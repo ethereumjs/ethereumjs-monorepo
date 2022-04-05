@@ -16,8 +16,8 @@ function createChain() {
     blocks: { latest: block },
     headers: { latest: block.header },
     getBlock: () => block,
-    getLatestBlock: () => block,
-    getLatestHeader: () => block.header,
+    getCanonicalHeadBlock: () => block,
+    getCanonicalHeadHeader: () => block.header,
   }
 }
 

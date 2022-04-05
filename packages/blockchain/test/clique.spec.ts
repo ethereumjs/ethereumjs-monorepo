@@ -10,8 +10,8 @@ tape('Clique: Initialization', (t) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
-    const head = await blockchain.getHead()
-    st.equal(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    const head = await blockchain.getIteratorHead()
+    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
 
     st.deepEquals(
       blockchain.cliqueActiveSigners(),

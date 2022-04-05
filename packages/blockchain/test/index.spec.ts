@@ -14,7 +14,7 @@ tape('blockchain test', (t) => {
       validateBlocks: true,
       validateConsensus: false,
     })
-    await blockchain.getHead()
+    await blockchain.getIteratorHead()
     st.end()
   })
 
@@ -22,15 +22,9 @@ tape('blockchain test', (t) => {
     const common = new Common({ chain: Chain.Ropsten })
     let blockchain = await Blockchain.create({ common })
 
-    const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
 
-    st.equal(
-      head.hash().toString('hex'),
-      common.genesis().hash.slice(2),
-      'correct genesis hash (getHead())'
-    )
-    st.equal(
+    st.equals(
       iteratorHead.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'correct genesis hash (getIteratorHead())'
@@ -52,10 +46,8 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       common,
     })
-
-    const head = await blockchain.getHead()
-
-    st.equal(head.header.number, BigInt(5), 'correct block number')
+    const head = await blockchain.getIteratorHead()
+    st.equals(head.header.number, BigInt(0), 'correct block number')
     st.end()
   })
 
@@ -81,7 +73,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     st.ok(
-      genesisBlock.hash().equals(blockchain.meta.genesis!),
+      genesisBlock.hash().equals((await blockchain.getCanonicalHeadHeader()).hash()),
       'genesis block hash should be correct'
     )
     st.end()
@@ -450,7 +442,7 @@ tape('blockchain test', (t) => {
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
   })
 
-  t.test('should test setHead (@deprecated)/setIteratorHead method', async (st) => {
+  t.test('should test setIteratorHead method', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
 
@@ -458,7 +450,7 @@ tape('blockchain test', (t) => {
 
     const headHash = blocks[headBlockIndex].hash()
     await blockchain.setIteratorHead('myHead', headHash)
-    const currentHeadBlock = await blockchain.getHead('myHead')
+    const currentHeadBlock = await blockchain.getIteratorHead('myHead')
 
     st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')
 
@@ -504,21 +496,6 @@ tape('blockchain test', (t) => {
     })
 
     st.pass('should finish iterating')
-    st.end()
-  })
-
-  t.test('should get meta.genesis', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    st.ok(blockchain.meta.rawHead.equals(blocks[24].hash()), 'should get meta.rawHead')
-    st.ok(blockchain.meta.genesis.equals(blocks[0].hash()), 'should get meta.genesis')
-    let i = 0
-    await blockchain.iterator('test', (block: Block) => {
-      if (block.hash().equals(blocks[i + 1].hash())) {
-        i++
-      }
-    })
-    st.ok(blockchain.meta.heads['test'], 'should get meta.heads')
     st.end()
   })
 
@@ -634,7 +611,7 @@ tape('blockchain test', (t) => {
   t.test('should get heads', async (st) => {
     const [db, genesis] = await createTestDB()
     const blockchain = await Blockchain.create({ db: db })
-    const head = await blockchain.getHead()
+    const head = await blockchain.getIteratorHead()
     if (genesis) {
       st.ok(head.hash().equals(genesis.hash()), 'should get head')
       st.equal(
@@ -736,10 +713,10 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
 
-    const latestHeader = await blockchain.getLatestHeader()
+    const latestHeader = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader.hash().equals(header.hash()), 'should save headHeader')
 
-    const latestBlock = await blockchain.getLatestBlock()
+    const latestBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should save headBlock')
     st.end()
   })
@@ -789,18 +766,18 @@ tape('blockchain test', (t) => {
 
     await blockchain.putHeaders(headers)
 
-    const latestHeader = await blockchain.getLatestHeader()
+    const latestHeader = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader.hash().equals(headers[1].hash()), 'should update latest header')
 
-    const latestBlock = await blockchain.getLatestBlock()
+    const latestBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should not change latest block')
 
     await blockchain.putBlock(block)
 
-    const latestHeader2 = await blockchain.getLatestHeader()
+    const latestHeader2 = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader2.hash().equals(headers[1].hash()), 'should not change latest header')
 
-    const getBlock = await blockchain.getLatestBlock()
+    const getBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(getBlock!.hash().equals(block.hash()), 'should update latest block')
     st.end()
   })
@@ -868,7 +845,7 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common })
 
     st.ok(
-      (await blockchain.getHead()).hash().equals(genesisHash),
+      (await blockchain.getIteratorHead()).hash().equals(genesisHash),
       'head hash should equal expected ropsten genesis hash'
     )
 
@@ -877,7 +854,7 @@ tape('initialization tests', (t) => {
     const newBlockchain = await Blockchain.create({ db, common })
 
     st.ok(
-      (await newBlockchain.getHead()).hash().equals(genesisHash),
+      (await newBlockchain.getIteratorHead()).hash().equals(genesisHash),
       'head hash should be read from the provided db'
     )
     st.end()
@@ -894,13 +871,13 @@ tape('initialization tests', (t) => {
     const db = blockchain.db
 
     st.ok(
-      (await blockchain.getHead()).hash().equals(hash),
+      (await blockchain.getIteratorHead()).hash().equals(hash),
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
     st.ok(
-      (await newBlockchain.getHead()).hash().equals(hash),
+      (await newBlockchain.getIteratorHead()).hash().equals(hash),
       'head hash should be read from the provided db'
     )
     st.end()

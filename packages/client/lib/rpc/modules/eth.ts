@@ -291,7 +291,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   }
 
   let block: Block
-  const latest = chain.blocks.latest ?? (await chain.getLatestBlock())
+  const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
 
   if (blockOpt === 'latest') {
     block = latest
@@ -532,7 +532,7 @@ export class Eth {
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await this._chain.getLatestHeader()
+      const latest = await this._chain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
     }
 
@@ -741,7 +741,7 @@ export class Eth {
     const [blockNumberHex] = params
     const blockNumber = BigInt(blockNumberHex)
     const latest =
-      this._chain.headers.latest?.number ?? (await this._chain.getLatestHeader()).number
+      this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
 
     if (blockNumber > latest) {
       throw {
@@ -1015,7 +1015,8 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
+    const currentBlockHeader =
+      this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bigIntToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer

@@ -28,7 +28,7 @@ export function mockBlockchain(options: any = {}) {
       }
       return block
     },
-    getLatestHeader: () => {
+    getCanonicalHeadHeader: () => {
       return Block.fromBlockData().header
     },
   }

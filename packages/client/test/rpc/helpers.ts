@@ -240,7 +240,7 @@ export async function runBlockWithTxs(
 ) {
   const { vm } = execution
   // build block with tx
-  const parentBlock = await chain.getLatestBlock()
+  const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.copy()
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
