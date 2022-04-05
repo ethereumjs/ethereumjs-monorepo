@@ -1,5 +1,5 @@
 import { Address } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'
 import { default as p2 } from './02-sha256'
@@ -72,39 +72,39 @@ const precompiles: Precompiles = {
 const precompileAvailability: PrecompileAvailability = {
   '0000000000000000000000000000000000000001': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'chainstart',
+    param: Hardfork.Chainstart,
   },
   '0000000000000000000000000000000000000002': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'chainstart',
+    param: Hardfork.Chainstart,
   },
   [ripemdPrecompileAddress]: {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'chainstart',
+    param: Hardfork.Chainstart,
   },
   '0000000000000000000000000000000000000004': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'chainstart',
+    param: Hardfork.Chainstart,
   },
   '0000000000000000000000000000000000000005': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'byzantium',
+    param: Hardfork.Byzantium,
   },
   '0000000000000000000000000000000000000006': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'byzantium',
+    param: Hardfork.Byzantium,
   },
   '0000000000000000000000000000000000000007': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'byzantium',
+    param: Hardfork.Byzantium,
   },
   '0000000000000000000000000000000000000008': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'byzantium',
+    param: Hardfork.Byzantium,
   },
   '0000000000000000000000000000000000000009': {
     type: PrecompileAvailabilityCheck.Hardfork,
-    param: 'istanbul',
+    param: Hardfork.Istanbul,
   },
   '000000000000000000000000000000000000000a': {
     type: PrecompileAvailabilityCheck.EIP,

@@ -26,36 +26,49 @@ export interface RunCodeOpts {
    * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
+  /**
+   * Pass a custom {@link EVM} to use. If omitted the default {@link EVM} will be used.
+   */
   evm?: EVM
-  txContext?: TxContext
+  /**
+   * The gas price for the call. Defaults to `0`
+   */
   gasPrice?: bigint
   /**
    * The address where the call originated from. Defaults to the zero address.
    */
   origin?: Address
-  message?: Message
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
   caller?: Address
   /**
-   * The EVM code to run
+   * The EVM code to run.
    */
   code?: Buffer
   /**
-   * The input data
+   * The input data.
    */
   data?: Buffer
   /**
-   * Gas limit
+   * The gas limit for the call.
    */
   gasLimit: bigint
   /**
-   * The value in ether that is being sent to `opt.address`. Defaults to `0`
+   * The value in ether that is being sent to `opts.address`. Defaults to `0`
    */
   value?: bigint
+  /**
+   * The call depth. Defaults to `0`
+   */
   depth?: number
+  /**
+   * If the call should be executed statically. Defaults to false.
+   */
   isStatic?: boolean
+  /**
+   * Addresses to selfdestruct. Defaults to none.
+   */
   selfdestruct?: { [k: string]: boolean }
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
@@ -73,24 +86,22 @@ export interface RunCodeOpts {
 export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
-  // Backwards compatibility
-  const txContext =
-    opts.txContext ??
-    new TxContext(opts.gasPrice ?? BigInt(0), opts.origin ?? opts.caller ?? Address.zero())
+  const txContext = new TxContext(
+    opts.gasPrice ?? BigInt(0),
+    opts.origin ?? opts.caller ?? Address.zero()
+  )
 
-  const message =
-    opts.message ??
-    new Message({
-      code: opts.code,
-      data: opts.data,
-      gasLimit: opts.gasLimit,
-      to: opts.address ?? Address.zero(),
-      caller: opts.caller,
-      value: opts.value,
-      depth: opts.depth ?? 0,
-      selfdestruct: opts.selfdestruct ?? {},
-      isStatic: opts.isStatic ?? false,
-    })
+  const message = new Message({
+    code: opts.code,
+    data: opts.data,
+    gasLimit: opts.gasLimit,
+    to: opts.address ?? Address.zero(),
+    caller: opts.caller,
+    value: opts.value,
+    depth: opts.depth ?? 0,
+    selfdestruct: opts.selfdestruct ?? {},
+    isStatic: opts.isStatic ?? false,
+  })
 
   const evm = opts.evm ?? new EVM(this, txContext, block)
 

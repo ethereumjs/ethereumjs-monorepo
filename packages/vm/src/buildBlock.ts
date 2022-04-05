@@ -139,7 +139,7 @@ export class BlockBuilder {
     const receiptTrie = new Trie()
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
-      const encodedReceipt = encodeReceipt(tx, txResult.receipt)
+      const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
       await receiptTrie.put(rlp.encode(i), encodedReceipt)
     }
     return receiptTrie.root
