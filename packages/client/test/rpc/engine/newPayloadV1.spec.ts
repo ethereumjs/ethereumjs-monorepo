@@ -79,6 +79,7 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
     {
       ...blockData,
       parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+      blockHash: '0xf31969a769bfcdbcc1c05f2542fdc7aa9336fc1ea9a82c4925320c035095d649',
     },
   ]
   const req = params(method, blockDataNonExistentParentHash)
@@ -88,6 +89,37 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
 
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(
+  `${method}: call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU`,
+  async (t) => {
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+    let req = params(method, [blocks[1]])
+    let expectRes = (res: any) => {
+      t.equal(res.body.result.status, 'SYNCING')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    req = params(method, [blocks[0]])
+    expectRes = (res: any) => {
+      t.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    const state = {
+      headBlockHash: blocks[1].blockHash,
+      safeBlockHash: blocks[1].blockHash,
+      finalizedBlockHash: blocks[0].blockHash,
+    }
+    req = params('engine_forkchoiceUpdatedV1', [state])
+    expectRes = (res: any) => {
+      t.equal(res.body.result.payloadStatus.status, 'VALID')
+    }
+
+    await baseRequest(t, server, req, 200, expectRes)
+  }
+)
 
 tape(`${method}: invalid terminal block`, async (t) => {
   const genesisWithHigherTtd = {
@@ -238,5 +270,21 @@ tape(`${method}: re-execute payload and verify that no errors occur`, async (t) 
   const expectRes = (res: any) => {
     t.equal(res.body.result.status, 'VALID')
   }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: parent hash equals to block hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const blockDataHasBlockHashSameAsParentHash = [
+    {
+      ...blockData,
+      blockHash: blockData.parentHash,
+    },
+  ]
+  const req = params(method, blockDataHasBlockHashSameAsParentHash)
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID_BLOCK_HASH')
+  }
+
   await baseRequest(t, server, req, 200, expectRes)
 })
