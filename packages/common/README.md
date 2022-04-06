@@ -55,14 +55,14 @@ c.param('gasPrices', 'ecAddGas') // 500
 c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 c.param('pow', 'minerReward') // 3000000000000000000
 
-// Instantiate with an EIP activated
-c = new Common({ chain: 'mainnet', eips: [2537] })
-
 // Access genesis data for Ropsten network
 c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d
 
 // Get bootstrap nodes for chain/network
 c.bootstrapNodes() // Array with current nodes
+
+// Instantiate with an EIP activated
+c = new Common({ chain: 'mainnet', eips: [2537] })
 ```
 
 If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
