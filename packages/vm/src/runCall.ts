@@ -41,7 +41,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
   )
 
   const message = new Message({
-    caller: opts.caller,
+    caller: opts.caller ?? Address.zero(),
     gasLimit: opts.gasLimit ?? new BN(0xffffff),
     to: opts.to ?? undefined,
     value: opts.value,
