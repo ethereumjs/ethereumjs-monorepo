@@ -17,9 +17,28 @@ Note: this `README` reflects the state of the library from `v2.0.0` onwards. See
 
 # USAGE
 
-All parameters can be accessed through the `Common` class which can be required through the
-main package and instantiated either with just the `chain` (e.g. 'mainnet') or the `chain`
-together with a specific `hardfork` provided.
+## import / require
+
+import (CommonJS, TypeScript with `esModuleInterop` enabled):
+
+`import Common from '@ethereumjs/common`
+`import Common, { Chain, Hardfork } from '@ethereumjs/common`
+
+require (ES Modules, Node.js):
+
+`const Common = require('@ethereumjs/common').default`
+`const { default: Common, Chain, Hardfork } = require('@ethereumjs/common')`
+
+## Parameters
+
+All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'mainnet') or the `chain` together with a specific `hardfork` provided:
+
+```typescript
+// With strings:
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+// With enums:
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+```
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
