@@ -99,9 +99,10 @@ export class VMExecution extends Execution {
     }
     // Bypass updating head by using blockchain db directly
     const [hash, num] = [block.hash(), block.header.number]
-    const td = (await this.chain.getTd(block.header.parentHash, block.header.number.subn(1))).add(
+    const td =
+      (await this.chain.getTd(block.header.parentHash, block.header.number - BigInt(1))) +
       block.header.difficulty
-    )
+
     await this.chain.blockchain.dbManager.batch([
       DBSetTD(td, num, hash),
       ...DBSetBlockOrHeader(block),

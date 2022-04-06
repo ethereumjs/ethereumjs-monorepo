@@ -516,7 +516,7 @@ export class Engine {
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
-      if (this.chain.headers.latest?.number.lt(headBlock.header.number)) {
+      if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
@@ -541,12 +541,6 @@ export class Engine {
       const blocks = [...parentBlocks, headBlock]
       await this.execution.setHead(blocks)
       this.service.txPool.removeNewBlockTxs(blocks)
-
-      // TODO: removed along rebase, 2022-04-05, @holgerd77
-      // Analyze if code should be there for some reason
-      /*for (const block of blocks) {
-        this.validBlocks.delete(block.hash().toString('hex'))
-      }*/
 
       const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
