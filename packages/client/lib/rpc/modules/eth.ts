@@ -478,9 +478,9 @@ export class Eth {
       const runCallOpts = {
         caller: from ? Address.fromString(from) : undefined,
         to: to ? Address.fromString(to) : undefined,
-        gasLimit: toType(gasLimit, TypeOutput.BN),
-        gasPrice: toType(gasPrice, TypeOutput.BN),
-        value: toType(value, TypeOutput.BN),
+        gasLimit: toType(gasLimit, TypeOutput.BigInt),
+        gasPrice: toType(gasPrice, TypeOutput.BigInt),
+        value: toType(value, TypeOutput.BigInt),
         data: data ? toBuffer(data) : undefined,
       }
       const { execResult } = await vm.runCall(runCallOpts)

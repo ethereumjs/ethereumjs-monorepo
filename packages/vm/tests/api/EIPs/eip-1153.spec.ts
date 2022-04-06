@@ -1,11 +1,11 @@
 import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address, BN } from 'ethereumjs-util'
+import { Account, Address, bufferToInt, privateToAddress } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 
 interface Test {
-  steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: BN[] }[]
+  steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
   contracts: { code: string; address: Address }[]
   transactions: Transaction[]
 }
@@ -16,16 +16,16 @@ const senderKey = Buffer.from(
 )
 
 tape('EIP 1153: transient storage', (t) => {
-  const initialGas = new BN(0xffffffffff)
+  const initialGas = BigInt(0xffffffffff)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
   const runTest = async function (test: Test, st: tape.Test) {
     let i = 0
     let currentGas = initialGas
-    const vm = new VM({ common })
+    const vm = new (VM as any)({ common })
 
     vm.on('step', function (step: any) {
-      const gasUsed = currentGas.sub(step.gasLeft)
+      const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
       st.equal(
@@ -35,16 +35,15 @@ tape('EIP 1153: transient storage', (t) => {
       )
 
       st.deepEqual(
-        step.stack.map((e: BN) => e.toString()),
-        test.steps[i].expectedStack.map((e: BN) => e.toString()),
+        step.stack.map((e: bigint) => e.toString()),
+        test.steps[i].expectedStack.map((e: bigint) => e.toString()),
         `Expected stack: ${step.stack}`
       )
 
       if (i > 0) {
-        const expectedGasUsed = new BN(test.steps[i - 1].expectedGasUsed)
-        st.equal(
-          true,
-          gasUsed.eq(expectedGasUsed),
+        const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
+        st.ok(
+          gasUsed === expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
           }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
@@ -57,6 +56,8 @@ tape('EIP 1153: transient storage', (t) => {
       await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
     }
 
+    const fromAddress = new Address(privateToAddress(senderKey))
+    await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
     const results = []
     for (const tx of test.transactions) {
       const result = await vm.runTx({ tx, skipBalance: true })
@@ -73,9 +74,9 @@ tape('EIP 1153: transient storage', (t) => {
 
     const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
     const tx = Transaction.fromTxData({
-      gasLimit: new BN(21000 + 9000),
+      gasLimit: BigInt(21000 + 9000),
       to: address,
-      value: new BN(1),
+      value: BigInt(1),
     }).sign(senderKey)
 
     const test = {
@@ -83,15 +84,15 @@ tape('EIP 1153: transient storage', (t) => {
       transactions: [tx],
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(2)] },
-        { expectedOpcode: 'TSTORE', expectedGasUsed: 100, expectedStack: [new BN(2), new BN(1)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(2)] },
+        { expectedOpcode: 'TSTORE', expectedGasUsed: 100, expectedStack: [BigInt(2), BigInt(1)] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'TLOAD', expectedGasUsed: 100, expectedStack: [new BN(1)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(2)] },
-        { expectedOpcode: 'MSTORE', expectedGasUsed: 6, expectedStack: [new BN(2), new BN(0)] },
+        { expectedOpcode: 'TLOAD', expectedGasUsed: 100, expectedStack: [BigInt(1)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(2)] },
+        { expectedOpcode: 'MSTORE', expectedGasUsed: 6, expectedStack: [BigInt(2), BigInt(0)] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'RETURN', expectedGasUsed: NaN, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'RETURN', expectedGasUsed: NaN, expectedStack: [BigInt(32), BigInt(0)] },
       ],
     }
 
@@ -116,53 +117,53 @@ tape('EIP 1153: transient storage', (t) => {
       contracts: [{ address, code }],
       transactions: [
         Transaction.fromTxData({
-          gasLimit: new BN(15000000),
+          gasLimit: BigInt(15000000),
           to: address,
           data: Buffer.alloc(32),
         }).sign(senderKey),
         Transaction.fromTxData({
           nonce: 1,
-          gasLimit: new BN(15000000),
+          gasLimit: BigInt(15000000),
           to: address,
         }).sign(senderKey),
       ],
       steps: [
         // first tx
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
-        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(0), new BN(28)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [BigInt(0), BigInt(28)] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1)] },
-        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(1), new BN(18)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [BigInt(1)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [BigInt(1), BigInt(18)] },
         { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(255)] },
-        { expectedOpcode: 'TSTORE', expectedGasUsed: 100, expectedStack: [new BN(255), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(255)] },
+        { expectedOpcode: 'TSTORE', expectedGasUsed: 100, expectedStack: [BigInt(255), BigInt(0)] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'RETURN', expectedGasUsed: -278, expectedStack: [new BN(0), new BN(0)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'RETURN', expectedGasUsed: -278, expectedStack: [BigInt(0), BigInt(0)] },
         // second tx
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [new BN(0), new BN(0)] },
-        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1)] },
-        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(1), new BN(28)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [BigInt(0), BigInt(0)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [BigInt(1)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [BigInt(1), BigInt(28)] },
         { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'TLOAD', expectedGasUsed: 100, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'MSTORE', expectedGasUsed: 6, expectedStack: [new BN(0), new BN(0)] },
+        { expectedOpcode: 'TLOAD', expectedGasUsed: 100, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'MSTORE', expectedGasUsed: 6, expectedStack: [BigInt(0), BigInt(0)] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'RETURN', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'RETURN', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
       ],
     }
 
     const [result1, result2] = await runTest(test, st)
     st.equal(result1.execResult.exceptionError, undefined)
-    st.deepEqual(new BN(result2.execResult.returnValue).toNumber(), 0x00)
+    st.equal(bufferToInt(result2.execResult.returnValue), 0)
     st.end()
   })
 
@@ -186,7 +187,7 @@ tape('EIP 1153: transient storage', (t) => {
       '6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
     const unsignedTx = Transaction.fromTxData({
-      gasLimit: new BN(15000000),
+      gasLimit: BigInt(15000000),
       to: callingAddress,
     })
 
@@ -200,464 +201,464 @@ tape('EIP 1153: transient storage', (t) => {
       transactions: [tx],
       steps: [
         { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1660795326)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1660795326)] },
         {
           expectedOpcode: 'MSTORE',
           expectedGasUsed: 6,
-          expectedStack: [new BN(1660795326), new BN(0)],
+          expectedStack: [BigInt(1660795326), BigInt(0)],
         },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(32), new BN(0), new BN(32)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(32)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(32), new BN(0), new BN(32), new BN(0)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH32',
           expectedGasUsed: 3,
-          expectedStack: [new BN(32), new BN(0), new BN(32), new BN(0), new BN(0)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(32), BigInt(0), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH2',
           expectedGasUsed: 3,
           expectedStack: [
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
           ],
         },
         {
           expectedOpcode: 'CALL',
           expectedGasUsed: 14913432,
           expectedStack: [
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
-            new BN('65535'),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
+            BigInt('65535'),
           ],
         },
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
         //
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
         {
           expectedOpcode: 'CALLDATACOPY',
           expectedGasUsed: 9,
-          expectedStack: [new BN(32), new BN(0), new BN(0)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(0)],
         },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(1660795326)] },
+        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(1660795326)] },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(1660795326)],
+          expectedStack: [BigInt(1660795326), BigInt(1660795326)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(1660795326), new BN(2949149906)],
+          expectedStack: [BigInt(1660795326), BigInt(1660795326), BigInt(2949149906)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(0)],
+          expectedStack: [BigInt(1660795326), BigInt(0)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(1660795326), new BN(0), new BN(52)],
+          expectedStack: [BigInt(1660795326), BigInt(0), BigInt(52)],
         },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(1660795326)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(1660795326)] },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(1660795326)],
+          expectedStack: [BigInt(1660795326), BigInt(1660795326)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(1660795326), new BN(1660795326)],
+          expectedStack: [BigInt(1660795326), BigInt(1660795326), BigInt(1660795326)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(1)],
+          expectedStack: [BigInt(1660795326), BigInt(1)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(1660795326), new BN(1), new BN(63)],
+          expectedStack: [BigInt(1660795326), BigInt(1), BigInt(63)],
         },
-        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [new BN(1660795326)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1660795326)] },
+        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [BigInt(1660795326)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1660795326)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(170)],
+          expectedStack: [BigInt(1660795326), BigInt(170)],
         },
         {
           expectedOpcode: 'TSTORE',
           expectedGasUsed: 100,
-          expectedStack: [new BN(1660795326), new BN(170), new BN(0)],
+          expectedStack: [BigInt(1660795326), BigInt(170), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1660795326)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1660795326)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1660795326), new BN(0)],
+          expectedStack: [BigInt(1660795326), BigInt(0)],
         },
         {
           expectedOpcode: 'RETURN',
           expectedGasUsed: -14910832,
-          expectedStack: [new BN(1660795326), new BN(0), new BN(0)],
+          expectedStack: [BigInt(1660795326), BigInt(0), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [BigInt(1)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(2949149906)],
+          expectedStack: [BigInt(1), BigInt(2949149906)],
         },
         {
           expectedOpcode: 'MSTORE',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(2949149906), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(2949149906), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1), new BN(32)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1), BigInt(32)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(32), new BN(0)],
-        },
-        {
-          expectedOpcode: 'PUSH1',
-          expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(32), new BN(0), new BN(32)],
+          expectedStack: [BigInt(1), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(32), new BN(0), new BN(32), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(32), BigInt(0), BigInt(32)],
+        },
+        {
+          expectedOpcode: 'PUSH1',
+          expectedGasUsed: 3,
+          expectedStack: [BigInt(1), BigInt(32), BigInt(0), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH32',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(32), new BN(0), new BN(32), new BN(0), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(32), BigInt(0), BigInt(32), BigInt(0), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH2',
           expectedGasUsed: 3,
           expectedStack: [
-            new BN(1),
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
+            BigInt(1),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
           ],
         },
         {
           expectedOpcode: 'CALL',
           expectedGasUsed: 14910622,
           expectedStack: [
-            new BN(1),
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
-            new BN(0xffff),
+            BigInt(1),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
+            BigInt(0xffff),
           ],
         },
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
         {
           expectedOpcode: 'CALLDATACOPY',
           expectedGasUsed: 9,
-          expectedStack: [new BN(32), new BN(0), new BN(0)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(0)],
         },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(2949149906)] },
+        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(2949149906)] },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(2949149906), new BN(2949149906)],
+          expectedStack: [BigInt(2949149906), BigInt(2949149906)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(2949149906), new BN(2949149906), new BN(2949149906)],
+          expectedStack: [BigInt(2949149906), BigInt(2949149906), BigInt(2949149906)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(2949149906), new BN(1)],
+          expectedStack: [BigInt(2949149906), BigInt(1)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(2949149906), new BN(1), new BN(52)],
+          expectedStack: [BigInt(2949149906), BigInt(1), BigInt(52)],
         },
-        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [new BN(2949149906)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(2949149906)] },
+        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [BigInt(2949149906)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(2949149906)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(2949149906), new BN(255)],
+          expectedStack: [BigInt(2949149906), BigInt(255)],
         },
         {
           expectedOpcode: 'TSTORE',
           expectedGasUsed: 100,
-          expectedStack: [new BN(2949149906), new BN(255), new BN(0)],
+          expectedStack: [BigInt(2949149906), BigInt(255), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(2949149906)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(2949149906)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(2949149906), new BN(0)],
+          expectedStack: [BigInt(2949149906), BigInt(0)],
         },
         {
           expectedOpcode: 'REVERT',
           expectedGasUsed: -14910522,
-          expectedStack: [new BN(2949149906), new BN(0), new BN(0)],
+          expectedStack: [BigInt(2949149906), BigInt(0), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1), new BN(0)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [BigInt(1), BigInt(0)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1135352889)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1135352889)],
         },
         {
           expectedOpcode: 'MSTORE',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1135352889), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1135352889), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1), BigInt(0)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(32)],
-        },
-        {
-          expectedOpcode: 'PUSH1',
-          expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(32), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(32)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(32), new BN(0), new BN(32)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(32), new BN(0), new BN(32), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(32), BigInt(0), BigInt(32)],
+        },
+        {
+          expectedOpcode: 'PUSH1',
+          expectedGasUsed: 3,
+          expectedStack: [BigInt(1), BigInt(0), BigInt(32), BigInt(0), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH32',
           expectedGasUsed: 3,
           expectedStack: [
-            new BN(1),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
+            BigInt(1),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
           ],
         },
         {
           expectedOpcode: 'PUSH2',
           expectedGasUsed: 3,
           expectedStack: [
-            new BN(1),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
+            BigInt(1),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
           ],
         },
         {
           expectedOpcode: 'CALL',
           expectedGasUsed: 14910334,
           expectedStack: [
-            new BN(1),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(32),
-            new BN(0),
-            new BN(0),
-            new BN('1338207774508379457866452578149304295121587113672'),
-            new BN(0xffff),
+            BigInt(1),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(32),
+            BigInt(0),
+            BigInt(0),
+            BigInt('1338207774508379457866452578149304295121587113672'),
+            BigInt(0xffff),
           ],
         },
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
         {
           expectedOpcode: 'CALLDATACOPY',
           expectedGasUsed: 9,
-          expectedStack: [new BN(32), new BN(0), new BN(0)],
+          expectedStack: [BigInt(32), BigInt(0), BigInt(0)],
         },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
-        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [new BN(0)] },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(1135352889)] },
+        { expectedOpcode: 'MLOAD', expectedGasUsed: 3, expectedStack: [BigInt(0)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(1135352889)] },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889), new BN(2949149906)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889), BigInt(2949149906)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(0)],
+          expectedStack: [BigInt(1135352889), BigInt(0)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(1135352889), new BN(0), new BN(52)],
+          expectedStack: [BigInt(1135352889), BigInt(0), BigInt(52)],
         },
         {
           expectedOpcode: 'DUP1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889)],
+          expectedStack: [BigInt(1135352889)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889), new BN(1660795326)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889), BigInt(1660795326)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(0)],
+          expectedStack: [BigInt(1135352889), BigInt(0)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(1135352889), new BN(0), new BN(63)],
+          expectedStack: [BigInt(1135352889), BigInt(0), BigInt(63)],
         },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(1135352889)] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(1135352889)] },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889)],
         },
         {
           expectedOpcode: 'EQ',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1135352889), new BN(1135352889)],
+          expectedStack: [BigInt(1135352889), BigInt(1135352889), BigInt(1135352889)],
         },
         {
           expectedOpcode: 'PUSH4',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(1)],
+          expectedStack: [BigInt(1135352889), BigInt(1)],
         },
         {
           expectedOpcode: 'JUMPI',
           expectedGasUsed: 10,
-          expectedStack: [new BN(1135352889), new BN(1), new BN(74)],
+          expectedStack: [BigInt(1135352889), BigInt(1), BigInt(74)],
         },
-        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [new BN(1135352889)] },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1135352889)] },
+        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [BigInt(1135352889)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1135352889)] },
         {
           expectedOpcode: 'TLOAD',
           expectedGasUsed: 100,
-          expectedStack: [new BN(1135352889), new BN(0)],
+          expectedStack: [BigInt(1135352889), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(170)],
+          expectedStack: [BigInt(1135352889), BigInt(170)],
         },
         {
           expectedOpcode: 'MSTORE',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(170), new BN(0)],
+          expectedStack: [BigInt(1135352889), BigInt(170), BigInt(0)],
         },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(1135352889)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(1135352889)] },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1135352889), new BN(32)],
+          expectedStack: [BigInt(1135352889), BigInt(32)],
         },
         {
           expectedOpcode: 'RETURN',
           expectedGasUsed: -14910234,
-          expectedStack: [new BN(1135352889), new BN(32), new BN(0)],
+          expectedStack: [BigInt(1135352889), BigInt(32), BigInt(0)],
         },
         {
           expectedOpcode: 'CALLDATASIZE',
           expectedGasUsed: 2,
-          expectedStack: [new BN(1), new BN(0), new BN(1)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1), BigInt(0)],
         },
         {
           expectedOpcode: 'DUP1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1), new BN(0), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1), BigInt(0), BigInt(0)],
         },
         {
           expectedOpcode: 'CALLDATACOPY',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1), new BN(0), new BN(0), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1), BigInt(0), BigInt(0), BigInt(0)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1)],
         },
         {
           expectedOpcode: 'PUSH1',
           expectedGasUsed: 3,
-          expectedStack: [new BN(1), new BN(0), new BN(1), new BN(32)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1), BigInt(32)],
         },
         {
           expectedOpcode: 'RETURN',
           expectedGasUsed: NaN,
-          expectedStack: [new BN(1), new BN(0), new BN(1), new BN(32), new BN(0)],
+          expectedStack: [BigInt(1), BigInt(0), BigInt(1), BigInt(32), BigInt(0)],
         },
       ],
     }
 
     const [result] = await runTest(test, st)
-    st.deepEqual(new BN(result.execResult.returnValue).toNumber(), 0xaa)
+    st.equal(bufferToInt(result.execResult.returnValue), 0xaa)
     st.end()
   })
 })

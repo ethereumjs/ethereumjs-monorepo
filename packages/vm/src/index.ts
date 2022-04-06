@@ -282,7 +282,7 @@ export default class VM extends AsyncEventEmitter {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
-      Hardfork.PreMerge,
+      Hardfork.MergeForkBlock,
       Hardfork.Merge,
     ]
     if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
