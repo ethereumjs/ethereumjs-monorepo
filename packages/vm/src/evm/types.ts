@@ -20,6 +20,10 @@ export type AddOpcode = {
 }
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
+
+/**
+ * Tx context for vm execution
+ */
 export interface TxContext {
   gasPrice: bigint
   origin: Address
