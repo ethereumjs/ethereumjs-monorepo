@@ -64,7 +64,7 @@ export default class EEI {
   _evm: EVM
   _lastReturned: Buffer
   _common: Common
-  _gasLeft: BN
+  _gasLeft: bigint
   _transientStorage: TransientStorage
 
   constructor(
