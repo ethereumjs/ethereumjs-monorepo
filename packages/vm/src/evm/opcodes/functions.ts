@@ -676,7 +676,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, byte] = runState.stack.popN(2)
 
-      const buf = bigIntToBuffer(byte & 0xffn)
+      const buf = bigIntToBuffer(byte & BigInt(0xff))
       const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
@@ -878,9 +878,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xb3,
     function (runState) {
       const key = runState.stack.pop()
-      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       const value = runState.eei.transientStorageLoad(keyBuf)
-      const valueBN = value.length ? new BN(value) : new BN(0)
+      const valueBN = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBN)
     },
   ],
@@ -893,13 +893,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       const [key, val] = runState.stack.popN(2)
 
-      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value
-      if (val.isZero()) {
+      if (val === BigInt(0)) {
         value = Buffer.from([])
       } else {
-        value = val.toArrayLike(Buffer, 'be')
+        value = bigIntToBuffer(val)
       }
 
       runState.eei.transientStorageStore(keyBuf, value)
