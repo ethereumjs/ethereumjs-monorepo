@@ -196,6 +196,10 @@ export default class VM extends AsyncEventEmitter {
 
   protected _precompiles!: Map<string, PrecompileFunc>
 
+  public get precompiles() {
+    return this._precompiles
+  }
+
   /**
    * Cached emit() function, not for public usage
    * set to public due to implementation internals
