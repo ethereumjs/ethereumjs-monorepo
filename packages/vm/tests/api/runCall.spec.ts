@@ -567,7 +567,7 @@ tape.only('Skip balance checks', async (t) => {
   )
   t.equal(res.execResult.exceptionError, undefined, 'no exceptionError when skipBalance = true')
 
-  const res2 = await vm.runCall({ ...runCallArgs, ...{ skipBalance: false } })
+  const res2 = await vm.runCall({ ...runCallArgs, skipBalance: false })
   t.equal(
     res2.execResult.exceptionError?.error,
     'insufficient balance',

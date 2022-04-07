@@ -91,6 +91,7 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
     // if skipBalance, ensure the caller has enough balance for `value` transfer
     const callerAccount = await this.stateManager.getAccount(caller)
     const balance = callerAccount.balance
+
     if (opts.value && balance < opts.value) {
       callerAccount.balance += opts.value - balance
       await this.stateManager.putAccount(caller, callerAccount)
