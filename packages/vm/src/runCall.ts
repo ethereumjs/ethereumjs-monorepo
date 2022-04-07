@@ -66,6 +66,10 @@ export interface RunCallOpts {
    */
   selfdestruct?: { [k: string]: boolean }
   /**
+   * Skip balance checks if true.
+   */
+  skipBalance?: boolean
+  /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
   delegatecall?: boolean
@@ -74,7 +78,7 @@ export interface RunCallOpts {
 /**
  * @ignore
  */
-export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
+export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   const txContext = new TxContext(
@@ -82,6 +86,15 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     opts.origin ?? opts.caller ?? Address.zero()
   )
 
+  if (opts.skipBalance) {
+    const caller = opts.caller ?? Address.zero()
+    const callerAccount = await this.stateManager.getAccount(caller)
+    const balance = callerAccount.balance
+    if (opts.value && balance < opts.value) {
+      callerAccount.balance += opts.value - balance
+      await this.stateManager.putAccount(caller, callerAccount)
+    }
+  }
   const message = new Message({
     caller: opts.caller ?? Address.zero(),
     gasLimit: opts.gasLimit ?? BigInt(0xffffff),

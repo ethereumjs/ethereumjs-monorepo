@@ -244,14 +244,18 @@ export default class EVM {
 
   async _executeCall(message: Message): Promise<EVMResult> {
     const account = await this._state.getAccount(message.authcallOrigin ?? message.caller)
+    let errorMessage
     // Reduce tx value from sender
     if (!message.delegatecall) {
-      await this._reduceSenderBalance(account, message)
+      try {
+        await this._reduceSenderBalance(account, message)
+      } catch (e) {
+        errorMessage = e
+      }
     }
     // Load `to` account
     const toAccount = await this._state.getAccount(message.to)
     // Add tx value to the `to` account
-    let errorMessage
     if (!message.delegatecall) {
       try {
         await this._addToBalance(toAccount, message)
@@ -633,6 +637,9 @@ export default class EVM {
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
+    if (account.balance < BigInt(0)) {
+      throw new Error('sender account has insufficient funds to execute message')
+    }
     const result = this._state.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this._vm.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)

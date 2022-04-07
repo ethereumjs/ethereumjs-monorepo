@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, MAX_INTEGER } from 'ethereumjs-util'
+import { Account, Address, MAX_INTEGER, privateToAddress } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
@@ -639,4 +639,38 @@ tape('runTx() -> RunTxOptions', (t) => {
     }
     t.end()
   })
+})
+
+tape('skipBalance checks', async (t) => {
+  t.plan(3)
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await VM.create({ common })
+  const code = '600260015260015160005260206000F3'
+  const returndata = Buffer.alloc(32)
+  returndata[31] = 0x02
+
+  const senderKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+  const tx = Transaction.fromTxData({
+    gasLimit: BigInt(21000 + 9000),
+    to: address,
+    value: BigInt(1),
+  }).sign(senderKey)
+
+  const res = await vm.runTx({ tx, skipBalance: true })
+  t.pass('runTx should not throw with no balance and skipBalance = true')
+
+  const callerBalance = (await vm.stateManager.getAccount(new Address(privateToAddress(senderKey))))
+    .balance
+  t.equal(
+    callerBalance,
+    BigInt(0),
+    'caller balance should be 0 if skipBalance = true and caller balance less than tx cost'
+  )
+  t.equal(res.execResult.exceptionError, undefined, 'no exceptionError when skipBalance = true')
 })
