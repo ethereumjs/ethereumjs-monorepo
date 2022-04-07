@@ -45,7 +45,7 @@ export interface RunTxOpts {
    */
   skipNonce?: boolean
   /**
-   * If true, skips the balance check
+   * Skip balance checks if true and adds transaction value to balance to ensure transaction execution doesn't fail on balance checks
    */
   skipBalance?: boolean
 
