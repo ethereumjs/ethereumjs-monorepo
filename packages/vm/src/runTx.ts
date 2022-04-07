@@ -310,7 +310,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
-  if (!opts.skipBalance) {
+  if (opts.skipBalance) {
+    // when skipBalance, ensure the caller has enough balance for the total tx cost
+    fromAccount.balance += cost - balance
+    await this.stateManager.putAccount(caller, fromAccount)
+  } else {
     if (balance < cost) {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
@@ -336,9 +340,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         throw new Error(msg)
       }
     }
-  } else {
-    fromAccount.balance += cost - balance
-    await this.stateManager.putAccount(caller, fromAccount)
   }
   if (!opts.skipNonce) {
     if (nonce !== tx.nonce) {
