@@ -572,7 +572,7 @@ export default class EVM {
    * Returns code for precompile at the given address, or undefined
    * if no such precompile exists.
    */
-  getPrecompile(address: Address): PrecompileFunc {
+  getPrecompile(address: Address): PrecompileFunc | undefined {
     return this._vm.precompiles.get(address.buf.toString('hex'))
   }
 
