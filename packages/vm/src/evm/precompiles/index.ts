@@ -205,4 +205,5 @@ export {
   CustomPrecompile,
   ripemdPrecompileAddress,
   getActivePrecompiles,
+  precompiles,
 }
