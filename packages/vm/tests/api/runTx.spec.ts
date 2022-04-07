@@ -665,7 +665,7 @@ tape('skipBalance checks', async (t) => {
   const res = await vm.runTx({ tx, skipBalance: true })
   t.pass('runTx should not throw with no balance and skipBalance = true')
 
-  const callerBalance = (await vm.stateManager.getAccount(new Address(privateToAddress(senderKey))))
+  const callerBalance = (await vm.stateManager.getAccount(Address.fromPrivateKey(senderKey)))
     .balance
   t.equal(
     callerBalance,

@@ -638,7 +638,7 @@ export default class EVM {
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
     if (account.balance < BigInt(0)) {
-      throw new Error('sender account has insufficient funds to execute message')
+      throw new VmError(ERROR.INSUFFICIENT_BALANCE)
     }
     const result = this._state.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this._vm.DEBUG) {

@@ -533,8 +533,8 @@ tape('Throws on negative call value', async (t) => {
   t.end()
 })
 
-tape('Skip balance checks', async (t) => {
-  t.plan(3)
+tape.only('Skip balance checks', async (t) => {
+  t.plan(4)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
   const code = '600260015260015160005260206000F3'
@@ -545,7 +545,7 @@ tape('Skip balance checks', async (t) => {
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex'
   )
-  const caller = new Address(privateToAddress(senderKey))
+  const caller = Address.fromPrivateKey(senderKey)
   const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
 
   await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
@@ -566,4 +566,11 @@ tape('Skip balance checks', async (t) => {
     'caller balance should be 0 if skipBalance = true and caller balance less than tx cost'
   )
   t.equal(res.execResult.exceptionError, undefined, 'no exceptionError when skipBalance = true')
+
+  const res2 = await vm.runCall({ ...runCallArgs, ...{ skipBalance: false } })
+  t.equal(
+    res2.execResult.exceptionError?.error,
+    'insufficient balance',
+    'runCall reverts when insufficient caller balance and skipBalance = false'
+  )
 })

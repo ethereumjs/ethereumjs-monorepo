@@ -86,8 +86,9 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
     opts.origin ?? opts.caller ?? Address.zero()
   )
 
+  const caller = opts.caller ?? Address.zero()
   if (opts.skipBalance) {
-    const caller = opts.caller ?? Address.zero()
+    // if skipBalance, ensure the caller has enough balance for `value` transfer
     const callerAccount = await this.stateManager.getAccount(caller)
     const balance = callerAccount.balance
     if (opts.value && balance < opts.value) {
@@ -95,8 +96,9 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
       await this.stateManager.putAccount(caller, callerAccount)
     }
   }
+
   const message = new Message({
-    caller: opts.caller ?? Address.zero(),
+    caller,
     gasLimit: opts.gasLimit ?? BigInt(0xffffff),
     to: opts.to ?? undefined,
     value: opts.value,
