@@ -8,6 +8,7 @@ import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
 import { parseCustomParams, parseGenesisState } from '../../lib/util'
+import { Event } from '../../lib/types'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { VMExecution } from '../../lib/execution'
@@ -136,6 +137,9 @@ export function baseSetup(clientOpts: any = {}) {
   const client = createClient(clientOpts)
   const manager = createManager(client)
   const server = startRPC(manager.getMethods(clientOpts.engine === true))
+  server.once('close', () => {
+    client.config.events.emit(Event.CLIENT_SHUTDOWN)
+  })
   return { server, manager, client }
 }
 
@@ -201,6 +205,9 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
   const manager = createManager(client)
   const server = startRPC(manager.getMethods(clientOpts.engine))
+  server.once('close', () => {
+    client.config.events.emit(Event.CLIENT_SHUTDOWN)
+  })
 
   const { chain, execution } = client
 

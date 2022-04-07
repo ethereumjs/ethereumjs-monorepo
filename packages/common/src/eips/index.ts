@@ -1,6 +1,7 @@
 import { eipsType } from './../types'
 
 export const EIPs: eipsType = {
+  1153: require('./1153.json'),
   1559: require('./1559.json'),
   2315: require('./2315.json'),
   2537: require('./2537.json'),
@@ -14,6 +15,7 @@ export const EIPs: eipsType = {
   3541: require('./3541.json'),
   3554: require('./3554.json'),
   3607: require('./3607.json'),
+  3651: require('./3651.json'),
   3670: require('./3670.json'),
   3675: require('./3675.json'),
   3855: require('./3855.json'),

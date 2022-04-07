@@ -1,7 +1,7 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BNLike } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
@@ -43,6 +43,7 @@ export interface VMOpts {
    *
    * ### Supported EIPs
    *
+   * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
@@ -54,6 +55,7 @@ export interface VMOpts {
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
@@ -183,7 +185,7 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedContractSize: boolean
   // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
   protected _opcodes!: OpcodeList
   protected _handlers!: Map<number, OpHandler>
@@ -221,7 +223,7 @@ export default class VM extends AsyncEventEmitter {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  protected readonly DEBUG: boolean = false
+  readonly DEBUG: boolean = false
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -255,8 +257,8 @@ export default class VM extends AsyncEventEmitter {
     if (opts.common) {
       // Supported EIPs
       const supportedEIPs = [
-        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
-        4399,
+        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
+        3855, 3860, 4399,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
@@ -267,21 +269,21 @@ export default class VM extends AsyncEventEmitter {
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
       const supportedHardforks = [
-        'chainstart',
-        'homestead',
-        'dao',
-        'tangerineWhistle',
-        'spuriousDragon',
-        'byzantium',
-        'constantinople',
-        'petersburg',
-        'istanbul',
-        'muirGlacier',
-        'berlin',
-        'london',
-        'arrowGlacier',
-        'preMerge',
-        'merge',
+        Hardfork.Chainstart,
+        Hardfork.Homestead,
+        Hardfork.Dao,
+        Hardfork.TangerineWhistle,
+        Hardfork.SpuriousDragon,
+        Hardfork.Byzantium,
+        Hardfork.Constantinople,
+        Hardfork.Petersburg,
+        Hardfork.Istanbul,
+        Hardfork.MuirGlacier,
+        Hardfork.Berlin,
+        Hardfork.London,
+        Hardfork.ArrowGlacier,
+        Hardfork.MergeForkBlock,
+        Hardfork.Merge,
       ]
       this._common = new Common({
         chain: DEFAULT_CHAIN,

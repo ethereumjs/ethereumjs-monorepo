@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | Resources common to all EthereumJS implementations. |
-| --- |
+| --------------------------------------------------- |
 
 Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceding release.
 
@@ -17,9 +17,28 @@ Note: this `README` reflects the state of the library from `v2.0.0` onwards. See
 
 # USAGE
 
-All parameters can be accessed through the `Common` class which can be required through the
-main package and instantiated either with just the `chain` (e.g. 'mainnet') or the `chain`
-together with a specific `hardfork` provided.
+## import / require
+
+import (CommonJS, TypeScript with `esModuleInterop` enabled):
+
+`import Common from '@ethereumjs/common`\
+`import Common, { Chain, Hardfork } from '@ethereumjs/common`
+
+require (ES Modules, Node.js):
+
+`const Common = require('@ethereumjs/common').default`\
+`const { default: Common, Chain, Hardfork } = require('@ethereumjs/common')`
+
+## Parameters
+
+All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'mainnet') or the `chain` together with a specific `hardfork` provided:
+
+```typescript
+// With strings:
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+// With enums:
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+```
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
@@ -28,24 +47,22 @@ Current `DEFAULT_HARDFORK`: `istanbul`
 Here are some simple usage examples:
 
 ```typescript
-import Common from '@ethereumjs/common'
-
 // Instantiate with the chain (and the default hardfork)
-const c = new Common({ chain: 'ropsten' })
+let c = new Common({ chain: 'ropsten' })
 c.param('gasPrices', 'ecAddGas') // 500
 
 // Chain and hardfork provided
 c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 c.param('pow', 'minerReward') // 3000000000000000000
 
-// Instantiate with an EIP activated
-const c = new Common({ chain: 'mainnet', eips: [2537] })
-
 // Access genesis data for Ropsten network
 c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d
 
 // Get bootstrap nodes for chain/network
 c.bootstrapNodes() // Array with current nodes
+
+// Instantiate with an EIP activated
+c = new Common({ chain: 'mainnet', eips: [2537] })
 ```
 
 If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
@@ -57,8 +74,8 @@ const c = new Common({
 })
 ```
 
-This will e.g. throw an error when a param is requested for an unsupported hardfork and
-like this prevents unpredicted behaviour.
+This will throw an error when a param is requested for an unsupported hardfork
+to prevent unpredictable behavior.
 
 For an improved developer experience, there are `Chain` and `Hardfork` enums available:
 
@@ -86,8 +103,8 @@ to ease `blockNumber` based access to parameters.
 The `Common` class is implemented as an `EventEmitter` and is emitting the following events
 on which you can react within your code:
 
-| Event | Description |
-| - | - |
+| Event             | Description                                                |
+| ----------------- | ---------------------------------------------------------- |
 | `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
 
 # SETUP
@@ -163,11 +180,10 @@ The following custom chains are currently supported:
 
 `Common` instances created with this simplified `custom()` constructor can't be used in all usage contexts (the HF configuration is very likely not matching the actual chain) but can be useful for specific use cases, e.g. for sending a tx with `@ethereumjs/tx` to an L2 network (see the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for a complete usage example).
 
-
 #### Activate with a single custom Chain setup
 
 If you want to initialize a `Common` instance with a single custom chain which is then directly activated
-you can pass a dictionary - conforming to the parameter format described above - with your custom chain 
+you can pass a dictionary - conforming to the parameter format described above - with your custom chain
 values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
 
 ```typescript
@@ -179,20 +195,23 @@ const common = new Common({ chain: myCustomChain })
 
 A second way for custom chain initialization is to use the `customChains` constructor option. This
 option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on
-a common instance in addition to the already supported ones. It also allows for an activation-independent 
-initialization, so you can add your chains by adding to the `customChains` array and either directly 
-use the `chain` option to activate one of the custom chains passed or activate a build in chain 
+a common instance in addition to the already supported ones. It also allows for an activation-independent
+initialization, so you can add your chains by adding to the `customChains` array and either directly
+use the `chain` option to activate one of the custom chains passed or activate a build in chain
 (e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
 
 ```typescript
 import myCustomChain1 from './[PATH]/myCustomChain1.json'
 import myCustomChain2 from './[PATH]/myCustomChain2.json'
 // Add two custom chains, initial mainnet activation
-const common1 = new Common({ chain: 'mainnet', customChains: [ myCustomChain1, myCustomChain2 ] })
+const common1 = new Common({ chain: 'mainnet', customChains: [myCustomChain1, myCustomChain2] })
 // Somewhat later down the road...
 common1.setChain('customChain1')
 // Add two custom chains, activate customChain1
-const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
+const common1 = new Common({
+  chain: 'customChain1',
+  customChains: [myCustomChain1, myCustomChain2],
+})
 ```
 
 It is also possible (`v2.5.0`+) to pass in a custom genesis state file (see e.g. `src/genesisStates/goerli.json` for an example on the format needed) along with the custom chain configuration:
@@ -200,18 +219,33 @@ It is also possible (`v2.5.0`+) to pass in a custom genesis state file (see e.g.
 ```typescript
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, chain1GenesisState]],
+})
 ```
 
 A more complex example with genesis state with Contract and EoA states would have the following format:
 
 ```typescript
 const complexState = {
-  '0x0...01': '0x100', // For EoA
-  '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
+  // For EoA
+  '0x0...01': '0x100',
+  // For contracts
+  '0x0...02': [
+    '0x1',
+    '0xRUNTIME_BYTECODE',
+    [
+      [key1, value1],
+      [key2, value2],
+    ],
+  ],
 }
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, complexState]],
+})
 ```
 
 Accessing the genesis state can be done as follows:
@@ -254,7 +288,7 @@ library supported:
 - `byzantium` (`Hardfork.Byzantium`)
 - `constantinople` (`Hardfork.Constantinople`)
 - `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Instanbul`) (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `istanbul` (`Hardfork.Istanbul`) (`DEFAULT_HARDFORK` (`v2.0.0` release series))
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
