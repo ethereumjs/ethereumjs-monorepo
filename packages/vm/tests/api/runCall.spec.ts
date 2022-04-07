@@ -1,13 +1,6 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import {
-  Account,
-  Address,
-  toBuffer,
-  MAX_UINT64,
-  padToEven,
-  privateToAddress,
-} from 'ethereumjs-util'
+import { Account, Address, toBuffer, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
@@ -534,7 +527,7 @@ tape('Throws on negative call value', async (t) => {
 })
 
 tape('Skip balance checks', async (t) => {
-  t.plan(4)
+  t.plan(7)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
   const code = '600260015260015160005260206000F3'
@@ -549,6 +542,27 @@ tape('Skip balance checks', async (t) => {
   const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
 
   await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+  for (const balance of [undefined, BigInt(5)]) {
+    const runCallArgs = {
+      gasLimit: BigInt(21000 + 9000),
+      to: address,
+      value: BigInt(1),
+      from: caller,
+      skipBalance: true,
+    }
+
+    await vm.stateManager.putAccount(caller, new Account(BigInt(0), balance))
+    const res = await vm.runCall(runCallArgs)
+    t.pass('runCall should not throw with no balance and skipBalance = true')
+    const callerBalance = (await vm.stateManager.getAccount(caller)).balance
+    t.equal(
+      callerBalance,
+      balance ?? BigInt(0),
+      'caller balance should be the same before and after call execution if skipBalance = true and caller balance less than tx cost'
+    )
+    t.equal(res.execResult.exceptionError, undefined, 'no exceptionError when skipBalance = true')
+  }
+
   const runCallArgs = {
     gasLimit: BigInt(21000 + 9000),
     to: address,
@@ -556,16 +570,6 @@ tape('Skip balance checks', async (t) => {
     from: caller,
     skipBalance: true,
   }
-
-  const res = await vm.runCall(runCallArgs)
-  t.pass('runCall should not throw with no balance and skipBalance = true')
-  const callerBalance = (await vm.stateManager.getAccount(caller)).balance
-  t.ok(
-    callerBalance >= BigInt(0),
-    'caller balance should be >= 0 if skipBalance = true and caller balance less than tx cost'
-  )
-  t.equal(res.execResult.exceptionError, undefined, 'no exceptionError when skipBalance = true')
-
   const res2 = await vm.runCall({ ...runCallArgs, skipBalance: false })
   t.equal(
     res2.execResult.exceptionError?.error,
