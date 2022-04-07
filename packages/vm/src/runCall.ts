@@ -93,7 +93,7 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
     const balance = callerAccount.balance
 
     if (opts.value && balance < opts.value) {
-      callerAccount.balance += opts.value - balance
+      callerAccount.balance += opts.value
       await this.stateManager.putAccount(caller, callerAccount)
     }
   }
