@@ -99,7 +99,7 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
     caller,
     gasLimit: opts.gasLimit ?? BigInt(0xffffff),
     to: opts.to ?? undefined,
-    value: opts.value,
+    value,
     data: opts.data,
     code: opts.code,
     depth: opts.depth ?? 0,

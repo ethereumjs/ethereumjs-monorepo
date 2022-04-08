@@ -653,15 +653,13 @@ tape('skipBalance checks', async (t) => {
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex'
   )
+  const caller = Address.fromPrivateKey(senderKey)
   const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
 
   await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
   for (const balance of [undefined, BigInt(5)]) {
     if (balance) {
-      await vm.stateManager.putAccount(
-        Address.fromPrivateKey(senderKey),
-        new Account(BigInt(0), balance)
-      )
+      await vm.stateManager.modifyAccountFields(caller, { balance: balance })
     }
 
     const tx = Transaction.fromTxData({
