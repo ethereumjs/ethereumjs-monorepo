@@ -6,7 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
-import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
@@ -74,7 +74,7 @@ export class VMExecution extends Execution {
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
     if (number === BigInt(0)) {
-      await this.vm.stateManager.generateCanonicalGenesis()
+      await this.vm.vmState.generateCanonicalGenesis()
     }
   }
 

@@ -7,22 +7,22 @@ import {
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
+  short,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { Log, TransientStorage } from '@ethereumjs/statemanager'
+
 import { ERROR, VmError } from '../exceptions'
-import { StateManager } from '../state/index'
+import { VmState } from '../vmState'
 import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
-import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
-import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import VM from '../index'
-import { TransientStorage } from '../state'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -130,7 +130,7 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  */
 export default class EVM {
   _vm: VM
-  _state: StateManager
+  _state: VmState
   _tx: TxContext
   _block: Block
   /**
@@ -141,7 +141,7 @@ export default class EVM {
 
   constructor(vm: VM, txContext: TxContext, block: Block) {
     this._vm = vm
-    this._state = this._vm.stateManager
+    this._state = this._vm.vmState
     this._tx = txContext
     this._block = block
     this._refund = BigInt(0)

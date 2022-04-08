@@ -1,4 +1,4 @@
-import { Log } from './evm/types'
+import { Log } from '@ethereumjs/statemanager'
 
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 

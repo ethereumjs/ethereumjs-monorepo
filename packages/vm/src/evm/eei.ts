@@ -3,12 +3,12 @@ import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
-import { StateManager } from '../state/index'
+import { Log, TransientStorage } from '@ethereumjs/statemanager'
+
+import { VmState } from '../vmState'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
-import { Log } from './types'
-import { TransientStorage } from '../state'
 import { addressToBuffer } from './opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
@@ -60,7 +60,7 @@ export interface RunResult {
 export default class EEI {
   _env: Env
   _result: RunResult
-  _state: StateManager
+  _state: VmState
   _evm: EVM
   _lastReturned: Buffer
   _common: Common
@@ -69,7 +69,7 @@ export default class EEI {
 
   constructor(
     env: Env,
-    state: StateManager,
+    state: VmState,
     evm: EVM,
     common: Common,
     gasLeft: bigint,

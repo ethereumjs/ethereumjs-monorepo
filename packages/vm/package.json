@@ -50,6 +50,7 @@
     "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.3",
+    "@ethereumjs/statemanager": "^5.8.0",
     "@ethereumjs/tx": "^3.5.1",
     "merkle-patricia-tree": "^4.2.4",
     "async-eventemitter": "^0.2.4",

@@ -1,0 +1,91 @@
+{
+  "name": "@ethereumjs/statemanager",
+  "version": "5.8.0",
+  "description": "An Ethereum statemanager implementation",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "keywords": [
+    "ethereum",
+    "statemanager"
+  ],
+  "files": [
+    "dist",
+    "dist.browser",
+    "src"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist.browser/index.js",
+  "scripts": {
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
+    "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
+    "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
+    "profiling": "0x ./benchmarks/run.js profiling",
+    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "nyc npm run coverage:test",
+    "coverage:test": "npm run test:API",
+    "docs:build": "typedoc --options typedoc.js",
+    "tape": "tape -r ts-node/register --stack-size=1500",
+    "test:API": "npm run tape -- './tests/api/**/*.spec.ts'",
+    "test:API:browser": "karma start karma.conf.js",
+    "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "formatTest": "node ./scripts/formatTest",
+    "tsc": "../../config/cli/ts-compile.sh",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
+  },
+  "dependencies": {
+    "@ethereumjs/block": "^3.6.2",
+    "@ethereumjs/common": "^2.6.3",
+    "merkle-patricia-tree": "^4.2.4",
+    "core-js-pure": "^3.0.1",
+    "debug": "^4.3.3",
+    "ethereumjs-util": "^7.1.4",
+    "functional-red-black-tree": "^1.0.1",
+    "mcl-wasm": "^0.7.1",
+    "rustbn.js": "~0.2.0"
+  },
+  "devDependencies": {
+    "@types/benchmark": "^1.0.33",
+    "@types/core-js": "^2.5.0",
+    "@types/lru-cache": "^5.1.0",
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^16.11.7",
+    "@types/node-dir": "^0.0.34",
+    "@types/tape": "^4.13.2",
+    "benchmark": "^2.1.4",
+    "eslint": "^6.8.0",
+    "karma": "^6.3.2",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.5.3",
+    "level": "^6.0.0",
+    "level-mem": "^5.0.1",
+    "minimist": "^1.2.5",
+    "node-dir": "^0.1.17",
+    "nyc": "^15.1.0",
+    "prettier": "^2.0.5",
+    "standard": "^10.0.0",
+    "tape": "^5.3.1",
+    "ts-node": "^10.2.1",
+    "typedoc": "^0.22.4",
+    "typescript": "^4.4.2",
+    "solc": "^0.8.1"
+  },
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
+  }
+}

@@ -262,6 +262,15 @@ export const addHexPrefix = function (str: string): string {
   return isHexPrefixed(str) ? str : '0x' + str
 }
 
+export function short(buffer: Buffer): string {
+  const MAX_LENGTH = 50
+  const bufferStr = buffer.toString('hex')
+  if (bufferStr.length <= MAX_LENGTH) {
+    return bufferStr
+  }
+  return bufferStr.slice(0, MAX_LENGTH) + '...'
+}
+
 /**
  * Returns the utf8 string representation from a hex string.
  *

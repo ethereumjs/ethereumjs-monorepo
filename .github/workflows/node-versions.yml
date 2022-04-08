@@ -89,6 +89,10 @@ jobs:
         run: npm run test
         working-directory: packages/util
 
+      - name: Test StateManager
+        run: npm run test:API
+        working-directory: packages/statemanager
+
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm

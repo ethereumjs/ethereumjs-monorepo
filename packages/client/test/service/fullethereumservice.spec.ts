@@ -1,6 +1,6 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { Log } from '@ethereumjs/vm/dist/evm/types'
+import { Log } from '@ethereumjs/statemanager'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { VMExecution } from '../../lib/execution'

@@ -63,15 +63,6 @@ export function divCeil(a: bigint, b: bigint): bigint {
   return div < BigInt(0) ? div - BigInt(1) : div + BigInt(1)
 }
 
-export function short(buffer: Buffer): string {
-  const MAX_LENGTH = 50
-  const bufferStr = buffer.toString('hex')
-  if (bufferStr.length <= MAX_LENGTH) {
-    return bufferStr
-  }
-  return bufferStr.slice(0, MAX_LENGTH) + '...'
-}
-
 /**
  * Returns an overflow-safe slice of an array. It right-pads
  * the data with zeros to `length`.

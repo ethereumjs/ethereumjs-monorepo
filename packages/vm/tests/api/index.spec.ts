@@ -1,7 +1,8 @@
 import tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '../../src/state'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+
 import VM from '../../src'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'

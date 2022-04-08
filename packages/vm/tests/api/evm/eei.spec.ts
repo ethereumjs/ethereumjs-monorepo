@@ -1,8 +1,9 @@
 import tape from 'tape'
 import { Account, Address } from 'ethereumjs-util'
+import { DefaultStateManager as StateManager, TransientStorage } from '@ethereumjs/statemanager'
+
 import EEI from '../../../src/evm/eei'
-import StateManager from '../../../src/state/stateManager'
-import { TransientStorage } from '../../../src/state'
+import { VmState } from '../../../src/vmState'
 
 const ZeroAddress = Address.zero()
 
@@ -10,7 +11,7 @@ tape('EEI', (t) => {
   t.test('should return false on non-existing accounts', async (st) => {
     const eei = new EEI(
       undefined!,
-      new StateManager(),
+      new VmState({ stateManager: new StateManager() }),
       undefined!,
       undefined!,
       undefined!,
@@ -26,7 +27,7 @@ tape('EEI', (t) => {
     async (st) => {
       const eei = new EEI(
         undefined!,
-        new StateManager(),
+        new VmState({ stateManager: new StateManager() }),
         undefined!,
         undefined!,
         undefined!,
@@ -48,7 +49,7 @@ tape('EEI', (t) => {
   t.test('should return true on existing accounts', async (st) => {
     const eei = new EEI(
       undefined!,
-      new StateManager(),
+      new VmState({ stateManager: new StateManager() }),
       undefined!,
       undefined!,
       undefined!,
@@ -67,7 +68,7 @@ tape('EEI', (t) => {
   t.test('should work with transient storage', async (st) => {
     const eei = new EEI(
       undefined!,
-      new StateManager(),
+      new VmState({ stateManager: new StateManager() }),
       undefined!,
       undefined!,
       undefined!,

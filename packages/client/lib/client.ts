@@ -194,7 +194,7 @@ export default class EthereumClient {
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
 
       // Set the correct state root
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      await vm.vmState.setStateRoot(parentBlock.header.stateRoot)
 
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
       vm._common.setHardforkByBlockNumber(blockNumber, td)

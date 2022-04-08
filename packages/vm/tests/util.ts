@@ -19,7 +19,7 @@ import {
   bufferToHex,
   isHexPrefixed,
 } from 'ethereumjs-util'
-import { DefaultStateManager } from '../src/state'
+import { VmState } from '../src/vmState'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -313,7 +313,7 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
  * @param state - the state DB/trie
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: DefaultStateManager, testData: any) {
+export async function setupPreConditions(state: VmState, testData: any) {
   await state.checkpoint()
   for (const addressStr of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[addressStr]

@@ -207,7 +207,7 @@ export class Miner {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    await vmCopy.vmState.setStateRoot(parentBlock.header.stateRoot)
 
     let difficulty
     let cliqueSigner
@@ -258,10 +258,7 @@ export class Miner {
       },
     })
 
-    const txs = await this.synchronizer.txPool.txsByPriceAndNonce(
-      vmCopy.stateManager,
-      baseFeePerGas
-    )
+    const txs = await this.synchronizer.txPool.txsByPriceAndNonce(vmCopy.vmState, baseFeePerGas)
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         baseFeePerGas ? `(baseFee: ${baseFeePerGas})` : ''

@@ -1,15 +1,14 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, intToBuffer, rlp, short } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
-import { StateManager } from './state'
-import { short } from './evm/opcodes'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
 import DAOConfig from './config/dao_fork_accounts_config.json'
+import { VmState } from './vmState'
 
 const debug = createDebugLogger('vm:block')
 
@@ -95,7 +94,7 @@ export interface AfterBlockEvent extends RunBlockResult {
  * @ignore
  */
 export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.stateManager
+  const state = this.vmState
   const { root } = opts
   let { block } = opts
   const generateFields = !!opts.generate
@@ -379,7 +378,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.stateManager
+  const state = this.vmState
   const minerReward = BigInt(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
@@ -420,7 +419,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: StateManager,
+  state: VmState,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -453,7 +452,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: StateManager) {
+async function _applyDAOHardfork(state: VmState) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
     await state.putAccount(DAORefundContractAddress, new Account())

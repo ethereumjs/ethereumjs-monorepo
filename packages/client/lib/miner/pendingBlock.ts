@@ -45,7 +45,7 @@ export class PendingBlock {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    await vm.vmState.setStateRoot(parentBlock.header.stateRoot)
 
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
@@ -67,7 +67,7 @@ export class PendingBlock {
     this.pendingPayloads.push([payloadId, builder])
 
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(vm.stateManager, baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(vm.vmState, baseFeePerGas)
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )

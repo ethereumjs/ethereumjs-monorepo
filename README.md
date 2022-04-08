@@ -170,6 +170,7 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [util-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Util%22
 [util-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=util
 [util-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/util
+[statemanager-package]: ./packages/statemanager
 [vm-package]: ./packages/vm
 [vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg
 [vm-npm-link]: https://www.npmjs.com/package/@ethereumjs/vm

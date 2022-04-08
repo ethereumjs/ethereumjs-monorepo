@@ -10,7 +10,7 @@ import { Config } from '../config'
 import { Peer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
-import type { StateManager } from '@ethereumjs/vm/dist/state'
+import type { VmState } from '@ethereumjs/vm/dist/vmState'
 
 export interface TxPoolOptions {
   /* Config */
@@ -470,10 +470,10 @@ export class TxPool {
    * satisfied, the results are merged back together by price, always comparing only
    * the head transaction from each account. This is done via a heap to keep it fast.
    *
-   * @param stateManager Account nonces are queried to only include executable txs
+   * @param vmState Account nonces are queried to only include executable txs
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(stateManager: StateManager, baseFee?: bigint) {
+  async txsByPriceAndNonce(vmState: VmState, baseFee?: bigint) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
@@ -482,7 +482,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await stateManager.getAccount(new Address(Buffer.from(address, 'hex')))
+      const { nonce } = await vmState.getAccount(new Address(Buffer.from(address, 'hex')))
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently exectuable
