@@ -641,7 +641,7 @@ tape('runTx() -> RunTxOptions', (t) => {
   })
 })
 
-tape.only('runTx() -> skipBalance behavior', async (t) => {
+tape('runTx() -> skipBalance behavior', async (t) => {
   t.plan(6)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
