@@ -296,7 +296,6 @@ export default class VM extends AsyncEventEmitter {
     })
 
     // Set list of opcodes based on HF
-    // TODO: make this EIP-friendly
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
