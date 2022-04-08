@@ -91,11 +91,10 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     }
 
     common = Common.custom(CustomChain.PolygonMumbai)
-    st.notEqual(common.hardfork(), Hardfork.Byzantium, 'by default PolygonMumbai hardfork is not Byzantium')
     st.equal(
       common.hardfork(),
-      Hardfork.Byzantium,
-      'should correctly set an option (no default options present)'
+      common.DEFAULT_HARDFORK,
+      'uses default hardfork when no options are present'
     )
 
     common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
