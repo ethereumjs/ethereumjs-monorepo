@@ -44,7 +44,7 @@ tape('[TxPool]', async (t) => {
   const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
   const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
-
+  /*
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
@@ -187,7 +187,7 @@ tape('[TxPool]', async (t) => {
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
-  })
+  })*/
 
   t.test('announcedTxHashes() -> add two txs (same sender and nonce)', async (t) => {
     const config = new Config({ transports: [] })
@@ -213,7 +213,7 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
   })
-
+  /*
   t.test('announcedTxs()', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
@@ -373,5 +373,5 @@ tape('[TxPool]', async (t) => {
 
     pool.stop()
     pool.close()
-  })
+  })*/
 })

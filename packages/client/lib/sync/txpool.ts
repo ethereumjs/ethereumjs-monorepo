@@ -1,5 +1,6 @@
 import Heap from 'qheap'
 import {
+  AccessListEIP2930Transaction,
   Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
@@ -18,6 +19,10 @@ export interface TxPoolOptions {
 
   /* Return number of connected peers for stats logging */
   getPeerCount?: () => number
+
+  /* minGasPriceBump: minimum gas price to bump in case a transaction with same sender and nonce comes in (as percentage) */
+
+  minGasPriceBump?: number
 }
 
 type TxPoolObject = {
@@ -119,6 +124,11 @@ export class TxPool {
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 20000 // ms
+  
+  /**
+   * 
+   */
+  private minGasPriceBump = 10 // percentage
 
   /**
    * Create new tx pool
@@ -131,6 +141,8 @@ export class TxPool {
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
+
+    this.minGasPriceBump = options.minGasPriceBump ?? this.minGasPriceBump
 
     this.opened = false
     this.running = false
@@ -165,16 +177,38 @@ export class TxPool {
    * Adds a tx to the pool.
    *
    * If there is a tx in the pool with the same address and
-   * nonce it will be replaced by the new tx.
+   * nonce it will be replaced by the new tx, if it has a sufficent gas bump.
+   * (TODO) verifies certain constraints, if these are not matches, throws.
    * @param tx Transaction
    */
-  add(tx: TypedTransaction) {
+  async add(tx: TypedTransaction) {
     const sender: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     const inPool = this.pool.get(sender)
     let add: TxPoolObject[] = []
     if (inPool) {
       // Replace pooled txs with the same nonce
-      add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
+      let existingTxn = inPool.find((poolObj) => poolObj.tx.nonce.eq(tx.nonce))
+      if (existingTxn) {
+        let currentGasPrice
+        switch (existingTxn.tx.type) {
+          case 0: 
+            currentGasPrice = (existingTxn.tx as Transaction).gasPrice
+            break
+          case 1: 
+            currentGasPrice = (existingTxn.tx as AccessListEIP2930Transaction).gasPrice
+            break
+          case 2:
+            currentGasPrice = (existingTxn.tx as FeeMarketEIP1559Transaction).maxFeePerGas
+            break
+          default: 
+            throw new Error("unknown tx type") // TODO make this error better
+        }
+        let minimumGasPrice = currentGasPrice.add(currentGasPrice.muln(this.minGasPriceBump).divn(100))
+        if (minimumGasPrice.gt(currentGasPrice)) {
+          // TODO handle in RPC
+          throw new Error("gas too low")
+        }
+      }
     }
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     const hash: UnprefixedHash = tx.hash().toString('hex')
@@ -325,7 +359,7 @@ export class TxPool {
 
     const newTxHashes = []
     for (const tx of txs) {
-      this.add(tx)
+      await this.add(tx)
       newTxHashes.push(tx.hash())
     }
     const peers = peerPool.peers
@@ -381,7 +415,7 @@ export class TxPool {
 
     const newTxHashes = []
     for (const tx of txs) {
-      this.add(tx)
+      await this.add(tx)
       newTxHashes.push(tx.hash())
     }
     await this.sendNewTxHashes(newTxHashes, peerPool.peers)

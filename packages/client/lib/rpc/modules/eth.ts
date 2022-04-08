@@ -931,7 +931,8 @@ export class Eth {
 
     // Add the tx to own tx pool
     const { txPool } = this.service.synchronizer as FullSynchronizer
-    txPool.add(tx)
+    // TODO handle any errors here
+    await txPool.add(tx)
 
     const peerPool = this.service.pool
     if (
