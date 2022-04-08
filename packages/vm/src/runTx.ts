@@ -210,6 +210,12 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       const { tx } = opts
       // Do not include sender address in access list
       const removed = [tx.getSenderAddress()]
+      // Add the active precompiles as well
+      // Note: `_precompiles` is always updated if the hardfork of `common` changes
+      const activePrecompiles = this._precompiles
+      for (const [key] of activePrecompiles.entries()) {
+        removed.push(Address.fromString('0x' + key))
+      }
       // Only include to address on present storage slot accesses
       const onlyStorage = tx.to ? [tx.to] : []
       result.accessList = state.generateAccessList!(removed, onlyStorage)
