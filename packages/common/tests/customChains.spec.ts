@@ -90,7 +90,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       )
     }
 
-    common = Common.custom(CustomChain.PolygonMumbai, { hardfork: Hardfork.Byzantium })
+    common = Common.custom(CustomChain.PolygonMumbai)
+    st.notEqual(common.hardfork(), Hardfork.Byzantium, 'by default PolygonMumbai hardfork is not Byzantium')
     st.equal(
       common.hardfork(),
       Hardfork.Byzantium,
