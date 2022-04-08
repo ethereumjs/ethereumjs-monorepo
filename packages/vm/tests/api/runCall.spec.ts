@@ -551,7 +551,7 @@ tape('Skip balance checks', async (t) => {
       skipBalance: true,
     }
 
-    await vm.stateManager.modifyAccountFields(caller, { balance: balance })
+    await vm.stateManager.modifyAccountFields(caller, { nonce: BigInt(0), balance: balance })
     const res = await vm.runCall(runCallArgs)
     t.pass('runCall should not throw with no balance and skipBalance = true')
     const callerBalance = (await vm.stateManager.getAccount(caller)).balance

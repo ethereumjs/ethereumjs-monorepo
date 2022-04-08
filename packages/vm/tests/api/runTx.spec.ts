@@ -659,7 +659,7 @@ tape('skipBalance checks', async (t) => {
   await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
   for (const balance of [undefined, BigInt(5)]) {
     if (balance) {
-      await vm.stateManager.modifyAccountFields(caller, { balance: balance })
+      await vm.stateManager.modifyAccountFields(caller, { nonce: BigInt(0), balance: balance })
     }
 
     const tx = Transaction.fromTxData({
