@@ -66,7 +66,7 @@ export interface RunCallOpts {
    */
   selfdestruct?: { [k: string]: boolean }
   /**
-   * Skip balance checks if true and adds transaction value to balance to ensure message execution doesn't fail on balance checks
+   * Skip balance checks if true. Adds transaction value to balance to ensure execution doesn't fail.
    */
   skipBalance?: boolean
   /**
