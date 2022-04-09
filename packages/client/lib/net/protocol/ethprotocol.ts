@@ -99,7 +99,7 @@ export class EthProtocol extends Protocol {
       decode: ([txs]: [Buffer[]]) => {
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight, this.chain.headers.td)
+        //common.setHardforkByBlockNumber(this.config.syncTargetHeight, this.chain.headers.td)
         return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
       },
     },
@@ -210,7 +210,7 @@ export class EthProtocol extends Protocol {
         new BN(reqId),
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        //common.setHardforkByBlockNumber(this.config.syncTargetHeight)
         txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
       ],
     },

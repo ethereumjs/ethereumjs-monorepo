@@ -15,6 +15,7 @@ import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
+import type { FullEthereumService } from '../lib/service'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -309,7 +310,9 @@ async function executeBlocks(client: EthereumClient) {
     )
     process.exit()
   }
-  await client.executeBlocks(first, last, txHashes)
+  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  if (!execution) throw new Error('executeBlocks requires execution')
+  await execution.executeBlocks(first, last, txHashes)
 }
 
 /**

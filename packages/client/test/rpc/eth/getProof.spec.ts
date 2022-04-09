@@ -4,7 +4,7 @@ import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, bnToHex } from 'ethereumjs-util'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
-import { VMExecution } from '../../../lib/execution'
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getProof'
 
@@ -37,10 +37,9 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const { execution } = client
+  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
-
-  const { vm } = execution as VMExecution
+  const { vm } = execution
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

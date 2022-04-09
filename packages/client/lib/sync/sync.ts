@@ -51,9 +51,7 @@ export abstract class Synchronizer {
   protected forceSync: boolean
   public startingBlock: BN
 
-  // Best known sync block height
-  public syncTargetHeight?: BN
-  // Time (in ms) after which the synced state is reset
+  /** Time (in ms) after which the synced state is reset */
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
@@ -144,10 +142,10 @@ export abstract class Synchronizer {
    * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
-    if (!this.syncTargetHeight) {
+    if (!this.config.syncTargetHeight) {
       return
     }
-    if (this.chain.headers.height.gte(this.syncTargetHeight)) {
+    if (this.chain.headers.height.gte(this.config.syncTargetHeight)) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(
