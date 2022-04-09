@@ -16,8 +16,6 @@ import type { Block } from '@ethereumjs/block'
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
-  /** VMExecution */
-  execution: VMExecution
 }
 
 /**
@@ -40,7 +38,13 @@ export class FullEthereumService extends EthereumService {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
-    this.execution = options.execution
+
+    this.execution = new VMExecution({
+      config: options.config,
+      stateDB: options.stateDB,
+      metaDB: options.metaDB,
+      chain: this.chain,
+    })
 
     this.txPool = new TxPool({
       config: this.config,
@@ -58,7 +62,7 @@ export class FullEthereumService extends EthereumService {
       interval: this.interval,
     })
     this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
-      await this.synchronizer.processBlocks(options.execution, ...args)
+      await this.synchronizer.processBlocks(this.execution, ...args)
     })
 
     if (this.config.mine) {

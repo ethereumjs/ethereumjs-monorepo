@@ -8,7 +8,6 @@ import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
-import { VMExecution } from '../../lib/execution'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
@@ -104,11 +103,9 @@ tape('[Miner]', async (t) => {
 
   t.test('should initialize correctly', (t) => {
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
     t.notOk(miner.running)
@@ -118,11 +115,9 @@ tape('[Miner]', async (t) => {
   t.test('should start/stop', async (t) => {
     t.plan(4)
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     let miner = new Miner({ config, service })
     t.notOk(miner.running)
@@ -142,15 +137,13 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> with a single tx', async (t) => {
     t.plan(1)
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
     const { txPool } = service
-    const { vm } = execution
+    const { vm } = service.execution
 
     txPool.start()
     miner.start()
@@ -177,15 +170,13 @@ tape('[Miner]', async (t) => {
     async (t) => {
       t.plan(4)
       const chain = new FakeChain() as any
-      const execution = new VMExecution({ config, chain })
       const service = new FullEthereumService({
         config,
         chain,
-        execution,
       })
       const miner = new Miner({ config, service })
       const { txPool } = service
-      const { vm } = execution
+      const { vm } = service.execution
       txPool.start()
       miner.start()
 
@@ -232,15 +223,13 @@ tape('[Miner]', async (t) => {
         return { latest: block }
       },
     })
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
     const { txPool } = service
-    const { vm } = execution
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -280,15 +269,13 @@ tape('[Miner]', async (t) => {
         return { latest: block, height: new BN(0) }
       },
     })
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
     const { txPool } = service
-    const { vm } = execution
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -323,11 +310,9 @@ tape('[Miner]', async (t) => {
     t.plan(2)
     const chain = new FakeChain() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
 
@@ -336,7 +321,7 @@ tape('[Miner]', async (t) => {
     ;(miner as any).chainUpdated = async () => {}
 
     const { txPool } = service
-    const { vm } = execution
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -373,15 +358,13 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
 
-    const { vm } = execution
+    const { vm } = service.execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
@@ -440,11 +423,9 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
-    const execution = new VMExecution({ config, chain })
     const service = new FullEthereumService({
       config,
       chain,
-      execution,
     })
     const miner = new Miner({ config, service })
     ;(chain.blockchain as any)._validateConsensus = false

@@ -3,7 +3,6 @@ import { MultiaddrLike } from './types'
 import { Config, SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
-import { VMExecution } from './execution'
 import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
@@ -68,12 +67,6 @@ export default class EthereumClient {
     this.chain = new Chain(options)
 
     if (this.config.syncmode === SyncMode.Full) {
-      const execution = new VMExecution({
-        config: options.config,
-        stateDB: options.stateDB,
-        metaDB: options.metaDB,
-        chain: this.chain,
-      })
       this.services = [
         new FullEthereumService({
           config: this.config,
@@ -81,7 +74,6 @@ export default class EthereumClient {
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain: this.chain,
-          execution,
         }),
       ]
     } else {
