@@ -19,9 +19,6 @@ export interface TxPoolOptions {
 
   /* FullEthereumService */
   service: FullEthereumService
-
-  /* Return number of connected peers for stats logging */
-  getPeerCount?: () => number
 }
 
 type TxPoolObject = {
@@ -58,7 +55,6 @@ export class TxPool {
   private vm: VM
 
   private opened: boolean
-  private getPeerCount?: () => number
 
   public running: boolean
 
@@ -136,7 +132,6 @@ export class TxPool {
     this.service = options.service
     this.vm = this.service.execution.vm
 
-    this.getPeerCount = options.getPeerCount
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -576,7 +571,7 @@ export class TxPool {
       count += poolObjects.length
     })
     this.config.logger.info(
-      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.getPeerCount?.() ?? 0}`
+      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
     )
   }
 }

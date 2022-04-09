@@ -49,7 +49,6 @@ export class FullEthereumService extends EthereumService {
     this.txPool = new TxPool({
       config: this.config,
       service: this,
-      getPeerCount: () => this.pool.peers.length,
     })
 
     this.synchronizer = new FullSynchronizer({
