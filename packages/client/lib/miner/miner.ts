@@ -4,7 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
-import { FullSynchronizer } from '../sync'
+import { FullEthereumService } from '../service'
 import { VMExecution } from '../execution'
 
 const level = require('level-mem')
@@ -13,9 +13,8 @@ export interface MinerOptions {
   /* Config */
   config: Config
 
-  /* FullSynchronizer */
-  synchronizer: FullSynchronizer
-  execution: VMExecution
+  /* FullEthereumService */
+  service: FullEthereumService
 }
 
 /**
@@ -31,7 +30,7 @@ export class Miner {
   private _nextAssemblyTimeoutId: NodeJS.Timeout | undefined /* global NodeJS */
   private _boundChainUpdatedHandler: (() => void) | undefined
   private config: Config
-  private synchronizer: FullSynchronizer
+  private service: FullEthereumService
   private execution: VMExecution
   private assembling: boolean
   private period: number
@@ -46,8 +45,8 @@ export class Miner {
    */
   constructor(options: MinerOptions) {
     this.config = options.config
-    this.synchronizer = options.synchronizer
-    this.execution = options.execution
+    this.service = options.service
+    this.execution = this.service.execution
     this.running = false
     this.assembling = false
     this.period = (this.config.chainCommon.consensusConfig().period ?? this.DEFAULT_PERIOD) * 1000 // defined in ms for setTimeout use
@@ -61,7 +60,7 @@ export class Miner {
    * Convenience alias to return the latest block in the blockchain
    */
   private latestBlockHeader(): BlockHeader {
-    return (this.synchronizer as any).chain.headers.latest
+    return this.service.chain.headers.latest!
   }
 
   /**
@@ -86,7 +85,7 @@ export class Miner {
       // EIP-225 spec: If the signer is out-of-turn,
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
-      const { blockchain } = (this.synchronizer as any).chain
+      const { blockchain } = this.service.chain
       const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
         const signerCount = blockchain.cliqueActiveSigners().length
@@ -175,7 +174,7 @@ export class Miner {
     _boundSetInterruptHandler = setInterrupt.bind(this)
     this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
-    const parentBlock = (this.synchronizer as any).chain.blocks.latest
+    const parentBlock = this.service.chain.blocks.latest!
     const number = parentBlock.header.number.addn(1)
     let { gasLimit } = parentBlock.header
 
@@ -186,7 +185,7 @@ export class Miner {
         { number },
         { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.synchronizer as any).chain.blockchain.cliqueCheckRecentlySigned(header)) {
+      if ((this.service.chain.blockchain as any).cliqueCheckRecentlySigned(header)) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
@@ -258,10 +257,7 @@ export class Miner {
       },
     })
 
-    const txs = await this.synchronizer.txPool.txsByPriceAndNonce(
-      vmCopy.stateManager,
-      baseFeePerGas
-    )
+    const txs = await this.service.txPool.txsByPriceAndNonce(baseFeePerGas)
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         baseFeePerGas ? `(baseFee: ${baseFeePerGas})` : ''
@@ -304,9 +300,9 @@ export class Miner {
     this.assembling = false
     if (interrupt) return
     // Put block in blockchain
-    await this.synchronizer.handleNewBlock(block)
+    await this.service.synchronizer.handleNewBlock(block)
     // Remove included txs from TxPool
-    this.synchronizer.txPool.removeNewBlockTxs([block])
+    this.service.txPool.removeNewBlockTxs([block])
     this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
   }
 

@@ -6,9 +6,8 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
-import { FullSynchronizer } from '../../lib/sync/fullsync'
+import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
-import { VMExecution } from '../../lib/execution'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
@@ -45,13 +44,6 @@ tape('[Miner]', async (t) => {
   DefaultStateManager.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
 
-  class PeerPool {
-    open() {}
-    close() {}
-    get peers() {
-      return []
-    }
-  }
   class FakeChain {
     open() {}
     close() {}
@@ -110,30 +102,24 @@ tape('[Miner]', async (t) => {
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
   t.test('should initialize correctly', (t) => {
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
+    const miner = new Miner({ config, service })
     t.notOk(miner.running)
     t.end()
   })
 
   t.test('should start/stop', async (t) => {
     t.plan(4)
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    let miner = new Miner({ config, synchronizer, execution })
+    let miner = new Miner({ config, service })
     t.notOk(miner.running)
     miner.start()
     t.ok(miner.running)
@@ -143,24 +129,21 @@ tape('[Miner]', async (t) => {
 
     // Should not start when config.mine=false
     const configMineFalse = new Config({ transports: [], accounts, mine: false })
-    miner = new Miner({ config: configMineFalse, synchronizer, execution })
+    miner = new Miner({ config: configMineFalse, service })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
   })
 
   t.test('assembleBlocks() -> with a single tx', async (t) => {
     t.plan(1)
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
-    const { txPool } = synchronizer
-    const { vm } = execution
+    const miner = new Miner({ config, service })
+    const { txPool } = service
+    const { vm } = service.execution
 
     txPool.start()
     miner.start()
@@ -186,17 +169,14 @@ tape('[Miner]', async (t) => {
     'assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce',
     async (t) => {
       t.plan(4)
-      const pool = new PeerPool() as any
       const chain = new FakeChain() as any
-      const execution = new VMExecution({ config, chain })
-      const synchronizer = new FullSynchronizer({
+      const service = new FullEthereumService({
         config,
-        pool,
         chain,
       })
-      const miner = new Miner({ config, synchronizer, execution })
-      const { txPool } = synchronizer
-      const { vm } = execution
+      const miner = new Miner({ config, service })
+      const { txPool } = service
+      const { vm } = service.execution
       txPool.start()
       miner.start()
 
@@ -231,7 +211,6 @@ tape('[Miner]', async (t) => {
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
@@ -244,15 +223,13 @@ tape('[Miner]', async (t) => {
         return { latest: block }
       },
     })
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
-    const { txPool } = synchronizer
-    const { vm } = execution
+    const miner = new Miner({ config, service })
+    const { txPool } = service
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -267,7 +244,7 @@ tape('[Miner]', async (t) => {
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
 
-    synchronizer.handleNewBlock = async (block: Block) => {
+    service.synchronizer.handleNewBlock = async (block: Block) => {
       t.equal(block.transactions.length, 0, 'should not include tx')
       miner.stop()
       txPool.stop()
@@ -279,7 +256,6 @@ tape('[Miner]', async (t) => {
 
   t.test("assembleBlocks() -> should stop assembling a block after it's full", async (t) => {
     t.plan(1)
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const gasLimit = 100000
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
@@ -293,15 +269,13 @@ tape('[Miner]', async (t) => {
         return { latest: block, height: new BN(0) }
       },
     })
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
-    const { txPool } = synchronizer
-    const { vm } = execution
+    const miner = new Miner({ config, service })
+    const { txPool } = service
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -334,23 +308,20 @@ tape('[Miner]', async (t) => {
 
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
     t.plan(2)
-    const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
+    const miner = new Miner({ config, service })
 
     // stub chainUpdated so assemble isn't called again
     // when emitting Event.CHAIN_UPDATED in this test
     ;(miner as any).chainUpdated = async () => {}
 
-    const { txPool } = synchronizer
-    const { vm } = execution
+    const { txPool } = service
+    const { vm } = service.execution
     txPool.start()
     miner.start()
 
@@ -384,19 +355,16 @@ tape('[Miner]', async (t) => {
     }
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
-    const pool = new PeerPool() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
+    const miner = new Miner({ config, service })
 
-    const { vm } = execution
+    const { vm } = service.execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
@@ -452,17 +420,14 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const common = new Common({ chain: CommonChain.Ropsten })
     ;(common as any)._chainParams['genesis'].difficulty = 1
-    const pool = new PeerPool() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
-    const execution = new VMExecution({ config, chain })
-    const synchronizer = new FullSynchronizer({
+    const service = new FullEthereumService({
       config,
-      pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer, execution })
+    const miner = new Miner({ config, service })
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()

@@ -8,16 +8,17 @@ import {
 import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
+import type VM from '@ethereumjs/vm'
+import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
-import type { StateManager } from '@ethereumjs/vm/dist/state'
 
 export interface TxPoolOptions {
   /* Config */
   config: Config
 
-  /* Return number of connected peers for stats logging */
-  getPeerCount?: () => number
+  /* FullEthereumService */
+  service: FullEthereumService
 }
 
 type TxPoolObject = {
@@ -49,11 +50,13 @@ type PeerId = string
  * @memberof module:service
  */
 export class TxPool {
-  public config: Config
-  public running: boolean
+  private config: Config
+  private service: FullEthereumService
+  private vm: VM
 
   private opened: boolean
-  private getPeerCount?: () => number
+
+  public running: boolean
 
   /* global NodeJS */
   private _logInterval: NodeJS.Timeout | undefined
@@ -126,8 +129,9 @@ export class TxPool {
    */
   constructor(options: TxPoolOptions) {
     this.config = options.config
+    this.service = options.service
+    this.vm = this.service.execution.vm
 
-    this.getPeerCount = options.getPeerCount
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -159,6 +163,19 @@ export class TxPool {
     this.running = true
     this.config.logger.info('TxPool started.')
     return true
+  }
+
+  /**
+   * Checks if tx pool should be started
+   */
+  checkRunState() {
+    if (this.running || !this.config.syncTargetHeight) return
+    // If height gte target, we are close enough to the
+    // head of the chain that the tx pool can be started
+    const target = this.config.syncTargetHeight.subn(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+    if (this.service.chain.headers.height.gte(target)) {
+      this.start()
+    }
   }
 
   /**
@@ -470,10 +487,9 @@ export class TxPool {
    * satisfied, the results are merged back together by price, always comparing only
    * the head transaction from each account. This is done via a heap to keep it fast.
    *
-   * @param stateManager Account nonces are queried to only include executable txs
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(stateManager: StateManager, baseFee?: BN) {
+  async txsByPriceAndNonce(baseFee?: BN) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
@@ -482,7 +498,9 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => a.nonce.sub(b.nonce).toNumber())
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await stateManager.getAccount(new Address(Buffer.from(address, 'hex')))
+      const { nonce } = await this.vm.stateManager.getAccount(
+        new Address(Buffer.from(address, 'hex'))
+      )
       if (!txsSortedByNonce[0].nonce.eq(nonce)) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently exectuable
@@ -553,7 +571,7 @@ export class TxPool {
       count += poolObjects.length
     })
     this.config.logger.info(
-      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.getPeerCount?.() ?? 0}`
+      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
     )
   }
 }

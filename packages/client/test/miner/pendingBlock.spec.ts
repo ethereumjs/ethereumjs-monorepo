@@ -7,7 +7,7 @@ import VM from '@ethereumjs/vm'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
-import { TxPool } from '../../lib/sync/txpool'
+import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
 
 const A = {
@@ -33,6 +33,18 @@ const setBalance = async (stateManager: StateManager, address: Address, balance:
   await stateManager.commit()
 }
 
+const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+const config = new Config({ transports: [], common })
+
+const setup = () => {
+  const service: any = {
+    chain: { headers: { height: new BN(0) } },
+    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+  }
+  const txPool = new TxPool({ config, service })
+  return { txPool }
+}
+
 tape('[PendingBlock]', async (t) => {
   const originalValidate = BlockHeader.prototype.validate
   BlockHeader.prototype.validate = td.func<any>()
@@ -41,9 +53,6 @@ tape('[PendingBlock]', async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
-
-  const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
-  const config = new Config({ transports: [], common })
 
   const createTx = (
     from = A,
@@ -70,7 +79,7 @@ tape('[PendingBlock]', async (t) => {
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
   t.test('should start and build', async (t) => {
-    const txPool = new TxPool({ config })
+    const { txPool } = setup()
     txPool.add(txA01)
     txPool.add(txA02)
     const pendingBlock = new PendingBlock({ config, txPool })
@@ -92,7 +101,7 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('should start and stop', async (t) => {
-    const txPool = new TxPool({ config })
+    const { txPool } = setup()
     txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
@@ -110,7 +119,7 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('should stop adding txs when block is full', async (t) => {
-    const txPool = new TxPool({ config })
+    const { txPool } = setup()
     txPool.add(txA01)
     txPool.add(txA02)
     const txA03 = Transaction.fromTxData(
@@ -139,7 +148,7 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
-    const txPool = new TxPool({ config })
+    const { txPool } = setup()
     txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })

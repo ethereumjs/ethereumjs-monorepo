@@ -3,7 +3,6 @@ import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
-import { VMExecution } from '../../lib/execution'
 
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
@@ -57,14 +56,9 @@ export async function setup(
   if (syncmode === 'light') {
     service = new LightEthereumService(serviceOpts)
   } else {
-    const execution = new VMExecution({
-      ...serviceOpts,
-      chain: chain,
-    })
     service = new FullEthereumService({
       ...serviceOpts,
       lightserv: true,
-      execution,
     })
   }
   await service.open()

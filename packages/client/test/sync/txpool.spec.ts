@@ -2,9 +2,20 @@ import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
+import { Account, BN } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
-import { TxPool } from '../../lib/sync/txpool'
+import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
+
+const setup = () => {
+  const config = new Config({ transports: [] })
+  const service: any = {
+    chain: { headers: { height: new BN(0) } },
+    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+  }
+  const pool = new TxPool({ config, service })
+  return { pool }
+}
 
 tape('[TxPool]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -46,8 +57,7 @@ tape('[TxPool]', async (t) => {
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
   t.test('should initialize correctly', (t) => {
-    const config = new Config({ transports: [] })
-    const pool = new TxPool({ config })
+    const { pool } = setup()
     t.equal(pool.pool.size, 0, 'pool empty')
     t.notOk((pool as any).opened, 'pool not opened yet')
     pool.open()
@@ -63,8 +73,7 @@ tape('[TxPool]', async (t) => {
 
   t.test('should open/close', async (t) => {
     t.plan(3)
-    const config = new Config({ transports: [] })
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -78,7 +87,7 @@ tape('[TxPool]', async (t) => {
   t.test('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async (t) => {
     // Safeguard that send() method from peer2 gets called
     t.plan(12)
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -143,7 +152,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async (t) => {
-    const pool = new TxPool({ config })
+    const { pool } = setup()
     const TX_RETRIEVAL_LIMIT: number = (pool as any).TX_RETRIEVAL_LIMIT
 
     pool.open()
@@ -170,7 +179,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> add two txs (different sender)', async (t) => {
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -190,8 +199,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> add two txs (same sender and nonce)', async (t) => {
-    const config = new Config({ transports: [] })
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -215,8 +223,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxs()', async (t) => {
-    const config = new Config({ transports: [] })
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -238,8 +245,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('newBlocks() -> should remove included txs', async (t) => {
-    const config = new Config({ transports: [] })
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
@@ -301,7 +307,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('cleanup()', async (t) => {
-    const pool = new TxPool({ config })
+    const { pool } = setup()
 
     pool.open()
     pool.start()
