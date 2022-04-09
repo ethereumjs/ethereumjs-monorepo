@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
+import { TxPool } from './txpool'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
@@ -13,9 +14,8 @@ import { Event } from '../types'
 import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
-  /* Serve LES requests (default: false) */
+  /** Serve LES requests (default: false) */
   lightserv?: boolean
-  execution: VMExecution
 }
 
 /**
@@ -27,6 +27,7 @@ export class FullEthereumService extends EthereumService {
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
+  public txPool: TxPool
 
   /**
    * Create new ETH service
@@ -37,31 +38,48 @@ export class FullEthereumService extends EthereumService {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
-    this.execution = options.execution
+
+    this.execution = new VMExecution({
+      config: options.config,
+      stateDB: options.stateDB,
+      metaDB: options.metaDB,
+      chain: this.chain,
+    })
+
+    this.txPool = new TxPool({
+      config: this.config,
+      service: this,
+    })
 
     this.synchronizer = new FullSynchronizer({
       config: this.config,
       pool: this.pool,
       chain: this.chain,
+      txPool: this.txPool,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
       interval: this.interval,
     })
     this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
-      await this.synchronizer.processBlocks(options.execution, ...args)
+      await this.synchronizer.processBlocks(this.execution, ...args)
     })
 
     if (this.config.mine) {
       this.miner = new Miner({
         config: this.config,
-        synchronizer: this.synchronizer,
-        execution: options.execution,
+        service: this,
       })
     }
   }
 
   async open() {
     await super.open()
+    await this.execution.open()
+    this.txPool.open()
+    if (this.config.mine) {
+      // Start the TxPool immediately if mining
+      this.txPool.start()
+    }
     return true
   }
 
@@ -84,9 +102,20 @@ export class FullEthereumService extends EthereumService {
     if (!this.running) {
       return false
     }
+    this.txPool.stop()
     this.miner?.stop()
+    await this.execution.stop()
     await super.stop()
     return true
+  }
+
+  /**
+   * Close service
+   */
+  async close() {
+    if (!this.opened) return
+    this.txPool.close()
+    await super.close()
   }
 
   /**
@@ -165,7 +194,7 @@ export class FullEthereumService extends EthereumService {
         this.synchronizer.handleNewBlockHashes(message.data)
       }
     } else if (message.name === 'Transactions') {
-      await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
+      await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
       if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         this.config.logger.debug(
@@ -176,10 +205,10 @@ export class FullEthereumService extends EthereumService {
         await this.synchronizer.handleNewBlock(message.data[0], peer)
       }
     } else if (message.name === 'NewPooledTransactionHashes') {
-      await this.synchronizer.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
+      await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
     } else if (message.name === 'GetPooledTransactions') {
       const { reqId, hashes } = message.data
-      const txs = this.synchronizer.txPool.getByHash(hashes)
+      const txs = this.txPool.getByHash(hashes)
       // Always respond, also on an empty list
       peer.eth?.send('PooledTransactions', { reqId, txs })
     } else if (message.name === 'GetReceipts') {

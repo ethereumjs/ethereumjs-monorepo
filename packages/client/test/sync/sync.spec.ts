@@ -7,7 +7,6 @@ import { Synchronizer } from '../../lib/sync/sync'
 import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
-  syncTargetHeight = new BN(1)
   async syncWithPeer() {
     return true
   }
@@ -29,6 +28,7 @@ tape('[Synchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     const config = new Config({ transports: [] })
+    config.syncTargetHeight = new BN(1)
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new SynchronizerTest({ config, pool, chain })

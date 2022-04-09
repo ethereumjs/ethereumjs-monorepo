@@ -24,8 +24,7 @@ import {
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
-import { EthereumService } from '../../service'
-import { FullSynchronizer } from '../../sync'
+import { EthereumService, FullEthereumService } from '../../service'
 import type VM from '@ethereumjs/vm'
 import type {
   PostByzantiumTxReceipt,
@@ -322,9 +321,9 @@ export class Eth {
   constructor(client: EthereumClient) {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as EthereumService
-    this.receiptsManager = client.execution?.receiptsManager
     this._chain = this.service.chain
-    this._vm = client.execution?.vm
+    this._vm = (this.service as FullEthereumService).execution?.vm
+    this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
@@ -899,7 +898,7 @@ export class Eth {
     const [serializedTx] = params
 
     const common = this.client.config.chainCommon.copy()
-    const { syncTargetHeight } = this.service.synchronizer
+    const { syncTargetHeight } = this.client.config
     if (!syncTargetHeight && !this.client.config.mine) {
       throw {
         code: INTERNAL_ERROR,
@@ -930,7 +929,7 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service.synchronizer as FullSynchronizer
+    const { txPool } = this.service as FullEthereumService
     txPool.add(tx)
 
     const peerPool = this.service.pool
@@ -995,11 +994,12 @@ export class Eth {
     const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
+    const { syncTargetHeight } = this.client.config
     const startingBlock = bnToHex(synchronizer.startingBlock)
 
     let highestBlock
-    if (synchronizer.syncTargetHeight) {
-      highestBlock = bnToHex(synchronizer.syncTargetHeight)
+    if (syncTargetHeight) {
+      highestBlock = bnToHex(syncTargetHeight)
     } else {
       const bestPeer = synchronizer.best()
       if (!bestPeer) {

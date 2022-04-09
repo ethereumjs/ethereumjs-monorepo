@@ -6,7 +6,7 @@ import { Address, BN, toBuffer, bnToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
-import { VMExecution } from '../../../lib/execution'
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getBalance'
 
@@ -18,10 +18,9 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
 
   const server = startRPC(manager.getMethods())
 
-  const { execution } = client
+  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
-
-  const { vm } = execution as VMExecution
+  const { vm } = execution
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()

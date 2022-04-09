@@ -9,7 +9,7 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
 import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { Event } from '../../lib/types'
-import { TxPool } from '../../lib/sync/txpool'
+import { TxPool } from '../../lib/service/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { VMExecution } from '../../lib/execution'
 import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
@@ -17,6 +17,7 @@ import { mockBlockchain } from './mockBlockchain'
 import type { IncomingMessage } from 'connect'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type EthereumClient from '../../lib/client'
+import type { FullEthereumService } from '../../lib/service'
 const request = require('supertest')
 const level = require('level-mem')
 
@@ -80,6 +81,8 @@ export function createClient(clientOpts: any = {}) {
     }),
   ]
 
+  config.syncTargetHeight = clientOpts.syncTargetHeight
+
   const synchronizer: any = {
     startingBlock: 0,
     best: () => {
@@ -88,9 +91,6 @@ export function createClient(clientOpts: any = {}) {
     latest: () => {
       return undefined
     },
-    syncTargetHeight: clientOpts.syncTargetHeight,
-    txPool: new TxPool({ config }),
-    checkTxPoolState: () => {},
   }
 
   let execution
@@ -108,7 +108,6 @@ export function createClient(clientOpts: any = {}) {
     synchronized: false,
     config,
     chain,
-    execution,
     services: [
       {
         name: 'eth',
@@ -121,6 +120,7 @@ export function createClient(clientOpts: any = {}) {
           },
         ],
         synchronizer,
+        execution,
       },
     ],
     servers,
@@ -128,6 +128,10 @@ export function createClient(clientOpts: any = {}) {
     server: (name: string) => {
       return servers.find((s) => s.name === name)
     },
+  }
+
+  if (clientOpts.includeVM) {
+    client.services[0].txPool = new TxPool({ config, service: client.services[0] })
   }
 
   return client as EthereumClient
@@ -209,7 +213,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
 
-  const { chain, execution } = client
+  const { chain } = client
+  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
 
   await chain.open()
   await execution?.open()

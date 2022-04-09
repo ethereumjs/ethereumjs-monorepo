@@ -9,7 +9,6 @@ import Common, {
 import { BN, Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
-import { VMExecution } from '../../lib/execution'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
@@ -89,11 +88,9 @@ tape('[Integration:Merge]', async (t) => {
     const chain = new Chain({ config: serviceConfig, blockchain })
     // attach server to centralized event bus
     ;(server.config as any).events = serviceConfig.events
-    const execution = new VMExecution({ config: serviceConfig, chain })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,
-      execution,
     })
     await service.open()
     await server.start()

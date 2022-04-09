@@ -4,7 +4,7 @@ import type { TxReceipt } from '@ethereumjs/vm/dist/types'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { TxPool } from '../sync/txpool'
+import type { TxPool } from '../service/txpool'
 import type { Config } from '../config'
 
 interface PendingBlockOpts {
@@ -67,7 +67,7 @@ export class PendingBlock {
     this.pendingPayloads.push([payloadId, builder])
 
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(vm.stateManager, baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(baseFeePerGas)
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
@@ -123,10 +123,7 @@ export class PendingBlock {
 
     // Add new txs that the pool received
     const txs = (
-      await this.txPool.txsByPriceAndNonce(
-        (builder as any).vm.stateManager,
-        (builder as any).headerData.baseFeePerGas
-      )
+      await this.txPool.txsByPriceAndNonce((builder as any).headerData.baseFeePerGas)
     ).filter(
       (tx) =>
         !(builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash()))
