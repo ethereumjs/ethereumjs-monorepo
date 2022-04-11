@@ -211,8 +211,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       // Do not include sender address in access list
       const removed = [tx.getSenderAddress()]
       // Add the active precompiles as well
-      // Note: `_precompiles` is always updated if the hardfork of `common` changes
-      const activePrecompiles = this._precompiles
+      // Note: `precompiles` is always updated if the hardfork of `common` changes
+      const activePrecompiles = this.precompiles
       for (const [key] of activePrecompiles.entries()) {
         removed.push(Address.fromString('0x' + key))
       }
@@ -264,7 +264,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
-    for (const [addressStr] of this._precompiles) {
+    for (const [addressStr] of this.precompiles) {
       state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
     }
     state.addWarmedAddress(caller.buf)
