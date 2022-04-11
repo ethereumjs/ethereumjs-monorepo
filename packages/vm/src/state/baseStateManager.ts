@@ -3,7 +3,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-import { CustomPrecompile, ripemdPrecompileAddress } from '../evm/precompiles'
+import { ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
 
@@ -25,7 +25,6 @@ export abstract class BaseStateManager {
   _common: Common
   _debug: Debugger
   _cache!: Cache
-  _customPrecompiles?: CustomPrecompile[]
 
   _touched: Set<AddressHex>
   _touchedStack: Set<AddressHex>[]
@@ -75,10 +74,6 @@ export abstract class BaseStateManager {
     this._accessedStorageReverted = [new Map()]
 
     this._checkpointCount = 0
-
-    if (opts.customPrecompiles) {
-      this._customPrecompiles = opts.customPrecompiles
-    }
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
