@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
+import { bufferToHex } from 'ethereumjs-util'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { short } from '../util'
@@ -291,5 +292,61 @@ export class VMExecution extends Execution {
     await this.stateDB?.close()
     await super.stop()
     return true
+  }
+
+  /**
+   * Execute a range of blocks on a copy of the VM
+   * without changing any chain or client state
+   *
+   * Possible input formats:
+   *
+   * - Single block, '5'
+   * - Range of blocks, '5-10'
+   */
+  async executeBlocks(first: number, last: number, txHashes: string[]) {
+    this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
+    const vm = this.vm.copy()
+
+    for (let blockNumber = first; blockNumber <= last; blockNumber++) {
+      const block = await vm.blockchain.getBlock(blockNumber)
+      const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
+
+      // Set the correct state root
+      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+
+      const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
+      vm._common.setHardforkByBlockNumber(blockNumber, td)
+
+      if (txHashes.length === 0) {
+        const res = await vm.runBlock({ block })
+        this.config.logger.info(
+          `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
+            block.transactions.length
+          } gasUsed=${res.gasUsed} `
+        )
+      } else {
+        let count = 0
+        // Special verbose tx execution mode triggered by BLOCK_NUMBER[*]
+        // Useful e.g. to trace slow txs
+        const allTxs = txHashes.length === 1 && txHashes[0] === '*' ? true : false
+        for (const tx of block.transactions) {
+          const txHash = bufferToHex(tx.hash())
+          if (allTxs || txHashes.includes(txHash)) {
+            const res = await vm.runTx({ block, tx })
+            this.config.logger.info(
+              `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
+            )
+            count += 1
+          }
+        }
+        if (count === 0) {
+          if (!allTxs) {
+            this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+          } else {
+            this.config.logger.info(`Block has 0 transactions (no execution)`)
+          }
+        }
+      }
+    }
   }
 }

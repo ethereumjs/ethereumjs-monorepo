@@ -4,7 +4,6 @@ import { Log } from '@ethereumjs/vm/dist/evm/types'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-import { VMExecution } from '../../lib/execution'
 import { Chain } from '../../lib/blockchain'
 
 tape('[FullEthereumService]', async (t) => {
@@ -51,8 +50,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
-    const service = new FullEthereumService({ config, execution, chain })
+    const service = new FullEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
@@ -61,12 +59,11 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should get protocols', (t) => {
     let config = new Config({ transports: [] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
-    let service = new FullEthereumService({ config, execution, chain })
+    let service = new FullEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.notOk(service.protocols[1], 'no light protocol')
     config = new Config({ transports: [], lightserv: true })
-    service = new FullEthereumService({ config, execution, chain })
+    service = new FullEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()
@@ -77,8 +74,7 @@ tape('[FullEthereumService]', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
-    const service = new FullEthereumService({ config, execution, chain })
+    const service = new FullEthereumService({ config, chain })
     await service.open()
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
@@ -99,8 +95,7 @@ tape('[FullEthereumService]', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
-    const service = new FullEthereumService({ config, execution, chain })
+    const service = new FullEthereumService({ config, chain })
 
     await service.start()
     td.verify(service.synchronizer.start())
@@ -114,8 +109,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should call handleNewBlock on NewBlock', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
-    const service = new FullEthereumService({ config, execution, chain })
+    const service = new FullEthereumService({ config, chain })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
     t.end()
@@ -124,10 +118,10 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
-    const execution = {
+    const service = new FullEthereumService({ config, chain })
+    service.execution = {
       receiptsManager: { getReceipts: td.func<any>() },
-    } as VMExecution
-    const service = new FullEthereumService({ config, execution, chain })
+    } as any
     const blockHash = Buffer.alloc(32, 1)
     const receipts = [
       {
@@ -149,7 +143,9 @@ tape('[FullEthereumService]', async (t) => {
         txType: 0,
       },
     ]
-    td.when(execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(receipts)
+    td.when(service.execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(
+      receipts
+    )
     const peer = { eth: { send: td.func() } } as any
     await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))

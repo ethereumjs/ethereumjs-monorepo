@@ -1,10 +1,8 @@
-import { bufferToHex } from 'ethereumjs-util'
 import { version as packageVersion } from '../package.json'
 import { MultiaddrLike } from './types'
 import { Config, SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
-import { VMExecution } from './execution'
 import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
@@ -57,7 +55,6 @@ export default class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[]
-  public execution: VMExecution | undefined
 
   public opened: boolean
   public started: boolean
@@ -70,12 +67,6 @@ export default class EthereumClient {
     this.chain = new Chain(options)
 
     if (this.config.syncmode === SyncMode.Full) {
-      this.execution = new VMExecution({
-        config: options.config,
-        stateDB: options.stateDB,
-        metaDB: options.metaDB,
-        chain: this.chain,
-      })
       this.services = [
         new FullEthereumService({
           config: this.config,
@@ -83,7 +74,6 @@ export default class EthereumClient {
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain: this.chain,
-          execution: this.execution,
         }),
       ]
     } else {
@@ -123,7 +113,6 @@ export default class EthereumClient {
       this.config.logger.info(`Synchronized blockchain at height=${height}`)
     })
 
-    await this.execution?.open()
     await Promise.all(this.services.map((s) => s.open()))
 
     this.opened = true
@@ -152,7 +141,6 @@ export default class EthereumClient {
       return false
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
-    await this.execution?.stop()
     await Promise.all(this.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
@@ -172,63 +160,5 @@ export default class EthereumClient {
    */
   server(name: string) {
     return this.config.servers.find((s) => s.name === name)
-  }
-
-  /**
-   * Execute a range of blocks on a copy of the VM
-   * without changing any chain or client state
-   *
-   * Possible input formats:
-   *
-   * - Single block, '5'
-   * - Range of blocks, '5-10'
-   *
-   */
-  async executeBlocks(first: number, last: number, txHashes: string[]) {
-    this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-    if (!this.execution) throw new Error('executeBlocks requires execution')
-    const vm = this.execution.vm.copy()
-
-    for (let blockNumber = first; blockNumber <= last; blockNumber++) {
-      const block = await vm.blockchain.getBlock(blockNumber)
-      const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
-
-      // Set the correct state root
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
-
-      const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkByBlockNumber(blockNumber, td)
-
-      if (txHashes.length === 0) {
-        const res = await vm.runBlock({ block })
-        this.config.logger.info(
-          `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
-            block.transactions.length
-          } gasUsed=${res.gasUsed} `
-        )
-      } else {
-        let count = 0
-        // Special verbose tx execution mode triggered by BLOCK_NUMBER[*]
-        // Useful e.g. to trace slow txs
-        const allTxs = txHashes.length === 1 && txHashes[0] === '*' ? true : false
-        for (const tx of block.transactions) {
-          const txHash = bufferToHex(tx.hash())
-          if (allTxs || txHashes.includes(txHash)) {
-            const res = await vm.runTx({ block, tx })
-            this.config.logger.info(
-              `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
-            )
-            count += 1
-          }
-        }
-        if (count === 0) {
-          if (!allTxs) {
-            this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
-          } else {
-            this.config.logger.info(`Block has 0 transactions (no execution)`)
-          }
-        }
-      }
-    }
   }
 }
