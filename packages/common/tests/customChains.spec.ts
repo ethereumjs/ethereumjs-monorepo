@@ -90,6 +90,20 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       )
     }
 
+    common = Common.custom(CustomChain.PolygonMumbai)
+    st.equal(
+      common.hardfork(),
+      common.DEFAULT_HARDFORK,
+      'uses default hardfork when no options are present'
+    )
+
+    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
+    st.equal(
+      common.hardfork(),
+      Hardfork.Byzantium,
+      'should correctly set an option (default options present)'
+    )
+
     try {
       //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
       Common.custom('this-chain-is-not-supported')

@@ -6,8 +6,13 @@ import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { VMExecution } from '../execution'
-import { TxPool } from './txpool'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { TxPool } from '../service/txpool'
+
+interface FullSynchronizerOptions extends SynchronizerOptions {
+  /** Tx Pool */
+  txPool: TxPool
+}
 
 interface HandledObject {
   hash: Buffer
@@ -20,18 +25,14 @@ type PeerId = string
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
-  public txPool: TxPool
-
+  private txPool: TxPool
   private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
 
-  constructor(options: SynchronizerOptions) {
+  constructor(options: FullSynchronizerOptions) {
     super(options)
 
+    this.txPool = options.txPool
     this.newBlocksKnownByPeer = new Map()
-    this.txPool = new TxPool({
-      config: this.config,
-      getPeerCount: () => this.pool.peers.length,
-    })
 
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async () => {
       await this.stop()
@@ -53,7 +54,7 @@ export class FullSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await super.open()
     await this.chain.open()
-    this.txPool.open()
+
     await this.pool.open()
     const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
@@ -64,10 +65,6 @@ export class FullSynchronizer extends Synchronizer {
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
-    if (this.config.mine) {
-      // Start the TxPool immediately if mining
-      this.txPool.start()
-    }
   }
 
   /**
@@ -111,21 +108,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Checks if tx pool should be started
-   */
-  checkTxPoolState() {
-    if (!this.syncTargetHeight || this.txPool.running) {
-      return
-    }
-    // If height gte target, we are close enough to the
-    // head of the chain that the tx pool can be started
-    const target = this.syncTargetHeight.subn(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
-    if (this.chain.headers.height.gte(target)) {
-      this.txPool.start()
-    }
-  }
-
-  /**
    * Sync all blocks and state from peer starting from current height.
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
@@ -138,8 +120,8 @@ export class FullSynchronizer extends Synchronizer {
       if (!latest) return resolve(false)
 
       const height = latest.number
-      if (!this.syncTargetHeight || this.syncTargetHeight.lt(latest.number)) {
-        this.syncTargetHeight = height
+      if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
+        this.config.syncTargetHeight = height
         this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }
 
@@ -248,7 +230,7 @@ export class FullSynchronizer extends Synchronizer {
 
     if (!this.running) return
     await execution.run()
-    this.checkTxPoolState()
+    this.txPool.checkRunState()
   }
 
   private clearFetcher() {
@@ -323,8 +305,8 @@ export class FullSynchronizer extends Synchronizer {
       await this.chain.putBlocks([block])
       // Check if new sync target height can be set
       const blockNumber = block.header.number
-      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
-        this.syncTargetHeight = blockNumber
+      if (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight)) {
+        this.config.syncTargetHeight = blockNumber
       }
     } else {
       // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
@@ -356,13 +338,13 @@ export class FullSynchronizer extends Synchronizer {
       }
 
       // Check if new sync target height can be set
-      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+      if (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight)) {
         newSyncHeight = blockNumber
       }
     })
 
     if (!newSyncHeight) return
-    this.syncTargetHeight = newSyncHeight
+    this.config.syncTargetHeight = newSyncHeight
     const [hash, height] = data[data.length - 1]
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
     // enqueue if we are close enough to chain head
@@ -375,8 +357,6 @@ export class FullSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.txPool.stop()
-
     if (!this.running) {
       return false
     }
@@ -394,9 +374,7 @@ export class FullSynchronizer extends Synchronizer {
    * Close synchronizer.
    */
   async close() {
-    if (this.opened) {
-      this.txPool.close()
-    }
+    if (!this.opened) return
     await super.close()
   }
 }

@@ -247,32 +247,44 @@ export default class Common extends EventEmitter {
       })
     } else {
       if (chainParamsOrName === CustomChain.PolygonMainnet) {
-        return Common.custom({
-          name: CustomChain.PolygonMainnet,
-          chainId: 137,
-          networkId: 137,
-        })
+        return Common.custom(
+          {
+            name: CustomChain.PolygonMainnet,
+            chainId: 137,
+            networkId: 137,
+          },
+          opts
+        )
       }
       if (chainParamsOrName === CustomChain.PolygonMumbai) {
-        return Common.custom({
-          name: CustomChain.PolygonMumbai,
-          chainId: 80001,
-          networkId: 80001,
-        })
+        return Common.custom(
+          {
+            name: CustomChain.PolygonMumbai,
+            chainId: 80001,
+            networkId: 80001,
+          },
+          opts
+        )
       }
       if (chainParamsOrName === CustomChain.ArbitrumRinkebyTestnet) {
-        return Common.custom({
-          name: CustomChain.ArbitrumRinkebyTestnet,
-          chainId: 421611,
-          networkId: 421611,
-        })
+        return Common.custom(
+          {
+            name: CustomChain.ArbitrumRinkebyTestnet,
+            chainId: 421611,
+            networkId: 421611,
+          },
+          opts
+        )
       }
       if (chainParamsOrName === CustomChain.xDaiChain) {
-        return Common.custom({
-          name: CustomChain.xDaiChain,
-          chainId: 100,
-          networkId: 100,
-        })
+        return Common.custom(
+          {
+            name: CustomChain.xDaiChain,
+            chainId: 100,
+            networkId: 100,
+          },
+          opts
+        )
       }
 
       if (chainParamsOrName === CustomChain.OptimisticKovan) {
@@ -283,7 +295,7 @@ export default class Common extends EventEmitter {
             networkId: 69,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: Hardfork.Berlin }
+          { hardfork: Hardfork.Berlin, ...opts }
         )
       }
 
@@ -295,7 +307,7 @@ export default class Common extends EventEmitter {
             networkId: 10,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: Hardfork.Berlin }
+          { hardfork: Hardfork.Berlin, ...opts }
         )
       }
       throw new Error(`Custom chain ${chainParamsOrName} not supported`)

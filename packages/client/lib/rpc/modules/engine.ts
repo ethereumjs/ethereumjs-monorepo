@@ -13,9 +13,7 @@ import type EthereumClient from '../../client'
 import type { Chain } from '../../blockchain'
 import type { VMExecution } from '../../execution'
 import type { Config } from '../../config'
-import type { EthereumService } from '../../service'
-import type { FullSynchronizer } from '../../sync'
-import type { TxPool } from '../../sync/txpool'
+import type { FullEthereumService } from '../../service'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -243,12 +241,10 @@ const assembleBlock = async (
 export class Engine {
   private client: EthereumClient
   private execution: VMExecution
-  private service: EthereumService
+  private service: FullEthereumService
   private chain: Chain
   private config: Config
-  private synchronizer: FullSynchronizer
   private vm: VM
-  private txPool: TxPool
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
@@ -259,18 +255,16 @@ export class Engine {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
-    this.synchronizer = this.service.synchronizer as FullSynchronizer
-    if (!this.client.execution) {
+    if (!this.service.execution) {
       throw Error('execution required for engine module')
     }
-    this.execution = this.client.execution
-    this.vm = this.client.execution.vm
-    this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
+    this.execution = this.service.execution
+    this.vm = this.execution.vm
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
-    this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
+    this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
 
     this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
@@ -546,18 +540,18 @@ export class Engine {
 
       const blocks = [...parentBlocks, headBlock]
       await this.execution.setHead(blocks)
-      this.txPool.removeNewBlockTxs(blocks)
+      this.service.txPool.removeNewBlockTxs(blocks)
 
       const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
       if (
-        (!this.synchronizer.syncTargetHeight ||
-          this.synchronizer.syncTargetHeight.lt(headBlock.header.number)) &&
+        (!this.config.syncTargetHeight ||
+          this.config.syncTargetHeight.lt(headBlock.header.number)) &&
         timeDiff < 30
       ) {
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()
-        this.synchronizer.syncTargetHeight = headBlock.header.number
-        this.synchronizer.checkTxPoolState()
+        this.config.syncTargetHeight = headBlock.header.number
+        this.service.txPool.checkRunState()
       }
     }
 

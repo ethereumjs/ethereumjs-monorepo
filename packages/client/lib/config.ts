@@ -1,7 +1,7 @@
 import Common, { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
-import { Address } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Multiaddr } from 'multiaddr'
 import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
@@ -253,6 +253,8 @@ export class Config {
 
   public synchronized: boolean
   public lastSyncDate: number
+  /** Best known block height */
+  public syncTargetHeight?: BN
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
