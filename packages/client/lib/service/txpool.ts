@@ -6,13 +6,18 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, bufferToHex } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import type VM from '@ethereumjs/vm'
 import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
+
+const MIN_GAS_PRICE_BUMP_PERCENT = 10
+const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
+const MAX_POOL_SIZE = 5000
+const MIN_GASPRICE = new BN(1000000000) // 1 GWei
 
 export interface TxPoolOptions {
   /* Config */
@@ -21,9 +26,6 @@ export interface TxPoolOptions {
   /* Return number of connected peers for stats logging */
   getPeerCount?: () => number
 
-  /* minGasPriceBump: minimum gas price to bump in case a transaction with same sender and nonce comes in (as percentage) */
-
-  minGasPriceBump?: number
   /* FullEthereumService */
   service: FullEthereumService
 }
@@ -129,11 +131,6 @@ export class TxPool {
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 20000 // ms
-  
-  /**
-   * 
-   */
-  private minGasPriceBump = 10 // percentage
 
   /**
    * Create new tx pool
@@ -147,8 +144,6 @@ export class TxPool {
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
-
-    this.minGasPriceBump = options.minGasPriceBump ?? this.minGasPriceBump
 
     this.opened = false
     this.running = false
@@ -192,6 +187,102 @@ export class TxPool {
     }
   }
 
+  // TODO this logic should be moved to the Transaction package
+  private getTxGasPrice(tx: TypedTransaction) {
+    let currentGasPrice
+    switch (tx.type) {
+      case 0:
+        currentGasPrice = (tx as Transaction).gasPrice
+        break
+      case 1:
+        currentGasPrice = (tx as AccessListEIP2930Transaction).gasPrice
+        break
+      case 2:
+        currentGasPrice = (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+        break
+      default:
+        throw new Error(`tx of type ${tx.type} unknown`) // TODO make this error better
+    }
+    return currentGasPrice
+  }
+
+  /**
+   * Validates a transaction against the pool and other constraints
+   * @param tx The tx to validate
+   */
+  private async validate(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+    if (tx.data.length > TX_MAX_DATA_SIZE) {
+      throw new Error(
+        `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
+      )
+    }
+    const currentGasPrice = this.getTxGasPrice(tx)
+    if (!isLocalTransaction) {
+      let txsInPool = 0 // TODO: should not have to recalculate this every time
+      this.pool.forEach((value) => {
+        txsInPool += value.length
+      })
+      if (txsInPool >= MAX_POOL_SIZE) {
+        throw new Error('Cannot add tx: pool is full')
+      }
+      // Local txs are not checked against MIN_GASPRICE
+      if (currentGasPrice.lt(MIN_GASPRICE)) {
+        throw new Error(`Tx does not pay the minimum gas price of ${MIN_GASPRICE.toString()}`)
+      }
+    }
+    const senderAddress = tx.getSenderAddress()
+    const sender: UnprefixedAddress = senderAddress.toString().slice(2)
+    const inPool = this.pool.get(sender)
+    if (inPool) {
+      // Replace pooled txs with the same nonce
+      const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce.eq(tx.nonce))
+      if (existingTxn) {
+        if (existingTxn.tx.hash().equals(tx.hash())) {
+          throw new Error(`${tx.hash()}: this transaction is already in the TxPool`)
+        }
+        const minimumGasPrice = currentGasPrice.add(
+          currentGasPrice.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
+        )
+        if (minimumGasPrice.gt(currentGasPrice)) {
+          // TODO handle in RPC
+          throw new Error('replacement gas too low')
+        }
+      } else {
+        const expectedNonce = inPool
+          .map((txObject) => txObject.tx.nonce)
+          .reduce((b1, b2) => BN.max(b1, b2))
+        if (!tx.nonce.eq(expectedNonce.addn(1))) {
+          throw new Error(
+            `Transactions for address 0x${sender} are known, nonce should be ${expectedNonce
+              .addn(1)
+              .toString()}, but got ${tx.nonce.toString()}`
+          )
+        }
+      }
+    } else {
+      // Tx is not in pool
+      const account = await this.vm.stateManager.getAccount(senderAddress)
+      if (!tx.nonce.eq(account.nonce)) {
+        throw new Error(
+          `No transactions for address 0x${sender} are known, nonce should be ${account.nonce.toString()}, but got ${tx.nonce.toString()}`
+        )
+      }
+    }
+    const block = await this.service.chain.getLatestHeader() // This should probably be cached somewhere
+    if (tx.gasLimit > block.gasLimit) {
+      throw new Error(
+        `Tx gaslimit of ${tx.gasLimit.toString()} exceeds block gas limit of ${block.gasLimit.toString()}`
+      )
+    }
+    const account = await this.vm.stateManager.getAccount(senderAddress)
+    const minimumBalance = tx.value.add(currentGasPrice.mul(tx.gasLimit))
+    if (account.balance.lt(minimumBalance)) {
+      throw new Error(
+        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance.toString()}, but have ${account.balance.toString()}`
+      )
+    }
+  }
+
   /**
    * Adds a tx to the pool.
    *
@@ -199,42 +290,20 @@ export class TxPool {
    * nonce it will be replaced by the new tx, if it has a sufficent gas bump.
    * (TODO) verifies certain constraints, if these are not matches, throws.
    * @param tx Transaction
+   * @param isLocalTransaction Boolean which is true if this is a local transaction (this drops some constraint checks)
    */
-  async add(tx: TypedTransaction) {
-    const sender: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
-    const inPool = this.pool.get(sender)
-    let add: TxPoolObject[] = []
-    if (inPool) {
-      // Replace pooled txs with the same nonce
-      let existingTxn = inPool.find((poolObj) => poolObj.tx.nonce.eq(tx.nonce))
-      if (existingTxn) {
-        let currentGasPrice
-        switch (existingTxn.tx.type) {
-          case 0: 
-            currentGasPrice = (existingTxn.tx as Transaction).gasPrice
-            break
-          case 1: 
-            currentGasPrice = (existingTxn.tx as AccessListEIP2930Transaction).gasPrice
-            break
-          case 2:
-            currentGasPrice = (existingTxn.tx as FeeMarketEIP1559Transaction).maxFeePerGas
-            break
-          default: 
-            throw new Error("unknown tx type") // TODO make this error better
-        }
-        let minimumGasPrice = currentGasPrice.add(currentGasPrice.muln(this.minGasPriceBump).divn(100))
-        if (minimumGasPrice.gt(currentGasPrice)) {
-          // TODO handle in RPC
-          throw new Error("gas too low")
-        }
-      }
+  async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+    try {
+      await this.validate(tx, isLocalTransaction)
+    } catch (error: any) {
+      throw error
     }
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
+    const add: TxPoolObject[] = this.pool.get(address) ?? []
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
     add.push({ tx, added, hash })
     this.pool.set(address, add)
-
     this.handled.set(hash, { address, added })
   }
 
@@ -378,7 +447,13 @@ export class TxPool {
 
     const newTxHashes = []
     for (const tx of txs) {
-      await this.add(tx)
+      try {
+        await this.add(tx)
+      } catch (error: any) {
+        this.config.logger.debug(
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+        )
+      }
       newTxHashes.push(tx.hash())
     }
     const peers = peerPool.peers

@@ -930,7 +930,15 @@ export class Eth {
 
     // Add the tx to own tx pool
     const { txPool } = this.service as FullEthereumService
-    await txPool.add(tx)
+
+    try {
+      await txPool.add(tx, true)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message ?? error.toString(),
+      }
+    }
 
     const peerPool = this.service.pool
     if (

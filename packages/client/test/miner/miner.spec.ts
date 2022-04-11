@@ -60,6 +60,9 @@ tape('[Miner]', async (t) => {
         height: new BN(0),
       }
     }
+    getLatestHeader() {
+      return BlockHeader.fromHeaderData()
+    }
     blockchain: any = {
       putBlock: async () => {},
       cliqueActiveSigners: () => [A.address],
@@ -184,10 +187,10 @@ tape('[Miner]', async (t) => {
       await setBalance(vm.stateManager, B.address, new BN('400000000000001'))
 
       // add txs
-      txPool.add(txA01)
-      txPool.add(txA02)
-      txPool.add(txA03)
-      txPool.add(txB01)
+      await txPool.add(txA01)
+      await txPool.add(txA02)
+      await txPool.add(txA03)
+      await txPool.add(txB01)
 
       // disable consensus to skip PoA block signer validation
       ;(vm.blockchain as any)._validateConsensus = false
@@ -195,6 +198,7 @@ tape('[Miner]', async (t) => {
       chain.putBlocks = (blocks: Block[]) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
+        console.log(blocks)
         for (const [index, tx] of expectedOrder.entries()) {
           t.ok(blocks[0].transactions[index].hash().equals(tx.hash()), msg)
         }
@@ -239,7 +243,7 @@ tape('[Miner]', async (t) => {
       { to: B.address, maxFeePerGas: 6 },
       { common }
     ).sign(A.privateKey)
-    txPool.add(tx)
+    txPool.add(tx, true)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
