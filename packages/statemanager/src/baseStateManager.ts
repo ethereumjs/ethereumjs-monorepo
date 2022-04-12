@@ -46,7 +46,7 @@ export abstract class BaseStateManager {
     if (process !== undefined && process.env.DEBUG) {
       this.DEBUG = true
     }
-    this._debug = createDebugLogger('vm:stateManager')
+    this._debug = createDebugLogger('statemanager:statemanager')
   }
 
   /**
