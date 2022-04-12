@@ -1,6 +1,11 @@
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 
+/**
+ * Log that the contract emits.
+ */
+export type Log = [address: Buffer, topics: Buffer[], data: Buffer]
+
 export type DeleteOpcode = {
   opcode: number
 }

@@ -11,7 +11,6 @@ import {
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { Log, TransientStorage } from '@ethereumjs/statemanager'
 
 import { ERROR, VmError } from '../exceptions'
 import { VmState } from '../vmState'
@@ -21,8 +20,10 @@ import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
 import * as eof from './opcodes/eof'
+import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import VM from '../index'
+import { TransientStorage } from '../state'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
