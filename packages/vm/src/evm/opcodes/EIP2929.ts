@@ -31,11 +31,11 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     if (chargeGas) {
-      return BigInt(common.param('gasPrices', 'coldaccountaccess'))
+      return common.param('gasPrices', 'coldaccountaccess')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestructOrAuthcall) {
-    return BigInt(common.param('gasPrices', 'warmstorageread'))
+    return common.param('gasPrices', 'warmstorageread')
   }
   return BigInt(0)
 }
@@ -63,9 +63,9 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     vmState.addWarmedStorage(address, key)
-    return BigInt(common.param('gasPrices', 'coldsload'))
+    return common.param('gasPrices', 'coldsload') ?? BigInt(0)
   } else if (!isSstore) {
-    return BigInt(common.param('gasPrices', 'warmstorageread'))
+    return common.param('gasPrices', 'warmstorageread') ?? BigInt(0)
   }
   return BigInt(0)
 }
@@ -91,17 +91,17 @@ export function adjustSstoreGasEIP2929(
 
   const vmState = runState.vmState
   const address = runState.eei.getAddress().buf
-  const warmRead = BigInt(common.param('gasPrices', 'warmstorageread'))
-  const coldSload = BigInt(common.param('gasPrices', 'coldsload'))
+  const warmRead = common.param('gasPrices', 'warmstorageread')
+  const coldSload = common.param('gasPrices', 'coldsload')
 
   if (vmState.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead
       case 'initRefund':
-        return BigInt(common.param('gasPrices', 'sstoreInitGasEIP2200')) - warmRead
+        return common.param('gasPrices', 'sstoreInitGasEIP2200') - warmRead
       case 'cleanRefund':
-        return BigInt(common.param('gasPrices', 'sstoreReset')) - coldSload - warmRead
+        return common.param('gasPrices', 'sstoreReset') - coldSload - warmRead
     }
   }
 

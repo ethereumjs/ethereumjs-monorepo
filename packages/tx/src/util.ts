@@ -3,7 +3,7 @@ import { bufferToHex, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
-  if (length > common.param('vm', 'maxInitCodeSize')) {
+  if (BigInt(length) > common.param('vm', 'maxInitCodeSize')) {
     throw new Error(
       `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
         'vm',
@@ -108,6 +108,6 @@ export class AccessLists {
     }
 
     const addresses = accessList.length
-    return addresses * accessListAddressCost + slots * accessListStorageKeyCost
+    return Number(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
   }
 }

@@ -118,8 +118,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${block.hash().toString('hex')} number=${
-        block.header.number
+      `Running block hash=${block.hash().toString('hex')} number=${block.header.number
       } hardfork=${this._common.hardfork()}`
     )
   }
@@ -154,10 +153,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
       debug(
-        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
-          result.bloom.bitvector.length
-        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
-          result.receipts.length
+        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${result.bloom.bitvector.length
+        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${result.receipts.length
         } txResults=${result.results.length}`
       )
     }
@@ -255,8 +252,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await this._emit('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
-      `Running block finished hash=${block.hash().toString('hex')} number=${
-        block.header.number
+      `Running block finished hash=${block.hash().toString('hex')} number=${block.header.number
       } hardfork=${this._common.hardfork()}`
     )
   }
@@ -320,8 +316,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
-      maxGasLimit =
-        block.header.gasLimit * BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -379,7 +374,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
     debug(`Assign block rewards`)
   }
   const state = this.vmState
-  const minerReward = BigInt(this._common.param('pow', 'minerReward'))
+  const minerReward = this._common.param('pow', 'minerReward') ?? BigInt(0)
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {

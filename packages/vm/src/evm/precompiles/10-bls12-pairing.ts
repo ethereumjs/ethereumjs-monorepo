@@ -14,7 +14,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  const baseGas = BigInt(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
+  const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
 
   if (inputData.length == 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)

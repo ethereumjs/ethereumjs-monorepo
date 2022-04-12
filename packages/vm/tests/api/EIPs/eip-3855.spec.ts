@@ -30,7 +30,7 @@ tape('EIP 3541 tests', (t) => {
 
     st.ok(stack!.length == 1)
     st.equal(stack![0], BigInt(0))
-    st.equal(result.gasUsed, BigInt(common.param('gasPrices', 'push0')))
+    st.equal(result.gasUsed, common.param('gasPrices', 'push0'))
     st.end()
   })
 
@@ -42,7 +42,7 @@ tape('EIP 3541 tests', (t) => {
       stack = e.stack
     })
 
-    const depth = common.param('vm', 'stackLimit')
+    const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
@@ -55,7 +55,7 @@ tape('EIP 3541 tests', (t) => {
         st.fail('stack element is not 0')
       }
     })
-    st.equal(result.gasUsed, BigInt(common.param('gasPrices', 'push0') * depth))
+    st.equal(result.gasUsed, common.param('gasPrices', 'push0') * BigInt(depth))
     st.end()
   })
 

@@ -348,8 +348,8 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const gasBigInt = bufferToBigInt(gasUsed)
     const preGas =
       gas! -
-      BigInt(common.param('gasPrices', 'warmstorageread')) -
-      BigInt(common.param('gasPrices', 'coldaccountaccess'))
+      common.param('gasPrices', 'warmstorageread') -
+      common.param('gasPrices', 'coldaccountaccess')
     const expected = preGas - preGas / 64n - 2n
     st.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -390,7 +390,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       Buffer.from('00'.repeat(31) + '01', 'hex')
     )
     const gasBigInt = bufferToBigInt(gasUsed)
-    const preGas = gas! - BigInt(common.param('gasPrices', 'warmstorageread'))
+    const preGas = gas! - common.param('gasPrices', 'warmstorageread')
     const expected = preGas - preGas / 64n - 2n
     st.equal(gasBigInt, expected, 'forwarded max call gas')
   })
@@ -433,10 +433,10 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
       const gasBigInt = gas! - gasAfterCall!
       const expected =
-        BigInt(common.param('gasPrices', 'coldaccountaccess')) +
-        BigInt(common.param('gasPrices', 'warmstorageread')) +
-        BigInt(common.param('gasPrices', 'callNewAccount')) +
-        BigInt(common.param('gasPrices', 'authcallValueTransfer'))
+        common.param('gasPrices', 'coldaccountaccess') +
+        common.param('gasPrices', 'warmstorageread') +
+        common.param('gasPrices', 'callNewAccount') +
+        common.param('gasPrices', 'authcallValueTransfer')
 
       st.equal(gasBigInt, expected, 'forwarded max call gas')
     }
@@ -484,9 +484,9 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const gasBigInt = bufferToBigInt(gasUsed)
       const preGas =
         gas! -
-        BigInt(common.param('gasPrices', 'warmstorageread')) -
-        BigInt(common.param('gasPrices', 'authcallValueTransfer')) -
-        BigInt(common.param('gasPrices', 'coldaccountaccess'))
+        common.param('gasPrices', 'warmstorageread') -
+        common.param('gasPrices', 'authcallValueTransfer') -
+        common.param('gasPrices', 'coldaccountaccess')
       const expected = preGas - preGas / 64n - 2n
       st.equal(gasBigInt, expected, 'forwarded max call gas')
 

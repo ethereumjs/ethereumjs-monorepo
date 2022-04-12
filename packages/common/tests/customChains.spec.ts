@@ -51,8 +51,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
-    st.equal(customChainCommon.chainId(), BigInt(customChainParams.chainId))
-    st.equal(customChainCommon.networkId(), BigInt(customChainParams.networkId))
+    st.equal(customChainCommon.chainId(), customChainParams.chainId))
+  st.equal(customChainCommon.networkId(), customChainParams.networkId))
 
     // Fallback params from mainnet
     st.equal(customChainCommon.genesis(), mainnetCommon.genesis())

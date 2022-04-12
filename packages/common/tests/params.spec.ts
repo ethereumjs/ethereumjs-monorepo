@@ -9,11 +9,11 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
 
     msg = 'Should return correct value for HF set in class'
     c.setHardfork(Hardfork.Byzantium)
-    st.equal(c.param('gasPrices', 'ecAdd'), 500, msg)
+    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(500), msg)
     c.setHardfork(Hardfork.Istanbul)
-    st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
+    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
     c.setHardfork(Hardfork.MuirGlacier)
-    st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
+    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
 
     msg = 'Should return null for non-existing value'
     st.equal(c.param('gasPrices', 'notexistingvalue'), null, msg)
@@ -41,7 +41,11 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
     c.setHardfork(Hardfork.Byzantium)
-    st.equal(c.param('gasPrices', 'ecAdd'), 500, 'Should return correct value for HF set in class')
+    st.equal(
+      c.param('gasPrices', 'ecAdd'),
+      BigInt(500),
+      'Should return correct value for HF set in class'
+    )
 
     st.end()
   })
@@ -108,10 +112,10 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     for (const fork of [Hardfork.MuirGlacier, Hardfork.Berlin]) {
       const c = new Common({ chain: Chain.Mainnet, hardfork: fork })
       let delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, 9000000)
+      st.equal(delay, BigInt(9000000))
       c.setEIPs([3554])
       delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, 9500000)
+      st.equal(delay, BigInt(9500000))
     }
     st.end()
   })

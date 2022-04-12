@@ -317,7 +317,7 @@ export default class EVM {
     await this._reduceSenderBalance(account, message)
 
     if (this._vm._common.isActivatedEIP(3860)) {
-      if (message.data.length > this._vm._common.param('vm', 'maxInitCodeSize')) {
+      if (message.data.length > Number(this._vm._common.param('vm', 'maxInitCodeSize'))) {
         return {
           createdAddress: message.to,
           execResult: {
@@ -412,8 +412,7 @@ export default class EVM {
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
-        BigInt(result.returnValue.length) *
-        BigInt(this._vm._common.param('gasPrices', 'createData'))
+        BigInt(result.returnValue.length) * this._vm._common.param('gasPrices', 'createData')
       totalGas = totalGas + returnFee
       if (this._vm.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -425,7 +424,7 @@ export default class EVM {
     if (
       !result.exceptionError &&
       this._vm._common.gteHardfork(Hardfork.SpuriousDragon) &&
-      result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
+      result.returnValue.length > Number(this._vm._common.param('vm', 'maxCodeSize'))
     ) {
       allowedCodeSize = false
     }

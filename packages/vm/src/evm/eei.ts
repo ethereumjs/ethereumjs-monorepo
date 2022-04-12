@@ -436,7 +436,7 @@ export default class EEI {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
-      this.refundGas(BigInt(this._common.param('gasPrices', 'selfdestructRefund')))
+      this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
@@ -581,7 +581,7 @@ export default class EEI {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= this._common.param('vm', 'stackLimit') ||
+      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BigInt(0)
@@ -640,7 +640,7 @@ export default class EEI {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= this._common.param('vm', 'stackLimit') ||
+      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BigInt(0)
@@ -655,7 +655,7 @@ export default class EEI {
     await this._state.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (msg.data.length > this._common.param('vm', 'maxInitCodeSize')) {
+      if (msg.data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
         return BigInt(0)
       }
     }

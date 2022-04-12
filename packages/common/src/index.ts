@@ -540,7 +540,7 @@ export default class Common extends EventEmitter {
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @returns The value requested or `null` if not found
    */
-  param(topic: string, name: string): any {
+  param(topic: string, name: string): bigint | null {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
     let value = null
@@ -560,7 +560,7 @@ export default class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns The value requested or `null` if not found
    */
-  paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): any {
+  paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint | null {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
@@ -581,7 +581,7 @@ export default class Common extends EventEmitter {
       }
       if (hfChanges[0] === hardfork) break
     }
-    return value
+    return value ? BigInt(value) : null
   }
 
   /**
@@ -591,7 +591,7 @@ export default class Common extends EventEmitter {
    * @param eip Number of the EIP
    * @returns The value requested or `null` if not found
    */
-  paramByEIP(topic: string, name: string, eip: number): any {
+  paramByEIP(topic: string, name: string, eip: number): bigint | null {
     if (!(eip in EIPs)) {
       throw new Error(`${eip} not supported`)
     }
@@ -604,7 +604,7 @@ export default class Common extends EventEmitter {
       return null
     }
     const value = eipParams[topic][name].v
-    return value
+    return BigInt(value)
   }
 
   /**
@@ -615,7 +615,12 @@ export default class Common extends EventEmitter {
    * @param blockNumber Block number
    * @param td Total difficulty
    */
-  paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): any {
+  paramByBlock(
+    topic: string,
+    name: string,
+    blockNumber: BigIntLike,
+    td?: BigIntLike
+  ): bigint | null {
     const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     return this.paramByHardfork(topic, name, hardfork)
   }

@@ -21,7 +21,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const numPairs = Math.floor(inputData.length / 288)
 
-  const gasUsedPerPair = BigInt(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
+  const gasUsedPerPair = opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
   const gasDiscountArray = opts._common.paramByEIP('gasPrices', 'Bls12381MultiExpGasDiscount', 2537)
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier

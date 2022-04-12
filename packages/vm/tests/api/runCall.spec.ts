@@ -169,7 +169,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   const resultActivated = await vmActivated.runCall(runCallArgs)
 
   const diff = resultNotActivated.execResult.gasUsed - resultActivated.execResult.gasUsed
-  const expected = BigInt(common.param('gasPrices', 'callNewAccount'))
+  const expected = common.param('gasPrices', 'callNewAccount')
 
   t.equal(diff, expected, 'precompiles are activated')
 
