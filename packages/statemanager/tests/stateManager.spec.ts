@@ -10,8 +10,8 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '../../src'
-import { createAccount } from '../util'
+import { DefaultStateManager } from '../src'
+import { createAccount } from './util'
 
 tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {

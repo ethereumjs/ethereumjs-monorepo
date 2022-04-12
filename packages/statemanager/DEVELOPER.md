@@ -5,7 +5,7 @@
 ### Running Tests
 
 Tests can be found in the `tests` directory. The `API` of StateManager can be tested as:
-`npm run test:API`
+`npm run test`
 
 ### CI Test Integration
 

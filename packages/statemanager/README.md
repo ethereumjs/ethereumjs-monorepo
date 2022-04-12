@@ -6,7 +6,7 @@
 [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| TypeScript implementation of the Ethereum VM. |
+| TypeScript implementation of the Ethereum StateManager. |
 | --------------------------------------------- |
 
 # INSTALL

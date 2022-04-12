@@ -29,10 +29,6 @@ module.exports = function (config) {
       },
     },
 
-    proxies: {
-      '/mcl_c384_256.wasm': '../../node_modules/mcl-wasm/mcl_c384_256.wasm',
-    },
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://www.npmjs.com/browse/keyword/karma-reporter
