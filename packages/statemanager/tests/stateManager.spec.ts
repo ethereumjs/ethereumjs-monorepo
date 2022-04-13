@@ -13,6 +13,9 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../src'
 import { createAccount } from './util'
 
+// explicitly import `inherits` to fix karma-typescript issue
+import { inherits } from 'util' // eslint-disable-line
+
 tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {
     const stateManager = new DefaultStateManager()
