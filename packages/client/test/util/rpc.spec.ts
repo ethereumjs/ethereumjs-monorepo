@@ -8,6 +8,8 @@ import {
 } from '../../lib/util/rpc'
 import Client from '../../lib/client'
 import { Config } from '../../lib/config'
+const request = require('supertest')
+import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 
 tape('[Util/RPC]', (t) => {
   t.test('should return enabled RPC servers', (st) => {
@@ -42,5 +44,37 @@ tape('[Util/RPC]', (t) => {
       }
     }
     st.end()
+  })
+})
+
+tape('[Util/RPC/Engine eth methods]', async (t) => {
+  const config = new Config({ transports: [] })
+  const client = new Client({ config })
+  const manager = new RPCManager(client, config)
+  const { server } = createRPCServer(manager, {
+    methodConfig: MethodConfig.EngineOnly,
+    rpcDebug: false,
+  })
+  const httpServer = createRPCServerListener({ server })
+  t.test('should have eth_blockNumber', (st) => {
+    const req = {
+      jsonrpc: '2.0',
+      method: 'eth_blockNumber',
+      id: 1,
+    }
+
+    request(httpServer)
+      .post('/')
+      .set('Content-Type', 'application/json')
+      .send(req)
+      .expect((res: any) => {
+        if (res.body.error && res.body.error.code === METHOD_NOT_FOUND) {
+          throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
+        }
+      })
+      .end((err: any) => {
+        st.end(err)
+        httpServer.close()
+      })
   })
 })
