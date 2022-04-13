@@ -439,7 +439,7 @@ export class BlockHeader {
       this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
     const offset =
-      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
+      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
     let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
@@ -474,10 +474,7 @@ export class BlockHeader {
       dif = parentDif + offset * a
     } else {
       // pre-homestead
-      if (
-        parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork)) >
-        blockTs
-      ) {
+      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
         dif = offset + parentDif
       } else {
         dif = parentDif - offset
@@ -559,15 +556,14 @@ export class BlockHeader {
     const hardfork = this._common.hardfork()
 
     const a =
-      parentGasLimit /
-      this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
     const result =
       gasLimit < maxGasLimit &&
       gasLimit > minGasLimit &&
-      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
 
     return result
   }
@@ -703,7 +699,7 @@ export class BlockHeader {
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
       if (isInitialEIP1559Block) {
-        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee'))
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
         if (this.baseFeePerGas! !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
@@ -738,8 +734,10 @@ export class BlockHeader {
       nextBaseFee = this.baseFeePerGas!
     } else if (this.gasUsed > parentGasTarget) {
       const gasUsedDelta = this.gasUsed - parentGasTarget
-      const baseFeeMaxChangeDenominator = 
-        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      const baseFeeMaxChangeDenominator = this._common.param(
+        'gasConfig',
+        'baseFeeMaxChangeDenominator'
+      )
 
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
@@ -747,8 +745,10 @@ export class BlockHeader {
         (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
     } else {
       const gasUsedDelta = parentGasTarget - this.gasUsed
-      const baseFeeMaxChangeDenominator = 
-        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      const baseFeeMaxChangeDenominator = this._common.param(
+        'gasConfig',
+        'baseFeeMaxChangeDenominator'
+      )
 
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator

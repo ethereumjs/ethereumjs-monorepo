@@ -108,6 +108,6 @@ export class AccessLists {
     }
 
     const addresses = accessList.length
-    return Number(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
+    return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
   }
 }
