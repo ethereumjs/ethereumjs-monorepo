@@ -263,6 +263,22 @@ export const addHexPrefix = function (str: string): string {
 }
 
 /**
+ * Shortens a string  or buffer's hex string representation to maxLength (default 50).
+ *
+ * Examples:
+ *
+ * Input:  '657468657265756d000000000000000000000000000000000000000000000000'
+ * Output: '657468657265756d0000000000000000000000000000000000…'
+ */
+export function short(buffer: Buffer | string, maxLength: number = 50): string {
+  const bufferStr = Buffer.isBuffer(buffer) ? buffer.toString('hex') : buffer
+  if (bufferStr.length <= maxLength) {
+    return bufferStr
+  }
+  return bufferStr.slice(0, maxLength) + '…'
+}
+
+/**
  * Returns the utf8 string representation from a hex string.
  *
  * Examples:

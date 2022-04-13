@@ -31,7 +31,7 @@ import type {
   TxReceipt,
 } from '@ethereumjs/vm/dist/types'
 import type { Log } from '@ethereumjs/vm/dist/evm/types'
-import type { Proof } from '@ethereumjs/vm/dist/state'
+import type { Proof } from '@ethereumjs/statemanager'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'

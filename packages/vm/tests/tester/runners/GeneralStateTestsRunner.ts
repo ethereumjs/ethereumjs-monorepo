@@ -71,7 +71,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
   const vm = await VM.create({ state, common })
 
-  await setupPreConditions(vm.stateManager, testData)
+  await setupPreConditions(vm.vmState, testData)
 
   let execInfo = ''
   let tx

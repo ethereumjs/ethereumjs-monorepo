@@ -1,7 +1,7 @@
 import { Account, Address, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { StateManager, DefaultStateManager } from '../dist/state'
+import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { RunBlockResult } from '../dist/runBlock'
 import Mockchain from './mockchain'
 

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import VM from '../../src'
-import { DefaultStateManager } from '../../src/state'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const STOP = '00'
 const JUMP = '56'

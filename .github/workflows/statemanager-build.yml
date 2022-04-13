@@ -1,0 +1,47 @@
+name: StateManager
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+env:
+  cwd: ${{github.workspace}}/packages/statemanager
+
+defaults:
+  run:
+    working-directory: packages/statemanager
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test-statemanager:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      - run: npm run lint
+      - run: npm run coverage
+
+      - uses: codecov/codecov-action@v2
+        with:
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: statemanager
+        if: ${{ matrix.node-version == 16 }}

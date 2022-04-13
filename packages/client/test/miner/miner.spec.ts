@@ -3,8 +3,10 @@ import td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
+import { VmState } from '@ethereumjs/vm/dist/vmState'
 import { Address } from 'ethereumjs-util'
+import VM from '@ethereumjs/vm'
+
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
@@ -28,10 +30,10 @@ const B = {
   ),
 }
 
-const setBalance = async (stateManager: StateManager, address: Address, balance: bigint) => {
-  await stateManager.checkpoint()
-  await stateManager.modifyAccountFields(address, { balance })
-  await stateManager.commit()
+const setBalance = async (vm: VM, address: Address, balance: bigint) => {
+  await vm.vmState.checkpoint()
+  await vm.vmState.modifyAccountFields(address, { balance })
+  await vm.vmState.commit()
 }
 
 tape('[Miner]', async (t) => {
@@ -39,9 +41,9 @@ tape('[Miner]', async (t) => {
   BlockHeader.prototype.validate = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
 
-  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
+  const originalSetStateRoot = VmState.prototype.setStateRoot
+  VmState.prototype.setStateRoot = td.func<any>()
+  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   class FakeChain {
     open() {}
@@ -148,7 +150,7 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
+    await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add tx
     txPool.add(txA01)
@@ -180,8 +182,8 @@ tape('[Miner]', async (t) => {
       txPool.start()
       miner.start()
 
-      await setBalance(vm.stateManager, A.address, BigInt('400000000000001'))
-      await setBalance(vm.stateManager, B.address, BigInt('400000000000001'))
+      await setBalance(vm, A.address, BigInt('400000000000001'))
+      await setBalance(vm, B.address, BigInt('400000000000001'))
 
       // add txs
       txPool.add(txA01)
@@ -282,7 +284,7 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
+    await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
@@ -328,7 +330,7 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
+    await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
     for (let i = 0; i < 1000; i++) {
@@ -452,7 +454,7 @@ tape('[Miner]', async (t) => {
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype.validate = originalValidate
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    VmState.prototype.setStateRoot = originalSetStateRoot
     t.end()
   })
 })

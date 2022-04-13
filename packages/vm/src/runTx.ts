@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
+import { Address, KECCAK256_NULL, toBuffer, short } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
@@ -14,10 +14,8 @@ import {
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
-import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
-import { EIP2929StateManager } from './state/interface'
 import type {
   TxReceipt,
   BaseTxReceipt,
@@ -133,8 +131,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error(msg)
   }
 
-  // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
-  const state = this.stateManager as EIP2929StateManager
+  const state = this.vmState
 
   if (opts.reportAccessList && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -237,8 +234,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  // Have to cast as `EIP2929StateManager` to access the EIP2929 methods
-  const state = this.stateManager as EIP2929StateManager
+  const state = this.vmState
 
   const { tx, block } = opts
 
