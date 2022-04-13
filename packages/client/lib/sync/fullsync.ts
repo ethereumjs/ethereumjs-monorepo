@@ -205,7 +205,7 @@ export class FullSynchronizer extends Synchronizer {
       }
     } else {
       if (
-        this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock &&
+        this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
         !this.config.chainCommon.gteHardfork(Hardfork.Merge)
       ) {
         const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!

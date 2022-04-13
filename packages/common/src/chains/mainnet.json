@@ -74,10 +74,10 @@
       "name": "berlin",
       "block": 12244000,
       "forkHash": "0x0eb440f6"
-    }, 
+    },
     {
       "name": "london",
-      "block": 12965000, 
+      "block": 12965000,
       "forkHash": "0xb715077d"
     },
     {
@@ -86,7 +86,7 @@
       "forkHash": "0x20c327fc"
     },
     {
-      "name": "preMerge",
+      "name": "mergeForkIdTransition",
       "block": null,
       "forkHash": null
     },
