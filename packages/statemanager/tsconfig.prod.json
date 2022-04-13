@@ -5,7 +5,7 @@
     "outDir": "./dist",
     "composite": true,
   },
-  "include": ["src/**/*.ts", "src/**/*.json"],
+  "include": ["src/**/*.ts"],
   "references": [
     { "path": "../common/tsconfig.prod.json" },
     { "path": "../trie/tsconfig.prod.json" },
