@@ -5,7 +5,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   t.test('Basic usage', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
-    st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
     msg = 'Should return correct value for HF set in class'
     c.setHardfork(Hardfork.Byzantium)
@@ -15,9 +15,9 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     c.setHardfork(Hardfork.MuirGlacier)
     st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
 
-    msg = 'Should return null for non-existing value'
-    st.equal(c.param('gasPrices', 'notexistingvalue'), null, msg)
-    st.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), null, msg)
+    msg = 'Should throw for non-existing value'
+    st.throws(() => c.param('gasPrices', 'notexistingvalue'), msg)
+    st.throws(() => c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), msg)
 
     /*
     // Manual test since no test triggering EIP config available
@@ -54,16 +54,20 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return correct value for chain start'
-    st.equal(c.paramByHardfork('pow', 'minerReward', 'chainstart'), '5000000000000000000', msg)
+    st.equal(
+      c.paramByHardfork('pow', 'minerReward', 'chainstart'),
+      BigInt(5000000000000000000),
+      msg
+    )
 
     msg = 'Should reflect HF update changes'
-    st.equal(c.paramByHardfork('pow', 'minerReward', 'byzantium'), '3000000000000000000', msg)
+    st.equal(c.paramByHardfork('pow', 'minerReward', 'byzantium'), BigInt(3000000000000000000), msg)
 
     msg = 'Should return updated sstore gas prices for constantinople'
-    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'), 200, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'), BigInt(200), msg)
 
     msg = 'Should nullify SSTORE related values for petersburg'
-    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), null, msg)
+    st.throws(() => c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), msg)
 
     st.end()
   })
@@ -71,14 +75,14 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   t.test('Access by block number, paramByBlock()', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
-    st.equal(c.paramByBlock('pow', 'minerReward', 4370000), '3000000000000000000', msg)
+    st.equal(c.paramByBlock('pow', 'minerReward', 4370000), BigInt(3000000000000000000), msg)
 
     msg = 'Should correctly translate block numbers into HF states (original value)'
-    st.equal(c.paramByBlock('pow', 'minerReward', 4369999), '5000000000000000000', msg)
+    st.equal(c.paramByBlock('pow', 'minerReward', 4369999), BigInt(5000000000000000000), msg)
 
     msg = 'Should correctly translate total difficulty into HF states'
     const td = BigInt('1196768507891266117779')
-    st.equal(c.paramByBlock('pow', 'minerReward', 4370000, td), '3000000000000000000', msg)
+    st.equal(c.paramByBlock('pow', 'minerReward', 4370000, td), BigInt(3000000000000000000), msg)
 
     st.comment('-----------------------------------------------------------------')
     st.end()
@@ -88,7 +92,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return null for non-existing value'
-    st.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), null, msg)
+    st.throws(() => c.paramByEIP('gasPrices', 'notexistingvalue', 2537), msg)
 
     const UNSUPPORTED_EIP = 1000000
     let f = function () {
@@ -104,7 +108,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.throws(f, /not defined$/, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), 600, msg)
+    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
     st.end()
   })
 
