@@ -538,7 +538,7 @@ export default class Common extends EventEmitter {
    *
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @returns The value requested or `null` if not found
+   * @returns The value requested or `undefined` if not found
    */
   param(topic: string, name: string): bigint | undefined {
     // TODO: consider the case that different active EIPs
@@ -556,7 +556,7 @@ export default class Common extends EventEmitter {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param hardfork Hardfork name
-   * @returns The value requested or `null` if not found
+   * @returns The value requested or `undefined` if not found
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint | undefined {
     let value = null
@@ -565,10 +565,8 @@ export default class Common extends EventEmitter {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
-          try {
-            const valueEIP = this.paramByEIP(topic, name, eip)
-            value = valueEIP !== null ? valueEIP : value
-          } catch { }
+          const valueEIP = this.paramByEIP(topic, name, eip)
+          value = valueEIP !== undefined ? valueEIP : value
         }
         // Paramater-inlining HF file (e.g. istanbul.json)
       } else {
@@ -590,7 +588,7 @@ export default class Common extends EventEmitter {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param eip Number of the EIP
-   * @returns The value requested or `null` if not found
+   * @returns The value requested or `undefined` if not found
    */
   paramByEIP(topic: string, name: string, eip: number): bigint | undefined {
     if (!(eip in EIPs)) {
