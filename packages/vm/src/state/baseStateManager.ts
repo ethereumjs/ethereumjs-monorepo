@@ -3,7 +3,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
+import { ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
 
@@ -480,12 +480,11 @@ export abstract class BaseStateManager {
     const accessList: AccessList = []
     folded.forEach((slots, addressStr) => {
       const address = Address.fromString(`0x${addressStr}`)
-      const check1 = getActivePrecompiles(this._common).find((a) => a.equals(address))
-      const check2 = addressesRemoved.find((a) => a.equals(address))
-      const check3 =
+      const check1 = addressesRemoved.find((a) => a.equals(address))
+      const check2 =
         addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
 
-      if (!check1 && !check2 && !check3) {
+      if (!check1 && !check2) {
         const storageSlots = Array.from(slots)
           .map((s) => `0x${s}`)
           .sort()

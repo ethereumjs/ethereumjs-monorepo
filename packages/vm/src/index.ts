@@ -10,7 +10,7 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
-import { precompiles } from './evm/precompiles'
+import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
@@ -156,6 +156,13 @@ export interface VMOpts {
    */
 
   customOpcodes?: CustomOpcode[]
+  /*
+   * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
+   * If only an address is given, the precompile is deleted
+   * If an address and a `PrecompileFunc` is given, this precompile is inserted or overridden
+   * Please ensure `PrecompileFunc` has exactly one parameter `input: PrecompileInput`
+   */
+  customPrecompiles?: CustomPrecompile[]
 }
 
 /**
@@ -187,6 +194,13 @@ export default class VM extends AsyncEventEmitter {
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
   protected readonly _customOpcodes?: CustomOpcode[]
+  protected readonly _customPrecompiles?: CustomPrecompile[]
+
+  protected _precompiles!: Map<string, PrecompileFunc>
+
+  public get precompiles() {
+    return this._precompiles
+  }
 
   /**
    * Cached emit() function, not for public usage
@@ -232,6 +246,8 @@ export default class VM extends AsyncEventEmitter {
     this._opts = opts
     this._customOpcodes = opts.customOpcodes
 
+    this._customPrecompiles = opts.customPrecompiles
+
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
@@ -276,10 +292,12 @@ export default class VM extends AsyncEventEmitter {
     }
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
+      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
-    // Initialize the opcode data
+    // Set list of opcodes based on HF
     this.getActiveOpcodes()
+    this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -333,20 +351,22 @@ export default class VM extends AsyncEventEmitter {
       if (this._opts.activateGenesisState) {
         await this.stateManager.generateCanonicalGenesis()
       }
+    }
 
-      if (this._opts.activatePrecompiles) {
-        await this.stateManager.checkpoint()
-        // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-        await Promise.all(
-          Object.keys(precompiles)
-            .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
-            .map(async (address: Address) => {
-              const account = Account.fromAccountData({ balance: 1 })
-              await this.stateManager.putAccount(address, account)
-            })
-        )
-        await this.stateManager.commit()
+    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
+      await this.stateManager.checkpoint()
+      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
+      for (const [addressStr] of getActivePrecompiles(this._common)) {
+        const address = new Address(Buffer.from(addressStr, 'hex'))
+        const account = await this.stateManager.getAccount(address)
+        // Only do this if it is not overridden in genesis
+        // Note: in the case that custom genesis has storage fields, this is preserved
+        if (account.isEmpty()) {
+          const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
+          await this.stateManager.putAccount(address, newAccount)
+        }
       }
+      await this.stateManager.commit()
     }
 
     if (this._common.isActivatedEIP(2537)) {
