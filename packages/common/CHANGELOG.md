@@ -14,15 +14,16 @@ Small EIP - see [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) considered f
 
 ### EIP-1153: Transient Storage Opcodes
 
-Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
+Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [#1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
 
-The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communcation via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
+The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communication via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
 
-Hardfork inclusion of the EIP has been extensively discussed along [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
+Hardfork inclusion of the EIP was extensively discussed during [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
 
 ### Other Changes
 
 - Fixed non-option passing on `custom()` method, PR [#1851](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1851)
+- `PreMerge` hardfork renamed to `MergeForkIdTransition` for increased clarity, PR [#1856](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1856)
 
 ## 2.6.3 - 2022-03-15
 

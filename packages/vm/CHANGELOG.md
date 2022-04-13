@@ -15,31 +15,31 @@ Small EIP - see [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) considered f
 EIP can be activated manually with:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3651 ] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3651] })
 ```
 
 ### EIP-1153: Transient Storage Opcodes
 
-Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
+Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [#1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
 
-The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communcation via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
+The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communication via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
 
-Hardfork inclusion of the EIP has been extensively discussed along [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
+Hardfork inclusion of the EIP was extensively discussed during [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
 
 EIP can be activated manually with:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 1153 ] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1153] })
 ```
 
 ### Custom Precompiles (L2 Support)
 
-It is now possible to add, override or delete precompiles on the VM with a new `customPrecompiles` option, see PR [#1813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1813). This allow for further behavioral VM customization in addition to the lately added `customOpcodes` option, which can be useful for L2 solutions or EVM based side chains or L1.
+It is now possible to add, override or delete precompiles in the VM with a new `customPrecompiles` option, see PR [#1813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1813). This allows for further customization of VM behavior in addition to the recently added `customOpcodes` option, which can be useful for L2 solutions, EVM-based side chains, and other L1s.
 
 An EVM initialization with a custom precompile looks roughly like this where you can provide the intended precompile `address` and some precompile `function` which needs to adhere to some specific format to be internally readable and executable:
 
 ```typescript
-const vm = new VM({
+const vm = await VM.create({
   customPrecompiles: [
     {
       address: shaAddress,

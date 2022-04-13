@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - client/engine: add ability to add blocks to blockchain without setting the head (faster engine calls!), PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
 - chain: safer closing to not cause db corruption during shutdown while handling engine requests, PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
 - CLConnectionManager: starts on first `updateStatus` in case `MergeForkIdTransition` isn't reached before merge (Goerli shadow fork scenario), PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
-- `eth_call` bug fix on specfic `data` value cases, PR [#1830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1830)
+- `eth_call` bug fix on specific `data` value cases, PR [#1830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1830)
 - engine: Adds `remoteBlocks` to handle storing blocks with unknown parent in case fcU sets head to it when parent is later given to `newPayload`, PR [#1830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1830)
 - Moved the TxPool to `FullEthereumService` (internal refactor for merge preparation), PR [#1853](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1853)
 
