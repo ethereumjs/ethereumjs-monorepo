@@ -1,7 +1,7 @@
 import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { StateManager, DefaultStateManager } from './state/index'
+import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
@@ -15,6 +15,7 @@ const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { CustomOpcode } from './evm/types'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './evm/opcodes/gas'
+import { VmState } from './vmState'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -169,6 +170,7 @@ export default class VM extends AsyncEventEmitter {
    * The StateManager used by the VM
    */
   readonly stateManager: StateManager
+  readonly vmState: VmState
   /**
    * The blockchain the VM operates on
    */
@@ -305,6 +307,7 @@ export default class VM extends AsyncEventEmitter {
         common: this._common,
       })
     }
+    this.vmState = new VmState({ common: this._common, stateManager: this.stateManager })
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
@@ -343,24 +346,24 @@ export default class VM extends AsyncEventEmitter {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.stateManager.generateCanonicalGenesis()
+        await this.vmState.generateCanonicalGenesis()
       }
     }
 
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.stateManager.checkpoint()
+      await this.vmState.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.stateManager.getAccount(address)
+        const account = await this.vmState.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
           const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
-          await this.stateManager.putAccount(address, newAccount)
+          await this.vmState.putAccount(address, newAccount)
         }
       }
-      await this.stateManager.commit()
+      await this.vmState.commit()
     }
 
     if (this._common.isActivatedEIP(2537)) {

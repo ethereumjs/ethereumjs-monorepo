@@ -1,0 +1,70 @@
+{
+  "name": "@ethereumjs/statemanager",
+  "version": "1.0.0",
+  "description": "An Ethereum statemanager implementation",
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "keywords": [
+    "ethereum",
+    "statemanager"
+  ],
+  "files": [
+    "dist",
+    "dist.browser",
+    "src"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist.browser/index.js",
+  "scripts": {
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
+    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "docs:build": "typedoc --options typedoc.js",
+    "tsc": "../../config/cli/ts-compile.sh",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "npm run tape -- tests/*.spec.ts",
+    "test:browser": "karma start karma.conf.js"
+  },
+  "dependencies": {
+    "@ethereumjs/common": "^2.6.3",
+    "merkle-patricia-tree": "^4.2.4",
+    "debug": "^4.3.3",
+    "ethereumjs-util": "^7.1.4",
+    "functional-red-black-tree": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/tape": "^4.13.2",
+    "eslint": "^6.8.0",
+    "karma": "^6.3.2",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.5.3",
+    "nyc": "^15.1.0",
+    "prettier": "^2.0.5",
+    "standard": "^10.0.0",
+    "tape": "^5.3.1",
+    "ts-node": "^10.2.1",
+    "typedoc": "^0.22.4",
+    "typescript": "^4.4.2"
+  },
+  "contributors": [
+    "g11tech <gajinder@g11.in>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
+  }
+}

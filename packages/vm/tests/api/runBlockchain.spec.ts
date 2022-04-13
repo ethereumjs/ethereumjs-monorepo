@@ -6,7 +6,7 @@ import Blockchain from '@ethereumjs/blockchain'
 import { setupVM } from './utils'
 import { setupPreConditions } from '../util'
 import * as testData from './testdata/blockchain.json'
-import { DefaultStateManager } from '../../src/state'
+import { VmState } from '../../src/vmState'
 
 const level = require('level-mem')
 
@@ -70,7 +70,7 @@ tape('runBlockchain', (t) => {
 
     await vm.blockchain.putBlock(block)
 
-    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
+    await setupPreConditions(vm.vmState as VmState, testData)
 
     vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
 
@@ -97,7 +97,7 @@ tape('runBlockchain', (t) => {
 
     await vm.blockchain.putBlock(block)
 
-    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
+    await setupPreConditions(vm.vmState as VmState, testData)
 
     await vm.runBlockchain()
 

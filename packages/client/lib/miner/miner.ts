@@ -207,7 +207,7 @@ export class Miner {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    await vmCopy.vmState.setStateRoot(parentBlock.header.stateRoot)
 
     let difficulty
     let cliqueSigner
