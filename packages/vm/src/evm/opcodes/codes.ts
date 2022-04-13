@@ -298,6 +298,7 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
   const result: OpcodeList = new Map()
   for (const [key, value] of Object.entries(opcodes)) {
     const code = parseInt(key, 10)
+    if (isNaN(value.fee)) value.fee = 0
     result.set(
       code,
       new Opcode({
@@ -341,13 +342,15 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   }
 
   for (const key in opcodeBuilder) {
-    const baseFee = Number(common.param('gasPrices', opcodeBuilder[key].name.toLowerCase()))
+    const baseFee = Number(
+      common.param('gasPrices', opcodeBuilder[key].name.toLowerCase()) ?? BigInt(0)
+    )
     // explicitly verify that we have defined a base fee
     if (baseFee === undefined) {
       throw new Error(`base fee not defined for: ${opcodeBuilder[key].name}`)
     }
     opcodeBuilder[key].fee = Number(
-      common.param('gasPrices', opcodeBuilder[key].name.toLowerCase())
+      common.param('gasPrices', opcodeBuilder[key].name.toLowerCase() ?? BigInt(0))
     )
   }
 
