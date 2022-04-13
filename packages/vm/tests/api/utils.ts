@@ -8,7 +8,7 @@ import Common from '@ethereumjs/common'
 
 const level = require('level-mem')
 
-export function createAccount(nonce: bigint = BigInt(0), balance: bigint = BigInt(0xfff384)) {
+export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
