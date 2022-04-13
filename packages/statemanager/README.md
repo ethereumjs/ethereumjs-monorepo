@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | TypeScript implementation of the Ethereum StateManager. |
-| --------------------------------------------- |
+| ------------------------------------------------------- |
 
 # INSTALL
 
@@ -16,7 +16,7 @@
 # USAGE
 
 ```typescript
-import { DefaultStateManager } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 ```
 
 ## Example
@@ -25,7 +25,7 @@ import { DefaultStateManager } from '@ethereumjs/common'
 
 ## StateManager
 
-Documentation on the `StateManager` can be found [here](./docs/classes/_state_statemanager_.defaultstatemanager.md). If you want to provide your own `StateManager` you can implement the dedicated [interface](./docs/interfaces/_state_interface_.statemanager.md) to ensure that your implementation conforms with the current API.
+Documentation on the `StateManager` can be found [here](./docs). If you want to provide your own `StateManager` you can implement the dedicated interface to ensure that your implementation conforms with the current API.
 
 # DEVELOPMENT
 
