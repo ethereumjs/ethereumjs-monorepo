@@ -30,7 +30,7 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "npm run tape -- tests/*.spec.ts",
-    "test:browser": "karma start karma.conf.js"    
+    "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.6.3",
@@ -40,7 +40,6 @@
     "functional-red-black-tree": "^1.0.1"
   },
   "devDependencies": {
-    "@types/lru-cache": "^5.1.0",
     "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
@@ -49,8 +48,6 @@
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.3",
-    "level": "^6.0.0",
-    "level-mem": "^5.0.1",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "standard": "^10.0.0",
