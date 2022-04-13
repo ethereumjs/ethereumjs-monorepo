@@ -16,7 +16,7 @@
 - [Istanbul](Hardfork.md#istanbul)
 - [London](Hardfork.md#london)
 - [Merge](Hardfork.md#merge)
-- [MergeForkBlock](Hardfork.md#mergeforkblock)
+- [MergeForkIdTransition](Hardfork.md#mergeforkidtransition)
 - [MuirGlacier](Hardfork.md#muirglacier)
 - [Petersburg](Hardfork.md#petersburg)
 - [Shanghai](Hardfork.md#shanghai)
@@ -125,9 +125,9 @@ ___
 
 ___
 
-### MergeForkBlock
+### MergeForkIdTransition
 
-• **MergeForkBlock** = `"mergeForkBlock"`
+• **MergeForkIdTransition** = `"mergeForkIdTransition"`
 
 #### Defined in
 
