@@ -888,6 +888,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xb4,
     function (runState) {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
       const [key, val] = runState.stack.popN(2)
 
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
