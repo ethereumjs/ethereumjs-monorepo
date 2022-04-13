@@ -576,7 +576,7 @@ export class CliqueConsensus implements Consensus {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.blockchain.getLatestHeader!()
+    const { number } = await this.blockchain.getCanonicalHeadHeader()
     //eslint-disable-next-line
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }

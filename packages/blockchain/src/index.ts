@@ -13,8 +13,6 @@ import { EthashConsensus } from './consensus/ethash'
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
 
-const debug = createDebugLogger('blockchain:clique')
-
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export interface BlockchainInterface {
@@ -1154,23 +1152,6 @@ export default class Blockchain implements BlockchainInterface {
       return false
     }
   }
-<<<<<<< HEAD
-
-  /**
-   * Helper to determine if a signer is in or out of turn for the next block.
-   * @param signer The signer address
-   */
-  async cliqueSignerInTurn(signer: Address): Promise<boolean> {
-    const signers = this.cliqueActiveSigners()
-    const signerIndex = signers.findIndex((address) => address.equals(signer))
-    if (signerIndex === -1) {
-      throw new Error('Signer not found')
-    }
-    const { number } = await this.getCanonicalHeadHeader()
-    return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
-  }
-=======
->>>>>>> 9969ce2f (blockchain: encapsulate consensus WIP)
 }
 
 export { Consensus, CasperConsensus, CliqueConsensus, EthashConsensus }
