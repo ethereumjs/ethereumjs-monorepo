@@ -113,10 +113,20 @@ export function createRPCServer(
        * Filter eth methods to be exposed with engine as per kiln spec 2.1
        * From: https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.8/src/engine/specification.md#underlying-protocol
        */
-      const ethMethodsToBeIncluded = ['eth_getBlockByNumber']
+      const ethMethodsToBeIncluded = [
+        'eth_blockNumber',
+        'eth_call',
+        'eth_chainId',
+        'eth_getCode',
+        'eth_getBlockByHash',
+        'eth_getBlockByNumber',
+        'eth_getLogs',
+        'eth_sendRawTransaction',
+        'eth_syncing',
+      ]
       const ethEngineSubsetMethods: { [key: string]: Function } = {}
       ethMethodsToBeIncluded.reduce((filteredAcc, methodKey) => {
-        filteredAcc[methodKey] = ethMethods[methodKey]
+        if (ethMethods[methodKey]) filteredAcc[methodKey] = ethMethods[methodKey]
         return filteredAcc
       }, ethEngineSubsetMethods)
 
