@@ -17,6 +17,7 @@ import {
   toUnsigned,
   toUtf8,
   addHexPrefix,
+  short,
   toBuffer,
   baToJSON,
   intToBuffer,
@@ -225,6 +226,24 @@ tape('hex prefix', function (t) {
   })
   t.test('should return on non-string input', function (st) {
     st.equal(addHexPrefix(1 as any), 1)
+    st.end()
+  })
+})
+
+tape('short', function (t) {
+  const string = '657468657265756d000000000000000000000000000000000000000000000000'
+  const shortened = '657468657265756d0000000000000000000000000000000000…'
+  const shortenedToTen = '6574686572…'
+  t.test('should short string', function (st) {
+    st.equal(short(string), shortened)
+    st.end()
+  })
+  t.test('should short buffer', function (st) {
+    st.equal(short(Buffer.from(string, 'hex')), shortened)
+    st.end()
+  })
+  t.test('should short buffer to 10 chars', function (st) {
+    st.equal(short(Buffer.from(string, 'hex'), 10), shortenedToTen)
     st.end()
   })
 })

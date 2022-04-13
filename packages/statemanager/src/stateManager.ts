@@ -12,12 +12,12 @@ import {
   bigIntToHex,
   KECCAK256_RLP,
   setLengthLeft,
+  short,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'
-import { short } from '../evm/opcodes'
 
 type StorageProof = {
   key: PrefixedHexString
@@ -227,7 +227,6 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
         contract.stateRoot = storageTrie.root
 
         await this.putAccount(address, contract)
-        this.touchAccount(address)
         resolve()
       })
     })
@@ -439,10 +438,6 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot set state root with uncommitted checkpoints')
-    }
-
     await this._cache.flush()
 
     if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {

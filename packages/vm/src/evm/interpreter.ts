@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
-import { StateManager } from '../state/index'
+import { VmState } from '../vmState'
+
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
@@ -23,7 +24,7 @@ export interface RunState {
   code: Buffer
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  stateManager: StateManager
+  vmState: VmState
   eei: EEI
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
 }
@@ -36,7 +37,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  stateManager: StateManager
+  vmState: VmState
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -59,7 +60,7 @@ export interface InterpreterStep {
  */
 export default class Interpreter {
   _vm: any
-  _state: StateManager
+  _state: VmState
   _runState: RunState
   _eei: EEI
 
@@ -68,7 +69,7 @@ export default class Interpreter {
 
   constructor(vm: any, eei: EEI) {
     this._vm = vm
-    this._state = vm.stateManager
+    this._state = vm.vmState
     this._eei = eei
     this._runState = {
       programCounter: 0,
@@ -80,7 +81,7 @@ export default class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
-      stateManager: this._state,
+      vmState: this._state,
       eei: this._eei,
       shouldDoJumpAnalysis: true,
     }
@@ -242,7 +243,7 @@ export default class Interpreter {
       depth: this._eei._env.depth,
       address: this._eei._env.address,
       account: this._eei._env.contract,
-      stateManager: this._runState.stateManager,
+      vmState: this._runState.vmState,
       memory: this._runState.memory._store,
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._eei._env.codeAddress,

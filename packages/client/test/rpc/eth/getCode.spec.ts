@@ -24,7 +24,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   t.notEqual(execution, undefined, 'should have valid execution')
 
   const { vm } = execution as VMExecution
-  await vm.stateManager.generateCanonicalGenesis()
+  await vm.vmState.generateCanonicalGenesis()
 
   // genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

@@ -26,7 +26,7 @@ export default async function runBlockchain(
         // generate genesis state if we are at the genesis block
         // we don't have the genesis state
         if (!headBlock) {
-          await this.stateManager.generateCanonicalGenesis()
+          await this.vmState.generateCanonicalGenesis()
         } else {
           parentState = headBlock.header.stateRoot
         }
