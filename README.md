@@ -58,6 +58,8 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    tx --> vm
    vm --> client
    statemanager --> vm
+   common --> statemanager
+   trie --> statemanager
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
