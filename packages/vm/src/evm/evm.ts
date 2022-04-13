@@ -412,7 +412,8 @@ export default class EVM {
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
-        BigInt(result.returnValue.length) * this._vm._common.param('gasPrices', 'createData')
+        BigInt(result.returnValue.length) *
+        (this._vm._common.param('gasPrices', 'createData') ?? BigInt(0))
       totalGas = totalGas + returnFee
       if (this._vm.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)

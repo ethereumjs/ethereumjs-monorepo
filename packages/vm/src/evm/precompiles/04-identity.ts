@@ -7,8 +7,10 @@ export default function (opts: PrecompileInput): ExecResult {
 
   const data = opts.data
 
-  let gasUsed = opts._common.param('gasPrices', 'identity')
-  gasUsed += opts._common.param('gasPrices', 'identityWord') * BigInt(Math.ceil(data.length / 32))
+  let gasUsed = opts._common.param('gasPrices', 'identity') ?? BigInt(0)
+  gasUsed +=
+    (opts._common.param('gasPrices', 'identityWord') ?? BigInt(0)) *
+    BigInt(Math.ceil(data.length / 32))
 
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)

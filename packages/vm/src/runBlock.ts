@@ -316,7 +316,9 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
-      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
+      maxGasLimit =
+        block.header.gasLimit *
+        (this._common.param('gasConfig', 'elasticityMultiplier') ?? BigInt(0))
     } else {
       maxGasLimit = block.header.gasLimit
     }

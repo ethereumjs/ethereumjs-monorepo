@@ -40,7 +40,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [offset, length] = runState.stack.peek(2)
         gas += subMemUsage(runState, offset, length, common)
-        gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
+        gas += (common.param('gasPrices', 'sha3Word') ?? BigInt(0)) * divCeil(length, BigInt(32))
         return gas
       },
     ],
@@ -64,7 +64,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BigInt(0)) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += (common.param('gasPrices', 'copy') ?? BigInt(0)) * divCeil(dataLength, BigInt(32))
         }
         return gas
       },
@@ -77,7 +77,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BigInt(0)) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += (common.param('gasPrices', 'copy') ?? BigInt(0)) * divCeil(dataLength, BigInt(32))
         }
         return gas
       },
@@ -108,7 +108,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (dataLength !== BigInt(0)) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += (common.param('gasPrices', 'copy') ?? BigInt(0)) * divCeil(dataLength, BigInt(32))
         }
         return gas
       },
@@ -126,7 +126,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         if (dataLength !== BigInt(0)) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += (common.param('gasPrices', 'copy') ?? BigInt(0)) * divCeil(dataLength, BigInt(32))
         }
         return gas
       },
@@ -251,8 +251,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, memLength, common)
         gas +=
-          common.param('gasPrices', 'logTopic') * BigInt(topicsCount) +
-          memLength * common.param('gasPrices', 'logData')
+          (common.param('gasPrices', 'logTopic') ?? BigInt(0)) * BigInt(topicsCount) +
+          memLength * (common.param('gasPrices', 'logData') ?? BigInt(0))
         return gas
       },
     ],
@@ -296,19 +296,19 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BigInt(0)) {
-          gas += common.param('gasPrices', 'callValueTransfer')
+          gas += common.param('gasPrices', 'callValueTransfer') ?? BigInt(0)
         }
 
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
           if ((await runState.eei.isAccountEmpty(toAddress)) && !(value === BigInt(0))) {
-            gas += common.param('gasPrices', 'callNewAccount')
+            gas += common.param('gasPrices', 'callNewAccount') ?? BigInt(0)
           }
         } else if (!(await runState.eei.accountExists(toAddress))) {
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
-          gas += common.param('gasPrices', 'callNewAccount')
+          gas += common.param('gasPrices', 'callNewAccount') ?? BigInt(0)
         }
 
         let gasLimit = maxCallGas(
@@ -328,7 +328,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BigInt(0)) {
-          const callStipend = common.param('gasPrices', 'callStipend')
+          const callStipend = common.param('gasPrices', 'callStipend') ?? BigInt(0)
           runState.eei.addStipend(callStipend)
           gasLimit += callStipend
         }
@@ -353,7 +353,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BigInt(0)) {
-          gas += common.param('gasPrices', 'callValueTransfer')
+          gas += common.param('gasPrices', 'callValueTransfer') ?? BigInt(0)
         }
         let gasLimit = maxCallGas(
           currentGasLimit,
@@ -367,7 +367,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.OUT_OF_GAS)
         }
         if (value !== BigInt(0)) {
-          const callStipend = common.param('gasPrices', 'callStipend')
+          const callStipend = common.param('gasPrices', 'callStipend') ?? BigInt(0)
           runState.eei.addStipend(callStipend)
           gasLimit += callStipend
         }
@@ -432,7 +432,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, runState.eei.getAddress(), common, false)
         }
 
-        gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
+        gas += (common.param('gasPrices', 'sha3Word') ?? BigInt(0)) * divCeil(length, BigInt(32))
         let gasLimit = runState.eei.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
@@ -464,7 +464,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         const toAddress = new Address(addressToBuffer(addr))
 
-        gas += common.param('gasPrices', 'warmstorageread')
+        gas += common.param('gasPrices', 'warmstorageread') ?? BigInt(0)
 
         gas += accessAddressEIP2929(runState, toAddress, common, true, true)
 

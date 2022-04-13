@@ -181,7 +181,7 @@ export default function (opts: PrecompileInput): ExecResult {
   // final
   const f = lastByte === 1
 
-  let gasUsed = opts._common.param('gasPrices', 'blake2Round')
+  let gasUsed = opts._common.param('gasPrices', 'blake2Round') ?? BigInt(0)
   gasUsed *= BigInt(rounds)
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)

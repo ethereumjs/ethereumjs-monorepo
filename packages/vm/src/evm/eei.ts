@@ -436,7 +436,7 @@ export default class EEI {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
-      this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
+      this.refundGas(this._common.param('gasPrices', 'selfdestructRefund') ?? BigInt(0))
     }
 
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf

@@ -202,7 +202,9 @@ tape('EIP1559 tests', function (t) {
         timestamp: BigInt(1),
         gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
         gasUsed:
-          genesis.header.gasLimit * common.param('gasConfig', 'elasticityMultiplier') + BigInt(1),
+          genesis.header.gasLimit *
+          (common.param('gasConfig', 'elasticityMultiplier') ?? BigInt(0)) +
+          BigInt(1),
         baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
       },
       {

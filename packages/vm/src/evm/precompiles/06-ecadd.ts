@@ -8,7 +8,7 @@ export default function (opts: PrecompileInput): ExecResult {
 
   const inputData = opts.data
 
-  const gasUsed = opts._common.param('gasPrices', 'ecAdd')
+  const gasUsed = opts._common.param('gasPrices', 'ecAdd') ?? BigInt(0)
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
