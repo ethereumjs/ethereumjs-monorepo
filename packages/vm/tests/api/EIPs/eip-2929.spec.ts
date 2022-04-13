@@ -258,7 +258,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     st.end()
   })
 
-  tape('ensure warm addresses/slots are tracked transaction-wide', async (t) => {
+  t.test('ensure warm addresses/slots are tracked transaction-wide', async (st) => {
     // Note: these tests were manually analyzed to check if these are correct.
     // The gas cost has been taken from these tests.
 
@@ -272,21 +272,21 @@ tape('EIP 2929: gas cost tests', (t) => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', BigInt(23369), t)
+    await runCodeTest('60005460003415601357600080808080305AF15B00', BigInt(23369), st)
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374), t)
+    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374), st)
 
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', BigInt(23909), t)
+    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', BigInt(23909), st)
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
       '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
       BigInt(26414),
-      t
+      st
     )
 
-    t.end()
+    st.end()
   })
 })

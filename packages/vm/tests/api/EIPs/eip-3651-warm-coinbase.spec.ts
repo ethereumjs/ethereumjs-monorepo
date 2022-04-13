@@ -65,7 +65,8 @@ tape('EIP 3651 tests', (t) => {
 
     const result2 = await vm2.runTx({ block, tx })
     const expectedDiff =
-      common.param('gasPrices', 'coldaccountaccess') - common.param('gasPrices', 'warmstorageread')
+      common.param('gasPrices', 'coldaccountaccess')! -
+      common.param('gasPrices', 'warmstorageread')!
     st.equal(result2.gasUsed - result.gasUsed, expectedDiff, 'gas difference is correct')
   })
 })

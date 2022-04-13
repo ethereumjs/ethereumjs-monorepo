@@ -228,9 +228,8 @@ export class Miner {
     const isInitialEIP1559Block = londonHardforkBlock && number === londonHardforkBlock
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
-      baseFeePerGas = BigInt(
-        this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)
-      )
+      baseFeePerGas =
+        this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BigInt(0)
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
       gasLimit = gasLimit * BigInt(2)
     } else if (this.config.chainCommon.isActivatedEIP(1559)) {
