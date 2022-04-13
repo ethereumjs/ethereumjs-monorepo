@@ -1,35 +1,36 @@
-const Set = require('core-js-pure/es/set')
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
-import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-import { ripemdPrecompileAddress } from '../evm/precompiles'
-import Cache from './cache'
-import { AccountFields } from './interface'
-import { DefaultStateManagerOpts } from './stateManager'
+const Set = require('core-js-pure/es/set')
+
+import { StateManager, StateAccess, AccountFields } from '@ethereumjs/statemanager'
+
+import { ripemdPrecompileAddress } from './evm/precompiles'
+import { debug as createDebugLogger, Debugger } from 'debug'
 
 type AddressHex = string
 
-/**
- * Abstract BaseStateManager class for the non-storage-backend
- * related functionality parts of a StateManager like keeping
- * track of accessed storage (`EIP-2929`) or touched accounts
- * (`EIP-158`).
- *
- * This is not a full StateManager implementation in itself but
- * can be used to ease implementing an own StateManager.
- *
- * Note that the implementation is pretty new (October 2021)
- * and we cannot guarantee a stable interface yet.
- */
-export abstract class BaseStateManager {
+interface VmStateAccess extends StateAccess {
+  touchAccount(address: Address): void
+  addWarmedAddress(address: Buffer): void
+  isWarmedAddress(address: Buffer): boolean
+  addWarmedStorage(address: Buffer, slot: Buffer): void
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  clearWarmedAccounts(): void
+  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
+  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  clearOriginalStorageCache(): void
+  cleanupTouchedAccounts(): Promise<void>
+}
+
+export class VmState implements VmStateAccess {
   _common: Common
   _debug: Debugger
-  _cache!: Cache
 
+  _checkpointCount: number
+  _stateManager: StateManager
   _touched: Set<AddressHex>
   _touchedStack: Set<AddressHex>[]
-  _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -45,36 +46,19 @@ export abstract class BaseStateManager {
   // to also include on access list generation
   _accessedStorageReverted: Map<string, Set<string>>[]
 
-  _checkpointCount: number
+  _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
-  /**
-   * StateManager is run in DEBUG mode (default: false)
-   * Taken from DEBUG environment variable
-   *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
-   * @hidden
-   */
   protected readonly DEBUG: boolean = false
 
-  /**
-   * Needs to be called from the subclass constructor
-   */
-  constructor(opts: DefaultStateManagerOpts) {
-    let common = opts.common
-    if (!common) {
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    }
-    this._common = common
-
+  constructor({ common, stateManager }: { common?: Common; stateManager: StateManager }) {
+    this._checkpointCount = 0
+    this._stateManager = stateManager
+    this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     this._touched = new Set()
     this._touchedStack = []
     this._originalStorageCache = new Map()
-
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
-
-    this._checkpointCount = 0
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
@@ -84,45 +68,94 @@ export abstract class BaseStateManager {
   }
 
   /**
-   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
-   * @param address - Address of the `account` to get
+   * Checkpoints the current state of the StateManager instance.
+   * State changes that follow can then be committed by calling
+   * `commit` or `reverted` by calling rollback.
+   *
+   * Partial implementation, called from the subclass.
    */
-  async getAccount(address: Address): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
-    return account
+  async checkpoint(): Promise<void> {
+    this._touchedStack.push(new Set(Array.from(this._touched)))
+    this._accessedStorage.push(new Map())
+    await this._stateManager.checkpoint()
+    this._checkpointCount++
+
+    if (this.DEBUG) {
+      this._debug('-'.repeat(100))
+      this._debug(`message checkpoint`)
+    }
+  }
+
+  async commit(): Promise<void> {
+    // setup cache checkpointing
+    this._touchedStack.pop()
+    // Copy the contents of the map of the current level to a map higher.
+    const storageMap = this._accessedStorage.pop()
+    if (storageMap) {
+      this._accessedStorageMerge(this._accessedStorage, storageMap)
+    }
+    await this._stateManager.commit()
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this._stateManager.flush()
+      this._clearOriginalStorageCache()
+    }
+
+    if (this.DEBUG) {
+      this._debug(`message checkpoint committed`)
+    }
   }
 
   /**
-   * Saves an account into state under the provided `address`.
-   * @param address - Address under which to store `account`
-   * @param account - The account to store
+   * Reverts the current change-set to the instance since the
+   * last call to checkpoint.
+   *
+   * Partial implementation , called from the subclass.
    */
-  async putAccount(address: Address, account: Account): Promise<void> {
-    if (this.DEBUG) {
-      this._debug(
-        `Save account address=${address} nonce=${account.nonce} balance=${
-          account.balance
-        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
-      )
+  async revert(): Promise<void> {
+    // setup cache checkpointing
+    const lastItem = this._accessedStorage.pop()
+    if (lastItem) {
+      this._accessedStorageReverted.push(lastItem)
     }
-    this._cache.put(address, account)
+    const touched = this._touchedStack.pop()
+    if (!touched) {
+      throw new Error('Reverting to invalid state checkpoint failed')
+    }
+    // Exceptional case due to consensus issue in Geth and Parity.
+    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
+    // The RIPEMD precompile has to remain *touched* even when the call reverts,
+    // and be considered for deletion.
+    if (this._touched.has(ripemdPrecompileAddress)) {
+      touched.add(ripemdPrecompileAddress)
+    }
+    this._touched = touched
+    await this._stateManager.revert()
+
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this._stateManager.flush()
+      this._clearOriginalStorageCache()
+    }
+
+    if (this.DEBUG) {
+      this._debug(`message checkpoint reverted`)
+    }
+  }
+
+  async getAccount(address: Address): Promise<Account> {
+    return await this._stateManager.getAccount(address)
+  }
+
+  async putAccount(address: Address, account: Account): Promise<void> {
+    await this._stateManager.putAccount(address, account)
     this.touchAccount(address)
   }
 
-  /**
-   * Gets the account associated with `address`, modifies the given account
-   * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
-   * @param address - Address of the account to modify
-   * @param accountFields - Object containing account fields and values to modify
-   */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    const account = await this.getAccount(address)
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
+    return this._stateManager.modifyAccountFields(address, accountFields)
   }
 
   /**
@@ -130,11 +163,45 @@ export abstract class BaseStateManager {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    if (this.DEBUG) {
-      this._debug(`Delete account ${address}`)
-    }
-    this._cache.del(address)
+    await this._stateManager.deleteAccount(address)
     this.touchAccount(address)
+  }
+
+  async getContractCode(address: Address): Promise<Buffer> {
+    return await this._stateManager.getContractCode(address)
+  }
+
+  async putContractCode(address: Address, value: Buffer): Promise<void> {
+    return await this._stateManager.putContractCode(address, value)
+  }
+
+  async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+    return await this._stateManager.getContractStorage(address, key)
+  }
+
+  async putContractStorage(address: Address, key: Buffer, value: Buffer) {
+    await this._stateManager.putContractStorage(address, key, value)
+    this.touchAccount(address)
+  }
+
+  async clearContractStorage(address: Address) {
+    await this._stateManager.clearContractStorage(address)
+    this.touchAccount(address)
+  }
+
+  async accountExists(address: Address): Promise<boolean> {
+    return await this._stateManager.accountExists(address)
+  }
+
+  async setStateRoot(stateRoot: Buffer): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot set state root with uncommitted checkpoints')
+    }
+    return await this._stateManager.setStateRoot(stateRoot)
+  }
+
+  async getStateRoot(): Promise<Buffer> {
+    return await this._stateManager.getStateRoot()
   }
 
   /**
@@ -148,11 +215,104 @@ export abstract class BaseStateManager {
     this._touched.add(address.buf.toString('hex'))
   }
 
-  abstract putContractCode(address: Address, value: Buffer): Promise<void>
+  /**
+   * Merges a storage map into the last item of the accessed storage stack
+   */
+  private _accessedStorageMerge(
+    storageList: Map<string, Set<string>>[],
+    storageMap: Map<string, Set<string>>
+  ) {
+    const mapTarget = storageList[storageList.length - 1]
 
-  abstract getContractStorage(address: Address, key: Buffer): Promise<Buffer>
+    if (mapTarget) {
+      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
+      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
+        const addressExists = mapTarget.get(addressString)
+        if (!addressExists) {
+          mapTarget.set(addressString, new Set())
+        }
+        const storageSet = mapTarget.get(addressString)
+        slotSet.forEach((value: string) => {
+          storageSet!.add(value)
+        })
+      })
+    }
+  }
 
-  abstract putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  /**
+   * Generates a canonical genesis state on the instance based on the
+   * configured chain parameters. Will error if there are uncommitted
+   * checkpoints on the instance.
+   */
+  async generateCanonicalGenesis(): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+
+    const genesis = await this._stateManager.hasGenesisState()
+    if (!genesis) {
+      await this.generateGenesis(this._common.genesisState())
+    }
+  }
+
+  /**
+   * Initializes the provided genesis state into the state trie
+   * @param initState address -> balance | [balance, code, storage]
+   */
+  async generateGenesis(initState: any): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+
+    if (this.DEBUG) {
+      this._debug(`Save genesis state into the state trie`)
+    }
+    const addresses = Object.keys(initState)
+    for (const address of addresses) {
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this.putAccount(addr, account)
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage] = state
+        const account = Account.fromAccountData({ balance })
+        await this.putAccount(addr, account)
+        if (code) {
+          await this.putContractCode(addr, toBuffer(code))
+        }
+        if (storage) {
+          for (const [key, value] of Object.values(storage) as [string, string][]) {
+            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+          }
+        }
+      }
+    }
+    await this._stateManager.flush()
+  }
+
+  /**
+   * Removes accounts form the state trie that have been touched,
+   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
+   */
+  async cleanupTouchedAccounts(): Promise<void> {
+    if (this._common.gteHardfork('spuriousDragon')) {
+      const touchedArray = Array.from(this._touched)
+      for (const addressHex of touchedArray) {
+        const address = new Address(Buffer.from(addressHex, 'hex'))
+        const empty = await this.accountIsEmpty(address)
+        if (empty) {
+          await this._stateManager.deleteAccount(address)
+          if (this.DEBUG) {
+            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
+          }
+        }
+      }
+    }
+    this._touched.clear()
+  }
 
   /**
    * Caches the storage value associated with the provided `address` and `key`
@@ -201,190 +361,6 @@ export abstract class BaseStateManager {
    */
   clearOriginalStorageCache(): void {
     this._clearOriginalStorageCache()
-  }
-
-  /**
-   * Checkpoints the current state of the StateManager instance.
-   * State changes that follow can then be committed by calling
-   * `commit` or `reverted` by calling rollback.
-   *
-   * Partial implementation, called from the subclass.
-   */
-  async checkpoint(): Promise<void> {
-    this._cache.checkpoint()
-    this._touchedStack.push(new Set(Array.from(this._touched)))
-    this._accessedStorage.push(new Map())
-    this._checkpointCount++
-  }
-
-  /**
-   * Merges a storage map into the last item of the accessed storage stack
-   */
-  private _accessedStorageMerge(
-    storageList: Map<string, Set<string>>[],
-    storageMap: Map<string, Set<string>>
-  ) {
-    const mapTarget = storageList[storageList.length - 1]
-
-    if (mapTarget) {
-      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
-        const addressExists = mapTarget.get(addressString)
-        if (!addressExists) {
-          mapTarget.set(addressString, new Set())
-        }
-        const storageSet = mapTarget.get(addressString)
-        slotSet.forEach((value: string) => {
-          storageSet!.add(value)
-        })
-      })
-    }
-  }
-
-  /**
-   * Commits the current change-set to the instance since the
-   * last call to checkpoint.
-   *
-   * Partial implementation, called from the subclass.
-   */
-  async commit(): Promise<void> {
-    // setup cache checkpointing
-    this._cache.commit()
-    this._touchedStack.pop()
-    this._checkpointCount--
-
-    // Copy the contents of the map of the current level to a map higher.
-    const storageMap = this._accessedStorage.pop()
-    if (storageMap) {
-      this._accessedStorageMerge(this._accessedStorage, storageMap)
-    }
-
-    if (this._checkpointCount === 0) {
-      await this._cache.flush()
-      this._clearOriginalStorageCache()
-    }
-  }
-
-  /**
-   * Reverts the current change-set to the instance since the
-   * last call to checkpoint.
-   *
-   * Partial implementation , called from the subclass.
-   */
-  async revert(): Promise<void> {
-    // setup cache checkpointing
-    this._cache.revert()
-    const lastItem = this._accessedStorage.pop()
-    if (lastItem) {
-      this._accessedStorageReverted.push(lastItem)
-    }
-    const touched = this._touchedStack.pop()
-    if (!touched) {
-      throw new Error('Reverting to invalid state checkpoint failed')
-    }
-    // Exceptional case due to consensus issue in Geth and Parity.
-    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
-    // The RIPEMD precompile has to remain *touched* even when the call reverts,
-    // and be considered for deletion.
-    if (this._touched.has(ripemdPrecompileAddress)) {
-      touched.add(ripemdPrecompileAddress)
-    }
-    this._touched = touched
-    this._checkpointCount--
-
-    if (this._checkpointCount === 0) {
-      await this._cache.flush()
-      this._clearOriginalStorageCache()
-    }
-  }
-
-  abstract hasGenesisState(): Promise<boolean>
-  abstract hasStateRoot?(root: Buffer): Promise<boolean>
-
-  /**
-   * Generates a canonical genesis state on the instance based on the
-   * configured chain parameters. Will error if there are uncommitted
-   * checkpoints on the instance.
-   */
-  async generateCanonicalGenesis(): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    const genesis = await this.hasGenesisState()
-    if (!genesis) {
-      await this.generateGenesis(this._common.genesisState())
-    }
-  }
-
-  /**
-   * Initializes the provided genesis state into the state trie
-   * @param initState address -> balance | [balance, code, storage]
-   */
-  async generateGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const addr = Address.fromString(address)
-      const state = initState[address]
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
-        await this.putAccount(addr, account)
-      } else {
-        // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
-        await this.putAccount(addr, account)
-        if (code) {
-          await this.putContractCode(addr, toBuffer(code))
-        }
-        if (storage) {
-          for (const [key, value] of Object.values(storage) as [string, string][]) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
-          }
-        }
-      }
-    }
-    await this._cache.flush()
-  }
-
-  /**
-   * Checks if the `account` corresponding to `address`
-   * is empty or non-existent as defined in
-   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   * @param address - Address to check
-   */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    return account.isEmpty()
-  }
-
-  /**
-   * Removes accounts form the state trie that have been touched,
-   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   */
-  async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
-      const touchedArray = Array.from(this._touched)
-      for (const addressHex of touchedArray) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
-        const empty = await this.accountIsEmpty(address)
-        if (empty) {
-          this._cache.del(address)
-          if (this.DEBUG) {
-            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
-          }
-        }
-      }
-    }
-    this._touched.clear()
   }
 
   /** EIP-2929 logic
@@ -515,5 +491,15 @@ export abstract class BaseStateManager {
     })
 
     return accessList
+  }
+
+  /**
+   * Checks if the `account` corresponding to `address`
+   * is empty or non-existent as defined in
+   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
+   * @param address - Address to check
+   */
+  async accountIsEmpty(address: Address): Promise<boolean> {
+    return this._stateManager.accountIsEmpty(address)
   }
 }

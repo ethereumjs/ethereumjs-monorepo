@@ -1,6 +1,5 @@
 import Common from '@ethereumjs/common'
 import { Address } from 'ethereumjs-util'
-import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
 
 /**
@@ -22,12 +21,12 @@ export function accessAddressEIP2929(
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BigInt(0)
 
-  const stateManager = runState.stateManager as EIP2929StateManager
+  const vmState = runState.vmState
   const addressStr = address.buf
 
   // Cold
-  if (!stateManager.isWarmedAddress(addressStr)) {
-    stateManager.addWarmedAddress(addressStr)
+  if (!vmState.isWarmedAddress(addressStr)) {
+    vmState.addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -57,13 +56,13 @@ export function accessStorageEIP2929(
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BigInt(0)
 
-  const stateManager = runState.stateManager as EIP2929StateManager
+  const vmState = runState.vmState
   const address = runState.eei.getAddress().buf
-  const slotIsCold = !stateManager.isWarmedStorage(address, key)
+  const slotIsCold = !vmState.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    stateManager.addWarmedStorage(address, key)
+    vmState.addWarmedStorage(address, key)
     return BigInt(common.param('gasPrices', 'coldsload'))
   } else if (!isSstore) {
     return BigInt(common.param('gasPrices', 'warmstorageread'))
@@ -90,12 +89,12 @@ export function adjustSstoreGasEIP2929(
 ): bigint {
   if (!common.isActivatedEIP(2929)) return defaultCost
 
-  const stateManager = runState.stateManager as EIP2929StateManager
+  const vmState = runState.vmState
   const address = runState.eei.getAddress().buf
   const warmRead = BigInt(common.param('gasPrices', 'warmstorageread'))
   const coldSload = BigInt(common.param('gasPrices', 'coldsload'))
 
-  if (stateManager.isWarmedStorage(address, key)) {
+  if (vmState.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead

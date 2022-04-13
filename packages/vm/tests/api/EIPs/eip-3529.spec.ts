@@ -3,7 +3,6 @@ import { Address } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
-import { EIP2929StateManager } from '../../../src/state/interface'
 import { Transaction } from '@ethereumjs/tx'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
@@ -137,7 +136,7 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      ;(<EIP2929StateManager>vm.stateManager).addWarmedStorage(address.toBuffer(), key)
+      vm.vmState.addWarmedStorage(address.toBuffer(), key)
 
       await vm.runCode({
         code,
@@ -152,7 +151,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.stateManager.clearOriginalStorageCache()
+      vm.vmState.clearOriginalStorageCache()
     }
 
     st.end()

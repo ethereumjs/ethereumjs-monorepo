@@ -89,7 +89,7 @@ tape('BlockBuilder', async (t) => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const root0 = await vm.stateManager.getStateRoot()
+    const root0 = await vm.vmState.getStateRoot()
 
     const blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
 
@@ -104,11 +104,11 @@ tape('BlockBuilder', async (t) => {
 
     await blockBuilder.addTransaction(tx)
 
-    const root1 = await vm.stateManager.getStateRoot()
+    const root1 = await vm.vmState.getStateRoot()
     st.ok(!root0.equals(root1), 'state root should change after adding a tx')
 
     await blockBuilder.revert()
-    const root2 = await vm.stateManager.getStateRoot()
+    const root2 = await vm.vmState.getStateRoot()
 
     st.ok(root2.equals(root0), 'state root should revert to before the tx was run')
     st.end()
@@ -176,7 +176,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
-    await vm.stateManager.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
+    await vm.vmState.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

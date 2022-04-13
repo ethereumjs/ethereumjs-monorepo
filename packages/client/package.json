@@ -57,6 +57,7 @@
     "@ethereumjs/ethash": "^1.1.0",
     "@ethereumjs/tx": "^3.5.2",
     "@ethereumjs/vm": "^5.9.1",
+    "@ethereumjs/statemanager": "^1.0.0",
     "body-parser": "^1.19.2",
     "chalk": "^4.1.2",
     "connect": "^3.7.0",

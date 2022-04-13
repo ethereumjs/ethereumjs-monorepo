@@ -8,15 +8,15 @@ import Common from '@ethereumjs/common'
 
 const level = require('level-mem')
 
-export function createAccount(nonce: bigint = BigInt(0), balance: bigint = BigInt(0xfff384)) {
+export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
 export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
   const account = createAccount(BigInt(0), balance)
-  await vm.stateManager.checkpoint()
-  await vm.stateManager.putAccount(address, account)
-  await vm.stateManager.commit()
+  await vm.vmState.checkpoint()
+  await vm.vmState.putAccount(address, account)
+  await vm.vmState.commit()
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {

@@ -630,7 +630,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await this.vm.stateManager.getAccount(
+      const { nonce } = await this.vm.vmState.getAccount(
         new Address(Buffer.from(address, 'hex'))
       )
       if (!txsSortedByNonce[0].nonce !== nonce) {

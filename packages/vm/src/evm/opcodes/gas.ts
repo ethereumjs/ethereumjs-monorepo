@@ -473,7 +473,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (value > BigInt(0)) {
           gas += BigInt(common.param('gasPrices', 'authcallValueTransfer'))
-          const account = await runState.stateManager.getAccount(toAddress)
+          const account = await runState.vmState.getAccount(toAddress)
           if (account.isEmpty()) {
             gas += BigInt(common.param('gasPrices', 'callNewAccount'))
           }
@@ -555,7 +555,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
           // EIP-150 (Tangerine Whistle) gas semantics
-          const exists = await runState.stateManager.accountExists(selfdestructToAddress)
+          const exists = await runState.vmState.accountExists(selfdestructToAddress)
           if (!exists) {
             deductGas = true
           }
