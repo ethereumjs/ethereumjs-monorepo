@@ -520,7 +520,7 @@ export class BlockHeader {
     }
     if ('cliqueActiveSigners' in (blockchain as any).consensus === false) {
       const msg = this._errorMsg(
-        'PoA blockchain requires method blockchain.cliqueActiveSigners() to validate clique difficulty'
+        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
       )
       throw new Error(msg)
     }
