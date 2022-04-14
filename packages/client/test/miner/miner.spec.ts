@@ -439,7 +439,7 @@ tape('[Miner]', async (t) => {
       blockHeader3.gasLimit,
       'gas limit should be double previous block'
     )
-    const initialBaseFee = config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559))
+    const initialBaseFee = config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)!
     t.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
     // block 4
