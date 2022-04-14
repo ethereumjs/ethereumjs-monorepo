@@ -5,6 +5,7 @@ import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { VmState } from '@ethereumjs/vm/dist/vmState'
 import { Address, keccak256 } from 'ethereumjs-util'
+import { CliqueConsensus } from '@ethereumjs/blockchain'
 import VM from '@ethereumjs/vm'
 
 import { Config } from '../../lib/config'
@@ -67,9 +68,11 @@ tape('[Miner]', async (t) => {
     }
     blockchain: any = {
       putBlock: async () => {},
-      cliqueActiveSigners: () => [A.address],
-      cliqueSignerInTurn: async () => true,
-      cliqueCheckRecentlySigned: () => false,
+      consensus: {
+        cliqueActiveSigners: () => [A.address],
+        cliqueSignerInTurn: async () => true,
+        cliqueCheckRecentlySigned: () => false,
+      },
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
       _init: async () => undefined,
@@ -380,7 +383,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
 
     const { vm } = service.execution
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
