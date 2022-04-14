@@ -48,7 +48,7 @@ tape('[Util/RPC]', (t) => {
 })
 
 tape('[Util/RPC/Engine eth methods]', async (t) => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], saveReceipts: true })
   const client = new Client({ config })
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
@@ -56,25 +56,37 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
     rpcDebug: false,
   })
   const httpServer = createRPCServerListener({ server })
-  t.test('should have eth_blockNumber', (st) => {
-    const req = {
-      jsonrpc: '2.0',
-      method: 'eth_blockNumber',
-      id: 1,
-    }
+  ;[
+    'eth_blockNumber',
+    'eth_call',
+    'eth_chainId',
+    'eth_getCode',
+    'eth_getBlockByHash',
+    'eth_getBlockByNumber',
+    'eth_getLogs',
+    'eth_sendRawTransaction',
+    'eth_syncing',
+  ].forEach((method) => {
+    t.test(`should have method ${method}`, (st) => {
+      const req = {
+        jsonrpc: '2.0',
+        method,
+        id: 1,
+      }
 
-    request(httpServer)
-      .post('/')
-      .set('Content-Type', 'application/json')
-      .send(req)
-      .expect((res: any) => {
-        if (res.body.error && res.body.error.code === METHOD_NOT_FOUND) {
-          throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
-        }
-      })
-      .end((err: any) => {
-        st.end(err)
-        httpServer.close()
-      })
+      request(httpServer)
+        .post('/')
+        .set('Content-Type', 'application/json')
+        .send(req)
+        .expect((res: any) => {
+          if (res.body.error && res.body.error.code === METHOD_NOT_FOUND) {
+            console.log(method, res.body.error)
+            throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
+          }
+        })
+        .end((err: any) => {
+          st.end(err)
+        })
+    })
   })
 })
