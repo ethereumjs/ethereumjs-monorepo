@@ -546,7 +546,7 @@ export default class Common extends EventEmitter {
     let value = null
     for (const eip of this._eips) {
       value = this.paramByEIP(topic, name, eip)
-      if (value) return value
+      if (value !== undefined) return value
     }
     return this.paramByHardfork(topic, name, this._hardfork)
   }
@@ -603,7 +603,10 @@ export default class Common extends EventEmitter {
       return undefined
     }
     const value = eipParams[topic][name].v
-    return BigInt(value)
+    // Hack to see if value is object since EIP-2537 has one param that is an array
+    // Note: this breaks the typing for the return method but is the sole exception where
+    // the param value is not a string representing a numeric value
+    return typeof value === 'object' ? value : BigInt(value)
   }
 
   /**
