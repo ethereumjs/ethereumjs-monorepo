@@ -1,5 +1,6 @@
 import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
+import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
@@ -86,9 +87,9 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
-      const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
+      const inTurn = await blockchain.consensus.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
-        const signerCount = blockchain.cliqueActiveSigners().length
+        const signerCount = blockchain.consensus.cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
     }
@@ -186,7 +187,7 @@ export class Miner {
         { number },
         { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.service.chain.blockchain as any).cliqueCheckRecentlySigned(header)) {
+      if ((this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header)) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
@@ -216,7 +217,9 @@ export class Miner {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
-      inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
+      inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        signerAddress
+      )
       difficulty = inTurn ? 2 : 1
     }
 
