@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { toBuffer, rlp, stripHexPrefix, bufferToBigInt, isHexPrefixed } from 'ethereumjs-util'
@@ -64,7 +64,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as any)._ethash!.cacheDB = cacheDB
+    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
   }
 
   let VM

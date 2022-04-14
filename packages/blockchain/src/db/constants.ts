@@ -15,21 +15,6 @@ const HEAD_HEADER_KEY = 'LastHeader'
 const HEAD_BLOCK_KEY = 'LastBlock'
 
 /**
- * Cique signers
- */
-const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
-
-/**
- * Clique votes
- */
-const CLIQUE_VOTES_KEY = 'CliqueVotes'
-
-/**
- * Cique block signers (snapshot)
- */
-const CLIQUE_BLOCK_SIGNERS_KEY = 'CliqueBlockSignersSnapshot'
-
-/**
  * headerPrefix + number + hash -> header
  */
 const HEADER_PREFIX = Buffer.from('h')
@@ -79,9 +64,6 @@ export {
   HEADS_KEY,
   HEAD_HEADER_KEY,
   HEAD_BLOCK_KEY,
-  CLIQUE_SIGNERS_KEY,
-  CLIQUE_VOTES_KEY,
-  CLIQUE_BLOCK_SIGNERS_KEY,
   bufBE8,
   tdKey,
   headerKey,

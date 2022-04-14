@@ -87,9 +87,9 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = (this.synchronizer as any).chain
-      const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
+      const inTurn = await blockchain.consensus.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
-        const signerCount = blockchain.cliqueActiveSigners().length
+        const signerCount = blockchain.consensus.cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
     }
@@ -187,7 +187,7 @@ export class Miner {
         { number },
         { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.synchronizer as any).chain.blockchain.cliqueCheckRecentlySigned(header)) {
+      if ((this.synchronizer as any).chain.blockchain.consensus.cliqueCheckRecentlySigned(header)) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return

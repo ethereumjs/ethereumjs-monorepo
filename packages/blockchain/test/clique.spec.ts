@@ -184,7 +184,8 @@ tape('Clique: Initialization', (t) => {
   t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
     const { blockchain } = await initWithSigners([A])
     ;(blockchain as any)._validateBlocks = false
-    ;(blockchain as any)._validateConsensus = false
+    // _validateConsensus needs to be true to trigger this test condition
+    ;(blockchain as any)._validateConsensus = true
     const number = COMMON.consensusConfig().epoch
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = Buffer.concat([
@@ -193,7 +194,10 @@ tape('Clique: Initialization', (t) => {
       unauthorizedSigner.toBuffer(),
       Buffer.alloc(65),
     ])
-    const block = Block.fromBlockData({ header: { number, extraData } }, { common: COMMON })
+    const block = Block.fromBlockData(
+      { header: { number, extraData } },
+      { common: COMMON, cliqueSigner: A.privateKey }
+    )
     try {
       await blockchain.putBlock(block)
       st.fail('should fail')

@@ -8,7 +8,7 @@
 
 import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import VM from '../'
 import { testData } from './helpers/blockchain-mock-data'
@@ -31,7 +31,7 @@ async function main() {
   // Note that this optimization is a bit hacky and might
   // not be working in the future though. :-)
   if (validatePow) {
-    (blockchain.consensus as any)._ethash!.cacheDB = level('./.cachedb')
+    (blockchain.consensus as EthashConsensus)._ethash.cacheDB = level('./.cachedb')
   }
 
   const vm = await VM.create({ blockchain, common })

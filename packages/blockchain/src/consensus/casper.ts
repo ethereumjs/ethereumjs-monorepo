@@ -1,15 +1,14 @@
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
-import { Consensus } from './interface'
+import Blockchain from '..'
+import { Consensus, ConsensusOptions } from './interface'
 
 /**
  * This class encapsulates Casper-related consensus functionality when used with the Blockchain class.
  */
 export class CasperConsensus implements Consensus {
-  db: LevelUp
+  blockchain: Blockchain
 
-  constructor(db: LevelUp) {
-    this.db = db
+  constructor({ blockchain }: ConsensusOptions) {
+    this.blockchain = blockchain
   }
 
   public async genesisInit(): Promise<void> {}

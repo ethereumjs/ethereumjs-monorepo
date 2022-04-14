@@ -1,19 +1,18 @@
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
-import { Consensus } from './interface'
+import Blockchain from '..'
+import { Consensus, ConsensusOptions } from './interface'
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
  */
 export class EthashConsensus implements Consensus {
-  db: LevelUp
+  blockchain: Blockchain
   _ethash: Ethash
 
-  constructor(db: LevelUp) {
-    this.db = db
-    this._ethash = new Ethash(this.db)
+  constructor({ blockchain }: ConsensusOptions) {
+    this.blockchain = blockchain
+    this._ethash = new Ethash(this.blockchain.db)
   }
 
   async validate(block: Block): Promise<void> {

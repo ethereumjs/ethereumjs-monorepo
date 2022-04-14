@@ -72,9 +72,11 @@ tape('[Miner]', async (t) => {
     }
     blockchain: any = {
       putBlock: async () => {},
-      cliqueActiveSigners: () => [A.address],
-      cliqueSignerInTurn: async () => true,
-      cliqueCheckRecentlySigned: () => false,
+      consensus: {
+        cliqueActiveSigners: () => [A.address],
+        cliqueSignerInTurn: async () => true,
+        cliqueCheckRecentlySigned: () => false,
+      },
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
       _init: async () => undefined,
