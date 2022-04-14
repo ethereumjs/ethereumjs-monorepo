@@ -80,7 +80,7 @@ export enum Hardfork {
   London = 'london',
   ArrowGlacier = 'arrowGlacier',
   Shanghai = 'shanghai',
-  MergeForkBlock = 'mergeForkBlock',
+  MergeForkIdTransition = 'mergeForkIdTransition',
   Merge = 'merge',
 }
 

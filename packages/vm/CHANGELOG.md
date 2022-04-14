@@ -6,6 +6,54 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.9.0 - 2022-04-14
+
+### EIP-3651: Warm COINBASE (Shanghai CFI EIP)
+
+Small EIP - see [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) considered for inclusion (CFI) in Shanghai to address an initially overpriced `COINBASE` access, PR [#1814](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1814).
+
+EIP can be activated manually with:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3651] })
+```
+
+### EIP-1153: Transient Storage Opcodes
+
+Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [#1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
+
+The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communication via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
+
+Hardfork inclusion of the EIP was extensively discussed during [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
+
+EIP can be activated manually with:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1153] })
+```
+
+### Custom Precompiles (L2 Support)
+
+It is now possible to add, override or delete precompiles in the VM with a new `customPrecompiles` option, see PR [#1813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1813). This allows for further customization of VM behavior in addition to the recently added `customOpcodes` option, which can be useful for L2 solutions, EVM-based side chains, and other L1s.
+
+An EVM initialization with a custom precompile looks roughly like this where you can provide the intended precompile `address` and some precompile `function` which needs to adhere to some specific format to be internally readable and executable:
+
+```typescript
+const vm = await VM.create({
+  customPrecompiles: [
+    {
+      address: shaAddress,
+      function: customPrecompile,
+    },
+  ],
+})
+```
+
+### Other Changes
+
+- Updated `ethereum/tests` to `10.3`, PR [#1826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1826)
+- Set `caller` in `VM.runCall()` to zero address if not provided, PR [#1840](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1840)
+
 ## 5.8.0 - 2022-03-15
 
 ### Merge Kiln v2 Testnet Support
