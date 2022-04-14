@@ -118,7 +118,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${block.hash().toString('hex')} number=${block.header.number
+      `Running block hash=${block.hash().toString('hex')} number=${
+        block.header.number
       } hardfork=${this._common.hardfork()}`
     )
   }
@@ -153,8 +154,10 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
       debug(
-        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${result.bloom.bitvector.length
-        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${result.receipts.length
+        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
+          result.bloom.bitvector.length
+        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
+          result.receipts.length
         } txResults=${result.results.length}`
       )
     }
@@ -252,7 +255,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await this._emit('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
-      `Running block finished hash=${block.hash().toString('hex')} number=${block.header.number
+      `Running block finished hash=${block.hash().toString('hex')} number=${
+        block.header.number
       } hardfork=${this._common.hardfork()}`
     )
   }
