@@ -4,6 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { Address } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
 
@@ -71,9 +72,11 @@ tape('[Miner]', async (t) => {
     }
     blockchain: any = {
       putBlock: async () => {},
-      cliqueActiveSigners: () => [A.address],
-      cliqueSignerInTurn: async () => true,
-      cliqueCheckRecentlySigned: () => false,
+      consensus: {
+        cliqueActiveSigners: () => [A.address],
+        cliqueSignerInTurn: async () => true,
+        cliqueCheckRecentlySigned: () => false,
+      },
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
       _init: async () => undefined,
@@ -402,7 +405,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer, execution })
 
     const { vm } = execution
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
