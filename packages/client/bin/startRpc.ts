@@ -115,9 +115,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         }`
       )
       logger.debug(
-        `Methods available at address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}  methods=${Object.keys(
+        `Methods available at address=http://${rpcaddr}:${rpcport} namespaces=${namespaces} methods=${Object.keys(
           methods
-        ).join(', ')}`
+        ).join(',')}`
       )
     }
     if (ws) {
@@ -139,9 +139,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         }`
       )
       logger.debug(
-        `Methods available at address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}  methods=${Object.keys(
+        `Methods available at address=ws://${wsAddr}:${wsPort} namespaces=${namespaces} methods=${Object.keys(
           methods
-        ).join(', ')}`
+        ).join(',')}`
       )
     }
   }
@@ -167,9 +167,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
     )
     logger.debug(
-      `Methods available at address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces}  methods=${Object.keys(
+      `Methods available at address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} methods=${Object.keys(
         methods
-      ).join(', ')}`
+      ).join(',')}`
     )
 
     if (ws) {
@@ -190,9 +190,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
       )
       logger.debug(
-        `Methods available at address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces}  methods=${Object.keys(
+        `Methods available at address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} methods=${Object.keys(
           methods
-        ).join(', ')}`
+        ).join(',')}`
       )
     }
   }
