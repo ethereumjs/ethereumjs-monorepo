@@ -114,7 +114,7 @@ tape('call JSON-RPC without Content-Type header', (t) => {
     })
 })
 
-tape('call JSON RPC with non-exist method', (t) => {
+tape('call JSON RPC with nonexistent method', (t) => {
   const server = startRPC({})
   const req = {
     jsonrpc: '2.0',

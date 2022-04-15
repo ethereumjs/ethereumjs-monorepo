@@ -8,8 +8,8 @@ import {
 } from '../../lib/util/rpc'
 import Client from '../../lib/client'
 import { Config } from '../../lib/config'
-const request = require('supertest')
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {
   t.test('should return enabled RPC servers', (st) => {
@@ -56,7 +56,7 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
     rpcDebug: false,
   })
   const httpServer = createRPCServerListener({ server })
-  ;[
+  const methods = [
     'eth_blockNumber',
     'eth_call',
     'eth_chainId',
@@ -66,7 +66,8 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
     'eth_getLogs',
     'eth_sendRawTransaction',
     'eth_syncing',
-  ].forEach((method) => {
+  ]
+  for (const method of methods) {
     t.test(`should have method ${method}`, (st) => {
       const req = {
         jsonrpc: '2.0',
@@ -80,7 +81,6 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
         .send(req)
         .expect((res: any) => {
           if (res.body.error && res.body.error.code === METHOD_NOT_FOUND) {
-            console.log(method, res.body.error)
             throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
           }
         })
@@ -88,5 +88,5 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
           st.end(err)
         })
     })
-  })
+  }
 })
