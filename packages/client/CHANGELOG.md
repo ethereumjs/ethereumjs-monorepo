@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.4.1 - 2022-04-14
+
+- Allow `forkchoiceUpdated` method to properly work on a reorg if a previous block was sent as `headBlockHash`, PR [#1820](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1820)
+- Fix to have `newPayload` properly handle already existing payload, PR [#1824](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1824)
+- client/engine: add ability to add blocks to blockchain without setting the head (faster engine calls!), PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
+- chain: safer closing to not cause db corruption during shutdown while handling engine requests, PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
+- CLConnectionManager: starts on first `updateStatus` in case `MergeForkIdTransition` isn't reached before merge (Goerli shadow fork scenario), PR [#1827](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1827)
+- `eth_call` bug fix on specific `data` value cases, PR [#1830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1830)
+- engine: Adds `remoteBlocks` to handle storing blocks with unknown parent in case fcU sets head to it when parent is later given to `newPayload`, PR [#1830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1830)
+- Moved the TxPool to `FullEthereumService` (internal refactor for merge preparation), PR [#1853](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1853)
+
 ## 0.4.0 - 2022-03-15
 
 ### Merge Kiln v2 Testnet Support
@@ -21,9 +32,9 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 - Engine API (RPC): Renamed `message` to `validationError`, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Engine API (RPC): Allowed ws and http on the same port, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Engine API (RPC): Respect message ordering in forkchoiceUpdated, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
-- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) 
+- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Engine API (RPC): Support for [jwt](https://jwt.io) based auth through both http/websocket protocols, PR [#1751](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1751)
-- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727) 
+- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727)
 - Geth genesis files: Use `mergeForkBlock` if provided, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Execution module refactor: decoupling from `FullSync` module to prepare for a post-Merge execution/sync separation, PR [#1663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1663)
 - Added terminal block validation in `newPayload` and `forkchoiceUpdated` methods from Engine API, PR [#1797](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1797)

@@ -81,11 +81,11 @@ export class CLConnectionManager {
       maximumFractionDigits: 1,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
           this.start()
         }
       })
@@ -248,7 +248,7 @@ export class CLConnectionManager {
       }
     }
 
-    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock) {
+    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(

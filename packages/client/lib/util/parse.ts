@@ -253,7 +253,7 @@ async function parseGethParams(json: any) {
     [Hardfork.MuirGlacier]: 'muirGlacierBlock',
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
-    [Hardfork.MergeForkBlock]: 'mergeForkBlock',
+    [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
   }
   params.hardforks = Object.values(Hardfork)
     .map((name) => ({

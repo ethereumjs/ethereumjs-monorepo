@@ -1,15 +1,15 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../../src'
-import { getPrecompile } from '../../../../src/evm/precompiles'
+import { getActivePrecompiles } from '../../../../src/evm/precompiles'
 
 tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const vm = new VM({ common: common })
-    const address = new Address(Buffer.from('0000000000000000000000000000000000000006', 'hex'))
-    const ECADD = getPrecompile(address, common)
+    const addressStr = '0000000000000000000000000000000000000006'
+    const ECADD = getActivePrecompiles(common).get(addressStr)!
 
     const result = await ECADD({
       data: Buffer.alloc(0),
