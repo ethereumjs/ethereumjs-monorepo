@@ -125,11 +125,9 @@ export function createRPCServer(
         'eth_syncing',
       ]
       const ethEngineSubsetMethods: { [key: string]: Function } = {}
-      ethMethodsToBeIncluded.reduce((filteredAcc, methodKey) => {
-        if (ethMethods[methodKey]) filteredAcc[methodKey] = ethMethods[methodKey]
-        return filteredAcc
-      }, ethEngineSubsetMethods)
-
+      for (const method of ethMethodsToBeIncluded) {
+        if (ethMethods[method]) ethEngineSubsetMethods[method] = ethMethods[method]
+      }
       methods = { ...ethEngineSubsetMethods, ...manager.getMethods(true) }
       break
     }
