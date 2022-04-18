@@ -12,6 +12,8 @@ export interface BlockFetcherOptions extends FetcherOptions {
   /* How many blocks to fetch */
   count: BN
 
+  height: BN
+
   /* Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 }
@@ -29,6 +31,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   protected chain: Chain
   protected first: BN
   protected count: BN
+  height: BN
 
   /**
    * Create new block fetcher
@@ -39,6 +42,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
+    this.height = options.height
     this.debug(
       `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} destroyWhenDone=${this.destroyWhenDone}`
     )
@@ -47,20 +51,36 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   /**
    * Generate list of tasks to fetch
    */
-  tasks(first = this.first, count = this.count): JobTask[] {
+  tasks(first = this.first, count = this.count, maxTasks = Infinity): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    const debugStr = `first=${first} count=${count}`
-    while (count.gten(max)) {
+    let debugStr = `first=${first}`
+    const pushedCount = new BN(0)
+
+    while (count.gten(max) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: max })
       first.iaddn(max)
       count.isubn(max)
+      pushedCount.iaddn(max)
     }
-    if (count.gtn(0)) {
+    if (count.gtn(0) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
+      pushedCount.iadd(count)
     }
+    debugStr = `${debugStr} count=${pushedCount}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
+  }
+
+  nextTasks(): void {
+    if (this.in.length === 0 && this.count.gten(0)) {
+      this.debug(`Fetcher has pendancy with first=${this.first} count=${this.count}`)
+      const tasks = this.tasks(this.first, this.count, this.config.maxFetcherJobs)
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
+      this.debug(`Enqueued num=${tasks.length} tasks`)
+    }
   }
 
   /**
