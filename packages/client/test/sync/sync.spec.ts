@@ -8,7 +8,7 @@ import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {
-    return true
+    return null
   }
   async sync() {
     return false

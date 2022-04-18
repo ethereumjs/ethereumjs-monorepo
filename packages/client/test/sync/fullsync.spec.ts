@@ -7,7 +7,6 @@ import { Event } from '../../lib/types'
 import { Block } from '@ethereumjs/block'
 
 tape('[FullSynchronizer]', async (t) => {
-  const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
   class PeerPool {
     open() {}
     close() {}
@@ -33,7 +32,7 @@ tape('[FullSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const sync = new FullSynchronizer({ config, pool, chain, txPool })
+    const sync = new FullSynchronizer({ config, pool, chain })
     t.equals(sync.type, 'full', 'full type')
     t.end()
   })
@@ -46,7 +45,6 @@ tape('[FullSynchronizer]', async (t) => {
       config,
       pool,
       chain,
-      txPool,
     })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
     ;(sync as any).pool.peers = []
@@ -61,7 +59,7 @@ tape('[FullSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const sync = new FullSynchronizer({ config, pool, chain, txPool: txPool })
+    const sync = new FullSynchronizer({ config, pool, chain })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
     const headers = [{ number: new BN(5) }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([new BN(1), headers])
@@ -81,7 +79,6 @@ tape('[FullSynchronizer]', async (t) => {
       interval: 1,
       pool,
       chain,
-      txPool,
     })
     ;(sync as any).running = true
     ;(sync as any).height = td.func()
@@ -114,7 +111,6 @@ tape('[FullSynchronizer]', async (t) => {
       interval: 1,
       pool,
       chain,
-      txPool,
     })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
@@ -153,7 +149,6 @@ tape('[FullSynchronizer]', async (t) => {
       interval: 1,
       pool,
       chain,
-      txPool,
     })
     ;(sync as any).fetcher = {
       enqueueByNumberList: (blockNumberList: BN[], min: BN) => {
