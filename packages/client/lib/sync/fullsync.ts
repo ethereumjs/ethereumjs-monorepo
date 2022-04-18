@@ -119,7 +119,6 @@ export class FullSynchronizer extends Synchronizer {
             interval: this.interval,
             first,
             count,
-            height,
             destroyWhenDone: false,
           })
         } else {
