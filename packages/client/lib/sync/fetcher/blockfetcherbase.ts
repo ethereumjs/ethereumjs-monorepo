@@ -40,7 +40,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
-    this.height = this.first.add(this.count).subn(1)
+    this.height = this.first?.add(this.count).subn(1)
     this.debug(
       `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} destroyWhenDone=${this.destroyWhenDone}`
     )

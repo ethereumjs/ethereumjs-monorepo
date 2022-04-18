@@ -442,6 +442,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.running = true
+    this.nextTasks()
 
     while (this.running) {
       if (!this.next()) {
