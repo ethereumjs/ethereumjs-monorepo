@@ -122,7 +122,9 @@ export class FullSynchronizer extends Synchronizer {
             destroyWhenDone: false,
           })
         } else {
-          if (height.gt(this.fetcher.height)) this.fetcher.height = height
+          const fetcherHeight = this.fetcher.first.add(this.fetcher.count).subn(1)
+          if (height.gt(fetcherHeight)) this.fetcher.count.iadd(height.sub(fetcherHeight))
+          this.config.logger.info(`peer=${peer} updated fetcher target to height=${height}`)
         }
       }
     }
@@ -216,7 +218,7 @@ export class FullSynchronizer extends Synchronizer {
   handleNewBlockHashes(data: [Buffer, BN][]) {
     if (!data.length || !this.fetcher || this.fetcher.errored) return
     let min = new BN(-1)
-    let newSyncHeight
+    let newSyncHeight: [Buffer, BN] | undefined
     const blockNumberList: BN[] = []
     data.forEach((value) => {
       const blockNumber = value[1]
@@ -226,18 +228,22 @@ export class FullSynchronizer extends Synchronizer {
       }
 
       // Check if new sync target height can be set
-      if (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight)) {
-        newSyncHeight = blockNumber
+      if (
+        (!newSyncHeight &&
+          (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight))) ||
+        (newSyncHeight && blockNumber.gt(newSyncHeight[1]))
+      ) {
+        newSyncHeight = value
       }
     })
 
     if (!newSyncHeight) return
-    this.config.syncTargetHeight = newSyncHeight
-    const [hash, height] = data[data.length - 1]
+    const [hash, height] = newSyncHeight
+    this.config.syncTargetHeight = height
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
     // enqueue if we are close enough to chain head
     if (min.lt(this.chain.headers.height.addn(3000))) {
-      this.fetcher.enqueueByNumberList(blockNumberList, min)
+      this.fetcher.enqueueByNumberList(blockNumberList, min, height)
     }
   }
 

@@ -127,7 +127,9 @@ export class LightSynchronizer extends Synchronizer {
             destroyWhenDone: false,
           })
         } else {
-          if (height.gt(this.fetcher.height)) this.fetcher.height = height
+          const fetcherHeight = this.fetcher.first.add(this.fetcher.count).subn(1)
+          if (height.gt(fetcherHeight)) this.fetcher.count.iadd(height.sub(fetcherHeight))
+          this.config.logger.info(`peer=${peer} updated fetcher target to height=${height}`)
         }
       }
     }
