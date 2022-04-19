@@ -1,9 +1,9 @@
 import tape from 'tape'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Account,
   Address,
   toBuffer,
-  keccak256,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   unpadBuffer,
@@ -257,7 +257,8 @@ tape('StateManager', (t) => {
     await stateManager.putContractStorage(address, key, value)
 
     const data = await stateManager.dumpStorage(address)
-    const expect = { [keccak256(key).toString('hex')]: '0a' }
+    const buf = toBuffer(keccak256(key)).toString('hex')
+    const expect = { [buf]: '0a' }
     st.deepEqual(data, expect, 'should dump storage value')
 
     st.end()

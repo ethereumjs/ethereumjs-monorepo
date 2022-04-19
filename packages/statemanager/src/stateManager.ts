@@ -1,9 +1,9 @@
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
   Address,
   toBuffer,
-  keccak256,
   KECCAK256_NULL,
   rlp,
   unpadBuffer,
@@ -122,7 +122,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Buffer): Promise<void> {
-    const codeHash = keccak256(value)
+    const codeHash = toBuffer(keccak256(value))
 
     if (codeHash.equals(KECCAK256_NULL)) {
       return
@@ -355,7 +355,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(toBuffer(proof.accountProof[0]))
+    const rootHash = toBuffer(keccak256(toBuffer(proof.accountProof[0])))
     const key = toBuffer(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       toBuffer(rlpString)
