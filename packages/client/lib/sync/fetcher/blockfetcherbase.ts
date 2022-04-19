@@ -89,6 +89,33 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   }
 
   /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    let first = this.first
+    let last = this.first.add(this.count).subn(1)
+
+    // we have to loop and figure out because the jobs won't always be an monotonically
+    // increasing order, some jobs could have refetch tasks enqueued. So better to find
+    // the first and last examining each job
+    while (this.in.length > 0) {
+      const job = this.in.remove()
+      if (!job) break
+      if (job.task.first.lt(first)) {
+        first = job.task.first
+      }
+      const jobLast = job.task.first.addn(job.task.count).subn(1)
+      if (jobLast.gt(last)) {
+        last = jobLast
+      }
+    }
+    this.first = first
+    this.count = last.sub(this.first).addn(1)
+    // already removed jobs from the `in` heap, just pass to super for further cleanup
+    super.clear()
+  }
+
+  /**
    * Create new tasks based on a provided list of block numbers.
    *
    * If numbers are sequential the request is created as bulk request.
@@ -121,7 +148,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       seqCheckNum.iaddn(1)
     }
 
-    if (bulkRequest) {
+    if (bulkRequest && numBlocks > 0) {
       this.enqueueTask(
         {
           first: min,
