@@ -9,10 +9,8 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import { VMExecution } from '../execution'
-import { Event } from '../types'
-import { short } from '../util'
 
-import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */
@@ -58,13 +56,9 @@ export class FullEthereumService extends EthereumService {
       chain: this.chain,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
+      txPool: this.txPool,
+      execution: this.execution,
       interval: this.interval,
-    })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
-      await this.processBlocks(...args)
-    })
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async () => {
-      await this.synchronizer.stop()
     })
 
     if (this.config.mine) {
@@ -259,67 +253,5 @@ export class FullEthereumService extends EthereumService {
         peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
-  }
-
-  async processBlocks(blocks: Block[] | BlockHeader[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      if (this.synchronizer.fetcher !== null) {
-        // If we are beyond the merge block we should stop the fetcher
-        this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-        this.synchronizer.clearFetcher()
-      }
-    }
-
-    if (blocks.length === 0) {
-      if (this.synchronizer.fetcher !== null) {
-        this.config.logger.warn('No blocks fetched are applicable for import')
-      }
-      return
-    }
-
-    blocks = blocks as Block[]
-    const first = blocks[0].header.number
-    const last = blocks[blocks.length - 1].header.number
-    const hash = short(blocks[0].hash())
-    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
-      ? `baseFee=${blocks[0].header.baseFeePerGas} `
-      : ''
-
-    let attentionHF: string | null = null
-    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockBN()
-    if (nextHFBlockNum !== null) {
-      const remaining = nextHFBlockNum.sub(last)
-      if (remaining.lten(10000)) {
-        const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
-        attentionHF = `${nextHF} HF in ${remaining} blocks`
-      }
-    } else {
-      if (
-        this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        !this.config.chainCommon.gteHardfork(Hardfork.Merge)
-      ) {
-        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
-        const td = this.chain.blocks.td
-        const remaining = mergeTD.sub(td)
-        if (remaining.lte(mergeTD.divn(10))) {
-          attentionHF = `Merge HF in ${remaining} TD`
-        }
-      }
-    }
-
-    this.config.logger.info(
-      `Imported blocks count=${
-        blocks.length
-      } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
-        this.pool.size
-      }`,
-      { attentionHF }
-    )
-
-    this.txPool.removeNewBlockTxs(blocks)
-
-    if (!this.running) return
-    await this.execution.run()
-    this.txPool.checkRunState()
   }
 }

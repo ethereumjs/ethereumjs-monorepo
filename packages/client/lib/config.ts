@@ -130,9 +130,9 @@ export interface ConfigOptions {
   maxPerRequest?: number
 
   /**
-   * Max jobs to be enqued in a fetcher at any given time
+   * Max jobs to be enqueued in the fetcher at any given time
    *
-   * Default: `100``
+   * Default: `100`
    */
   maxFetcherJobs?: number
 
