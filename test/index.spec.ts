@@ -84,6 +84,15 @@ describe('.getChecksumAddressString()', function () {
   })
 })
 
+describe('.verifyPublicKey()', function () {
+  it('should return true if publicKey, privateKey pair is valid', function () {
+    assert.strictEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBuffer), true)
+  })
+  it('should return false if publicKey, privateKey pair is invalid', function () {
+    assert.strictEqual(fixtureWallet.verifyPublicKey(Buffer.alloc(64, 0)), false)
+  })
+})
+
 describe('public key only wallet', function () {
   const pubKey = Buffer.from(fixturePublicKey, 'hex')
   it('.fromPublicKey() should work', function () {
