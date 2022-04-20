@@ -36,6 +36,9 @@ export class FullSynchronizer extends Synchronizer {
     this.execution = options.execution
     this.newBlocksKnownByPeer = new Map()
 
+    this.processBlocks = this.processBlocks.bind(this)
+    this.stop = this.stop.bind(this)
+
     this.config.events.on(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
 
@@ -330,8 +333,8 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   async stop(): Promise<boolean> {
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
+    this.config.events.removeListener(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
 
     return await super.stop()
   }
