@@ -189,12 +189,11 @@ export abstract class Synchronizer {
           if (this.fetcher) {
             await this.fetcher.fetch()
           }
-          resolve(true)
+          resolveSync(true)
         } catch (error: any) {
-          reject(error)
-        } finally {
-          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
           this.clearFetcher()
+          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
+          reject(error)
         }
       })
     }
