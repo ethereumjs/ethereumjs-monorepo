@@ -13,7 +13,7 @@ tape('Transient Storage', (tester) => {
 
     transientStorage.put(address, key, value)
     const got = transientStorage.get(address, key)
-    t.deepEqual(value, got)
+    t.strictEqual(value, got)
     t.end()
   })
 
@@ -75,61 +75,6 @@ tape('Transient Storage', (tester) => {
     t.end()
   })
 
-  it('should copy', (t) => {
-    const transientStorage = new TransientStorage()
-
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = Buffer.alloc(32, 0xff)
-    const value = Buffer.alloc(32, 0x99)
-
-    transientStorage.put(address, key, value)
-
-    const transientStorage2 = transientStorage.copy()
-    transientStorage2.put(address, key, Buffer.alloc(32, 0x11))
-
-    const got = transientStorage.get(address, key)
-    const got2 = transientStorage2.get(address, key)
-
-    t.notEqual(got.toString('hex'), got2.toString('hex'))
-    t.end()
-  })
-
-  it('should fail to commit without checkpoint', (t) => {
-    const transientStorage = new TransientStorage()
-
-    t.throws(() => {
-      transientStorage.commit()
-    }, /trying to commit when not checkpointed/)
-
-    t.end()
-  })
-
-  it('should fail to revert with empty changesets', (t) => {
-    const transientStorage = new TransientStorage()
-    transientStorage._changesets = []
-
-    t.throws(() => {
-      transientStorage.revert()
-    }, /cannot revert without a changeset/)
-
-    t.end()
-  })
-
-  it('should fail to add storage with empty changesets', (t) => {
-    const transientStorage = new TransientStorage()
-    transientStorage._changesets = []
-
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = Buffer.alloc(32, 0xff)
-    const value = Buffer.alloc(32, 0x99)
-
-    t.throws(() => {
-      transientStorage.put(address, key, value)
-    }, /no changeset initialized/)
-
-    t.end()
-  })
-
   it('should fail with wrong size key/value', (t) => {
     const transientStorage = new TransientStorage()
 
@@ -140,25 +85,9 @@ tape('Transient Storage', (tester) => {
     }, /Transient storage key must be 32 bytes long/)
 
     t.throws(() => {
-      transientStorage.put(address, Buffer.alloc(32), Buffer.alloc(100))
+      transientStorage.put(address, Buffer.alloc(32), Buffer.alloc(33))
     }, /Transient storage value cannot be longer than 32 bytes/)
 
-    t.end()
-  })
-
-  it('should clear', (t) => {
-    const transientStorage = new TransientStorage()
-
-    const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = Buffer.alloc(32, 0xff)
-    const value = Buffer.alloc(32, 0x99)
-
-    transientStorage.put(address, key, value)
-
-    transientStorage.clear()
-
-    const got = transientStorage.get(address, key)
-    t.deepEqual(got, Buffer.alloc(32, 0x00))
     t.end()
   })
 
@@ -185,48 +114,78 @@ tape('Transient Storage', (tester) => {
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
     const key = Buffer.alloc(32, 0xff)
-    const value0 = Buffer.alloc(32, 0x00)
     const value1 = Buffer.alloc(32, 0x01)
     const value2 = Buffer.alloc(32, 0x02)
+    const value3 = Buffer.alloc(32, 0x03)
 
-    transientStorage.put(address, key, value0)
-    transientStorage.checkpoint()
     transientStorage.put(address, key, value1)
+    transientStorage.checkpoint()
     transientStorage.put(address, key, value2)
+    transientStorage.put(address, key, value3)
     transientStorage.revert()
 
-    t.deepEqual(transientStorage.get(address, key), value0)
+    t.deepEqual(transientStorage.get(address, key), value1)
     t.end()
   })
 
-  it('copies do not share changesets', (t) => {
-    const original = new TransientStorage()
+  it('nested reverts', (t) => {
+    const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
     const key = Buffer.alloc(32, 0xff)
     const value0 = Buffer.alloc(32, 0x00)
     const value1 = Buffer.alloc(32, 0x01)
     const value2 = Buffer.alloc(32, 0x02)
+    const value3 = Buffer.alloc(32, 0x03)
 
-    original.put(address, key, value0)
-    original.checkpoint()
-    original.put(address, key, value1)
-    original.put(address, key, value2)
+    transientStorage.put(address, key, value1)
+    transientStorage.checkpoint()
+    transientStorage.put(address, key, value2)
+    transientStorage.put(address, key, value3)
+    transientStorage.checkpoint()
+    transientStorage.put(address, key, value2)
+    transientStorage.checkpoint()
 
-    const copy = original.copy()
+    t.deepEqual(transientStorage.get(address, key), value2)
+    transientStorage.revert()
+    // not changed since nothing happened after latest checkpoint
+    t.deepEqual(transientStorage.get(address, key), value2)
+    transientStorage.revert()
+    t.deepEqual(transientStorage.get(address, key), value3)
+    transientStorage.revert()
+    t.deepEqual(transientStorage.get(address, key), value1)
+    transientStorage.revert()
+    t.deepEqual(transientStorage.get(address, key), value0)
 
-    // they are not strictly equal
-    t.notStrictEqual(copy._changesets, original._changesets)
-    for (let i = 0; i < copy._changesets.length; i++) {
-      t.notStrictEqual(copy._changesets[i], original._changesets[i])
-    }
-    t.notStrictEqual(copy._storage, original._storage)
+    t.end()
+  })
 
-    // however they are deeply equal
-    t.deepEqual(copy._storage, original._storage)
-    t.deepEqual(copy._changesets, original._changesets)
+  it('commit batches changes into next revert', (t) => {
+    const transientStorage = new TransientStorage()
 
-    t.deepEqual(copy.toJSON(), original.toJSON())
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value1 = Buffer.alloc(32, 0x01)
+    const value2 = Buffer.alloc(32, 0x02)
+    const value3 = Buffer.alloc(32, 0x03)
+
+    transientStorage.put(address, key, value1)
+    transientStorage.checkpoint()
+    transientStorage.put(address, key, value2)
+    transientStorage.put(address, key, value3)
+    transientStorage.checkpoint()
+    transientStorage.put(address, key, value2)
+    transientStorage.checkpoint()
+
+    // clears empty checkpoint
+    transientStorage.commit()
+    // now revert should go all the way to 1
+    transientStorage.commit()
+
+    t.deepEqual(transientStorage.get(address, key), value2)
+    transientStorage.revert()
+    t.deepEqual(transientStorage.get(address, key), value1)
+
     t.end()
   })
 })

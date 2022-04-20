@@ -1,80 +1,34 @@
 import { Address } from 'ethereumjs-util'
 
-export type TStorage = Map<string, Map<string, Buffer>>
+type TransientStorageCurrent = Map<string, Map<string, Buffer>>
 
-export interface TransientStorageModification {
-  addr: Address
-  key: Buffer
+interface TransientStorageModification {
+  addr: string
+  key: string
   prevValue: Buffer
 }
 
-export type Changeset = TStorage
-
-export interface TransientStorageOptions {
-  storage?: TStorage
-  changesets?: Changeset[]
-}
-
-function copyTransientStorage(input: TStorage): TStorage {
-  const map: TStorage = new Map()
-  for (const [addr, storage] of input.entries()) {
-    const copy = new Map()
-    for (const [key, value] of storage.entries()) {
-      copy.set(key, value)
-    }
-    map.set(addr, copy)
-  }
-  return map
-}
-
-/**
- * Merge all the keys from the additional changes into the base, if they aren't already present
- * @param base the base changeset, no keys will be overwritten
- * @param additionalChanges the additional changes that occurred in the nested context
- */
-function mergeInto(base: TStorage, additionalChanges: TStorage): void {
-  for (const [addr, storage] of additionalChanges.entries()) {
-    if (!base.has(addr)) {
-      base.set(addr, new Map())
-    }
-    const map = base.get(addr)!
-    for (const [key, value] of storage.entries()) {
-      if (!map.has(key)) map.set(key, value)
-    }
-  }
-}
+type TransientStorageJournal = TransientStorageModification[]
 
 export default class TransientStorage {
-  _storage: TStorage
-  _changesets: Changeset[]
+  /**
+   * The current values of the transient storage, keyed by contract address and then slot
+   */
+  private _storage: TransientStorageCurrent = new Map()
+  /**
+   * Each change to storage is recorded in the journal. This is never cleared.
+   */
+  private _changeJournal: TransientStorageJournal = []
+  /**
+   * The length of the journal at the beginning of each call in the call stack.
+   */
+  private _indices: number[] = [0]
 
-  constructor(opts: TransientStorageOptions = {}) {
-    this._storage = opts.storage ?? new Map()
-    this._changesets = opts.changesets ?? [new Map()]
-  }
-
-  private get latestChangeset(): Changeset {
-    if (this._changesets.length === 0) {
-      throw new Error('no changeset initialized')
-    }
-    return this._changesets[this._changesets.length - 1]
-  }
-
-  private recordModification(modification: TransientStorageModification) {
-    const latest = this.latestChangeset
-    const addrString = modification.addr.toString()
-    if (!latest.has(addrString)) {
-      latest.set(addrString, new Map())
-    }
-    const addrMap = latest.get(addrString)!
-
-    const keyString = modification.key.toString('hex')
-    // we only need the previous value for the first time the addr-key has been changed since the last checkpoint
-    if (!addrMap.has(keyString)) {
-      addrMap.set(keyString, modification.prevValue)
-    }
-  }
-
+  /**
+   * Get the value for the given address and key
+   * @param addr the address for which transient storage is accessed
+   * @param key the key of the address to get
+   */
   public get(addr: Address, key: Buffer): Buffer {
     const map = this._storage.get(addr.toString())
     if (!map) {
@@ -87,6 +41,12 @@ export default class TransientStorage {
     return value
   }
 
+  /**
+   * Put the given value for the address and key
+   * @param addr the address of the contract for which the key is being set
+   * @param key the slot to set for the address
+   * @param value the new value of the transient storage slot to set
+   */
   public put(addr: Address, key: Buffer, value: Buffer) {
     if (key.length !== 32) {
       throw new Error('Transient storage key must be 32 bytes long')
@@ -96,70 +56,65 @@ export default class TransientStorage {
       throw new Error('Transient storage value cannot be longer than 32 bytes')
     }
 
-    if (!this._storage.has(addr.toString())) {
-      this._storage.set(addr.toString(), new Map())
+    const addrString = addr.toString()
+    if (!this._storage.has(addrString)) {
+      this._storage.set(addrString, new Map())
     }
-    const map = this._storage.get(addr.toString())!
+    const map = this._storage.get(addrString)!
 
-    const str = key.toString('hex')
-    const prevValue = map.get(str) ?? Buffer.alloc(32)
+    const keyStr = key.toString('hex')
+    const prevValue = map.get(keyStr) ?? Buffer.alloc(32)
 
-    this.recordModification({
-      addr,
-      key,
+    this._changeJournal.push({
+      addr: addrString,
+      key: keyStr,
       prevValue,
     })
 
-    map.set(str, value)
+    map.set(keyStr, value)
   }
 
-  public revert() {
-    const changeset = this._changesets.pop()
-    if (!changeset) {
-      throw new Error('cannot revert without a changeset')
-    }
-
-    for (const [addr, map] of changeset.entries()) {
-      for (const [key, prevValue] of map.entries()) {
-        const storageMap = this._storage.get(addr)!
-        storageMap.set(key, prevValue)
-      }
-    }
-  }
-
+  /**
+   * Commit all the changes since the last checkpoint
+   */
   public commit(): void {
-    // Don't allow there to be no changeset
-    if (this._changesets.length <= 1) {
-      throw new Error('trying to commit when not checkpointed')
-    }
-    const changeset = this._changesets.pop()
-    mergeInto(this.latestChangeset, changeset!)
+    if (this._indices.length === 0) throw new Error('Nothing to commit')
+    // by discarding the length of the array from the last time checkpoint was called, all changes are included in the last stack
+    this._indices.pop()
   }
 
+  /**
+   * To be called whenever entering a new context. If revert is called after checkpoint, all changes after the latest checkpoint are reverted.
+   */
   public checkpoint(): void {
-    this._changesets.push(new Map())
+    this._indices.push(this._changeJournal.length)
   }
 
+  /**
+   * Revert transient storage to the last checkpoint
+   */
+  public revert() {
+    const lastCheckpoint = this._indices.pop()
+    if (typeof lastCheckpoint === 'undefined') throw new Error('Nothing to revert')
+
+    for (let i = this._changeJournal.length - 1; i >= lastCheckpoint; i--) {
+      const { key, prevValue, addr } = this._changeJournal[i]
+      this._storage.get(addr)!.set(key, prevValue)
+    }
+    this._changeJournal.splice(lastCheckpoint, this._changeJournal.length - lastCheckpoint)
+  }
+
+  /**
+   * Create a JSON representation of the current transient storage state
+   */
   public toJSON(): { [address: string]: { [key: string]: string } } {
-    const obj: { [address: string]: { [key: string]: string } } = {}
+    const result: { [address: string]: { [key: string]: string } } = {}
     for (const [address, map] of this._storage.entries()) {
-      obj[address.toString()] = {}
+      result[address] = {}
       for (const [key, value] of map.entries()) {
-        obj[address.toString()][key] = value.toString('hex')
+        result[address][key] = value.toString('hex')
       }
     }
-    return obj
-  }
-
-  public clear(): void {
-    this._storage = new Map()
-    this._changesets = [new Map()]
-  }
-
-  public copy(): TransientStorage {
-    return new TransientStorage({
-      storage: copyTransientStorage(this._storage),
-      changesets: this._changesets.slice().map(copyTransientStorage),
-    })
+    return result
   }
 }
