@@ -43,7 +43,7 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected fetcher: BlockFetcher | HeaderFetcher | null
+  fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
   public opened: boolean
@@ -135,7 +135,7 @@ export abstract class Synchronizer {
 
   abstract best(): Peer | undefined
 
-  abstract syncWithPeer(peer?: Peer): Promise<boolean>
+  abstract syncWithPeer(peer?: Peer): Promise<BlockFetcher | HeaderFetcher | null>
 
   /**
    * Checks if the synchronized state of the chain has changed
@@ -172,13 +172,47 @@ export abstract class Synchronizer {
       peer = this.best()
       numAttempts += 1
     }
-    return this.syncWithPeer(peer)
+    const fetcher = await this.syncWithPeer(peer)
+    if (fetcher) {
+      this.clearFetcher()
+      this.fetcher = fetcher
+
+      // eslint-disable-next-line no-async-promise-executor
+      return new Promise(async (resolve, reject) => {
+        const resolveSync = () => {
+          this.clearFetcher()
+          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
+          resolve(true)
+        }
+        this.config.events.on(Event.SYNC_SYNCHRONIZED, resolveSync)
+        try {
+          if (this.fetcher) {
+            await this.fetcher.fetch()
+          }
+          resolveSync()
+        } catch (error: any) {
+          this.clearFetcher()
+          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
+          reject(error)
+        }
+      })
+    }
+    return false
+  }
+
+  clearFetcher() {
+    if (this.fetcher) {
+      this.fetcher.clear()
+      this.fetcher.destroy()
+      this.fetcher = null
+    }
   }
 
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false
     }
+    this.clearFetcher()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false

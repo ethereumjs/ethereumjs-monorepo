@@ -12,6 +12,7 @@ import type { TxPool } from '../service/txpool'
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
   txPool: TxPool
+  execution: VMExecution
 }
 
 interface HandledObject {
@@ -26,17 +27,20 @@ type PeerId = string
  */
 export class FullSynchronizer extends Synchronizer {
   private txPool: TxPool
+  private execution: VMExecution
   private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
 
   constructor(options: FullSynchronizerOptions) {
     super(options)
-
     this.txPool = options.txPool
+    this.execution = options.execution
     this.newBlocksKnownByPeer = new Map()
 
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async () => {
-      await this.stop()
-    })
+    this.processBlocks = this.processBlocks.bind(this)
+    this.stop = this.stop.bind(this)
+
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
 
     void this.chain.update()
   }
@@ -60,6 +64,7 @@ export class FullSynchronizer extends Synchronizer {
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number, td)
+
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
         hash
@@ -112,13 +117,9 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
-    // eslint-disable-next-line no-async-promise-executor
-    return await new Promise(async (resolve, reject) => {
-      if (!peer) return resolve(false)
-      const latest = await this.latest(peer)
-      if (!latest) return resolve(false)
-
+  async syncWithPeer(peer?: Peer): Promise<BlockFetcher | null> {
+    let latest
+    if (peer && (latest = await this.latest(peer))) {
       const height = latest.number
       if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
         this.config.syncTargetHeight = height
@@ -132,46 +133,28 @@ export class FullSynchronizer extends Synchronizer {
         new BN(1)
       )
       const count = height.sub(first).addn(1)
-
-      if (count.lten(0)) return resolve(false)
-      const resolveSync = () => {
-        resolve(true)
-      }
-      this.config.events.on(Event.SYNC_SYNCHRONIZED, resolveSync)
-      this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
-
-      this.clearFetcher()
-      this.fetcher = new BlockFetcher({
-        config: this.config,
-        pool: this.pool,
-        chain: this.chain,
-        interval: this.interval,
-        first,
-        count,
-        destroyWhenDone: false,
-      })
-      try {
-        if (this.fetcher) {
-          await this.fetcher.fetch()
+      if (count.gtn(0)) {
+        if (!this.fetcher || this.fetcher.errored) {
+          return new BlockFetcher({
+            config: this.config,
+            pool: this.pool,
+            chain: this.chain,
+            interval: this.interval,
+            first,
+            count,
+            destroyWhenDone: false,
+          })
+        } else {
+          const fetcherHeight = this.fetcher.first.add(this.fetcher.count).subn(1)
+          if (height.gt(fetcherHeight)) this.fetcher.count.iadd(height.sub(fetcherHeight))
+          this.config.logger.info(`peer=${peer} updated fetcher target to height=${height}`)
         }
-        resolve(true)
-      } catch (error: any) {
-        // Since the fetcher has errored, likely because of bad data fed by the peer,
-        // the peer should be banned for at least a couple of seconds (default: 60s)
-        // to refresh its status to find the next best peer to start a new fetcher.
-        this.pool.ban(peer)
-        this.config.logger.debug(
-          `Fetcher error, temporarily banning ${peer.toString(true)}: ${error}`
-        )
-        reject(error)
-      } finally {
-        this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
-        this.clearFetcher()
       }
-    })
+    }
+    return null
   }
 
-  async processBlocks(execution: VMExecution, blocks: Block[] | BlockHeader[]) {
+  async processBlocks(blocks: Block[] | BlockHeader[]) {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
@@ -229,16 +212,8 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    await execution.run()
+    await this.execution.run()
     this.txPool.checkRunState()
-  }
-
-  private clearFetcher() {
-    if (this.fetcher) {
-      this.fetcher.clear()
-      this.fetcher.destroy()
-      this.fetcher = null
-    }
   }
 
   /**
@@ -326,9 +301,9 @@ export class FullSynchronizer extends Synchronizer {
    * @param data new block hash announcements
    */
   handleNewBlockHashes(data: [Buffer, BN][]) {
-    if (!data.length || !this.fetcher) return
+    if (!data.length || !this.fetcher || this.fetcher.errored) return
     let min = new BN(-1)
-    let newSyncHeight
+    let newSyncHeight: [Buffer, BN] | undefined
     const blockNumberList: BN[] = []
     data.forEach((value) => {
       const blockNumber = value[1]
@@ -338,36 +313,30 @@ export class FullSynchronizer extends Synchronizer {
       }
 
       // Check if new sync target height can be set
-      if (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight)) {
-        newSyncHeight = blockNumber
+      if (
+        (!newSyncHeight &&
+          (!this.config.syncTargetHeight || blockNumber.gt(this.config.syncTargetHeight))) ||
+        (newSyncHeight && blockNumber.gt(newSyncHeight[1]))
+      ) {
+        newSyncHeight = value
       }
     })
 
     if (!newSyncHeight) return
-    this.config.syncTargetHeight = newSyncHeight
-    const [hash, height] = data[data.length - 1]
+    const [hash, height] = newSyncHeight
+    this.config.syncTargetHeight = height
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
     // enqueue if we are close enough to chain head
     if (min.lt(this.chain.headers.height.addn(3000))) {
-      this.fetcher.enqueueByNumberList(blockNumberList, min)
+      this.fetcher.enqueueByNumberList(blockNumberList, min, height)
     }
   }
 
-  /**
-   * Stop synchronization. Returns a promise that resolves once its stopped.
-   */
   async stop(): Promise<boolean> {
-    if (!this.running) {
-      return false
-    }
+    this.config.events.removeListener(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
 
-    if (this.fetcher) {
-      this.fetcher.destroy()
-      this.fetcher = null
-    }
-    await super.stop()
-
-    return true
+    return await super.stop()
   }
 
   /**

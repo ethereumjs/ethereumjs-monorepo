@@ -57,9 +57,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
-  protected errored?: Error
   protected reading: boolean
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
+  errored?: Error
 
   private _readableState?: {
     // This property is inherited from Readable. We only need `length`.
@@ -138,6 +138,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     return []
   }
 
+  nextTasks(): void {}
+
   /**
    * Enqueue job
    * @param job
@@ -186,6 +188,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       state: 'idle',
       peer: null,
     }
+    this.debug(`enqueueTask ${this.jobStr(job)}`)
     this.in.insert(job)
     if (!this.running && autoRestart) {
       void this.fetch()
@@ -292,6 +295,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Process next task
    */
   next() {
+    this.nextTasks()
     const job = this.in.peek()
     if (!job) {
       this.debug(`No job found on next task, skip next job execution.`)
@@ -439,11 +443,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.running = true
-    const tasks = this.tasks()
-    for (const task of tasks) {
-      this.enqueueTask(task)
-    }
-    this.debug(`Enqueued num=${tasks.length} tasks`)
+    this.nextTasks()
+
     while (this.running) {
       if (!this.next()) {
         if (this.finished === this.total && this.destroyWhenDone) {

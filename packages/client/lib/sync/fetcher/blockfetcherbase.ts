@@ -27,8 +27,16 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   StorageItem
 > {
   protected chain: Chain
-  protected first: BN
-  protected count: BN
+  /**
+   * `first` is from where the fetcher pendancy starts apart from the jobs/tasks already
+   *  in the `in` queue.
+   */
+  first: BN
+  /**
+   * `count` are the number of items in fetcher pendancy starting from (and including)
+   * `first`. `first + count - 1` gives the height fetcher is attempting to reach
+   */
+  count: BN
 
   /**
    * Create new block fetcher
@@ -45,22 +53,66 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   }
 
   /**
-   * Generate list of tasks to fetch
+   * Generate list of tasks to fetch, modifies `first`` and `count` to indicate any
+   * remaning pendancy of the fetcher apart from jobs/tasks it pushes in the queue
    */
-  tasks(first = this.first, count = this.count): JobTask[] {
+  tasks(first = this.first, count = this.count, maxTasks = Infinity): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    const debugStr = `first=${first} count=${count}`
-    while (count.gten(max)) {
+    let debugStr = `first=${first}`
+    const pushedCount = new BN(0)
+
+    while (count.gten(max) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: max })
       first.iaddn(max)
       count.isubn(max)
+      pushedCount.iaddn(max)
     }
-    if (count.gtn(0)) {
+    if (count.gtn(0) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
+      pushedCount.iadd(count)
     }
+    debugStr = `${debugStr} count=${pushedCount}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
+  }
+
+  nextTasks(): void {
+    if (this.in.length === 0 && this.count.gten(0)) {
+      this.debug(`Fetcher has pendancy with first=${this.first} count=${this.count}`)
+      const tasks = this.tasks(this.first, this.count, this.config.maxFetcherJobs)
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
+      this.debug(`Enqueued num=${tasks.length} tasks`)
+    }
+  }
+
+  /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    let first = this.first
+    let last = this.first.add(this.count).subn(1)
+
+    // we have to loop and figure out because the jobs won't always be an monotonically
+    // increasing order, some jobs could have refetch tasks enqueued. So better to find
+    // the first and last examining each job
+    while (this.in.length > 0) {
+      const job = this.in.remove()
+      if (!job) break
+      if (job.task.first.lt(first)) {
+        first = job.task.first
+      }
+      const jobLast = job.task.first.addn(job.task.count).subn(1)
+      if (jobLast.gt(last)) {
+        last = jobLast
+      }
+    }
+    this.first = first
+    this.count = last.sub(this.first).addn(1)
+    // already removed jobs from the `in` heap, just pass to super for further cleanup
+    super.clear()
   }
 
   /**
@@ -74,17 +126,17 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    * @param numberList List of block numbers
    * @param min Start block number
    */
-  enqueueByNumberList(numberList: BN[], min: BN) {
-    const nextChainHeight = this.chain.headers.height.addn(1)
-    if (this.in.length === 0 && nextChainHeight.lt(min)) {
-      // If fetcher queue is empty and head is behind `min`,
-      // enqueue tasks for missing block numbers so head can reach `min`
-      this.debug(`Enqueuing missing blocks between chain head and newBlockHashes...`)
-      const tasks = this.tasks(nextChainHeight, min.sub(nextChainHeight))
-      for (const task of tasks) {
-        this.enqueueTask(task)
-      }
+  enqueueByNumberList(numberList: BN[], min: BN, max: BN) {
+    // Check and update the height
+    const last = this.first.add(this.count).subn(1)
+    let updateHeightStr = ''
+    if (max.gt(last)) {
+      this.count.iadd(max.sub(last))
+      updateHeightStr = `updated height=${max}`
     }
+    // Re enqueue the numbers which are < `this.first`  to refetch them else they will be
+    // fetched in the future automatically on the jobs created by `nextTasks`
+    numberList = numberList.filter((num) => num.lte(this.first))
     const numBlocks = numberList.length
     let bulkRequest = true
     const seqCheckNum = min.clone()
@@ -96,7 +148,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       seqCheckNum.iaddn(1)
     }
 
-    if (bulkRequest) {
+    if (bulkRequest && numBlocks > 0) {
       this.enqueueTask(
         {
           first: min,
@@ -116,7 +168,10 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       })
     }
     this.debug(
-      `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest}`
+      `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`
     )
+    if (this.in.length === 0) {
+      this.nextTasks()
+    }
   }
 }

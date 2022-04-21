@@ -1,9 +1,10 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
-import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher'
+import { Event } from '../types'
 import type { BlockHeader } from '@ethereumjs/block'
 
 /**
@@ -13,6 +14,22 @@ import type { BlockHeader } from '@ethereumjs/block'
 export class LightSynchronizer extends Synchronizer {
   constructor(options: SynchronizerOptions) {
     super(options)
+
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
+      headers = headers as BlockHeader[]
+      if (headers.length === 0) {
+        this.config.logger.warn('No headers fetched are applicable for import')
+        return
+      }
+      const first = headers[0].number
+      const hash = short(headers[0].hash())
+      const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+        ? `baseFee=${headers[0].baseFeePerGas} `
+        : ''
+      this.config.logger.info(
+        `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      )
+    })
   }
 
   /**
@@ -81,78 +98,41 @@ export class LightSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
-    // eslint-disable-next-line no-async-promise-executor
-    return await new Promise(async (resolve, reject) => {
-      if (!peer) return resolve(false)
-
-      const latest = await this.latest(peer)
-      if (!latest) return resolve(false)
-
+  async syncWithPeer(peer?: Peer): Promise<HeaderFetcher | null> {
+    let latest
+    if (peer && (latest = await this.latest(peer))) {
       const height = peer.les!.status.headNum
       if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(height)) {
         this.config.syncTargetHeight = height
         this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }
 
-      const first = this.chain.headers.height.addn(1)
+      // Start fetcher from a safe distance behind because if the previous fetcher exited
+      // due to a reorg, it would make sense to step back and refetch.
+      const first = BN.max(
+        this.chain.headers.height.addn(1).subn(this.config.safeReorgDistance),
+        new BN(1)
+      )
       const count = height.sub(first).addn(1)
-      if (count.lten(0)) return resolve(false)
-
-      this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
-
-      this.fetcher = new HeaderFetcher({
-        config: this.config,
-        pool: this.pool,
-        chain: this.chain,
-        flow: this.flow,
-        interval: this.interval,
-        first,
-        count,
-        destroyWhenDone: false,
-      })
-
-      this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
-        headers = headers as BlockHeader[]
-        if (headers.length === 0) {
-          this.config.logger.warn('No headers fetched are applicable for import')
-          return
+      if (count.gtn(0)) {
+        if (!this.fetcher || this.fetcher.errored) {
+          return new HeaderFetcher({
+            config: this.config,
+            pool: this.pool,
+            chain: this.chain,
+            flow: this.flow,
+            interval: this.interval,
+            first,
+            count,
+            destroyWhenDone: false,
+          })
+        } else {
+          const fetcherHeight = this.fetcher.first.add(this.fetcher.count).subn(1)
+          if (height.gt(fetcherHeight)) this.fetcher.count.iadd(height.sub(fetcherHeight))
+          this.config.logger.info(`peer=${peer} updated fetcher target to height=${height}`)
         }
-        const first = headers[0].number
-        const hash = short(headers[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
-          ? `baseFee=${headers[0].baseFeePerGas} `
-          : ''
-        this.config.logger.info(
-          `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
-        )
-      })
-
-      this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-        resolve(true)
-      })
-
-      try {
-        await this.fetcher.fetch()
-      } catch (error: any) {
-        reject(error)
       }
-    })
-  }
-
-  /**
-   * Stop synchronization.
-   * Returns a promise that resolves once its stopped.
-   */
-  async stop(): Promise<boolean> {
-    if (!this.running) {
-      return false
     }
-    if (this.fetcher) {
-      this.fetcher.destroy()
-      this.fetcher = null
-    }
-    await super.stop()
-    return true
+    return null
   }
 }
