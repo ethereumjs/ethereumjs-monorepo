@@ -180,8 +180,10 @@ export class BeaconSynchronizer extends Synchronizer {
     }
 
     blocks = blocks as Block[]
-    const first = blocks[0].header.number
-    const last = blocks[blocks.length - 1].header.number
+    // Blocks are in reverse order, but we keep our first and last terminology same
+    // as thats how its in the job logging
+    const last = blocks[0].header.number
+    const first = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
     this.config.logger.info(
