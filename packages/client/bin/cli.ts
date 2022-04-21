@@ -613,6 +613,7 @@ async function run() {
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
+    maxFetcherJobs: args.maxFetcherJobs,
     mine: args.mine || args.dev,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,
