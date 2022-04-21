@@ -646,6 +646,15 @@ export default class Wallet {
   public async toV3String(password: string, opts?: Partial<V3Params>): Promise<string> {
     return JSON.stringify(await this.toV3(password, opts))
   }
+
+  /**
+   * Verify the publicKey, privateKey pair
+   *
+   * @param publicKey the public key to verify against the private key of the wallet
+   */
+  public verifyPublicKey(publicKey: Buffer): boolean {
+    return privateToPublic(this.privateKey as Buffer).equals(publicKey)
+  }
 }
 
 // helpers
