@@ -64,7 +64,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    let debugStr = `first=${first}`
+    let debugStr = !this.reverse ? `first=${first}` : `last=${first}`
     const pushedCount = new BN(0)
     if (!this.reverse) {
       while (count.gten(max) && tasks.length < maxTasks) {
@@ -83,9 +83,11 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         tasks.push({ first: first.subn(max).addn(1), count: max })
         first.isubn(max)
         count.isubn(max)
+        pushedCount.iaddn(max)
       }
       if (count.gtn(0) && tasks.length < maxTasks) {
         tasks.push({ first: first.sub(count).addn(1), count: count.toNumber() })
+        pushedCount.iadd(count)
       }
     }
     debugStr += ` count=${pushedCount}`

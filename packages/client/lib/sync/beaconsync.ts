@@ -145,7 +145,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (peer && (bounds = this.skeleton.bounds())) {
       const { tail } = bounds
       if (tail.subn(1).isZero()) return null // already linked
-      const first = tail.clone()
+      const first = tail.clone().subn(1)
       // Sync from tail to next subchain
       const count = tail
         .subn(1)
