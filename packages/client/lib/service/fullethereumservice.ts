@@ -72,13 +72,8 @@ export class FullEthereumService extends EthereumService {
         pool: this.pool,
         chain: this.chain,
         interval: this.interval,
+        execution: this.execution,
         skeleton,
-      })
-      this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
-        await this.synchronizer.processBlocks(this.execution, ...args)
-      })
-      this.config.events.on(Event.CHAIN_UPDATED, async () => {
-        await this.execution.run()
       })
     }
 

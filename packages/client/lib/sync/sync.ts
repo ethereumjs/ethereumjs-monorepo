@@ -6,7 +6,7 @@ import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
 import { Event } from '../types'
-import { BlockFetcher, HeaderFetcher } from './fetcher'
+import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 import { short } from '../util'
 
 export interface SynchronizerOptions {
@@ -129,7 +129,6 @@ export abstract class Synchronizer {
   abstract best(): Peer | undefined
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
-
   /**
    * Checks if the synchronized state of the chain has changed
    * @emits {@link Event.SYNC_SYNCHRONIZED}

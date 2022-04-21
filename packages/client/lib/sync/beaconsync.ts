@@ -11,6 +11,7 @@ import type { VMExecution } from '../execution'
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
   skeleton: Skeleton
+  execution: VMExecution
 }
 
 /**
@@ -20,12 +21,20 @@ interface BeaconSynchronizerOptions extends SynchronizerOptions {
  */
 export class BeaconSynchronizer extends Synchronizer {
   private skeleton: Skeleton
+  private execution: VMExecution
 
   public running = false
 
   constructor(options: BeaconSynchronizerOptions) {
     super(options)
     this.skeleton = options.skeleton
+    this.execution = options.execution
+
+    this.processBlocks = this.processBlocks.bind(this)
+    this.runExecution = this.runExecution.bind(this)
+
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
   }
 
   /**
@@ -131,60 +140,38 @@ export class BeaconSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
-    // eslint-disable-next-line no-async-promise-executor
-    return await new Promise(async (resolve, reject) => {
-      if (!peer) return resolve(false)
-
-      const bounds = this.skeleton.bounds()
-      if (!bounds) return resolve(false) // have no head yet
+  async syncWithPeer(peer?: Peer): Promise<ReverseBlockFetcher | null> {
+    let bounds
+    if (peer && (bounds = this.skeleton.bounds())) {
       const { tail } = bounds
-      if (tail.subn(1).isZero()) return resolve(true) // already linked
+      if (tail.subn(1).isZero()) return null // already linked
       const first = tail.clone()
       // Sync from tail to next subchain
       const count = tail
         .subn(1)
         .sub((this.skeleton as any).status.progress.subchains[1]?.head ?? new BN(0))
-      const resolveSync = () => {
-        resolve(true)
-      }
-      this.config.events.on(Event.SYNC_SYNCHRONIZED, resolveSync)
-      this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} start=${first}`)
-
-      this.clearFetcher()
-      this.fetcher = new ReverseBlockFetcher({
-        config: this.config,
-        pool: this.pool,
-        chain: this.chain,
-        skeleton: this.skeleton,
-        interval: this.interval,
-        first,
-        count,
-        reverse: true,
-        destroyWhenDone: false,
-      })
-      try {
-        if (this.fetcher) {
-          await this.fetcher.fetch()
+      if (count.gtn(0)) {
+        if (!this.fetcher || this.fetcher.errored) {
+          return new ReverseBlockFetcher({
+            config: this.config,
+            pool: this.pool,
+            chain: this.chain,
+            skeleton: this.skeleton,
+            interval: this.interval,
+            first,
+            count,
+            reverse: true,
+            destroyWhenDone: false,
+          })
+        } else {
+          /** TODO figure out if there is any fetcher property to be updated */
         }
-        resolve(true)
-      } catch (error: any) {
-        // Since the fetcher has errored, likely because of bad data fed by the peer,
-        // the peer should be banned for at least a couple of seconds (default: 60s)
-        // to refresh its status to find the next best peer to start a new fetcher.
-        this.pool.ban(peer)
-        this.config.logger.debug(
-          `Fetcher error, temporarily banning ${peer.toString(true)}: ${error}`
-        )
-        reject(error)
-      } finally {
-        this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
-        this.clearFetcher()
       }
-    })
+    }
+    return null
   }
 
-  async processBlocks(execution: VMExecution, blocks: Block[] | BlockHeader[]) {
+  async processBlocks(blocks: Block[] | BlockHeader[]) {
     if (blocks.length === 0) {
       if (this.fetcher !== null) {
         this.config.logger.warn('No blocks fetched are applicable for import')
@@ -206,35 +193,22 @@ export class BeaconSynchronizer extends Synchronizer {
     // If we have linked the chain, run execution
     const { tail } = this.skeleton.bounds()
     if (tail.eqn(0)) {
-      await execution.run()
+      await this.runExecution()
     }
   }
 
-  /**
-   * Clears and destroys the fetcher
-   */
-  private clearFetcher() {
-    if (this.fetcher) {
-      this.fetcher.clear()
-      this.fetcher.destroy()
-      this.fetcher = null
-    }
-    this.running = false
+  async runExecution(): Promise<void> {
+    await this.execution.run()
   }
 
   /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    if (!this.running) return false
+    this.config.events.removeListener(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
 
-    if (this.fetcher) {
-      this.fetcher.destroy()
-      this.fetcher = null
-    }
-    await super.stop()
-
-    return true
+    return await super.stop()
   }
 
   /**
