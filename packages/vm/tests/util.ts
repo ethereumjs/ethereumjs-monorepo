@@ -8,6 +8,7 @@ import {
   TxOptions,
 } from '@ethereumjs/tx'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Account,
   rlp,
@@ -131,7 +132,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = toBuffer(keccak256(Buffer.from(stripHexPrefix(key), 'hex'))).toString('hex')
+      const hash = bytesToHex(keccak256(Buffer.from(stripHexPrefix(key), 'hex')))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -191,9 +192,8 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[
-        toBuffer(keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32))).toString('hex')
-      ] = acctData.storage[key]
+      hashedStorage[bytesToHex(keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)))] =
+        acctData.storage[key]
     }
 
     if (storageKeys.length > 0) {

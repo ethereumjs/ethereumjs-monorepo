@@ -1,5 +1,6 @@
 import Common from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Address,
   toBuffer,
@@ -380,7 +381,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = bufferToBigInt(toBuffer(keccak256(data)))
+      const r = BigInt('0x' + bytesToHex(keccak256(data)))
       runState.stack.push(r)
     },
   ],
@@ -533,7 +534,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      runState.stack.push(bufferToBigInt(toBuffer(keccak256(code))))
+      runState.stack.push(BigInt('0x' + bytesToHex(keccak256(code))))
     },
   ],
   // 0x3d: RETURNDATASIZE

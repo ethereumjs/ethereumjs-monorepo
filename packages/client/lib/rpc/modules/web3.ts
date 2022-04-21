@@ -1,4 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import { addHexPrefix, toBuffer } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import { getClientVersion } from '../../util'
@@ -39,8 +40,7 @@ export class Web3 {
    * @param params The data to convert into a SHA3 hash
    */
   sha3(params: string[]) {
-    const rawDigest = toBuffer(keccak256(toBuffer(params[0])))
-    const hexEncodedDigest = addHexPrefix(rawDigest.toString('hex'))
+    const hexEncodedDigest = addHexPrefix(bytesToHex(keccak256(toBuffer(params[0]))))
     return hexEncodedDigest
   }
 }

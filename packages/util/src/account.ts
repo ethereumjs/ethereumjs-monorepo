@@ -1,4 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
@@ -152,7 +153,7 @@ export const toChecksumAddress = function (
   }
 
   const buf = Buffer.from(prefix + address, 'utf8')
-  const hash = toBuffer(keccak256(buf)).toString('hex')
+  const hash = bytesToHex(keccak256(buf))
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
