@@ -97,6 +97,13 @@ export class FullEthereumService extends EthereumService {
   }
 
   async open() {
+    // Check if skelton has sync status, swap syrncroniser with beacon syncronizer
+    if (this.synchronizer instanceof FullSynchronizer) {
+      await this.beaconSynchronizer.skeleton.open()
+      if (this.beaconSynchronizer.skeleton.bounds()) {
+        this.synchronizer = this.beaconSynchronizer
+      }
+    }
     await super.open()
     await this.execution.open()
     this.txPool.open()

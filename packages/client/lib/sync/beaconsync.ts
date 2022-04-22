@@ -20,7 +20,7 @@ interface BeaconSynchronizerOptions extends SynchronizerOptions {
  * @memberof module:sync
  */
 export class BeaconSynchronizer extends Synchronizer {
-  private skeleton: Skeleton
+  skeleton: Skeleton
   private execution: VMExecution
 
   public running = false
@@ -209,8 +209,8 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!this.running) return
 
     // If we have linked the chain, run execution
-    const { tail } = this.skeleton.bounds()
-    if (tail.eqn(0)) {
+    const bounds = this.skeleton.bounds()
+    if (bounds?.tail.eqn(0)) {
       await this.runExecution()
     }
   }
