@@ -43,12 +43,13 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
-  fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
+  protected forceSync: boolean
+
+  public fetcher: BlockFetcher | HeaderFetcher | null
   public opened: boolean
   public running: boolean
-  protected forceSync: boolean
   public startingBlock: BN
 
   /** Time (in ms) after which the synced state is reset */
@@ -135,7 +136,7 @@ export abstract class Synchronizer {
 
   abstract best(): Peer | undefined
 
-  abstract syncWithPeer(peer?: Peer): Promise<BlockFetcher | HeaderFetcher | null>
+  abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
   /**
    * Checks if the synchronized state of the chain has changed
@@ -161,7 +162,7 @@ export abstract class Synchronizer {
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
-   * @returns with true if sync successful
+   * @returns when sync is completed
    */
   async sync(): Promise<boolean> {
     let peer = this.best()
@@ -172,34 +173,31 @@ export abstract class Synchronizer {
       peer = this.best()
       numAttempts += 1
     }
-    const fetcher = await this.syncWithPeer(peer)
-    if (fetcher) {
-      this.clearFetcher()
-      this.fetcher = fetcher
 
-      // eslint-disable-next-line no-async-promise-executor
-      return new Promise(async (resolve, reject) => {
-        const resolveSync = () => {
-          this.clearFetcher()
-          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
-          resolve(true)
+    if (!(await this.syncWithPeer(peer))) return false
+
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      const resolveSync = () => {
+        this.clearFetcher()
+        resolve(true)
+      }
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
+      try {
+        if (this.fetcher) {
+          await this.fetcher.fetch()
         }
-        this.config.events.on(Event.SYNC_SYNCHRONIZED, resolveSync)
-        try {
-          if (this.fetcher) {
-            await this.fetcher.fetch()
-          }
-          resolveSync()
-        } catch (error: any) {
-          this.clearFetcher()
-          this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
-          reject(error)
-        }
-      })
-    }
-    return false
+        resolveSync()
+      } catch (error: any) {
+        this.clearFetcher()
+        reject(error)
+      }
+    })
   }
 
+  /**
+   * Clears and removes the fetcher.
+   */
   clearFetcher() {
     if (this.fetcher) {
       this.fetcher.clear()
@@ -208,6 +206,9 @@ export abstract class Synchronizer {
     }
   }
 
+  /**
+   * Stop synchronizer.
+   */
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false
