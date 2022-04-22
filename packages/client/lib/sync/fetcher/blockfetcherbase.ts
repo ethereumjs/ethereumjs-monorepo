@@ -53,7 +53,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.count = options.count
     this.reverse = options.reverse ?? false
     this.debug(
-      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
+      `Block fetcher instantiated interval=${this.interval} ${!this.reverse ? 'first' : 'last'}=${
+        this.first
+      } count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
     )
   }
 
@@ -97,7 +99,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   nextTasks(): void {
     if (this.in.length === 0 && this.count.gten(0)) {
-      this.debug(`Fetcher pending with first=${this.first} count=${this.count}`)
+      this.debug(
+        `Fetcher pending with ${!this.reverse ? 'first' : 'last'}=${this.first} count=${this.count}`
+      )
       const tasks = this.tasks(this.first, this.count)
       for (const task of tasks) {
         this.enqueueTask(task)

@@ -17,6 +17,7 @@ export enum Event {
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
   SYNC_FETCHED_BLOCKS = 'sync:fetcher:fetched_blocks',
   SYNC_FETCHED_HEADERS = 'sync:fetcher:fetched_headers',
+  SYNC_FETCHED_SKELETON_BLOCKS = 'sync:fetcher:fetched_skeleton_blocks',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   SYNC_POS_TRANSITION = 'sync:pos:transition',
   SYNC_ERROR = 'sync:error',
@@ -38,6 +39,7 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: [vmError: Error]
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
+  [Event.SYNC_FETCHED_SKELETON_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: BN]
   [Event.SYNC_POS_TRANSITION]: []
   [Event.SYNC_ERROR]: [syncError: Error]
@@ -66,6 +68,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
   EventBus<Event.SYNC_FETCHED_BLOCKS> &
   EventBus<Event.SYNC_FETCHED_HEADERS> &
+  EventBus<Event.SYNC_FETCHED_SKELETON_BLOCKS> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
   EventBus<Event.SYNC_POS_TRANSITION> &
   EventBus<Event.SYNC_FETCHER_ERROR> &

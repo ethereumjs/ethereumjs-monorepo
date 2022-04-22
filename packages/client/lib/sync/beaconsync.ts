@@ -3,7 +3,7 @@ import { short } from '../util'
 import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { ReverseBlockFetcher } from './fetcher'
-import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Block } from '@ethereumjs/block'
 import type { Peer } from '../net/peer/peer'
 import type { Skeleton } from './skeleton'
 import type { VMExecution } from '../execution'
@@ -30,10 +30,10 @@ export class BeaconSynchronizer extends Synchronizer {
     this.skeleton = options.skeleton
     this.execution = options.execution
 
-    this.processBlocks = this.processBlocks.bind(this)
+    this.processSkeletonBlocks = this.processSkeletonBlocks.bind(this)
     this.runExecution = this.runExecution.bind(this)
 
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.on(Event.SYNC_FETCHED_SKELETON_BLOCKS, this.processSkeletonBlocks)
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
   }
 
@@ -156,38 +156,38 @@ export class BeaconSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
-  async syncWithPeer(peer?: Peer): Promise<ReverseBlockFetcher | null> {
-    let bounds
-    if (peer && (bounds = this.skeleton.bounds())) {
-      const { tail } = bounds
-      if (tail.subn(1).isZero()) return null // already linked
-      const first = tail.clone().subn(1)
-      // Sync from tail to next subchain
-      const count = tail
-        .subn(1)
-        .sub((this.skeleton as any).status.progress.subchains[1]?.head ?? new BN(0))
-      if (count.gtn(0)) {
-        if (!this.fetcher || this.fetcher.errored) {
-          return new ReverseBlockFetcher({
-            config: this.config,
-            pool: this.pool,
-            chain: this.chain,
-            skeleton: this.skeleton,
-            interval: this.interval,
-            first,
-            count,
-            reverse: true,
-            destroyWhenDone: false,
-          })
-        } else {
-          /** TODO figure out if there is any fetcher property to be updated */
-        }
+  async syncWithPeer(peer?: Peer): Promise<boolean> {
+    const bounds = peer ? this.skeleton.bounds() : undefined
+    const { tail } = bounds ?? {}
+
+    if (!tail || tail.subn(1).isZero()) return false
+
+    const first = tail.clone().subn(1)
+    // Sync from tail to next subchain
+    const count = tail
+      .subn(1)
+      .sub((this.skeleton as any).status.progress.subchains[1]?.head ?? new BN(0))
+    if (count.gtn(0)) {
+      if (!this.fetcher || this.fetcher.errored) {
+        this.fetcher = new ReverseBlockFetcher({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          skeleton: this.skeleton,
+          interval: this.interval,
+          first,
+          count,
+          reverse: true,
+          destroyWhenDone: false,
+        })
+      } else {
+        /** TODO figure out if there is any fetcher property to be updated */
       }
     }
-    return null
+    return true
   }
 
-  async processBlocks(blocks: Block[] | BlockHeader[]) {
+  async processSkeletonBlocks(blocks: Block[]) {
     if (blocks.length === 0) {
       if (this.fetcher !== null) {
         this.config.logger.warn('No blocks fetched are applicable for import')
@@ -223,7 +223,10 @@ export class BeaconSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.config.events.removeListener(Event.SYNC_FETCHER_FETCHED, this.processBlocks)
+    this.config.events.removeListener(
+      Event.SYNC_FETCHED_SKELETON_BLOCKS,
+      this.processSkeletonBlocks
+    )
     this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
 
     return await super.stop()
