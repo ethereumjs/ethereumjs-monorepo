@@ -149,7 +149,7 @@ export class BlockBuilder {
    * Adds the block miner reward to the coinbase account.
    */
   private async rewardMiner() {
-    const minerReward = this.vm._common.param('pow', 'minerReward') ?? BigInt(0)
+    const minerReward = this.vm._common.param('pow', 'minerReward')
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase = this.headerData.coinbase
       ? new Address(toBuffer(this.headerData.coinbase))

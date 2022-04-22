@@ -178,7 +178,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (byteLength < 1 || byteLength > 32) {
         trap(ERROR.OUT_OF_RANGE)
       }
-      const gasPrice = common.param('gasPrices', 'expByte') ?? BigInt(0)
+      const gasPrice = common.param('gasPrices', 'expByte')
       const amount = BigInt(byteLength) * gasPrice
       runState.eei.useGas(amount, 'EXP opcode')
 

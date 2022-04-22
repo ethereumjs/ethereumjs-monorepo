@@ -201,8 +201,8 @@ export abstract class BaseTransaction<TransactionObject> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    const txDataZero = this.common.param('gasPrices', 'txDataZero') ?? BigInt(0)
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero') ?? BigInt(0)
+    const txDataZero = this.common.param('gasPrices', 'txDataZero')
+    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
     let cost = BigInt(0)
     for (let i = 0; i < this.data.length; i++) {
@@ -211,8 +211,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
     if ((this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
       const dataLength = BigInt(Math.ceil(this.data.length / 32))
-      const initCodeCost =
-        (this.common.param('gasPrices', 'initCodeWordCost') ?? BigInt(0)) * dataLength
+      const initCodeCost = this.common.param('gasPrices', 'initCodeWordCost') * dataLength
       cost += initCodeCost
     }
 

@@ -31,11 +31,11 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     if (chargeGas) {
-      return common.param('gasPrices', 'coldaccountaccess') ?? BigInt(0)
+      return common.param('gasPrices', 'coldaccountaccess')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestructOrAuthcall) {
-    return common.param('gasPrices', 'warmstorageread') ?? BigInt(0)
+    return common.param('gasPrices', 'warmstorageread')
   }
   return BigInt(0)
 }
@@ -63,9 +63,9 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     vmState.addWarmedStorage(address, key)
-    return common.param('gasPrices', 'coldsload') ?? BigInt(0)
+    return common.param('gasPrices', 'coldsload')
   } else if (!isSstore) {
-    return common.param('gasPrices', 'warmstorageread') ?? BigInt(0)
+    return common.param('gasPrices', 'warmstorageread')
   }
   return BigInt(0)
 }
@@ -91,17 +91,17 @@ export function adjustSstoreGasEIP2929(
 
   const vmState = runState.vmState
   const address = runState.eei.getAddress().buf
-  const warmRead = common.param('gasPrices', 'warmstorageread') ?? BigInt(0)
-  const coldSload = common.param('gasPrices', 'coldsload') ?? BigInt(0)
+  const warmRead = common.param('gasPrices', 'warmstorageread')
+  const coldSload = common.param('gasPrices', 'coldsload')
 
   if (vmState.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead
       case 'initRefund':
-        return (common.param('gasPrices', 'sstoreInitGasEIP2200') ?? BigInt(0)) - warmRead
+        return common.param('gasPrices', 'sstoreInitGasEIP2200') - warmRead
       case 'cleanRefund':
-        return (common.param('gasPrices', 'sstoreReset') ?? BigInt(0)) - coldSload - warmRead
+        return common.param('gasPrices', 'sstoreReset') - coldSload - warmRead
     }
   }
 

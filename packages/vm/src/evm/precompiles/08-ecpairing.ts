@@ -10,8 +10,8 @@ export default function (opts: PrecompileInput): ExecResult {
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
   const inputDataSize = BigInt(Math.floor(inputData.length / 192))
   const gasUsed =
-    (opts._common.param('gasPrices', 'ecPairing') ?? BigInt(0)) +
-    inputDataSize * (opts._common.param('gasPrices', 'ecPairingWord') ?? BigInt(0))
+    opts._common.param('gasPrices', 'ecPairing') +
+    inputDataSize * opts._common.param('gasPrices', 'ecPairingWord')
 
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)

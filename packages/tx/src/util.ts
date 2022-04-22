@@ -98,9 +98,8 @@ export class AccessLists {
   }
 
   public static getDataFeeEIP2930(accessList: AccessListBuffer, common: Common): number {
-    const accessListStorageKeyCost =
-      common.param('gasPrices', 'accessListStorageKeyCost') ?? BigInt(0)
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost') ?? BigInt(0)
+    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
+    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
 
     let slots = 0
     for (let index = 0; index < accessList.length; index++) {

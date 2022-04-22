@@ -15,9 +15,9 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     c.setHardfork(Hardfork.MuirGlacier)
     st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
 
-    msg = 'Should return undefined for non-existing value'
-    st.equals(c.param('gasPrices', 'notexistingvalue'), undefined, msg)
-    st.equals(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), undefined, msg)
+    msg = 'Should return 0n for non-existing value'
+    st.equals(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
+    st.equals(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
 
     /*
     // Manual test since no test triggering EIP config available
@@ -67,7 +67,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'), BigInt(200), msg)
 
     msg = 'Should nullify SSTORE related values for petersburg'
-    st.equals(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), undefined, msg)
+    st.equals(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), BigInt(0), msg)
 
     st.end()
   })
@@ -92,7 +92,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
-    st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
+    st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), BigInt(0), msg)
 
     const UNSUPPORTED_EIP = 1000000
     let f = function () {
