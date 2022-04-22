@@ -117,7 +117,7 @@ tape('[LightSynchronizer]', async (t) => {
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHER_FETCHED, [BlockHeader.fromHeaderData({})])
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
     )
     config.logger.on('data', async (data) => {
       if (data.message.includes('Imported headers count=1')) {
@@ -151,7 +151,7 @@ tape('[LightSynchronizer]', async (t) => {
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHER_FETCHED, [] as BlockHeader[])
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[])
     )
     config.logger.on('data', async (data) => {
       if (data.message.includes('No headers fetched are applicable for import')) {

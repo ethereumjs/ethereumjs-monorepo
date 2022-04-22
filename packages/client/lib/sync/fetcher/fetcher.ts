@@ -188,7 +188,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       state: 'idle',
       peer: null,
     }
-    this.debug(`enqueueTask ${this.jobStr(job)}`)
+    this.debug(`enqueueTask: ${this.jobStr(job)}`)
     this.in.insert(job)
     if (!this.running && autoRestart) {
       void this.fetch()
