@@ -98,10 +98,21 @@ export class BeaconSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
+  async transitionToPOS(): Promise<void> {
+    await this.open()
+    await this.start()
+    this.config.events.emit(Event.SYNC_POS_TRANSITION)
+  }
+
   /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
+    // If the syncronizer has not yet been opened this means this is the first attempt on
+    // a POS transitioned block
+    if (!this.opened) {
+      await this.transitionToPOS()
+    }
     await this.skeleton.processNewHead(block)
     return true
   }
@@ -110,6 +121,11 @@ export class BeaconSynchronizer extends Synchronizer {
    * Sets the new head of the skeleton chain.
    */
   async setHead(block: Block): Promise<boolean> {
+    // If the syncronizer has not yet been opened this means this is the first attempt on
+    // a POS transitioned block
+    if (!this.opened) {
+      await this.transitionToPOS()
+    }
     const reorged = await this.skeleton.processNewHead(block, true)
     // New head announced, start syncing to it if we are not already.
     // If this causes a reorg, we will tear down the fetcher and start

@@ -8,7 +8,6 @@ import { BeaconSynchronizer } from '../../sync'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { short } from '../../util'
-import { SyncMode } from '../../config'
 import { PendingBlock } from '../../miner'
 import { CLConnectionManager } from '../util/CLConnectionManager'
 import type VM from '@ethereumjs/vm'
@@ -267,10 +266,7 @@ export class Engine {
     }
     this.execution = this.service.execution
     this.vm = this.execution.vm
-    this.beaconSync =
-      this.config.syncmode === SyncMode.Beacon
-        ? (this.service.synchronizer as BeaconSynchronizer)
-        : undefined
+    this.beaconSync = this.service.beaconSynchronizer
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
@@ -393,7 +389,7 @@ export class Engine {
         }
       }
     } catch (error: any) {
-      const status = (await this.beaconSync?.extendChain(block)) ? Status.ACCEPTED : Status.SYNCING
+      const status = (await this.beaconSync?.extendChain(block)) ? Status.SYNCING : Status.ACCEPTED
       if (status !== Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
         this.remoteBlocks.set(block.hash().toString('hex'), block)

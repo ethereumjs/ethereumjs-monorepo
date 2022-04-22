@@ -1,6 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
-import { SyncMode } from '../config'
 import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
@@ -11,6 +10,7 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import { VMExecution } from '../execution'
+import { Event } from '../types'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -25,6 +25,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  */
 export class FullEthereumService extends EthereumService {
   public synchronizer!: BeaconSynchronizer | FullSynchronizer
+  public beaconSynchronizer: BeaconSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -52,7 +53,23 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.syncmode === SyncMode.Full) {
+    const skeleton = new Skeleton({
+      config: this.config,
+      chain: this.chain,
+      metaDB: options.metaDB!,
+    })
+    this.beaconSynchronizer = new BeaconSynchronizer({
+      config: this.config,
+      pool: this.pool,
+      chain: this.chain,
+      interval: this.interval,
+      execution: this.execution,
+      skeleton,
+    })
+
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      this.synchronizer = this.beaconSynchronizer
+    } else {
       this.synchronizer = new FullSynchronizer({
         config: this.config,
         pool: this.pool,
@@ -61,19 +78,13 @@ export class FullEthereumService extends EthereumService {
         execution: this.execution,
         interval: this.interval,
       })
-    } else if (this.config.syncmode === SyncMode.Beacon) {
-      const skeleton = new Skeleton({
-        config: this.config,
-        chain: this.chain,
-        metaDB: options.metaDB!,
-      })
-      this.synchronizer = new BeaconSynchronizer({
-        config: this.config,
-        pool: this.pool,
-        chain: this.chain,
-        interval: this.interval,
-        execution: this.execution,
-        skeleton,
+      this.config.events.on(Event.SYNC_POS_TRANSITION, async () => {
+        if (this.synchronizer instanceof FullSynchronizer) {
+          await this.synchronizer.stop()
+          await this.synchronizer.close()
+          this.miner?.stop()
+          this.synchronizer = this.beaconSynchronizer
+        }
       })
     }
 
