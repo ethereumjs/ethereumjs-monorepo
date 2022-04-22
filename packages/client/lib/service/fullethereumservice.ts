@@ -84,6 +84,7 @@ export class FullEthereumService extends EthereumService {
           await this.synchronizer.close()
           this.miner?.stop()
           this.synchronizer = this.beaconSynchronizer
+          this.config.logger.info(`Switching over to beacon sync!`)
         }
       })
     }
@@ -103,6 +104,11 @@ export class FullEthereumService extends EthereumService {
       if (this.beaconSynchronizer.skeleton.bounds()) {
         this.synchronizer = this.beaconSynchronizer
       }
+    }
+    if (this.synchronizer instanceof FullSynchronizer) {
+      this.config.logger.info('Opening FullEthereumService with FullSynchronizer')
+    } else {
+      this.config.logger.info('Opening FullEthereumService with BeaconSynchronizer')
     }
     await super.open()
     await this.execution.open()
