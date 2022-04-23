@@ -347,9 +347,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
     if (baseFee === undefined) {
       throw new Error(`base fee not defined for: ${opcodeBuilder[key].name}`)
     }
-    opcodeBuilder[key].fee = Number(
-      common.param('gasPrices', opcodeBuilder[key].name.toLowerCase())
-    )
+    opcodeBuilder[key].fee = baseFee
   }
 
   if (customOpcodes) {

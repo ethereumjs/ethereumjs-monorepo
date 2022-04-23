@@ -41,7 +41,7 @@ tape('EIP 2929: gas cost tests', (t) => {
             gasUsed === expectedGasUsed,
             `Opcode: ${
               test.steps[i - 1].expectedOpcode
-            }, Gase Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
           )
         }
       }
