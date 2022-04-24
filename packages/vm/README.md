@@ -50,7 +50,7 @@ vm.runCode({
 This projects contain the following examples:
 
 1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-code-browser](./examples/run-code-browser.ts): Show how to use this library in a browser.
+1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
 1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
 1. [./examples/run-transactions-complete](./examples/run-transactions-complete.ts): Runs a contract-deployment transaction and then calls one of its functions.
 1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
