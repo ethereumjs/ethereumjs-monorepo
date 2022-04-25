@@ -401,6 +401,28 @@ tape('[TxPool]', async (t) => {
     }
   })
 
+  t.test('announcedTxHashes() -> account cannot pay the fees', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+      })
+    )
+
+    try {
+      await handleTxs(txs, {
+        getAccount: () => new Account(new BN(0), new BN('0')),
+      })
+      t.fail('should fail: account cannot pay upfront fees')
+    } catch (e) {
+      t.ok('succesfully rejected account with too low balance')
+    }
+  })
+
   t.test('announcedTxHashes() -> reject txs with too low gas price', async (t) => {
     // Setup 101 txs
     const txs = []
