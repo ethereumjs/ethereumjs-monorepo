@@ -28,8 +28,12 @@ const setup = () => {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const config = new Config({ transports: [] })
 
-const handleTxs = async (txs: any[]) => {
+const handleTxs = async (txs: any[], stateManager?: any) => {
   const { pool } = setup()
+
+  if (stateManager) {
+    ;(<any>pool).service.execution.vm.stateManager = stateManager
+  }
 
   pool.open()
   pool.start()
@@ -42,7 +46,11 @@ const handleTxs = async (txs: any[]) => {
   }
   const peerPool = new PeerPool({ config })
 
-  await pool.handleAnnouncedTxHashes(txs.map((e) => e.hash()), peer, peerPool)
+  await pool.handleAnnouncedTxHashes(
+    txs.map((e) => e.hash()),
+    peer,
+    peerPool
+  )
 }
 
 tape('[TxPool]', async (t) => {
@@ -284,15 +292,18 @@ tape('[TxPool]', async (t) => {
 
   t.test('announcedTxHashes() -> reject if pool is full', async (t) => {
     // Setup 5001 txs
-    let txs = []
+    const txs = []
     for (let account = 0; account < 51; account++) {
-      let pkey = Buffer.concat([Buffer.from(("aa").repeat(31), 'hex'), Buffer.from(account.toString(16).padStart(2, "0"), 'hex')])
-      let from = {
+      const pkey = Buffer.concat([
+        Buffer.from('aa'.repeat(31), 'hex'),
+        Buffer.from(account.toString(16).padStart(2, '0'), 'hex'),
+      ])
+      const from = {
         address: privateToAddress(pkey),
-        privateKey: pkey
+        privateKey: pkey,
       }
       for (let tx = 0; tx < 100; tx++) {
-        let txn = createTx(from, B, tx)
+        const txn = createTx(from, B, tx)
         txs.push(txn)
         if (txs.length > 5000) {
           break
@@ -305,25 +316,109 @@ tape('[TxPool]', async (t) => {
     try {
       await handleTxs(txs)
       t.fail('should fail: too much txs in pool')
-    } catch(e) {
+    } catch (e) {
       t.ok('succesfully rejected too many txs')
     }
   })
 
   t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
     // Setup 101 txs
-    let txs = []
+    const txs = []
 
     for (let tx = 0; tx < 101; tx++) {
-      let txn = createTx(A, B, tx)
+      const txn = createTx(A, B, tx)
       txs.push(txn)
     }
 
     try {
       await handleTxs(txs)
       t.fail('should fail: too much txs from account')
-    } catch(e) {
+    } catch (e) {
       t.ok('succesfully rejected too many txs from same account')
+    }
+  })
+
+  t.test('announcedTxHashes() -> reject unsigned txs', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+      })
+    )
+
+    try {
+      await handleTxs(txs)
+      t.fail('should fail: tx is not signed')
+    } catch (e) {
+      t.ok('succesfully rejected unsigned tx')
+    }
+  })
+
+  t.test('announcedTxHashes() -> reject txs with invalid nonce', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+      })
+    )
+
+    try {
+      await handleTxs(txs, {
+        getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
+      })
+      t.fail('should fail: tx is not signed')
+    } catch (e) {
+      t.ok('succesfully rejected unsigned tx')
+    }
+  })
+
+  t.test('announcedTxHashes() -> reject txs with too much data', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+        data: '0x' + '00'.repeat(128 * 1024 + 1),
+      })
+    )
+
+    try {
+      await handleTxs(txs, {
+        getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
+      })
+      t.fail('should fail: tx data field too long')
+    } catch (e) {
+      t.ok('succesfully rejected big tx')
+    }
+  })
+
+  t.test('announcedTxHashes() -> reject txs with too low gas price', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000 - 1,
+        maxPriorityFeePerGas: 1000000000 - 1,
+        nonce: 0,
+      })
+    )
+
+    try {
+      await handleTxs(txs)
+      t.fail('should fail: gas price too low')
+    } catch (e) {
+      t.ok('succesfully rejected tx with too low gas price')
     }
   })
 
