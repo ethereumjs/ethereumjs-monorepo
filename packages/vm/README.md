@@ -70,7 +70,7 @@ Note: along the `EIP-2929` (Gas cost increases for state access opcodes) impleme
 
 # BROWSER
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser).
+To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
 
 # SETUP
 
