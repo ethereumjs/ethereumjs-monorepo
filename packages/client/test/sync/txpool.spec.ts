@@ -6,7 +6,6 @@ import { Account, BN, privateToAddress } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
-import { start } from 'repl'
 
 const setup = () => {
   const config = new Config({ transports: [] })

@@ -289,13 +289,7 @@ export class TxPool {
    * @param isLocalTransaction Boolean which is true if this is a local transaction (this drops some constraint checks)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    try {
-      await this.validate(tx, isLocalTransaction).catch((e) => {
-        throw e
-      })
-    } catch (error: any) {
-      throw error
-    }
+    await this.validate(tx, isLocalTransaction)
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     let add: TxPoolObject[] = this.pool.get(address) ?? []
     const inPool = this.pool.get(address)

@@ -154,7 +154,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
 
     // add tx
-    txPool.add(txA01)
+    await txPool.add(txA01)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -198,7 +198,6 @@ tape('[Miner]', async (t) => {
       chain.putBlocks = (blocks: Block[]) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
-        console.log(blocks)
         for (const [index, tx] of expectedOrder.entries()) {
           t.ok(blocks[0].transactions[index].hash().equals(tx.hash()), msg)
         }
@@ -243,7 +242,7 @@ tape('[Miner]', async (t) => {
       { to: B.address, maxFeePerGas: 6 },
       { common }
     ).sign(A.privateKey)
-    txPool.add(tx, true)
+    await txPool.add(tx, true)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -295,8 +294,8 @@ tape('[Miner]', async (t) => {
       { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: new BN(1000000000) },
       { common }
     ).sign(A.privateKey)
-    txPool.add(tx1FillsBlockGasLimit)
-    txPool.add(tx2ExceedsBlockGasLimit)
+    await txPool.add(tx1FillsBlockGasLimit)
+    await txPool.add(tx2ExceedsBlockGasLimit)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -333,7 +332,7 @@ tape('[Miner]', async (t) => {
 
     // add many txs to slow assembling
     for (let i = 0; i < 1000; i++) {
-      txPool.add(createTx())
+      await txPool.add(createTx())
     }
 
     chain.putBlocks = () => {

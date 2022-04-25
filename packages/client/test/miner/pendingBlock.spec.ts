@@ -157,7 +157,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
     const { txPool } = setup()
-    txPool.add(txA01)
+    await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
     const parentBlock = await vm.blockchain.getLatestBlock()
