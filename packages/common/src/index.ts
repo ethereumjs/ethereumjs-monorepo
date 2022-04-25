@@ -538,7 +538,7 @@ export default class Common extends EventEmitter {
    *
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @returns The value requested or `undefined` if not found
+   * @returns The value requested or `BigInt(0)` if not found
    */
   param(topic: string, name: string): bigint {
     // TODO: consider the case that different active EIPs
@@ -546,7 +546,7 @@ export default class Common extends EventEmitter {
     let value
     for (const eip of this._eips) {
       value = this.paramByEIP(topic, name, eip)
-      if (value !== BigInt(0)) return value
+      if (value !== undefined) return value
     }
     return this.paramByHardfork(topic, name, this._hardfork)
   }
@@ -556,7 +556,7 @@ export default class Common extends EventEmitter {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param hardfork Hardfork name
-   * @returns The value requested or `undefined` if not found
+   * @returns The value requested or `BigInt(0)` if not found
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
@@ -566,7 +566,7 @@ export default class Common extends EventEmitter {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
-          value = valueEIP !== BigInt(0) ? valueEIP : value
+          value = valueEIP !== undefined ? valueEIP : value
         }
         // Paramater-inlining HF file (e.g. istanbul.json)
       } else {
@@ -588,9 +588,9 @@ export default class Common extends EventEmitter {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param eip Number of the EIP
-   * @returns The value requested or `BigInt(0)` if not found
+   * @returns The value requested or `undefined` if not found
    */
-  paramByEIP(topic: string, name: string, eip: number): bigint {
+  paramByEIP(topic: string, name: string, eip: number): bigint | undefined {
     if (!(eip in EIPs)) {
       throw new Error(`${eip} not supported`)
     }
@@ -600,7 +600,7 @@ export default class Common extends EventEmitter {
       throw new Error(`Topic ${topic} not defined`)
     }
     if (eipParams[topic][name] === undefined) {
-      return BigInt(0)
+      return undefined
     }
     const value = eipParams[topic][name].v
     return BigInt(value)
@@ -613,6 +613,7 @@ export default class Common extends EventEmitter {
    * @param name Parameter name
    * @param blockNumber Block number
    * @param td Total difficulty
+   *    * @returns The value requested or `BigInt(0)` if not found
    */
   paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): bigint {
     const hardfork = this.getHardforkByBlockNumber(blockNumber, td)

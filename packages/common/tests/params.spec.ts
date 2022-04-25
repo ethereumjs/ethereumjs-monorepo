@@ -92,7 +92,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
-    st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), BigInt(0), msg)
+    st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
 
     const UNSUPPORTED_EIP = 1000000
     let f = function () {
