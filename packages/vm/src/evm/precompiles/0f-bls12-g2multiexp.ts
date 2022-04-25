@@ -1,6 +1,7 @@
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
+import { gasDiscountPairs } from './util/bls12_381'
 const assert = require('assert')
 const {
   BLS12_381_ToG2Point,
@@ -22,11 +23,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const numPairs = Math.floor(inputData.length / 288)
 
   const gasUsedPerPair = opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
-  const gasDiscountArray = opts._common.paramByEIP(
-    'gasPrices',
-    'Bls12381MultiExpGasDiscount',
-    2537
-  ) as any
+  const gasDiscountArray = gasDiscountPairs
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
 
