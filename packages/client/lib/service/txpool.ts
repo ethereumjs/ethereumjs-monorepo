@@ -212,6 +212,9 @@ export class TxPool {
    * @param tx The tx to validate
    */
   private async validate(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+    if (!tx.isSigned()) {
+      throw new Error('Attempting to add tx to txpool which is not signed')
+    }
     if (tx.data.length > TX_MAX_DATA_SIZE) {
       throw new Error(
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
