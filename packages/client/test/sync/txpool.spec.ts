@@ -2,10 +2,11 @@ import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Account, BN } from 'ethereumjs-util'
+import { Account, BN, privateToAddress } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
+import { start } from 'repl'
 
 const setup = () => {
   const config = new Config({ transports: [] })
@@ -24,10 +25,27 @@ const setup = () => {
   return { pool }
 }
 
-tape('[TxPool]', async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const config = new Config({ transports: [] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const config = new Config({ transports: [] })
 
+const handleTxs = async (txs: any[]) => {
+  const { pool } = setup()
+
+  pool.open()
+  pool.start()
+  const peer: any = {
+    eth: {
+      getPooledTransactions: () => {
+        return [null, txs]
+      },
+    },
+  }
+  const peerPool = new PeerPool({ config })
+
+  await pool.handleAnnouncedTxHashes(txs.map((e) => e.hash()), peer, peerPool)
+}
+
+tape('[TxPool]', async (t) => {
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
@@ -62,6 +80,7 @@ tape('[TxPool]', async (t) => {
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
   const txA02 = createTx(A, B, 0, 2, 10) // A -> B, nonce: 0, value: 2 (different hash)
+  const txA02_Underpriced = createTx(A, B, 0, 2, 9) // A -> B, nonce: 0, gas price is too low to replace txn
   const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
@@ -229,6 +248,83 @@ tape('[TxPool]', async (t) => {
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
     pool.stop()
     pool.close()
+  })
+
+  t.test('announcedTxHashes() -> reject underpriced txn (same sender and nonce)', async (t) => {
+    const { pool } = setup()
+
+    pool.open()
+    pool.start()
+    let txs = [txA01]
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, txs]
+        },
+      },
+    }
+    const peerPool = new PeerPool({ config })
+
+    await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
+    try {
+      txs = [txA02_Underpriced]
+      await pool.handleAnnouncedTxHashes([txA02_Underpriced.hash()], peer, peerPool)
+      t.fail('should fail adding underpriced txn to txpool')
+    } catch (e) {
+      t.ok('succesfully failed adding underpriced txn')
+    }
+    t.equal(pool.pool.size, 1, 'pool size 1')
+    const address = A.address.toString('hex')
+    const poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 1, 'only one tx')
+    t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+    pool.stop()
+    pool.close()
+  })
+
+  t.test('announcedTxHashes() -> reject if pool is full', async (t) => {
+    // Setup 5001 txs
+    let txs = []
+    for (let account = 0; account < 51; account++) {
+      let pkey = Buffer.concat([Buffer.from(("aa").repeat(31), 'hex'), Buffer.from(account.toString(16).padStart(2, "0"), 'hex')])
+      let from = {
+        address: privateToAddress(pkey),
+        privateKey: pkey
+      }
+      for (let tx = 0; tx < 100; tx++) {
+        let txn = createTx(from, B, tx)
+        txs.push(txn)
+        if (txs.length > 5000) {
+          break
+        }
+      }
+      if (txs.length > 5000) {
+        break
+      }
+    }
+    try {
+      await handleTxs(txs)
+      t.fail('should fail: too much txs in pool')
+    } catch(e) {
+      t.ok('succesfully rejected too many txs')
+    }
+  })
+
+  t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
+    // Setup 101 txs
+    let txs = []
+
+    for (let tx = 0; tx < 101; tx++) {
+      let txn = createTx(A, B, tx)
+      txs.push(txn)
+    }
+
+    try {
+      await handleTxs(txs)
+      t.fail('should fail: too much txs from account')
+    } catch(e) {
+      t.ok('succesfully rejected too many txs from same account')
+    }
   })
 
   t.test('announcedTxs()', async (t) => {
