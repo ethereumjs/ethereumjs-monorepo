@@ -18,6 +18,7 @@ const MIN_GAS_PRICE_BUMP_PERCENT = 10
 const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
 const MAX_POOL_SIZE = 5000
 const MIN_GASPRICE = new BN(1000000000) // 1 GWei
+const MAX_TXS_PER_ACCOUNT = 100
 
 export interface TxPoolOptions {
   /* Config */
@@ -234,6 +235,11 @@ export class TxPool {
     const sender: UnprefixedAddress = senderAddress.toString().slice(2)
     const inPool = this.pool.get(sender)
     if (inPool) {
+      if (!isLocalTransaction && inPool.length >= MAX_TXS_PER_ACCOUNT) {
+        throw new Error(
+          `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`
+        )
+      }
       // Replace pooled txs with the same nonce
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce.eq(tx.nonce))
       if (existingTxn) {
@@ -247,34 +253,20 @@ export class TxPool {
           // TODO handle in RPC
           throw new Error('replacement gas too low')
         }
-      } else {
-        const expectedNonce = inPool
-          .map((txObject) => txObject.tx.nonce)
-          .reduce((b1, b2) => BN.max(b1, b2))
-        if (!tx.nonce.eq(expectedNonce.addn(1))) {
-          throw new Error(
-            `Transactions for address 0x${sender} are known, nonce should be ${expectedNonce
-              .addn(1)
-              .toString()}, but got ${tx.nonce.toString()}`
-          )
-        }
-      }
-    } else {
-      // Tx is not in pool
-      const account = await this.vm.stateManager.getAccount(senderAddress)
-      if (!tx.nonce.eq(account.nonce)) {
-        throw new Error(
-          `No transactions for address 0x${sender} are known, nonce should be ${account.nonce.toString()}, but got ${tx.nonce.toString()}`
-        )
       }
     }
     const block = await this.service.chain.getLatestHeader() // This should probably be cached somewhere
-    if (tx.gasLimit > block.gasLimit) {
+    if (tx.gasLimit.gt(block.gasLimit)) {
       throw new Error(
         `Tx gaslimit of ${tx.gasLimit.toString()} exceeds block gas limit of ${block.gasLimit.toString()}`
       )
     }
     const account = await this.vm.stateManager.getAccount(senderAddress)
+    if (account.nonce.gt(tx.nonce)) {
+      throw new Error(
+        `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
+      )
+    }
     const minimumBalance = tx.value.add(currentGasPrice.mul(tx.gasLimit))
     if (account.balance.lt(minimumBalance)) {
       throw new Error(
@@ -294,7 +286,9 @@ export class TxPool {
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
     try {
-      await this.validate(tx, isLocalTransaction)
+      await this.validate(tx, isLocalTransaction).catch((e) => {
+        throw e
+      })
     } catch (error: any) {
       throw error
     }
