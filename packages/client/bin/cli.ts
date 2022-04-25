@@ -250,10 +250,10 @@ const args = yargs(hideBin(process.argv))
       'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
     boolean: true,
   })
-  .option('enableBeaconSync', {
-    describe: 'Enables beacon/optimistic sync if the CL gives fcUs which are ahead than the chain',
+  .option('disableBeaconSync', {
+    describe:
+      'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
     boolean: true,
-    default: true,
   })
   .option('txLookupLimit', {
     describe:
@@ -282,12 +282,9 @@ function initDBs(config: Config) {
   const stateDB = level(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
-  let metaDB
-  if (args.saveReceipts || args.enableBeaconSync) {
-    const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
-    ensureDirSync(metaDataDir)
-    metaDB = level(metaDataDir)
-  }
+  const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
+  ensureDirSync(metaDataDir)
+  const metaDB = level(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
 }
@@ -626,6 +623,7 @@ async function run() {
     port: args.port,
     saveReceipts: args.saveReceipts,
     syncmode: args.syncmode,
+    disableBeaconSync: args.disableBeaconSync,
     transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })

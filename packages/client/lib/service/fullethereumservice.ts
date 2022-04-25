@@ -10,7 +10,6 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import { VMExecution } from '../execution'
-import { Event } from '../types'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -25,7 +24,6 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  */
 export class FullEthereumService extends EthereumService {
   public synchronizer!: BeaconSynchronizer | FullSynchronizer
-  public beaconSynchronizer: BeaconSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -53,22 +51,8 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    const skeleton = new Skeleton({
-      config: this.config,
-      chain: this.chain,
-      metaDB: options.metaDB!,
-    })
-    this.beaconSynchronizer = new BeaconSynchronizer({
-      config: this.config,
-      pool: this.pool,
-      chain: this.chain,
-      interval: this.interval,
-      execution: this.execution,
-      skeleton,
-    })
-
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      this.synchronizer = this.beaconSynchronizer
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) && !this.config.disableBeaconSync) {
+      void this.switchToBeaconSync()
     } else {
       this.synchronizer = new FullSynchronizer({
         config: this.config,
@@ -77,15 +61,6 @@ export class FullEthereumService extends EthereumService {
         txPool: this.txPool,
         execution: this.execution,
         interval: this.interval,
-      })
-      this.config.events.on(Event.SYNC_POS_TRANSITION, async () => {
-        if (this.synchronizer instanceof FullSynchronizer) {
-          await this.synchronizer.stop()
-          await this.synchronizer.close()
-          this.miner?.stop()
-          this.synchronizer = this.beaconSynchronizer
-          this.config.logger.info(`Switching over to beacon sync!`)
-        }
       })
     }
 
@@ -97,14 +72,44 @@ export class FullEthereumService extends EthereumService {
     }
   }
 
-  async open() {
-    // Check if skelton has sync status, swap syrncroniser with beacon syncronizer
-    if (this.synchronizer instanceof FullSynchronizer) {
-      await this.beaconSynchronizer.skeleton.open()
-      if (this.beaconSynchronizer.skeleton.bounds()) {
-        this.synchronizer = this.beaconSynchronizer
-      }
+  /**
+   * Public accessor for {@link BeaconSynchronizer}
+   */
+  get beaconSync() {
+    if (this.synchronizer instanceof BeaconSynchronizer) {
+      return this.synchronizer
     }
+    return undefined
+  }
+
+  /**
+   * Helper to switch to {@link BeaconSynchronizer}
+   */
+  async switchToBeaconSync() {
+    if (this.synchronizer instanceof FullSynchronizer) {
+      await this.synchronizer.stop()
+      await this.synchronizer.close()
+      this.miner?.stop()
+      this.config.logger.info(`Transitioning to beacon sync`)
+    }
+    const skeleton = new Skeleton({
+      config: this.config,
+      chain: this.chain,
+      metaDB: (this.execution as any).metaDB,
+    })
+    this.synchronizer = new BeaconSynchronizer({
+      config: this.config,
+      pool: this.pool,
+      chain: this.chain,
+      interval: this.interval,
+      execution: this.execution,
+      skeleton,
+    })
+    await this.synchronizer.open()
+    await this.synchronizer.start()
+  }
+
+  async open() {
     if (this.synchronizer instanceof FullSynchronizer) {
       this.config.logger.info('Opening FullEthereumService with FullSynchronizer')
     } else {
@@ -227,8 +232,8 @@ export class FullEthereumService extends EthereumService {
         )
         this.pool.ban(peer, 9000000)
       } else {
-        if (this.synchronizer.type === 'full') {
-          ;(this.synchronizer as FullSynchronizer).handleNewBlockHashes(message.data)
+        if (this.synchronizer instanceof FullSynchronizer) {
+          this.synchronizer.handleNewBlockHashes(message.data)
         }
       }
     } else if (message.name === 'Transactions') {
@@ -240,8 +245,8 @@ export class FullEthereumService extends EthereumService {
         )
         this.pool.ban(peer, 9000000)
       } else {
-        if (this.synchronizer.type === 'full') {
-          await (this.synchronizer as FullSynchronizer).handleNewBlock(message.data[0], peer)
+        if (this.synchronizer instanceof FullSynchronizer) {
+          await this.synchronizer.handleNewBlock(message.data[0], peer)
         }
       }
     } else if (message.name === 'NewPooledTransactionHashes') {

@@ -129,6 +129,7 @@ export abstract class Synchronizer {
   abstract best(): Peer | undefined
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
   /**
    * Checks if the synchronized state of the chain has changed
    * @emits {@link Event.SYNC_SYNCHRONIZED}

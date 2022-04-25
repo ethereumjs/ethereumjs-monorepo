@@ -3,7 +3,6 @@ import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN, zeros } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
-import { BeaconSynchronizer } from '../../sync'
 
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
@@ -247,7 +246,6 @@ export class Engine {
   private chain: Chain
   private config: Config
   private vm: VM
-  private beaconSync?: BeaconSynchronizer
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
@@ -266,7 +264,6 @@ export class Engine {
     }
     this.execution = this.service.execution
     this.vm = this.execution.vm
-    this.beaconSync = this.service.beaconSynchronizer
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
@@ -389,7 +386,12 @@ export class Engine {
         }
       }
     } catch (error: any) {
-      const status = (await this.beaconSync?.extendChain(block)) ? Status.SYNCING : Status.ACCEPTED
+      if (!this.service.beaconSync && !this.config.disableBeaconSync) {
+        await this.service.switchToBeaconSync()
+      }
+      const status = (await this.service.beaconSync?.extendChain(block))
+        ? Status.ACCEPTED
+        : Status.SYNCING
       if (status !== Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
         this.remoteBlocks.set(block.hash().toString('hex'), block)
@@ -466,7 +468,9 @@ export class Engine {
     try {
       headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
     } catch (error) {
-      headBlock = this.remoteBlocks.get(headBlockHash.slice(2)) as Block
+      headBlock =
+        (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
+        (this.remoteBlocks.get(headBlockHash.slice(2)) as Block)
       if (!headBlock) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
       } else {
@@ -475,7 +479,8 @@ export class Engine {
             headBlock.hash()
           )}`
         )
-        this.beaconSync?.setHead(headBlock)
+        this.service.beaconSync?.setHead(headBlock)
+        this.remoteBlocks.delete(headBlockHash.slice(2))
       }
       const payloadStatus = {
         status: Status.SYNCING,

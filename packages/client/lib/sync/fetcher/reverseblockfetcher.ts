@@ -39,7 +39,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
           blocks[0]?.header.number
         } last=${blocks[blocks.length - 1]?.header.number})`
       )
-      this.config.events.emit(Event.SYNC_FETCHED_SKELETON_BLOCKS, blocks.slice(0, num))
+      this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
       this.debug(
         `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${

@@ -17,6 +17,7 @@ export enum DBKey {
   Receipts,
   TxHash,
   SkeletonBlock,
+  SkeletonBlockHashToNumber,
   SkeletonStatus,
 }
 

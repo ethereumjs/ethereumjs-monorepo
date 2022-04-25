@@ -40,6 +40,7 @@ export class Skeleton extends MetaDBManager {
   private started: number /** Timestamp when the skeleton syncer was created */
   private logged = 0 /** Timestamp when progress was last logged to user */
   private pulled = new BN(0) /** Number of headers downloaded in this run */
+  private filling = false /** Whether we are actively filling the canonical chain */
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
 
@@ -51,6 +52,7 @@ export class Skeleton extends MetaDBManager {
 
   async open() {
     await this.getSyncStatus()
+    this.started = new Date().getTime()
   }
 
   /**
@@ -88,7 +90,8 @@ export class Skeleton extends MetaDBManager {
       if (force) {
         this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
       }
-      return true
+      // TODO uncommenting the below doesn't allow us to resume a new run due to the gap
+      // return true
     }
     const parent = await this.getBlock(number.subn(1))
     if (parent && !parent.hash().equals(head.header.parentHash)) {
@@ -100,6 +103,14 @@ export class Skeleton extends MetaDBManager {
         )
       }
       return true
+    }
+
+    // Return if we already have the block
+    if (
+      (lastchain?.head.eq(number) || lastchain?.tail.gte(number)) &&
+      (await this.getBlock(head.header.number))?.hash().equals(head.hash())
+    ) {
+      return false
     }
 
     await this.putBlock(head)
@@ -119,7 +130,7 @@ export class Skeleton extends MetaDBManager {
 
     await this.writeSyncStatus()
 
-    if (this.chain.blocks.height.addn(1).eq(head.header.number)) {
+    if (this.isLinked()) {
       await this.fillCanonicalChain()
     }
 
@@ -157,12 +168,18 @@ export class Skeleton extends MetaDBManager {
           foundSubchain.next = block.header.parentHash
         } else {
           // New subchain
-          const subchain = {
-            head: number.clone(),
-            tail: number.clone(),
-            next: block.header.parentHash,
+          if (
+            number.lt(
+              this.status.progress.subchains[this.status.progress.subchains.length - 1].tail
+            )
+          ) {
+            const subchain = {
+              head: number.clone(),
+              tail: number.clone(),
+              next: block.header.parentHash,
+            }
+            this.status.progress.subchains.push(subchain)
           }
-          this.status.progress.subchains.push(subchain)
         }
       }
 
@@ -183,6 +200,7 @@ export class Skeleton extends MetaDBManager {
             `Previous subchain fully overwritten head=${head} tail=${tail} next=${short(next)}`
           )
           this.status.progress.subchains = this.status.progress.subchains.slice(1)
+          continue
         } else {
           // Partially overwritten, trim the head to the overwritten size
           this.config.logger.debug(
@@ -203,7 +221,10 @@ export class Skeleton extends MetaDBManager {
           )
           this.status.progress.subchains[0].tail = tail
           this.status.progress.subchains[0].next = next
-          this.status.progress.subchains = this.status.progress.subchains.slice(1)
+          this.status.progress.subchains = [
+            this.status.progress.subchains[0],
+            ...this.status.progress.subchains.slice(2),
+          ]
           // If subchains were merged, all further available headers in the scratch
           // space are invalid since we skipped ahead. Stop processing the scratch
           // space to avoid dropping peers thinking they delivered invalid data.
@@ -216,22 +237,24 @@ export class Skeleton extends MetaDBManager {
 
     // Print a progress report making the UX a bit nicer
     if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
-      const left = this.status.progress.subchains[0].tail.subn(1)
-      this.logged = new Date().getTime()
-      if (this.pulled.isZero()) {
-        this.config.logger.info(`Beacon sync starting left=${left}`)
-      } else {
-        const eta = timeDuration(
-          new BN(new Date().getTime() - this.started).div(this.pulled.mul(left)).toNumber()
-        )
-        this.config.logger.info(
-          `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${eta}`
-        )
+      let left = this.bounds().tail.subn(1)
+      if (this.isLinked()) left = new BN(0)
+      if (left.gtn(0)) {
+        this.logged = new Date().getTime()
+        if (this.pulled.isZero()) {
+          this.config.logger.info(`Beacon sync starting left=${left}`)
+        } else {
+          const sinceStarted = new BN(new Date().getTime() - this.started).divn(1000)
+          const eta = timeDuration(sinceStarted.div(this.pulled).mul(left).toNumber())
+          this.config.logger.info(
+            `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${eta}`
+          )
+        }
       }
     }
 
     // If our tail reaches genesis, start filling.
-    if (this.status.progress.subchains[0].tail.subn(1).isZero()) {
+    if (this.isLinked()) {
       void this.fillCanonicalChain()
     }
 
@@ -239,31 +262,58 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
-   * Inserts skeleton blocks into canonical chain and runs execution.
-   * @param block
-   * @returns
+   * Returns true if the skeleton chain is linked to canonical
+   */
+  isLinked() {
+    if (this.status.progress.subchains.length !== 1) return false
+    const { tail } = this.bounds()
+    if (tail.lte(this.chain.blocks.height.addn(1))) {
+      return true
+    }
+    return false
+  }
+
+  /**
+   * Inserts skeleton blocks into canonical chain and runs execution when linked.
    */
   private async fillCanonicalChain() {
+    if (this.filling) return
+    this.filling = true
+    this.config.logger.debug('Starting canonical chain fill')
     const canonicalHead = this.chain.blocks.height.clone()
-    const next = canonicalHead.addn(1)
-    const { tail } = this.bounds()
+    const { head, tail } = this.bounds()
     while (canonicalHead.lt(tail)) {
       // Get next block
-      const block = await this.getBlock(next)
+      const block = await this.getBlock(canonicalHead.addn(1))
       // Insert into chain
       if (!block) break
       const num = await this.chain.putBlocks([block])
       // Delete skeleton block to clean up as we go
-      if (num === 1) await this.deleteBlock(next)
+      if (num === 1) await this.deleteBlock(block)
+      this.config.logger.debug(
+        `Successfully put block num=${canonicalHead.addn(1)} from skeleton chain to canonical`
+      )
       canonicalHead.iaddn(1)
+      if (head.eq(tail)) {
+        this.status.progress.subchains = []
+        break
+      }
+      tail.isubn(1)
     }
+    this.config.logger.debug(`Finished canonical chain fill end=${tail}`)
+    this.filling = false
   }
 
   /**
    * Writes a skeleton block to the db by number
    */
   private async putBlock(block: Block): Promise<boolean> {
-    await this.delete(DBKey.SkeletonBlock, block.header.number.toArrayLike(Buffer))
+    await this.put(DBKey.SkeletonBlock, block.header.number.toArrayLike(Buffer), block.serialize())
+    await this.put(
+      DBKey.SkeletonBlockHashToNumber,
+      block.hash(),
+      block.header.number.toArrayLike(Buffer)
+    )
     return true
   }
 
@@ -285,11 +335,27 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * Gets a skeleton block from the db by hash
+   */
+  async getBlockByHash(hash: Buffer): Promise<Block | undefined> {
+    try {
+      const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
+      if (!number) return undefined
+      return this.getBlock(new BN(number))
+    } catch (error: any) {
+      if (error.type === 'NotFoundError') {
+        return undefined
+      }
+    }
+  }
+
+  /**
    * Deletes a skeleton block from the db by number
    */
-  async deleteBlock(number: BN): Promise<boolean> {
+  async deleteBlock(block: Block): Promise<boolean> {
     try {
-      await this.delete(DBKey.SkeletonBlock, number.toArrayLike(Buffer))
+      await this.delete(DBKey.SkeletonBlock, block.header.number.toArrayLike(Buffer))
+      await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
       return true
     } catch (error: any) {
       return false

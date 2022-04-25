@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { short } from '../util'
 import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
@@ -33,7 +32,7 @@ export class BeaconSynchronizer extends Synchronizer {
     this.processSkeletonBlocks = this.processSkeletonBlocks.bind(this)
     this.runExecution = this.runExecution.bind(this)
 
-    this.config.events.on(Event.SYNC_FETCHED_SKELETON_BLOCKS, this.processSkeletonBlocks)
+    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
   }
 
@@ -98,22 +97,12 @@ export class BeaconSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
-  async transitionToPOS(): Promise<void> {
-    await this.open()
-    await this.start()
-    this.config.events.emit(Event.SYNC_POS_TRANSITION)
-  }
-
   /**
    * Returns true if the block successfully extends the chain.
    */
-  async extendChain(block: Block): Promise<boolean> {
-    // If the syncronizer has not yet been opened this means this is the first attempt on
-    // a POS transitioned block
-    if (!this.opened) {
-      await this.transitionToPOS()
-    }
-    await this.skeleton.processNewHead(block)
+  async extendChain(block: Block, force = false): Promise<boolean> {
+    if (!this.opened) return false
+    await this.skeleton.processNewHead(block, force)
     return true
   }
 
@@ -121,11 +110,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * Sets the new head of the skeleton chain.
    */
   async setHead(block: Block): Promise<boolean> {
-    // If the syncronizer has not yet been opened this means this is the first attempt on
-    // a POS transitioned block
-    if (!this.opened) {
-      await this.transitionToPOS()
-    }
+    if (!this.opened) return false
     const reorged = await this.skeleton.processNewHead(block, true)
     // New head announced, start syncing to it if we are not already.
     // If this causes a reorg, we will tear down the fetcher and start
@@ -140,7 +125,7 @@ export class BeaconSynchronizer extends Synchronizer {
           )}`
         )
         // Tear down fetcher and start from new head
-        this.clearFetcher()
+        await this.stop()
         void this.start()
       } else {
         this.config.logger.debug(
@@ -157,16 +142,17 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
+    if (this.skeleton.isLinked()) return true
+
     const bounds = peer ? this.skeleton.bounds() : undefined
-    const { tail } = bounds ?? {}
+    if (!bounds) return false
+    const { tail } = bounds
 
-    if (!tail || tail.subn(1).isZero()) return false
-
-    const first = tail.clone().subn(1)
-    // Sync from tail to next subchain
-    const count = tail
-      .subn(1)
-      .sub((this.skeleton as any).status.progress.subchains[1]?.head ?? new BN(0))
+    const first = tail.subn(1)
+    // Sync from tail to next subchain or chain height
+    const count = first.sub(
+      (this.skeleton as any).status.progress.subchains[1]?.head ?? this.chain.blocks.height
+    )
     if (count.gtn(0)) {
       if (!this.fetcher || this.fetcher.errored) {
         this.fetcher = new ReverseBlockFetcher({
@@ -178,10 +164,10 @@ export class BeaconSynchronizer extends Synchronizer {
           first,
           count,
           reverse: true,
-          destroyWhenDone: false,
+          destroyWhenDone: true,
         })
       } else {
-        /** TODO figure out if there is any fetcher property to be updated */
+        // TODO figure out if there is any fetcher property to be updated
       }
     }
     return true
@@ -209,8 +195,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!this.running) return
 
     // If we have linked the chain, run execution
-    const bounds = this.skeleton.bounds()
-    if (bounds?.tail.eqn(0)) {
+    if (this.skeleton.isLinked()) {
       await this.runExecution()
     }
   }
@@ -223,13 +208,10 @@ export class BeaconSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.config.events.removeListener(
-      Event.SYNC_FETCHED_SKELETON_BLOCKS,
-      this.processSkeletonBlocks
-    )
+    this.running = false
+    this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
     this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
-
-    return await super.stop()
+    return super.stop()
   }
 
   /**
