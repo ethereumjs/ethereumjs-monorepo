@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Account, BN } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
@@ -10,8 +10,15 @@ import { Config } from '../../lib/config'
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
-    chain: { headers: { height: new BN(0) } },
-    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+    chain: {
+      headers: { height: new BN(0) },
+      getLatestHeader: () => BlockHeader.fromHeaderData({}),
+    },
+    execution: {
+      vm: {
+        stateManager: { getAccount: () => new Account(new BN(0), new BN('50000000000000000000')) },
+      },
+    },
   }
   const pool = new TxPool({ config, service })
   return { pool }
@@ -37,7 +44,7 @@ tape('[TxPool]', async (t) => {
     ),
   }
 
-  const createTx = (from = A, to = B, nonce = 0, value = 1) => {
+  const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {
     const txData = {
       nonce,
       maxFeePerGas: 1000000000,
@@ -46,16 +53,18 @@ tape('[TxPool]', async (t) => {
       to: to.address,
       value,
     }
+    txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
+    txData.maxInclusionFeePerGas += (txData.maxInclusionFeePerGas * feeBump) / 100
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
-  const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
+  const txA02 = createTx(A, B, 0, 2, 10) // A -> B, nonce: 0, value: 2 (different hash)
   const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
-  /*
+
   t.test('should initialize correctly', (t) => {
     const { pool } = setup()
     t.equal(pool.pool.size, 0, 'pool empty')
@@ -196,7 +205,7 @@ tape('[TxPool]', async (t) => {
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
-  })*/
+  })
 
   t.test('announcedTxHashes() -> add two txs (same sender and nonce)', async (t) => {
     const { pool } = setup()
@@ -221,7 +230,7 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
   })
-  /*
+
   t.test('announcedTxs()', async (t) => {
     const { pool } = setup()
 
@@ -379,5 +388,5 @@ tape('[TxPool]', async (t) => {
 
     pool.stop()
     pool.close()
-  })*/
+  })
 })

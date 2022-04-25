@@ -246,8 +246,9 @@ export class TxPool {
         if (existingTxn.tx.hash().equals(tx.hash())) {
           throw new Error(`${tx.hash()}: this transaction is already in the TxPool`)
         }
-        const minimumGasPrice = currentGasPrice.add(
-          currentGasPrice.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
+        const otherTxGasPrice = this.getTxGasPrice(existingTxn.tx)
+        const minimumGasPrice = otherTxGasPrice.add(
+          otherTxGasPrice.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
         )
         if (minimumGasPrice.gt(currentGasPrice)) {
           // TODO handle in RPC
@@ -293,7 +294,12 @@ export class TxPool {
       throw error
     }
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
-    const add: TxPoolObject[] = this.pool.get(address) ?? []
+    let add: TxPoolObject[] = this.pool.get(address) ?? []
+    const inPool = this.pool.get(address)
+    if (inPool) {
+      // Replace pooled txs with the same nonce
+      add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
+    }
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
     add.push({ tx, added, hash })
