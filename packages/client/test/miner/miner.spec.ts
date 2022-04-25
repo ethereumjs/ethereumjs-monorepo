@@ -288,11 +288,11 @@ tape('[Miner]', async (t) => {
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: gasLimit - 1, data },
+      { gasLimit: gasLimit - 1, data, gasPrice: new BN(1000000000) },
       { common }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: 21000, to: B.address, nonce: 1 },
+      { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: new BN(1000000000) },
       { common }
     ).sign(A.privateKey)
     txPool.add(tx1FillsBlockGasLimit)
