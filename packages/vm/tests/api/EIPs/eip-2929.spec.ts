@@ -151,7 +151,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
-  /*
+
   // Checks `extcodecopy( 0xff,0,0,0,0)` twice, (should be expensive first time),
   // and then does `extcodecopy( this,0,0,0,0)`.
   t.test('should charge for extcodecopy correctly', async (st) => {
@@ -288,5 +288,5 @@ tape('EIP 2929: gas cost tests', (t) => {
     )
 
     st.end()
-  })*/
+  })
 })
