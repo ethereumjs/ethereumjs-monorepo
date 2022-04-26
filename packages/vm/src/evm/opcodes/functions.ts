@@ -12,6 +12,7 @@ import {
   ecrecover,
   publicToAddress,
   SECP256K1_ORDER_DIV_2,
+  setLengthRight,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -1023,12 +1024,27 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf6,
     async function (runState) {
-      const [commitUnpadded, yParity, r, s] = runState.stack.popN(4)
-      if (s > SECP256K1_ORDER_DIV_2) {
+      // eslint-disable-next-line prefer-const
+      let [authority, memOffset, memLength] = runState.stack.popN(3)
+
+      if (memLength > 128n) {
+        memLength = 128n
+      }
+
+      let mem = runState.memory.read(Number(memOffset), Number(memLength))
+      if (mem.length < 128) {
+        mem = setLengthRight(mem, 128)
+      }
+
+      const yParity = bufferToBigInt(mem[31])
+      const r = mem.slice(32, 64)
+      const s = mem.slice(64, 96)
+      const commit = mem.slice(96, 128)
+
+      if (bufferToBigInt(s) > SECP256K1_ORDER_DIV_2) {
         trap(ERROR.AUTH_INVALID_S)
       }
 
-      const commit = setLengthLeft(bigIntToBuffer(commitUnpadded), 32)
       const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
       const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
@@ -1036,9 +1052,9 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let recover
       try {
-        recover = ecrecover(msgHash, Number(yParity) + 27, bigIntToBuffer(r), bigIntToBuffer(s))
+        recover = ecrecover(msgHash, Number(yParity) + 27, r, s)
       } catch (e) {
-        // Malformed signature, push 0 on stack, clear auth variable and return
+        // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BigInt(0))
         runState.eei._env.auth = undefined
         return
@@ -1046,10 +1062,18 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const addressBuffer = publicToAddress(recover)
       const address = new Address(addressBuffer)
-      runState.eei._env.auth = address
 
-      const addressBigInt = bufferToBigInt(addressBuffer)
-      runState.stack.push(addressBigInt)
+      const expectedAddress = new Address(setLengthLeft(bigIntToBuffer(authority), 20))
+
+      if (!expectedAddress.equals(address)) {
+        // expected address does not equal the recovered address, clear auth variable
+        runState.stack.push(BigInt(0))
+        runState.eei._env.auth = undefined
+        return
+      }
+
+      runState.eei._env.auth = address
+      runState.stack.push(BigInt(1))
     },
   ],
   // 0xf7: AUTHCALL
