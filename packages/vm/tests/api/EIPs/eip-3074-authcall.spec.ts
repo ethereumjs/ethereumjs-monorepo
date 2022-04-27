@@ -28,6 +28,7 @@ const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
   'hex'
 )
+const authAddress = new Address(privateToAddress(privateKey))
 
 const block = Block.fromBlockData(
   {
@@ -73,7 +74,7 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
  * @param commitUnpadded - The commit
  * @param signature - The signature as obtained by `signMessage`
  */
-function getAuthCode(commitUnpadded: Buffer, signature: any) {
+function getAuthCode(commitUnpadded: Buffer, signature: any, address: Address) {
   const commit = setLengthLeft(commitUnpadded, 32)
   let v
   if (signature.v == 27) {
@@ -86,8 +87,39 @@ function getAuthCode(commitUnpadded: Buffer, signature: any) {
 
   const PUSH32 = Buffer.from('7F', 'hex')
   const AUTH = Buffer.from('F6', 'hex')
+  const MSTORE = Buffer.from('53', 'hex')
+  const mslot0 = zeros(32)
+  const mslot1 = Buffer.concat([zeros(31), Buffer.from('20', 'hex')])
+  const mslot2 = Buffer.concat([zeros(31), Buffer.from('40', 'hex')])
+  const mslot3 = Buffer.concat([zeros(31), Buffer.from('60', 'hex')])
+  const addressBuffer = setLengthLeft(address.buf, 32)
   // This bytecode setups the stack to be used for AUTH
-  return Buffer.concat([PUSH32, signature.s, PUSH32, signature.r, PUSH32, v, PUSH32, commit, AUTH])
+  return Buffer.concat([
+    PUSH32,
+    signature.s,
+    PUSH32,
+    mslot2,
+    MSTORE,
+    PUSH32,
+    signature.r,
+    PUSH32,
+    mslot1,
+    MSTORE,
+    PUSH32,
+    v,
+    PUSH32,
+    mslot0,
+    MSTORE,
+    PUSH32,
+    commit,
+    PUSH32,
+    mslot3,
+    MSTORE,
+    Buffer.from('60606000', 'hex'),
+    PUSH32,
+    addressBuffer,
+    AUTH,
+  ])
 }
 
 // This type has all arguments to be used on AUTHCALL
@@ -185,7 +217,7 @@ tape('EIP-3074 AUTH', (t) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = Buffer.concat([getAuthCode(message, signature), RETURNTOP])
+    const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = Transaction.fromTxData({
@@ -199,15 +231,15 @@ tape('EIP-3074 AUTH', (t) => {
     await vm.stateManager.putAccount(callerAddress, account)
 
     const result = await vm.runTx({ tx, block })
-    const buf = result.execResult.returnValue.slice(12)
-    st.ok(buf.equals(address.buf), 'auth returned right address')
+    const buf = result.execResult.returnValue.slice(31)
+    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth should return 1')
   })
   t.test('Should not set AUTH if signature is invalid', async (st) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
-    const code = Buffer.concat([getAuthCode(message, signature), RETURNTOP])
+    const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = Transaction.fromTxData({
@@ -229,7 +261,7 @@ tape('EIP-3074 AUTH', (t) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
-    const code = Buffer.concat([getAuthCode(message, signature), RETURNTOP])
+    const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = Transaction.fromTxData({
@@ -252,8 +284,8 @@ tape('EIP-3074 AUTH', (t) => {
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = signMessage(message, contractAddress, callerPrivateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
-      getAuthCode(message, signature2),
+      getAuthCode(message, signature, authAddress),
+      getAuthCode(message, signature2, authAddress),
       RETURNTOP,
     ])
 
@@ -290,7 +322,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
       }),
@@ -317,7 +349,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
       }),
@@ -358,7 +390,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
       }),
@@ -401,7 +433,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const message = Buffer.from('01', 'hex')
       const signature = signMessage(message, contractAddress, privateKey)
       const code = Buffer.concat([
-        getAuthCode(message, signature),
+        getAuthCode(message, signature, authAddress),
         getAuthCallCode({
           address: new Address(Buffer.from('cc'.repeat(20), 'hex')),
           value: 1n,
@@ -448,7 +480,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const message = Buffer.from('01', 'hex')
       const signature = signMessage(message, contractAddress, privateKey)
       const code = Buffer.concat([
-        getAuthCode(message, signature),
+        getAuthCode(message, signature, authAddress),
         getAuthCallCode({
           address: contractStorageAddress,
           value: 1n,
@@ -536,11 +568,11 @@ tape('EIP-3074 AUTHCALL', (t) => {
       s: signature.s,
     }
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
       }),
-      getAuthCode(message, signature2),
+      getAuthCode(message, signature2, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
       }),
@@ -567,7 +599,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
         gasLimit: 10000000n,
@@ -591,7 +623,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
         valueExt: 1n,
@@ -619,7 +651,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
         gasLimit: 700000n,
@@ -648,7 +680,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const signature = signMessage(message, contractAddress, privateKey)
     const input = Buffer.from('aa'.repeat(32), 'hex')
     const code = Buffer.concat([
-      getAuthCode(message, signature),
+      getAuthCode(message, signature, authAddress),
       MSTORE(Buffer.from('20', 'hex'), input),
       getAuthCallCode({
         address: contractStorageAddress,

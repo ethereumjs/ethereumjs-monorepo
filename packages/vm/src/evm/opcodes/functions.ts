@@ -1036,7 +1036,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         mem = setLengthRight(mem, 128)
       }
 
-      const yParity = bufferToBigInt(mem[31])
+      const yParity = BigInt(mem[31])
       const r = mem.slice(32, 64)
       const s = mem.slice(64, 96)
       const commit = mem.slice(96, 128)
