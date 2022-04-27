@@ -87,7 +87,7 @@ function getAuthCode(commitUnpadded: Buffer, signature: any, address: Address) {
 
   const PUSH32 = Buffer.from('7F', 'hex')
   const AUTH = Buffer.from('F6', 'hex')
-  const MSTORE = Buffer.from('53', 'hex')
+  const MSTORE = Buffer.from('52', 'hex')
   const mslot0 = zeros(32)
   const mslot1 = Buffer.concat([zeros(31), Buffer.from('20', 'hex')])
   const mslot2 = Buffer.concat([zeros(31), Buffer.from('40', 'hex')])
@@ -115,7 +115,7 @@ function getAuthCode(commitUnpadded: Buffer, signature: any, address: Address) {
     PUSH32,
     mslot3,
     MSTORE,
-    Buffer.from('60606000', 'hex'),
+    Buffer.from('60806000', 'hex'),
     PUSH32,
     addressBuffer,
     AUTH,
@@ -234,6 +234,7 @@ tape('EIP-3074 AUTH', (t) => {
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth should return 1')
   })
+
   t.test('Should not set AUTH if signature is invalid', async (st) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
@@ -285,7 +286,7 @@ tape('EIP-3074 AUTH', (t) => {
     const signature2 = signMessage(message, contractAddress, callerPrivateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
-      getAuthCode(message, signature2, authAddress),
+      getAuthCode(message, signature2, callerAddress),
       RETURNTOP,
     ])
 
@@ -301,8 +302,8 @@ tape('EIP-3074 AUTH', (t) => {
     await vm.stateManager.putAccount(callerAddress, account)
 
     const result = await vm.runTx({ tx, block })
-    const buf = result.execResult.returnValue.slice(12)
-    st.ok(buf.equals(callerAddress.buf), 'auth returned right address')
+    const buf = result.execResult.returnValue.slice(31)
+    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
   })
 })
 
