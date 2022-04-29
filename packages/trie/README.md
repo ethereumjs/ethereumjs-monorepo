@@ -29,7 +29,7 @@ import level from 'level'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 
 const db = level('./testdb')
-const trie = new Trie(db)
+const trie = new Trie({ db })
 
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
@@ -120,7 +120,7 @@ const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580
 // Convert the state root to a Buffer (strip the 0x prefix)
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
-const trie = new Trie(db, stateRootBuffer)
+const trie = new Trie({ db, root: stateRootBuffer })
 
 trie
   .createReadStream()
@@ -140,7 +140,7 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
 const db = level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')
-const trie = new Trie(db, stateRoot)
+const trie = new Trie({ db, root: stateRoot })
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 

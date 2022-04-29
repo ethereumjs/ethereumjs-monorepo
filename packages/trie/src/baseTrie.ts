@@ -35,6 +35,24 @@ export type FoundNodeFunction = (
   walkController: WalkController
 ) => void
 
+export interface TrieOpts {
+  /**
+   * A [levelup](https://github.com/Level/levelup) instance.
+   * By default (if the db is `null` or left undefined) creates an
+   * in-memory [memdown](https://github.com/Level/memdown) instance.
+   */
+  db?: LevelUp | null
+  /**
+   * A `Buffer` for the root of a previously stored trie
+   */
+  root?: Buffer
+  /**
+   * Delete nodes from DB on delete operations (disallows switching to an older state root)
+   * Default: `false`
+   */
+  deleteFromDB?: boolean
+}
+
 /**
  * The basic trie interface, use with `import { BaseTrie as Trie } from 'merkle-patricia-tree'`.
  * In Ethereum applications stick with the {@link SecureTrie} overlay.
@@ -51,22 +69,19 @@ export class Trie {
   private _deleteFromDB: boolean
 
   /**
-   * test
-   * @param db - A [levelup](https://github.com/Level/levelup) instance. By default (if the db is `null` or
-   * left undefined) creates an in-memory [memdown](https://github.com/Level/memdown) instance.
-   * @param root - A `Buffer` for the root of a previously stored trie
-   * @param deleteFromDB - Delete nodes from DB on delete operations (disallows switching to an older state root) (default: `false`)
+   * Create a new trie
+   * @param opts Options for instantiating the trie
    */
-  constructor(db?: LevelUp | null, root?: Buffer, deleteFromDB: boolean = false) {
+  constructor(opts: TrieOpts = {}) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
 
-    this.db = db ? new DB(db) : new DB()
+    this.db = opts.db ? new DB(opts.db) : new DB()
     this._root = this.EMPTY_TRIE_ROOT
-    this._deleteFromDB = deleteFromDB
+    this._deleteFromDB = opts.deleteFromDB ?? false
 
-    if (root) {
-      this.root = root
+    if (opts.root) {
+      this.root = opts.root
     }
   }
 
@@ -683,7 +698,7 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    let proofTrie = new Trie(null, rootHash)
+    let proofTrie = new Trie({ root: rootHash })
     try {
       proofTrie = await Trie.fromProof(proof, proofTrie)
     } catch (e: any) {
@@ -735,7 +750,7 @@ export class Trie {
    */
   copy(): Trie {
     const db = this.db.copy()
-    return new Trie(db._leveldb, this.root)
+    return new Trie({ db: db._leveldb, root: this.root, deleteFromDB: this._deleteFromDB })
   }
 
   /**
