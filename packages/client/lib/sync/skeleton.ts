@@ -68,6 +68,7 @@ export class Skeleton extends MetaDBManager {
     // the outer loop to tear down the skeleton sync and restart it
     const { number } = head.header
 
+    /*
     const [lastchain] = this.status.progress.subchains
     if (lastchain?.tail.gte(number)) {
       // If the chain is down to a single beacon header, and it is re-announced
@@ -103,31 +104,63 @@ export class Skeleton extends MetaDBManager {
         )
       }
       return true
+    }*/
+
+    // Create a new subchain for the head (unless the last can be extended),
+    // trimming anything it would overwrite
+    const headchain = {
+      head: number.clone(),
+      tail: number.clone(),
+      next: head.header.parentHash,
     }
-
-    // Return if we already have the block
-    if (
-      (lastchain?.head.eq(number) || lastchain?.tail.gte(number)) &&
-      (await this.getBlock(head.header.number))?.hash().equals(head.hash())
-    ) {
-      return false
-    }
-
-    await this.putBlock(head)
-
-    if (lastchain?.head.addn(1).eq(number)) {
-      // Extend subchain
-      lastchain.head.iaddn(1)
-    } else {
-      // Start new subchain
-      const subchain = {
-        head: number.clone(),
-        tail: number.clone(),
-        next: head.header.parentHash,
+    for (const _subchain of this.status.progress.subchains) {
+      // If the last chain is above the new head, delete altogether
+      const lastchain = this.status.progress.subchains[0]
+      if (lastchain.tail.gte(headchain.tail)) {
+        this.config.logger.debug(
+          `Dropping skeleton subchain head=${lastchain.head} tail=${lastchain.tail}`
+        )
+        this.status.progress.subchains = this.status.progress.subchains.slice(1)
+        continue
       }
-      this.status.progress.subchains.unshift(subchain)
+      // Otherwise truncate the last chain if needed and abort trimming
+      if (lastchain.head.gte(headchain.tail)) {
+        this.config.logger.debug(
+          `Trimming skeleton subchain oldHead=${lastchain.head} newHead=${headchain.tail.subn(
+            1
+          )} tail=${lastchain.tail}`
+        )
+        lastchain.head = headchain.tail.subn(1)
+      }
+      break
+    }
+    // If the last subchain can be extended, we're lucky. Otherwise create
+    // a new subchain sync task.
+    let extended = false
+    if (this.status.progress.subchains.length > 0) {
+      const lastchain = this.status.progress.subchains[0]
+      if (lastchain.head.eq(headchain.tail.subn(1))) {
+        const lasthead = await this.getBlock(lastchain.head)
+        if (lasthead?.hash().equals(head.header.parentHash)) {
+          this.config.logger.debug(
+            `Extended skeleton subchain with new head=${headchain.tail} tail=${lastchain.tail}`
+          )
+          lastchain.head = headchain.tail
+          extended = true
+        }
+      }
+    }
+    if (!extended) {
+      this.config.logger.debug(`Created new skeleton subchain head=${number} tail=${number}`)
+      this.status.progress.subchains.unshift(headchain)
     }
 
+    // Update the database with the new sync stats and insert the new
+    // head header. We won't delete any trimmed skeleton headers since
+    // those will be outside the index space of the many subchains and
+    // the database space will be reclaimed eventually when processing
+    // blocks above the current head.
+    await this.putBlock(head)
     await this.writeSyncStatus()
 
     if (this.isLinked()) {

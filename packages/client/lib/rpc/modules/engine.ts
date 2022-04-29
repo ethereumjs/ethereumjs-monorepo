@@ -390,9 +390,9 @@ export class Engine {
         await this.service.switchToBeaconSync()
       }
       const status = (await this.service.beaconSync?.extendChain(block))
-        ? Status.ACCEPTED
-        : Status.SYNCING
-      if (status !== Status.ACCEPTED) {
+        ? Status.SYNCING
+        : Status.ACCEPTED
+      if (status !== Status.SYNCING) {
         // Stash the block for a potential forced forkchoice update to it later.
         this.remoteBlocks.set(block.hash().toString('hex'), block)
       }

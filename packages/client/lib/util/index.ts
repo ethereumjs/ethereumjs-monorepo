@@ -8,6 +8,7 @@ export * from './parse'
 export * from './rpc'
 
 export function short(buf: Buffer | string): string {
+  if (!buf) return ''
   const bufStr = Buffer.isBuffer(buf) ? `0x${buf.toString('hex')}` : buf
   let str = bufStr.substring(0, 6) + '…'
   if (bufStr.length === 66) {

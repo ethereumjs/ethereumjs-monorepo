@@ -102,8 +102,12 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async extendChain(block: Block, force = false): Promise<boolean> {
     if (!this.opened) return false
-    await this.skeleton.processNewHead(block, force)
-    return true
+    const canonicalHead = await this.skeleton.getBlock(this.skeleton.bounds().head)
+    if (canonicalHead?.hash().equals(block.header.parentHash)) {
+      await this.skeleton.processNewHead(block, force)
+      return true
+    }
+    return false
   }
 
   /**
