@@ -96,7 +96,10 @@ export class LightSynchronizer extends Synchronizer {
 
     // Start fetcher from a safe distance behind because if the previous fetcher exited
     // due to a reorg, it would make sense to step back and refetch.
-    const first = this.chain.headers.height >= BigInt(this.config.safeReorgDistance)? this.chain.headers.height - BigInt(this.config.safeReorgDistance) + BigInt(1): BigInt(1);
+    const first =
+      this.chain.headers.height >= BigInt(this.config.safeReorgDistance)
+        ? this.chain.headers.height - BigInt(this.config.safeReorgDistance) + BigInt(1)
+        : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
     if (!this.fetcher || this.fetcher.errored) {
@@ -112,8 +115,8 @@ export class LightSynchronizer extends Synchronizer {
       })
     } else {
       const fetcherHeight = this.fetcher.first + this.fetcher.count - BigInt(1)
-      if (height > fetcherHeight){
-        this.fetcher.count += (height - fetcherHeight)
+      if (height > fetcherHeight) {
+        this.fetcher.count += height - fetcherHeight
         this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
       }
     }

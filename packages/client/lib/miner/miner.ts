@@ -87,9 +87,11 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
-      const inTurn = await blockchain.consensus.cliqueSignerInTurn(signerAddress)
+      const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        signerAddress
+      )
       if (!inTurn) {
-        const signerCount = blockchain.consensus.cliqueActiveSigners().length
+        const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
     }

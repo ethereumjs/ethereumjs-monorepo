@@ -4,8 +4,8 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
-import { DefaultStateManager, StateManager } from '@ethereumjs/statemanager'
-import { Address } from 'ethereumjs-util'
+import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { Address, Account } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
@@ -26,10 +26,10 @@ const B = {
   ),
 }
 
-const setBalance = async (stateManager: StateManager, address: Address, balance: bigint) => {
-  await stateManager.checkpoint()
-  await stateManager.modifyAccountFields(address, { balance })
-  await stateManager.commit()
+const setBalance = async (vm: VM, address: Address, balance: bigint) => {
+  await vm.vmState.checkpoint()
+  await vm.vmState.modifyAccountFields(address, { balance })
+  await vm.vmState.commit()
 }
 
 const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
@@ -37,14 +37,8 @@ const config = new Config({ transports: [], common })
 
 const setup = () => {
   const service: any = {
-    chain: {
-      headers: { height: new BN(0), latest: BlockHeader.fromHeaderData({}, { common }) },
-    },
-    execution: {
-      vm: {
-        stateManager: { getAccount: () => new Account(new BN(0), new BN('50000000000000000000')) },
-      },
-    },
+    chain: { headers: { height: BigInt(0), latest: BlockHeader.fromHeaderData({}, { common }) } },
+    execution: { vm: { vmState: { getAccount: () => new Account() } } },
   }
   const txPool = new TxPool({ config, service })
   return { txPool }
@@ -55,9 +49,9 @@ tape('[PendingBlock]', async (t) => {
   BlockHeader.prototype.validate = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
 
-  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
+  const originalSetStateRoot = VmState.prototype.setStateRoot
+  VmState.prototype.setStateRoot = td.func<any>()
+  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   const createTx = (
     from = A,
@@ -110,7 +104,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
+    await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
@@ -141,7 +135,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
+    await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
@@ -183,7 +177,7 @@ tape('[PendingBlock]', async (t) => {
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype.validate = originalValidate
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    VmState.prototype.setStateRoot = originalSetStateRoot
     t.end()
   })
 })

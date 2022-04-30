@@ -284,7 +284,7 @@ export default class VM extends AsyncEventEmitter {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
-      Hardfork.MergeForkBlock,
+      Hardfork.MergeForkIdTransition,
       Hardfork.Merge,
     ]
     if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
@@ -295,10 +295,12 @@ export default class VM extends AsyncEventEmitter {
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
+      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
-    // Initialize the opcode data
+    // Set list of opcodes based on HF
     this.getActiveOpcodes()
+    this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager

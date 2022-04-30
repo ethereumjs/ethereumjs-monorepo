@@ -196,8 +196,9 @@ export class TxPool {
     if (this.running || !this.config.syncTargetHeight) return
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
-    const target = this.config.syncTargetHeight.subn(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
-    if (this.service.chain.headers.height.gte(target)) {
+    const target =
+      this.config.syncTargetHeight - BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+    if (this.service.chain.headers.height >= target) {
       this.start()
     }
   }
@@ -630,10 +631,8 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await this.vm.vmState.getAccount(
-        new Address(Buffer.from(address, 'hex'))
-      )
-      if (!txsSortedByNonce[0].nonce !== nonce) {
+      const { nonce } = await this.vm.vmState.getAccount(new Address(Buffer.from(address, 'hex')))
+      if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
         continue

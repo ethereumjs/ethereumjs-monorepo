@@ -1,8 +1,8 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Account, BN, privateToAddress } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
+import { Account, privateToAddress } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
@@ -10,14 +10,8 @@ import { Config } from '../../lib/config'
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
-    chain: {
-      headers: { height: new BN(0), latest: BlockHeader.fromHeaderData({}) },
-    },
-    execution: {
-      vm: {
-        stateManager: { getAccount: () => new Account(new BN(0), new BN('50000000000000000000')) },
-      },
-    },
+    chain: { headers: { height: BigInt(0) } },
+    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
   }
   const pool = new TxPool({ config, service })
   return { pool }
