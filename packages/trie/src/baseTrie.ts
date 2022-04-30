@@ -18,7 +18,6 @@ import {
 import { verifyRangeProof } from './verifyRangeProof'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-const assert = require('assert')
 
 export type Proof = Buffer[]
 
@@ -92,7 +91,7 @@ export class Trie {
     if (!value) {
       value = this.EMPTY_TRIE_ROOT
     }
-    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
+    if (value.length !== 32) throw new Error('Invalid root length. Roots are 32 bytes')
     this._root = value
   }
 
@@ -101,17 +100,6 @@ export class Trie {
    */
   get root(): Buffer {
     return this._root
-  }
-
-  /**
-   * This method is deprecated.
-   * Please use {@link Trie.root} instead.
-   *
-   * @param value
-   * @deprecated
-   */
-  setRoot(value?: Buffer) {
-    this.root = value ?? this.EMPTY_TRIE_ROOT
   }
 
   /**
@@ -473,7 +461,7 @@ export class Trie {
     }
 
     let lastNode = stack.pop() as TrieNode
-    assert(lastNode)
+    if (!lastNode) throw new Error('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
