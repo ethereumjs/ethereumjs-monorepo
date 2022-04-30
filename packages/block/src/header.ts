@@ -237,7 +237,7 @@ export class BlockHeader {
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
         const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-        const isInitialEIP1559Block = londonHfBlock && number === londonHfBlock
+        const isInitialEIP1559Block = number === londonHfBlock
         if (isInitialEIP1559Block) {
           baseFeePerGas = BigInt(this._common.param('gasConfig', 'initialBaseFee'))
         } else {

@@ -55,18 +55,23 @@ tape('[BlockFetcher]', async (t) => {
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
     await wait(100)
 
-    let blockNumberList = [new BigInt(11), new BigInt(12)]
-    let min = new BigInt(11)
-    let max = new BigInt(12)
+    let blockNumberList = [BigInt(11), BigInt(12)]
+    let min = BigInt(11)
+    let max = BigInt(12)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
+
     t.equals((fetcher as any).in.size(), 3, '1 new task for two subsequent block numbers')
 
-    blockNumberList = [new BigInt(13), new BigInt(15)]
-    min = new BigInt(13)
-    max = new BigInt(15)
+    blockNumberList = [BigInt(13), BigInt(15)]
+    min = BigInt(13)
+    max = BigInt(15)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
     t.equals((fetcher as any).in.size(), 3, 'no new task added only the height changed')
-    t.equals(fetcher.first + fetcher.count - BigInt(1) === BigInt(15), true, 'height should now be 15')
+    t.equals(
+      fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
+      true,
+      'height should now be 15'
+    )
 
     // Clear fetcher queue for next test of gap when following head
     fetcher.clear()

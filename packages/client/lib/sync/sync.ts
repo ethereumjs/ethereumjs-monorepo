@@ -49,7 +49,6 @@ export abstract class Synchronizer {
   public fetcher: BlockFetcher | HeaderFetcher | null
   public opened: boolean
   public running: boolean
-  protected forceSync: boolean
   public startingBlock: bigint
 
   // Time (in ms) after which the synced state is reset
@@ -146,7 +145,7 @@ export abstract class Synchronizer {
     if (!this.config.syncTargetHeight) {
       return
     }
-    if (this.chain.headers.height >= this.syncTargetHeight) {
+    if (this.chain.headers.height >= this.config.syncTargetHeight) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(

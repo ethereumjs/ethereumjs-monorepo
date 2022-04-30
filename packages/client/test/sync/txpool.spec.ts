@@ -2,7 +2,7 @@ import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { Account, BN } from 'ethereumjs-util'
+import { Account } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
@@ -10,7 +10,7 @@ import { Config } from '../../lib/config'
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
-    chain: { headers: { height: new BN(0) } },
+    chain: { headers: { height: BigInt(0) } },
     execution: { vm: { stateManager: { getAccount: () => new Account() } } },
   }
   const pool = new TxPool({ config, service })

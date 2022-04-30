@@ -544,8 +544,7 @@ export class Engine {
 
       const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
-        (!this.config.syncTargetHeight ||
-          this.config.syncTargetHeight < headBlock.header.number) &&
+        (!this.config.syncTargetHeight || this.config.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {
         this.config.synchronized = true
