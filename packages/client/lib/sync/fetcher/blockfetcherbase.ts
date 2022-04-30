@@ -63,7 +63,8 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
     let debugStr = `first=${first}`
-    const pushedCount = BigInt(0)
+    let pushedCount = BigInt(0)
+    const startedWith = first
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
       tasks.push({ first: first, count: max })
@@ -76,6 +77,14 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       pushedCount += count
       count = BigInt(0);
     }
+
+    // If we started with where this.first was, i.e. there are no gaps and hence
+    // we can move this.first to where its now, and reduce count by pushedCount
+    if (startedWith === this.first) {
+      this.first = first
+      this.count = this.count - pushedCount
+    }
+
     debugStr += ` count=${pushedCount} reverse=${this.reverse}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
@@ -105,11 +114,11 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     while (this.in.length > 0) {
       const job = this.in.remove()
       if (!job) break
-      if (job.task.first.lt(first)) {
+      if (job.task.first < first) {
         first = job.task.first
       }
-      const jobLast = job.task.first.addn(job.task.count).subn(1)
-      if (jobLast.gt(last)) {
+      const jobLast = job.task.first + BigInt(job.task.count) - BigInt(1)
+      if (jobLast > last) {
         last = jobLast
       }
     }
@@ -135,12 +144,12 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const last = this.first + this.count - BigInt(1)
     let updateHeightStr = ''
     if (max > last) {
-      this.count += (max - last)
+      this.count += max - last
       updateHeightStr = `updated height=${max}`
     }
     // Re-enqueue the numbers which are less than `first` to refetch them,
     // else they will be fetched in the future with the jobs created by `nextTasks`.
-    numberList = numberList.filter((num) => num.lte(this.first))
+    numberList = numberList.filter((num) => num <= this.first)
     const numBlocks = numberList.length
     let bulkRequest = true
     let seqCheckNum = min

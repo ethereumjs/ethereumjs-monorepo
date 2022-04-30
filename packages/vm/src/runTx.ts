@@ -262,7 +262,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
-    for (const [addressStr] of this.precompiles) {
+    const activePrecompiles = this.precompiles
+    for (const [addressStr] of activePrecompiles.entries()) {
       state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
     }
     state.addWarmedAddress(caller.buf)

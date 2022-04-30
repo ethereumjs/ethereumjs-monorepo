@@ -302,7 +302,7 @@ export class VMExecution extends Execution {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-    const vm = this.vm.copy()
+    const vm = await this.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)

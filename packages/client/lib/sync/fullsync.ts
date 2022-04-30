@@ -115,13 +115,13 @@ export class FullSynchronizer extends Synchronizer {
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
-    if (!this.syncTargetHeight || this.txPool.running) {
+    if (!this.config.syncTargetHeight || this.txPool.running) {
       return
     }
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      this.syncTargetHeight - BigInt(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+      this.config.syncTargetHeight - BigInt(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.chain.headers.height >= target) {
       this.txPool.start()
     }
@@ -144,7 +144,10 @@ export class FullSynchronizer extends Synchronizer {
 
     // Start fetcher from a safe distance behind because if the previous fetcher exited
     // due to a reorg, it would make sense to step back and refetch.
-    const first = this.chain.blocks.height >= BigInt(this.config.safeReorgDistance): this.chain.blocks.height - BigInt(this.config.safeReorgDistance) + BigInt(1) : BigInt(1);
+    const first =
+      this.chain.blocks.height >= BigInt(this.config.safeReorgDistance)
+        ? this.chain.blocks.height - BigInt(this.config.safeReorgDistance) + BigInt(1)
+        : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
     if (!this.fetcher || this.fetcher.errored) {
@@ -159,8 +162,8 @@ export class FullSynchronizer extends Synchronizer {
       })
     } else {
       const fetcherHeight = this.fetcher.first + this.fetcher.count - BigInt(1)
-      if (height > fetcherHeight){
-        this.fetcher.count += (height - fetcherHeight)
+      if (height > fetcherHeight) {
+        this.fetcher.count += height - fetcherHeight
         this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
       }
     }
@@ -185,7 +188,6 @@ export class FullSynchronizer extends Synchronizer {
       }
       return
     }
-
 
     const first = BigInt(blocks[0].header.number)
     const last = BigInt(blocks[blocks.length - 1].header.number)
@@ -298,7 +300,7 @@ export class FullSynchronizer extends Synchronizer {
       // Check if new sync target height can be set
       const blockNumber = block.header.number
       if (!this.config.syncTargetHeight || blockNumber > this.config.syncTargetHeight) {
-        this.syncTargetHeight = blockNumber
+        this.config.syncTargetHeight = blockNumber
       }
     } else {
       // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
@@ -320,9 +322,9 @@ export class FullSynchronizer extends Synchronizer {
   handleNewBlockHashes(data: [Buffer, bigint][]) {
     if (!data.length || !this.fetcher || this.fetcher.errored) return
     let min = BigInt(-1)
-    let newSyncHeight
+    let newSyncHeight: [Buffer, bigint] | undefined
     const blockNumberList: bigint[] = []
-    data.forEach((value) => {
+    for (const value of data) {
       const blockNumber = value[1]
       blockNumberList.push(blockNumber)
       if (min === BigInt(-1) || blockNumber < min) {

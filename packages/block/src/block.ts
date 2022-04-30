@@ -436,7 +436,7 @@ export class Block {
     const includedUncles: { [key: string]: boolean } = {}
 
     // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
-    const getBlocks = this.header.number - lowestUncleNumber + BigInt(1)
+    const getBlocks = Number(this.header.number - lowestUncleNumber + BigInt(1))
 
     // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
     // Here we get the necessary blocks from the chain.
