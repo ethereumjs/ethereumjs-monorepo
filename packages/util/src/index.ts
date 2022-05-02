@@ -39,6 +39,11 @@ export * from './externals'
 export * from './types'
 
 /**
+ * Unit formatter
+ */
+export * from './units'
+
+/**
  * Export ethjs-util methods
  */
 export {
