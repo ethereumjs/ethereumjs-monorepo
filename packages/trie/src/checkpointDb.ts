@@ -21,7 +21,7 @@ export class CheckpointDB extends DB {
    * defaults to an [in-memory store](https://github.com/Level/memdown).
    * @param leveldb - An abstract-leveldown compliant store
    */
-  constructor(leveldb?: LevelUp) {
+  constructor(leveldb?: LevelUp | null) {
     super(leveldb)
     // Roots of trie at the moment of checkpoint
     this.checkpoints = []

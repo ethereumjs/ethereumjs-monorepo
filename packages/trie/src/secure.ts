@@ -11,10 +11,6 @@ import { Proof } from './baseTrie'
  * @public
  */
 export class SecureTrie extends CheckpointTrie {
-  constructor(...args: any) {
-    super(...args)
-  }
-
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
@@ -110,7 +106,11 @@ export class SecureTrie extends CheckpointTrie {
    */
   copy(includeCheckpoints = true): SecureTrie {
     const db = this.db.copy()
-    const secureTrie = new SecureTrie(db._leveldb, this.root)
+    const secureTrie = new SecureTrie({
+      db: db._leveldb,
+      root: this.root,
+      deleteFromDB: (this as any)._deleteFromDB,
+    })
     if (includeCheckpoints && this.isCheckpoint) {
       secureTrie.db.checkpoints = [...this.db.checkpoints]
     }

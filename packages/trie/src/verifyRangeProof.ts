@@ -317,7 +317,7 @@ async function verifyProof(
   key: Buffer,
   proof: Buffer[]
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  let proofTrie = new Trie(null, rootHash)
+  let proofTrie = new Trie({ root: rootHash })
   try {
     proofTrie = await Trie.fromProof(proof, proofTrie)
   } catch (e) {
@@ -483,7 +483,7 @@ export async function verifyRangeProof(
     )
   }
 
-  let trie = new Trie(null, rootHash)
+  let trie = new Trie({ root: rootHash })
   trie = await Trie.fromProof(proof, trie)
 
   // Remove all nodes between two edge proofs
