@@ -14,7 +14,7 @@ tape('simple save and retrieve', function (tester) {
       '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
       'hex'
     )
-    const trie = new CheckpointTrie(null, root)
+    const trie = new CheckpointTrie({ root })
     const value = await trie.get(Buffer.from('test'))
     t.equal(value, null)
     t.end()
@@ -165,7 +165,7 @@ tape('testing deletion cases', function (tester) {
     msg: 'without DB delete',
   }
   const trieSetupWithDBDelete = {
-    trie: new CheckpointTrie(undefined, undefined, true),
+    trie: new CheckpointTrie({ deleteFromDB: true }),
     msg: 'with DB delete',
   }
   const trieSetups = [trieSetupWithoutDBDelete, trieSetupWithDBDelete]
@@ -311,12 +311,12 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 
   const trieSetups = [
     {
-      trie: new BaseTrie(undefined, undefined, false),
+      trie: new BaseTrie({ deleteFromDB: false }),
       expected: v1,
       msg: 'should return v1 when setting back the state root when deleteFromDB=false',
     },
     {
-      trie: new BaseTrie(undefined, undefined, true),
+      trie: new BaseTrie({ deleteFromDB: true }),
       expected: null,
       msg: 'should return null when setting back the state root when deleteFromDB=true',
     },
