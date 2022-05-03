@@ -3,6 +3,10 @@ import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import Common, { Chain } from '@ethereumjs/common'
 import testdata from '../testdata.json'
 
+export const delay = async (ms: number) => {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export const localhost = '127.0.0.1'
 export const basePort = 30306
 
@@ -34,8 +38,8 @@ export function getTestDPTsWithDns(numDPTs: number) {
         udpPort: basePort + i,
         tcpPort: basePort + i,
       },
-      timeout: 100,
-      refreshInterval: 10,
+      timeout: 1000,
+      refreshInterval: 400,
       dnsNetworks: [testdata.dns.enrTree],
       shouldFindNeighbours: false,
       shouldGetDnsPeers: true,
