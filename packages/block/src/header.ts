@@ -239,7 +239,7 @@ export class BlockHeader {
         const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
         const isInitialEIP1559Block = number === londonHfBlock
         if (isInitialEIP1559Block) {
-          baseFeePerGas = BigInt(this._common.param('gasConfig', 'initialBaseFee'))
+          baseFeePerGas = this._common.param('gasConfig', 'initialBaseFee')
         } else {
           // Minimum possible value for baseFeePerGas is 7,
           // so we use it as the default if the field is missing.
@@ -435,11 +435,9 @@ export class BlockHeader {
     const hardfork = this._common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = BigInt(
-      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    )
+    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     const offset =
-      parentDif / BigInt(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
+      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
     let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
@@ -459,7 +457,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // Get delay as parameter from common
-      num = num - BigInt(this._common.param('pow', 'difficultyBombDelay'))
+      num = num - this._common.param('pow', 'difficultyBombDelay')
       if (num < BigInt(0)) {
         num = BigInt(0)
       }
@@ -474,10 +472,7 @@ export class BlockHeader {
       dif = parentDif + offset * a
     } else {
       // pre-homestead
-      if (
-        parentTs + BigInt(this._common.paramByHardfork('pow', 'durationLimit', hardfork)) >
-        blockTs
-      ) {
+      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
         dif = offset + parentDif
       } else {
         dif = parentDif - offset
@@ -552,22 +547,21 @@ export class BlockHeader {
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
     if (londonHardforkBlock && this.number === londonHardforkBlock) {
-      const elasticity = BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
     const gasLimit = this.gasLimit
     const hardfork = this._common.hardfork()
 
     const a =
-      parentGasLimit /
-      BigInt(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
+      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
     const result =
       gasLimit < maxGasLimit &&
       gasLimit > minGasLimit &&
-      gasLimit >= BigInt(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
 
     return result
   }
@@ -703,7 +697,7 @@ export class BlockHeader {
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
       if (isInitialEIP1559Block) {
-        const initialBaseFee = BigInt(this._common.param('gasConfig', 'initialBaseFee'))
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
         if (this.baseFeePerGas! !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
@@ -731,25 +725,29 @@ export class BlockHeader {
       throw new Error(msg)
     }
     let nextBaseFee: bigint
-    const elasticity = BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+    const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
     const parentGasTarget = this.gasLimit / elasticity
 
     if (parentGasTarget === this.gasUsed) {
       nextBaseFee = this.baseFeePerGas!
     } else if (this.gasUsed > parentGasTarget) {
       const gasUsedDelta = this.gasUsed - parentGasTarget
-      const baseFeeMaxChangeDenominator = BigInt(
-        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      const baseFeeMaxChangeDenominator = this._common.param(
+        'gasConfig',
+        'baseFeeMaxChangeDenominator'
       )
+
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
       nextBaseFee =
         (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
     } else {
       const gasUsedDelta = parentGasTarget - this.gasUsed
-      const baseFeeMaxChangeDenominator = BigInt(
-        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      const baseFeeMaxChangeDenominator = this._common.param(
+        'gasConfig',
+        'baseFeeMaxChangeDenominator'
       )
+
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
       nextBaseFee =

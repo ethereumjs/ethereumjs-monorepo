@@ -98,7 +98,10 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should only accept valid chain and fork', async (st) => {
     let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     let vm = await VM.create({ common })
-    st.equal((vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'), 500)
+    st.equal(
+      (vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'),
+      BigInt(500)
+    )
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })

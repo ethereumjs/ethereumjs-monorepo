@@ -320,8 +320,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
-      maxGasLimit =
-        block.header.gasLimit * BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -379,7 +378,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
     debug(`Assign block rewards`)
   }
   const state = this.vmState
-  const minerReward = BigInt(this._common.param('pow', 'minerReward'))
+  const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
