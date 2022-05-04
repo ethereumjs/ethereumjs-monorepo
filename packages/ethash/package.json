@@ -36,7 +36,8 @@
     "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^7.1.5",
-    "miller-rabin": "^4.0.0"
+    "miller-rabin": "^4.0.0",
+    "ethereum-cryptography": "^1.0.3",
   },
   "devDependencies": {
     "@ethereumjs/common": "^2.6.4",

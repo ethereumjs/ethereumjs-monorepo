@@ -1,5 +1,6 @@
 import { isProbablyPrime } from 'bigint-crypto-utils'
-import { keccak256 } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { toBuffer } from 'ethereumjs-util'
 
 export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30
@@ -50,7 +51,7 @@ export function getEpoc(blockNumber: bigint) {
  */
 export function getSeed(seed: Buffer, begin: number, end: number) {
   for (let i = begin; i < end; i++) {
-    seed = keccak256(seed)
+    seed = toBuffer(keccak256(seed))
   }
   return seed
 }

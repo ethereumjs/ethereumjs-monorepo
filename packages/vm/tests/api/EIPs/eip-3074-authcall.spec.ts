@@ -1,10 +1,10 @@
 import tape from 'tape'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,
   bigIntToBuffer,
   bufferToBigInt,
   ecsign,
-  keccak256,
   privateToAddress,
   setLengthLeft,
   toBuffer,
@@ -64,7 +64,7 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
   const paddedInvokerAddress = setLengthLeft(address.buf, 32)
   const chainId = setLengthLeft(bigIntToBuffer(common.chainId()), 32)
   const message = Buffer.concat([Buffer.from('03', 'hex'), chainId, paddedInvokerAddress, commit])
-  const msgHash = keccak256(message)
+  const msgHash = toBuffer(keccak256(message))
   return ecsign(msgHash, privateKey, 0)
 }
 

@@ -1,3 +1,4 @@
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
@@ -5,7 +6,6 @@ import {
   ecrecover,
   MAX_INTEGER,
   rlp,
-  rlphash,
   toBuffer,
   unpadBuffer,
   validateNoLeadingZeroes,
@@ -217,7 +217,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getMessageToSign(hashMessage = true) {
     const message = this._getMessageToSign()
     if (hashMessage) {
-      return rlphash(message)
+      return toBuffer(keccak256(rlp.encode(message)))
     } else {
       return message
     }
@@ -272,12 +272,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = rlphash(this.raw())
+        this.cache.hash = toBuffer(keccak256(rlp.encode(this.raw())))
       }
       return this.cache.hash
     }
 
-    return rlphash(this.raw())
+    return toBuffer(keccak256(rlp.encode(this.raw())))
   }
 
   /**
@@ -289,7 +289,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       throw new Error(msg)
     }
     const message = this._getMessageToSign()
-    return rlphash(message)
+    return toBuffer(keccak256(rlp.encode(message)))
   }
 
   /**

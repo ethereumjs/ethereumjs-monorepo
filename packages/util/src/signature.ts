@@ -1,3 +1,4 @@
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
 import {
   toBuffer,
@@ -8,7 +9,6 @@ import {
   bufferToBigInt,
 } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
 import { BigIntLike, toType, TypeOutput } from './types'
 
@@ -225,5 +225,5 @@ export const isValidSignature = function (
 export const hashPersonalMessage = function (message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
-  return keccak(Buffer.concat([prefix, message]))
+  return toBuffer(keccak256(Buffer.concat([prefix, message])))
 }

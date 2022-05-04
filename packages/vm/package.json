@@ -57,6 +57,7 @@
     "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",
     "ethereumjs-util": "^7.1.5",
+    "ethereum-cryptography": "^1.0.3",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
