@@ -3,7 +3,8 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bufferToHex, keccak } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Address, bigIntToHex, bufferToHex, toBuffer } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -120,11 +121,13 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // verify storage of pos1 is accurate
   // pos1["0xccfd725760a68823ff1e062f4cc97e1360e8d997"]
-  const key = keccak(
-    Buffer.from(
-      '000000000000000000000000ccfd725760a68823ff1e062f4cc97e1360e8d997' +
-        '0000000000000000000000000000000000000000000000000000000000000001',
-      'hex'
+  const key = toBuffer(
+    keccak256(
+      Buffer.from(
+        '000000000000000000000000ccfd725760a68823ff1e062f4cc97e1360e8d997' +
+          '0000000000000000000000000000000000000000000000000000000000000001',
+        'hex'
+      )
     )
   )
   req = params(method, [createdAddress!.toString(), bufferToHex(key), 'latest'])

@@ -1,12 +1,12 @@
+import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 import {
-  keccak,
-  keccak256,
-  rlphash,
+  rlp,
   zeros,
   TWO_POW256,
   bigIntToBuffer,
   bufferToBigInt,
   setLengthLeft,
+  toBuffer,
 } from 'ethereumjs-util'
 import {
   params,
@@ -161,17 +161,17 @@ export default class Ethash {
   mkcache(cacheSize: number, seed: Buffer) {
     // console.log(`generating cache\nsize: ${cacheSize}\nseed: ${seed.toString('hex')}`)
     const n = Math.floor(cacheSize / params.HASH_BYTES)
-    const o = [keccak(seed, 512)]
+    const o = [toBuffer(keccak512(seed))]
 
     let i
     for (i = 1; i < n; i++) {
-      o.push(keccak(o[o.length - 1], 512))
+      o.push(toBuffer(keccak512(o[o.length - 1])))
     }
 
     for (let _ = 0; _ < params.CACHE_ROUNDS; _++) {
       for (i = 0; i < n; i++) {
         const v = o[i].readUInt32LE(0) % n
-        o[i] = keccak(xor(o[(i - 1 + n) % n], o[v]), 512)
+        o[i] = toBuffer(keccak512(xor(o[(i - 1 + n) % n], o[v])))
       }
     }
 
@@ -184,12 +184,12 @@ export default class Ethash {
     const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES)
     let mix = Buffer.from(this.cache[i % n])
     mix.writeInt32LE(mix.readUInt32LE(0) ^ i, 0)
-    mix = keccak(mix, 512)
+    mix = toBuffer(keccak512(mix))
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
       const cacheIndex = fnv(i ^ j, mix.readUInt32LE((j % r) * 4))
       mix = fnvBuffer(mix, this.cache[cacheIndex % n])
     }
-    return keccak(mix, 512)
+    return toBuffer(keccak512(mix))
   }
 
   run(val: Buffer, nonce: Buffer, fullSize?: number) {
@@ -201,7 +201,7 @@ export default class Ethash {
     }
     const n = Math.floor(fullSize / params.HASH_BYTES)
     const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
-    const s = keccak(Buffer.concat([val, bufReverse(nonce)]), 512)
+    const s = toBuffer(keccak512(Buffer.concat([val, bufReverse(nonce)])))
     const mixhashes = Math.floor(params.MIX_BYTES / params.HASH_BYTES)
     let mix = Buffer.concat(Array(mixhashes).fill(s))
 
@@ -227,16 +227,16 @@ export default class Ethash {
 
     return {
       mix: cmix,
-      hash: keccak256(Buffer.concat([s, cmix])),
+      hash: toBuffer(keccak256(Buffer.concat([s, cmix]))),
     }
   }
 
   cacheHash() {
-    return keccak256(Buffer.concat(this.cache))
+    return toBuffer(keccak256(Buffer.concat(this.cache)))
   }
 
   headerHash(rawHeader: Buffer[]) {
-    return rlphash(rawHeader.slice(0, -2))
+    return toBuffer(keccak256(rlp.encode(rawHeader.slice(0, -2))))
   }
 
   /**

@@ -1,5 +1,7 @@
 import tape from 'tape'
-import { keccak256, rlp, zeros, toBuffer } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import { rlp, zeros, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
@@ -594,8 +596,7 @@ tape('[Block]: block functions', function (t) {
         common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
       })
 
-      forkBlock2HeaderData.uncleHash =
-        '0x' + keccak256(rlp.encode([uncleHeader.raw()])).toString('hex')
+      forkBlock2HeaderData.uncleHash = '0x' + bytesToHex(keccak256(rlp.encode([uncleHeader.raw()])))
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {

@@ -1,4 +1,5 @@
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,
   bigIntToHex,
@@ -9,7 +10,6 @@ import {
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
-  rlphash,
   toBuffer,
   zeros,
   bufferToHex,
@@ -795,12 +795,12 @@ export class BlockHeader {
   hash(): Buffer {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = rlphash(this.raw())
+        this.cache.hash = toBuffer(keccak256(rlp.encode(this.raw())))
       }
       return this.cache.hash
     }
 
-    return rlphash(this.raw())
+    return toBuffer(keccak256(rlp.encode(this.raw())))
   }
 
   /**
@@ -826,7 +826,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return rlphash(raw)
+    return toBuffer(keccak256(rlp.encode(raw)))
   }
 
   /**

@@ -2,10 +2,10 @@ import { URL } from 'url'
 import { Multiaddr, multiaddr } from 'multiaddr'
 import { BlockHeader } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
-  keccak,
   rlp,
   toBuffer,
   unpadBuffer,
@@ -121,7 +121,7 @@ async function createGethGenesisStateTrie(alloc: any) {
       account.balance = BigInt(balance)
     }
     if (code) {
-      account.codeHash = keccak(toBuffer(code))
+      account.codeHash = toBuffer(keccak256(toBuffer(code)))
     }
     if (storage) {
       const storageTrie = await createStorageTrie(storage)
