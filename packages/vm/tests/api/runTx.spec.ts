@@ -640,3 +640,35 @@ tape('runTx() -> RunTxOptions', (t) => {
     t.end()
   })
 })
+
+tape('runTx() -> skipBalance behavior', async (t) => {
+  t.plan(6)
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await VM.create({ common })
+  const senderKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const sender = Address.fromPrivateKey(senderKey)
+
+  for (const balance of [undefined, BigInt(5)]) {
+    if (balance) {
+      await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
+    }
+    const tx = Transaction.fromTxData({
+      gasLimit: BigInt(21000),
+      value: BigInt(1),
+      to: Address.zero(),
+    }).sign(senderKey)
+
+    const res = await vm.runTx({ tx, skipBalance: true })
+    t.pass('runTx should not throw with no balance and skipBalance')
+    const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
+    t.equal(
+      afterTxBalance,
+      balance ?? BigInt(0),
+      `sender balance before and after transaction should be equal with skipBalance`
+    )
+    t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
+  }
+})
