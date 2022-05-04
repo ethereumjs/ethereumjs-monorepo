@@ -525,3 +525,47 @@ tape('Throws on negative call value', async (t) => {
 
   t.end()
 })
+
+tape('runCall() -> skipBalance behavior', async (t) => {
+  t.plan(7)
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const vm = await VM.create({ common })
+
+  // runCall against a contract to reach `_reduceSenderBalance`
+  const contractCode = Buffer.from('00', 'hex') // 00: STOP
+  const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
+  await vm.stateManager.putContractCode(contractAddress, contractCode)
+  const senderKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const sender = Address.fromPrivateKey(senderKey)
+
+  const runCallArgs = {
+    gasLimit: BigInt(21000),
+    value: BigInt(6),
+    from: sender,
+    to: contractAddress,
+    skipBalance: true,
+  }
+
+  for (const balance of [undefined, BigInt(5)]) {
+    await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
+    const res = await vm.runCall(runCallArgs)
+    t.pass('runCall should not throw with no balance and skipBalance')
+    const senderBalance = (await vm.stateManager.getAccount(sender)).balance
+    t.equal(
+      senderBalance,
+      balance ?? BigInt(0),
+      'sender balance should be the same before and after call execution with skipBalance'
+    )
+    t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
+  }
+
+  const res2 = await vm.runCall({ ...runCallArgs, skipBalance: false })
+  t.equal(
+    res2.execResult.exceptionError?.error,
+    'insufficient balance',
+    'runCall reverts when insufficient sender balance and skipBalance is false'
+  )
+})
