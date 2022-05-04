@@ -44,7 +44,7 @@ export interface RunTxOpts {
    */
   skipNonce?: boolean
   /**
-   * If true, skips the balance check
+   * Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
    */
   skipBalance?: boolean
 
@@ -315,8 +315,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  if (!opts.skipBalance) {
-    const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  if (opts.skipBalance) {
+    // if skipBalance, add tx cost to sender balance to ensure sufficient funds
+    fromAccount.balance += cost
+    await this.stateManager.putAccount(caller, fromAccount)
+  } else {
     if (balance < cost) {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
@@ -326,6 +330,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
+
     if (tx.supports(Capability.EIP1559FeeMarket)) {
       // EIP-1559 spec:
       // The signer must be able to afford the transaction
