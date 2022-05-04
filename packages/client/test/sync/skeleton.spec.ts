@@ -1,16 +1,18 @@
 import tape from 'tape'
-import td from 'testdouble'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
-import { Skeleton } from '../../lib/sync'
+import { Skeleton, errReorgDenied } from '../../lib/sync/skeleton'
 const level = require('level-mem')
 
-const common = new Common({ chain: 1 })
+type Subchain = {
+  head: BN
+  tail: BN
+}
 
-// Create a few key headers
+const common = new Common({ chain: 1 })
 const block49 = Block.fromBlockData({ header: { number: 49 } }, { common })
 const block49B = Block.fromBlockData(
   { header: { number: 49, extraData: Buffer.from('B') } },
@@ -24,11 +26,6 @@ const block51 = Block.fromBlockData(
   { header: { number: 51, parentHash: block50.hash() } },
   { common }
 )
-
-type Subchain = {
-  head: BN
-  tail: BN
-}
 
 tape('[Skeleton]', async (t) => {
   // Tests various sync initializations based on previous leftovers in the database
@@ -172,14 +169,13 @@ tape('[Skeleton]', async (t) => {
         ;(skeleton as any).status.progress.subchains = testCase.oldState
       }
 
-      await skeleton.processNewHead(testCase.head, true)
+      await skeleton.initSync(testCase.head)
 
       const { progress } = (skeleton as any).status
       if (progress.subchains.length !== testCase.newState.length) {
         st.fail(
           `test ${testCaseIndex}: subchain count mismatch: have ${progress.subchains.length}, want ${testCase.newState.length}`
         )
-        console.log(progress.subchains, testCase.newState)
       }
       for (const [i, subchain] of progress.subchains.entries()) {
         if (!subchain.head.eq(testCase.newState[i].head)) {
@@ -204,9 +200,8 @@ tape('[Skeleton]', async (t) => {
       head: Block /** New head header to announce to reorg to */
       extend: Block /** New head header to announce to extend with */
       newState: Subchain[] /** Expected sync state after the reorg */
-      err?: string /** Whether extension succeeds or not */
+      err?: Error /** Whether extension succeeds or not */
     }
-    const errReorgDenied = 'reorg denied'
     const testCases: TestCase[] = [
       // Initialize a sync and try to extend it with a subsequent block.
       {
@@ -264,20 +259,20 @@ tape('[Skeleton]', async (t) => {
       const skeleton = new Skeleton({ chain, config, metaDB })
       await skeleton.open()
 
-      await skeleton.processNewHead(testCase.head, true)
+      await skeleton.initSync(testCase.head)
 
       try {
-        await skeleton.processNewHead(testCase.extend)
+        await skeleton.setHead(testCase.extend)
         if (testCase.err) {
-          t.fail('should have failed')
+          st.fail(`test ${testCaseIndex}: should have failed`)
         } else {
-          t.pass('successfully passed')
+          st.pass(`test ${testCaseIndex}: successfully passed`)
         }
       } catch (error: any) {
-        if (error.message.includes(testCase.err)) {
-          t.pass('passed with correct error')
+        if (error.message.includes(testCase.err?.message)) {
+          st.pass(`test ${testCaseIndex}: passed with correct error`)
         } else {
-          t.pass('received wrong error')
+          st.fail(`test ${testCaseIndex}: received wrong error`)
         }
       }
 
@@ -301,10 +296,5 @@ tape('[Skeleton]', async (t) => {
         }
       }
     }
-  })
-
-  t.test('should reset td', (t) => {
-    td.reset()
-    t.end()
   })
 })

@@ -4,7 +4,7 @@ import { Synchronizer, SynchronizerOptions } from './sync'
 import { ReverseBlockFetcher } from './fetcher'
 import type { Block } from '@ethereumjs/block'
 import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from './skeleton'
+import { errSyncReorged, Skeleton } from './skeleton'
 import type { VMExecution } from '../execution'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
@@ -100,14 +100,14 @@ export class BeaconSynchronizer extends Synchronizer {
   /**
    * Returns true if the block successfully extends the chain.
    */
-  async extendChain(block: Block, force = false): Promise<boolean> {
+  async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
-    const canonicalHead = await this.skeleton.getBlock(this.skeleton.bounds().head)
-    if (canonicalHead?.hash().equals(block.header.parentHash)) {
-      await this.skeleton.processNewHead(block, force)
+    try {
+      await this.skeleton.setHead(block)
       return true
+    } catch (error) {
+      return false
     }
-    return false
   }
 
   /**
@@ -115,14 +115,22 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async setHead(block: Block): Promise<boolean> {
     if (!this.opened) return false
-    const reorged = await this.skeleton.processNewHead(block, true)
     // New head announced, start syncing to it if we are not already.
     // If this causes a reorg, we will tear down the fetcher and start
     // from the new head.
-    if (!this.running) {
-      void this.start()
-    } else {
-      if (reorged) {
+    try {
+      if (!this.running) {
+        await this.skeleton.initSync(block)
+        void this.start()
+      } else {
+        await this.skeleton.setHead(block, true)
+      }
+      this.config.logger.debug(
+        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
+      )
+      return true
+    } catch (error) {
+      if (error == errSyncReorged) {
         this.config.logger.debug(
           `Beacon sync reorged, new head number=${block.header.number} hash=${short(
             block.header.hash()
@@ -131,13 +139,11 @@ export class BeaconSynchronizer extends Synchronizer {
         // Tear down fetcher and start from new head
         await this.stop()
         void this.start()
+        return true
       } else {
-        this.config.logger.debug(
-          `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-        )
+        throw error
       }
     }
-    return true
   }
 
   /**

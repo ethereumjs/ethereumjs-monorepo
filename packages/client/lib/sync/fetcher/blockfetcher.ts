@@ -34,6 +34,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const headersResult = await peer!.eth!.getBlockHeaders({
       block: first,
       max: count,
+      reverse: this.reverse,
     })
     if (!headersResult || headersResult[1].length === 0) {
       // Catch occasional null or empty responses

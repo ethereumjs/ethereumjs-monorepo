@@ -3,6 +3,8 @@ import { BN, rlp } from 'ethereumjs-util'
 import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'
 import { short, timeDuration } from '../util'
 
+// Thanks to go-ethereum for the skeleton design
+
 type SkeletonStatus = {
   progress: SkeletonProgress
 }
@@ -31,6 +33,19 @@ type SkeletonSubchain = {
 type SkeletonSubchainRLP = [head: Buffer, tail: Buffer, next: Buffer]
 
 /**
+ * errSyncReorged is an internal helper error to signal that the head chain of
+ * the current sync cycle was (partially) reorged, thus the skeleton syncer
+ * should abort and restart with the new state.
+ */
+export const errSyncReorged = new Error('sync reorged')
+
+/**
+ * errReorgDenied is returned if an attempt is made to extend the beacon chain
+ * with a new header, but it does not link up to the existing sync.
+ */
+export const errReorgDenied = new Error('non-forced head reorg denied')
+
+/**
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.
  */
@@ -56,10 +71,109 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * Announce and integrate a new head.
+   * @throws if the new head causes a reorg.
+   */
+  async setHead(head: Block, force = false): Promise<void> {
+    this.config.logger.debug(
+      `New skeleton head announced number=${head.header.number} hash=${short(
+        head.hash()
+      )} force=${force}`
+    )
+    const reorged = await this.processNewHead(head, force)
+    if (reorged) {
+      if (force) {
+        throw errSyncReorged
+      } else {
+        throw errReorgDenied
+      }
+    }
+  }
+
+  /**
+   * Attempts to get the skeleton sync into a consistent state wrt any
+   * past state on disk and the newly requested head to sync to.
+   */
+  async initSync(head: Block): Promise<void> {
+    const { number } = head.header
+
+    if (this.status.progress.subchains.length === 0) {
+      // Start a fresh sync with a single subchain represented by the currently sent
+      // chain head.
+      this.status.progress.subchains.push({
+        head: number.clone(),
+        tail: number.clone(),
+        next: head.header.parentHash,
+      })
+      this.config.logger.debug(`Created initial skeleton subchain head=${number} tail=${number}`)
+    } else {
+      // Print some continuation logs
+      this.config.logger.debug(
+        `Restarting skeleton subchain subchains=${this.status.progress.subchains
+          .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+          .join(',')}`
+      )
+
+      // Create a new subchain for the head (unless the last can be extended),
+      // trimming anything it would overwrite
+      const headchain = {
+        head: number.clone(),
+        tail: number.clone(),
+        next: head.header.parentHash,
+      }
+
+      for (const _subchain of this.status.progress.subchains) {
+        // If the last chain is above the new head, delete altogether
+        const lastchain = this.status.progress.subchains[0]
+        if (lastchain.tail.gte(headchain.tail)) {
+          this.config.logger.debug(
+            `Dropping skeleton subchain head=${lastchain.head} tail=${lastchain.tail}`
+          )
+          this.status.progress.subchains = this.status.progress.subchains.slice(1)
+          continue
+        }
+        // Otherwise truncate the last chain if needed and abort trimming
+        if (lastchain.head.gte(headchain.tail)) {
+          this.config.logger.debug(
+            `Trimming skeleton subchain oldHead=${lastchain.head} newHead=${headchain.tail.subn(
+              1
+            )} tail=${lastchain.tail}`
+          )
+          lastchain.head = headchain.tail.subn(1)
+        }
+        break
+      }
+      // If the last subchain can be extended, we're lucky. Otherwise create
+      // a new subchain sync task.
+      let extended = false
+      if (this.status.progress.subchains.length > 0) {
+        const lastchain = this.status.progress.subchains[0]
+        if (lastchain.head.eq(headchain.tail.subn(1))) {
+          const lasthead = await this.getBlock(lastchain.head)
+          if (lasthead?.hash().equals(head.header.parentHash)) {
+            this.config.logger.debug(
+              `Extended skeleton subchain with new head=${headchain.tail} tail=${lastchain.tail}`
+            )
+            lastchain.head = headchain.tail
+            extended = true
+          }
+        }
+      }
+      if (!extended) {
+        this.config.logger.debug(`Created new skeleton subchain head=${number} tail=${number}`)
+        this.status.progress.subchains.unshift(headchain)
+      }
+    }
+
+    await this.putBlock(head)
+    await this.writeSyncStatus()
+  }
+
+  /**
    * processNewHead does the internal shuffling for a new head marker and either
    * accepts and integrates it into the skeleton or requests a reorg. Upon reorg,
    * the syncer will tear itself down and restart with a fresh head. It is simpler
-   * to reconstruct the sync state than to mutate it and hope for the best.
+   * to reconstruct the sync state than to mutate it.
    *
    * @returns true if the chain was reorged
    */
@@ -68,7 +182,6 @@ export class Skeleton extends MetaDBManager {
     // the outer loop to tear down the skeleton sync and restart it
     const { number } = head.header
 
-    /*
     const [lastchain] = this.status.progress.subchains
     if (lastchain?.tail.gte(number)) {
       // If the chain is down to a single beacon header, and it is re-announced
@@ -91,8 +204,7 @@ export class Skeleton extends MetaDBManager {
       if (force) {
         this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
       }
-      // TODO uncommenting the below doesn't allow us to resume a new run due to the gap
-      // return true
+      return true
     }
     const parent = await this.getBlock(number.subn(1))
     if (parent && !parent.hash().equals(head.header.parentHash)) {
@@ -104,55 +216,6 @@ export class Skeleton extends MetaDBManager {
         )
       }
       return true
-    }*/
-
-    // Create a new subchain for the head (unless the last can be extended),
-    // trimming anything it would overwrite
-    const headchain = {
-      head: number.clone(),
-      tail: number.clone(),
-      next: head.header.parentHash,
-    }
-    for (const _subchain of this.status.progress.subchains) {
-      // If the last chain is above the new head, delete altogether
-      const lastchain = this.status.progress.subchains[0]
-      if (lastchain.tail.gte(headchain.tail)) {
-        this.config.logger.debug(
-          `Dropping skeleton subchain head=${lastchain.head} tail=${lastchain.tail}`
-        )
-        this.status.progress.subchains = this.status.progress.subchains.slice(1)
-        continue
-      }
-      // Otherwise truncate the last chain if needed and abort trimming
-      if (lastchain.head.gte(headchain.tail)) {
-        this.config.logger.debug(
-          `Trimming skeleton subchain oldHead=${lastchain.head} newHead=${headchain.tail.subn(
-            1
-          )} tail=${lastchain.tail}`
-        )
-        lastchain.head = headchain.tail.subn(1)
-      }
-      break
-    }
-    // If the last subchain can be extended, we're lucky. Otherwise create
-    // a new subchain sync task.
-    let extended = false
-    if (this.status.progress.subchains.length > 0) {
-      const lastchain = this.status.progress.subchains[0]
-      if (lastchain.head.eq(headchain.tail.subn(1))) {
-        const lasthead = await this.getBlock(lastchain.head)
-        if (lasthead?.hash().equals(head.header.parentHash)) {
-          this.config.logger.debug(
-            `Extended skeleton subchain with new head=${headchain.tail} tail=${lastchain.tail}`
-          )
-          lastchain.head = headchain.tail
-          extended = true
-        }
-      }
-    }
-    if (!extended) {
-      this.config.logger.debug(`Created new skeleton subchain head=${number} tail=${number}`)
-      this.status.progress.subchains.unshift(headchain)
     }
 
     // Update the database with the new sync stats and insert the new
@@ -161,11 +224,8 @@ export class Skeleton extends MetaDBManager {
     // the database space will be reclaimed eventually when processing
     // blocks above the current head.
     await this.putBlock(head)
+    lastchain.head = number
     await this.writeSyncStatus()
-
-    if (this.isLinked()) {
-      await this.fillCanonicalChain()
-    }
 
     return false
   }
@@ -286,7 +346,7 @@ export class Skeleton extends MetaDBManager {
       }
     }
 
-    // If our tail reaches genesis, start filling.
+    // If the sync is finished, start filling the canonical chain.
     if (this.isLinked()) {
       void this.fillCanonicalChain()
     }
