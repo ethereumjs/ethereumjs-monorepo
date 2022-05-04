@@ -92,7 +92,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (maxLen < mLen) {
     maxLen = mLen
   }
-  const Gquaddivisor = BigInt(opts._common.param('gasPrices', 'modexpGquaddivisor'))
+  const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
   let gasUsed
 
   const bStart = BigInt(96)
