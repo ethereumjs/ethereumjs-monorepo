@@ -13,6 +13,7 @@ export enum ERROR {
   STOP = 'stop',
   REFUND_EXHAUSTED = 'refund exhausted',
   VALUE_OVERFLOW = 'value overflow',
+  INSUFFICIENT_BALANCE = 'insufficient balance',
   INVALID_BEGINSUB = 'invalid BEGINSUB',
   INVALID_RETURNSUB = 'invalid RETURNSUB',
   INVALID_JUMPSUB = 'invalid JUMPSUB',

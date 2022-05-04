@@ -66,6 +66,10 @@ export interface RunCallOpts {
    */
   selfdestruct?: { [k: string]: boolean }
   /**
+   * Skip balance checks if true. Adds transaction value to balance to ensure execution doesn't fail.
+   */
+  skipBalance?: boolean
+  /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
   delegatecall?: boolean
@@ -74,7 +78,7 @@ export interface RunCallOpts {
 /**
  * @ignore
  */
-export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
+export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   const txContext = new TxContext(
@@ -82,11 +86,21 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     opts.origin ?? opts.caller ?? Address.zero()
   )
 
+  const caller = opts.caller ?? Address.zero()
+  const value = opts.value ?? BigInt(0)
+
+  if (opts.skipBalance) {
+    // if skipBalance, add `value` to caller balance to ensure sufficient funds
+    const callerAccount = await this.stateManager.getAccount(caller)
+    callerAccount.balance += value
+    await this.stateManager.putAccount(caller, callerAccount)
+  }
+
   const message = new Message({
-    caller: opts.caller ?? Address.zero(),
+    caller,
     gasLimit: opts.gasLimit ?? BigInt(0xffffff),
     to: opts.to ?? undefined,
-    value: opts.value,
+    value,
     data: opts.data,
     code: opts.code,
     depth: opts.depth ?? 0,
