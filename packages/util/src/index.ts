@@ -14,11 +14,6 @@ export * from './account'
 export * from './address'
 
 /**
- * Hash functions
- */
-export * from './hash'
-
-/**
  * ECDSA signature
  */
 export * from './signature'

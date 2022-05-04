@@ -1,4 +1,5 @@
-import { sha256 } from 'ethereumjs-util'
+import { sha256 } from 'ethereum-cryptography/sha256'
+import { toBuffer } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
@@ -18,6 +19,6 @@ export default function (opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    returnValue: sha256(data),
+    returnValue: toBuffer(sha256(data)),
   }
 }

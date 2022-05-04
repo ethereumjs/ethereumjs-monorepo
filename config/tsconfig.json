@@ -12,6 +12,6 @@
     "downlevelIteration": true,
     "strict": true,
     "target": "es2020",
-    "lib": ["ES2020"]
+    "lib": ["ES2020", "DOM"]
   }
 }

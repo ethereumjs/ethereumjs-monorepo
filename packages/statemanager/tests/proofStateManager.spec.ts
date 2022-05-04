@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { Address, keccak256, toBuffer, zeros } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Address, toBuffer, zeros } from 'ethereumjs-util'
 import { SecureTrie } from 'merkle-patricia-tree'
 import { DefaultStateManager } from '../src'
 import ropsten_validAccount from './testdata/ropsten_validAccount.json'
@@ -44,7 +45,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_validAccount.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = keccak256(bufferData)
+      const key = toBuffer(keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -71,7 +72,7 @@ tape('ProofStateManager', (t) => {
       let stateRoot: Buffer | undefined
       for (const proofData of ropsten_nonexistentAccount.accountProof) {
         const bufferData = toBuffer(proofData)
-        const key = keccak256(bufferData)
+        const key = toBuffer(keccak256(bufferData))
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -99,7 +100,7 @@ tape('ProofStateManager', (t) => {
       let stateRoot: Buffer | undefined
       for (const proofData of ropsten_contractWithStorage.accountProof) {
         const bufferData = toBuffer(proofData)
-        const key = keccak256(bufferData)
+        const key = toBuffer(keccak256(bufferData))
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -111,7 +112,7 @@ tape('ProofStateManager', (t) => {
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
         storageKeys.push(toBuffer(storageProofsData.key))
         for (const storageProofData of storageProofsData.proof) {
-          const key = keccak256(toBuffer(storageProofData))
+          const key = toBuffer(keccak256(toBuffer(storageProofData)))
           await storageTrie.db.put(key, toBuffer(storageProofData))
         }
       }
@@ -139,7 +140,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = keccak256(bufferData)
+      const key = toBuffer(keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -151,7 +152,7 @@ tape('ProofStateManager', (t) => {
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
       storageKeys.push(toBuffer(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(toBuffer(storageProofData))
+        const key = toBuffer(keccak256(toBuffer(storageProofData)))
         await storageTrie.db.put(key, toBuffer(storageProofData))
       }
     }
@@ -206,7 +207,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = keccak256(bufferData)
+      const key = toBuffer(keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }
