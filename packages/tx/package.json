@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^2.6.3",
+    "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.4"
   },
   "devDependencies": {

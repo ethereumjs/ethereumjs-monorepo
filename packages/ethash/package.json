@@ -35,6 +35,7 @@
     "@types/levelup": "^4.3.0",
     "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
+    "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.4"
   },
   "devDependencies": {

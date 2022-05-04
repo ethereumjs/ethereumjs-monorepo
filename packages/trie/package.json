@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@types/levelup": "^4.3.0",
+    "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.4",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",

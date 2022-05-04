@@ -1,4 +1,5 @@
-import { keccak256, rlp } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { toBuffer, rlp } from 'ethereumjs-util'
 import { bufferToNibbles, nibblesToBuffer } from './util/nibbles'
 import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'
 
@@ -45,7 +46,7 @@ export class BranchNode {
   }
 
   hash(): Buffer {
-    return keccak256(this.serialize())
+    return toBuffer(keccak256(this.serialize()))
   }
 
   getBranch(i: number) {
@@ -119,7 +120,7 @@ export class ExtensionNode {
   }
 
   hash(): Buffer {
-    return keccak256(this.serialize())
+    return toBuffer(keccak256(this.serialize()))
   }
 }
 
@@ -173,7 +174,7 @@ export class LeafNode {
   }
 
   hash(): Buffer {
-    return keccak256(this.serialize())
+    return toBuffer(keccak256(this.serialize()))
   }
 }
 

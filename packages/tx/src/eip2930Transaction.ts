@@ -1,9 +1,9 @@
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufferToBigInt,
   ecrecover,
-  keccak256,
   MAX_INTEGER,
   rlp,
   toBuffer,
@@ -261,7 +261,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const base = this.raw().slice(0, 8)
     const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
     if (hashMessage) {
-      return keccak256(message)
+      return toBuffer(keccak256(message))
     } else {
       return message
     }
@@ -281,12 +281,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = keccak256(this.serialize())
+        this.cache.hash = toBuffer(keccak256(this.serialize()))
       }
       return this.cache.hash
     }
 
-    return keccak256(this.serialize())
+    return toBuffer(keccak256(this.serialize()))
   }
 
   /**

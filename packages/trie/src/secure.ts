@@ -1,4 +1,5 @@
-import { keccak256 } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { toBuffer } from 'ethereumjs-util'
 import { CheckpointTrie } from './checkpointTrie'
 import { Proof } from './baseTrie'
 
@@ -17,7 +18,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    const hash = keccak256(key)
+    const hash = toBuffer(keccak256(key))
     const value = await super.get(hash)
     return value
   }
@@ -32,7 +33,7 @@ export class SecureTrie extends CheckpointTrie {
     if (!val || val.toString() === '') {
       await this.del(key)
     } else {
-      const hash = keccak256(key)
+      const hash = toBuffer(keccak256(key))
       await super.put(hash, val)
     }
   }
@@ -42,7 +43,7 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   async del(key: Buffer): Promise<void> {
-    const hash = keccak256(key)
+    const hash = toBuffer(keccak256(key))
     await super.del(hash)
   }
 
@@ -62,7 +63,7 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   static createProof(trie: SecureTrie, key: Buffer): Promise<Proof> {
-    const hash = keccak256(key)
+    const hash = toBuffer(keccak256(key))
     return super.createProof(trie, hash)
   }
 
@@ -75,7 +76,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns The value from the key.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const hash = keccak256(key)
+    const hash = toBuffer(keccak256(key))
     return super.verifyProof(rootHash, hash, proof)
   }
 
@@ -92,9 +93,9 @@ export class SecureTrie extends CheckpointTrie {
   ): Promise<boolean> {
     return super.verifyRangeProof(
       rootHash,
-      firstKey && keccak256(firstKey),
-      lastKey && keccak256(lastKey),
-      keys.map(keccak256),
+      firstKey && toBuffer(keccak256(firstKey)),
+      lastKey && toBuffer(keccak256(lastKey)),
+      keys.map((k) => toBuffer(keccak256(k))),
       values,
       proof
     )
