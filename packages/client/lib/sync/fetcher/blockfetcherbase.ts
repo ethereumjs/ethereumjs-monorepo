@@ -76,6 +76,8 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     }
     if (count.gtn(0) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
+      !this.reverse ? first.iadd(count) : first.isub(count)
+      count.isub(count)
       pushedCount.iadd(count)
     }
     debugStr += ` count=${pushedCount}`
