@@ -4,6 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+import { FullSynchronizer } from '../../../lib/sync'
 
 const method = 'eth_syncing'
 
@@ -62,7 +63,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
-  const synchronizer = client.services[0].synchronizer
+  const synchronizer = client.services[0].synchronizer as FullSynchronizer
   synchronizer.best = td.func<typeof synchronizer['best']>()
   synchronizer.latest = td.func<typeof synchronizer['latest']>()
   td.when(synchronizer.best()).thenReturn('peer')

@@ -111,7 +111,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = new Chain({ config })
     const service = new FullEthereumService({ config, chain })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
-    td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
+    td.verify((service.synchronizer as any).handleNewBlock({} as any, undefined))
     t.end()
   })
 
