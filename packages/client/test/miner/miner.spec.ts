@@ -7,6 +7,7 @@ import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
+import { FullSynchronizer } from '../../lib/sync'
 import { Chain } from '../../lib/blockchain'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
@@ -247,8 +248,7 @@ tape('[Miner]', async (t) => {
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
-
-    service.synchronizer.handleNewBlock = async (block: Block) => {
+    ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
       t.equal(block.transactions.length, 0, 'should not include tx')
       miner.stop()
       txPool.stop()
