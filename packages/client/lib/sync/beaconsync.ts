@@ -171,7 +171,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const first = tail.subn(1)
     // Sync from tail to next subchain or chain height
     const count = first.sub(
-      (this.skeleton as any).status.progress.subchains[1]?.head ?? this.chain.blocks.height
+      (this.skeleton as any).status.progress.subchains[1]?.head.subn(1) ?? this.chain.blocks.height
     )
     if (count.gtn(0) && (!this.fetcher || this.fetcher.errored)) {
       this.fetcher = new ReverseBlockFetcher({
