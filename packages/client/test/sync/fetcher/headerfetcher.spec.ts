@@ -92,6 +92,7 @@ tape('[HeaderFetcher]', async (t) => {
       job.peer.les.getBlockHeaders({
         block: job.task.first.addn(partialResult.length),
         max: job.task.count - partialResult.length,
+        reverse: false,
       })
     )
     t.end()

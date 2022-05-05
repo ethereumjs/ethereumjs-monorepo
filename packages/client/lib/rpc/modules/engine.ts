@@ -473,6 +473,17 @@ export class Engine {
         (this.remoteBlocks.get(headBlockHash.slice(2)) as Block)
       if (!headBlock) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
+        const payloadStatus = {
+          status: Status.SYNCING,
+          latestValidHash: null,
+          validationError: null,
+        }
+        const response = { payloadStatus, payloadId: null }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        return response
       } else {
         this.config.logger.debug(
           `Forkchoice requested sync to new head number=${headBlock.header.number} hash=${short(
@@ -482,17 +493,6 @@ export class Engine {
         this.service.beaconSync?.setHead(headBlock)
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
-      const payloadStatus = {
-        status: Status.SYNCING,
-        latestValidHash: null,
-        validationError: null,
-      }
-      const response = { payloadStatus, payloadId: null }
-      this.connectionManager.lastForkchoiceUpdate({
-        state: params[0],
-        response,
-      })
-      return response
     }
 
     if (!headBlock._common.gteHardfork(Hardfork.Merge)) {

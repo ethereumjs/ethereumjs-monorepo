@@ -126,12 +126,12 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(0),
-      count: new BN(0),
+      first: new BN(10),
+      count: new BN(5),
     })
-    const partialResult: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+    const partialResult: any = [{ header: { number: 10 } }, { header: { number: 9 } }]
 
-    const task = { count: 3, first: new BN(1) }
+    const task = { first: new BN(10), count: 5 }
     const peer = {
       eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
       id: 'random',
@@ -141,7 +141,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     await fetcher.request(job as any)
     td.verify(
       job.peer.eth.getBlockHeaders({
-        block: job.task.first.addn(partialResult.length),
+        block: job.task.first.subn(partialResult.length),
         max: job.task.count - partialResult.length,
         reverse: true,
       })

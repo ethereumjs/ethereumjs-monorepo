@@ -4,7 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { checkError } from '../util'
-import { FullSynchronizer } from '../../../lib/sync'
+import type { FullSynchronizer } from '../../../lib/sync'
 
 const method = 'eth_syncing'
 

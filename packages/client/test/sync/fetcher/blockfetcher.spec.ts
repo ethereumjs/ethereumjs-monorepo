@@ -171,6 +171,7 @@ tape('[BlockFetcher]', async (t) => {
       job.peer.eth.getBlockHeaders({
         block: job.task.first.addn(partialResult.length),
         max: job.task.count - partialResult.length,
+        reverse: false,
       })
     )
     t.end()

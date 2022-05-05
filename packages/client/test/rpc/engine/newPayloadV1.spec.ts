@@ -71,7 +71,6 @@ tape(`${method}: call with non existent block hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-// TODO(cbrzn): Change this to expect ACCEPTED when optimistic sync is supported
 tape(`${method}: call with non existent parent hash`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
@@ -84,7 +83,7 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
   ]
   const req = params(method, blockDataNonExistentParentHash)
   const expectRes = (res: any) => {
-    t.equal(res.body.result.status, 'SYNCING')
+    t.equal(res.body.result.status, 'ACCEPTED')
   }
 
   await baseRequest(t, server, req, 200, expectRes)
@@ -97,7 +96,7 @@ tape(
 
     let req = params(method, [blocks[1]])
     let expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'SYNCING')
+      t.equal(res.body.result.status, 'ACCEPTED')
     }
     await baseRequest(t, server, req, 200, expectRes, false)
 

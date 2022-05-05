@@ -4,15 +4,14 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address, BN, keccak256 } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
-import { FullSynchronizer } from '../../lib/sync'
 import { Chain } from '../../lib/blockchain'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
-import { keccak256 } from '@ethereumjs/devp2p'
+import type { FullSynchronizer } from '../../lib/sync'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -329,25 +328,16 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    let pkey = keccak256(Buffer.from(''))
-
     // add many txs to slow assembling
+    let privateKey = keccak256(Buffer.from(''))
     for (let i = 0; i < 1000; i++) {
       // In order not to pollute TxPool with too many txs from the same address
       // (or txs which are already known), keep generating a new address for each tx
-      const address = Address.fromPrivateKey(pkey)
+      const address = Address.fromPrivateKey(privateKey)
       await setBalance(vm.stateManager, address, new BN('200000000000001'))
-      await txPool.add(
-        createTx(
-          {
-            address,
-            privateKey: pkey,
-          },
-          undefined,
-          i
-        )
-      )
-      pkey = keccak256(pkey)
+      const tx = createTx({ address, privateKey })
+      await txPool.add(tx)
+      privateKey = keccak256(privateKey)
     }
 
     chain.putBlocks = () => {

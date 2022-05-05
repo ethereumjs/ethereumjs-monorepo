@@ -37,7 +37,7 @@ tape('[FullEthereumService]', async (t) => {
   FullSynchronizer.prototype.open = td.func<any>()
   FullSynchronizer.prototype.close = td.func<any>()
   FullSynchronizer.prototype.handleNewBlock = td.func<any>()
-  td.replace('../../lib/sync/fullsync', { FullSynchronizer })
+  td.replace('../../lib/sync', { FullSynchronizer })
 
   class Block {
     static fromValuesArray() {
@@ -111,7 +111,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = new Chain({ config })
     const service = new FullEthereumService({ config, chain })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
-    td.verify((service.synchronizer as any).handleNewBlock({} as any, undefined))
+    td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
     t.end()
   })
 
