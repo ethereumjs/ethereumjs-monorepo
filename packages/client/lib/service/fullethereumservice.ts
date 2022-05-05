@@ -106,7 +106,6 @@ export class FullEthereumService extends EthereumService {
       skeleton,
     })
     await this.synchronizer.open()
-    await this.synchronizer.start()
   }
 
   async open() {

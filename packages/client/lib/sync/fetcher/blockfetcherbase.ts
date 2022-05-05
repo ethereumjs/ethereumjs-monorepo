@@ -68,29 +68,15 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const tasks: JobTask[] = []
     let debugStr = !this.reverse ? `first=${first}` : `last=${first}`
     const pushedCount = new BN(0)
-    if (!this.reverse) {
-      while (count.gten(max) && tasks.length < maxTasks) {
-        tasks.push({ first: first.clone(), count: max })
-        first.iaddn(max)
-        count.isubn(max)
-        pushedCount.iaddn(max)
-      }
-      if (count.gtn(0) && tasks.length < maxTasks) {
-        tasks.push({ first: first.clone(), count: count.toNumber() })
-        pushedCount.iadd(count)
-      }
-    } else {
-      // Sync in reverse order (e.g. for beacon sync)
-      while (count.gten(max) && tasks.length < maxTasks) {
-        tasks.push({ first: first.subn(max).addn(1), count: max })
-        first.isubn(max)
-        count.isubn(max)
-        pushedCount.iaddn(max)
-      }
-      if (count.gtn(0) && tasks.length < maxTasks) {
-        tasks.push({ first: first.sub(count).addn(1), count: count.toNumber() })
-        pushedCount.iadd(count)
-      }
+    while (count.gten(max) && tasks.length < maxTasks) {
+      tasks.push({ first: first.clone(), count: max })
+      !this.reverse ? first.iaddn(max) : first.isubn(max)
+      count.isubn(max)
+      pushedCount.iaddn(max)
+    }
+    if (count.gtn(0) && tasks.length < maxTasks) {
+      tasks.push({ first: first.clone(), count: count.toNumber() })
+      pushedCount.iadd(count)
     }
     debugStr += ` count=${pushedCount}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)

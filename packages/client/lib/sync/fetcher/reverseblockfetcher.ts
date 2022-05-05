@@ -7,9 +7,6 @@ import type { Skeleton } from '../skeleton'
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
   /** Skeleton */
   skeleton: Skeleton
-
-  /** Reverse must be true */
-  reverse: true
 }
 
 /**
@@ -23,7 +20,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
    * Create new block fetcher
    */
   constructor(options: ReverseBlockFetcherOptions) {
-    super(options)
+    super({ ...options, reverse: true })
     this.skeleton = options.skeleton
   }
 
@@ -33,7 +30,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
    */
   async store(blocks: Block[]) {
     try {
-      const num = await this.skeleton.putBlocks(blocks.reverse())
+      const num = await this.skeleton.putBlocks(blocks)
       this.debug(
         `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
           blocks[0]?.header.number

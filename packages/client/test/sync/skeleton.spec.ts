@@ -5,6 +5,7 @@ import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Skeleton, errReorgDenied } from '../../lib/sync/skeleton'
+import { wait } from '../integration/util'
 const level = require('level-mem')
 
 type Subchain = {
@@ -297,4 +298,119 @@ tape('[Skeleton]', async (t) => {
       }
     }
   })
+
+  const block1 = Block.fromBlockData(
+    { header: { number: 1, parentHash: common.genesis().hash, difficulty: 100 } },
+    { common }
+  )
+  const block2 = Block.fromBlockData(
+    { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+    { common }
+  )
+  const block3 = Block.fromBlockData(
+    { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
+    { common }
+  )
+  const block4 = Block.fromBlockData(
+    { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
+    { common }
+  )
+  const block5 = Block.fromBlockData(
+    { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
+    { common }
+  )
+
+  t.test('should fill the canonical chain after being linked to genesis', async (st) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    ;(chain.blockchain as any)._validateBlocks = false
+    ;(chain.blockchain as any)._validateConsensus = false
+    const metaDB = level()
+    const skeleton = new Skeleton({ chain, config, metaDB })
+    await chain.open()
+    await skeleton.open()
+
+    await skeleton.initSync(block4)
+    await skeleton.putBlocks([block3, block2])
+    st.equal(chain.blocks.height.toNumber(), 0, 'canonical height should be at genesis')
+    await skeleton.putBlocks([block1])
+    await wait(200)
+    st.equal(chain.blocks.height.toNumber(), 4, 'canonical height should update after being linked')
+    await skeleton.setHead(block5, false)
+    await wait(200)
+    st.equal(
+      chain.blocks.height.toNumber(),
+      4,
+      'canonical height should not change when setHead is set with force=false'
+    )
+    await skeleton.setHead(block5, true)
+    await wait(200)
+    st.equal(
+      chain.blocks.height.toNumber(),
+      5,
+      'canonical height should change when setHead is set with force=true'
+    )
+    for (const block of [block1, block2, block3, block4, block5]) {
+      st.equal(
+        await skeleton.getBlock(block.header.number),
+        undefined,
+        `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+      )
+      st.equal(
+        await skeleton.getBlockByHash(block.hash()),
+        undefined,
+        `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+      )
+    }
+  })
+
+  t.test(
+    'should fill the canonical chain after being linked to a canonical block past genesis',
+    async (st) => {
+      const config = new Config({ transports: [] })
+      const chain = new Chain({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
+      ;(chain.blockchain as any)._validateConsensus = false
+      const metaDB = level()
+      const skeleton = new Skeleton({ chain, config, metaDB })
+      await chain.open()
+      await skeleton.open()
+      await chain.putBlocks([block1, block2])
+      await skeleton.initSync(block4)
+      st.equal(chain.blocks.height.toNumber(), 2, 'canonical height should be at block 2')
+      await skeleton.putBlocks([block3])
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        4,
+        'canonical height should update after being linked'
+      )
+      await skeleton.setHead(block5, false)
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        4,
+        'canonical height should not change when setHead with force=false'
+      )
+      await skeleton.setHead(block5, true)
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        5,
+        'canonical height should change when setHead with force=true'
+      )
+      for (const block of [block3, block4, block5]) {
+        st.equal(
+          await skeleton.getBlock(block.header.number),
+          undefined,
+          `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+        )
+        st.equal(
+          await skeleton.getBlockByHash(block.hash()),
+          undefined,
+          `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+        )
+      }
+    }
+  )
 })

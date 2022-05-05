@@ -81,6 +81,12 @@ export class Skeleton extends MetaDBManager {
       )} force=${force}`
     )
     const reorged = await this.processNewHead(head, force)
+
+    // If linked, fill the canonical chain.
+    if (force && this.isLinked()) {
+      void this.fillCanonicalChain()
+    }
+
     if (reorged) {
       if (force) {
         throw errSyncReorged
@@ -210,7 +216,7 @@ export class Skeleton extends MetaDBManager {
     if (parent && !parent.hash().equals(head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
-          `Beacon chain forked ancestor=${parent.header.number} hash=${parent.hash()} want=${
+          `Beacon chain forked ancestor=${parent.header.number} hash=${short(parent.hash())} want=${
             head.header.parentHash
           }`
         )
@@ -367,34 +373,38 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
-   * Inserts skeleton blocks into canonical chain and runs execution when linked.
+   * Inserts skeleton blocks into canonical chain and runs execution.
    */
   private async fillCanonicalChain() {
     if (this.filling) return
     this.filling = true
-    this.config.logger.debug('Starting canonical chain fill')
     const canonicalHead = this.chain.blocks.height.clone()
-    const { head, tail } = this.bounds()
-    while (canonicalHead.lt(tail)) {
+    const start = canonicalHead.clone()
+    const { head } = this.bounds()
+    this.config.logger.debug(
+      `Starting canonical chain fill canonicalHead=${this.chain.blocks.height} subchainHead=${head}`
+    )
+    while (this.filling && canonicalHead.lt(head)) {
       // Get next block
-      const block = await this.getBlock(canonicalHead.addn(1))
-      // Insert into chain
+      const number = canonicalHead.addn(1)
+      const block = await this.getBlock(number)
       if (!block) break
-      const num = await this.chain.putBlocks([block])
-      // Delete skeleton block to clean up as we go
-      if (num === 1) await this.deleteBlock(block)
-      this.config.logger.debug(
-        `Successfully put block num=${canonicalHead.addn(1)} from skeleton chain to canonical`
-      )
-      canonicalHead.iaddn(1)
-      if (head.eq(tail)) {
-        this.status.progress.subchains = []
+      // Insert into chain
+      const num = await this.chain.putBlocks([block], true)
+      if (num !== 1) {
+        this.config.logger.error(
+          `Failed to put block num=${number} from skeleton chain to canonical`
+        )
         break
       }
-      tail.isubn(1)
+      // Delete skeleton block to clean up as we go
+      await this.deleteBlock(block)
+      canonicalHead.iaddn(1)
     }
-    this.config.logger.debug(`Finished canonical chain fill end=${tail}`)
     this.filling = false
+    this.config.logger.debug(
+      `Successfully put blocks start=${start} end=${canonicalHead} from skeleton chain to canonical`
+    )
   }
 
   /**

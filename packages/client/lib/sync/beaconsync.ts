@@ -10,6 +10,8 @@ import type { VMExecution } from '../execution'
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
   skeleton: Skeleton
+
+  /** VM Execution */
   execution: VMExecution
 }
 
@@ -103,7 +105,12 @@ export class BeaconSynchronizer extends Synchronizer {
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
     try {
-      await this.skeleton.setHead(block)
+      if (!this.running) {
+        await this.skeleton.initSync(block)
+        void this.start()
+      } else {
+        await this.skeleton.setHead(block)
+      }
       return true
     } catch (error) {
       return false
@@ -152,7 +159,10 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.isLinked()) return true
+    if (this.skeleton.isLinked()) {
+      this.clearFetcher()
+      return true
+    }
 
     const bounds = peer ? this.skeleton.bounds() : undefined
     if (!bounds) return false
@@ -163,22 +173,17 @@ export class BeaconSynchronizer extends Synchronizer {
     const count = first.sub(
       (this.skeleton as any).status.progress.subchains[1]?.head ?? this.chain.blocks.height
     )
-    if (count.gtn(0)) {
-      if (!this.fetcher || this.fetcher.errored) {
-        this.fetcher = new ReverseBlockFetcher({
-          config: this.config,
-          pool: this.pool,
-          chain: this.chain,
-          skeleton: this.skeleton,
-          interval: this.interval,
-          first,
-          count,
-          reverse: true,
-          destroyWhenDone: true,
-        })
-      } else {
-        // TODO figure out if there is any fetcher property to be updated
-      }
+    if (count.gtn(0) && (!this.fetcher || this.fetcher.errored)) {
+      this.fetcher = new ReverseBlockFetcher({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        skeleton: this.skeleton,
+        interval: this.interval,
+        first,
+        count,
+        destroyWhenDone: true,
+      })
     }
     return true
   }
@@ -192,33 +197,32 @@ export class BeaconSynchronizer extends Synchronizer {
     }
 
     blocks = blocks as Block[]
-    // Blocks are in reverse order, but we keep our first and last terminology same
-    // as thats how its in the job logging
-    const last = blocks[0].header.number
-    const first = blocks[blocks.length - 1].header.number
+    const first = blocks[0].header.number
+    const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
     this.config.logger.info(
-      `Imported blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
+      `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
     )
-
-    if (!this.running) return
-
-    // If we have linked the chain, run execution
-    if (this.skeleton.isLinked()) {
-      await this.runExecution()
-    }
   }
 
+  /**
+   * Runs vm execution on {@link Event.CHAIN_UPDATED}
+   */
   async runExecution(): Promise<void> {
-    await this.execution.run()
+    // Execute a single block when at head, otherwise run execution in batch of 50 blocks when filling canonical chain.
+    if (
+      this.chain.blocks.height.addn(1).eq(this.skeleton.bounds().head) ||
+      this.chain.blocks.height.modrn(50) === 0
+    ) {
+      void this.execution.run()
+    }
   }
 
   /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.running = false
     this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
     this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
     return super.stop()
