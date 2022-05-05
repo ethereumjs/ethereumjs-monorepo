@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { BN, rlp } from 'ethereumjs-util'
 import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'
 import { short, timeDuration } from '../util'
+import { Event } from '../types'
 
 // Thanks to go-ethereum for the skeleton design
 
@@ -405,6 +406,7 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Successfully put blocks start=${start} end=${canonicalHead} from skeleton chain to canonical`
     )
+    this.config.events.emit(Event.SYNC_SYNCHRONIZED, canonicalHead)
   }
 
   /**

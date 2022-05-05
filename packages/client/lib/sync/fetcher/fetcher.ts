@@ -299,9 +299,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     const job = this.in.peek()
     if (!job) {
       this.debug(`No job found on next task, skip next job execution.`)
-      // If there are no jobs despite nextTasks, then we just need to finish up!
-      // especially useful in beacon sync
-      this.running = false
       return false
     }
     if (this._readableState!.length > this.maxQueue) {
