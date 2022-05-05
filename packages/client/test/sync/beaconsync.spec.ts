@@ -102,8 +102,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     }
     void sync.sync()
     await wait(50)
-    t.equal(sync.fetcher!.first.toNumber(), 5, 'should sync block 5')
-    t.equal(sync.fetcher!.count.toNumber(), 1, 'should sync block 5')
+    t.equal(sync.fetcher!.first.toNumber(), 5, 'should sync block 5 and 4')
+    t.equal(sync.fetcher!.count.toNumber(), 2, 'should sync block 5 and 4')
     await wait(51)
     ;(skeleton as any).status.progress.subchains = [{ head: new BN(10), tail: new BN(2) }]
     void sync.sync()
