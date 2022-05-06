@@ -113,6 +113,9 @@ export class BeaconSynchronizer extends Synchronizer {
       }
       return true
     } catch (error) {
+      if (this.running) {
+        void this.stop()
+      }
       return false
     }
   }
