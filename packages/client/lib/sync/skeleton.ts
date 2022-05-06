@@ -216,9 +216,9 @@ export class Skeleton extends MetaDBManager {
     if (parent && !parent.hash().equals(head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
-          `Beacon chain forked ancestor=${parent.header.number} hash=${short(parent.hash())} want=${
-            head.header.parentHash
-          }`
+          `Beacon chain forked ancestor=${parent.header.number} hash=${short(
+            parent.hash()
+          )} want=${short(head.header.parentHash)}`
         )
       }
       return true
