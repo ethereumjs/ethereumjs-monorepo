@@ -54,7 +54,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
 
   const req = params(method, [])
 
-  const expectRes = checkError(t, INTERNAL_ERROR, 'highest block header unavailable')
+  const expectRes = checkError(t, INTERNAL_ERROR, 'highest block unavailable')
   await baseRequest(t, rpcServer, req, 200, expectRes)
 })
 
@@ -66,8 +66,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   const synchronizer = client.services[0].synchronizer as FullSynchronizer
   synchronizer.best = td.func<typeof synchronizer['best']>()
   synchronizer.latest = td.func<typeof synchronizer['latest']>()
-  td.when(synchronizer.best()).thenReturn('peer')
-  td.when(synchronizer.latest('peer' as any)).thenResolve({ number: new BN(2) })
+  td.when(synchronizer.best()).thenReturn({ eth: { status: { latestBlock: new BN(2) } } } as any)
 
   client.config.synchronized = false
   t.equals(client.config.synchronized, false, 'not synchronized yet')

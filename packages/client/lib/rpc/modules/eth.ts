@@ -1001,17 +1001,17 @@ export class Eth {
           message: `no peer available for synchronization`,
         }
       }
-      let highestBlockHeader
-      if ('latest' in synchronizer) {
-        highestBlockHeader = await synchronizer.latest(bestPeer)
+      if (bestPeer.eth?.status.latestBlock.gte(this.client.chain.headers.height)) {
+        highestBlock = bnToHex(bestPeer.eth.status.latestBlock)
+      } else if (bestPeer.les?.status.headNum) {
+        highestBlock = bnToHex(bestPeer.les.status.headNum)
       }
-      if (!highestBlockHeader) {
+      if (!highestBlock) {
         throw {
           code: INTERNAL_ERROR,
-          message: `highest block header unavailable`,
+          message: `highest block unavailable`,
         }
       }
-      highestBlock = bnToHex(highestBlockHeader.number)
     }
 
     return { startingBlock, currentBlock, highestBlock }
