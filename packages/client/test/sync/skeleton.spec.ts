@@ -352,7 +352,7 @@ tape('[Skeleton]', async (t) => {
     )
     for (const block of [block1, block2, block3, block4, block5]) {
       st.equal(
-        await skeleton.getBlock(block.header.number),
+        await skeleton.getBlock(block.header.number, true),
         undefined,
         `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
       )
@@ -401,7 +401,7 @@ tape('[Skeleton]', async (t) => {
       )
       for (const block of [block3, block4, block5]) {
         st.equal(
-          await skeleton.getBlock(block.header.number),
+          await skeleton.getBlock(block.header.number, true),
           undefined,
           `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
         )

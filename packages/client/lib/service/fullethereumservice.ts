@@ -73,7 +73,7 @@ export class FullEthereumService extends EthereumService {
   }
 
   /**
-   * Public accessor for {@link BeaconSynchronizer}
+   * Public accessor for {@link BeaconSynchronizer}. Returns undefined if unavailable.
    */
   get beaconSync() {
     if (this.synchronizer instanceof BeaconSynchronizer) {
@@ -109,11 +109,11 @@ export class FullEthereumService extends EthereumService {
   }
 
   async open() {
-    if (this.synchronizer instanceof FullSynchronizer) {
-      this.config.logger.info('Opening FullEthereumService with FullSynchronizer')
-    } else {
-      this.config.logger.info('Opening FullEthereumService with BeaconSynchronizer')
-    }
+    this.config.logger.info(
+      `Opening FullEthereumService with ${
+        this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
+      } `
+    )
     await super.open()
     await this.execution.open()
     this.txPool.open()
@@ -214,8 +214,7 @@ export class FullEthereumService extends EthereumService {
           return
         }
       }
-      let headers = await this.chain.getHeaders(block, max, skip, reverse)
-      headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
+      const headers = await this.chain.getHeaders(block, max, skip, reverse)
       peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
@@ -230,10 +229,8 @@ export class FullEthereumService extends EthereumService {
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
         )
         this.pool.ban(peer, 9000000)
-      } else {
-        if (this.synchronizer instanceof FullSynchronizer) {
-          this.synchronizer.handleNewBlockHashes(message.data)
-        }
+      } else if (this.synchronizer instanceof FullSynchronizer) {
+        this.synchronizer.handleNewBlockHashes(message.data)
       }
     } else if (message.name === 'Transactions') {
       await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
@@ -243,10 +240,8 @@ export class FullEthereumService extends EthereumService {
           `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
         )
         this.pool.ban(peer, 9000000)
-      } else {
-        if (this.synchronizer instanceof FullSynchronizer) {
-          await this.synchronizer.handleNewBlock(message.data[0], peer)
-        }
+      } else if (this.synchronizer instanceof FullSynchronizer) {
+        await this.synchronizer.handleNewBlock(message.data[0], peer)
       }
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)

@@ -496,16 +496,30 @@ export class Engine {
     }
 
     if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
-      const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
-      if (!validTerminalBlock) {
-        const response = {
-          payloadStatus: {
-            status: Status.INVALID_TERMINAL_BLOCK,
-            validationError: null,
-            latestValidHash: null,
-          },
-          payloadId: null,
+      try {
+        const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
+        if (!validTerminalBlock) {
+          const response = {
+            payloadStatus: {
+              status: Status.INVALID_TERMINAL_BLOCK,
+              validationError: null,
+              latestValidHash: null,
+            },
+            payloadId: null,
+          }
+          this.connectionManager.lastForkchoiceUpdate({
+            state: params[0],
+            response,
+          })
+          return response
         }
+      } catch (error) {
+        const payloadStatus = {
+          status: Status.SYNCING,
+          latestValidHash: null,
+          validationError: null,
+        }
+        const response = { payloadStatus, payloadId: null }
         this.connectionManager.lastForkchoiceUpdate({
           state: params[0],
           response,

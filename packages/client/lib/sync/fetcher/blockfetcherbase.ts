@@ -31,12 +31,11 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 > {
   protected chain: Chain
   /**
-   * Where the fetcher starts apart from the tasks already in the `in` queue
+   * Where the fetcher starts apart from the tasks already in the `in` queue.
    */
   first: BN
   /**
-   * Number of items in the fetcher starting from (and including) `first`.
-   * `first + count - 1` gives the height fetcher is attempting to reach
+   * Number of items for the fetcher to fetch starting from (and including) `first`.
    */
   count: BN
 
@@ -53,9 +52,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.count = options.count
     this.reverse = options.reverse ?? false
     this.debug(
-      `Block fetcher instantiated interval=${this.interval} ${!this.reverse ? 'first' : 'last'}=${
-        this.first
-      } count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
+      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
     )
   }
 
@@ -66,7 +63,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    let debugStr = !this.reverse ? `first=${first}` : `last=${first}`
+    let debugStr = `first=${first}`
     const pushedCount = new BN(0)
     while (count.gten(max) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: max })
@@ -77,18 +74,18 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (count.gtn(0) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
       !this.reverse ? first.iadd(count) : first.isub(count)
-      count.isub(count)
       pushedCount.iadd(count)
+      count.isub(count)
     }
-    debugStr += ` count=${pushedCount}`
+    debugStr += ` count=${pushedCount} reverse=${this.reverse}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count.gten(0)) {
+    if (this.in.length === 0 && this.count.gtn(0)) {
       this.debug(
-        `Fetcher pending with ${!this.reverse ? 'first' : 'last'}=${this.first} count=${this.count}`
+        `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
       )
       const tasks = this.tasks(this.first, this.count)
       for (const task of tasks) {

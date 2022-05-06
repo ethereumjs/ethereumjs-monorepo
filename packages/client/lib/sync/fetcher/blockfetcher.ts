@@ -29,8 +29,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       count -= partialResult.length
     }
     const blocksRange = !this.reverse
-      ? `${first}-${first.addn(count)}`
-      : `${first}-${first.subn(count)}`
+      ? `${first}-${first.addn(count - 1)}`
+      : `${first}-${first.subn(count - 1)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
     const headersResult = await peer!.eth!.getBlockHeaders({

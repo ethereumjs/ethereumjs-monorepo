@@ -31,13 +31,25 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
     handleNewBlock() {}
+    handleNewBlockHashes() {}
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
   FullSynchronizer.prototype.open = td.func<any>()
   FullSynchronizer.prototype.close = td.func<any>()
   FullSynchronizer.prototype.handleNewBlock = td.func<any>()
-  td.replace('../../lib/sync', { FullSynchronizer })
+  FullSynchronizer.prototype.handleNewBlockHashes = td.func<any>()
+  class BeaconSynchronizer {
+    start() {}
+    stop() {}
+    open() {}
+    close() {}
+  }
+  BeaconSynchronizer.prototype.start = td.func<any>()
+  BeaconSynchronizer.prototype.stop = td.func<any>()
+  BeaconSynchronizer.prototype.open = td.func<any>()
+  BeaconSynchronizer.prototype.close = td.func<any>()
+  td.replace('../../lib/sync', { FullSynchronizer, BeaconSynchronizer })
 
   class Block {
     static fromValuesArray() {
@@ -106,14 +118,34 @@ tape('[FullEthereumService]', async (t) => {
     t.end()
   })
 
-  t.test('should call handleNewBlock on NewBlock', async (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
-    const service = new FullEthereumService({ config, chain })
-    await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
-    td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
-    t.end()
-  })
+  t.test(
+    'should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes',
+    async (t) => {
+      const config = new Config({ transports: [] })
+      const chain = new Chain({ config })
+      const service = new FullEthereumService({ config, chain })
+      await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
+      td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
+      await service.handle(
+        { name: 'NewBlockHashes', data: [{}, new BN(1)] },
+        'eth',
+        undefined as any
+      )
+      td.verify((service.synchronizer as any).handleNewBlockHashes([{}, new BN(1)]))
+      // should not call when using BeaconSynchronizer
+      // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
+      await service.switchToBeaconSync()
+      t.ok(service.synchronizer instanceof BeaconSynchronizer, 'switched to BeaconSynchronizer')
+      t.ok(service.beaconSync, 'can access BeaconSynchronizer')
+      await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
+      await service.handle(
+        { name: 'NewBlockHashes', data: [{}, new BN(1)] },
+        'eth',
+        undefined as any
+      )
+      t.end()
+    }
+  )
 
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })

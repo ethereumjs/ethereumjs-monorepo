@@ -83,17 +83,14 @@ export class FullSynchronizer extends Synchronizer {
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
    */
-  best(): Peer | undefined {
+  async best(): Promise<Peer | undefined> {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       if (peer.eth?.status) {
         const td = peer.eth.status.td
-        if (
-          (!best && td.gte(this.chain.blocks.td)) ||
-          (best && best.eth && best.eth.status.td.lt(td))
-        ) {
+        if ((!best && td.gte(this.chain.blocks.td)) || best?.eth?.status.td.lt(td)) {
           best = peer
         }
       }

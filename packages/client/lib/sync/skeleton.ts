@@ -307,7 +307,6 @@ export class Skeleton extends MetaDBManager {
           )
           this.status.progress.subchains[1].head = this.status.progress.subchains[0].tail.subn(1)
         }
-
         // If the old subchain is an extension of the new one, merge the two
         // and let the skeleton syncer restart (to clean internal state)
         if (
@@ -421,9 +420,9 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
-   * Gets a skeleton block from the db by number
+   * Gets a block from the skeleton or canonical db by number.
    */
-  async getBlock(number: BN): Promise<Block | undefined> {
+  async getBlock(number: BN, onlySkeleton = false): Promise<Block | undefined> {
     try {
       const rlp = await this.get(DBKey.SkeletonBlock, number.toArrayLike(Buffer))
       const block = Block.fromRLPSerializedBlock(rlp!, {
@@ -431,7 +430,11 @@ export class Skeleton extends MetaDBManager {
       })
       return block
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (onlySkeleton) return undefined
+      // As a fallback, try to get the block from the canonical chain in case it is available there
+      try {
+        return await this.chain.getBlock(number)
+      } catch (error) {
         return undefined
       }
     }
@@ -441,15 +444,9 @@ export class Skeleton extends MetaDBManager {
    * Gets a skeleton block from the db by hash
    */
   async getBlockByHash(hash: Buffer): Promise<Block | undefined> {
-    try {
-      const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
-      if (!number) return undefined
-      return this.getBlock(new BN(number))
-    } catch (error: any) {
-      if (error.type === 'NotFoundError') {
-        return undefined
-      }
-    }
+    const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
+    if (!number) return undefined
+    return this.getBlock(new BN(number))
   }
 
   /**

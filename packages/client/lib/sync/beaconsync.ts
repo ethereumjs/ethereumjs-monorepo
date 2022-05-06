@@ -6,6 +6,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Peer } from '../net/peer/peer'
 import { errSyncReorged, Skeleton } from './skeleton'
 import type { VMExecution } from '../execution'
+import type { BN } from 'ethereumjs-util'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -72,21 +73,31 @@ export class BeaconSynchronizer extends Synchronizer {
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
    */
-  best(): Peer | undefined {
-    let best
+  async best(): Promise<Peer | undefined> {
+    let best: [Peer, BN] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
+    if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      if (peer.eth?.status) {
-        const { latestBlock } = peer.eth.status
-        if (
-          (!best && latestBlock.gte(this.chain.blocks.height)) ||
-          best?.eth?.status.latestBlock.lt(latestBlock)
-        ) {
-          best = peer
+      const latest = await this.latest(peer)
+      if (latest) {
+        const { number } = latest
+        if ((!best && number.gte(this.chain.blocks.height)) || (best && best[1].lt(number))) {
+          best = [peer, number]
         }
       }
     }
-    return best
+    return best ? best[0] : undefined
+  }
+
+  /**
+   * Get latest header of peer
+   */
+  async latest(peer: Peer) {
+    const result = await peer.eth?.getBlockHeaders({
+      block: peer.eth!.status.bestHash,
+      max: 1,
+    })
+    return result ? result[1][0] : undefined
   }
 
   /**
@@ -99,7 +110,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running) {
+    while (this.running && !this.skeleton.isLinked()) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -179,10 +190,16 @@ export class BeaconSynchronizer extends Synchronizer {
       return true
     }
 
-    const bounds = peer ? this.skeleton.bounds() : undefined
-    if (!bounds) return false
-    const { tail } = bounds
+    const latest = peer ? await this.latest(peer) : undefined
+    if (!latest) return false
 
+    const height = latest.number
+    if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
+      this.config.syncTargetHeight = height
+      this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+    }
+
+    const { tail } = this.skeleton.bounds()
     const first = tail.subn(1)
     // Sync from tail to next subchain or chain height
     const count = first.sub(
@@ -227,7 +244,7 @@ export class BeaconSynchronizer extends Synchronizer {
   async runExecution(): Promise<void> {
     // Execute a single block when at head, otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
-      this.chain.blocks.height.addn(1).eq(this.skeleton.bounds().head) ||
+      this.skeleton.bounds()?.head.eq(this.chain.blocks.height.addn(1)) ||
       this.chain.blocks.height.modrn(50) === 0
     ) {
       void this.execution.run()

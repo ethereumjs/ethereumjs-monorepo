@@ -66,15 +66,15 @@ export interface EthProtocolMethods {
   getReceipts: (opts: GetReceiptsOpts) => Promise<[BN, TxReceipt[]]>
 }
 
-const id = new BN(0)
-
 /**
  * Implements eth/66 protocol
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
   private chain: Chain
+  private nextReqId = new BN(0)
 
+  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'NewBlockHashes',
@@ -108,7 +108,7 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
@@ -135,7 +135,7 @@ export class EthProtocol extends Protocol {
           // and we look backwards for the correct block)
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
-            common: this.config.chainCommon, // eslint-disable-line no-invalid-this
+            common: this.config.chainCommon,
           })
         ),
       ],
@@ -145,7 +145,7 @@ export class EthProtocol extends Protocol {
       code: 0x05,
       response: 0x06,
       encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -168,7 +168,6 @@ export class EthProtocol extends Protocol {
       encode: ([block, td]: [Block, BN]) => [block.raw(), td.toArrayLike(Buffer)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [
         Block.fromValuesArray(block, {
-          // eslint-disable-next-line no-invalid-this
           common: this.config.chainCommon,
           hardforkByBlockNumber: true,
         }),
@@ -184,7 +183,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -219,7 +218,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: BN; hashes: Buffer[] }) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -319,7 +318,6 @@ export class EthProtocol extends Protocol {
         : this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
-      latestBlock: this.chain.blocks.latest!.header.number.toArrayLike(Buffer),
     }
   }
 

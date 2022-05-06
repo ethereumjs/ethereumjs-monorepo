@@ -126,7 +126,7 @@ export abstract class Synchronizer {
     clearTimeout(timeout)
   }
 
-  abstract best(): Peer | undefined
+  abstract best(): Promise<Peer | undefined>
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
@@ -157,12 +157,12 @@ export abstract class Synchronizer {
    * @returns when sync is completed
    */
   async sync(): Promise<boolean> {
-    let peer = this.best()
+    let peer = await this.best()
     let numAttempts = 1
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await new Promise((resolve) => setTimeout(resolve, 5000))
-      peer = this.best()
+      peer = await this.best()
       numAttempts += 1
     }
 

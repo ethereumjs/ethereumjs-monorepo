@@ -1,11 +1,11 @@
+import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
 import { Config, SyncMode } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
-
-import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+const level = require('level-mem')
 
 interface SetupOptions {
   location?: string
@@ -58,6 +58,7 @@ export async function setup(
   } else {
     service = new FullEthereumService({
       ...serviceOpts,
+      metaDB: level(),
       lightserv: true,
     })
   }

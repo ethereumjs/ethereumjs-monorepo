@@ -188,7 +188,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       state: 'idle',
       peer: null,
     }
-    this.debug(`enqueueTask: ${this.jobStr(job)}`)
+    this.debug(`enqueueTask ${this.jobStr(job)}`)
     this.in.insert(job)
     if (!this.running && autoRestart) {
       void this.fetch()
@@ -506,6 +506,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         partialResult = ` partialResults=${job.partialResult.length}`
       }
       str += `first=${first} count=${count}${partialResult}`
+      if ('reverse' in this) {
+        str += ` reverse=${(this as any).reverse}`
+      }
     }
     return str
   }

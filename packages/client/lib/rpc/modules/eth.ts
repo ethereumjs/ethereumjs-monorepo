@@ -994,24 +994,21 @@ export class Eth {
     if (syncTargetHeight) {
       highestBlock = bnToHex(syncTargetHeight)
     } else {
-      const bestPeer = synchronizer.best()
+      const bestPeer = await synchronizer.best()
       if (!bestPeer) {
         throw {
           code: INTERNAL_ERROR,
           message: `no peer available for synchronization`,
         }
       }
-      if (bestPeer.eth?.status.latestBlock.gte(this.client.chain.headers.height)) {
-        highestBlock = bnToHex(bestPeer.eth.status.latestBlock)
-      } else if (bestPeer.les?.status.headNum) {
-        highestBlock = bnToHex(bestPeer.les.status.headNum)
-      }
-      if (!highestBlock) {
+      const highestBlockHeader = await synchronizer.latest(bestPeer)
+      if (!highestBlockHeader) {
         throw {
           code: INTERNAL_ERROR,
-          message: `highest block unavailable`,
+          message: `highest block header unavailable`,
         }
       }
+      highestBlock = bnToHex(highestBlockHeader.number)
     }
 
     return { startingBlock, currentBlock, highestBlock }
