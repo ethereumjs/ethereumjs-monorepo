@@ -72,12 +72,12 @@ tape('[BeaconSynchronizer]', async (t) => {
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).running = true
     const peers = [
-      { eth: { status: {} }, inbound: false },
-      { eth: { status: {} }, inbound: false },
+      { eth: { status: { latestBlock: new BN(1) } }, inbound: false },
+      { eth: { status: { latestBlock: new BN(3) } }, inbound: false },
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    t.equals(sync.best(), peers[0], 'found best')
+    t.equals(sync.best(), peers[1], 'found best')
     await sync.stop()
     await sync.close()
     t.end()

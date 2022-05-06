@@ -73,8 +73,20 @@ export class BeaconSynchronizer extends Synchronizer {
    * blockchain. Returns null if no valid peer is found
    */
   best(): Peer | undefined {
+    let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
-    return peers.length > 0 ? peers[0] : undefined
+    for (const peer of peers) {
+      if (peer.eth?.status) {
+        const { latestBlock } = peer.eth.status
+        if (
+          (!best && latestBlock.gte(this.chain.blocks.height)) ||
+          best?.eth?.status.latestBlock.lt(latestBlock)
+        ) {
+          best = peer
+        }
+      }
+    }
+    return best
   }
 
   /**
