@@ -46,6 +46,13 @@ export const errSyncReorged = new Error('sync reorged')
 export const errReorgDenied = new Error('non-forced head reorg denied')
 
 /**
+ * errSyncMerged is an internal helper error to signal that the current sync
+ * cycle merged with a previously aborted subchain, thus the skeleton syncer
+ * should abort and restart with the new state.
+ */
+export const errSyncMerged = new Error('sync merged')
+
+/**
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.
  */
@@ -248,6 +255,7 @@ export class Skeleton extends MetaDBManager {
    * @returns number of blocks saved
    */
   async putBlocks(blocks: Block[]): Promise<number> {
+    let merged = false
     for (const block of blocks) {
       await this.putBlock(block)
       this.pulled.iaddn(1)
@@ -323,9 +331,9 @@ export class Skeleton extends MetaDBManager {
             this.status.progress.subchains[0],
             ...this.status.progress.subchains.slice(2),
           ]
-          // If subchains were merged, all further available headers in the scratch
-          // space are invalid since we skipped ahead. Stop processing the scratch
-          // space to avoid dropping peers thinking they delivered invalid data.
+          // If subchains were merged, all further available headers
+          // are invalid since we skipped ahead.
+          merged = true
           break
         }
       }
@@ -355,6 +363,8 @@ export class Skeleton extends MetaDBManager {
     if (this.isLinked()) {
       void this.fillCanonicalChain()
     }
+
+    if (merged) throw errSyncMerged
 
     return blocks.length
   }

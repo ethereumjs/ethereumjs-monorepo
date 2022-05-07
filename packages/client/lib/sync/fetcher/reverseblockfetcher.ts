@@ -1,8 +1,8 @@
+import { Event } from '../../types'
+import { Skeleton, errSyncMerged } from '../skeleton'
 import { BlockFetcherOptions } from './blockfetcherbase'
 import { BlockFetcher } from './blockfetcher'
-import { Event } from '../../types'
 import type { Block } from '@ethereumjs/block'
-import type { Skeleton } from '../skeleton'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
   /** Skeleton */
@@ -38,12 +38,19 @@ export class ReverseBlockFetcher extends BlockFetcher {
       )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
-      this.debug(
-        `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${
-          blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
-      )
-      throw e
+      if (e == errSyncMerged) {
+        // Tear down the syncer to restart from new subchain segments
+        this.running = false
+        this.clear()
+        this.destroy()
+      } else {
+        this.debug(
+          `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${
+            blocks[0]?.header.number
+          } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
+        )
+        throw e
+      }
     }
   }
 }
