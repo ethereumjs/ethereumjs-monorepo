@@ -15,7 +15,7 @@ import { Hardfork } from '@ethereumjs/common'
 
 import { ERROR, VmError } from '../exceptions'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
-import Message from './message'
+import Message, { MessageWithTo } from './message'
 import EEI from './eei'
 // eslint-disable-next-line
 import * as eof from './opcodes/eof'
@@ -223,7 +223,7 @@ export interface RunCodeOpts {
    * The address where the call originated from. Defaults to the zero address.
    */
   origin?: Address
-  message?: Message
+  message?: MessageWithTo
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
@@ -239,7 +239,7 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: bigint
+  gasLimit: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
@@ -502,7 +502,7 @@ export default class EVM extends AsyncEventEmitter {
       if (this.DEBUG) {
         debug(`Message CALL execution (to: ${message.to})`)
       }
-      result = await this._executeCall(message)
+      result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG) {
         debug(`Message CREATE execution (to undefined)`)
@@ -554,7 +554,7 @@ export default class EVM extends AsyncEventEmitter {
     return result
   }
 
-  async _executeCall(message: Message): Promise<EVMResult> {
+  async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     const account = await this._state.getAccount(message.authcallOrigin ?? message.caller)
     let errorMessage
     // Reduce tx value from sender
@@ -685,7 +685,7 @@ export default class EVM extends AsyncEventEmitter {
     // Add tx value to the `to` account
     let errorMessage
     try {
-      await this._addToBalance(toAccount, message)
+      await this._addToBalance(toAccount, message as MessageWithTo)
     } catch (e: any) {
       errorMessage = e
     }
@@ -831,17 +831,17 @@ export default class EVM extends AsyncEventEmitter {
   async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._blockchain, // Only used in BLOCKHASH
-      address: message.to || Address.zero(),
-      caller: message.caller || Address.zero(),
-      callData: message.data || Buffer.from([0]),
-      callValue: message.value || BigInt(0),
+      address: message.to ?? Address.zero(),
+      caller: message.caller ?? Address.zero(),
+      callData: message.data ?? Buffer.from([0]),
+      callValue: message.value ?? BigInt(0),
       code: message.code as Buffer,
-      isStatic: message.isStatic || false,
-      depth: message.depth || 0,
+      isStatic: message.isStatic ?? false,
+      depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
-      origin: this._tx!.origin || message.caller || Address.zero(),
+      origin: this._tx!.origin ?? message.caller ?? Address.zero(),
       block: this._block ?? new Block(),
-      contract: await this._state.getAccount(message.to || Address.zero()),
+      contract: await this._state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
     }
     const eei = new EEI(
@@ -853,7 +853,7 @@ export default class EVM extends AsyncEventEmitter {
       this._transientStorage
     )
     if (message.selfdestruct) {
-      eei._result.selfdestruct = message.selfdestruct
+      eei._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 
     const interpreter = new Interpreter(this, eei)
@@ -914,17 +914,17 @@ export default class EVM extends AsyncEventEmitter {
 
     const message = new Message({
       caller,
-      gasLimit: opts.gasLimit ?? 0xffffffn,
-      to: opts.to ?? undefined,
+      gasLimit: opts.gasLimit ?? BigInt(0xffffff),
+      to: opts.to,
       value,
       data: opts.data,
       code: opts.code,
-      depth: opts.depth ?? 0,
-      isCompiled: opts.compiled ?? false,
-      isStatic: opts.static ?? false,
-      salt: opts.salt ?? null,
+      depth: opts.depth,
+      isCompiled: opts.compiled,
+      isStatic: opts.static,
+      salt: opts.salt,
       selfdestruct: opts.selfdestruct ?? {},
-      delegatecall: opts.delegatecall ?? false,
+      delegatecall: opts.delegatecall,
     })
 
     return this.executeMessage(message)
@@ -946,17 +946,17 @@ export default class EVM extends AsyncEventEmitter {
 
     const message =
       opts.message ??
-      new Message({
+      (new Message({
         code: opts.code,
         data: opts.data,
         gasLimit: opts.gasLimit,
         to: opts.address ?? Address.zero(),
         caller: opts.caller,
         value: opts.value,
-        depth: opts.depth ?? 0,
+        depth: opts.depth,
         selfdestruct: opts.selfdestruct ?? {},
-        isStatic: opts.isStatic ?? false,
-      })
+        isStatic: opts.isStatic,
+      }) as MessageWithTo)
 
     return this.runInterpreter(message, { pc: opts.pc })
   }
@@ -1028,7 +1028,7 @@ export default class EVM extends AsyncEventEmitter {
     return result
   }
 
-  async _addToBalance(toAccount: Account, message: Message): Promise<void> {
+  async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new VmError(ERROR.VALUE_OVERFLOW)

@@ -618,12 +618,7 @@ export default class EEI {
   /**
    * Creates a new contract with a given value.
    */
-  async create(
-    gasLimit: bigint,
-    value: bigint,
-    data: Buffer,
-    salt: Buffer | null = null
-  ): Promise<bigint> {
+  async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     const msg = new Message({
       caller: this._env.address,

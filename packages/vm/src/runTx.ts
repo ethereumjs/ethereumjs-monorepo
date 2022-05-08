@@ -401,7 +401,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     caller,
     gasLimit,
     to,
-    value: value,
+    value,
     data,
   })
   if (this.DEBUG) {

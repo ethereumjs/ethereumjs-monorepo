@@ -1,19 +1,46 @@
 import { Address } from 'ethereumjs-util'
 import { PrecompileFunc } from './precompiles'
 
+const defaults = {
+  value: BigInt(0),
+  caller: Address.zero(),
+  data: Buffer.alloc(0),
+  depth: 0,
+  isStatic: false,
+  isCompiled: false,
+  delegatecall: false,
+}
+
+interface MessageOpts {
+  to?: Address
+  value?: bigint
+  caller?: Address
+  gasLimit: bigint
+  data?: Buffer
+  depth?: number
+  code?: Buffer | PrecompileFunc
+  codeAddress?: Address
+  isStatic?: boolean
+  isCompiled?: boolean
+  salt?: Buffer
+  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
+  delegatecall?: boolean
+  authcallOrigin?: Address
+}
+
 export default class Message {
-  to: Address
+  to?: Address
   value: bigint
   caller: Address
   gasLimit: bigint
   data: Buffer
   depth: number
-  code: Buffer | PrecompileFunc
-  _codeAddress: Address
+  code?: Buffer | PrecompileFunc
+  _codeAddress?: Address
   isStatic: boolean
   isCompiled: boolean
-  salt: Buffer
-  selfdestruct: any
+  salt?: Buffer
+  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,
@@ -21,20 +48,20 @@ export default class Message {
    */
   authcallOrigin?: Address
 
-  constructor(opts: any) {
+  constructor(opts: MessageOpts) {
     this.to = opts.to
-    this.value = opts.value ? opts.value : BigInt(0)
-    this.caller = opts.caller
+    this.value = opts.value ?? defaults.value
+    this.caller = opts.caller ?? defaults.caller
     this.gasLimit = opts.gasLimit
-    this.data = opts.data || Buffer.alloc(0)
-    this.depth = opts.depth || 0
+    this.data = opts.data ?? defaults.data
+    this.depth = opts.depth ?? defaults.depth
     this.code = opts.code
     this._codeAddress = opts.codeAddress
-    this.isStatic = opts.isStatic || false
-    this.isCompiled = opts.isCompiled || false // For CALLCODE, TODO: Move from here
-    this.salt = opts.salt // For CREATE2, TODO: Move from here
-    this.selfdestruct = opts.selfdestruct // TODO: Move from here
-    this.delegatecall = opts.delegatecall || false
+    this.isStatic = opts.isStatic ?? defaults.isStatic
+    this.isCompiled = opts.isCompiled ?? defaults.isCompiled
+    this.salt = opts.salt
+    this.selfdestruct = opts.selfdestruct
+    this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
 
     if (this.value < 0) {
@@ -42,7 +69,16 @@ export default class Message {
     }
   }
 
+  /**
+   * Note: should only be called in instances where `_codeAddress` or `to` is defined.
+   */
   get codeAddress(): Address {
-    return this._codeAddress ? this._codeAddress : this.to
+    const codeAddress = this._codeAddress ?? this.to
+    if (!codeAddress) {
+      throw new Error('Missing codeAddress')
+    }
+    return codeAddress
   }
 }
+
+export type MessageWithTo = Message & Pick<Required<MessageOpts>, 'to'>
