@@ -1,3 +1,4 @@
+import { Address } from 'ethereumjs-util'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 
@@ -19,3 +20,11 @@ export type AddOpcode = {
 }
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
+
+/**
+ * Tx context for vm execution
+ */
+export interface TxContext {
+  gasPrice: bigint
+  origin: Address
+}
