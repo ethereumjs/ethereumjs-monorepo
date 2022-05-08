@@ -513,6 +513,7 @@ tape('Throws on negative call value', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
+    to: Address.zero(),
     value: BigInt(-10),
   }
 
