@@ -51,8 +51,10 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) && !this.config.disableBeaconSync) {
-      void this.switchToBeaconSync()
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (!this.config.disableBeaconSync) {
+        void this.switchToBeaconSync()
+      }
     } else {
       this.synchronizer = new FullSynchronizer({
         config: this.config,

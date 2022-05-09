@@ -178,6 +178,21 @@ tape('[BeaconSynchronizer]', async (t) => {
     t.end()
   })
 
+  t.test('syncWithPeer should return early if skeleton is already linked', async (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const metaDB = level()
+    const skeleton = new Skeleton({ chain, config, metaDB })
+    skeleton.isLinked = () => true // stub
+    const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
+    await sync.open()
+    t.ok(await sync.syncWithPeer({} as any))
+    await sync.stop()
+    await sync.close()
+    t.end()
+  })
+
   t.test('should reset td', (t) => {
     td.reset()
     t.end()

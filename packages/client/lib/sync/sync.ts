@@ -138,7 +138,7 @@ export abstract class Synchronizer {
     if (!this.config.syncTargetHeight) {
       return
     }
-    if (this.chain.headers.height.gte(this.config.syncTargetHeight)) {
+    if (this.chain.headers.height.eq(this.config.syncTargetHeight)) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(

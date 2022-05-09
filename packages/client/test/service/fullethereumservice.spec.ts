@@ -1,10 +1,13 @@
 import tape from 'tape'
 import td from 'testdouble'
+import Common from '@ethereumjs/common'
 import { Log } from '@ethereumjs/vm/dist/evm/types'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { Chain } from '../../lib/blockchain'
+import { parseCustomParams } from '../../lib/util'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
@@ -182,6 +185,19 @@ tape('[FullEthereumService]', async (t) => {
     await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))
     t.end()
+  })
+
+  t.test('should start on beacon sync when past merge', async (t) => {
+    const params = await parseCustomParams(genesisJSON, 'post-merge')
+    const common = new Common({ chain: params.name, customChains: [params] })
+    common.setHardforkByBlockNumber(new BN(0), new BN(0))
+    const config = new Config({ transports: [], common })
+    const chain = new Chain({ config })
+    let service = new FullEthereumService({ config, chain })
+    t.ok(service.beaconSync, 'beacon sync should be available')
+    const configDisableBeaconSync = new Config({ transports: [], common, disableBeaconSync: true })
+    service = new FullEthereumService({ config: configDisableBeaconSync, chain })
+    t.notOk(service.beaconSync, 'beacon sync should not be available')
   })
 
   t.test('should reset td', (t) => {
