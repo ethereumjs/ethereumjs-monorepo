@@ -102,10 +102,15 @@ export class BeaconSynchronizer extends Synchronizer {
 
   /**
    * Start synchronizer.
+   * If passed a block, will initialize sync starting from the block.
    */
-  async start(): Promise<void> {
+  async start(block?: Block): Promise<void> {
     if (this.running) return
     this.running = true
+
+    if (block) {
+      await this.skeleton.initSync(block)
+    }
 
     const timeout = setTimeout(() => {
       this.forceSync = true
@@ -129,8 +134,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!this.opened) return false
     try {
       if (!this.running) {
-        await this.skeleton.initSync(block)
-        void this.start()
+        void this.start(block)
       } else {
         await this.skeleton.setHead(block)
       }
@@ -153,8 +157,7 @@ export class BeaconSynchronizer extends Synchronizer {
     // from the new head.
     try {
       if (!this.running) {
-        await this.skeleton.initSync(block)
-        void this.start()
+        void this.start(block)
       } else {
         await this.skeleton.setHead(block, true)
       }
@@ -171,7 +174,7 @@ export class BeaconSynchronizer extends Synchronizer {
         )
         // Tear down fetcher and start from new head
         await this.stop()
-        void this.start()
+        void this.start(block)
         return true
       } else {
         throw error
