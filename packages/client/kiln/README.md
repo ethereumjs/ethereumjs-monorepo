@@ -89,3 +89,12 @@ Also, one will need to remove `--eth1.disableEth1DepositDataTracker true` and in
 1. Download latest Teku binary [here](https://github.com/ConsenSys/teku/releases) and extract from archive
 2. Run cmd (with checkpoint sync): `./teku --data-path "./data" --network kiln --initial-state="https://lodestar-kiln.chainsafe.io/eth/v2/debug/beacon/states/finalized" --ee-endpoint http://localhost:8551 --ee-jwt-secret-file "/path/to/ethjs/packages/client/kiln/datadir/jwtsecret" --logging=DEBUG`
 
+### Nimbus
+
+#### Beacon
+1. Build Nimbus following the [kiln instructions](https://nimbus.guide/kiln.html#3-nimbus)
+2. Get your hands on a SSZ encoded finalized state/block snapshot from a synced client (I used Teku).  Assuming you have a synced Teku (or other CL node running locally that exposes the Beacon REST API), you can use the below `curl` commands to get it.
+`curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/debug/beacon/states/finalized > state.ssz`
+`curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/beacon/blocks/[block number corresponding to finalized state above] > block.ssz`
+3. Run cmd (with checkpoint sync and adjust ports/paths accordingly for ): `build/nimbus_beacon_node --network=vendor/merge-testnets/kiln --web3-url=ws://127.0.0.1:8551 --log-level=DEBUG  --jwt-secret="/path/to/ethjs/packages/client/kiln/datadir/jwtsecret" --data-dir=build/kiln --data-dir:trusted --finalized-checkpoint-state=state.ssz --finalized-checkpoint-block=block.ssz`
+
