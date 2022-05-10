@@ -77,8 +77,15 @@ Also, one will need to remove `--eth1.disableEth1DepositDataTracker true` and in
 
 ### Lighthouse
 
-### Beacon
+#### Beacon
 
 1. Use lighthouse branch `unstable` and run `make`
 1. Make dir `lighthouse/kiln` and copy in from the downloaded config dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
 1. Run cmd: `lighthouse --debug-level=info --datadir=kiln/datadir --testnet-dir=kiln beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8551 --terminal-total-difficulty-override=`
+
+### Teku
+
+#### Beacon
+1. Download latest Teku binary [here](https://github.com/ConsenSys/teku/releases) and extract from archive
+2. Run cmd (with checkpoint sync): `./teku --data-path "./data" --network kiln --initial-state="https://lodestar-kiln.chainsafe.io/eth/v2/debug/beacon/states/finalized" --ee-endpoint http://localhost:8551 --ee-jwt-secret-file "/path/to/ethjs/packages/client/kiln/datadir/jwtsecret" --logging=DEBUG`
+
