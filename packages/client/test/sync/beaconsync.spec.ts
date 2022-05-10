@@ -171,8 +171,8 @@ tape('[BeaconSynchronizer]', async (t) => {
 
     const gapBlock = Block.fromBlockData({ header: { number: new BN(18) } })
     t.notOk(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
-    t.ok(await sync.setHead(gapBlock), 'should not set head with gapped block')
-    t.equal(skeleton.bounds().head.toNumber(), 16, 'head should not update with gapped block')
+    t.ok(await sync.setHead(gapBlock), 'should be able to set and update head with gapped block')
+    t.equal(skeleton.bounds().head.toNumber(), 18, 'head should update with gapped block')
     await sync.stop()
     await sync.close()
     t.end()

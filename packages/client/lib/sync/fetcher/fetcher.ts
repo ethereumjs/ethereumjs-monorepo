@@ -352,7 +352,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * `this.request`
    */
   clear() {
-    this.total = this.total - this.in.length
+    this.total -= this.in.length
     while (this.in.length > 0) {
       this.in.remove()
     }

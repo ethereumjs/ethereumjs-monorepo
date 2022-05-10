@@ -174,7 +174,9 @@ export abstract class Synchronizer {
         this.clearFetcher()
         resolve(true)
         this.config.logger.debug(
-          `Finishing up sync with the current fetcher height=${height ?? this.chain.headers.height}`
+          `Finishing up sync with the current fetcher height=${
+            height ?? this.chain.headers?.height
+          }`
         )
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
@@ -184,6 +186,9 @@ export abstract class Synchronizer {
         }
         resolveSync()
       } catch (error: any) {
+        this.config.logger.debug(
+          `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+        )
         this.clearFetcher()
         reject(error)
       }

@@ -40,6 +40,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
     } catch (e: any) {
       if (e == errSyncMerged) {
         // Tear down the syncer to restart from new subchain segments
+        this.debug('Skeleton subchains merged, restarting sync')
         this.running = false
         this.clear()
         this.destroy()
