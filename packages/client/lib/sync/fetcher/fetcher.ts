@@ -298,7 +298,17 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.nextTasks()
     const job = this.in.peek()
     if (!job) {
-      this.debug(`No job found on next task, skip next job execution.`)
+      if (this.finished !== this.total) {
+        // There are still jobs waiting to be processed out in the writer pipe
+        this.debug(
+          `No job found on next task, skip next job execution, finished=${this.finished}, total=${this.total}`
+        )
+      } else {
+        // There are no more jobs in the fetcher, so its better to resolve
+        // the sync and exit
+        this.debug(`Fetcher seems to have processed all jobs, stopping...`)
+        this.running = false
+      }
       return false
     }
     if (this._readableState!.length > this.maxQueue) {
@@ -338,11 +348,17 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * Clears all outstanding tasks from the fetcher
+   * TODO: figure out a way to reject the jobs which are under async processing post
+   * `this.request`
    */
   clear() {
+    this.total = this.total - this.in.length
     while (this.in.length > 0) {
       this.in.remove()
     }
+    this.debug(
+      `Cleared out fetcher, job stats: total=${this.total}, processed=${this.processed}, finished=${this.finished}`
+    )
   }
 
   /**
@@ -376,7 +392,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         for (const jobItem of jobItems) {
           await this.store(jobItem.result as StorageItem[])
         }
-        this.finished++
+        this.finished += jobItems.length
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)

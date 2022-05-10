@@ -170,9 +170,14 @@ export abstract class Synchronizer {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
-      const resolveSync = () => {
+      const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
+        this.config.logger.debug(
+          `Finishing up sync with the current fetcher, height=${
+            height ?? this.chain.headers.height
+          }`
+        )
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
