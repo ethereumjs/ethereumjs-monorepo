@@ -180,6 +180,11 @@ export class Skeleton extends MetaDBManager {
 
     await this.putBlock(head)
     await this.writeSyncStatus()
+
+    // If the sync is finished, start filling the canonical chain.
+    if (this.isLinked()) {
+      void this.fillCanonicalChain()
+    }
   }
 
   /**
