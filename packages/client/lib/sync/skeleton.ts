@@ -417,7 +417,7 @@ export class Skeleton extends MetaDBManager {
     }
     this.filling = false
     this.config.logger.debug(
-      `Successfully put blocks start=${start} end=${canonicalHead} from skeleton chain to canonical, syncTargetHeight=${this.config.syncTargetHeight}`
+      `Successfully put blocks start=${start} end=${canonicalHead} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
 

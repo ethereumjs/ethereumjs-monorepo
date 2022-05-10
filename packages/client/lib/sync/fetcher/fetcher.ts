@@ -301,12 +301,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
-          `No job found on next task, skip next job execution, finished=${this.finished}, total=${this.total}`
+          `No job found on next task, skip next job execution finished=${this.finished} total=${this.total}`
         )
       } else {
         // There are no more jobs in the fetcher, so its better to resolve
         // the sync and exit
-        this.debug(`Fetcher seems to have processed all jobs, stopping...`)
+        this.debug(`Fetcher seems to have processed all jobs, stopping…`)
         this.running = false
       }
       return false
@@ -357,7 +357,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.in.remove()
     }
     this.debug(
-      `Cleared out fetcher, job stats: total=${this.total}, processed=${this.processed}, finished=${this.finished}`
+      `Cleared out fetcher total=${this.total} processed=${this.processed} finished=${this.finished}`
     )
   }
 

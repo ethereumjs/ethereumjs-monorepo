@@ -174,9 +174,7 @@ export abstract class Synchronizer {
         this.clearFetcher()
         resolve(true)
         this.config.logger.debug(
-          `Finishing up sync with the current fetcher, height=${
-            height ?? this.chain.headers.height
-          }`
+          `Finishing up sync with the current fetcher height=${height ?? this.chain.headers.height}`
         )
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
