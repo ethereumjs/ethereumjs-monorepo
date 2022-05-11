@@ -28,6 +28,7 @@ export interface StateManager {
   setStateRoot(stateRoot: Buffer): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>
   hasGenesisState(): Promise<boolean>
+  hasStateRoot(root: Buffer): Promise<boolean>
   generateCanonicalGenesis(): Promise<void>
   generateGenesis(initState: any): Promise<void>
   accountIsEmpty(address: Address): Promise<boolean>

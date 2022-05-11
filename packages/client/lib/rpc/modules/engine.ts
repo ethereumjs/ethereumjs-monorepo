@@ -149,6 +149,17 @@ const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => 
 }
 
 /**
+ * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
+ */
+const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => {
+  try {
+    return await chain.getBlock(hash)
+  } catch (error: any) {
+    return null
+  }
+}
+
+/**
  *  Validate that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
@@ -360,19 +371,31 @@ export class Engine {
       return response
     }
 
-    const blockExists = await validHash(toBuffer(blockHash), this.chain)
-    if (blockExists) {
-      const response = {
-        status: Status.VALID,
-        latestValidHash: blockHash,
-        validationError: null,
+    const blockExists = await validBlock(toBuffer(blockHash), this.chain)
+    if (blockExists !== null) {
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
+      if (isBlockExecuted) {
+        const response = {
+          status: Status.VALID,
+          latestValidHash: blockHash,
+          validationError: null,
+        }
+        this.connectionManager.lastNewPayload({ payload: params[0], response })
+        return response
+      } else {
+        /** Seems like the block isn't executed yet, force execution */
+        void this.service.beaconSync?.runExecution(true)
       }
-      this.connectionManager.lastNewPayload({ payload: params[0], response })
-      return response
     }
 
     try {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+      // If the parent is not executed throw error, this would lead to catching the
+      // error and suitably sending SYNCING or ACCEPTED response.
+      if (!isBlockExecuted) {
+        throw new Error(`Parent block not yet executed number=${parent.header.number}`)
+      }
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
@@ -495,7 +518,12 @@ export class Engine {
       }
     }
 
-    if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
+    // Only validate this as terminal block if this block's difficulty is non-zero.
+    // else this is a PoS block but its hardfork could be indeterminable if the skeleton
+    // is not yet connected.
+    // TODO: validate the terminal block when skeleton connects , otherwise mark skeleton
+    // as invalid and throw errors if invalid skeleton is refered to
+    if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty.gtn(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
@@ -536,6 +564,12 @@ export class Engine {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest?.number.lt(headBlock.header.number)) {
         try {
+          const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
+          const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+          if (!isBlockExecuted) {
+            throw new Error(`Parent block not yet executed number=${parent.header.number}`)
+          }
+
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,

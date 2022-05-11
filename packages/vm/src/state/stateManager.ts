@@ -487,6 +487,14 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
+   * Checks whether there is a state corresponding to a stateRoot
+   */
+
+  async hasStateRoot(root: Buffer): Promise<boolean> {
+    return await this._trie.checkRoot(root)
+  }
+
+  /**
    * Checks if the `account` corresponding to `address`
    * exists
    * @param address - Address of the `account` to check

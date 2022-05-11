@@ -243,10 +243,12 @@ export class BeaconSynchronizer extends Synchronizer {
 
   /**
    * Runs vm execution on {@link Event.CHAIN_UPDATED}
+   * @params force for to run execution even if there is a single block
    */
-  async runExecution(): Promise<void> {
+  async runExecution(force?: boolean): Promise<void> {
     // Execute a single block when at head, otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
+      force ||
       this.skeleton.bounds()?.head.eq(this.chain.blocks.height.addn(1)) ||
       this.chain.blocks.height.modrn(50) === 0
     ) {

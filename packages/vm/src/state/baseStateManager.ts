@@ -282,6 +282,7 @@ export abstract class BaseStateManager {
   }
 
   abstract hasGenesisState(): Promise<boolean>
+  abstract hasStateRoot(root: Buffer): Promise<boolean>
 
   /**
    * Generates a canonical genesis state on the instance based on the
