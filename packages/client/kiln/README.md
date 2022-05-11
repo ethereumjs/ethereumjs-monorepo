@@ -80,8 +80,9 @@ Also, one will need to remove `--eth1.disableEth1DepositDataTracker true` and in
 #### Beacon
 
 1. Use lighthouse branch `unstable` and run `make`
-1. Make dir `lighthouse/kiln` and copy in from the downloaded config dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
-1. Run cmd: `lighthouse --debug-level=info --datadir=kiln/datadir --testnet-dir=kiln beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8551 --terminal-total-difficulty-override=`
+2. Make dir `lighthouse/kiln` and copy in from the downloaded config dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
+3. Run cmd: `lighthouse --debug-level=info --datadir=kiln/datadir --testnet-dir=kiln beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8551 --terminal-total-difficulty-override=20000000000000`
+4. Run cmd (with checkpoint sync - tested this with a locally running syncd Nimbus client): `lighthouse bn --network kiln --terminal-total-difficulty-override=20000000000000 --merge --http-allow-sync-stalled --checkpoint-sync-url "http://localhost:5052" --logfile logs.txt --logfile-debug-level trace`
 
 ### Teku
 
@@ -96,5 +97,5 @@ Also, one will need to remove `--eth1.disableEth1DepositDataTracker true` and in
 2. Get your hands on a SSZ encoded finalized state/block snapshot from a synced client (I used Teku).  Assuming you have a synced Teku (or other CL node running locally that exposes the Beacon REST API), you can use the below `curl` commands to get it.
 `curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/debug/beacon/states/finalized > state.ssz`
 `curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/beacon/blocks/[block number corresponding to finalized state above] > block.ssz`
-3. Run cmd (with checkpoint sync and adjust ports/paths accordingly for ): `build/nimbus_beacon_node --network=vendor/merge-testnets/kiln --web3-url=ws://127.0.0.1:8551 --log-level=DEBUG  --jwt-secret="/path/to/ethjs/packages/client/kiln/datadir/jwtsecret" --data-dir=build/kiln --data-dir:trusted --finalized-checkpoint-state=state.ssz --finalized-checkpoint-block=block.ssz`
+3. Run cmd (with checkpoint sync and adjust ports/paths accordingly for your setup): `build/nimbus_beacon_node --network=vendor/merge-testnets/kiln --web3-url=ws://127.0.0.1:8551 --log-level=DEBUG  --jwt-secret="/path/to/ethjs/packages/client/kiln/datadir/jwtsecret" --data-dir=build/kiln --data-dir:trusted --finalized-checkpoint-state=state.ssz --finalized-checkpoint-block=block.ssz`
 
