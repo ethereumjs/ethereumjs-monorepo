@@ -332,7 +332,8 @@ export class ECIES {
 
   createHeader(size: number): Buffer | undefined {
     const bufSize = zfill(int2buffer(size), 3)
-    let header = Buffer.concat([bufSize, Buffer.from(RLP.encode([0, 0]))]) // TODO: the rlp will contain something else someday
+    const headerData = Buffer.from(RLP.encode([0, 0])) // [capability-id, context-id] (currently unused in spec)
+    let header = Buffer.concat([bufSize, headerData])
     header = zfill(header, 16, false)
     if (!this._egressAes) return
     header = this._egressAes.update(header)
