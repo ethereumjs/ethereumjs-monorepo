@@ -1,14 +1,16 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
+  arrToBufArr,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
+  bufArrToArr,
   bufferToBigInt,
   ecrecover,
   MAX_INTEGER,
-  rlp,
   toBuffer,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
@@ -76,7 +78,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       )
     }
 
-    const values = rlp.decode(serialized.slice(1))
+    const values = arrToBufArr(RLP.decode(serialized.slice(1)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
@@ -270,7 +272,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
+    return Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
+    ])
   }
 
   /**
@@ -288,9 +293,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 9)
-    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
+    const message = Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
+    ])
     if (hashMessage) {
-      return toBuffer(keccak256(message))
+      return Buffer.from(keccak256(message))
     } else {
       return message
     }
@@ -310,12 +318,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = toBuffer(keccak256(this.serialize()))
+        this.cache.hash = Buffer.from(keccak256(this.serialize()))
       }
       return this.cache.hash
     }
 
-    return toBuffer(keccak256(this.serialize()))
+    return Buffer.from(keccak256(this.serialize()))
   }
 
   /**

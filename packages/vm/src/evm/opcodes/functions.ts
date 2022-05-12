@@ -3,7 +3,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Address,
-  toBuffer,
   KECCAK256_NULL,
   TWO_POW256,
   MAX_INTEGER_BIGINT,
@@ -1033,7 +1032,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
       const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
-      const msgHash = toBuffer(keccak256(message))
+      const msgHash = Buffer.from(keccak256(message))
 
       let recover
       try {

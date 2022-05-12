@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, intToBuffer, rlp, short } from 'ethereumjs-util'
+import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
@@ -357,7 +358,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie.put(rlp.encode(txIdx), encodedReceipt)
+    await receiptTrie.put(Buffer.from(RLP.encode(txIdx)), encodedReceipt)
   }
 
   return {
@@ -432,12 +433,19 @@ export async function rewardAccount(
  * Returns the encoded tx receipt.
  */
 export function encodeReceipt(receipt: TxReceipt, txType: number) {
-  const encoded = rlp.encode([
-    (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
-    receipt.gasUsed,
-    receipt.bitvector,
-    receipt.logs,
-  ])
+  const encoded = Buffer.from(
+    RLP.encode(
+      bufArrToArr([
+        (receipt as PreByzantiumTxReceipt).stateRoot ??
+        (receipt as PostByzantiumTxReceipt).status === 0
+          ? Buffer.from([])
+          : Buffer.from('01', 'hex'),
+        bigIntToBuffer(receipt.gasUsed),
+        receipt.bitvector,
+        receipt.logs,
+      ])
+    )
+  )
 
   if (txType === 0) {
     return encoded
@@ -475,7 +483,7 @@ async function _applyDAOHardfork(state: VmState) {
 async function _genTxTrie(block: Block) {
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(rlp.encode(i), tx.serialize())
+    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
   return trie.root
 }

@@ -3,7 +3,8 @@ import { Block } from '@ethereumjs/block'
 import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { toBuffer, rlp, stripHexPrefix, bufferToBigInt, isHexPrefixed } from 'ethereumjs-util'
+import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
@@ -110,7 +111,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
-      const decodedRLP: any = rlp.decode(blockRlp)
+      const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bufferToBigInt(decodedRLP[0][8])
     } catch (e: any) {
       await handleError(e, expectException)

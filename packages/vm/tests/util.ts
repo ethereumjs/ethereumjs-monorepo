@@ -11,15 +11,15 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Account,
-  rlp,
-  stripHexPrefix,
-  setLengthLeft,
-  toBuffer,
   Address,
   bigIntToBuffer,
   bufferToHex,
   isHexPrefixed,
+  setLengthLeft,
+  stripHexPrefix,
+  toBuffer,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { VmState } from '../src/vmState'
 
 export function dumpState(state: any, cb: Function) {

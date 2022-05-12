@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { Address, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
+import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -79,7 +80,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromRLPSerializedHeader() -> error cases', function (st) {
     try {
-      BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
+      BlockHeader.fromRLPSerializedHeader(Buffer.from(RLP.encode('a')))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       st.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
@@ -267,7 +268,8 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
-    const block = Block.fromRLPSerializedBlock(testDataPreLondon.genesisRLP, { common })
+    const genesisRlp = toBuffer(testDataPreLondon.genesisRLP)
+    const block = Block.fromRLPSerializedBlock(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -348,10 +350,7 @@ tape('[Block]: Header functions', function (t) {
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
       'hex'
     )
-    const poaBlock = Block.fromRLPSerializedBlock(testDataPreLondon.genesisRLP, {
-      common,
-      cliqueSigner,
-    })
+    const poaBlock = Block.fromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
     header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
@@ -380,9 +379,9 @@ tape('[Block]: Header functions', function (t) {
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
     Object.keys(bcBlockGasLimitTestData).forEach((key) => {
-      const genesisRlp = bcBlockGasLimitTestData[key].genesisRLP
+      const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
-      const blockRlp = bcBlockGasLimitTestData[key].blocks[0].rlp
+      const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp)
       st.equal(block.validateGasLimit(parentBlock), true)
     })

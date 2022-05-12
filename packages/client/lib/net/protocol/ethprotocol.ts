@@ -7,7 +7,14 @@ import {
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
-import { bigIntToBuffer, bufferToBigInt, bufferToInt, rlp } from 'ethereumjs-util'
+import {
+  arrToBufArr,
+  bigIntToBuffer,
+  bufArrToArr,
+  bufferToBigInt,
+  bufferToInt,
+} from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../execution/receipt'
@@ -241,7 +248,7 @@ export class EthProtocol extends Protocol {
         bufferToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
-          const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
+          const decoded = arrToBufArr(RLP.decode(bufArrToArr(r[0] >= 0xc0 ? r : r.slice(1)))) as any
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
           const receipt = {
             gasUsed: bufferToBigInt(cumulativeGasUsed),

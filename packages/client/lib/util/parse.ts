@@ -6,16 +6,16 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
-  rlp,
-  toBuffer,
-  unpadBuffer,
-  isHexPrefixed,
-  stripHexPrefix,
+  addHexPrefix,
   bigIntToHex,
   bufferToHex,
-  addHexPrefix,
   intToHex,
+  isHexPrefixed,
+  stripHexPrefix,
+  toBuffer,
+  unpadBuffer,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
 
@@ -98,8 +98,12 @@ async function createStorageTrie(storage: any) {
   const trie = new Trie()
   for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
     const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
-    const val = rlp.encode(
-      unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
+    const val = Buffer.from(
+      RLP.encode(
+        Uint8Array.from(
+          unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
+        )
+      )
     )
     await trie.put(key, val)
   }
@@ -121,7 +125,7 @@ async function createGethGenesisStateTrie(alloc: any) {
       account.balance = BigInt(balance)
     }
     if (code) {
-      account.codeHash = toBuffer(keccak256(toBuffer(code)))
+      account.codeHash = Buffer.from(keccak256(toBuffer(code)))
     }
     if (storage) {
       const storageTrie = await createStorageTrie(storage)

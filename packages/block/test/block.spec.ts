@@ -1,7 +1,8 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { rlp, zeros, toBuffer } from 'ethereumjs-util'
+import { bufArrToArr, NestedUint8Array, toBuffer, zeros } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
@@ -596,7 +597,8 @@ tape('[Block]: block functions', function (t) {
         common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
       })
 
-      forkBlock2HeaderData.uncleHash = '0x' + bytesToHex(keccak256(rlp.encode([uncleHeader.raw()])))
+      forkBlock2HeaderData.uncleHash =
+        '0x' + bytesToHex(keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {
@@ -718,14 +720,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('DAO hardfork', function (st) {
-    const blockData: any = rlp.decode(testDataPreLondon2.blocks[0].rlp)
+    const blockData = RLP.decode(testDataPreLondon2.blocks[0].rlp) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     st.throws(
       function () {
-        Block.fromValuesArray(blockData, { common })
+        Block.fromValuesArray(blockData as BlockBuffer, { common })
       },
       /Error: extraData should be 'dao-hard-fork'/,
       'should throw on DAO HF block with wrong extra data'
@@ -735,7 +737,7 @@ tape('[Block]: block functions', function (t) {
     blockData[0][12] = Buffer.from('64616f2d686172642d666f726b', 'hex')
 
     st.doesNotThrow(function () {
-      Block.fromValuesArray(blockData, { common })
+      Block.fromValuesArray(blockData as BlockBuffer, { common })
     }, 'should not throw on DAO HF block with correct extra data')
     st.end()
   })
