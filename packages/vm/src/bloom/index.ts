@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { toBuffer, zeros } from 'ethereumjs-util'
+import { zeros } from 'ethereumjs-util'
 
 const BYTE_SIZE = 256
 
@@ -25,7 +25,7 @@ export default class Bloom {
    */
   add(e: Buffer) {
     assert(Buffer.isBuffer(e), 'Element should be buffer')
-    e = toBuffer(keccak256(e))
+    e = Buffer.from(keccak256(e))
     const mask = 2047 // binary 11111111111
 
     for (let i = 0; i < 3; i++) {
@@ -43,7 +43,7 @@ export default class Bloom {
    */
   check(e: Buffer): boolean {
     assert(Buffer.isBuffer(e), 'Element should be Buffer')
-    e = toBuffer(keccak256(e))
+    e = Buffer.from(keccak256(e))
     const mask = 2047 // binary 11111111111
     let match = true
 

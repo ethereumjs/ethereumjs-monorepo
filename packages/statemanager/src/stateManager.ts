@@ -5,7 +5,6 @@ import {
   Address,
   toBuffer,
   KECCAK256_NULL,
-  rlp,
   unpadBuffer,
   PrefixedHexString,
   bufferToHex,
@@ -15,6 +14,7 @@ import {
   short,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
+import RLP from 'rlp'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'
@@ -122,7 +122,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Buffer): Promise<void> {
-    const codeHash = toBuffer(keccak256(value))
+    const codeHash = Buffer.from(keccak256(value))
 
     if (codeHash.equals(KECCAK256_NULL)) {
       return
@@ -199,8 +199,8 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
-    const decoded = rlp.decode(value)
-    return decoded as Buffer
+    const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
+    return decoded
   }
 
   /**
@@ -253,7 +253,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (value && value.length) {
         // format input
-        const encodedValue = rlp.encode(value)
+        const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
@@ -355,7 +355,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = toBuffer(keccak256(toBuffer(proof.accountProof[0])))
+    const rootHash = Buffer.from(keccak256(toBuffer(proof.accountProof[0])))
     const key = toBuffer(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       toBuffer(rlpString)
@@ -410,7 +410,10 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
       const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
-      const reportedValue = setLengthLeft(rlp.decode(proofValue as Buffer), 32)
+      const reportedValue = setLengthLeft(
+        Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
+        32
+      )
       if (!reportedValue.equals(storageValue)) {
         throw new Error('Reported trie value does not match storage')
       }

@@ -1,6 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { rlp, toBuffer } from 'ethereumjs-util'
+import { bufArrToArr } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Block, BlockHeader } from '../src'
 
 /**
@@ -25,6 +26,8 @@ function createBlock(
   const number = parentBlock.header.number + BigInt(1)
   const timestamp = parentBlock.header.timestamp + BigInt(1)
 
+  const uncleHash = keccak256(RLP.encode(bufArrToArr(uncles.map((uh) => uh.raw()))))
+
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
     londonHfBlock && number > londonHfBlock ? parentBlock.header.calcNextBaseFee() : undefined
@@ -37,7 +40,7 @@ function createBlock(
         timestamp,
         gasLimit: BigInt(5000),
         extraData: Buffer.from(extraData),
-        uncleHash: toBuffer(keccak256(rlp.encode(uncles.map((uh) => uh.raw())))),
+        uncleHash,
         baseFeePerGas,
       },
       uncleHeaders: uncles,

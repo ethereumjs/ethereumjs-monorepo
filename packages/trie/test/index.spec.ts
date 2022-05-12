@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { KECCAK256_NULL, rlp } from 'ethereumjs-util'
+import { bufArrToArr, KECCAK256_NULL } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { BaseTrie, CheckpointTrie } from '../src'
 
 // explicitly import buffer,
@@ -276,7 +277,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   startAmount[0] = 1
 
   const account = [startAmount, 0, stateRoot, KECCAK256_NULL]
-  const rlpAccount = rlp.encode(account)
+  const rlpAccount = Buffer.from(RLP.encode(bufArrToArr(account as Buffer[])))
   const cppRlp =
     'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 

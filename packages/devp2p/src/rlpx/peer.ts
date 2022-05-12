@@ -6,7 +6,8 @@ import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import Common from '@ethereumjs/common'
-import { rlp } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
 import { ECIES } from './ecies'
@@ -206,7 +207,7 @@ export class Peer extends EventEmitter {
   _sendMessage(code: number, data: Buffer) {
     if (this._closed) return false
 
-    const msg = Buffer.concat([rlp.encode(code), data])
+    const msg = Buffer.concat([Buffer.from(RLP.encode(code)), data])
     const header = this._eciesSession.createHeader(msg.length)
     if (!header || this._socket.destroyed) return
     this._socket.write(header)
@@ -235,7 +236,12 @@ export class Peer extends EventEmitter {
     ]
 
     if (!this._closed) {
-      if (this._sendMessage(PREFIXES.HELLO, rlp.encode(payload as any))) {
+      if (
+        this._sendMessage(
+          PREFIXES.HELLO,
+          Buffer.from(RLP.encode(bufArrToArr(payload as unknown as Buffer[])))
+        )
+      ) {
         this._weHello = payload
       }
       if (this._hello) {
@@ -252,7 +258,7 @@ export class Peer extends EventEmitter {
     const reasonName = this.getDisconnectPrefix(reason)
     const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
     this.debug('DISCONNECT', debugMsg, reasonName)
-    const data = rlp.encode(reason)
+    const data = Buffer.from(RLP.encode(reason))
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 
     this._disconnectReason = reason
@@ -267,7 +273,7 @@ export class Peer extends EventEmitter {
   _sendPing() {
     const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('PING', debugMsg)
-    let data = rlp.encode([])
+    let data = Buffer.from(RLP.encode([]))
     if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
     }
@@ -286,7 +292,7 @@ export class Peer extends EventEmitter {
   _sendPong() {
     const debugMsg = `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('PONG', debugMsg)
-    let data = rlp.encode([])
+    let data = Buffer.from(RLP.encode([]))
 
     if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
@@ -530,7 +536,7 @@ export class Peer extends EventEmitter {
     }
 
     try {
-      let payload = body.slice(1)
+      let payload: any = body.slice(1)
 
       // Use snappy uncompression if peer supports DevP2P >=v5
       let compressed = false
@@ -555,13 +561,13 @@ export class Peer extends EventEmitter {
       //
       if (protocolName === 'Peer') {
         try {
-          payload = rlp.decode(payload)
+          payload = arrToBufArr(RLP.decode(Uint8Array.from(payload)))
         } catch (e: any) {
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
-              payload = rlp.decode(origPayload)
+              payload = arrToBufArr(RLP.decode(Uint8Array.from(origPayload)))
             } else {
-              payload = rlp.decode(snappy.uncompress(payload))
+              payload = arrToBufArr(RLP.decode(Uint8Array.from(snappy.uncompress(payload))))
             }
           } else {
             throw new Error(e)

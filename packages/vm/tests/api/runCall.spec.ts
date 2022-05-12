@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Account, Address, toBuffer, MAX_UINT64, padToEven } from 'ethereumjs-util'
+import { Account, Address, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
@@ -9,7 +9,7 @@ import { ERROR } from '../../src/exceptions'
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
   const rlp_proc_buffer = Buffer.from('ff', 'hex')
   const hashBuffer = Buffer.concat([rlp_proc_buffer, sourceAddress.buf, salt, codeHash])
-  return new Address(toBuffer(keccak256(hashBuffer)).slice(12))
+  return new Address(Buffer.from(keccak256(hashBuffer)).slice(12))
 }
 
 /*
@@ -46,7 +46,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
 
   await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
   await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
-  const codeHash = toBuffer(keccak256(Buffer.from('')))
+  const codeHash = Buffer.from(keccak256(Buffer.from('')))
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
     const runCallArgs = {
