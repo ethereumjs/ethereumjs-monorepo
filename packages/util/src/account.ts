@@ -1,10 +1,18 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
+import RLP from 'rlp'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
-import { zeros, bufferToHex, toBuffer, bufferToBigInt, bigIntToUnpaddedBuffer } from './bytes'
-import { rlp } from './externals'
+import {
+  arrToBufArr,
+  bigIntToUnpaddedBuffer,
+  bufArrToArr,
+  bufferToBigInt,
+  bufferToHex,
+  toBuffer,
+  zeros,
+} from './bytes'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
 import { BigIntLike, BufferLike } from './types'
 
@@ -35,7 +43,7 @@ export class Account {
   }
 
   public static fromRlpSerializedAccount(serialized: Buffer) {
-    const values = rlp.decode(serialized)
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)) as Uint8Array[]) as Buffer[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized account input. Must be array')
@@ -94,7 +102,7 @@ export class Account {
    * Returns the RLP serialization of the account as a `Buffer`.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
   }
 
   /**
@@ -191,11 +199,11 @@ export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return toBuffer(keccak256(rlp.encode([from, null]))).slice(-20)
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, null] as any)))).slice(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return toBuffer(keccak256(rlp.encode([from, nonce]))).slice(-20)
+  return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, nonce])))).slice(-20)
 }
 
 /**
@@ -276,7 +284,7 @@ export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false)
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return toBuffer(keccak256(pubKey)).slice(-20)
+  return Buffer.from(keccak256(pubKey)).slice(-20)
 }
 export const publicToAddress = pubToAddress
 

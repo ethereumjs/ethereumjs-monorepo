@@ -38,7 +38,8 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.4",
-    "functional-red-black-tree": "^1.0.1"
+    "functional-red-black-tree": "^1.0.1",
+    "rlp": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",

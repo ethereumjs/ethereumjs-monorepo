@@ -1,4 +1,5 @@
-import { bufferToBigInt, rlp } from 'ethereumjs-util'
+import { arrToBufArr, bufferToBigInt } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Cache from './cache'
@@ -111,7 +112,7 @@ export class DBManager {
    */
   async getBody(blockHash: Buffer, blockNumber: bigint): Promise<BlockBodyBuffer> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
-    return rlp.decode(body) as any as BlockBodyBuffer
+    return arrToBufArr(RLP.decode(Uint8Array.from(body))) as BlockBodyBuffer
   }
 
   /**
@@ -134,7 +135,7 @@ export class DBManager {
    */
   async getTotalDifficulty(blockHash: Buffer, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
-    return bufferToBigInt(rlp.decode(td))
+    return bufferToBigInt(Buffer.from(RLP.decode(Uint8Array.from(td)) as Uint8Array))
   }
 
   /**

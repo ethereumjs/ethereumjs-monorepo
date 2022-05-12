@@ -225,5 +225,5 @@ export const isValidSignature = function (
 export const hashPersonalMessage = function (message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
-  return toBuffer(keccak256(Buffer.concat([prefix, message])))
+  return Buffer.from(keccak256(Buffer.concat([prefix, message])))
 }

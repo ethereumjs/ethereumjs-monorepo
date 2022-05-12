@@ -24,11 +24,6 @@ export * from './signature'
 export * from './bytes'
 
 /**
- * External exports (BN, rlp)
- */
-export * from './externals'
-
-/**
  * Helpful TypeScript types
  */
 export * from './types'

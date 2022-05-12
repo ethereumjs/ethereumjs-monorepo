@@ -266,7 +266,8 @@ Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 ```typescript
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Common, { Chain } from '@ethereumjs/common'
-import { rlp } from 'ethereumjs-util'
+import { bufArrToArr } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)
@@ -282,7 +283,7 @@ const run = async () => {
   // Signing a legacy tx
   tx = Transaction.fromTxData(txData, { common })
   unsignedTx = tx.getMessageToSign(false)
-  unsignedTx = rlp.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
+  unsignedTx = Buffer.from(RLP.encode(bufArrToArr(unsignedTx))) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
   signedTx = Transaction.fromTxData(txData, { common })
