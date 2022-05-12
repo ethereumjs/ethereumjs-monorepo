@@ -245,13 +245,20 @@ export class BeaconSynchronizer extends Synchronizer {
    * Runs vm execution on {@link Event.CHAIN_UPDATED}
    * @params force for to run execution even if there is a single block
    */
-  async runExecution(force?: boolean): Promise<void> {
-    // Execute a single block when at head, otherwise run execution in batch of 50 blocks when filling canonical chain.
-    if (
-      force ||
-      this.skeleton.bounds()?.head.eq(this.chain.blocks.height.addn(1)) ||
-      this.chain.blocks.height.modrn(50) === 0
-    ) {
+  async runExecution(): Promise<void> {
+    // Execute even single block when executed head is near supposed chain head,
+    // otherwise run execution in batch of 50 blocks when filling canonical chain.
+    const vmHead = (await this.chain.blockchain.getIteratorHead()).header.number
+    const { head: skeletonHead, tail: skeletonTail } = this.skeleton.bounds() || {
+      head: this.config.syncTargetHeight ?? vmHead,
+      tail: this.config.syncTargetHeight ?? vmHead,
+    }
+    const isExecutionNearHead =
+      vmHead.lt(skeletonHead) &&
+      vmHead.gte(skeletonTail) &&
+      vmHead.addn(50).gt(this.config.syncTargetHeight ?? vmHead)
+
+    if (isExecutionNearHead || this.chain.blocks.height.modrn(50) === 0) {
       void this.execution.run()
     }
   }

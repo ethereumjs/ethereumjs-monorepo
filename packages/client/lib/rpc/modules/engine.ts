@@ -382,9 +382,6 @@ export class Engine {
         }
         this.connectionManager.lastNewPayload({ payload: params[0], response })
         return response
-      } else {
-        /** Seems like the block isn't executed yet, force execution */
-        void this.service.beaconSync?.runExecution(true)
       }
     }
 
