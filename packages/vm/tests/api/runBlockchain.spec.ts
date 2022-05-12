@@ -101,7 +101,7 @@ tape('runBlockchain', (t) => {
 
     await vm.runBlockchain()
 
-    const head = await vm.blockchain.getHead()
+    const head = await vm.blockchain.getIteratorHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
     st.end()
