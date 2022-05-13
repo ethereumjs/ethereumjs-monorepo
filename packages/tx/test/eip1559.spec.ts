@@ -113,6 +113,16 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     st.end()
   })
 
+  t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
+    const data = testdata[0]
+    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    st.ok(!Object.isFrozen(txn), 'tx object is not frozen')
+    const signedTxn = txn.sign(pkey)
+    st.ok(!Object.isFrozen(signedTxn), 'tx object is not frozen')
+    st.end()
+  })
+
   t.test('unsigned tx -> getMessageToSign()', function (t) {
     const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
       {

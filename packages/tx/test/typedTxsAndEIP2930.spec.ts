@@ -575,4 +575,12 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
 
     t.end()
   })
+
+  t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
+    const tx = AccessListEIP2930Transaction.fromTxData({}, { freeze: false })
+    st.ok(!Object.isFrozen(tx), 'tx object is not frozen')
+    const signedTxn = tx.sign(pKey)
+    st.ok(!Object.isFrozen(signedTxn), 'tx object is not frozen')
+    st.end()
+  })
 })
