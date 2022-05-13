@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { BN, bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest, dummy } from '../helpers'
 import { checkError } from '../util'
 
 const mockedTxData = {
@@ -15,6 +15,11 @@ const mockedTxData = {
   v: '0x',
   r: '0x',
   s: '0x',
+  hash: '0xa2285835057e8252ebd4980cf498f7538cedb3600dc183f1c523c6971b6889aa',
+  blockHash: '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
+  blockNumber: '1',
+  transactionIndex: 0,
+  from: '0xcde098d93535445768e8a2345a2f869139f45641',
 }
 
 function createChain() {
@@ -50,12 +55,15 @@ function createChain() {
     hash: () => blockHash,
     header: {
       number: new BN(1),
+      hash: () => blockHash,
     },
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
       transactions: transactions2,
     }),
-    transactions: [{ hash: () => txHash2, toJSON: () => mockedTxData }],
+    transactions: [
+      { hash: () => txHash2, toJSON: () => mockedTxData, getSenderAddress: () => dummy.addr },
+    ],
     uncleHeaders: [],
   }
   return {
