@@ -24,9 +24,6 @@ export interface TxPoolOptions {
   /* Config */
   config: Config
 
-  /* Return number of connected peers for stats logging */
-  getPeerCount?: () => number
-
   /* FullEthereumService */
   service: FullEthereumService
 }
@@ -82,6 +79,12 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
+
+  /**
+   * The number of txs currently in the pool
+   */
+
+  public txsInPool: number
 
   /**
    * Map for handled tx hashes
@@ -143,6 +146,7 @@ export class TxPool {
     this.vm = this.service.execution.vm
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
 
@@ -222,10 +226,7 @@ export class TxPool {
     }
     const currentGasPrice = this.getTxGasPrice(tx)
     if (!isLocalTransaction) {
-      let txsInPool = 0 // TODO: should not have to recalculate this every time
-      this.pool.forEach((value) => {
-        txsInPool += value.length
-      })
+      let txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
         throw new Error('Cannot add tx: pool is full')
       }
@@ -301,6 +302,7 @@ export class TxPool {
     const added = Date.now()
     add.push({ tx, added, hash })
     this.pool.set(address, add)
+    this.txsInPool++
     this.handled.set(hash, { address, added })
   }
 
@@ -338,6 +340,7 @@ export class TxPool {
       return
     }
     const newPoolObjects = this.pool.get(address)!.filter((poolObj) => poolObj.hash !== txHash)
+    this.txsInPool--
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
       this.pool.delete(address)
@@ -674,10 +677,7 @@ export class TxPool {
   }
 
   _logPoolStats() {
-    let count = 0
-    this.pool.forEach((poolObjects) => {
-      count += poolObjects.length
-    })
+    let count = this.txsInPool
     this.config.logger.info(
       `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
     )
