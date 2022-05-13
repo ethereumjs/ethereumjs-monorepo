@@ -101,6 +101,9 @@ tape('runBlockchain', (t) => {
 
     await vm.runBlockchain()
 
+    const head = await vm.blockchain.getIteratorHead()
+    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
+
     st.end()
   })
 
@@ -138,12 +141,16 @@ tape('runBlockchain', (t) => {
     await blockchain.putBlock(b2)
     await blockchain.putBlock(b3)
 
+    let head = await blockchain.getIteratorHead()
+    st.deepEqual(head.hash(), genesisBlock.hash(), 'Iterator head should still be at genesis')
+
     try {
       await vm.runBlockchain()
       st.fail('should have returned error')
     } catch (e: any) {
       st.equal(e.message, 'test')
-
+      head = await blockchain.getIteratorHead()
+      st.deepEqual(head.hash(), b2.hash(), 'should have removed invalid block from head')
       st.end()
     }
   })
