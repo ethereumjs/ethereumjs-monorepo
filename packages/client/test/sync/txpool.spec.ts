@@ -29,27 +29,37 @@ const config = new Config({ transports: [] })
 
 const handleTxs = async (txs: any[], stateManager?: any) => {
   const { pool } = setup()
+  try {
+    if (stateManager) {
+      ;(<any>pool).service.execution.vm.stateManager = stateManager
+    }
 
-  if (stateManager) {
-    ;(<any>pool).service.execution.vm.stateManager = stateManager
-  }
-
-  pool.open()
-  pool.start()
-  const peer: any = {
-    eth: {
-      getPooledTransactions: () => {
-        return [null, txs]
+    pool.open()
+    pool.start()
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, txs]
+        },
       },
-    },
-  }
-  const peerPool = new PeerPool({ config })
+    }
+    const peerPool = new PeerPool({ config })
 
-  await pool.handleAnnouncedTxHashes(
-    txs.map((e) => e.hash()),
-    peer,
-    peerPool
-  )
+    await pool.handleAnnouncedTxHashes(
+      txs.map((e) => e.hash()),
+      peer,
+      peerPool
+    )
+
+    pool.stop()
+    pool.close()
+
+    return true
+  } catch (e: any) {
+    pool.stop()
+    pool.close()
+    return false
+  }
 }
 
 tape('[TxPool]', async (t) => {
@@ -312,12 +322,7 @@ tape('[TxPool]', async (t) => {
         break
       }
     }
-    try {
-      await handleTxs(txs)
-      t.fail('should fail: too much txs in pool')
-    } catch (e) {
-      t.ok('succesfully rejected too many txs')
-    }
+    t.notOk(await handleTxs(txs), 'succesfully rejected too many txs')
   })
 
   t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
@@ -329,16 +334,10 @@ tape('[TxPool]', async (t) => {
       txs.push(txn)
     }
 
-    try {
-      await handleTxs(txs)
-      t.fail('should fail: too much txs from account')
-    } catch (e) {
-      t.ok('succesfully rejected too many txs from same account')
-    }
+    t.notOk(await handleTxs(txs), 'succesfully rejected too many txs from same account')
   })
 
   t.test('announcedTxHashes() -> reject unsigned txs', async (t) => {
-    // Setup 101 txs
     const txs = []
 
     txs.push(
@@ -348,16 +347,10 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    try {
-      await handleTxs(txs)
-      t.fail('should fail: tx is not signed')
-    } catch (e) {
-      t.ok('succesfully rejected unsigned tx')
-    }
+    t.notOk(await handleTxs(txs), 'succesfully rejected unsigned tx')
   })
 
   t.test('announcedTxHashes() -> reject txs with invalid nonce', async (t) => {
-    // Setup 101 txs
     const txs = []
 
     txs.push(
@@ -368,18 +361,15 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    try {
+    t.notOk(
       await handleTxs(txs, {
         getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
-      })
-      t.fail('should fail: tx is not signed')
-    } catch (e) {
-      t.ok('succesfully rejected unsigned tx')
-    }
+      }),
+      'succesfully rejected tx with invalid nonce'
+    )
   })
 
   t.test('announcedTxHashes() -> reject txs with too much data', async (t) => {
-    // Setup 101 txs
     const txs = []
 
     txs.push(
@@ -391,18 +381,15 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    try {
+    t.notOk(
       await handleTxs(txs, {
         getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
-      })
-      t.fail('should fail: tx data field too long')
-    } catch (e) {
-      t.ok('succesfully rejected big tx')
-    }
+      }),
+      'succesfully rejected tx with too much data'
+    )
   })
 
   t.test('announcedTxHashes() -> account cannot pay the fees', async (t) => {
-    // Setup 101 txs
     const txs = []
 
     txs.push(
@@ -413,18 +400,15 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    try {
+    t.notOk(
       await handleTxs(txs, {
         getAccount: () => new Account(new BN(0), new BN('0')),
-      })
-      t.fail('should fail: account cannot pay upfront fees')
-    } catch (e) {
-      t.ok('succesfully rejected account with too low balance')
-    }
+      }),
+      'succesfully rejected account with too low balance'
+    )
   })
 
   t.test('announcedTxHashes() -> reject txs with too low gas price', async (t) => {
-    // Setup 101 txs
     const txs = []
 
     txs.push(
@@ -435,12 +419,7 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    try {
-      await handleTxs(txs)
-      t.fail('should fail: gas price too low')
-    } catch (e) {
-      t.ok('succesfully rejected tx with too low gas price')
-    }
+    t.notOk(await handleTxs(txs), 'succesfully rejected tx with too low gas price')
   })
 
   t.test('announcedTxs()', async (t) => {
