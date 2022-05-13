@@ -153,8 +153,8 @@ const jsonRpcBlock = async (
         gas,
         hash: bufferToHex(tx.hash()),
         blockHash: bufferToHex(block.header.hash()),
-        blockNumber: block.header.number.toString('hex'),
-        transactionIndex: idx,
+        blockNumber: bnToHex(block.header.number),
+        transactionIndex: intToHex(idx),
         from: tx.getSenderAddress().toString(),
       }
     })
