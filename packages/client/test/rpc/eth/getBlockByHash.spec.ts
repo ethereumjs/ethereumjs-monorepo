@@ -1,52 +1,27 @@
-import { Transaction } from '@ethereumjs/tx'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest, dummy, runBlockWithTxs, setupChain } from '../helpers'
+import { baseSetup, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
-import pow from './../../testdata/geth-genesis/pow.json'
 
 const method = 'eth_getBlockByHash'
 
-tape(`${method}: call with valid arguments and includeTransactions = false`, async (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const { server } = baseSetup()
 
-  const req = params(method, [
-    '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
-    false,
-  ])
-  const expectRes = (res: any) => {
-    const msg = 'should return the correct number'
-    t.equal(res.body.result.number, '0x444444', msg)
+  const blockHash = '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
+  let includeTransactions = false
+  let req = params(method, [blockHash, includeTransactions])
+  let expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    t.equal(typeof res.body.result.transactions[0], 'string', 'should only include tx hashes')
   }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  await baseRequest(t, server, req, 200, expectRes, false)
 
-tape(`${method}: call with valid arguments and includeTransactions = true`, async (t) => {
-  const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
-
-  // setup tx, block, and chain
-  const tx = Transaction.fromTxData(
-    { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
-    { common }
-  ).sign(dummy.privKey)
-  await runBlockWithTxs(chain, execution, [tx])
-
-  const req = params(method, [
-    '0xb1ecc0eec666d08ae96f792f8105f316db20c3d59c77a60f685c2d0563b687cd',
-    true,
-  ])
-
-  const expectRes = (res: any) => {
-    t.equal(
-      typeof res.body.result.transactions[0],
-      'object',
-      'should return a transaction object with an object'
-    )
-    t.equal(
-      res.body.result.transactions[0].from,
-      dummy.addr.toString(),
-      'transaction object should contain correct "from" field'
-    )
+  includeTransactions = true
+  req = params(method, [blockHash, includeTransactions])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    t.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
   }
   await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })
