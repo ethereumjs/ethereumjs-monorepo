@@ -5,9 +5,10 @@ import { devp2pDebug } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 import { isTruthy } from '@ethereumjs/util'
 
-export enum EthProtocol {
+export enum EthProtocol { // What does this represent?
   ETH = 'eth',
   LES = 'les',
+  SNAP = 'snap',
 }
 
 type MessageCodes = { [key: number | string]: number | string }
