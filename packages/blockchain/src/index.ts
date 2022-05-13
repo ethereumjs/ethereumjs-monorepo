@@ -41,7 +41,7 @@ export interface BlockchainInterface {
    * @param onBlock - Function called on each block with params (block: Block,
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock): Promise<void | number>
+  iterator(name: string, onBlock: OnBlock): Promise<number>
 }
 
 /**
