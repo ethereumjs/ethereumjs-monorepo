@@ -247,7 +247,7 @@ export class TxPool {
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce.eq(tx.nonce))
       if (existingTxn) {
         if (existingTxn.tx.hash().equals(tx.hash())) {
-          throw new Error(`${tx.hash()}: this transaction is already in the TxPool`)
+          throw new Error(`${bufferToHex(tx.hash())}: this transaction is already in the TxPool`)
         }
         const otherTxGasPrice = this.getTxGasPrice(existingTxn.tx)
         const minimumGasPrice = otherTxGasPrice.add(
