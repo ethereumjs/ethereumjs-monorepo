@@ -1,11 +1,13 @@
+import { Transaction } from '@ethereumjs/tx'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest } from '../helpers'
+import { baseSetup, params, baseRequest, dummy, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
+import pow from './../../testdata/geth-genesis/pow.json'
 
 const method = 'eth_getBlockByHash'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+tape(`${method}: call with valid arguments and includeTransactions = false`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [
@@ -17,6 +19,36 @@ tape(`${method}: call with valid arguments`, async (t) => {
     t.equal(res.body.result.number, '0x444444', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with valid arguments and includeTransactions = true`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
+
+  // setup tx, block, and chain
+  const tx = Transaction.fromTxData(
+    { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
+    { common }
+  ).sign(dummy.privKey)
+  await runBlockWithTxs(chain, execution, [tx])
+
+  const req = params(method, [
+    '0xb1ecc0eec666d08ae96f792f8105f316db20c3d59c77a60f685c2d0563b687cd',
+    true,
+  ])
+
+  const expectRes = (res: any) => {
+    t.equal(
+      typeof res.body.result.transactions[0],
+      'object',
+      'should return a transaction object with an object'
+    )
+    t.equal(
+      res.body.result.transactions[0].from,
+      dummy.addr.toString(),
+      'transaction object should contain correct "from" field'
+    )
+  }
+  await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })
 
 tape(`${method}: call with false for second argument`, async (t) => {
