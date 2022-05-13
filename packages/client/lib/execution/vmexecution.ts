@@ -24,7 +24,7 @@ export class VMExecution extends Execution {
 
   public receiptsManager?: ReceiptsManager
   private pendingReceipts?: Map<string, TxReceipt[]>
-  private vmPromise?: Promise<number | undefined>
+  private vmPromise?: Promise<number>
 
   /** Number of maximum blocks to run per iteration of {@link VMExecution.run} */
   private NUM_BLOCKS_PER_ITERATION = 50
@@ -154,7 +154,6 @@ export class VMExecution extends Execution {
       headBlock = undefined
       parentState = undefined
       errorBlock = undefined
-
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
@@ -242,7 +241,7 @@ export class VMExecution extends Execution {
         },
         this.NUM_BLOCKS_PER_ITERATION
       )
-      numExecuted = (await this.vmPromise) as number
+      numExecuted = await this.vmPromise
 
       if (errorBlock) {
         await this.chain.blockchain.setIteratorHead('vm', (errorBlock as Block).header.parentHash)
@@ -250,7 +249,7 @@ export class VMExecution extends Execution {
       }
 
       const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
-      if (numExecuted > 0) {
+      if (numExecuted && numExecuted > 0) {
         const firstNumber = startHeadBlock.header.number
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number
