@@ -38,6 +38,19 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: call with invalid arguments: not enough balance`, async (t) => {
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const { server } = baseSetup({ syncTargetHeight, includeVM: true })
+
+  // Mainnet EIP-1559 tx
+  const txData =
+    '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
+
+  const req = params(method, [txData])
+  const expectRes = checkError(t, INVALID_PARAMS, 'upfront sender balance')
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with sync target height not set yet`, async (t) => {
   const { server } = baseSetup()
 

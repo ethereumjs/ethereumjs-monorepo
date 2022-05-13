@@ -226,7 +226,7 @@ export class TxPool {
     }
     const currentGasPrice = this.getTxGasPrice(tx)
     if (!isLocalTransaction) {
-      let txsInPool = this.txsInPool
+      const txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
         throw new Error('Cannot add tx: pool is full')
       }
@@ -677,7 +677,7 @@ export class TxPool {
   }
 
   _logPoolStats() {
-    let count = this.txsInPool
+    const count = this.txsInPool
     this.config.logger.info(
       `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
     )

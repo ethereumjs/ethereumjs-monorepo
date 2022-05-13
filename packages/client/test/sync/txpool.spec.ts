@@ -1,6 +1,6 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Account, BN, privateToAddress } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
@@ -358,7 +358,7 @@ tape('[TxPool]', async (t) => {
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
-      })
+      }).sign(A.privateKey)
     )
 
     t.notOk(
@@ -378,7 +378,7 @@ tape('[TxPool]', async (t) => {
         maxPriorityFeePerGas: 1000000000,
         nonce: 0,
         data: '0x' + '00'.repeat(128 * 1024 + 1),
-      })
+      }).sign(A.privateKey)
     )
 
     t.notOk(
@@ -396,8 +396,9 @@ tape('[TxPool]', async (t) => {
       FeeMarketEIP1559Transaction.fromTxData({
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1000000000,
+        gasLimit: 21000,
         nonce: 0,
-      })
+      }).sign(A.privateKey)
     )
 
     t.notOk(
@@ -416,11 +417,52 @@ tape('[TxPool]', async (t) => {
         maxFeePerGas: 1000000000 - 1,
         maxPriorityFeePerGas: 1000000000 - 1,
         nonce: 0,
-      })
+      }).sign(A.privateKey)
     )
 
     t.notOk(await handleTxs(txs), 'succesfully rejected tx with too low gas price')
   })
+
+  t.test(
+    'announcedTxHashes() -> reject txs with too low gas price (AccessListTransaction)',
+    async (t) => {
+      const txs = []
+
+      txs.push(
+        AccessListEIP2930Transaction.fromTxData({
+          gasPrice: 1000000000 - 1,
+          nonce: 0,
+        }).sign(A.privateKey)
+      )
+
+      t.notOk(await handleTxs(txs), 'succesfully rejected tx with too low gas price')
+    }
+  )
+
+  t.test(
+    'announcedTxHashes() -> reject txs with too low gas price (invalid tx type)',
+    async (t) => {
+      const txs = []
+
+      const tx = AccessListEIP2930Transaction.fromTxData(
+        {
+          gasPrice: 1000000000 - 1,
+          nonce: 0,
+        },
+        {
+          freeze: false,
+        }
+      ).sign(A.privateKey)
+
+      console.log(Object.isFrozen(tx))
+
+      Object.defineProperty(tx, 'type', { get: () => 5 })
+
+      txs.push(tx)
+
+      t.notOk(await handleTxs(txs), 'succesfully rejected tx with invalid tx type')
+    }
+  )
 
   t.test('announcedTxs()', async (t) => {
     const { pool } = setup()
