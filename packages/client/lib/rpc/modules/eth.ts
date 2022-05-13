@@ -142,14 +142,20 @@ const jsonRpcBlock = async (
 
   let transactions
   if (includeTransactions) {
-    transactions = block.transactions.map((tx) => {
+    transactions = block.transactions.map((tx, idx) => {
       const transaction = tx.toJSON()
       const { gasLimit: gas, data: input, ...txData } = transaction
+
       return {
         ...txData,
         // RPC specs specify `input` rather than `data`, and `gas` rather than `gasLimit`
         input,
         gas,
+        hash: bufferToHex(tx.hash()),
+        blockHash: bufferToHex(block.header.hash()),
+        blockNumber: block.header.number.toString('hex'),
+        transactionIndex: idx,
+        from: tx.getSenderAddress().toString(),
       }
     })
   } else {
