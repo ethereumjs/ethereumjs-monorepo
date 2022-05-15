@@ -391,95 +391,6 @@ export default class EVM extends AsyncEventEmitter {
     return data.opcodes
   }
 
-  /**
-   * Executes an EVM message, determining whether it's a call or create
-   * based on the `to` address. It checkpoints the state and reverts changes
-   * if an exception happens during the message execution.
-   */
-  async executeMessage(message: Message): Promise<EVMResult> {
-    await this._emit('beforeMessage', message)
-
-    if (!message.to && this._common.isActivatedEIP(2929)) {
-      message.code = message.data
-      ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
-    }
-
-    const oldRefund = this._refund
-
-    await this._state.checkpoint()
-    this._transientStorage.checkpoint()
-    if (this.DEBUG) {
-      debug('-'.repeat(100))
-      debug(`message checkpoint`)
-    }
-
-    let result
-    if (this.DEBUG) {
-      const { caller, gasLimit, to, value, delegatecall } = message
-      debug(
-        `New message caller=${caller} gasLimit=${gasLimit} to=${
-          to?.toString() ?? 'none'
-        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
-      )
-    }
-    if (message.to) {
-      if (this.DEBUG) {
-        debug(`Message CALL execution (to: ${message.to})`)
-      }
-      result = await this._executeCall(message as MessageWithTo)
-    } else {
-      if (this.DEBUG) {
-        debug(`Message CREATE execution (to undefined)`)
-      }
-      result = await this._executeCreate(message)
-    }
-    if (this.DEBUG) {
-      const { gasUsed, exceptionError, returnValue } = result.execResult
-      debug(
-        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
-          exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${result.gasRefund ?? 0} ]`
-      )
-    }
-    const err = result.execResult.exceptionError
-    // This clause captures any error which happened during execution
-    // If that is the case, then set the _refund tracker to the old refund value
-    if (err) {
-      this._refund = oldRefund
-      result.execResult.selfdestruct = {}
-    }
-    result.gasRefund = this._refund
-
-    if (err) {
-      if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
-        result.execResult.logs = []
-        await this._state.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this._state.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
-      }
-    } else {
-      await this._state.commit()
-      this._transientStorage.commit()
-      if (this.DEBUG) {
-        debug(`message checkpoint committed`)
-      }
-    }
-
-    await this._emit('afterMessage', result)
-
-    return result
-  }
-
   async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     const account = await this._state.getAccount(message.authcallOrigin ?? message.caller)
     let errorMessage
@@ -818,46 +729,128 @@ export default class EVM extends AsyncEventEmitter {
   }
 
   /**
-   * @ignore
+   * Executes an EVM message, determining whether it's a call or create
+   * based on the `to` address. It checkpoints the state and reverts changes
+   * if an exception happens during the message execution.
    */
   async runCall(opts: RunCallOpts): Promise<EVMResult> {
-    this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
-    this._tx = {
-      gasPrice: opts.gasPrice ?? BigInt(0),
-      origin: opts.origin ?? opts.caller ?? Address.zero(),
+    let message = opts.message
+    if (!message) {
+      this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+      this._tx = {
+        gasPrice: opts.gasPrice ?? BigInt(0),
+        origin: opts.origin ?? opts.caller ?? Address.zero(),
+      }
+
+      const caller = opts.caller ?? Address.zero()
+      const value = opts.value ?? BigInt(0)
+      if (opts.skipBalance) {
+        // if skipBalance, add `value` to caller balance to ensure sufficient funds
+        const callerAccount = await this._state.getAccount(caller)
+        callerAccount.balance += value
+        await this._state.putAccount(caller, callerAccount)
+      }
+
+      message = new Message({
+        caller,
+        gasLimit: opts.gasLimit ?? BigInt(0xffffff),
+        to: opts.to,
+        value,
+        data: opts.data,
+        code: opts.code,
+        depth: opts.depth,
+        isCompiled: opts.isCompiled,
+        isStatic: opts.isStatic,
+        salt: opts.salt,
+        selfdestruct: opts.selfdestruct ?? {},
+        delegatecall: opts.delegatecall,
+      })
     }
 
-    const caller = opts.caller ?? Address.zero()
-    const value = opts.value ?? BigInt(0)
-    if (opts.skipBalance) {
-      // if skipBalance, add `value` to caller balance to ensure sufficient funds
-      const callerAccount = await this._state.getAccount(caller)
-      callerAccount.balance += value
-      await this._state.putAccount(caller, callerAccount)
+    await this._emit('beforeMessage', message)
+
+    if (!message.to && this._common.isActivatedEIP(2929)) {
+      message.code = message.data
+      this._state.addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
-    const message = new Message({
-      caller,
-      gasLimit: opts.gasLimit ?? BigInt(0xffffff),
-      to: opts.to,
-      value,
-      data: opts.data,
-      code: opts.code,
-      depth: opts.depth,
-      isCompiled: opts.isCompiled,
-      isStatic: opts.isStatic,
-      salt: opts.salt,
-      selfdestruct: opts.selfdestruct ?? {},
-      delegatecall: opts.delegatecall,
-    })
+    const oldRefund = this._refund
 
-    return this.executeMessage(message)
+    await this._state.checkpoint()
+    this._transientStorage.checkpoint()
+    if (this.DEBUG) {
+      debug('-'.repeat(100))
+      debug(`message checkpoint`)
+    }
+
+    let result
+    if (this.DEBUG) {
+      const { caller, gasLimit, to, value, delegatecall } = message
+      debug(
+        `New message caller=${caller} gasLimit=${gasLimit} to=${
+          to?.toString() ?? 'none'
+        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
+      )
+    }
+    if (message.to) {
+      if (this.DEBUG) {
+        debug(`Message CALL execution (to: ${message.to})`)
+      }
+      result = await this._executeCall(message as MessageWithTo)
+    } else {
+      if (this.DEBUG) {
+        debug(`Message CREATE execution (to undefined)`)
+      }
+      result = await this._executeCreate(message)
+    }
+    if (this.DEBUG) {
+      const { gasUsed, exceptionError, returnValue } = result.execResult
+      debug(
+        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
+          exceptionError ? `'${exceptionError.error}'` : 'none'
+        } returnValue=0x${short(returnValue)} gasRefund=${result.gasRefund ?? 0} ]`
+      )
+    }
+    const err = result.execResult.exceptionError
+    // This clause captures any error which happened during execution
+    // If that is the case, then set the _refund tracker to the old refund value
+    if (err) {
+      this._refund = oldRefund
+      result.execResult.selfdestruct = {}
+    }
+    result.gasRefund = this._refund
+    if (err) {
+      if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+        result.execResult.logs = []
+        await this._state.revert()
+        this._transientStorage.revert()
+        if (this.DEBUG) {
+          debug(`message checkpoint reverted`)
+        }
+      } else {
+        // we are in chainstart and the error was the code deposit error
+        // we do like nothing happened.
+        await this._state.commit()
+        this._transientStorage.commit()
+        if (this.DEBUG) {
+          debug(`message checkpoint committed`)
+        }
+      }
+    } else {
+      await this._state.commit()
+      this._transientStorage.commit()
+      if (this.DEBUG) {
+        debug(`message checkpoint committed`)
+      }
+    }
+    await this._emit('afterMessage', result)
+
+    return result
   }
 
   /**
    * Bound to the global VM and therefore
    * shouldn't be used directly from the evm class
-   * @hidden
    */
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
