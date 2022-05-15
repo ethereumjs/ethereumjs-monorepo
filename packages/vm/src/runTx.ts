@@ -14,7 +14,6 @@ import {
 import VM from './index'
 import Bloom from './bloom'
 import { EVMResult } from './evm/evm'
-import Message from './evm/message'
 import type {
   TxReceipt,
   BaseTxReceipt,
@@ -397,13 +396,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Execute message
    */
   const { value, data, to } = tx
-  const message = new Message({
-    caller,
-    gasLimit,
-    to,
-    value,
-    data,
-  })
+
   if (this.DEBUG) {
     debug(
       `Running tx=0x${
@@ -414,9 +407,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  this.evm._tx = { gasPrice, origin: caller }
-  this.evm._block = block
-  const results = (await this.evm.executeMessage(message)) as RunTxResult
+  const results = (await this.evm.runCall({
+    block,
+    gasPrice,
+    caller,
+    gasLimit,
+    to,
+    value,
+    data,
+  })) as RunTxResult
+
   if (this.DEBUG) {
     const { gasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))

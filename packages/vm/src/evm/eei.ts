@@ -587,7 +587,7 @@ export default class EEI {
       return BigInt(0)
     }
 
-    const results = await this._evm.executeMessage(msg)
+    const results = await this._evm.runCall({ message: msg })
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -620,15 +620,8 @@ export default class EEI {
    */
   async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
-    const msg = new Message({
-      caller: this._env.address,
-      gasLimit,
-      value,
-      data,
-      salt,
-      depth: this._env.depth + 1,
-      selfdestruct,
-    })
+    const caller = this._env.address
+    const depth = this._env.depth + 1
 
     // empty the return data buffer
     this._lastReturned = Buffer.alloc(0)
@@ -636,7 +629,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
-      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
+      this._env.contract.balance < value
     ) {
       return BigInt(0)
     }
@@ -650,12 +643,22 @@ export default class EEI {
     await this._state.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (msg.data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
         return BigInt(0)
       }
     }
 
-    const results = await this._evm.executeMessage(msg)
+    const message = new Message({
+      caller,
+      gasLimit,
+      value,
+      data,
+      salt,
+      depth,
+      selfdestruct,
+    })
+
+    const results = await this._evm.runCall({ message })
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
