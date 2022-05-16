@@ -1,5 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
+import { BN } from 'ethereumjs-util'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
@@ -137,11 +139,15 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
       header: {
         number: blocks[0].blockNumber,
         parentHash: blocks[0].parentHash,
+        difficulty: new BN(1),
       },
     },
     { common }
   )
-
+  // A zero difficulty block shouldn't be put in the chain without chain transition to PoS
+  // May be a check in putBlocks?
+  // Also if the block is not in chain or skeleton chain, then should the forkChoice respond
+  // with INVALID instead of currently syncing?
   await chain.putBlocks([newBlock])
   const req = params(method, [
     { ...validForkChoiceState, headBlockHash: '0x' + newBlock.hash().toString('hex') },
