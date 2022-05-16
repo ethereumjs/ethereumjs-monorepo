@@ -27,8 +27,10 @@ const setup = () => {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const config = new Config({ transports: [] })
 
-const handleTxs = async (txs: any[], failMessage: string, stateManager?: any) => {
-  const { pool } = setup()
+const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, pool?: any) => {
+  if (!pool) {
+    pool = setup().pool
+  }
   try {
     if (stateManager) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
@@ -84,13 +86,13 @@ tape('[TxPool]', async (t) => {
     const txData = {
       nonce,
       maxFeePerGas: 1000000000,
-      maxInclusionFeePerGas: 100000000,
+      maxPriorityFeePerGas: 1000000000,
       gasLimit: 100000,
       to: to.address,
       value,
     }
     txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
-    txData.maxInclusionFeePerGas += (txData.maxInclusionFeePerGas * feeBump) / 100
+    txData.maxPriorityFeePerGas += (txData.maxPriorityFeePerGas * feeBump) / 100
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
@@ -414,6 +416,31 @@ tape('[TxPool]', async (t) => {
         getAccount: () => new Account(new BN(0), new BN('0')),
       }),
       'succesfully rejected account with too low balance'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject txs which cannot pay base fee', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+      }).sign(A.privateKey)
+    )
+
+    const { pool } = setup()
+
+    ;(<any>pool).service.chain.getLatestHeader = async () => {
+      return {
+        baseFeePerGas: new BN(1000000000 + 1),
+      }
+    }
+
+    t.notOk(
+      await handleTxs(txs, 'cannot pay basefee', undefined, pool),
+      'succesfully rejected tx with too low gas price'
     )
   })
 

@@ -192,23 +192,52 @@ export class TxPool {
     }
   }
 
-  // TODO this logic should be moved to the Transaction package
-  private getTxGasPrice(tx: TypedTransaction) {
-    let currentGasPrice
+  /**
+   * Returns the gas tip (the max priority fee) for each transaction type
+   * @param tx - tx to check
+   * @returns - max priority fee
+   */
+  private txGasTipCap(tx: TypedTransaction): BN {
     switch (tx.type) {
       case 0:
-        currentGasPrice = (tx as Transaction).gasPrice
-        break
+        return (tx as Transaction).gasPrice
       case 1:
-        currentGasPrice = (tx as AccessListEIP2930Transaction).gasPrice
-        break
+        return (tx as AccessListEIP2930Transaction).gasPrice
       case 2:
-        currentGasPrice = (tx as FeeMarketEIP1559Transaction).maxFeePerGas
-        break
+        return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       default:
-        throw new Error(`tx of type ${tx.type} unknown`) // TODO make this error better
+        throw new Error(`tx of type ${tx.type} unknown`)
     }
-    return currentGasPrice
+  }
+
+  /**
+   * This returns the gas fee cap (max fee per gas) for each transaction type
+   * @param tx - tx to check
+   * @returns - max fee per gas
+   */
+  private txGasFeeCap(tx: TypedTransaction): BN {
+    switch (tx.type) {
+      case 0:
+        return (tx as Transaction).gasPrice
+      case 1:
+        return (tx as AccessListEIP2930Transaction).gasPrice
+      case 2:
+        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+      default:
+        throw new Error(`tx of type ${tx.type} unknown`)
+    }
+  }
+
+  private validateTxGasBump(existingTx: TypedTransaction, addedTx: TypedTransaction) {
+    const existingTipCap = this.txGasTipCap(existingTx)
+    const existingFeeCap = this.txGasFeeCap(existingTx)
+    const newTipCap = this.txGasTipCap(addedTx)
+    const newFeeCap = this.txGasTipCap(addedTx)
+    const minTipCap = existingTipCap.add(existingTipCap.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
+    const minFeeCap = existingFeeCap.add(existingFeeCap.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
+    if (newTipCap.lt(minTipCap) || newFeeCap.lt(minFeeCap)) {
+      throw new Error('replacement gas too low')
+    }
   }
 
   /**
@@ -224,7 +253,9 @@ export class TxPool {
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
       )
     }
-    const currentGasPrice = this.getTxGasPrice(tx)
+    // This is the GasPrice which the miner receives: miner does not want
+    // to mine underpriced txs where miner gets almost no fees
+    const currentGasPrice = this.txGasTipCap(tx)
     if (!isLocalTransaction) {
       const txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
@@ -250,17 +281,17 @@ export class TxPool {
         if (existingTxn.tx.hash().equals(tx.hash())) {
           throw new Error(`${bufferToHex(tx.hash())}: this transaction is already in the TxPool`)
         }
-        const otherTxGasPrice = this.getTxGasPrice(existingTxn.tx)
-        const minimumGasPrice = otherTxGasPrice.add(
-          otherTxGasPrice.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
-        )
-        if (minimumGasPrice.gt(currentGasPrice)) {
-          // TODO handle in RPC
-          throw new Error('replacement gas too low')
-        }
+        this.validateTxGasBump(existingTxn.tx, tx)
       }
     }
-    const block = await this.service.chain.getLatestHeader() // This should probably be cached somewhere
+    const block = await this.service.chain.getLatestHeader()
+    if (block.baseFeePerGas) {
+      if (this.txGasFeeCap(tx).lt(block.baseFeePerGas)) {
+        throw new Error(
+          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${this.txGasFeeCap(tx)}.`
+        )
+      }
+    }
     if (tx.gasLimit.gt(block.gasLimit)) {
       throw new Error(
         `Tx gaslimit of ${tx.gasLimit.toString()} exceeds block gas limit of ${block.gasLimit.toString()}`
