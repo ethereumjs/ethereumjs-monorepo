@@ -269,6 +269,30 @@ tape('EIP-3074 AUTH', (t) => {
     st.ok(buf.equals(zeros(32)), 'auth puts 0 on stack on invalid signature')
   })
 
+  t.test('Should not set AUTH if reported address is invalid', async (st) => {
+    const vm = await VM.create({ common })
+    const message = Buffer.from('01', 'hex')
+    const signature = signMessage(message, contractAddress, privateKey)
+    signature.r = signature.s
+    // use the contractAddress instead of authAddress for the expected address (this should fail)
+    const code = Buffer.concat([getAuthCode(message, signature, contractAddress), RETURNTOP])
+
+    await vm.stateManager.putContractCode(contractAddress, code)
+    const tx = Transaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 1000000,
+      gasPrice: 10,
+    }).sign(callerPrivateKey)
+
+    const account = await vm.stateManager.getAccount(callerAddress)
+    account.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account)
+
+    const result = await vm.runTx({ tx, block })
+    const buf = result.execResult.returnValue
+    st.ok(buf.equals(zeros(32)), 'auth puts 0')
+  })
+
   t.test('Should throw if signature s > N_DIV_2', async (st) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
