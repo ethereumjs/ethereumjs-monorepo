@@ -583,4 +583,18 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     st.ok(!Object.isFrozen(signedTxn), 'tx object is not frozen')
     st.end()
   })
+
+  t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
+    const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
+    st.ok(newCommon !== common, 'new common is different than original common')
+    Object.defineProperty(txn, 'common', {
+      get: function () {
+        return newCommon
+      },
+    })
+    const signedTxn = txn.sign(pKey)
+    st.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    st.end()
+  })
 })

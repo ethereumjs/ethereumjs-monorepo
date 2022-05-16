@@ -123,6 +123,22 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     st.end()
   })
 
+  t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
+    const data = testdata[0]
+    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+    st.ok(newCommon !== common, 'new common is different than original common')
+    Object.defineProperty(txn, 'common', {
+      get: function () {
+        return newCommon
+      },
+    })
+    const signedTxn = txn.sign(pkey)
+    st.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    st.end()
+  })
+
   t.test('unsigned tx -> getMessageToSign()', function (t) {
     const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
       {

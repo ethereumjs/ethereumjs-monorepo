@@ -339,7 +339,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       vBN.iadd(this.common.chainIdBN().muln(2).addn(8))
     }
 
-    const opts = this.txOptions
+    const opts = { ...this.txOptions, ...{ common: this.common } }
 
     return Transaction.fromTxData(
       {

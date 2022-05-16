@@ -380,7 +380,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   _processSignature(v: number, r: Buffer, s: Buffer) {
-    const opts = this.txOptions
+    const opts = { ...this.txOptions, ...{ common: this.common } }
 
     return AccessListEIP2930Transaction.fromTxData(
       {
