@@ -408,7 +408,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   _processSignature(v: number, r: Buffer, s: Buffer) {
-    const opts = { ...this.txOptions, ...{ common: this.common } }
+    const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(
       {

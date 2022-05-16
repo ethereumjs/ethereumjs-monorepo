@@ -461,10 +461,10 @@ tape('[Transaction]', function (t) {
 
   t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
     const tx = Transaction.fromTxData({}, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx object is not frozen')
+    st.notOk(Object.isFrozen(tx), 'tx object is not frozen')
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     const signedTxn = tx.sign(privKey)
-    st.ok(!Object.isFrozen(signedTxn), 'tx object is not frozen')
+    st.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
     st.end()
   })
 
@@ -473,7 +473,7 @@ tape('[Transaction]', function (t) {
     const pkey = Buffer.from(txFixtures[0].privateKey, 'hex')
     const txn = Transaction.fromTxData({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
-    st.ok(newCommon !== common, 'new common is different than original common')
+    st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get: function () {
         return newCommon
