@@ -1,5 +1,11 @@
-import { debug as createDebugLogger } from 'debug'
+import { promisify } from 'util'
+
+import { Block } from '@ethereumjs/block'
+import Blockchain from '@ethereumjs/blockchain'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 const AsyncEventEmitter = require('async-eventemitter')
+import { debug as createDebugLogger } from 'debug'
 import {
   Account,
   Address,
@@ -10,26 +16,19 @@ import {
   MAX_INTEGER,
   short,
 } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
-import { ERROR, VmError } from '../exceptions'
-import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
-import Message, { MessageWithTo } from './message'
 import EEI from './eei'
-// eslint-disable-next-line
-import * as eof from './opcodes/eof'
-import { CustomOpcode, Log, TxContext } from './types'
+import { ERROR, VmError } from '../exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
-import Common, { Chain } from '@ethereumjs/common'
-import { promisify } from 'util'
+import Message, { MessageWithTo } from './message'
+import * as eof from './opcodes/eof'
 import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import Blockchain from '@ethereumjs/blockchain'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
 import { TransientStorage } from '../state'
+import { CustomOpcode, Log, RunCallOpts, RunCodeOpts, TxContext } from './types'
 import { VmState } from '../vmState'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -177,85 +176,10 @@ export interface ExecResult {
   selfdestruct?: { [k: string]: Buffer }
 }
 
-/**
- * Options for running a call (or create) operation
- */
-export interface RunCallOpts {
-  block?: Block
-  gasPrice?: bigint
-  origin?: Address
-  caller?: Address
-  gasLimit?: bigint
-  to?: Address
-  value?: bigint
-  data?: Buffer
-  /**
-   * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
-   */
-  code?: Buffer
-  depth?: number
-  compiled?: boolean
-  static?: boolean
-  salt?: Buffer
-  selfdestruct?: { [k: string]: boolean } | { [k: string]: Buffer }
-  delegatecall?: boolean
-  skipBalance?: boolean
-  message?: Message
-}
-
 export interface NewContractEvent {
   address: Address
   // The deployment code
   code: Buffer
-}
-
-/**
- * Options for the {@link runCode} method.
- */
-export interface RunCodeOpts {
-  /**
-   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
-   */
-  block?: Block
-  evm?: EVM
-  txContext?: TxContext
-  gasPrice?: bigint
-  /**
-   * The address where the call originated from. Defaults to the zero address.
-   */
-  origin?: Address
-  message?: MessageWithTo
-  /**
-   * The address that ran this code (`msg.sender`). Defaults to the zero address.
-   */
-  caller?: Address
-  /**
-   * The EVM code to run
-   */
-  code?: Buffer
-  /**
-   * The input data
-   */
-  data?: Buffer
-  /**
-   * Gas limit
-   */
-  gasLimit: bigint
-  /**
-   * The value in ether that is being sent to `opt.address`. Defaults to `0`
-   */
-  value?: bigint
-  depth?: number
-  isStatic?: boolean
-  selfdestruct?: { [k: string]: boolean }
-  /**
-   * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
-   */
-  address?: Address
-  /**
-   * The initial program counter. Defaults to `0`
-   */
-  pc?: number
 }
 
 export function OOGResult(gasLimit: bigint): ExecResult {
@@ -839,8 +763,8 @@ export default class EVM extends AsyncEventEmitter {
         data: opts.data,
         code: opts.code,
         depth: opts.depth,
-        isCompiled: opts.compiled,
-        isStatic: opts.static,
+        isCompiled: opts.isCompiled,
+        isStatic: opts.isStatic,
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
         delegatecall: opts.delegatecall,
@@ -929,14 +853,16 @@ export default class EVM extends AsyncEventEmitter {
   }
 
   /**
-   * @ignore
+   * Bound to the global VM and therefore
+   * shouldn't be used directly from the evm class
+   * @hidden
    */
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
     this._block = block
 
     // Backwards compatibility
-    const txContext: TxContext = opts.txContext ?? {
+    const txContext: TxContext = {
       gasPrice: opts.gasPrice ?? BigInt(0),
       origin: opts.origin ?? opts.caller ?? Address.zero(),
     }

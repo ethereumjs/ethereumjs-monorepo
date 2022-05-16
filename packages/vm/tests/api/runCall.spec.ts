@@ -4,7 +4,7 @@ import { Account, Address, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
-import { RunCallOpts } from '../../src/evm/evm'
+import { RunCallOpts } from '../../src/evm/types'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
