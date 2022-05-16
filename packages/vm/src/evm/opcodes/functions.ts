@@ -1027,8 +1027,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       // eslint-disable-next-line prefer-const
       let [authority, memOffset, memLength] = runState.stack.popN(3)
 
-      if (memLength > 128n) {
-        memLength = 128n
+      if (memLength > BigInt(128)) {
+        memLength = BigInt(128)
       }
 
       let mem = runState.memory.read(Number(memOffset), Number(memLength))
