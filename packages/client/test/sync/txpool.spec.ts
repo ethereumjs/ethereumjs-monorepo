@@ -27,7 +27,7 @@ const setup = () => {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const config = new Config({ transports: [] })
 
-const handleTxs = async (txs: any[], stateManager?: any) => {
+const handleTxs = async (txs: any[], failMessage: string, stateManager?: any) => {
   const { pool } = setup()
   try {
     if (stateManager) {
@@ -58,7 +58,8 @@ const handleTxs = async (txs: any[], stateManager?: any) => {
   } catch (e: any) {
     pool.stop()
     pool.close()
-    return false
+    // Return false if the error message contains the fail message
+    return !e.message.includes(failMessage)
   }
 }
 
@@ -283,12 +284,16 @@ tape('[TxPool]', async (t) => {
     const peerPool = new PeerPool({ config })
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
+
     try {
       txs = [txA02_Underpriced]
       await pool.handleAnnouncedTxHashes([txA02_Underpriced.hash()], peer, peerPool)
       t.fail('should fail adding underpriced txn to txpool')
-    } catch (e) {
-      t.ok('succesfully failed adding underpriced txn')
+    } catch (e: any) {
+      t.ok(
+        e.message.includes('replacement gas too low'),
+        'succesfully failed adding underpriced txn'
+      )
     }
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = A.address.toString('hex')
@@ -322,7 +327,7 @@ tape('[TxPool]', async (t) => {
         break
       }
     }
-    t.notOk(await handleTxs(txs), 'succesfully rejected too many txs')
+    t.notOk(await handleTxs(txs, 'pool is full'), 'succesfully rejected too many txs')
   })
 
   t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
@@ -334,7 +339,10 @@ tape('[TxPool]', async (t) => {
       txs.push(txn)
     }
 
-    t.notOk(await handleTxs(txs), 'succesfully rejected too many txs from same account')
+    t.notOk(
+      await handleTxs(txs, 'already have max amount of txs for this account'),
+      'succesfully rejected too many txs from same account'
+    )
   })
 
   t.test('announcedTxHashes() -> reject unsigned txs', async (t) => {
@@ -347,7 +355,7 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    t.notOk(await handleTxs(txs), 'succesfully rejected unsigned tx')
+    t.notOk(await handleTxs(txs, 'unsigned'), 'succesfully rejected unsigned tx')
   })
 
   t.test('announcedTxHashes() -> reject txs with invalid nonce', async (t) => {
@@ -362,7 +370,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, {
+      await handleTxs(txs, 'tx nonce too low', {
         getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
       }),
       'succesfully rejected tx with invalid nonce'
@@ -382,7 +390,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, {
+      await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
       }),
       'succesfully rejected tx with too much data'
@@ -402,7 +410,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, {
+      await handleTxs(txs, 'does not have enough balance to cover transaction costs', {
         getAccount: () => new Account(new BN(0), new BN('0')),
       }),
       'succesfully rejected account with too low balance'
@@ -420,7 +428,10 @@ tape('[TxPool]', async (t) => {
       }).sign(A.privateKey)
     )
 
-    t.notOk(await handleTxs(txs), 'succesfully rejected tx with too low gas price')
+    t.notOk(
+      await handleTxs(txs, 'does not pay the minimum gas price of'),
+      'succesfully rejected tx with too low gas price'
+    )
   })
 
   t.test(
@@ -435,7 +446,10 @@ tape('[TxPool]', async (t) => {
         }).sign(A.privateKey)
       )
 
-      t.notOk(await handleTxs(txs), 'succesfully rejected tx with too low gas price')
+      t.notOk(
+        await handleTxs(txs, 'does not pay the minimum gas price of'),
+        'succesfully rejected tx with too low gas price'
+      )
     }
   )
 
@@ -454,13 +468,13 @@ tape('[TxPool]', async (t) => {
         }
       ).sign(A.privateKey)
 
-      console.log(Object.isFrozen(tx))
+      // TODO fixme needs PR 1884
 
       Object.defineProperty(tx, 'type', { get: () => 5 })
 
       txs.push(tx)
 
-      t.notOk(await handleTxs(txs), 'succesfully rejected tx with invalid tx type')
+      t.notOk(await handleTxs(txs, ''), 'succesfully rejected tx with invalid tx type')
     }
   )
 
