@@ -10,7 +10,7 @@ export function checkError(t: tape.Test, expectedCode: any, expectedMessage?: an
     }
     if (expectedMessage && !res.body.error.message.includes(expectedMessage)) {
       throw new Error(
-        `should have an error message "${expectedMessage}, got ${res.body.error.message}"`
+        `should have an error message "${expectedMessage}", got "${res.body.error.message}"`
       )
     }
     t.pass('should return error object with error code and message')
