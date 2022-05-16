@@ -73,7 +73,7 @@ type JsonRpcBlock = {
   gasLimit: string // the maximum gas allowed in this block.
   gasUsed: string // the total used gas by all transactions in this block.
   timestamp: string // the unix timestamp for when the block was collated.
-  transactions: JsonTx[] | string[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
@@ -130,60 +130,6 @@ type JsonRpcLog = {
 }
 
 /**
- * Returns block formatted to the standard JSON-RPC fields
- */
-const jsonRpcBlock = async (
-  block: Block,
-  chain: Chain,
-  includeTransactions: boolean
-): Promise<JsonRpcBlock> => {
-  const json = block.toJSON()
-  const header = json!.header!
-
-  let transactions
-  if (includeTransactions) {
-    transactions = block.transactions.map((tx) => {
-      const transaction = tx.toJSON()
-      const { gasLimit: gas, data: input, ...txData } = transaction
-      return {
-        ...txData,
-        // RPC specs specify `input` rather than `data`, and `gas` rather than `gasLimit`
-        input,
-        gas,
-      }
-    })
-  } else {
-    transactions = block.transactions.map((tx) => bufferToHex(tx.hash()))
-  }
-
-  const td = await chain.getTd(block.hash(), block.header.number)
-
-  return {
-    number: header.number!,
-    hash: bufferToHex(block.hash()),
-    parentHash: header.parentHash!,
-    mixHash: header.mixHash,
-    nonce: header.nonce!,
-    sha3Uncles: header.uncleHash!,
-    logsBloom: header.logsBloom!,
-    transactionsRoot: header.transactionsTrie!,
-    stateRoot: header.stateRoot!,
-    receiptsRoot: header.receiptTrie!,
-    miner: header.coinbase!,
-    difficulty: header.difficulty!,
-    totalDifficulty: bnToHex(td),
-    extraData: header.extraData!,
-    size: intToHex(Buffer.byteLength(JSON.stringify(json))),
-    gasLimit: header.gasLimit!,
-    gasUsed: header.gasUsed!,
-    timestamp: header.timestamp!,
-    transactions,
-    uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
-    baseFeePerGas: header.baseFeePerGas,
-  }
-}
-
-/**
  * Returns tx formatted to the standard JSON-RPC fields
  */
 const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
@@ -208,6 +154,45 @@ const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonR
     v: txJSON.v!,
     r: txJSON.r!,
     s: txJSON.s!,
+  }
+}
+
+/**
+ * Returns block formatted to the standard JSON-RPC fields
+ */
+const jsonRpcBlock = async (
+  block: Block,
+  chain: Chain,
+  includeTransactions: boolean
+): Promise<JsonRpcBlock> => {
+  const json = block.toJSON()
+  const header = json!.header!
+  const transactions = block.transactions.map((tx, txIndex) =>
+    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
+  )
+  const td = await chain.getTd(block.hash(), block.header.number)
+  return {
+    number: header.number!,
+    hash: bufferToHex(block.hash()),
+    parentHash: header.parentHash!,
+    mixHash: header.mixHash,
+    nonce: header.nonce!,
+    sha3Uncles: header.uncleHash!,
+    logsBloom: header.logsBloom!,
+    transactionsRoot: header.transactionsTrie!,
+    stateRoot: header.stateRoot!,
+    receiptsRoot: header.receiptTrie!,
+    miner: header.coinbase!,
+    difficulty: header.difficulty!,
+    totalDifficulty: bnToHex(td),
+    extraData: header.extraData!,
+    size: intToHex(Buffer.byteLength(JSON.stringify(json))),
+    gasLimit: header.gasLimit!,
+    gasUsed: header.gasUsed!,
+    timestamp: header.timestamp!,
+    transactions,
+    uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
+    baseFeePerGas: header.baseFeePerGas,
   }
 }
 
