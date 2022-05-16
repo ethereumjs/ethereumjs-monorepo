@@ -1,21 +1,13 @@
 import { Block } from '@ethereumjs/block'
-import { BN, bufferToHex } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
+import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest, dummy } from '../helpers'
 import { checkError } from '../util'
 
-const mockedTxData = {
-  nonce: '0x',
-  gasPrice: '0x',
-  gasLimit: '0x',
-  to: '0x',
-  value: '0x',
-  data: '0x',
-  v: '0x',
-  r: '0x',
-  s: '0x',
-}
+const mockedTx1 = Transaction.fromTxData({}).sign(dummy.privKey)
+const mockedTx2 = Transaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
 
 function createChain() {
   const genesisBlockHash = Buffer.from(
@@ -26,36 +18,28 @@ function createChain() {
     'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
     'hex'
   )
-  const txHash = Buffer.from(
-    'c6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-    'hex'
-  )
-  const txHash2 = Buffer.from(
-    'a2285835057e8252ebd4980cf498f7538cedb3600dc183f1c523c6971b6889aa',
-    'hex'
-  )
-
-  const transactions = [{ hash: bufferToHex(txHash) }]
-  const transactions2 = [{ hash: bufferToHex(txHash2) }]
+  const transactions = [mockedTx1]
+  const transactions2 = [mockedTx2]
   const genesisBlock = {
     hash: () => genesisBlockHash,
     header: {
       number: new BN(0),
     },
     toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
-    transactions: [{ hash: () => txHash }],
+    transactions,
     uncleHeaders: [],
   }
   const block = {
     hash: () => blockHash,
     header: {
       number: new BN(1),
+      hash: () => blockHash,
     },
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
       transactions: transactions2,
     }),
-    transactions: [{ hash: () => txHash2, toJSON: () => mockedTxData }],
+    transactions: transactions2,
     uncleHeaders: [],
   }
   return {
@@ -115,6 +99,7 @@ tape(`${method}: call with latest param`, async (t) => {
   const expectRes = (res: any) => {
     const msg = 'should return a block number'
     t.equal(res.body.result.number, '0x1', msg)
+    t.equal(typeof res.body.result.transactions[0], 'string', 'should only include tx hashes')
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -176,9 +161,7 @@ tape(`${method}: call with transaction objects`, async (t) => {
   const req = params(method, ['latest', true])
 
   const expectRes = (res: any) => {
-    const [transactionData] = res.body.result.transactions
-    const { gasLimit: gas, data: input, ...txData } = mockedTxData
-    t.deepEqual(transactionData, { ...txData, input, gas })
+    t.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

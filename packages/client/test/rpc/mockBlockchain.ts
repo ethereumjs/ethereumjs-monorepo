@@ -1,14 +1,13 @@
 import { Block } from '@ethereumjs/block'
-import { BN, bufferToHex, toBuffer } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
+import { BN, toBuffer } from 'ethereumjs-util'
+import { dummy } from './helpers'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'
   const blockHash =
     options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
-  const txHash = Buffer.from(
-    '0be3065cf288b071ccff922c1c601e2e5628d488b66e781c260ecee36054a2dc',
-    'hex'
-  )
+  const transactions = options.transactions ?? [Transaction.fromTxData({}).sign(dummy.privKey)]
   const block = {
     hash: () => toBuffer(blockHash),
     header: {
@@ -17,15 +16,9 @@ export function mockBlockchain(options: any = {}) {
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number } }).toJSON(),
       hash: options.hash ?? blockHash,
-      transactions: options.transactions ?? [{ hash: bufferToHex(txHash) }],
+      transactions: transactions.map((t: Transaction) => t.toJSON()),
     }),
-    transactions: options.transactions ?? [
-      {
-        hash: () => {
-          return txHash
-        },
-      },
-    ],
+    transactions,
     uncleHeaders: [],
   }
   return {
