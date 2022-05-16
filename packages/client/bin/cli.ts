@@ -182,6 +182,11 @@ const args = yargs(hideBin(process.argv))
     number: true,
     default: Config.MAXPERREQUEST_DEFAULT,
   })
+  .option('maxFetcherJobs', {
+    describe: 'Max tasks or jobs to be created for a fetcher at a time',
+    number: true,
+    default: Config.MAXFETCHERJOBS_DEFAULT,
+  })
   .option('minPeers', {
     describe: 'Peers needed before syncing',
     number: true,
@@ -608,6 +613,7 @@ async function run() {
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
+    maxFetcherJobs: args.maxFetcherJobs,
     mine: args.mine || args.dev,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,

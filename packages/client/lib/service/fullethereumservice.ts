@@ -9,7 +9,6 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import { VMExecution } from '../execution'
-import { Event } from '../types'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -55,13 +54,11 @@ export class FullEthereumService extends EthereumService {
       config: this.config,
       pool: this.pool,
       chain: this.chain,
-      txPool: this.txPool,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
+      txPool: this.txPool,
+      execution: this.execution,
       interval: this.interval,
-    })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
-      await this.synchronizer.processBlocks(this.execution, ...args)
     })
 
     if (this.config.mine) {
@@ -178,10 +175,9 @@ export class FullEthereumService extends EthereumService {
       peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
-      let blocks: Block[] = await Promise.all(
+      const blocks: Block[] = await Promise.all(
         hashes.map((hash: Buffer) => this.chain.getBlock(hash))
       )
-      blocks = blocks.filter((b) => !b._common.gteHardfork(Hardfork.Merge))
       const bodies = blocks.map((block) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
@@ -253,8 +249,7 @@ export class FullEthereumService extends EthereumService {
             return
           }
         }
-        let headers = await this.chain.getHeaders(block, max, skip, reverse)
-        headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
+        const headers = await this.chain.getHeaders(block, max, skip, reverse)
         peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }

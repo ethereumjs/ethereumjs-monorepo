@@ -106,7 +106,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
           blocks[0]?.header.number
         } last=${blocks[blocks.length - 1]?.header.number})`
       )
-      this.config.events.emit(Event.SYNC_FETCHER_FETCHED, blocks.slice(0, num))
+      this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
       this.debug(
         `Error storing fetcher results in blockchain (blocks num=${blocks.length} first=${

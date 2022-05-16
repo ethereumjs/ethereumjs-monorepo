@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.6.4 - 2022-04-14
+
+### EIP-3651: Warm COINBASE
+
+Small EIP - see [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) considered for inclusion (CFI) in Shanghai to address an initially overpriced `COINBASE` access, PR [#1814](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1814).
+
+### EIP-1153: Transient Storage Opcodes
+
+Experimental implementation of [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153), see PR [#1768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1768), thanks to [Mark Tyneway](https://github.com/tynes) from Optimism for the implementation! ❤️
+
+The EIP adds opcodes for manipulating state that behaves identically to storage but is discarded after every transaction. This makes communication via storage (`SLOAD`/`SSTORE`) more efficient and would allow for significant gas cost reductions for various use cases.
+
+Hardfork inclusion of the EIP was extensively discussed during [ACD 135, April 1 2022](https://github.com/ethereum/pm/issues/500).
+
+### Other Changes
+
+- Fixed non-option passing on `custom()` method, PR [#1851](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1851)
+- `PreMerge` hardfork renamed to `MergeForkIdTransition` for increased clarity, PR [#1856](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1856)
+
 ## 2.6.3 - 2022-03-15
 
 ### Merge Kiln v2 Testnet Support

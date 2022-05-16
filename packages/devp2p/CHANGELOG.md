@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.2 - 2022-04-29
+
+- Solved memory leak "DPT discovers nodes when open_slots = 0", PR [#1816](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1816)
+- Fixed per-message debug logging, PR [#1776](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1776)
+- ETH-LES class refactor, PR [#1600](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1600)
+
 ## 4.2.1 - 2022-02-01
 
 - Dependencies: deduplicated RLP import, PR [#1549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1549)

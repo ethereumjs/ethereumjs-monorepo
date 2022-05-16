@@ -31,6 +31,7 @@ const PUSH1 = '60'
 const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
 
 vm.on('step', function (data) {
+  // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 
@@ -49,11 +50,10 @@ vm.runCode({
 
 This projects contain the following examples:
 
-1. [./examples/run-blockchain](./examples/run-blockchain): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-code-browser](./examples/run-code-browser): Show how to use this library in a browser.
-1. [./examples/run-solidity-contract](./examples/run-solidity-contract): Compiles a Solidity contract, and calls constant and non-constant functions.
-1. [./examples/run-transactions-complete](./examples/run-transactions-complete): Runs a contract-deployment transaction and then calls one of its functions.
-1. [./examples/decode-opcodes](./examples/decode-opcodes): Decodes a binary EVM program into its opcodes.
+1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
+1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
+1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
+1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
 
 All of the examples have their own `README.md` explaining how to run them.
 
@@ -71,7 +71,7 @@ Note: along the `EIP-2929` (Gas cost increases for state access opcodes) impleme
 
 # BROWSER
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser).
+To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
 
 # SETUP
 

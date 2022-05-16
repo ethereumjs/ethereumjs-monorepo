@@ -55,7 +55,7 @@ export interface TxOptions {
    * It also enables tx hash caching when the `hash()` method is called multiple times.
    *
    * If you need to deactivate the tx freeze - e.g. because you want to subclass tx and
-   * add aditional properties - it is strongly encouraged that you do the freeze yourself
+   * add additional properties - it is strongly encouraged that you do the freeze yourself
    * within your code instead.
    *
    * Default: true

@@ -43,12 +43,13 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
+  protected forceSync: boolean
+
+  public fetcher: BlockFetcher | HeaderFetcher | null
   public opened: boolean
   public running: boolean
-  protected forceSync: boolean
   public startingBlock: BN
 
   /** Time (in ms) after which the synced state is reset */
@@ -161,7 +162,7 @@ export abstract class Synchronizer {
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
-   * @returns with true if sync successful
+   * @returns when sync is completed
    */
   async sync(): Promise<boolean> {
     let peer = this.best()
@@ -172,13 +173,47 @@ export abstract class Synchronizer {
       peer = this.best()
       numAttempts += 1
     }
-    return this.syncWithPeer(peer)
+
+    if (!(await this.syncWithPeer(peer))) return false
+
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      const resolveSync = () => {
+        this.clearFetcher()
+        resolve(true)
+      }
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
+      try {
+        if (this.fetcher) {
+          await this.fetcher.fetch()
+        }
+        resolveSync()
+      } catch (error: any) {
+        this.clearFetcher()
+        reject(error)
+      }
+    })
   }
 
+  /**
+   * Clears and removes the fetcher.
+   */
+  clearFetcher() {
+    if (this.fetcher) {
+      this.fetcher.clear()
+      this.fetcher.destroy()
+      this.fetcher = null
+    }
+  }
+
+  /**
+   * Stop synchronizer.
+   */
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false
     }
+    this.clearFetcher()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false

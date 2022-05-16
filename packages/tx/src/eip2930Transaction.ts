@@ -171,7 +171,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE })
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
     const { chainId, accessList, gasPrice } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -380,9 +380,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   _processSignature(v: number, r: Buffer, s: Buffer) {
-    const opts = {
-      common: this.common,
-    }
+    const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(
       {

@@ -86,7 +86,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     let rpcHttpServer
     withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
 
-    const { server, namespaces } = createRPCServer(manager, {
+    const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
       rpcDebug,
       logger,
@@ -114,6 +114,11 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
         }`
       )
+      logger.debug(
+        `Methods available at address=http://${rpcaddr}:${rpcport} namespaces=${namespaces} methods=${Object.keys(
+          methods
+        ).join(',')}`
+      )
     }
     if (ws) {
       const opts: any = {
@@ -133,11 +138,16 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
           withEngineMethods ? ` rpcEngineAuth=${rpcEngineAuth}` : ''
         }`
       )
+      logger.debug(
+        `Methods available at address=ws://${wsAddr}:${wsPort} namespaces=${namespaces} methods=${Object.keys(
+          methods
+        ).join(',')}`
+      )
     }
   }
 
   if (rpcEngine && !(rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr)) {
-    const { server, namespaces } = createRPCServer(manager, {
+    const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: MethodConfig.EngineOnly,
       rpcDebug,
       logger,
@@ -154,7 +164,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     })
     rpcHttpServer.listen(rpcEnginePort)
     logger.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine rpcEngineAuth=${rpcEngineAuth}`
+      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
+    )
+    logger.debug(
+      `Methods available at address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} methods=${Object.keys(
+        methods
+      ).join(',')}`
     )
 
     if (ws) {
@@ -173,6 +188,11 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       if (rpcWsServer) rpcWsServer.listen(wsEnginePort)
       logger.info(
         `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
+      )
+      logger.debug(
+        `Methods available at address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} methods=${Object.keys(
+          methods
+        ).join(',')}`
       )
     }
   }

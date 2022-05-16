@@ -15,7 +15,8 @@ export enum Event {
   CHAIN_UPDATED = 'blockchain:chain:updated',
   CLIENT_SHUTDOWN = 'client:shutdown',
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
-  SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
+  SYNC_FETCHED_BLOCKS = 'sync:fetcher:fetched_blocks',
+  SYNC_FETCHED_HEADERS = 'sync:fetcher:fetched_headers',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   SYNC_ERROR = 'sync:error',
   SYNC_FETCHER_ERROR = 'sync:fetcher:error',
@@ -34,7 +35,8 @@ export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.CLIENT_SHUTDOWN]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [vmError: Error]
-  [Event.SYNC_FETCHER_FETCHED]: [blocksOrHeaders: Block[] | BlockHeader[]]
+  [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
+  [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: BN]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
@@ -60,7 +62,8 @@ export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.CLIENT_SHUTDOWN> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
-  EventBus<Event.SYNC_FETCHER_FETCHED> &
+  EventBus<Event.SYNC_FETCHED_BLOCKS> &
+  EventBus<Event.SYNC_FETCHED_HEADERS> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
   EventBus<Event.SYNC_FETCHER_ERROR> &
   EventBus<Event.PEER_CONNECTED> &

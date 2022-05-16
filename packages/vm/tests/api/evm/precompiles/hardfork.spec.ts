@@ -2,18 +2,17 @@ import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../../src'
-import { getPrecompile } from '../../../../src/evm/precompiles'
+import { getActivePrecompiles } from '../../../../src/evm/precompiles'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
-    const ECPAIR_Address = new Address(
-      Buffer.from('0000000000000000000000000000000000000008', 'hex')
-    )
+    const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
+    const ECPAIR_Address = new Address(Buffer.from(ECPAIR_AddressStr, 'hex'))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
 
-    let ECPAIRING = getPrecompile(ECPAIR_Address, commonByzantium)
+    let ECPAIRING = getActivePrecompiles(commonByzantium).get(ECPAIR_AddressStr)
 
     if (!ECPAIRING) {
       st.fail('ECPAIRING is not available in petersburg while it should be available')
@@ -33,8 +32,7 @@ tape('Precompiles: hardfork availability', (t) => {
 
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    ECPAIRING = getPrecompile(ECPAIR_Address, commonPetersburg)
-
+    ECPAIRING = getActivePrecompiles(commonPetersburg).get(ECPAIR_AddressStr)!
     if (!ECPAIRING) {
       st.fail('ECPAIRING is not available in petersburg while it should be available')
     } else {
@@ -53,7 +51,7 @@ tape('Precompiles: hardfork availability', (t) => {
 
     // Check if ECPAIR is not available in Homestead.
     const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    ECPAIRING = getPrecompile(ECPAIR_Address, commonHomestead)
+    ECPAIRING = getActivePrecompiles(commonHomestead).get(ECPAIR_AddressStr)!
 
     if (ECPAIRING != undefined) {
       st.fail('ECPAIRING is available in homestead while it should not be available')

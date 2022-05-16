@@ -58,19 +58,23 @@ tape('[BlockFetcher]', async (t) => {
 
     let blockNumberList = [new BN(11), new BN(12)]
     let min = new BN(11)
-    fetcher.enqueueByNumberList(blockNumberList, min)
+    let max = new BN(12)
+    fetcher.enqueueByNumberList(blockNumberList, min, max)
     t.equals((fetcher as any).in.size(), 3, '1 new task for two subsequent block numbers')
 
     blockNumberList = [new BN(13), new BN(15)]
     min = new BN(13)
-    fetcher.enqueueByNumberList(blockNumberList, min)
-    t.equals((fetcher as any).in.size(), 5, '2 new tasks for two non-subsequent block numbers')
+    max = new BN(15)
+    fetcher.enqueueByNumberList(blockNumberList, min, max)
+    t.equals((fetcher as any).in.size(), 3, 'no new task added only the height changed')
+    t.equals(fetcher.first.add(fetcher.count).subn(1).eqn(15), true, 'height should now be 15')
 
     // Clear fetcher queue for next test of gap when following head
     fetcher.clear()
     blockNumberList = [new BN(50), new BN(51)]
     min = new BN(50)
-    fetcher.enqueueByNumberList(blockNumberList, min)
+    max = new BN(51)
+    fetcher.enqueueByNumberList(blockNumberList, min, max)
     t.equals(
       (fetcher as any).in.size(),
       11,
@@ -197,8 +201,8 @@ tape('[BlockFetcher]', async (t) => {
     td.reset()
     chain.putBlocks = td.func<any>()
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve(1)
-    config.events.on(Event.SYNC_FETCHER_FETCHED, () =>
-      st.pass('store() emitted SYNC_FETCHER_FETCHED event on putting blocks')
+    config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
+      st.pass('store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
     )
     await fetcher.store([])
   })

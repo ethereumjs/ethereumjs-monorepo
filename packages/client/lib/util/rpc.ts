@@ -99,16 +99,38 @@ export function createRPCServer(
   }
 
   let methods
+  const ethMethods = manager.getMethods()
+
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...manager.getMethods(), ...manager.getMethods(true) }
+      methods = { ...ethMethods, ...manager.getMethods(true) }
       break
     case MethodConfig.WithoutEngine:
-      methods = { ...manager.getMethods() }
+      methods = { ...ethMethods }
       break
-    case MethodConfig.EngineOnly:
-      methods = { ...manager.getMethods(true) }
+    case MethodConfig.EngineOnly: {
+      /**
+       * Filter eth methods to be exposed with engine as per kiln spec 2.1
+       * From: https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.8/src/engine/specification.md#underlying-protocol
+       */
+      const ethMethodsToBeIncluded = [
+        'eth_blockNumber',
+        'eth_call',
+        'eth_chainId',
+        'eth_getCode',
+        'eth_getBlockByHash',
+        'eth_getBlockByNumber',
+        'eth_getLogs',
+        'eth_sendRawTransaction',
+        'eth_syncing',
+      ]
+      const ethEngineSubsetMethods: { [key: string]: Function } = {}
+      for (const method of ethMethodsToBeIncluded) {
+        if (ethMethods[method]) ethEngineSubsetMethods[method] = ethMethods[method]
+      }
+      methods = { ...ethEngineSubsetMethods, ...manager.getMethods(true) }
       break
+    }
   }
 
   const server = new RPCServer(methods)
