@@ -105,7 +105,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE })
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
 
@@ -339,9 +339,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       vBN.iadd(this.common.chainIdBN().muln(2).addn(8))
     }
 
-    const opts = {
-      common: this.common,
-    }
+    const opts = { ...this.txOptions, common: this.common }
 
     return Transaction.fromTxData(
       {
