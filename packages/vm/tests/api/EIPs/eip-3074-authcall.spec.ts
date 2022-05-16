@@ -49,6 +49,8 @@ const contractStorageAddress = new Address(Buffer.from('ee'.repeat(20), 'hex'))
 
 // Bytecode to exit call frame and return the topmost stack item
 const RETURNTOP = Buffer.from('60005260206000F3', 'hex')
+//Bytecode to exit call frame and return the current memory size
+const RETURNMEMSIZE = Buffer.from('5960005260206000F3', 'hex')
 // Bytecode to store CALLER in slot 0 and GAS in slot 1 and the first 32 bytes of the input in slot 2
 // Returns the entire input as output
 const STORECALLER = Buffer.from('5A60015533600055600035600255366000600037366000F3', 'hex')
@@ -73,8 +75,15 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
  * This method returns the bytecode in order to set AUTH
  * @param commitUnpadded - The commit
  * @param signature - The signature as obtained by `signMessage`
+ * @param address - The address which signed the commit
+ * @param msizeBuffer - Optional: memory size buffer, defaults to `0x80` (128 bytes)
  */
-function getAuthCode(commitUnpadded: Buffer, signature: any, address: Address) {
+function getAuthCode(
+  commitUnpadded: Buffer,
+  signature: any,
+  address: Address,
+  msizeBuffer?: Buffer
+) {
   const commit = setLengthLeft(commitUnpadded, 32)
   let v
   if (signature.v == 27) {
@@ -115,7 +124,9 @@ function getAuthCode(commitUnpadded: Buffer, signature: any, address: Address) {
     PUSH32,
     mslot3,
     MSTORE,
-    Buffer.from('60806000', 'hex'),
+    Buffer.from('60', 'hex'),
+    msizeBuffer ?? Buffer.from('80', 'hex'),
+    Buffer.from('6000', 'hex'),
     PUSH32,
     addressBuffer,
     AUTH,
@@ -304,6 +315,81 @@ tape('EIP-3074 AUTH', (t) => {
     const result = await vm.runTx({ tx, block })
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
+  })
+
+  t.test('Should use zeros in case that memory size < 128', async (st) => {
+    const vm = await VM.create({ common })
+    const message = Buffer.from('00', 'hex')
+    const signature = signMessage(message, contractAddress, privateKey)
+    const code = Buffer.concat([
+      getAuthCode(message, signature, authAddress, Buffer.from('60', 'hex')),
+      RETURNTOP,
+    ])
+
+    await vm.stateManager.putContractCode(contractAddress, code)
+    const tx = Transaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 1000000,
+      gasPrice: 10,
+    }).sign(callerPrivateKey)
+
+    const account = await vm.stateManager.getAccount(callerAddress)
+    account.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account)
+
+    const result = await vm.runTx({ tx, block })
+    const buf = result.execResult.returnValue.slice(31)
+    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
+  })
+
+  t.test('Should charge memory expansion gas if the memory size > 128', async (st) => {
+    const vm = await VM.create({ common })
+    const message = Buffer.from('00', 'hex')
+    const signature = signMessage(message, contractAddress, privateKey)
+    const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNMEMSIZE])
+
+    await vm.stateManager.putContractCode(contractAddress, code)
+    const tx = Transaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 1000000,
+      gasPrice: 10,
+    }).sign(callerPrivateKey)
+
+    const account = await vm.stateManager.getAccount(callerAddress)
+    account.balance = BigInt(20000000)
+    await vm.stateManager.putAccount(callerAddress, account)
+
+    const result = await vm.runTx({ tx, block })
+
+    st.ok(
+      result.execResult.returnValue.slice(31).equals(Buffer.from('80', 'hex')),
+      'reported msize is correct'
+    )
+    const gas = result.execResult.gasUsed
+
+    const code2 = Buffer.concat([
+      getAuthCode(message, signature, authAddress, Buffer.from('90', 'hex')),
+      RETURNMEMSIZE,
+    ])
+
+    await vm.stateManager.putContractCode(contractAddress, code2)
+    const tx2 = Transaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 1000000,
+      gasPrice: 10,
+      nonce: 1,
+    }).sign(callerPrivateKey)
+
+    const result2 = await vm.runTx({ tx: tx2, block })
+
+    // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
+    // so the correct amount of msize is 0xa0, not 0x90
+    st.ok(
+      result2.execResult.returnValue.slice(31).equals(Buffer.from('a0', 'hex')),
+      'reported msize is correct'
+    )
+    st.ok(result2.execResult.gasUsed > gas, 'charged more gas for memory expansion')
+    st.end()
   })
 })
 
