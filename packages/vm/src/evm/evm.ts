@@ -734,7 +734,6 @@ export default class EVM extends AsyncEventEmitter {
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-
   async runCall(opts: RunCallOpts): Promise<EVMResult> {
     let message = opts.message
     if (!message) {
