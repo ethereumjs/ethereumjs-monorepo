@@ -225,7 +225,9 @@ export class Peer extends EventEmitter {
    * Send HELLO message
    */
   _sendHello() {
-    const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${
+      this._socket.remotePort
+    } capabilities=${(this._capabilities ?? []).map((c) => `${c.name}${c.version}`).join(' ')}`
     this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
       int2buffer(BASE_PROTOCOL_VERSION),
@@ -373,6 +375,13 @@ export class Peer extends EventEmitter {
       port: buffer2int(payload[3]),
       id: payload[4],
     }
+
+    const debugMsg = `Received HELLO ${this._socket.remoteAddress}:${
+      this._socket.remotePort
+    } capabilities=${(this._hello.capabilities ?? [])
+      .map((c) => `${c.name}${c.version}`)
+      .join(' ')}`
+    this.debug('HELLO', debugMsg)
 
     if (this._remoteId === null) {
       this._remoteId = Buffer.from(this._hello.id)
