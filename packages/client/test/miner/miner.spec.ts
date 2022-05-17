@@ -159,7 +159,7 @@ tape('[Miner]', async (t) => {
     txPool.add(txA01)
 
     // disable consensus to skip PoA block signer validation
-    ;(vm.blockchain as any)._validateConsensus = false
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
 
     chain.putBlocks = (blocks: Block[]) => {
       t.equal(blocks[0].transactions.length, 1, 'new block should include tx')
