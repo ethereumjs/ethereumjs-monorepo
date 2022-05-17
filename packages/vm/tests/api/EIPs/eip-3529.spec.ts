@@ -151,6 +151,7 @@ tape('EIP-3529 tests', (t) => {
 
       // clear the storage cache, otherwise next test will use current original value
       vm.vmState.clearOriginalStorageCache()
+      vm.evm._refund = 0n
     }
 
     st.end()

@@ -508,6 +508,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
+  this.evm._refund = BigInt(0)
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
 
