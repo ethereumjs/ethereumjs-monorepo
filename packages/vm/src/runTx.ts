@@ -511,6 +511,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   this.evm._refund = BigInt(0)
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
+  if (this._common.isActivatedEIP(1153)) this.evm._transientStorage.clear()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
