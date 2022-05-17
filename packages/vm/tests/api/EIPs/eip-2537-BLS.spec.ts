@@ -104,7 +104,7 @@ tape('EIP-2537 BLS tests', (t) => {
       data: Buffer.from(testVector, 'hex'),
       gasLimit: BigInt(5000000),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(

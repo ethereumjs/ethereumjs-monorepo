@@ -7,7 +7,7 @@ const { BLS12_381_ToG2Point, BLS12_381_FromG2Point } = require('./util/bls12_381
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   assert(opts.data)
 
-  const mcl = opts._VM._mcl
+  const mcl = opts._EVM._mcl
 
   const inputData = opts.data
 
