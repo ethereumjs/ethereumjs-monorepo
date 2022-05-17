@@ -154,3 +154,11 @@ export interface RunCodeOpts {
    */
   pc?: number
 }
+
+/**
+ * Tx context for vm execution
+ */
+export interface TxContext {
+  gasPrice: bigint
+  origin: Address
+}
