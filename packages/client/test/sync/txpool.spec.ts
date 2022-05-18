@@ -59,7 +59,6 @@ const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, po
 
     pool.stop()
     pool.close()
-
     return true
   } catch (e: any) {
     pool.stop()
@@ -310,6 +309,35 @@ tape('[TxPool]', async (t) => {
     pool.close()
   })
 
+  t.test(
+    'announcedTxHashes() -> reject underpriced txn (same sender and nonce) in handleAnnouncedTxHashes',
+    async (t) => {
+      const { pool } = setup()
+
+      pool.open()
+      pool.start()
+      const txs = [txA01, txA02_Underpriced]
+      const peer: any = {
+        eth: {
+          getPooledTransactions: () => {
+            return [null, txs]
+          },
+        },
+      }
+      const peerPool = new PeerPool({ config })
+
+      await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
+
+      t.equal(pool.pool.size, 1, 'pool size 1')
+      const address = A.address.toString('hex')
+      const poolContent = pool.pool.get(address)!
+      t.equal(poolContent.length, 1, 'only one tx')
+      t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+      pool.stop()
+      pool.close()
+    }
+  )
+
   t.test('announcedTxHashes() -> reject if pool is full', async (t) => {
     // Setup 5001 txs
     const txs = []
@@ -448,6 +476,55 @@ tape('[TxPool]', async (t) => {
     t.notOk(
       await handleTxs(txs, 'cannot pay basefee', undefined, pool),
       'succesfully rejected tx with too low gas price'
+    )
+  })
+
+  t.test(
+    'announcedTxHashes() -> reject txs which have gas limit higher than block gas limit',
+    async (t) => {
+      const txs = []
+
+      txs.push(
+        FeeMarketEIP1559Transaction.fromTxData({
+          maxFeePerGas: 1000000000,
+          maxPriorityFeePerGas: 1000000000,
+          nonce: 0,
+          gasLimit: 21000,
+        }).sign(A.privateKey)
+      )
+
+      const { pool } = setup()
+
+      ;(<any>pool).service.chain.getLatestHeader = async () => {
+        return {
+          gasLimit: new BN(5000),
+        }
+      }
+
+      t.notOk(
+        await handleTxs(txs, 'exceeds block gas limit', undefined, pool),
+        'succesfully rejected tx which has gas limit higher than block gas limit'
+      )
+    }
+  )
+
+  t.test('announcedTxHashes() -> reject txs which are already in pool', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+      }).sign(A.privateKey)
+    )
+
+    txs.push(txs[0])
+
+    const { pool } = setup()
+
+    t.notOk(
+      await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
+      'succesfully rejected tx which is already in pool'
     )
   })
 
