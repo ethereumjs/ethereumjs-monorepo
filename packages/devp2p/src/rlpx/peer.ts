@@ -227,7 +227,12 @@ export class Peer extends EventEmitter {
   _sendHello() {
     const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${
       this._socket.remotePort
-    } capabilities=${(this._capabilities ?? []).map((c) => `${c.name}${c.version}`).join(' ')}`
+    } capabilities=${(this._capabilities ?? [])
+      // Filter out snap because we can't yet provide snap endpoints to the peers
+      // TODO: Remove when we can also serve snap requests from other peers
+      .filter((c) => c.name !== 'snap')
+      .map((c) => `${c.name}${c.version}`)
+      .join(',')}`
     this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
       int2buffer(BASE_PROTOCOL_VERSION),
@@ -380,7 +385,7 @@ export class Peer extends EventEmitter {
       this._socket.remotePort
     } capabilities=${(this._hello.capabilities ?? [])
       .map((c) => `${c.name}${c.version}`)
-      .join(' ')}`
+      .join(',')}`
     this.debug('HELLO', debugMsg)
 
     if (this._remoteId === null) {
