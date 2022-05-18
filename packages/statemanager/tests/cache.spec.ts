@@ -1,12 +1,12 @@
 import tape from 'tape'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address } from 'ethereumjs-util'
 import Cache, { getCb, putCb } from '../src/cache'
 import { createAccount } from './util'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {
-    const trie = new Trie()
+    const trie = new Trie({ db: new LevelDB() })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
       const rlp = await innerTrie.get(address.buf)
@@ -28,7 +28,7 @@ tape('cache initialization', (t) => {
 })
 
 tape('cache put and get account', (t) => {
-  const trie = new Trie()
+  const trie = new Trie({ db: new LevelDB() })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)
@@ -99,7 +99,7 @@ tape('cache put and get account', (t) => {
 })
 
 tape('cache checkpointing', (t) => {
-  const trie = new Trie()
+  const trie = new Trie({ db: new LevelDB() })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)

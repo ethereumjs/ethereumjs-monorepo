@@ -1,6 +1,6 @@
 'use strict'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { CheckpointTrie as Trie } from '../dist'
+import { CheckpointTrie as Trie, LevelDB } from '../dist'
 
 // References:
 // https://eth.wiki/en/fundamentals/benchmarks#the-trie
@@ -10,7 +10,7 @@ const ROUNDS = 1000
 const KEY_SIZE = 32
 
 export const runTrie = async (eraSize = 9, symmetric = false) => {
-  const trie = new Trie()
+  const trie = new Trie({ db: new LevelDB() })
   let key = Buffer.alloc(KEY_SIZE)
 
   for (let i = 0; i <= ROUNDS; i++) {
