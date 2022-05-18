@@ -9,6 +9,8 @@ export class SNAP extends Protocol {
     super(peer, send, EthProtocol.SNAP, version, SNAP.MESSAGE_CODES)
   }
 
+  static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
+
   _handleMessage(code: SNAP.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data) as unknown
     const messageName = this.getMsgPrefix(code)
