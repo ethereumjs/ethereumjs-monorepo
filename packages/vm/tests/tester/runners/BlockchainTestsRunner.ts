@@ -116,6 +116,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       // Update common HF
       common.setHardforkByBlockNumber(currentBlock.toNumber())
+
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
       if (raw.transactionSequence) {
@@ -128,7 +129,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
           const shouldFail = txData.valid == 'false'
           try {
             const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
-            const tx = TransactionFactory.fromSerializedData(txRLP, { common: vm._common })
+            const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
