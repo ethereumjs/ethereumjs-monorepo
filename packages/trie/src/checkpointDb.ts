@@ -146,6 +146,6 @@ export class CheckpointDB implements DB {
    * @inheritdoc
    */
   copy(): CheckpointDB {
-    throw new Error('Cannot copy CheckpointDB')
+    return new CheckpointDB(this.db)
   }
 }
