@@ -235,10 +235,7 @@ export function twoPeerMsgExchange3(
   rlpxs[1].on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.on('message', async (code: any, payload: any) => {
-      switch (code) {
-        case 0x00:
-          opts.receiveMessage(rlpxs, protocol, code, payload)
-      }
+      opts.receiveMessage(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: any) => {
       if (opts.onPeerError1) {
