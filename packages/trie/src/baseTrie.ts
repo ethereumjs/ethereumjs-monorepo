@@ -1,7 +1,7 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { KECCAK256_RLP } from 'ethereumjs-util'
-import { DB, BatchDBOp, PutBatch } from './db'
+import { DB, BatchDBOp, PutBatch, LevelDB } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
 import { WalkController } from './util/walkController'
@@ -17,8 +17,6 @@ import {
   Nibbles,
 } from './trieNode'
 import { verifyRangeProof } from './verifyRangeProof'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 
 export type Proof = Buffer[]
 
@@ -41,7 +39,7 @@ export interface TrieOpts {
    * By default (if the db is `null` or left undefined) creates an
    * in-memory [memdown](https://github.com/Level/memdown) instance.
    */
-  db?: LevelUp | null
+  db?: DB | null
   /**
    * A `Buffer` for the root of a previously stored trie
    */
@@ -76,7 +74,7 @@ export class Trie {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
 
-    this.db = opts.db ? new DB(opts.db) : new DB()
+    this.db = opts.db ?? new LevelDB()
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts.deleteFromDB ?? false
 
@@ -738,8 +736,7 @@ export class Trie {
    * Creates a new trie backed by the same db.
    */
   copy(): Trie {
-    const db = this.db.copy()
-    return new Trie({ db: db._leveldb, root: this.root, deleteFromDB: this._deleteFromDB })
+    return new Trie({ db: this.db.copy(), root: this.root, deleteFromDB: this._deleteFromDB })
   }
 
   /**

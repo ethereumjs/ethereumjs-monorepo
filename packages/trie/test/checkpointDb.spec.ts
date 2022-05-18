@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { CheckpointDB as DB } from '../src/checkpointDb'
-import { BatchDBOp } from '../src/db'
+import { CheckpointDB } from '../src/checkpointDb'
+import { BatchDBOp, LevelDB } from '../src/db'
 
 tape('DB tests', (t) => {
   const k = Buffer.from('k1')
@@ -9,7 +9,7 @@ tape('DB tests', (t) => {
   const v3 = Buffer.from('v3')
 
   t.test('Checkpointing: revert -> put (add)', async (st) => {
-    const db = new DB()
+    const db = new CheckpointDB(new LevelDB())
     db.checkpoint(Buffer.from('1', 'hex'))
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before revert: v1')
@@ -19,7 +19,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> put (update)', async (st) => {
-    const db = new DB()
+    const db = new CheckpointDB(new LevelDB())
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(Buffer.from('1', 'hex'))
@@ -31,7 +31,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> put (update) batched', async (st) => {
-    const db = new DB()
+    const db = new CheckpointDB(new LevelDB())
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(Buffer.from('1', 'hex'))
@@ -46,7 +46,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> del', async (st) => {
-    const db = new DB()
+    const db = new CheckpointDB(new LevelDB())
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(Buffer.from('1', 'hex'))
@@ -58,7 +58,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: nested checkpoints -> commit -> revert', async (st) => {
-    const db = new DB()
+    const db = new CheckpointDB(new LevelDB())
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(Buffer.from('1', 'hex'))
