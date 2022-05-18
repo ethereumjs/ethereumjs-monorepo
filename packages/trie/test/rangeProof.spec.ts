@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import tape from 'tape'
 import { setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { BaseTrie } from '../src'
+import { LevelDB } from '../src/db'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 
@@ -14,7 +15,7 @@ const TRIE_SIZE = 512
  */
 async function randomTrie(addKey: boolean = true) {
   const entries: [Buffer, Buffer][] = []
-  const trie = new BaseTrie()
+  const trie = new BaseTrie({ db: new LevelDB() })
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
@@ -183,7 +184,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     t.equal(await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey), true)
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new BaseTrie()
+    const tinyTrie = new BaseTrie({ db: new LevelDB() })
     const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -302,7 +303,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a gapped range proof and verify it', async (t) => {
-    const trie = new BaseTrie()
+    const trie = new BaseTrie({ db: new LevelDB() })
     const entries: [Buffer, Buffer][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBuffer(i), 32)

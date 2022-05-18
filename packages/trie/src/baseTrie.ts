@@ -35,11 +35,9 @@ export type FoundNodeFunction = (
 
 export interface TrieOpts {
   /**
-   * A [levelup](https://github.com/Level/levelup) instance.
-   * By default (if the db is `null` or left undefined) creates an
-   * in-memory [memdown](https://github.com/Level/memdown) instance.
+   * A database instance.
    */
-  db?: DB | null
+  db: DB
   /**
    * A `Buffer` for the root of a previously stored trie
    */
@@ -70,11 +68,11 @@ export class Trie {
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
-  constructor(opts: TrieOpts = {}) {
+  constructor(opts: TrieOpts) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
 
-    this.db = opts.db ?? new LevelDB()
+    this.db = opts.db
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts.deleteFromDB ?? false
 
@@ -643,7 +641,7 @@ export class Trie {
     })
 
     if (!trie) {
-      trie = new Trie()
+      trie = new Trie({ db: new LevelDB() })
       if (opStack[0]) {
         trie.root = opStack[0].key
       }
@@ -685,7 +683,7 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    let proofTrie = new Trie({ root: rootHash })
+    let proofTrie = new Trie({ db: new LevelDB(), root: rootHash })
     try {
       proofTrie = await Trie.fromProof(proof, proofTrie)
     } catch (e: any) {

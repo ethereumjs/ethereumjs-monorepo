@@ -106,7 +106,7 @@ export class SecureTrie extends CheckpointTrie {
    */
   copy(includeCheckpoints = true): SecureTrie {
     const secureTrie = new SecureTrie({
-      db: this.db.copy(),
+      db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
     })

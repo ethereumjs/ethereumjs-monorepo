@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { CheckpointTrie } from '../src'
-import { BatchDBOp } from '../src/db'
+import { BatchDBOp, LevelDB } from '../src/db'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test
@@ -11,7 +11,7 @@ tape('testing checkpoints', function (tester) {
   let postRoot: String
 
   it('setup', async function (t) {
-    trie = new CheckpointTrie()
+    trie = new CheckpointTrie({ db: new LevelDB() })
     await trie.put(Buffer.from('do'), Buffer.from('verb'))
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
     preRoot = trie.root.toString('hex')
@@ -112,7 +112,7 @@ tape('testing checkpoints', function (tester) {
   const v123 = Buffer.from('v123')
 
   it('revert -> put', async function (t) {
-    trie = new CheckpointTrie()
+    trie = new CheckpointTrie({ db: new LevelDB() })
 
     trie.checkpoint()
     await trie.put(k1, v1)
@@ -124,7 +124,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('revert -> put (update)', async (t) => {
-    trie = new CheckpointTrie()
+    trie = new CheckpointTrie({ db: new LevelDB() })
 
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
@@ -137,7 +137,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('revert -> put (update) batched', async (t) => {
-    const trie = new CheckpointTrie()
+    const trie = new CheckpointTrie({ db: new LevelDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
@@ -152,7 +152,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('Checkpointing: revert -> del', async (t) => {
-    const trie = new CheckpointTrie()
+    const trie = new CheckpointTrie({ db: new LevelDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
@@ -164,7 +164,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('Checkpointing: nested checkpoints -> commit -> revert', async (t) => {
-    const trie = new CheckpointTrie()
+    const trie = new CheckpointTrie({ db: new LevelDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()

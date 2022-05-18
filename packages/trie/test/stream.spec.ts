@@ -1,10 +1,10 @@
 import tape from 'tape'
 import { CheckpointTrie } from '../src'
-import { BatchDBOp } from '../src/db'
+import { BatchDBOp, LevelDB } from '../src/db'
 
 tape('kv stream test', function (tester) {
   const it = tester.test
-  const trie = new CheckpointTrie()
+  const trie = new CheckpointTrie({ db: new LevelDB() })
   const ops = [
     {
       type: 'del',
@@ -122,7 +122,7 @@ tape('kv stream test', function (tester) {
 
 tape('db stream test', function (tester) {
   const it = tester.test
-  const trie = new CheckpointTrie()
+  const trie = new CheckpointTrie({ db: new LevelDB() })
   const ops = [
     {
       type: 'put',

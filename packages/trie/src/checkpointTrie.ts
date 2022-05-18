@@ -1,15 +1,18 @@
 import { Trie as BaseTrie, TrieOpts } from './baseTrie'
 import { CheckpointDB } from './checkpointDb'
+import { DB } from './db'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}
  */
 export class CheckpointTrie extends BaseTrie {
   db: CheckpointDB
+  dbStorage: DB
 
-  constructor(opts: TrieOpts = {}) {
+  constructor(opts: TrieOpts) {
     super(opts)
-    this.db = new CheckpointDB(opts.db!)
+    this.dbStorage = opts.db
+    this.db = new CheckpointDB(opts.db)
   }
 
   /**
@@ -63,7 +66,7 @@ export class CheckpointTrie extends BaseTrie {
    */
   copy(includeCheckpoints = true): CheckpointTrie {
     const trie = new CheckpointTrie({
-      db: this.db.copy(),
+      db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
     })

@@ -1,8 +1,9 @@
 import tape from 'tape'
 import { SecureTrie } from '../src'
+import { LevelDB } from '../src/db'
 
 tape('SecureTrie', function (t) {
-  const trie = new SecureTrie()
+  const trie = new SecureTrie({ db: new LevelDB() })
   const k = Buffer.from('foo')
   const v = Buffer.from('bar')
 
@@ -22,7 +23,7 @@ tape('SecureTrie', function (t) {
 
   tape('SecureTrie proof', function (t) {
     t.test('create a merkle proof and verify it with a single short key', async function (st) {
-      const trie = new SecureTrie()
+      const trie = new SecureTrie({ db: new LevelDB() })
       await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
       const proof = await SecureTrie.createProof(trie, Buffer.from('key1aa'))
@@ -33,7 +34,7 @@ tape('SecureTrie', function (t) {
   })
 
   tape('secure tests', function (it) {
-    let trie = new SecureTrie()
+    let trie = new SecureTrie({ db: new LevelDB() })
     const jsonTests = require('./fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
@@ -46,7 +47,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('branchingTests', async function (t) {
-      trie = new SecureTrie()
+      trie = new SecureTrie({ db: new LevelDB() })
       for (const row of jsonTests.branchingTests.in) {
         const val = row[1] ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
@@ -69,7 +70,7 @@ tape('SecureTrie', function (t) {
   })
 })
 
-const trie = new SecureTrie()
+const trie = new SecureTrie({ db: new LevelDB() })
 const a = Buffer.from(
   'f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
   'hex'
@@ -127,7 +128,7 @@ tape('secure tests should not crash', async function (t) {
 
 tape('SecureTrie.copy', function (it) {
   it.test('created copy includes values added after checkpoint', async function (t) {
-    const trie = new SecureTrie()
+    const trie = new SecureTrie({ db: new LevelDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
@@ -139,7 +140,7 @@ tape('SecureTrie.copy', function (it) {
   })
 
   it.test('created copy includes values added before checkpoint', async function (t) {
-    const trie = new SecureTrie()
+    const trie = new SecureTrie({ db: new LevelDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
