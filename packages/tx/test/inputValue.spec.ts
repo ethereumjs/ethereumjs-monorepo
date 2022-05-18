@@ -1,12 +1,5 @@
 import tape from 'tape'
-import {
-  Address,
-  AddressLike,
-  BigIntLike,
-  BufferLike,
-  bufferToHex,
-  toBuffer,
-} from 'ethereumjs-util'
+import { Address, AddressLike, BigIntLike, BufferLike, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '../src'
 
@@ -112,12 +105,10 @@ tape('[Transaction Input Values]', function (t) {
     const legacyTxData = generateCombinations({
       options,
     })
-    const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash()
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
-      const hash = tx.hash()
-      st.deepEqual(hash, expectedHash, `correct tx hash (0x${bufferToHex(hash)})`)
+      t.throws(() => tx.hash(), 'tx.hash() throws if tx is unsigned')
     }
     st.end()
   })
@@ -133,14 +124,11 @@ tape('[Transaction Input Values]', function (t) {
     const eip1559TxData = generateCombinations({
       options,
     })
-    const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash()
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
-      const hash = tx.hash()
-
-      st.deepEqual(hash, expectedHash, `correct tx hash (0x${bufferToHex(hash)})`)
+      t.throws(() => tx.hash(), 'tx.hash() should throw if unsigned')
     }
     st.end()
   })
