@@ -14,10 +14,11 @@ import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
 
+// Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
+const MIN_GAS_PRICE = new BN(1000000000) // 1 GWei
 const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
 const MAX_POOL_SIZE = 5000
-const MIN_GASPRICE = new BN(1000000000) // 1 GWei
 const MAX_TXS_PER_ACCOUNT = 100
 
 export interface TxPoolOptions {
@@ -47,6 +48,11 @@ type SentObject = {
 type UnprefixedAddress = string
 type UnprefixedHash = string
 type PeerId = string
+
+type GasPrice = {
+  tip: BN
+  maxFee: BN
+}
 
 /**
  * @module service
@@ -83,7 +89,6 @@ export class TxPool {
   /**
    * The number of txs currently in the pool
    */
-
   public txsInPool: number
 
   /**
@@ -193,49 +198,42 @@ export class TxPool {
   }
 
   /**
-   * Returns the gas tip (the max priority fee) for each transaction type
-   * @param tx - tx to check
-   * @returns - max priority fee
+   * Returns the GasPrice object to provide information of the tx' gas prices
+   * @param tx Tx to use
+   * @returns Gas price (both tip and max fee)
    */
-  private txGasTipCap(tx: TypedTransaction): BN {
+  private txGasPrice(tx: TypedTransaction): GasPrice {
     switch (tx.type) {
       case 0:
-        return (tx as Transaction).gasPrice
+        return {
+          maxFee: (tx as Transaction).gasPrice,
+          tip: (tx as Transaction).gasPrice,
+        }
       case 1:
-        return (tx as AccessListEIP2930Transaction).gasPrice
+        return {
+          maxFee: (tx as AccessListEIP2930Transaction).gasPrice,
+          tip: (tx as AccessListEIP2930Transaction).gasPrice,
+        }
       case 2:
-        return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-      default:
-        throw new Error(`tx of type ${tx.type} unknown`)
-    }
-  }
-
-  /**
-   * This returns the gas fee cap (max fee per gas) for each transaction type
-   * @param tx - tx to check
-   * @returns - max fee per gas
-   */
-  private txGasFeeCap(tx: TypedTransaction): BN {
-    switch (tx.type) {
-      case 0:
-        return (tx as Transaction).gasPrice
-      case 1:
-        return (tx as AccessListEIP2930Transaction).gasPrice
-      case 2:
-        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+        return {
+          maxFee: (tx as FeeMarketEIP1559Transaction).maxFeePerGas,
+          tip: (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
+        }
       default:
         throw new Error(`tx of type ${tx.type} unknown`)
     }
   }
 
   private validateTxGasBump(existingTx: TypedTransaction, addedTx: TypedTransaction) {
-    const existingTipCap = this.txGasTipCap(existingTx)
-    const existingFeeCap = this.txGasFeeCap(existingTx)
-    const newTipCap = this.txGasTipCap(addedTx)
-    const newFeeCap = this.txGasTipCap(addedTx)
-    const minTipCap = existingTipCap.add(existingTipCap.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
-    const minFeeCap = existingFeeCap.add(existingFeeCap.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
-    if (newTipCap.lt(minTipCap) || newFeeCap.lt(minFeeCap)) {
+    const existingTxGasPrice = this.txGasPrice(existingTx)
+    const newGasPrice = this.txGasPrice(addedTx)
+    const minTipCap = existingTxGasPrice.tip.add(
+      existingTxGasPrice.tip.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
+    )
+    const minFeeCap = existingTxGasPrice.maxFee.add(
+      existingTxGasPrice.maxFee.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
+    )
+    if (newGasPrice.tip.lt(minTipCap) || newGasPrice.maxFee.lt(minFeeCap)) {
       throw new Error('replacement gas too low')
     }
   }
@@ -253,17 +251,18 @@ export class TxPool {
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
       )
     }
-    // This is the GasPrice which the miner receives: miner does not want
+    const currentGasPrice = this.txGasPrice(tx)
+    // This is the tip which the miner receives: miner does not want
     // to mine underpriced txs where miner gets almost no fees
-    const currentGasPrice = this.txGasTipCap(tx)
+    const currentTip = currentGasPrice.tip
     if (!isLocalTransaction) {
       const txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
         throw new Error('Cannot add tx: pool is full')
       }
-      // Local txs are not checked against MIN_GASPRICE
-      if (currentGasPrice.lt(MIN_GASPRICE)) {
-        throw new Error(`Tx does not pay the minimum gas price of ${MIN_GASPRICE.toString()}`)
+      // Local txs are not checked against MIN_GAS_PRICE
+      if (currentTip.lt(MIN_GAS_PRICE)) {
+        throw new Error(`Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`)
       }
     }
     const senderAddress = tx.getSenderAddress()
@@ -286,16 +285,14 @@ export class TxPool {
     }
     const block = await this.service.chain.getLatestHeader()
     if (block.baseFeePerGas) {
-      if (this.txGasFeeCap(tx).lt(block.baseFeePerGas)) {
+      if (currentGasPrice.maxFee.lt(block.baseFeePerGas)) {
         throw new Error(
-          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${this.txGasFeeCap(tx)}.`
+          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee}.`
         )
       }
     }
     if (tx.gasLimit.gt(block.gasLimit)) {
-      throw new Error(
-        `Tx gaslimit of ${tx.gasLimit.toString()} exceeds block gas limit of ${block.gasLimit.toString()}`
-      )
+      throw new Error(`Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit}`)
     }
     const account = await this.vm.stateManager.getAccount(senderAddress)
     if (account.nonce.gt(tx.nonce)) {
@@ -303,10 +300,10 @@ export class TxPool {
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
       )
     }
-    const minimumBalance = tx.value.add(currentGasPrice.mul(tx.gasLimit))
+    const minimumBalance = tx.value.add(currentGasPrice.maxFee.mul(tx.gasLimit))
     if (account.balance.lt(minimumBalance)) {
       throw new Error(
-        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance.toString()}, but have ${account.balance.toString()}`
+        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance}`
       )
     }
   }
@@ -316,7 +313,7 @@ export class TxPool {
    *
    * If there is a tx in the pool with the same address and
    * nonce it will be replaced by the new tx, if it has a sufficent gas bump.
-   * (TODO) verifies certain constraints, if these are not matches, throws.
+   * This also verifies certain constraints, if these are not met, tx will not be added to the pool.
    * @param tx Transaction
    * @param isLocalTransaction Boolean which is true if this is a local transaction (this drops some constraint checks)
    */
@@ -540,7 +537,13 @@ export class TxPool {
 
     const newTxHashes = []
     for (const tx of txs) {
-      await this.add(tx)
+      try {
+        await this.add(tx)
+      } catch (error: any) {
+        this.config.logger.debug(
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+        )
+      }
       newTxHashes.push(tx.hash())
     }
     await this.sendNewTxHashes(newTxHashes, peerPool.peers)
@@ -598,7 +601,7 @@ export class TxPool {
    * @param baseFee Provide a baseFee to subtract from the legacy
    * gasPrice to determine the leftover priority tip.
    */
-  private txGasPrice(tx: TypedTransaction, baseFee?: BN) {
+  private normalizedGasPrice(tx: TypedTransaction, baseFee?: BN) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
     if (baseFee) {
       if (supports1559) {
@@ -651,7 +654,7 @@ export class TxPool {
       if (baseFee) {
         // If any tx has an insiffucient gasPrice,
         // remove all txs after that since they cannot be executed
-        const found = txsSortedByNonce.findIndex((tx) => this.txGasPrice(tx).lt(baseFee))
+        const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx).lt(baseFee))
         if (found > -1) {
           txsSortedByNonce = txsSortedByNonce.slice(0, found)
         }
@@ -661,7 +664,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap<TypedTransaction>({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.txGasPrice(b, baseFee).sub(this.txGasPrice(a, baseFee)).ltn(0),
+        this.normalizedGasPrice(b, baseFee).sub(this.normalizedGasPrice(a, baseFee)).ltn(0),
     })
     byNonce.forEach((txs, address) => {
       byPrice.insert(txs[0])

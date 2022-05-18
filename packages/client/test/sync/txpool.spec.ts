@@ -495,8 +495,6 @@ tape('[TxPool]', async (t) => {
         }
       ).sign(A.privateKey)
 
-      // TODO fixme needs PR 1884
-
       Object.defineProperty(tx, 'type', { get: () => 5 })
 
       txs.push(tx)
