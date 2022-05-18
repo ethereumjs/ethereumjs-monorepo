@@ -4,6 +4,7 @@
 
 export * from './boundprotocol'
 export * from './protocol'
+export * from './snapprotocol'
 export * from './ethprotocol'
 export * from './lesprotocol'
 export * from './sender'

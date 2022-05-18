@@ -4,6 +4,7 @@ import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
 import { BeaconSynchronizer, FullSynchronizer } from '../sync'
+import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
@@ -168,6 +169,11 @@ export class FullEthereumService extends EthereumService {
   get protocols(): Protocol[] {
     const protocols: Protocol[] = [
       new EthProtocol({
+        config: this.config,
+        chain: this.chain,
+        timeout: this.timeout,
+      }),
+      new SnapProtocol({
         config: this.config,
         chain: this.chain,
         timeout: this.timeout,
