@@ -47,11 +47,15 @@ const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, po
     }
     const peerPool = new PeerPool({ config })
 
+    const validTxs = txs.slice(0, txs.length - 1)
+
     await pool.handleAnnouncedTxHashes(
-      txs.map((e) => e.hash()),
+      validTxs.map((e) => e.hash()),
       peer,
       peerPool
     )
+
+    await pool.add(txs[txs.length - 1])
 
     pool.stop()
     pool.close()
@@ -289,7 +293,7 @@ tape('[TxPool]', async (t) => {
 
     try {
       txs = [txA02_Underpriced]
-      await pool.handleAnnouncedTxHashes([txA02_Underpriced.hash()], peer, peerPool)
+      await pool.add(txA02_Underpriced)
       t.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
       t.ok(
@@ -357,7 +361,10 @@ tape('[TxPool]', async (t) => {
       })
     )
 
-    t.notOk(await handleTxs(txs, 'unsigned'), 'succesfully rejected unsigned tx')
+    t.notOk(
+      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
+      'succesfully rejected unsigned tx'
+    )
   })
 
   t.test('announcedTxHashes() -> reject txs with invalid nonce', async (t) => {
