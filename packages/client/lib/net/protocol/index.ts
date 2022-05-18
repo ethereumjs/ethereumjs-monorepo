@@ -3,6 +3,7 @@
  */
 
 export * from './boundprotocol'
+export * from './snapprotocol'
 export * from './ethprotocol'
 export * from './flowcontrol'
 export * from './lesprotocol'

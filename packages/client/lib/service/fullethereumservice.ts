@@ -2,11 +2,11 @@ import type { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
-
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
+import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { BeaconSynchronizer, FullSynchronizer } from '../sync'
@@ -168,6 +168,11 @@ export class FullEthereumService extends EthereumService {
   get protocols(): Protocol[] {
     const protocols: Protocol[] = [
       new EthProtocol({
+        config: this.config,
+        chain: this.chain,
+        timeout: this.timeout,
+      }),
+      new SnapProtocol({
         config: this.config,
         chain: this.chain,
         timeout: this.timeout,
