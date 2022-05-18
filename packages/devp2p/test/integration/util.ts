@@ -220,7 +220,7 @@ export function twoPeerMsgExchange2(
  * @param {Function} opts.onPeerError1 (err, rlpxs) Optional handler function
  * @param {Function} opts.onReceiveMessage (rlpxs, protocol, code, payload) Optional handler function
  */
- export function twoPeerMsgExchange3(
+export function twoPeerMsgExchange3(
   t: Test,
   opts: any,
   capabilities?: any,

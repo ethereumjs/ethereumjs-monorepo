@@ -1,9 +1,8 @@
 import test from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
 import * as devp2p from '../../src'
 import * as util from './util'
 
-const capabilities = [devp2p.SNAP.snap1]
+const capabilities = [devp2p.SNAP.snap]
 
 // FIXME: Handle unhandled promises directly
 process.on('unhandledRejection', () => {})
@@ -26,16 +25,16 @@ test('SNAP: send valid message', (t) => {
 })
 
 test('SNAP: send unknown message code', (t) => {
-    const opts: any = {}
-    opts.sendMessage = function (rlpxs: any, snap: any) {
-      try {
-        snap.sendMessage(0x55, [1, []])
-      } catch (err: any) {
-        const msg = 'Error: Unknown code 85'
-        t.equal(err.toString(), msg, `should emit error: ${msg}`)
-        util.destroyRLPXs(rlpxs)
-        t.end()
-      }
+  const opts: any = {}
+  opts.sendMessage = function (rlpxs: any, snap: any) {
+    try {
+      snap.sendMessage(0x55, [1, []])
+    } catch (err: any) {
+      const msg = 'Error: Unknown code 85'
+      t.equal(err.toString(), msg, `should emit error: ${msg}`)
+      util.destroyRLPXs(rlpxs)
+      t.end()
     }
-    util.twoPeerMsgExchange3(t, opts, capabilities)
-  })
+  }
+  util.twoPeerMsgExchange3(t, opts, capabilities)
+})
