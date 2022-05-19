@@ -1,8 +1,8 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
-import { Account, BN } from 'ethereumjs-util'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { Account, BN, privateToAddress } from 'ethereumjs-util'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
@@ -10,17 +10,65 @@ import { Config } from '../../lib/config'
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
-    chain: { headers: { height: new BN(0) } },
-    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+    chain: {
+      headers: { height: new BN(0) },
+      getLatestHeader: () => BlockHeader.fromHeaderData({}),
+    },
+    execution: {
+      vm: {
+        stateManager: { getAccount: () => new Account(new BN(0), new BN('50000000000000000000')) },
+      },
+    },
   }
   const pool = new TxPool({ config, service })
   return { pool }
 }
 
-tape('[TxPool]', async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const config = new Config({ transports: [] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const config = new Config({ transports: [] })
 
+const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, pool?: any) => {
+  if (!pool) {
+    pool = setup().pool
+  }
+  try {
+    if (stateManager) {
+      ;(<any>pool).service.execution.vm.stateManager = stateManager
+    }
+
+    pool.open()
+    pool.start()
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, txs]
+        },
+      },
+    }
+    const peerPool = new PeerPool({ config })
+
+    const validTxs = txs.slice(0, txs.length - 1)
+
+    await pool.handleAnnouncedTxHashes(
+      validTxs.map((e) => e.hash()),
+      peer,
+      peerPool
+    )
+
+    await pool.add(txs[txs.length - 1])
+
+    pool.stop()
+    pool.close()
+    return true
+  } catch (e: any) {
+    pool.stop()
+    pool.close()
+    // Return false if the error message contains the fail message
+    return !e.message.includes(failMessage)
+  }
+}
+
+tape('[TxPool]', async (t) => {
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
@@ -37,22 +85,25 @@ tape('[TxPool]', async (t) => {
     ),
   }
 
-  const createTx = (from = A, to = B, nonce = 0, value = 1) => {
+  const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {
     const txData = {
       nonce,
       maxFeePerGas: 1000000000,
-      maxInclusionFeePerGas: 100000000,
+      maxPriorityFeePerGas: 1000000000,
       gasLimit: 100000,
       to: to.address,
       value,
     }
+    txData.maxFeePerGas += (txData.maxFeePerGas * feeBump) / 100
+    txData.maxPriorityFeePerGas += (txData.maxPriorityFeePerGas * feeBump) / 100
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
-  const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
+  const txA02 = createTx(A, B, 0, 2, 10) // A -> B, nonce: 0, value: 2 (different hash)
+  const txA02_Underpriced = createTx(A, B, 0, 2, 9) // A -> B, nonce: 0, gas price is too low to replace txn
   const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
@@ -221,6 +272,320 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
   })
+
+  t.test('announcedTxHashes() -> reject underpriced txn (same sender and nonce)', async (t) => {
+    const { pool } = setup()
+
+    pool.open()
+    pool.start()
+    let txs = [txA01]
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, txs]
+        },
+      },
+    }
+    const peerPool = new PeerPool({ config })
+
+    await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
+
+    try {
+      txs = [txA02_Underpriced]
+      await pool.add(txA02_Underpriced)
+      t.fail('should fail adding underpriced txn to txpool')
+    } catch (e: any) {
+      t.ok(
+        e.message.includes('replacement gas too low'),
+        'succesfully failed adding underpriced txn'
+      )
+    }
+    t.equal(pool.pool.size, 1, 'pool size 1')
+    const address = A.address.toString('hex')
+    const poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 1, 'only one tx')
+    t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+    pool.stop()
+    pool.close()
+  })
+
+  t.test(
+    'announcedTxHashes() -> reject underpriced txn (same sender and nonce) in handleAnnouncedTxHashes',
+    async (t) => {
+      const { pool } = setup()
+
+      pool.open()
+      pool.start()
+      const txs = [txA01, txA02_Underpriced]
+      const peer: any = {
+        eth: {
+          getPooledTransactions: () => {
+            return [null, txs]
+          },
+        },
+      }
+      const peerPool = new PeerPool({ config })
+
+      await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
+
+      t.equal(pool.pool.size, 1, 'pool size 1')
+      const address = A.address.toString('hex')
+      const poolContent = pool.pool.get(address)!
+      t.equal(poolContent.length, 1, 'only one tx')
+      t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+      pool.stop()
+      pool.close()
+    }
+  )
+
+  t.test('announcedTxHashes() -> reject if pool is full', async (t) => {
+    // Setup 5001 txs
+    const txs = []
+    for (let account = 0; account < 51; account++) {
+      const pkey = Buffer.concat([
+        Buffer.from('aa'.repeat(31), 'hex'),
+        Buffer.from(account.toString(16).padStart(2, '0'), 'hex'),
+      ])
+      const from = {
+        address: privateToAddress(pkey),
+        privateKey: pkey,
+      }
+      for (let tx = 0; tx < 100; tx++) {
+        const txn = createTx(from, B, tx)
+        txs.push(txn)
+        if (txs.length > 5000) {
+          break
+        }
+      }
+      if (txs.length > 5000) {
+        break
+      }
+    }
+    t.notOk(await handleTxs(txs, 'pool is full'), 'succesfully rejected too many txs')
+  })
+
+  t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
+    // Setup 101 txs
+    const txs = []
+
+    for (let tx = 0; tx < 101; tx++) {
+      const txn = createTx(A, B, tx)
+      txs.push(txn)
+    }
+
+    t.notOk(
+      await handleTxs(txs, 'already have max amount of txs for this account'),
+      'succesfully rejected too many txs from same account'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject unsigned txs', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+      })
+    )
+
+    t.notOk(
+      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
+      'succesfully rejected unsigned tx'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject txs with invalid nonce', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+      }).sign(A.privateKey)
+    )
+
+    t.notOk(
+      await handleTxs(txs, 'tx nonce too low', {
+        getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
+      }),
+      'succesfully rejected tx with invalid nonce'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject txs with too much data', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+        data: '0x' + '00'.repeat(128 * 1024 + 1),
+      }).sign(A.privateKey)
+    )
+
+    t.notOk(
+      await handleTxs(txs, 'exceeds the max data size', {
+        getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
+      }),
+      'succesfully rejected tx with too much data'
+    )
+  })
+
+  t.test('announcedTxHashes() -> account cannot pay the fees', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        gasLimit: 21000,
+        nonce: 0,
+      }).sign(A.privateKey)
+    )
+
+    t.notOk(
+      await handleTxs(txs, 'does not have enough balance to cover transaction costs', {
+        getAccount: () => new Account(new BN(0), new BN('0')),
+      }),
+      'succesfully rejected account with too low balance'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject txs which cannot pay base fee', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+        nonce: 0,
+      }).sign(A.privateKey)
+    )
+
+    const { pool } = setup()
+
+    ;(<any>pool).service.chain.getLatestHeader = async () => {
+      return {
+        baseFeePerGas: new BN(1000000000 + 1),
+      }
+    }
+
+    t.notOk(
+      await handleTxs(txs, 'cannot pay basefee', undefined, pool),
+      'succesfully rejected tx with too low gas price'
+    )
+  })
+
+  t.test(
+    'announcedTxHashes() -> reject txs which have gas limit higher than block gas limit',
+    async (t) => {
+      const txs = []
+
+      txs.push(
+        FeeMarketEIP1559Transaction.fromTxData({
+          maxFeePerGas: 1000000000,
+          maxPriorityFeePerGas: 1000000000,
+          nonce: 0,
+          gasLimit: 21000,
+        }).sign(A.privateKey)
+      )
+
+      const { pool } = setup()
+
+      ;(<any>pool).service.chain.getLatestHeader = async () => {
+        return {
+          gasLimit: new BN(5000),
+        }
+      }
+
+      t.notOk(
+        await handleTxs(txs, 'exceeds block gas limit', undefined, pool),
+        'succesfully rejected tx which has gas limit higher than block gas limit'
+      )
+    }
+  )
+
+  t.test('announcedTxHashes() -> reject txs which are already in pool', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000000,
+      }).sign(A.privateKey)
+    )
+
+    txs.push(txs[0])
+
+    const { pool } = setup()
+
+    t.notOk(
+      await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
+      'succesfully rejected tx which is already in pool'
+    )
+  })
+
+  t.test('announcedTxHashes() -> reject txs with too low gas price', async (t) => {
+    const txs = []
+
+    txs.push(
+      FeeMarketEIP1559Transaction.fromTxData({
+        maxFeePerGas: 1000000000 - 1,
+        maxPriorityFeePerGas: 1000000000 - 1,
+        nonce: 0,
+      }).sign(A.privateKey)
+    )
+
+    t.notOk(
+      await handleTxs(txs, 'does not pay the minimum gas price of'),
+      'succesfully rejected tx with too low gas price'
+    )
+  })
+
+  t.test(
+    'announcedTxHashes() -> reject txs with too low gas price (AccessListTransaction)',
+    async (t) => {
+      const txs = []
+
+      txs.push(
+        AccessListEIP2930Transaction.fromTxData({
+          gasPrice: 1000000000 - 1,
+          nonce: 0,
+        }).sign(A.privateKey)
+      )
+
+      t.notOk(
+        await handleTxs(txs, 'does not pay the minimum gas price of'),
+        'succesfully rejected tx with too low gas price'
+      )
+    }
+  )
+
+  t.test(
+    'announcedTxHashes() -> reject txs with too low gas price (invalid tx type)',
+    async (t) => {
+      const txs = []
+
+      const tx = AccessListEIP2930Transaction.fromTxData(
+        {
+          gasPrice: 1000000000 - 1,
+          nonce: 0,
+        },
+        {
+          freeze: false,
+        }
+      ).sign(A.privateKey)
+
+      Object.defineProperty(tx, 'type', { get: () => 5 })
+
+      txs.push(tx)
+
+      t.notOk(await handleTxs(txs, ''), 'succesfully rejected tx with invalid tx type')
+    }
+  )
 
   t.test('announcedTxs()', async (t) => {
     const { pool } = setup()

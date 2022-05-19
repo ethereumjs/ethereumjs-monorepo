@@ -2,7 +2,7 @@ import tape from 'tape'
 import minimist from 'minimist'
 import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Transaction } from '../src/'
+import { TransactionFactory } from '../src'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 import { getTests } from './testLoader'
 
@@ -66,7 +66,7 @@ tape('TransactionTests', async (t) => {
             if (activateEIPs) {
               common.setEIPs(activateEIPs)
             }
-            const tx = Transaction.fromSerializedTx(rawTx, { common })
+            const tx = TransactionFactory.fromSerializedData(rawTx, { common })
             const sender = tx.getSenderAddress().toString()
             const hash = tx.hash().toString('hex')
             const txIsValid = tx.validate()

@@ -20,6 +20,7 @@ import {
   FeeMarketEIP1559TxData,
   TxValuesArray,
   Capability,
+  TxOptions,
 } from './types'
 
 interface TransactionCache {
@@ -57,6 +58,8 @@ export abstract class BaseTransaction<TransactionObject> {
     dataFee: undefined,
   }
 
+  protected readonly txOptions: TxOptions
+
   /**
    * List of tx type defining EIPs,
    * e.g. 1559 (fee market) and 2930 (access lists)
@@ -82,9 +85,11 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
 
-  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
+  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = new BN(toBuffer(type)).toNumber()
+
+    this.txOptions = opts
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)

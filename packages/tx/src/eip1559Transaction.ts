@@ -183,7 +183,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * varying data types.
    */
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE })
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -408,9 +408,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   _processSignature(v: number, r: Buffer, s: Buffer) {
-    const opts = {
-      common: this.common,
-    }
+    const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(
       {

@@ -8,15 +8,22 @@ const method = 'eth_getBlockByHash'
 tape(`${method}: call with valid arguments`, async (t) => {
   const { server } = baseSetup()
 
-  const req = params(method, [
-    '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
-    false,
-  ])
-  const expectRes = (res: any) => {
-    const msg = 'should return the correct number'
-    t.equal(res.body.result.number, '0x444444', msg)
+  const blockHash = '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
+  let includeTransactions = false
+  let req = params(method, [blockHash, includeTransactions])
+  let expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    t.equal(typeof res.body.result.transactions[0], 'string', 'should only include tx hashes')
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  includeTransactions = true
+  req = params(method, [blockHash, includeTransactions])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    t.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
+  }
+  await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })
 
 tape(`${method}: call with false for second argument`, async (t) => {
