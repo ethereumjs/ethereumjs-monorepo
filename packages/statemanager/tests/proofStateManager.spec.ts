@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Address, toBuffer, zeros } from 'ethereumjs-util'
-import { SecureTrie } from 'merkle-patricia-tree'
+import { LevelDB, SecureTrie } from 'merkle-patricia-tree'
 import { DefaultStateManager } from '../src'
 import ropsten_validAccount from './testdata/ropsten_validAccount.json'
 import ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
@@ -39,7 +39,7 @@ tape('ProofStateManager', (t) => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = new SecureTrie()
+    const trie = new SecureTrie({ db: new LevelDB() })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -66,7 +66,7 @@ tape('ProofStateManager', (t) => {
       // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
       // Storage slots: empty list
       const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-      const trie = new SecureTrie()
+      const trie = new SecureTrie({ db: new LevelDB() })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
       let stateRoot: Buffer | undefined
@@ -94,7 +94,7 @@ tape('ProofStateManager', (t) => {
       // Note: the first slot has a value, but the second slot is empty
       // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
       const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-      const trie = new SecureTrie()
+      const trie = new SecureTrie({ db: new LevelDB() })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
       let stateRoot: Buffer | undefined
@@ -107,7 +107,7 @@ tape('ProofStateManager', (t) => {
         await trie.db.put(key, bufferData)
       }
       const storageRoot = ropsten_contractWithStorage.storageHash
-      const storageTrie = new SecureTrie()
+      const storageTrie = new SecureTrie({ db: new LevelDB() })
       const storageKeys: Buffer[] = []
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
         storageKeys.push(toBuffer(storageProofsData.key))
@@ -134,7 +134,7 @@ tape('ProofStateManager', (t) => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new SecureTrie()
+    const trie = new SecureTrie({ db: new LevelDB() })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -147,7 +147,7 @@ tape('ProofStateManager', (t) => {
       await trie.db.put(key, bufferData)
     }
     const storageRoot = ropsten_contractWithStorage.storageHash
-    const storageTrie = new SecureTrie()
+    const storageTrie = new SecureTrie({ db: new LevelDB() })
     const storageKeys: Buffer[] = []
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
       storageKeys.push(toBuffer(storageProofsData.key))
@@ -201,7 +201,7 @@ tape('ProofStateManager', (t) => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new SecureTrie()
+    const trie = new SecureTrie({ db: new LevelDB() })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -214,7 +214,7 @@ tape('ProofStateManager', (t) => {
       await trie.db.put(key, bufferData)
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
-    const storageTrie = new SecureTrie()
+    const storageTrie = new SecureTrie({ db: new LevelDB() })
     storageTrie.root = toBuffer(storageRoot)
     const addressHex = address.buf.toString('hex')
     stateManager._storageTries[addressHex] = storageTrie
