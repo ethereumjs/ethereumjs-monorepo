@@ -4,7 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Account, Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
@@ -335,7 +335,7 @@ tape('[Miner]', async (t) => {
     for (let i = 0; i < 1000; i++) {
       // In order not to pollute TxPool with too many txs from the same address
       // (or txs which are already known), keep generating a new address for each tx
-      const address = new Address(privateToAddress(pkey))
+      const address = Address.fromPrivateKey(pkey)
       await setBalance(vm.stateManager, address, new BN('200000000000001'))
       await txPool.add(
         createTx(
