@@ -11,6 +11,7 @@ import { Chain } from '../../lib/blockchain'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
+import { keccak256 } from '@ethereumjs/devp2p'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -59,6 +60,9 @@ tape('[Miner]', async (t) => {
         latest: Block.fromBlockData(),
         height: new BN(0),
       }
+    }
+    getLatestHeader() {
+      return BlockHeader.fromHeaderData()
     }
     blockchain: any = {
       putBlock: async () => {},
@@ -151,7 +155,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
 
     // add tx
-    txPool.add(txA01)
+    await txPool.add(txA01)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -184,10 +188,10 @@ tape('[Miner]', async (t) => {
       await setBalance(vm.stateManager, B.address, new BN('400000000000001'))
 
       // add txs
-      txPool.add(txA01)
-      txPool.add(txA02)
-      txPool.add(txA03)
-      txPool.add(txB01)
+      await txPool.add(txA01)
+      await txPool.add(txA02)
+      await txPool.add(txA03)
+      await txPool.add(txB01)
 
       // disable consensus to skip PoA block signer validation
       ;(vm.blockchain as any)._validateConsensus = false
@@ -239,7 +243,7 @@ tape('[Miner]', async (t) => {
       { to: B.address, maxFeePerGas: 6 },
       { common }
     ).sign(A.privateKey)
-    txPool.add(tx)
+    await txPool.add(tx, true)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -284,15 +288,15 @@ tape('[Miner]', async (t) => {
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: gasLimit - 1, data },
+      { gasLimit: gasLimit - 1, data, gasPrice: new BN(1000000000) },
       { common }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: 21000, to: B.address, nonce: 1 },
+      { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: new BN(1000000000) },
       { common }
     ).sign(A.privateKey)
-    txPool.add(tx1FillsBlockGasLimit)
-    txPool.add(tx2ExceedsBlockGasLimit)
+    await txPool.add(tx1FillsBlockGasLimit)
+    await txPool.add(tx2ExceedsBlockGasLimit)
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -325,11 +329,25 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
+    let pkey = keccak256(Buffer.from(''))
 
     // add many txs to slow assembling
     for (let i = 0; i < 1000; i++) {
-      txPool.add(createTx())
+      // In order not to pollute TxPool with too many txs from the same address
+      // (or txs which are already known), keep generating a new address for each tx
+      const address = Address.fromPrivateKey(pkey)
+      await setBalance(vm.stateManager, address, new BN('200000000000001'))
+      await txPool.add(
+        createTx(
+          {
+            address,
+            privateKey: pkey,
+          },
+          undefined,
+          i
+        )
+      )
+      pkey = keccak256(pkey)
     }
 
     chain.putBlocks = () => {

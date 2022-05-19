@@ -38,8 +38,15 @@ const config = new Config({ transports: [], common })
 
 const setup = () => {
   const service: any = {
-    chain: { headers: { height: new BN(0) } },
-    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+    chain: {
+      headers: { height: new BN(0) },
+      getLatestHeader: () => BlockHeader.fromHeaderData({}),
+    },
+    execution: {
+      vm: {
+        stateManager: { getAccount: () => new Account(new BN(0), new BN('50000000000000000000')) },
+      },
+    },
   }
   const txPool = new TxPool({ config, service })
   return { txPool }
@@ -80,16 +87,16 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should start and build', async (t) => {
     const { txPool } = setup()
-    txPool.add(txA01)
-    txPool.add(txA02)
-    const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
     await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
     await setBalance(vm.stateManager, B.address, new BN(5000000000000000))
+    await txPool.add(txA01)
+    await txPool.add(txA02)
+    const pendingBlock = new PendingBlock({ config, txPool })
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
-    txPool.add(txB01)
+    await txPool.add(txB01)
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
@@ -102,7 +109,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should start and stop', async (t) => {
     const { txPool } = setup()
-    txPool.add(txA01)
+    await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
     await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
@@ -120,20 +127,21 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should stop adding txs when block is full', async (t) => {
     const { txPool } = setup()
-    txPool.add(txA01)
-    txPool.add(txA02)
+    const vm = await VM.create({ common })
+    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    await txPool.add(txA01)
+    await txPool.add(txA02)
     const txA03 = Transaction.fromTxData(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
+        gasPrice: 1000000000,
         nonce: 2,
       },
       { common }
     ).sign(A.privateKey)
-    txPool.add(txA03)
+    await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
-    const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
@@ -149,7 +157,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
     const { txPool } = setup()
-    txPool.add(txA01)
+    await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
     const parentBlock = await vm.blockchain.getLatestBlock()
