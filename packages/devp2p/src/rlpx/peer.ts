@@ -423,7 +423,10 @@ export class Peer extends EventEmitter {
    */
   _handleDisconnect(payload: any) {
     this._closed = true
-    this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
+    // When `payload` is from rlpx it is `Buffer` and when from subprotocol it is `[Buffer]`
+    this._disconnectReason = Buffer.isBuffer(payload)
+      ? buffer2int(payload)
+      : buffer2int(payload[0] ?? Buffer.from([0]))
     const reason = DISCONNECT_REASONS[this._disconnectReason as number]
     const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('DISCONNECT', debugMsg, reason)

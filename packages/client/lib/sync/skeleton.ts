@@ -348,7 +348,7 @@ export class Skeleton extends MetaDBManager {
 
     // Print a progress report making the UX a bit nicer
     if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
-      let left = this.bounds().tail.subn(1)
+      let left = this.bounds().tail.subn(1).sub(this.chain.blocks.height)
       if (this.isLinked()) left = new BN(0)
       if (left.gtn(0)) {
         this.logged = new Date().getTime()

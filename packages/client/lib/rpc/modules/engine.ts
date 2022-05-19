@@ -160,7 +160,7 @@ const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => 
 }
 
 /**
- *  Validate that the block satisfies post-merge conditions.
+ * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
   const td = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
@@ -372,8 +372,8 @@ export class Engine {
     }
 
     const blockExists = await validBlock(toBuffer(blockHash), this.chain)
-    if (blockExists !== null) {
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
+    if (blockExists) {
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(blockExists.header.stateRoot)
       if (isBlockExecuted) {
         const response = {
           status: Status.VALID,
@@ -387,9 +387,8 @@ export class Engine {
 
     try {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
-      // If the parent is not executed throw error, this would lead to catching the
-      // error and suitably sending SYNCING or ACCEPTED response.
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(parent.header.stateRoot)
+      // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!isBlockExecuted) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
@@ -515,11 +514,9 @@ export class Engine {
       }
     }
 
-    // Only validate this as terminal block if this block's difficulty is non-zero.
+    // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    // TODO: validate the terminal block when skeleton connects , otherwise mark skeleton
-    // as invalid and throw errors if invalid skeleton is refered to
     if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty.gtn(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
@@ -562,11 +559,10 @@ export class Engine {
       if (this.chain.headers.latest?.number.lt(headBlock.header.number)) {
         try {
           const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
-          const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+          const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(parent.header.stateRoot)
           if (!isBlockExecuted) {
             throw new Error(`Parent block not yet executed number=${parent.header.number}`)
           }
-
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,

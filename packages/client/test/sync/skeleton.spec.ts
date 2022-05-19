@@ -4,8 +4,10 @@ import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
-import { Skeleton, errReorgDenied } from '../../lib/sync/skeleton'
+import { parseCustomParams } from '../../lib/util'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { wait } from '../integration/util'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 const level = require('level-mem')
 
 type Subchain = {
@@ -411,6 +413,184 @@ tape('[Skeleton]', async (t) => {
           `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
         )
       }
+    }
+  )
+
+  t.test(
+    'should abort filling the canonical chain if the terminal block is invalid',
+    async (st) => {
+      const genesis = {
+        ...genesisJSON,
+        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        difficulty: '0x1',
+      }
+      const params = await parseCustomParams(genesis, 'post-merge')
+      const common = new Common({
+        chain: params.name,
+        customChains: [params],
+      })
+      common.setHardforkByBlockNumber(new BN(0), new BN(0))
+
+      const block1 = Block.fromBlockData(
+        { header: { number: 1, parentHash: common.genesis().hash, difficulty: 100 } },
+        { common }
+      )
+      const block2 = Block.fromBlockData(
+        { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block3PoW = Block.fromBlockData(
+        { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block3PoS = Block.fromBlockData(
+        { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
+        { common }
+      )
+      const block4PoW = Block.fromBlockData(
+        { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
+        { common }
+      )
+      const block4PoS = Block.fromBlockData(
+        { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
+        { common }
+      )
+      const block5 = Block.fromBlockData(
+        { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
+        { common }
+      )
+
+      const config = new Config({
+        transports: [],
+        common,
+      })
+      const chain = new Chain({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
+      ;(chain.blockchain as any)._validateConsensus = false
+      const metaDB = level()
+      const skeleton = new Skeleton({ chain, config, metaDB })
+      await chain.open()
+      await skeleton.open()
+
+      await skeleton.initSync(block4PoW)
+      await skeleton.putBlocks([block3PoW, block2])
+      st.equal(chain.blocks.height.toNumber(), 0, 'canonical height should be at genesis')
+      await skeleton.putBlocks([block1])
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        2,
+        'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)'
+      )
+      try {
+        await skeleton.setHead(block5, false)
+      } catch (error: any) {
+        if (error != errReorgDenied) {
+          t.fail(error)
+        }
+      }
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        2,
+        'canonical height should not change when setHead is set with force=false'
+      )
+      // Put correct chain
+      await skeleton.initSync(block4PoS)
+      try {
+        await skeleton.putBlocks([block3PoS])
+      } catch (error: any) {
+        if (error != errSyncMerged) {
+          t.fail(error)
+        }
+      }
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        4,
+        'canonical height should now be at head with correct chain'
+      )
+      st.ok(
+        chain.headers.latest?.hash().equals(block4PoS.hash()),
+        'canonical height should now be at head with correct chain'
+      )
+      await skeleton.setHead(block5, false)
+      await wait(200)
+      st.equal(skeleton.bounds().head.toNumber(), 5, 'should update to new height')
+    }
+  )
+
+  t.test(
+    'should abort filling the canonical chain if a PoS block comes too early without hitting ttd',
+    async (st) => {
+      const genesis = {
+        ...genesisJSON,
+        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        difficulty: '0x1',
+      }
+      const params = await parseCustomParams(genesis, 'post-merge')
+      const common = new Common({
+        chain: params.name,
+        customChains: [params],
+      })
+      common.setHardforkByBlockNumber(new BN(0), new BN(0))
+
+      const block1 = Block.fromBlockData(
+        { header: { number: 1, parentHash: common.genesis().hash, difficulty: 100 } },
+        { common }
+      )
+      const block2 = Block.fromBlockData(
+        { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block2PoS = Block.fromBlockData(
+        { header: { number: 2, parentHash: block1.hash(), difficulty: 0 } },
+        { common }
+      )
+      const block3 = Block.fromBlockData(
+        { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
+        { common }
+      )
+
+      const config = new Config({
+        transports: [],
+        common,
+      })
+      const chain = new Chain({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
+      ;(chain.blockchain as any)._validateConsensus = false
+      const metaDB = level()
+      const skeleton = new Skeleton({ chain, config, metaDB })
+      await chain.open()
+      await skeleton.open()
+
+      await skeleton.initSync(block2PoS)
+      await skeleton.putBlocks([block1])
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        1,
+        'canonical height should stop at block 1 (valid PoW block), since block 2 is invalid (invalid PoS, not past ttd)'
+      )
+      // Put correct chain
+      await skeleton.initSync(block3)
+      try {
+        await skeleton.putBlocks([block2])
+      } catch (error: any) {
+        if (error != errSyncMerged) {
+          t.fail(error)
+        }
+      }
+      await wait(200)
+      st.equal(
+        chain.blocks.height.toNumber(),
+        3,
+        'canonical height should now be at head with correct chain'
+      )
+      st.ok(
+        chain.headers.latest?.hash().equals(block3.hash()),
+        'canonical height should now be at head with correct chain'
+      )
     }
   )
 })
