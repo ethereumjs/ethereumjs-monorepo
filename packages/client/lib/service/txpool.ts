@@ -132,7 +132,7 @@ export class TxPool {
   /**
    * Rebroadcast full txs and new blocks to a fraction
    * of peers by doing
-   * `min(1, floor(NUM_PEERS/NUM_PEERS_REBROADCAST_QUOTIENT))`
+   * `max(1, floor(NUM_PEERS/NUM_PEERS_REBROADCAST_QUOTIENT))`
    */
   public NUM_PEERS_REBROADCAST_QUOTIENT = 4
 
@@ -477,16 +477,16 @@ export class TxPool {
     for (const tx of txs) {
       try {
         await this.add(tx)
+        newTxHashes.push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
         )
       }
-      newTxHashes.push(tx.hash())
     }
     const peers = peerPool.peers
     const numPeers = peers.length
-    const sendFull = Math.min(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
+    const sendFull = Math.max(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
     this.sendTransactions(txs, peers.slice(0, sendFull))
     await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
   }
