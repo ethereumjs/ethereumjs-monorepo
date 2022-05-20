@@ -133,9 +133,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(): Promise<number> {
-    if (this.running) {
-      return 0
-    }
+    if (this.running) return 0
     this.running = true
     let numExecuted: number | undefined
 
@@ -159,11 +157,9 @@ export class VMExecution extends Execution {
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
-          if (errorBlock) {
-            return
-          }
+          if (errorBlock) return
           // determine starting state for block run
-          // if we are just starting or if a chain re-org has happened
+          // if we are just starting or if a chain reorg has happened
           if (!headBlock || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = parentBlock.header.stateRoot

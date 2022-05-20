@@ -11,8 +11,7 @@ const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
     chain: {
-      headers: { height: new BN(0) },
-      getLatestHeader: () => BlockHeader.fromHeaderData({}),
+      headers: { height: new BN(0), latest: BlockHeader.fromHeaderData({}) },
     },
     execution: {
       vm: {
@@ -297,7 +296,7 @@ tape('[TxPool]', async (t) => {
     } catch (e: any) {
       t.ok(
         e.message.includes('replacement gas too low'),
-        'succesfully failed adding underpriced txn'
+        'successfully failed adding underpriced txn'
       )
     }
     t.equal(pool.pool.size, 1, 'pool size 1')
@@ -361,7 +360,7 @@ tape('[TxPool]', async (t) => {
         break
       }
     }
-    t.notOk(await handleTxs(txs, 'pool is full'), 'succesfully rejected too many txs')
+    t.notOk(await handleTxs(txs, 'pool is full'), 'successfully rejected too many txs')
   })
 
   t.test('announcedTxHashes() -> reject if account tries to send more than 100 txs', async (t) => {
@@ -375,7 +374,7 @@ tape('[TxPool]', async (t) => {
 
     t.notOk(
       await handleTxs(txs, 'already have max amount of txs for this account'),
-      'succesfully rejected too many txs from same account'
+      'successfully rejected too many txs from same account'
     )
   })
 
@@ -391,7 +390,7 @@ tape('[TxPool]', async (t) => {
 
     t.notOk(
       await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
-      'succesfully rejected unsigned tx'
+      'successfully rejected unsigned tx'
     )
   })
 
@@ -407,10 +406,10 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'tx nonce too low', {
+      await handleTxs(txs, 'Tx nonce too low', {
         getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
       }),
-      'succesfully rejected tx with invalid nonce'
+      'successfully rejected tx with invalid nonce'
     )
   })
 
@@ -430,7 +429,7 @@ tape('[TxPool]', async (t) => {
       await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
       }),
-      'succesfully rejected tx with too much data'
+      'successfully rejected tx with too much data'
     )
   })
 
@@ -447,10 +446,10 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'does not have enough balance to cover transaction costs', {
+      await handleTxs(txs, 'Insufficient balance', {
         getAccount: () => new Account(new BN(0), new BN('0')),
       }),
-      'succesfully rejected account with too low balance'
+      'successfully rejected account with too low balance'
     )
   })
 
@@ -467,15 +466,13 @@ tape('[TxPool]', async (t) => {
 
     const { pool } = setup()
 
-    ;(<any>pool).service.chain.getLatestHeader = async () => {
-      return {
-        baseFeePerGas: new BN(1000000000 + 1),
-      }
+    ;(<any>pool).service.chain.headers.latest = {
+      baseFeePerGas: new BN(3000000000),
     }
 
     t.notOk(
-      await handleTxs(txs, 'cannot pay basefee', undefined, pool),
-      'succesfully rejected tx with too low gas price'
+      await handleTxs(txs, 'not within 50% range of current basefee', undefined, pool),
+      'successfully rejected tx with too low gas price'
     )
   })
 
@@ -495,15 +492,13 @@ tape('[TxPool]', async (t) => {
 
       const { pool } = setup()
 
-      ;(<any>pool).service.chain.getLatestHeader = async () => {
-        return {
-          gasLimit: new BN(5000),
-        }
+      ;(<any>pool).service.chain.headers.latest = {
+        gasLimit: new BN(5000),
       }
 
       t.notOk(
-        await handleTxs(txs, 'exceeds block gas limit', undefined, pool),
-        'succesfully rejected tx which has gas limit higher than block gas limit'
+        await handleTxs(txs, 'exceeds last block gas limit', undefined, pool),
+        'successfully rejected tx which has gas limit higher than block gas limit'
       )
     }
   )
@@ -524,7 +519,7 @@ tape('[TxPool]', async (t) => {
 
     t.notOk(
       await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
-      'succesfully rejected tx which is already in pool'
+      'successfully rejected tx which is already in pool'
     )
   })
 
@@ -533,15 +528,15 @@ tape('[TxPool]', async (t) => {
 
     txs.push(
       FeeMarketEIP1559Transaction.fromTxData({
-        maxFeePerGas: 1000000000 - 1,
-        maxPriorityFeePerGas: 1000000000 - 1,
+        maxFeePerGas: 10000000,
+        maxPriorityFeePerGas: 10000000,
         nonce: 0,
       }).sign(A.privateKey)
     )
 
     t.notOk(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
-      'succesfully rejected tx with too low gas price'
+      'successfully rejected tx with too low gas price'
     )
   })
 
@@ -552,14 +547,14 @@ tape('[TxPool]', async (t) => {
 
       txs.push(
         AccessListEIP2930Transaction.fromTxData({
-          gasPrice: 1000000000 - 1,
+          gasPrice: 10000000,
           nonce: 0,
         }).sign(A.privateKey)
       )
 
       t.notOk(
         await handleTxs(txs, 'does not pay the minimum gas price of'),
-        'succesfully rejected tx with too low gas price'
+        'successfully rejected tx with too low gas price'
       )
     }
   )
@@ -583,7 +578,7 @@ tape('[TxPool]', async (t) => {
 
       txs.push(tx)
 
-      t.notOk(await handleTxs(txs, ''), 'succesfully rejected tx with invalid tx type')
+      t.notOk(await handleTxs(txs, ''), 'successfully rejected tx with invalid tx type')
     }
   )
 
@@ -712,17 +707,17 @@ tape('[TxPool]', async (t) => {
 
     const address = txB01.getSenderAddress().toString().slice(2)
     const poolObj = pool.pool.get(address)![0]
-    poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
+    poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     pool.pool.set(address, [poolObj])
 
     const knownByPeerObj1 = (pool as any).knownByPeer.get(peer.id)[0]
     const knownByPeerObj2 = (pool as any).knownByPeer.get(peer.id)[1]
-    knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
+    knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
     const hash = txB01.hash().toString('hex')
     const handledObj = (pool as any).handled.get(hash)
-    handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 60 - 1
+    handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).handled.set(hash, handledObj)
 
     pool.cleanup()
