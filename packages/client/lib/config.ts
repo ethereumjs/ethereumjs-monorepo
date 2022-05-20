@@ -39,6 +39,14 @@ export interface ConfigOptions {
   syncmode?: SyncMode
 
   /**
+   * Whether to disable beacon (optimistic) sync if CL provides
+   * blocks at the head of chain.
+   *
+   * Default: false
+   */
+  disableBeaconSync?: boolean
+
+  /**
    * Provide a custom VM instance to process blocks
    *
    * Default: VM instance created by client
@@ -259,6 +267,7 @@ export class Config {
   public readonly accounts: [address: Address, privKey: Buffer][]
   public readonly minerCoinbase?: Address
   public readonly safeReorgDistance: number
+  public readonly disableBeaconSync: boolean
 
   public synchronized: boolean
   public lastSyncDate: number
@@ -295,6 +304,7 @@ export class Config {
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
     this.safeReorgDistance = options.safeReorgDistance ?? Config.SAFE_REORG_DISTANCE
+    this.disableBeaconSync = options.disableBeaconSync ?? false
 
     this.synchronized = false
     this.lastSyncDate = 0

@@ -51,17 +51,14 @@ export class LightSynchronizer extends Synchronizer {
    * We will synchronize to this peer's blockchain.
    * @returns undefined if no valid peer is found
    */
-  best(): Peer | undefined {
+  async best(): Promise<Peer | undefined> {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       if (peer.les) {
         const td = peer.les.status.headTd
-        if (
-          (!best && td.gte(this.chain.headers.td)) ||
-          (best && best.les && best.les.status.headTd.lt(td))
-        ) {
+        if ((!best && td.gte(this.chain.headers.td)) || best?.les?.status.headTd.lt(td)) {
           best = peer
         }
       }

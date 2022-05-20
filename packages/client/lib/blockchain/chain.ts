@@ -182,7 +182,7 @@ export class Chain {
     await this.blockchain.db.open()
     await this.blockchain.initPromise
     this.opened = true
-    await this.update()
+    await this.update(false)
 
     this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
       if (hardfork !== Hardfork.Merge) {

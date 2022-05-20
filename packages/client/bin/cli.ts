@@ -11,7 +11,7 @@ import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer, BN } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
-import { Config, DataDirectory } from '../lib/config'
+import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
@@ -39,7 +39,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('syncmode', {
     describe: 'Blockchain sync mode (light sync experimental)',
-    choices: ['light', 'full'],
+    choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
   })
   .option('lightserv', {
@@ -250,6 +250,11 @@ const args = yargs(hideBin(process.argv))
       'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
     boolean: true,
   })
+  .option('disableBeaconSync', {
+    describe:
+      'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
+    boolean: true,
+  })
   .option('txLookupLimit', {
     describe:
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
@@ -276,13 +281,10 @@ function initDBs(config: Config) {
   ensureDirSync(stateDataDir)
   const stateDB = level(stateDataDir)
 
-  // Meta DB (receipts, logs, indexes)
-  let metaDB
-  if (args.saveReceipts) {
-    const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
-    ensureDirSync(metaDataDir)
-    metaDB = level(metaDataDir)
-  }
+  // Meta DB (receipts, logs, indexes, skeleton chain)
+  const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
+  ensureDirSync(metaDataDir)
+  const metaDB = level(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
 }
@@ -621,6 +623,7 @@ async function run() {
     port: args.port,
     saveReceipts: args.saveReceipts,
     syncmode: args.syncmode,
+    disableBeaconSync: args.disableBeaconSync,
     transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })

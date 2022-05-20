@@ -1,8 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
+import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
-import { FullSynchronizer } from '../sync/fullsync'
+import { BeaconSynchronizer, FullSynchronizer } from '../sync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
@@ -22,7 +23,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer: FullSynchronizer
+  public synchronizer!: BeaconSynchronizer | FullSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -50,16 +51,20 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    this.synchronizer = new FullSynchronizer({
-      config: this.config,
-      pool: this.pool,
-      chain: this.chain,
-      stateDB: options.stateDB,
-      metaDB: options.metaDB,
-      txPool: this.txPool,
-      execution: this.execution,
-      interval: this.interval,
-    })
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (!this.config.disableBeaconSync) {
+        void this.switchToBeaconSync()
+      }
+    } else {
+      this.synchronizer = new FullSynchronizer({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        txPool: this.txPool,
+        execution: this.execution,
+        interval: this.interval,
+      })
+    }
 
     if (this.config.mine) {
       this.miner = new Miner({
@@ -69,7 +74,48 @@ export class FullEthereumService extends EthereumService {
     }
   }
 
+  /**
+   * Public accessor for {@link BeaconSynchronizer}. Returns undefined if unavailable.
+   */
+  get beaconSync() {
+    if (this.synchronizer instanceof BeaconSynchronizer) {
+      return this.synchronizer
+    }
+    return undefined
+  }
+
+  /**
+   * Helper to switch to {@link BeaconSynchronizer}
+   */
+  async switchToBeaconSync() {
+    if (this.synchronizer instanceof FullSynchronizer) {
+      await this.synchronizer.stop()
+      await this.synchronizer.close()
+      this.miner?.stop()
+      this.config.logger.info(`Transitioning to beacon sync`)
+    }
+    const skeleton = new Skeleton({
+      config: this.config,
+      chain: this.chain,
+      metaDB: (this.execution as any).metaDB,
+    })
+    this.synchronizer = new BeaconSynchronizer({
+      config: this.config,
+      pool: this.pool,
+      chain: this.chain,
+      interval: this.interval,
+      execution: this.execution,
+      skeleton,
+    })
+    await this.synchronizer.open()
+  }
+
   async open() {
+    this.config.logger.info(
+      `Opening FullEthereumService with ${
+        this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
+      } `
+    )
     await super.open()
     await this.execution.open()
     this.txPool.open()
@@ -170,8 +216,7 @@ export class FullEthereumService extends EthereumService {
           return
         }
       }
-      let headers = await this.chain.getHeaders(block, max, skip, reverse)
-      headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
+      const headers = await this.chain.getHeaders(block, max, skip, reverse)
       peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
@@ -186,7 +231,7 @@ export class FullEthereumService extends EthereumService {
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
         )
         this.pool.ban(peer, 9000000)
-      } else {
+      } else if (this.synchronizer instanceof FullSynchronizer) {
         this.synchronizer.handleNewBlockHashes(message.data)
       }
     } else if (message.name === 'Transactions') {
@@ -197,7 +242,7 @@ export class FullEthereumService extends EthereumService {
           `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
         )
         this.pool.ban(peer, 9000000)
-      } else {
+      } else if (this.synchronizer instanceof FullSynchronizer) {
         await this.synchronizer.handleNewBlock(message.data[0], peer)
       }
     } else if (message.name === 'NewPooledTransactionHashes') {

@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { Chain, ChainOptions } from '../../../lib/blockchain'
 
 interface MockChainOptions extends ChainOptions {
@@ -22,17 +23,21 @@ export default class MockChain extends Chain {
   }
 
   async build() {
+    const common = this.config.chainCommon
     const blocks: Block[] = []
     for (let number = 0; number < this.height; number++) {
-      const block = Block.fromBlockData({
-        header: {
-          number: number + 1,
-          difficulty: 1,
-          parentHash: number ? blocks[number - 1].hash() : this.genesis.hash,
+      const block = Block.fromBlockData(
+        {
+          header: {
+            number: number + 1,
+            difficulty: common.gteHardfork(Hardfork.Merge) ? 0 : 1,
+            parentHash: number ? blocks[number - 1].hash() : this.genesis.hash,
+          },
         },
-      })
+        { common }
+      )
       blocks.push(block)
     }
-    await this.putBlocks(blocks)
+    await this.putBlocks(blocks, true)
   }
 }

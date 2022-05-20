@@ -2,12 +2,12 @@ import tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
-import { Config } from '../../../lib/config'
-import { Chain } from '../../../lib/blockchain'
-import { VMExecution } from '../../../lib/execution'
-import blocksDataMainnet from './../../testdata/blocks/mainnet.json'
-import blocksDataGoerli from './../../testdata/blocks/goerli.json'
-import testnet from './../../testdata/common/testnet.json'
+import { Config } from '../../lib/config'
+import { Chain } from '../../lib/blockchain'
+import { VMExecution } from '../../lib/execution'
+import blocksDataMainnet from '../testdata/blocks/mainnet.json'
+import blocksDataGoerli from '../testdata/blocks/goerli.json'
+import testnet from '../testdata/common/testnet.json'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
