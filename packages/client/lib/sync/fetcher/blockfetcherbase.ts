@@ -3,16 +3,19 @@ import { BN } from 'ethereumjs-util'
 import { Chain } from '../../blockchain'
 
 export interface BlockFetcherOptions extends FetcherOptions {
-  /* Blockchain */
+  /** Blockchain */
   chain: Chain
 
-  /* Block number to start fetching from */
+  /** Block number to start fetching from */
   first: BN
 
-  /* How many blocks to fetch */
+  /** How many blocks to fetch */
   count: BN
 
-  /* Destroy fetcher once all tasks are done */
+  /** Whether to fetch the blocks in reverse order (e.g. for beacon sync). Default: false */
+  reverse?: boolean
+
+  /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 }
 
@@ -28,14 +31,15 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 > {
   protected chain: Chain
   /**
-   * Where the fetcher starts apart from the tasks already in the `in` queue
+   * Where the fetcher starts apart from the tasks already in the `in` queue.
    */
   first: BN
   /**
-   * Number of items in the fetcher starting from (and including) `first`.
-   * `first + count - 1` gives the height fetcher is attempting to reach
+   * Number of items for the fetcher to fetch starting from (and including) `first`.
    */
   count: BN
+
+  protected reverse: boolean
 
   /**
    * Create new block fetcher
@@ -46,8 +50,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
+    this.reverse = options.reverse ?? false
     this.debug(
-      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} destroyWhenDone=${this.destroyWhenDone}`
+      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
     )
   }
 
@@ -60,25 +65,28 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const tasks: JobTask[] = []
     let debugStr = `first=${first}`
     const pushedCount = new BN(0)
-
     while (count.gten(max) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
+      !this.reverse ? first.iaddn(max) : first.isubn(max)
       count.isubn(max)
       pushedCount.iaddn(max)
     }
     if (count.gtn(0) && tasks.length < maxTasks) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
+      !this.reverse ? first.iadd(count) : first.isub(count)
       pushedCount.iadd(count)
+      count.isub(count)
     }
-    debugStr += ` count=${pushedCount}`
+    debugStr += ` count=${pushedCount} reverse=${this.reverse}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count.gten(0)) {
-      this.debug(`Fetcher pending with first=${this.first} count=${this.count}`)
+    if (this.in.length === 0 && this.count.gtn(0)) {
+      this.debug(
+        `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
+      )
       const tasks = this.tasks(this.first, this.count)
       for (const task of tasks) {
         this.enqueueTask(task)

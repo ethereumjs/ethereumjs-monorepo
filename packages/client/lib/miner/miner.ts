@@ -6,6 +6,7 @@ import { Event } from '../types'
 import { Config } from '../config'
 import { FullEthereumService } from '../service'
 import { VMExecution } from '../execution'
+import type { FullSynchronizer } from '../sync'
 
 const level = require('level-mem')
 
@@ -300,7 +301,7 @@ export class Miner {
     this.assembling = false
     if (interrupt) return
     // Put block in blockchain
-    await this.service.synchronizer.handleNewBlock(block)
+    await (this.service.synchronizer as FullSynchronizer).handleNewBlock(block)
     // Remove included txs from TxPool
     this.service.txPool.removeNewBlockTxs([block])
     this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)

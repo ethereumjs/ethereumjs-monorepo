@@ -47,6 +47,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
     const response = await peer!.les!.getBlockHeaders({
       block: first,
       max: count,
+      reverse: this.reverse,
     })
     return response
   }

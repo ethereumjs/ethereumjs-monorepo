@@ -53,7 +53,7 @@ export class VMExecution extends Execution {
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB) {
+    if (this.metaDB && this.config.saveReceipts) {
       this.receiptsManager = new ReceiptsManager({
         chain: this.chain,
         config: this.config,

@@ -13,7 +13,7 @@ class SynchronizerTest extends Synchronizer {
   async sync() {
     return false
   }
-  best() {
+  async best() {
     return undefined
   }
 }

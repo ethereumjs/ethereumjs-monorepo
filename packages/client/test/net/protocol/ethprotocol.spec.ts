@@ -57,7 +57,6 @@ tape('[EthProtocol]', (t) => {
         td: Buffer.from('64', 'hex'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
-        latestBlock: Buffer.from('0A', 'hex'),
       },
       'encode status'
     )

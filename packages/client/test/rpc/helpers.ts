@@ -121,6 +121,9 @@ export function createClient(clientOpts: any = {}) {
         ],
         synchronizer,
         execution,
+        switchToBeaconSync: () => {
+          return undefined
+        },
       },
     ],
     servers,

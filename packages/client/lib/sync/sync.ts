@@ -6,9 +6,7 @@ import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
 import { Event } from '../types'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
-import { BlockFetcher, HeaderFetcher } from './fetcher'
+import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 import { short } from '../util'
 
 export interface SynchronizerOptions {
@@ -20,12 +18,6 @@ export interface SynchronizerOptions {
 
   /* Blockchain */
   chain: Chain
-
-  /* State database */
-  stateDB?: LevelUp
-
-  /* Meta database (receipts, logs, indexes) */
-  metaDB?: LevelUp
 
   /* Flow control manager */
   flow?: FlowControl
@@ -47,7 +39,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public fetcher: BlockFetcher | HeaderFetcher | null
+  public fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: BN
@@ -134,7 +126,7 @@ export abstract class Synchronizer {
     clearTimeout(timeout)
   }
 
-  abstract best(): Peer | undefined
+  abstract best(): Promise<Peer | undefined>
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
@@ -146,7 +138,7 @@ export abstract class Synchronizer {
     if (!this.config.syncTargetHeight) {
       return
     }
-    if (this.chain.headers.height.gte(this.config.syncTargetHeight)) {
+    if (this.chain.headers.height.eq(this.config.syncTargetHeight)) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(
@@ -165,12 +157,12 @@ export abstract class Synchronizer {
    * @returns when sync is completed
    */
   async sync(): Promise<boolean> {
-    let peer = this.best()
+    let peer = await this.best()
     let numAttempts = 1
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await new Promise((resolve) => setTimeout(resolve, 5000))
-      peer = this.best()
+      peer = await this.best()
       numAttempts += 1
     }
 
@@ -178,9 +170,14 @@ export abstract class Synchronizer {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
-      const resolveSync = () => {
+      const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
+        const heightStr = height ? ` height=${height}` : ''
+        this.config.logger.debug(
+          `Finishing up sync with the current fetcher${heightStr}
+          }`
+        )
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
@@ -189,6 +186,9 @@ export abstract class Synchronizer {
         }
         resolveSync()
       } catch (error: any) {
+        this.config.logger.debug(
+          `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+        )
         this.clearFetcher()
         reject(error)
       }

@@ -101,7 +101,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((sync as any).height(peers[1])).thenDo((peer: any) =>
       Promise.resolve(peer.eth.status.td)
     )
-    t.equals(sync.best(), peers[1], 'found best')
+    t.equal(await sync.best(), peers[1], 'found best')
     await sync.stop()
     await sync.close()
     t.end()
@@ -122,7 +122,7 @@ tape('[FullSynchronizer]', async (t) => {
     })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenReturn('peer')
+    td.when(sync.best()).thenResolve('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: new BN(2),
       hash: () => Buffer.from([]),

@@ -499,10 +499,7 @@ export class TxPool {
    * @param peerPool Reference to the peer pool
    */
   async handleAnnouncedTxHashes(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txHashes.length === 0) {
-      return
-    }
-    this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
+    if (!this.running || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
     this.cleanup()
 
@@ -515,12 +512,12 @@ export class TxPool {
       reqHashes.push(txHash)
     }
 
-    if (reqHashes.length === 0) {
-      return
-    }
+    if (reqHashes.length === 0) return
+
+    this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
     const reqHashesStr: UnprefixedHash[] = reqHashes.map((hash) => hash.toString('hex'))
-    this.pending.concat(reqHashesStr)
+    this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )

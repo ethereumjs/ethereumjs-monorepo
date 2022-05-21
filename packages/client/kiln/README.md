@@ -6,10 +6,9 @@ Kiln v2 public testnet has been bootstrapped:
 
 The config files can be downloaded from the [merge-testnets](https://github.com/eth-clients/merge-testnets/tree/main/kiln) config GitHub repository.
 
-
 ## Execution - EthereumJS Setup
 
-Please ensure you have Node 12.x+ installed.
+Please ensure you have Node 16.x installed.
 
 ### Client Installation
 
@@ -28,7 +27,7 @@ The `v0.4.0` client release (respectively follow-up bug fix releases) is ready f
 npm install -g @ethereumjs/client
 ```
 
-Note that you eventually want to adopt the `config` download and accordingly modify the config file access paths as well as start the client just with `ethereumjs` instad of using the `npm run client:start` GitHub start command (also leave the inbetween `--` to forward the client config options).
+Note that you eventually want to adopt the `config` download and accordingly modify the config file access paths as well as start the client just with `ethereumjs` instead of using the `npm run client:start` GitHub start command (also leave the in-between `--` to forward the client config options).
 
 #### Docker
 
@@ -67,7 +66,7 @@ To prevent the secret to be re-generated next time you restart the client, pass 
 1. Use lodestar branch `master` and run `yarn && yarn build`
 2. Export path of the downloaded config dir `export CONFIG_PATH=/path/to/ethereumjs-monorepo/packages/client/kiln/config`
 3. Export path of the written jwt secret file `export JWT_SECRET_PATH=/path/to/ethereumjs-monorepo/packages/client/kiln/datadir/jwtsecret`
-4. Run cmd: `./lodestar beacon --rootDir kiln/temp --paramsFile $CONFIG_PATH/config.yaml --genesisStateFile $CONFIG_PATH/genesis.ssz --bootnodesFile $CONFIG_PATH/boot_enr.yaml --network.connectToDiscv5Bootnodes --network.discv5.enabled true --eth1.enabled true --eth1.providerUrls=http://localhost:8545 --execution.urls=http://localhost:8551 --eth1.disableEth1DepositDataTracker true --jwt-secret $JWT_SECRET_PATH`
+4. Run cmd: `./lodestar beacon --rootDir kiln/temp --paramsFile $CONFIG_PATH/config.yaml --genesisStateFile $CONFIG_PATH/genesis.ssz --bootnodesFile $CONFIG_PATH/boot_enr.yaml --network.connectToDiscv5Bootnodes --network.discv5.enabled true --eth1.enabled true --eth1.providerUrls=http://localhost:8545 --execution.urls=http://localhost:8551 --eth1.disableEth1DepositDataTracker true --jwt-secret $JWT_SECRET_PATH --weakSubjectivityServerUrl https://lodestar-kiln.chainsafe.io --weakSubjectivitySyncLatest`
 
 #### Validator
 
@@ -77,8 +76,26 @@ Also, one will need to remove `--eth1.disableEth1DepositDataTracker true` and in
 
 ### Lighthouse
 
-### Beacon
+#### Beacon
 
 1. Use lighthouse branch `unstable` and run `make`
-1. Make dir `lighthouse/kiln` and copy in from the downloaded config dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
-1. Run cmd: `lighthouse --debug-level=info --datadir=kiln/datadir --testnet-dir=kiln beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8551 --terminal-total-difficulty-override=`
+2. Make dir `lighthouse/kiln` and copy in from the downloaded config dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
+3. Run cmd: `lighthouse --debug-level=info --datadir=kiln/datadir --testnet-dir=kiln beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8551 --terminal-total-difficulty-override=20000000000000`
+4. Run cmd (with checkpoint sync - tested this with a locally running syncd Nimbus client): `lighthouse bn --network kiln --terminal-total-difficulty-override=20000000000000 --merge --http-allow-sync-stalled --checkpoint-sync-url "http://localhost:5052" --logfile logs.txt --logfile-debug-level trace`
+
+### Teku
+
+#### Beacon
+
+1. Download latest Teku binary [here](https://github.com/ConsenSys/teku/releases) and extract from archive
+2. Run cmd (with checkpoint sync): `./teku --data-path "./data" --network kiln --initial-state="https://lodestar-kiln.chainsafe.io/eth/v2/debug/beacon/states/finalized" --ee-endpoint http://localhost:8551 --ee-jwt-secret-file "/path/to/ethereumjs-monorepo/packages/client/kiln/datadir/jwtsecret" --logging=DEBUG`
+
+### Nimbus
+
+#### Beacon
+
+1. Build Nimbus following the [kiln instructions](https://nimbus.guide/kiln.html#3-nimbus)
+2. Get your hands on a SSZ encoded finalized state/block snapshot from a synced client. Assuming you have a synced Teku (or other CL node running locally that exposes the Beacon REST API), you can use the below `curl` commands to get it.
+   `curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/debug/beacon/states/finalized > state.ssz`
+   `curl -H 'Accept: application/octet-stream' http://127.0.0.1:5051/eth/v2/beacon/blocks/[block number corresponding to finalized state above] > block.ssz`
+3. Run cmd (with checkpoint sync and adjust ports/paths accordingly for your setup): `build/nimbus_beacon_node --network=vendor/merge-testnets/kiln --web3-url=ws://127.0.0.1:8551 --log-level=DEBUG --jwt-secret="/path/to/ethereumjs-monorepo/packages/client/kiln/datadir/jwtsecret" --data-dir=build/kiln --data-dir:trusted --finalized-checkpoint-state=state.ssz --finalized-checkpoint-block=block.ssz`

@@ -56,7 +56,7 @@ tape('[LightSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    t.equals(sync.best(), peers[1], 'found best')
+    t.equal(await sync.best(), peers[1], 'found best')
     t.end()
   })
 
@@ -73,7 +73,7 @@ tape('[LightSynchronizer]', async (t) => {
     })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.best()).thenResolve({ les: { status: { headNum: new BN(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: new BN(2),
       hash: () => Buffer.from([]),
@@ -110,7 +110,7 @@ tape('[LightSynchronizer]', async (t) => {
     })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.best()).thenResolve({ les: { status: { headNum: new BN(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: new BN(2),
       hash: () => Buffer.from([]),
@@ -144,7 +144,7 @@ tape('[LightSynchronizer]', async (t) => {
     })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.best()).thenResolve({ les: { status: { headNum: new BN(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: new BN(2),
       hash: () => Buffer.from([]),

@@ -994,7 +994,7 @@ export class Eth {
     if (syncTargetHeight) {
       highestBlock = bnToHex(syncTargetHeight)
     } else {
-      const bestPeer = synchronizer.best()
+      const bestPeer = await synchronizer.best()
       if (!bestPeer) {
         throw {
           code: INTERNAL_ERROR,
