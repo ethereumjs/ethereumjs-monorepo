@@ -47,6 +47,8 @@ export default class Memory {
       return
     }
 
+    this.extend(offset, size)
+
     assert(value.length === size, 'Invalid value size')
     assert(offset + size <= this._store.length, 'Value exceeds memory capacity')
     assert(Buffer.isBuffer(value), 'Invalid value type')
@@ -63,6 +65,8 @@ export default class Memory {
    * @param size - How many bytes to read
    */
   read(offset: number, size: number): Buffer {
+    this.extend(offset, size)
+
     const returnBuffer = Buffer.allocUnsafe(size)
     // Copy the stored "buffer" from memory into the return Buffer
 
