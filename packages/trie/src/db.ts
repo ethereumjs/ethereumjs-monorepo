@@ -50,7 +50,7 @@ export interface DB {
 }
 
 /**
- * DB is a thin wrapper around the underlying levelup db,
+ * LevelDB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
 export class LevelDB implements DB {
@@ -108,5 +108,60 @@ export class LevelDB implements DB {
    */
   copy(): DB {
     return new LevelDB(this._leveldb)
+  }
+}
+
+export class MemoryDB implements DB {
+  _database: Map<string, Buffer>
+
+  constructor(database?: Map<string, Buffer> | null) {
+    this._database = database ?? new Map()
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async get(key: Buffer): Promise<Buffer | null> {
+    const value = this._database.get(key.toString('hex'))
+
+    if (value === undefined) {
+      return null
+    }
+
+    return value
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async put(key: Buffer, val: Buffer): Promise<void> {
+    this._database.set(key.toString('hex'), val)
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async del(key: Buffer): Promise<void> {
+    this._database.delete(key.toString('hex'))
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async batch(opStack: BatchDBOp[]): Promise<void> {
+    for (const op of opStack) {
+      if (op.type === 'del') {
+        await this.del(op.key)
+      } else if (op.type === 'put') {
+        await this.put(op.key, op.value)
+      }
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  copy(): DB {
+    return new MemoryDB(this._database)
   }
 }
