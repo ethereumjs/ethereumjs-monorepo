@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain, { CliqueConsensus } from '@ethereumjs/blockchain'
 import Common, {
   Chain as ChainCommon,
   ConsensusType,
@@ -51,7 +51,7 @@ tape('[Integration:Miner]', async (t) => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
+    ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
     const chain = new Chain({ config, blockchain })
     const serviceConfig = new Config({
       common,
@@ -82,7 +82,9 @@ tape('[Integration:Miner]', async (t) => {
         height: 0,
         common,
       })
-      remoteService.chain.blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
+      ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
+        accounts[0][0],
+      ] // stub
       ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
       await server.discover('remotePeer1', '127.0.0.2')
       const targetHeight = BigInt(5)

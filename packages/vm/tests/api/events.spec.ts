@@ -99,7 +99,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.on('beforeMessage', (val: any) => {
+    vm.evm.on('beforeMessage', (val: any) => {
       emitted = val
     })
 
@@ -123,7 +123,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.on('afterMessage', (val: any) => {
+    vm.evm.on('afterMessage', (val: any) => {
       emitted = val
     })
 
@@ -145,7 +145,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let lastEmitted: any
-    vm.on('step', (val: any) => {
+    vm.evm.on('step', (val: any) => {
       lastEmitted = val
     })
 
@@ -169,7 +169,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted: any
-    vm.on('newContract', (val: any) => {
+    vm.evm.on('newContract', (val: any) => {
       emitted = val
     })
 

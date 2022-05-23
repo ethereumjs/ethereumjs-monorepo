@@ -117,4 +117,12 @@ export default class TransientStorage {
     }
     return result
   }
+
+  /**
+   * Clear transient storage state.
+   */
+  public clear(): void {
+    this._storage = new Map()
+    this._changeJournal = []
+  }
 }

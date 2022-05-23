@@ -41,7 +41,7 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
     value: BigInt(0),
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
   t.equal(result.execResult.gasUsed, BigInt(53552), 'vm correctly applies new account gas price')
   t.end()
 })
@@ -86,7 +86,7 @@ tape(
       value: BigInt(0),
     }
 
-    const result = await vm.runCall(runCallArgs)
+    const result = await vm.evm.runCall(runCallArgs)
     t.equal(
       result.execResult.gasUsed,
       BigInt(28552),

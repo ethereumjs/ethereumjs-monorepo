@@ -32,7 +32,7 @@ tape('Istanbul: EIP-1884', async (t) => {
       await vm.stateManager.putAccount(addr, account)
 
       try {
-        const res = await vm.runCode(runCodeArgs)
+        const res = await vm.evm.runCode(runCodeArgs)
         if (testCase.err) {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {

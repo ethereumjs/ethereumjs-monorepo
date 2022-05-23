@@ -13,9 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
-import { default as EVM, EVMResult } from './evm/evm'
-import Message from './evm/message'
-import TxContext from './evm/txContext'
+import { EVMResult } from './evm/evm'
 import type {
   TxReceipt,
   BaseTxReceipt,
@@ -211,7 +209,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       const removed = [tx.getSenderAddress()]
       // Add the active precompiles as well
       // Note: `precompiles` is always updated if the hardfork of `common` changes
-      const activePrecompiles = this.precompiles
+      const activePrecompiles = this.evm.precompiles
       for (const [key] of activePrecompiles.entries()) {
         removed.push(Address.fromString('0x' + key))
       }
@@ -262,7 +260,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
-    const activePrecompiles = this.precompiles
+    const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
       state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
     }
@@ -397,16 +395,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Execute message
    */
-  const txContext = new TxContext(gasPrice, caller)
   const { value, data, to } = tx
-  const message = new Message({
-    caller,
-    gasLimit,
-    to,
-    value: value,
-    data,
-  })
-  const evm = new EVM(this, txContext, block)
+
   if (this.DEBUG) {
     debug(
       `Running tx=0x${
@@ -417,7 +407,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  const results = (await evm.executeMessage(message)) as RunTxResult
+  const results = (await this.evm.runCall({
+    block,
+    gasPrice,
+    caller,
+    gasLimit,
+    to,
+    value,
+    data,
+  })) as RunTxResult
+
   if (this.DEBUG) {
     const { gasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
@@ -509,8 +508,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
+  this.evm._refund = BigInt(0)
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
+  if (this._common.isActivatedEIP(1153)) this.evm._transientStorage.clear()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
