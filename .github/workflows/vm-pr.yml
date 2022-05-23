@@ -163,6 +163,8 @@ jobs:
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
 
+      - run: npm run test:blockchain:transitionForks
+
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
