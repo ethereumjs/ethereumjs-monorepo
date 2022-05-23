@@ -458,7 +458,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const dataLengthNum = dataLength.toNumber()
-        runState.memory.extend(memOffsetNum, dataLengthNum)
         runState.memory.write(memOffsetNum, dataLengthNum, data)
       }
     },
@@ -480,7 +479,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const lengthNum = dataLength.toNumber()
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -506,7 +504,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const lengthNum = dataLength.toNumber()
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -549,7 +546,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const lengthNum = dataLength.toNumber()
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -652,7 +648,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x51,
     function (runState) {
       const pos = runState.stack.pop()
-      const word = runState.memory.read(pos.toNumber(), 32)
+      const posNum = pos.toNumber()
+      const word = runState.memory.read(posNum, 32)
       runState.stack.push(new BN(word))
     },
   ],
@@ -663,7 +660,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, word] = runState.stack.popN(2)
       const buf = word.toArrayLike(Buffer, 'be', 32)
       const offsetNum = offset.toNumber()
-      runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
     },
   ],
@@ -678,7 +674,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       // the types are wrong
       const buf = Buffer.from([byte.andln(0xff) as unknown as number])
       const offsetNum = offset.toNumber()
-      runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
     },
   ],

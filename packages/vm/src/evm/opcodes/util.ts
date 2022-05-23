@@ -223,7 +223,6 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
       dataLength = returnData.length
     }
     const data = getDataSlice(returnData, new BN(0), new BN(dataLength))
-    runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
   }
 }
