@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1653064575164,
+  "lastUpdate": 1653321122711,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "mark.tyneway@gmail.com",
-            "name": "Mark Tyneway",
-            "username": "tynes"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "83ff48a6c2a3d978742c0ea3bc9decb52dcd08c7",
-          "message": "VM, Common: Implement EIP 1153, Transient storage opcodes (#1768)\n\n* feat: eip1153\r\n\r\nImplement EIP 1153 - transient storage\r\n\r\nTLOAD 0xb3\r\nTSTORE 0xb4\r\n\r\nCo-authored-by: Moody Salem <moody.salem@gmail.com>\r\n\r\n* move transient storage to the EVM\r\n\r\n* bring back method in eei for transient storage loads and stores\r\n\r\n* cleanup\r\n\r\n* test: add reverting test\r\n\r\n* lint: fix\r\n\r\n* tests: get passing again\r\n\r\n* tests: more coverage\r\n\r\n* lint: fix\r\n\r\n* eip1153: more cleanup\r\n\r\n* lint: fix\r\n\r\n* - optimize the changeset recording (only store the first previous value)\r\n- add a test about copying\r\n- add a test about reverting\r\n- add a test about stringifying map keys\r\n\r\n* undo accidental commit of arrowGlacier.json\r\n\r\n* eip1153: fix build\r\n\r\nCo-authored-by: Moody Salem <moody.salem@gmail.com>\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>",
-          "timestamp": "2022-03-25T09:23:43+01:00",
-          "tree_id": "479f884ae585bdc492f3e9b836e36a7769446fff",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/83ff48a6c2a3d978742c0ea3bc9decb52dcd08c7"
-        },
-        "date": 1648196950066,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15800,
-            "range": "±11.44%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16928,
-            "range": "±2.98%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15920,
-            "range": "±9.29%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12669,
-            "range": "±22.89%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17249,
-            "range": "±2.93%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.07%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "42338831+theNvN@users.noreply.github.com",
+            "name": "Naveen Sahu",
+            "username": "theNvN"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0b7cc1b15d1fd9d58e4ae7db794674c3af4da5ae",
+          "message": "fix: expand memory on reading prev. untouched location (#1887)\n\n* fix: expand memory on reading prev. untouched location\r\n\r\nMemory is expanded by word when accessing previously untouched memory word ([relevant docs](https://docs.soliditylang.org/en/v0.8.13/introduction-to-smart-contracts.html#storage-memory-and-the-stack)). That applies to read operation on memory too.\r\n\r\n* fix: properly auto-expand memory on read/write\r\n\r\n* test: add tests for memory expansion on access\r\n\r\nRemoved a couple of tests for write beyond capacity.\r\nThis is because memory is now auto expanded during write.",
+          "timestamp": "2022-05-23T17:47:19+02:00",
+          "tree_id": "9209821f596fe17181d15f87bae21db67e085ce6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0b7cc1b15d1fd9d58e4ae7db794674c3af4da5ae"
+        },
+        "date": 1653321122149,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19029,
+            "range": "±7.82%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20281,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16779,
+            "range": "±14.04%",
+            "unit": "ops/sec",
+            "extra": "64 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19841,
+            "range": "±1.89%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20113,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
