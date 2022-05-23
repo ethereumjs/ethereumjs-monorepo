@@ -8,6 +8,8 @@ import Stack from './stack'
 import EEI from './eei'
 import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
+import Common from '@ethereumjs/common'
+import EVM from './evm'
 
 export interface InterpreterOpts {
   pc?: number
@@ -63,14 +65,17 @@ export default class Interpreter {
   _state: VmState
   _runState: RunState
   _eei: EEI
+  _common: Common
+  _evm: EVM
 
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(vm: any, eei: EEI) {
-    this._vm = vm
-    this._state = vm.vmState
+  constructor(evm: EVM, eei: EEI) {
+    this._evm = evm
     this._eei = eei
+    this._state = this._evm._state
+    this._common = this._evm._common
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -88,10 +93,10 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._vm._common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
+    if (!this._common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
-    } else if (this._vm._common.isActivatedEIP(3540)) {
+    } else if (this._common.isActivatedEIP(3540)) {
       if (code[1] !== eof.MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
@@ -179,13 +184,13 @@ export default class Interpreter {
     const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this._vm._common)
+      gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
+    if (this._evm.listenerCount('step') > 0 || this._evm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
@@ -205,9 +210,9 @@ export default class Interpreter {
     const opFn = this.getOpHandler(opInfo)
 
     if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this._vm._common])
+      await (opFn as AsyncOpHandler).apply(null, [this._runState, this._common])
     } else {
-      opFn.apply(null, [this._runState, this._vm._common])
+      opFn.apply(null, [this._runState, this._common])
     }
   }
 
@@ -215,7 +220,7 @@ export default class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return this._vm._handlers.get(opInfo.code)!
+    return this._evm._handlers.get(opInfo.code)!
   }
 
   /**
@@ -223,7 +228,7 @@ export default class Interpreter {
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
-    return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
+    return this._evm._opcodes.get(op) ?? this._evm._opcodes.get(0xfe)!
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
@@ -249,7 +254,7 @@ export default class Interpreter {
       codeAddress: this._eei._env.codeAddress,
     }
 
-    if (this._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       // Create opTrace for debug functionality
       let hexStack = []
       hexStack = eventObj.stack.map((item: any) => {
@@ -296,7 +301,7 @@ export default class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    return this._vm._emit('step', eventObj)
+    return this._evm._emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.

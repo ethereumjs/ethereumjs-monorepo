@@ -68,7 +68,7 @@ tape('Istanbul: EIP-2200', async (t) => {
       }
 
       try {
-        const res = await vm.runCall(runCallArgs)
+        const res = await vm.evm.runCall(runCallArgs)
         if (testCase.err) {
           st.equal(res.execResult.exceptionError?.error, testCase.err)
         } else {

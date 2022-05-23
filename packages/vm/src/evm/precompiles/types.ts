@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
 import { ExecResult } from '../evm'
-import VM from '../../index'
+import EVM from '../evm'
 
 export interface PrecompileFunc {
   (input: PrecompileInput): Promise<ExecResult> | ExecResult
@@ -10,5 +10,5 @@ export interface PrecompileInput {
   data: Buffer
   gasLimit: bigint
   _common: Common
-  _VM: VM
+  _EVM: EVM
 }

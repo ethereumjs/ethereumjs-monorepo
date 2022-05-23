@@ -17,7 +17,7 @@ tape('Precompiles: ECPAIRING', (t) => {
       ),
       gasLimit: BigInt(0xffffff),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(

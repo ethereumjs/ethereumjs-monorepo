@@ -98,7 +98,7 @@ export default class EEI {
    */
   useGas(amount: bigint, context?: string): void {
     this._gasLeft -= amount
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
     if (this._gasLeft < BigInt(0)) {
@@ -113,7 +113,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   refundGas(amount: bigint, context?: string): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     }
     this._evm._refund += amount
@@ -125,7 +125,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   subRefund(amount: bigint, context?: string): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     }
     this._evm._refund -= amount
@@ -140,7 +140,7 @@ export default class EEI {
    * @param amount - Amount to add
    */
   addStipend(amount: bigint): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
     }
     this._gasLeft += amount
@@ -587,7 +587,7 @@ export default class EEI {
       return BigInt(0)
     }
 
-    const results = await this._evm.executeMessage(msg)
+    const results = await this._evm.runCall({ message: msg })
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -618,22 +618,10 @@ export default class EEI {
   /**
    * Creates a new contract with a given value.
    */
-  async create(
-    gasLimit: bigint,
-    value: bigint,
-    data: Buffer,
-    salt: Buffer | null = null
-  ): Promise<bigint> {
+  async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
-    const msg = new Message({
-      caller: this._env.address,
-      gasLimit,
-      value,
-      data,
-      salt,
-      depth: this._env.depth + 1,
-      selfdestruct,
-    })
+    const caller = this._env.address
+    const depth = this._env.depth + 1
 
     // empty the return data buffer
     this._lastReturned = Buffer.alloc(0)
@@ -641,7 +629,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
-      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
+      this._env.contract.balance < value
     ) {
       return BigInt(0)
     }
@@ -655,12 +643,22 @@ export default class EEI {
     await this._state.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (msg.data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
         return BigInt(0)
       }
     }
 
-    const results = await this._evm.executeMessage(msg)
+    const message = new Message({
+      caller,
+      gasLimit,
+      value,
+      data,
+      salt,
+      depth,
+      selfdestruct,
+    })
+
+    const results = await this._evm.runCall({ message })
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)

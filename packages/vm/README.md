@@ -30,15 +30,16 @@ const PUSH1 = '60'
 // Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
 const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
 
-vm.on('step', function (data) {
+vm.evm.on('step', function (data) {
   // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 
-vm.runCode({
-  code: Buffer.from(code.join(''), 'hex'),
-  gasLimit: new BN(0xffff),
-})
+vm.evm
+  .runCode({
+    code: Buffer.from(code.join(''), 'hex'),
+    gasLimit: new BN(0xffff),
+  })
   .then((results) => {
     console.log(`Returned: ${results.returnValue.toString('hex')}`)
     console.log(`gasUsed : ${results.gasUsed.toString()}`)

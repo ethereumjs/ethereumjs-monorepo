@@ -30,7 +30,7 @@ const code = Buffer.from('60008080806001415AF100', 'hex')
 const contractAddress = new Address(Buffer.from('ee'.repeat(20), 'hex'))
 
 async function getVM(common: Common) {
-  const vm = new (VM as any)({ common: common })
+  const vm = await VM.create({ common: common })
   const account = await vm.stateManager.getAccount(sender)
   const balance = GWEI * BigInt(21000) * BigInt(10000000)
   account.balance = balance

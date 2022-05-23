@@ -14,7 +14,7 @@ tape('Precompiles: ECADD', (t) => {
       data: Buffer.alloc(0),
       gasLimit: BigInt(0xffff),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(result.gasUsed, BigInt(500), 'should use petersburg gas costs')
