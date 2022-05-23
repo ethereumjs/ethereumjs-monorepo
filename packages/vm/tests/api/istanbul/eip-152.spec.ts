@@ -94,7 +94,7 @@ tape('Istanbul: EIP-152', (t) => {
         data: Buffer.from(testCase.input, 'hex'),
         gasLimit: BigInt(20),
         _common: common,
-        _VM: vm,
+        _EVM: vm.evm,
       })
       st.equal(res.exceptionError?.error, testCase.err)
     }
@@ -105,7 +105,7 @@ tape('Istanbul: EIP-152', (t) => {
         data: Buffer.from(testCase.input, 'hex'),
         gasLimit: BigInt(10000000),
         _common: common,
-        _VM: vm,
+        _EVM: vm.evm,
       })
       st.equal(res.returnValue.toString('hex'), testCase.expected)
     }

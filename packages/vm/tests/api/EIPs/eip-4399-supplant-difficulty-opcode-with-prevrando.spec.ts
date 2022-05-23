@@ -24,7 +24,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
 
     // Track stack
     let stack: any = []
-    vm.on('step', (istep: InterpreterStep) => {
+    vm.evm.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }
@@ -34,7 +34,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
       code: Buffer.from('4400', 'hex'),
       gasLimit: BigInt(0xffff),
     }
-    await vm.runCode({ ...runCodeArgs, block })
+    await vm.evm.runCode({ ...runCodeArgs, block })
     st.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
@@ -48,7 +48,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
       },
       { common }
     )
-    await vm.runCode({ ...runCodeArgs, block })
+    await vm.evm.runCode({ ...runCodeArgs, block })
     st.equal(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
 
     st.end()

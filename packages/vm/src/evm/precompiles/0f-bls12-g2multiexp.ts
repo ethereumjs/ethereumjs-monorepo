@@ -12,7 +12,7 @@ const {
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   assert(opts.data)
 
-  const mcl = opts._VM._mcl
+  const mcl = opts._EVM._mcl
 
   const inputData = opts.data
 

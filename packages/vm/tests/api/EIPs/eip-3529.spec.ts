@@ -116,7 +116,7 @@ tape('EIP-3529 tests', (t) => {
     let gasRefund: bigint
     let gasLeft: bigint
 
-    vm.on('step', (step: InterpreterStep) => {
+    vm.evm.on('step', (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -138,7 +138,7 @@ tape('EIP-3529 tests', (t) => {
       await vm.stateManager.getContractStorage(address, key)
       vm.vmState.addWarmedStorage(address.toBuffer(), key)
 
-      await vm.runCode({
+      await vm.evm.runCode({
         code,
         address,
         gasLimit,
@@ -146,12 +146,12 @@ tape('EIP-3529 tests', (t) => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-
       st.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.vmState.clearOriginalStorageCache()
+      vm.evm._refund = 0n
     }
 
     st.end()
@@ -185,7 +185,7 @@ tape('EIP-3529 tests', (t) => {
     let startGas: bigint
     let finalGas: bigint
 
-    vm.on('step', (step: InterpreterStep) => {
+    vm.evm.on('step', (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }

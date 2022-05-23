@@ -437,9 +437,9 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
     RLP.encode(
       bufArrToArr([
         (receipt as PreByzantiumTxReceipt).stateRoot ??
-        (receipt as PostByzantiumTxReceipt).status === 0
-          ? Buffer.from([])
-          : Buffer.from('01', 'hex'),
+          ((receipt as PostByzantiumTxReceipt).status === 0
+            ? Buffer.from([])
+            : Buffer.from('01', 'hex')),
         bigIntToBuffer(receipt.gasUsed),
         receipt.bitvector,
         receipt.logs,
