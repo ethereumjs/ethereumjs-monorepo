@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1653064646317,
+  "lastUpdate": 1653321164485,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "mark.tyneway@gmail.com",
-            "name": "Mark Tyneway",
-            "username": "tynes"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "83ff48a6c2a3d978742c0ea3bc9decb52dcd08c7",
-          "message": "VM, Common: Implement EIP 1153, Transient storage opcodes (#1768)\n\n* feat: eip1153\r\n\r\nImplement EIP 1153 - transient storage\r\n\r\nTLOAD 0xb3\r\nTSTORE 0xb4\r\n\r\nCo-authored-by: Moody Salem <moody.salem@gmail.com>\r\n\r\n* move transient storage to the EVM\r\n\r\n* bring back method in eei for transient storage loads and stores\r\n\r\n* cleanup\r\n\r\n* test: add reverting test\r\n\r\n* lint: fix\r\n\r\n* tests: get passing again\r\n\r\n* tests: more coverage\r\n\r\n* lint: fix\r\n\r\n* eip1153: more cleanup\r\n\r\n* lint: fix\r\n\r\n* - optimize the changeset recording (only store the first previous value)\r\n- add a test about copying\r\n- add a test about reverting\r\n- add a test about stringifying map keys\r\n\r\n* undo accidental commit of arrowGlacier.json\r\n\r\n* eip1153: fix build\r\n\r\nCo-authored-by: Moody Salem <moody.salem@gmail.com>\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>",
-          "timestamp": "2022-03-25T09:23:43+01:00",
-          "tree_id": "479f884ae585bdc492f3e9b836e36a7769446fff",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/83ff48a6c2a3d978742c0ea3bc9decb52dcd08c7"
-        },
-        "date": 1648196983447,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 11156,
-            "range": "±18.24%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 13385,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 7619,
-            "range": "±25.87%",
-            "unit": "ops/sec",
-            "extra": "50 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 11898,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 14471,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 774,
-            "range": "±7.06%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 146,
-            "range": "±13.48%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 21.26,
-            "range": "±153.65%",
-            "unit": "ops/sec",
-            "extra": "18 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 14.76,
-            "range": "±8.39%",
-            "unit": "ops/sec",
-            "extra": "30 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±10.34%",
             "unit": "ops/sec",
             "extra": "31 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "42338831+theNvN@users.noreply.github.com",
+            "name": "Naveen Sahu",
+            "username": "theNvN"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0b7cc1b15d1fd9d58e4ae7db794674c3af4da5ae",
+          "message": "fix: expand memory on reading prev. untouched location (#1887)\n\n* fix: expand memory on reading prev. untouched location\r\n\r\nMemory is expanded by word when accessing previously untouched memory word ([relevant docs](https://docs.soliditylang.org/en/v0.8.13/introduction-to-smart-contracts.html#storage-memory-and-the-stack)). That applies to read operation on memory too.\r\n\r\n* fix: properly auto-expand memory on read/write\r\n\r\n* test: add tests for memory expansion on access\r\n\r\nRemoved a couple of tests for write beyond capacity.\r\nThis is because memory is now auto expanded during write.",
+          "timestamp": "2022-05-23T17:47:19+02:00",
+          "tree_id": "9209821f596fe17181d15f87bae21db67e085ce6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0b7cc1b15d1fd9d58e4ae7db794674c3af4da5ae"
+        },
+        "date": 1653321163907,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 13109,
+            "range": "±18.39%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 15120,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 7978,
+            "range": "±22.00%",
+            "unit": "ops/sec",
+            "extra": "59 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 14049,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 16913,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 817,
+            "range": "±7.38%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 161,
+            "range": "±11.71%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 43.56,
+            "range": "±92.83%",
+            "unit": "ops/sec",
+            "extra": "57 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 15.08,
+            "range": "±26.62%",
+            "unit": "ops/sec",
+            "extra": "30 samples"
           }
         ]
       }
