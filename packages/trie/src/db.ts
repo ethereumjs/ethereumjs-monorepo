@@ -122,7 +122,7 @@ export class MemoryDB implements DB {
    * @inheritdoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    const value = this._database.get(key.toString('hex'))
+    const value = this._database.get(key.toString('binary'))
 
     if (value === undefined) {
       return null
@@ -135,14 +135,14 @@ export class MemoryDB implements DB {
    * @inheritdoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    this._database.set(key.toString('hex'), val)
+    this._database.set(key.toString('binary'), val)
   }
 
   /**
    * @inheritdoc
    */
   async del(key: Buffer): Promise<void> {
-    this._database.delete(key.toString('hex'))
+    this._database.delete(key.toString('binary'))
   }
 
   /**
