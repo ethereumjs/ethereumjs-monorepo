@@ -70,7 +70,7 @@ export function dumpState(state: any, cb: Function) {
   })
 }
 
-export function format(a: any, toZero: boolean = false, isHex: boolean = false) {
+export function format(a: any, toZero: boolean = false, isHex: boolean = false): Buffer {
   if (a === '') {
     return Buffer.alloc(0)
   }
@@ -91,6 +91,10 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false) 
   }
 
   return a
+}
+
+function formatNumberString(input: Buffer): string {
+  return new BN(input).toString()
 }
 
 /**
@@ -174,8 +178,16 @@ export function verifyAccountPostConditions(
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
-    t.ok(format(account.balance, true).equals(format(acctData.balance, true)), 'correct balance')
-    t.ok(format(account.nonce, true).equals(format(acctData.nonce, true)), 'correct nonce')
+    t.equals(
+      formatNumberString(format(account.balance, true)),
+      formatNumberString(format(acctData.balance, true)),
+      'correct balance'
+    )
+    t.equals(
+      formatNumberString(format(account.nonce, true)),
+      formatNumberString(format(acctData.nonce, true)),
+      'correct nonce'
+    )
 
     // validate storage
     const origRoot = state.root
