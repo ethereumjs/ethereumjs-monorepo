@@ -3,7 +3,7 @@ import { BN } from 'ethereumjs-util'
 import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
-import { BeaconSynchronizer, FullSynchronizer } from '../sync'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
@@ -24,7 +24,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer!: BeaconSynchronizer | FullSynchronizer
+  public synchronizer!: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -52,17 +52,33 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      if (!this.config.disableBeaconSync) {
-        void this.switchToBeaconSync()
+    // TODO: This is just development only flag to force snap sync
+    // A better determination of when to snap sync will be required
+    // ideally if the blockchain block height is way being, its
+    // advisable to use snap sync. how ever syncTargetHeight is not
+    // available yet here, so we could start with full sync/beacon sync
+    // and switch to snap sync when we have syncTargetHeight
+    if (this.config.disableSnapSync) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        // Can't
+        if (!this.config.disableBeaconSync) {
+          void this.switchToBeaconSync()
+        }
+      } else {
+        this.synchronizer = new FullSynchronizer({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          txPool: this.txPool,
+          execution: this.execution,
+          interval: this.interval,
+        })
       }
     } else {
-      this.synchronizer = new FullSynchronizer({
+      this.synchronizer = new SnapSynchronizer({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
-        txPool: this.txPool,
-        execution: this.execution,
         interval: this.interval,
       })
     }

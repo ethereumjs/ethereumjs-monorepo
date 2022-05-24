@@ -3,6 +3,7 @@ import {
   Protocol,
   BoundProtocol,
   EthProtocolMethods,
+  SnapProtocolMethods,
   LesProtocolMethods,
   Sender,
 } from '../protocol'
@@ -57,6 +58,7 @@ export class Peer extends events.EventEmitter {
 
   // Dynamically bound protocol properties
   public eth: (BoundProtocol & EthProtocolMethods) | undefined
+  public snap: (BoundProtocol & SnapProtocolMethods) | undefined
   public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**
