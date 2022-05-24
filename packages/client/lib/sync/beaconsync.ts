@@ -251,7 +251,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height.gt(this.skeleton.bounds().head.subn(50)) ||
       this.chain.blocks.height.modrn(50) === 0
     ) {
-      void this.execution.run()
+      void this.execution.run(false)
     }
   }
 

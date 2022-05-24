@@ -115,6 +115,7 @@ export class VMExecution extends Execution {
    * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
   async setHead(blocks: Block[]): Promise<void> {
+    await this.chain.blockchain.setIteratorHead('vm', blocks[blocks.length - 1].hash())
     await this.chain.putBlocks(blocks, true)
     for (const block of blocks) {
       const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
@@ -123,16 +124,14 @@ export class VMExecution extends Execution {
         this.pendingReceipts?.delete(block.hash().toString('hex'))
       }
     }
-    const head = blocks[blocks.length - 1]
-    await this.chain.blockchain.setIteratorHead('vm', head.hash())
   }
 
   /**
    * Runs the VM execution
-   *
+   * @param loop Whether to continue iterating until vm head equals chain head (default: true)
    * @returns number of blocks executed
    */
-  async run(): Promise<number> {
+  async run(loop = true): Promise<number> {
     if (this.running) return 0
     this.running = true
     let numExecuted: number | undefined
@@ -146,7 +145,7 @@ export class VMExecution extends Execution {
     let errorBlock: Block | undefined
 
     while (
-      (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
+      (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
       !startHeadBlock.hash().equals(canonicalHead.hash())
     ) {
       let txCounter = 0
@@ -274,7 +273,7 @@ export class VMExecution extends Execution {
       canonicalHead = await this.vm.blockchain.getLatestBlock()
     }
     this.running = false
-    return numExecuted as number
+    return numExecuted ?? 0
   }
 
   /**
