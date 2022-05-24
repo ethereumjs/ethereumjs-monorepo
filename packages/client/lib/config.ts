@@ -286,6 +286,8 @@ export class Config {
   public readonly skeletonFillCanonicalBackStep: number
   public readonly skeletonSubchainMergeMinimum: number
   public readonly disableBeaconSync: boolean
+  // Just a development only flag, will/should be removed
+  public readonly disableSnapSync: boolean = false
 
   public synchronized: boolean
   public lastSyncDate: number

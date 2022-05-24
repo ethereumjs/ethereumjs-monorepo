@@ -9,7 +9,7 @@ import { Protocol } from '../net/protocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
-import { BeaconSynchronizer, FullSynchronizer } from '../sync'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
@@ -24,7 +24,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer!: BeaconSynchronizer | FullSynchronizer
+  public synchronizer!: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -57,12 +57,13 @@ export class FullEthereumService extends EthereumService {
         void this.switchToBeaconSync()
       }
     } else {
-      this.synchronizer = new FullSynchronizer({
+      // This is just for testing a proper syncronizer change condition
+      // should comeup, irrespective of pre-merge/post merge ideally
+      // depending on how far we are from the last executed block
+      this.synchronizer = new SnapSynchronizer({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
-        txPool: this.txPool,
-        execution: this.execution,
         interval: this.interval,
       })
     }
