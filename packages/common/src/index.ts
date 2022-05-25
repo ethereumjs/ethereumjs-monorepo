@@ -102,6 +102,11 @@ export enum ConsensusAlgorithm {
   Casper = 'casper',
 }
 
+export type cliqueOpts = {
+  period: number
+  epoch: number
+}
+
 interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
@@ -1024,7 +1029,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): { [key: string]: {} | { period: number; epoch: number } } {
+  consensusConfig(): { [key: string]: {} | cliqueOpts } {
     const hardfork = this.hardfork()
 
     let value
