@@ -225,7 +225,8 @@ export class CliqueConsensus implements Consensus {
         // See if there is a new majority consensus to update the signer list
         const lastEpochBlockNumber =
           header.number -
-          (header.number % BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
+          (header.number %
+            BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
         const limit = this.cliqueSignerLimit()
         let activeSigners = this.cliqueActiveSigners()
         let consensus = false
@@ -335,7 +336,8 @@ export class CliqueConsensus implements Consensus {
     if (lastBlockNumber) {
       const lastEpochBlockNumber =
         lastBlockNumber -
-        (lastBlockNumber % BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
+        (lastBlockNumber %
+          BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
       const blockLimit = lastEpochBlockNumber - BigInt(limit)
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
     }
