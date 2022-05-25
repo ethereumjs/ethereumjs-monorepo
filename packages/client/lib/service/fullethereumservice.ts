@@ -234,7 +234,11 @@ export class FullEthereumService extends EthereumService {
           (reverse && block.gt(this.chain.headers.height)) ||
           (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
         ) {
-          // Don't respond to requests greater than the current height
+          // Respond with an empty list in case the header is higher than the current height
+          // This is to ensure Geth does not disconnect with "useless peer"
+          // TODO: in batch queries filter out the headers we do not have and do not send
+          // the empty list in case one or more headers are not available
+          peer.eth!.send('BlockHeaders', { reqId, headers: [] })
           return
         }
       }
