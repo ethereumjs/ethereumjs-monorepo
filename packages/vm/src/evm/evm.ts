@@ -18,7 +18,7 @@ import {
 } from '@ethereumjs/util'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 
-import EEI from './eei'
+import EEI from '../eei/eei'
 import { ERROR, VmError } from '../exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import Message, { MessageWithTo } from './message'
@@ -28,7 +28,7 @@ import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
 import { TransientStorage } from '../state'
 import { CustomOpcode, Log, RunCallOpts, RunCodeOpts, TxContext } from './types'
-import { VmState } from '../vmState'
+import { VmState } from '../eei/vmState'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
