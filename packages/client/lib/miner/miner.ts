@@ -1,7 +1,7 @@
 import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork, cliqueOpts } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
 import { FullEthereumService } from '../service'
@@ -49,7 +49,9 @@ export class Miner {
     this.execution = this.service.execution
     this.running = false
     this.assembling = false
-    this.period = (this.config.chainCommon.consensusConfig().period ?? this.DEFAULT_PERIOD) * 1000 // defined in ms for setTimeout use
+    this.period =
+      ((this.config.chainCommon.consensusConfig() as cliqueOpts).period ?? this.DEFAULT_PERIOD) *
+      1000 // defined in ms for setTimeout use
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
       const cacheDB = level()
       this.ethash = new Ethash(cacheDB)
