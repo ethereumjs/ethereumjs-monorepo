@@ -46,6 +46,9 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
 
 function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
   const vBN = toType(v, TypeOutput.BN)
+
+  if (vBN.eqn(0) || vBN.eqn(1)) return toType(v, TypeOutput.BN)
+
   if (!chainId) {
     return vBN.subn(27)
   }
@@ -60,6 +63,7 @@ function isValidSigRecovery(recovery: number | BN): boolean {
 
 /**
  * ECDSA public key recovery from signature.
+ * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Recovered public key
  */
 export const ecrecover = function (
@@ -80,6 +84,7 @@ export const ecrecover = function (
 
 /**
  * Convert signature parameters into the format of `eth_sign` RPC method.
+ * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
 export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
@@ -94,6 +99,7 @@ export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNL
 
 /**
  * Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
+ * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
 export const toCompactSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
@@ -115,6 +121,8 @@ export const toCompactSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?:
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
  * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
+ * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
+ * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
 export const fromRpcSig = function (sig: string): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
@@ -150,6 +158,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
 
 /**
  * Validate a ECDSA signature.
+ * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function (

@@ -150,6 +150,14 @@ tape('ecrecover', function (t) {
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
+  t.test('should recover a public key (v = 0)', function (st) {
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const v = 0
+    const pubkey = ecrecover(echash, v, r, s)
+    st.ok(pubkey.equals(privateToPublic(ecprivkey)))
+    st.end()
+  })
   t.test('should fail on an invalid signature (v = 21)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
@@ -312,6 +320,20 @@ tape('isValidSignature', function (t) {
     st.ok(isValidSignature(v, r, s))
     st.end()
   })
+  t.test('should work otherwise (v=0)', function (st) {
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const v = 0
+    st.ok(isValidSignature(v, r, s))
+    st.end()
+  })
+  t.test('should work otherwise (v=1)', function (st) {
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const v = 1
+    st.ok(isValidSignature(v, r, s))
+    st.end()
+  })
   t.test('should work otherwise (chainId=3)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
@@ -396,10 +418,34 @@ tape('message sig', function (t) {
     st.end()
   })
 
+  t.test('should support compact signature representation (EIP-2098) (v=0)', function (st) {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    st.equal(toCompactSig(0, r, s), sig)
+    st.deepEqual(fromRpcSig(sig), {
+      v: 27,
+      r,
+      s,
+    })
+    st.end()
+  })
+
   t.test('should support compact signature representation 2 (EIP-2098)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(28, r, s), sig)
+    st.deepEqual(fromRpcSig(sig), {
+      v: 28,
+      r,
+      s,
+    })
+    st.end()
+  })
+
+  t.test('should support compact signature representation 2 (EIP-2098) (v=1)', function (st) {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    st.equal(toCompactSig(1, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: 28,
       r,
@@ -478,7 +524,7 @@ tape('message sig', function (t) {
 
   t.test('should throw on invalid v value', function (st) {
     st.throws(function () {
-      toRpcSig(1, r, s)
+      toRpcSig(2, r, s)
     })
     st.end()
   })
