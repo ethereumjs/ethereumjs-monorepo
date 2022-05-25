@@ -1024,7 +1024,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): { [key: string]: any } {
+  consensusConfig(): { [key: string]: {} | { period: number; epoch: number } } {
     const hardfork = this.hardfork()
 
     let value
