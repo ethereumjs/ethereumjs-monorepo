@@ -8,7 +8,7 @@ import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBloc
 import EVM from './evm/evm'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VmState } from './vmState'
+import { VmState } from './eei/vmState'
 import { getActivePrecompiles } from './evm/precompiles'
 
 /**

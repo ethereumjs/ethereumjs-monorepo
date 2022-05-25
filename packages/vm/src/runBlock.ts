@@ -9,7 +9,7 @@ import Bloom from './bloom'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
 import DAOConfig from './config/dao_fork_accounts_config.json'
-import { VmState } from './vmState'
+import { VmState } from './eei/vmState'
 
 const debug = createDebugLogger('vm:block')
 
