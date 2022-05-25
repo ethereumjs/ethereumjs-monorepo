@@ -10,6 +10,7 @@ import {
   GenesisState,
   Hardfork as HardforkParams,
   nameType,
+  chainsType,
 } from './types'
 import mainnet from './chains/mainnet.json'
 import ropsten from './chains/ropsten.json'
