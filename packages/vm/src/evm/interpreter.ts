@@ -1,11 +1,11 @@
 import { debug as createDebugLogger } from 'debug'
 import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
-import { VmState } from '../vmState'
+import { VmState } from '../eei/vmState'
 
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
-import EEI from './eei'
+import EEI from '../eei/eei'
 import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
 import Common from '@ethereumjs/common'

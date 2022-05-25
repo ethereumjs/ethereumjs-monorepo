@@ -4,13 +4,13 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 
-import { VmState } from '../vmState'
+import { VmState } from './vmState'
 import { VmError, ERROR } from '../exceptions'
-import Message from './message'
-import EVM, { EVMResult } from './evm'
-import { Log } from './types'
+import Message from '../evm/message'
+import EVM, { EVMResult } from '../evm/evm'
+import { Log } from '../evm/types'
 import { TransientStorage } from '../state'
-import { addressToBuffer } from './opcodes'
+import { addressToBuffer } from '../evm/opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
