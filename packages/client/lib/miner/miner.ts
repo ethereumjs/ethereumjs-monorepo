@@ -1,7 +1,7 @@
 import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork, cliqueOpts } from '@ethereumjs/common'
+import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
 import { FullEthereumService } from '../service'
@@ -50,7 +50,7 @@ export class Miner {
     this.running = false
     this.assembling = false
     this.period =
-      ((this.config.chainCommon.consensusConfig() as cliqueOpts).period ?? this.DEFAULT_PERIOD) *
+      ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
       const cacheDB = level()

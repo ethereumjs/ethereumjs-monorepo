@@ -9,7 +9,7 @@ import {
   GenesisBlock,
   GenesisState,
   Hardfork as HardforkParams,
-  nameType,
+  ChainName,
   chainsType,
 } from './types'
 import mainnet from './chains/mainnet.json'
@@ -103,7 +103,7 @@ export enum ConsensusAlgorithm {
   Casper = 'casper',
 }
 
-export type cliqueOpts = {
+export type CliqueConfig = {
   period: number
   epoch: number
 }
@@ -321,7 +321,7 @@ export default class Common extends EventEmitter {
    */
   static isSupportedChainId(chainId: bigint): boolean {
     const initializedChains: chainsType = this._getInitializedChains()
-    return Boolean((initializedChains['names'] as nameType)[chainId.toString()])
+    return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
   private static _getChainParams(
@@ -332,8 +332,8 @@ export default class Common extends EventEmitter {
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
-      if ((initializedChains['names'] as nameType)[chain]) {
-        const name: string = (initializedChains['names'] as nameType)[chain]
+      if ((initializedChains['names'] as ChainName)[chain]) {
+        const name: string = (initializedChains['names'] as ChainName)[chain]
         return initializedChains[name] as IChain
       }
 
@@ -1030,7 +1030,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): { [key: string]: {} | cliqueOpts } {
+  consensusConfig(): { [key: string]: {} | CliqueConfig } {
     const hardfork = this.hardfork()
 
     let value
@@ -1058,7 +1058,7 @@ export default class Common extends EventEmitter {
   }
 
   static _getInitializedChains(customChains?: IChain[]): chainsType {
-    const names: nameType = {
+    const names: ChainName = {
       '1': 'mainnet',
       '3': 'ropsten',
       '4': 'rinkeby',

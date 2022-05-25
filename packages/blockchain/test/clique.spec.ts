@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import Common, {
   Chain,
-  cliqueOpts,
+  CliqueConfig,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
@@ -192,7 +192,7 @@ tape('Clique: Initialization', (t) => {
     ;(blockchain as any)._validateBlocks = false
     // _validateConsensus needs to be true to trigger this test condition
     ;(blockchain as any)._validateConsensus = true
-    const number = (COMMON.consensusConfig() as cliqueOpts).epoch
+    const number = (COMMON.consensusConfig() as CliqueConfig).epoch
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = Buffer.concat([
       Buffer.alloc(32),
