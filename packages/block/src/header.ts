@@ -26,6 +26,7 @@ import {
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
 } from './clique'
+import { HeaderValidationError, HeaderValidationErrorCode } from './errors'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -355,10 +356,15 @@ export class BlockHeader {
       throw new Error(msg)
     }
     if (transactionsTrie.length !== 32) {
-      const msg = this._errorMsg(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
+      const e = new HeaderValidationError(
+        'transactionsTrie must be 32 bytes',
+        HeaderValidationErrorCode.WRONG_TX_TRIE_LENGTH,
+        {
+          block: this.errorStr(),
+          received: `${transactionsTrie.toString('hex')} (${transactionsTrie.length} bytes)`,
+        }
       )
-      throw new Error(msg)
+      throw e
     }
     if (receiptTrie.length !== 32) {
       const msg = this._errorMsg(
