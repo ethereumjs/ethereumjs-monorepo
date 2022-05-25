@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1653321122711,
+  "lastUpdate": 1653523105887,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "739f839380bc11d794d560aabd11235f18b93d43",
-          "message": "VM, Common -> Implement EIP 3651: Warm COINBASE (#1814)\n\n* common: add eip 3651\r\n\r\n* vm: implement eip3651\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-03-25T10:09:21+01:00",
-          "tree_id": "7de42d04a110c1d350ee253d6b1d0614cd2c3a7c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/739f839380bc11d794d560aabd11235f18b93d43"
-        },
-        "date": 1648199654118,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19261,
-            "range": "±7.19%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20480,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17021,
-            "range": "±14.48%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20311,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20058,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.28%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ryan@ryanio.com",
+            "name": "Ryan Ghods",
+            "username": "ryanio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a133e27f98f3dd919594ddd2cce8db53edcbbef2",
+          "message": "client: small engine updates (#1902)\n\n* simplify txpool, fix runExecution, allow safe block to also be zeros during transition\r\n* fix beacon sync skeleton fill with new vmexecution.run loop param",
+          "timestamp": "2022-05-25T16:53:19-07:00",
+          "tree_id": "e02703f878196d5bcdb1e9f7e1e1449018246213",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a133e27f98f3dd919594ddd2cce8db53edcbbef2"
+        },
+        "date": 1653523104635,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16076,
+            "range": "±7.75%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17453,
+            "range": "±2.77%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16664,
+            "range": "±6.51%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 11682,
+            "range": "±23.43%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16925,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
