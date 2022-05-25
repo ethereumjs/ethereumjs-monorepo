@@ -844,7 +844,7 @@ export default class Common extends EventEmitter {
    * @param forkHash Fork hash as a hex string
    * @returns Array with hardfork data (name, block, forkHash)
    */
-  hardforkForForkHash(forkHash: string): any | null {
+  hardforkForForkHash(forkHash: string): HardforkParams | null {
     const resArray = this.hardforks().filter((hf: any) => {
       return hf.forkHash === forkHash
     })
