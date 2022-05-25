@@ -371,7 +371,7 @@ const expectedTestsFull: any = {
     FrontierToHomesteadAt5: 13,
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
-    BerlinToLondonAt5: 0,
+    BerlinToLondonAt5: 24,
   },
   GeneralStateTests: {
     Chainstart: 896,
