@@ -8,11 +8,11 @@ export interface genesisStatesType {
   [key: string]: {}
 }
 
+export interface nameType {
+  [key: string]: string
+}
 export interface chainsType {
-  names: {
-    [key: string]: string
-  }
-  [key: string]: any
+  [key: string]: Chain | nameType
 }
 
 export interface Chain {

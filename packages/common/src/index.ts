@@ -9,6 +9,7 @@ import {
   GenesisBlock,
   GenesisState,
   Hardfork as HardforkParams,
+  nameType,
 } from './types'
 import mainnet from './chains/mainnet.json'
 import ropsten from './chains/ropsten.json'
@@ -313,8 +314,8 @@ export default class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains: any = this._getInitializedChains()
-    return Boolean(initializedChains['names'][chainId.toString()])
+    const initializedChains: chainsType = this._getInitializedChains()
+    return Boolean((initializedChains['names'] as nameType)[chainId.toString()])
   }
 
   private static _getChainParams(
@@ -325,16 +326,16 @@ export default class Common extends EventEmitter {
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
-      if (initializedChains['names'][chain]) {
-        const name: string = initializedChains['names'][chain]
-        return initializedChains[name]
+      if ((initializedChains['names'] as nameType)[chain]) {
+        const name: string = (initializedChains['names'] as nameType)[chain]
+        return initializedChains[name] as IChain
       }
 
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
     if (initializedChains[chain]) {
-      return initializedChains[chain]
+      return initializedChains[chain] as IChain
     }
 
     throw new Error(`Chain with name ${chain} not supported`)
@@ -1050,8 +1051,8 @@ export default class Common extends EventEmitter {
     return copy
   }
 
-  static _getInitializedChains(customChains?: IChain[]) {
-    const names: any = {
+  static _getInitializedChains(customChains?: IChain[]): chainsType {
+    const names: nameType = {
       '1': 'mainnet',
       '3': 'ropsten',
       '4': 'rinkeby',
@@ -1059,7 +1060,7 @@ export default class Common extends EventEmitter {
       '5': 'goerli',
       '11155111': 'sepolia',
     }
-    const chains: any = {
+    const chains: chainsType = {
       mainnet,
       ropsten,
       rinkeby,
