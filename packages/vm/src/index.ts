@@ -9,7 +9,7 @@ import EVM from './evm/evm'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VmState } from './vmState'
+import { VmState } from './eei/vmState'
 import { getActivePrecompiles } from './evm/precompiles'
 
 /**
