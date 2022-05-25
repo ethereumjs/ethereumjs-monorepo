@@ -211,7 +211,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         t.comment(
-          `Expected storage key 0x${data.key.toString('hex')} to have value ${
+          `Expected storage key 0x${data.key.toString('hex')} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`
         )
@@ -222,7 +222,7 @@ export function verifyAccountPostConditions(
     rs.on('end', function () {
       for (const key in hashedStorage) {
         if (hashedStorage[key] !== '0x00') {
-          t.comment('key: ' + key + ' not found in storage')
+          t.comment(`key: ${key} not found in storage at address ${address}`)
         }
       }
 
