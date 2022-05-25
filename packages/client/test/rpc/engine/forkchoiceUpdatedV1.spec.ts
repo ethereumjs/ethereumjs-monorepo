@@ -211,7 +211,7 @@ tape(`${method}: unknown finalized block hash`, async (t) => {
       finalizedBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
     },
   ])
-  const expectRes = checkError(t, INVALID_PARAMS, 'finalized block hash not available')
+  const expectRes = checkError(t, INVALID_PARAMS, 'finalized block not available')
   await baseRequest(t, server, req, 200, expectRes)
 })
 
@@ -223,7 +223,7 @@ tape(`${method}: invalid safe block hash`, async (t) => {
       safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
     },
   ])
-  const expectRes = checkError(t, INVALID_PARAMS, 'safe block hash not available')
+  const expectRes = checkError(t, INVALID_PARAMS, 'safe block not available')
 
   await baseRequest(t, server, req, 200, expectRes)
 })

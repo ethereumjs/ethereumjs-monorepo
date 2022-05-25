@@ -2,7 +2,7 @@ import tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { Account, BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
@@ -69,8 +69,12 @@ tape('[Integration:FullEthereumService]', async (t) => {
     peer.eth!.send('NewBlock', [block, new BN(1)])
 
     const txData =
-      '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
+      '0x02f901100180843b9aca00843b9aca008402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const tx = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData))
+    await service.execution.vm.stateManager.putAccount(
+      tx.getSenderAddress(),
+      new Account(new BN(0), new BN('40000000000100000'))
+    )
     await service.txPool.add(tx)
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     t.equal(

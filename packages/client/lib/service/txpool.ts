@@ -16,7 +16,7 @@ import type { Block } from '@ethereumjs/block'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
-const MIN_GAS_PRICE = new BN(1000000000) // 1 GWei
+const MIN_GAS_PRICE = new BN(100000000) // .1 GWei
 const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
 const MAX_POOL_SIZE = 5000
 const MAX_TXS_PER_ACCOUNT = 100
@@ -72,6 +72,7 @@ export class TxPool {
   public running: boolean
 
   /* global NodeJS */
+  private _cleanupInterval: NodeJS.Timeout | undefined
   private _logInterval: NodeJS.Timeout | undefined
 
   /**
@@ -178,6 +179,10 @@ export class TxPool {
     if (this.running) {
       return false
     }
+    this._cleanupInterval = setInterval(
+      this.cleanup.bind(this),
+      this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60
+    )
     this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
     this.running = true
     this.config.logger.info('TxPool started.')
@@ -225,15 +230,11 @@ export class TxPool {
   }
 
   private validateTxGasBump(existingTx: TypedTransaction, addedTx: TypedTransaction) {
-    const existingTxGasPrice = this.txGasPrice(existingTx)
-    const newGasPrice = this.txGasPrice(addedTx)
-    const minTipCap = existingTxGasPrice.tip.add(
-      existingTxGasPrice.tip.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
-    )
-    const minFeeCap = existingTxGasPrice.maxFee.add(
-      existingTxGasPrice.maxFee.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100)
-    )
-    if (newGasPrice.tip.lt(minTipCap) || newGasPrice.maxFee.lt(minFeeCap)) {
+    const { maxFee: existingMaxFee, tip: existingTip } = this.txGasPrice(existingTx)
+    const { maxFee: newMaxFee, tip: newTip } = this.txGasPrice(addedTx)
+    const minTipCap = existingTip.add(existingTip.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
+    const minFeeCap = existingMaxFee.add(existingMaxFee.muln(MIN_GAS_PRICE_BUMP_PERCENT).divn(100))
+    if (newTip.lt(minTipCap) || newMaxFee.lt(minFeeCap)) {
       throw new Error('replacement gas too low')
     }
   }
@@ -251,17 +252,15 @@ export class TxPool {
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`
       )
     }
-    const currentGasPrice = this.txGasPrice(tx)
+    const { maxFee, tip } = this.txGasPrice(tx)
     // This is the tip which the miner receives: miner does not want
     // to mine underpriced txs where miner gets almost no fees
-    const currentTip = currentGasPrice.tip
     if (!isLocalTransaction) {
-      const txsInPool = this.txsInPool
-      if (txsInPool >= MAX_POOL_SIZE) {
+      if (this.txsInPool >= MAX_POOL_SIZE) {
         throw new Error('Cannot add tx: pool is full')
       }
       // Local txs are not checked against MIN_GAS_PRICE
-      if (currentTip.lt(MIN_GAS_PRICE)) {
+      if (tip.lt(MIN_GAS_PRICE)) {
         throw new Error(`Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`)
       }
     }
@@ -283,27 +282,27 @@ export class TxPool {
         this.validateTxGasBump(existingTxn.tx, tx)
       }
     }
-    const block = await this.service.chain.getLatestHeader()
-    if (block.baseFeePerGas) {
-      if (currentGasPrice.maxFee.lt(block.baseFeePerGas)) {
-        throw new Error(
-          `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee}.`
-        )
-      }
+    const latest = this.service.chain.headers.latest!
+    if (latest.baseFeePerGas && maxFee.lt(latest.baseFeePerGas.divn(2)) && !isLocalTransaction) {
+      throw new Error(
+        `Tx max fee of ${maxFee} not within 50% range of current basefee ${latest.baseFeePerGas}`
+      )
     }
-    if (tx.gasLimit.gt(block.gasLimit)) {
-      throw new Error(`Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit}`)
+    if (tx.gasLimit.gt(latest.gasLimit)) {
+      throw new Error(
+        `Tx gas limit of ${tx.gasLimit} exceeds last block gas limit of ${latest.gasLimit}`
+      )
     }
     const account = await this.vm.stateManager.getAccount(senderAddress)
     if (account.nonce.gt(tx.nonce)) {
       throw new Error(
-        `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
+        `Tx nonce too low for 0x${sender}, account has nonce ${account.nonce} and tx has nonce ${tx.nonce}`
       )
     }
-    const minimumBalance = tx.value.add(currentGasPrice.maxFee.mul(tx.gasLimit))
+    const minimumBalance = tx.value.add(maxFee.mul(tx.gasLimit))
     if (account.balance.lt(minimumBalance)) {
       throw new Error(
-        `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance}`
+        `Insufficient balance to cover transaction costs for 0x${sender}, need ${minimumBalance}, but have ${account.balance}`
       )
     }
   }
@@ -312,12 +311,12 @@ export class TxPool {
    * Adds a tx to the pool.
    *
    * If there is a tx in the pool with the same address and
-   * nonce it will be replaced by the new tx, if it has a sufficent gas bump.
+   * nonce it will be replaced by the new tx, if it has a sufficient gas bump.
    * This also verifies certain constraints, if these are not met, tx will not be added to the pool.
    * @param tx Transaction
-   * @param isLocalTransaction Boolean which is true if this is a local transaction (this drops some constraint checks)
+   * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
-  async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+  async add(tx: TypedTransaction, isLocalTransaction = false) {
     await this.validate(tx, isLocalTransaction)
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     let add: TxPoolObject[] = this.pool.get(address) ?? []
@@ -330,8 +329,8 @@ export class TxPool {
     const added = Date.now()
     add.push({ tx, added, hash })
     this.pool.set(address, add)
-    this.txsInPool++
     this.handled.set(hash, { address, added })
+    this.txsInPool++
   }
 
   /**
@@ -344,9 +343,7 @@ export class TxPool {
     for (const txHash of txHashes) {
       const txHashStr = txHash.toString('hex')
       const handled = this.handled.get(txHashStr)
-      if (!handled) {
-        continue
-      }
+      if (!handled) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
       if (inPool && inPool.length === 1) {
         found.push(inPool[0].tx)
@@ -360,14 +357,12 @@ export class TxPool {
    * @param txHash Hash of the transaction
    */
   removeByHash(txHash: UnprefixedHash) {
-    if (!this.handled.has(txHash)) {
-      return
-    }
-    const address = this.handled.get(txHash)!.address
-    if (!this.pool.has(address)) {
-      return
-    }
-    const newPoolObjects = this.pool.get(address)!.filter((poolObj) => poolObj.hash !== txHash)
+    const handled = this.handled.get(txHash)
+    if (!handled) return
+    const { address } = handled
+    const poolObjects = this.pool.get(address)
+    if (!poolObjects) return
+    const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
     this.txsInPool--
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
@@ -463,15 +458,12 @@ export class TxPool {
    * @param peerPool Reference to the {@link PeerPool}
    */
   async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txs.length === 0) {
-      return
-    }
+    if (!this.running || txs.length === 0) return
     this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
       txs.map((tx) => tx.hash()),
       peer
     )
-    this.cleanup()
 
     const newTxHashes = []
     for (const tx of txs) {
@@ -501,7 +493,6 @@ export class TxPool {
   async handleAnnouncedTxHashes(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
-    this.cleanup()
 
     const reqHashes = []
     for (const txHash of txHashes) {
@@ -550,9 +541,7 @@ export class TxPool {
    * Remove txs included in the latest blocks from the tx pool
    */
   removeNewBlockTxs(newBlocks: Block[]) {
-    if (!this.running) {
-      return
-    }
+    if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
         const txHash: UnprefixedHash = tx.hash().toString('hex')
@@ -567,27 +556,28 @@ export class TxPool {
   cleanup() {
     // Remove txs older than POOLED_STORAGE_TIME_LIMIT from the pool
     // as well as the list of txs being known by a peer
-    let compDate = Date.now() - this.POOLED_STORAGE_TIME_LIMIT * 60
-    for (const mapToClean of [this.pool, this.knownByPeer]) {
-      mapToClean.forEach((objects, key) => {
+    let compDate = Date.now() - this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60
+    for (const [i, mapToClean] of [this.pool, this.knownByPeer].entries()) {
+      for (const [key, objects] of mapToClean) {
         const updatedObjects = objects.filter((obj) => obj.added >= compDate)
         if (updatedObjects.length < objects.length) {
+          if (i === 0) this.txsInPool -= objects.length - updatedObjects.length
           if (updatedObjects.length === 0) {
             mapToClean.delete(key)
           } else {
             mapToClean.set(key, updatedObjects)
           }
         }
-      })
+      }
     }
 
     // Cleanup handled txs
-    compDate = Date.now() - this.HANDLED_CLEANUP_TIME_LIMIT * 60
-    this.handled.forEach((handleObj, address) => {
+    compDate = Date.now() - this.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60
+    for (const [address, handleObj] of this.handled) {
       if (handleObj.added < compDate) {
         this.handled.delete(address)
       }
-    })
+    }
   }
 
   /**
@@ -645,11 +635,11 @@ export class TxPool {
       )
       if (!txsSortedByNonce[0].nonce.eq(nonce)) {
         // Account nonce does not match the lowest known tx nonce,
-        // therefore no txs from this address are currently exectuable
+        // therefore no txs from this address are currently executable
         continue
       }
       if (baseFee) {
-        // If any tx has an insiffucient gasPrice,
+        // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx).lt(baseFee))
         if (found > -1) {
@@ -663,10 +653,10 @@ export class TxPool {
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
         this.normalizedGasPrice(b, baseFee).sub(this.normalizedGasPrice(a, baseFee)).ltn(0),
     })
-    byNonce.forEach((txs, address) => {
+    for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])
       byNonce.set(address, txs.slice(1))
-    })
+    }
     // Merge by replacing the best with the next from the same account
     while (byPrice.length > 0) {
       // Retrieve the next best transaction by price
@@ -689,11 +679,9 @@ export class TxPool {
    * Stop pool execution
    */
   stop(): boolean {
-    if (!this.running) {
-      return false
-    }
+    if (!this.running) return false
+    clearInterval(this._cleanupInterval as NodeJS.Timeout)
     clearInterval(this._logInterval as NodeJS.Timeout)
-
     this.running = false
     this.config.logger.info('TxPool stopped.')
     return true
@@ -704,13 +692,14 @@ export class TxPool {
    */
   close() {
     this.pool.clear()
+    this.handled.clear()
+    this.txsInPool = 0
     this.opened = false
   }
 
   _logPoolStats() {
-    const count = this.txsInPool
     this.config.logger.info(
-      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
+      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
     )
   }
 }

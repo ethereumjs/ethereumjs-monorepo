@@ -52,6 +52,9 @@ export class BeaconSynchronizer extends Synchronizer {
     await this.pool.open()
     await this.skeleton.open()
 
+    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
+    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+
     const subchain = this.skeleton.bounds()
     if (subchain) {
       const { head, tail, next } = subchain
@@ -104,9 +107,6 @@ export class BeaconSynchronizer extends Synchronizer {
   async start(block?: Block): Promise<void> {
     if (this.running) return
     this.running = true
-
-    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
-    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     if (block) {
       await this.skeleton.initSync(block)
@@ -245,11 +245,13 @@ export class BeaconSynchronizer extends Synchronizer {
    * Runs vm execution on {@link Event.CHAIN_UPDATED}
    */
   async runExecution(): Promise<void> {
-    // Execute single block when executed head is near chain head,
+    // Execute single block when within 50 blocks of head,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
-    const vmHead = (await this.chain.blockchain.getIteratorHead('vm')).header.number
-    if (this.chain.blocks.height.lt(vmHead.addn(50)) || this.chain.blocks.height.modrn(50) === 0) {
-      void this.execution.run()
+    if (
+      this.chain.blocks.height.gt(this.skeleton.bounds().head.subn(50)) ||
+      this.chain.blocks.height.modrn(50) === 0
+    ) {
+      void this.execution.run(false)
     }
   }
 
@@ -257,8 +259,6 @@ export class BeaconSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
-    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
     return super.stop()
   }
 
@@ -267,6 +267,8 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async close() {
     if (!this.opened) return
+    this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
     await super.close()
   }
 }

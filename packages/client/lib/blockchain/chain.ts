@@ -83,9 +83,6 @@ export class Chain {
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
-  public terminalPoWBlock: Block | undefined
-  public transitionPoSBlock: Block | undefined
-  public lastFinalizedBlockHash: Buffer | undefined
 
   private _headers: ChainHeaders = {
     latest: null,

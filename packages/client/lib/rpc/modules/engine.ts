@@ -536,23 +536,6 @@ export class Engine {
       }
     }
 
-    if (safeBlockHash !== headBlockHash) {
-      try {
-        await this.chain.getBlock(toBuffer(safeBlockHash))
-      } catch (error) {
-        const message = 'safe block hash not available'
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response: undefined,
-          error: message,
-        })
-        throw {
-          code: INVALID_PARAMS,
-          message,
-        }
-      }
-    }
-
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
@@ -601,19 +584,34 @@ export class Engine {
     }
 
     /*
-     * Process finalized block
-     * All zeros means no finalized block yet which is okay
+     * Process safe and finalized block
+     * Allowed to have zero value while transition block is finalizing
      */
-    const zeroHash = zeros(32)
-    const finalizedHash = toBuffer(finalizedBlockHash)
-    if (!finalizedHash.equals(zeroHash)) {
+    const zeroBlockHash = zeros(32)
+    const safe = toBuffer(safeBlockHash)
+    if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
       try {
-        this.chain.lastFinalizedBlockHash = (
-          await this.chain.getBlock(toBuffer(finalizedBlockHash))
-        ).hash()
+        await this.chain.getBlock(safe)
+      } catch (error) {
+        const message = 'safe block not available'
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response: undefined,
+          error: message,
+        })
+        throw {
+          code: INVALID_PARAMS,
+          message,
+        }
+      }
+    }
+    const finalized = toBuffer(finalizedBlockHash)
+    if (!finalized.equals(zeroBlockHash)) {
+      try {
+        await this.chain.getBlock(finalized)
       } catch (error) {
         throw {
-          message: 'finalized block hash not available',
+          message: 'finalized block not available',
           code: INVALID_PARAMS,
         }
       }

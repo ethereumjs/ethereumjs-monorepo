@@ -39,8 +39,7 @@ const config = new Config({ transports: [], common })
 const setup = () => {
   const service: any = {
     chain: {
-      headers: { height: new BN(0) },
-      getLatestHeader: () => BlockHeader.fromHeaderData({}),
+      headers: { height: new BN(0), latest: BlockHeader.fromHeaderData({}, { common }) },
     },
     execution: {
       vm: {
