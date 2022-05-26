@@ -408,7 +408,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x32,
     function (runState) {
-      runState.stack.push(runState.eei.getTxOrigin())
+      runState.stack.push(runState.interpreter.getTxOrigin())
     },
   ],
   // 0x33: CALLER
@@ -563,7 +563,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3a,
     function (runState) {
-      runState.stack.push(runState.eei.getTxGasPrice())
+      runState.stack.push(runState.interpreter.getTxGasPrice())
     },
   ],
   // '0x40' range - block operations
