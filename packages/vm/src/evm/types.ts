@@ -186,6 +186,11 @@ type CallFrameEnvironment = BaseFrameEnvironment & {
   data?: Buffer // The calldata
 }
 
+/**
+ * The frame environment holds all info of the current call/create frame
+ * Note that this will internally also hold information such as selfdestructed addresses,
+ * if the frame is static (due to previous STATICCALL), whatever AUTH parameter is set, etc.
+ */
 export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
 
 /**
@@ -248,8 +253,9 @@ export interface ExternalInterface {
 }
 
 type EVMResult = {
-  error: any // TODO Add error type
+  error?: any // TODO Add error type
   returnData: Buffer
+  logs: Log[]
 }
 
 export interface EVMInterface {
