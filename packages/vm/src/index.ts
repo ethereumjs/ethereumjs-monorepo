@@ -9,7 +9,8 @@ import EVM from './evm/evm'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { getActivePrecompiles } from './evm/precompiles'
-import { EIFactory } from './eei/eei'
+import EEI from './eei/eei'
+import { TransientStorage } from './state'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -120,8 +121,6 @@ export default class VM extends AsyncEventEmitter {
    */
   readonly stateManager: StateManager
 
-  readonly eiFactory: EIFactory
-
   /**
    * The blockchain the VM operates on
    */
@@ -231,16 +230,14 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
-    this.eiFactory = new EIFactory({
-      common: this._common,
-      stateManager: this.stateManager,
-    })
+    // TODO add options to pass in custom EEI. This should only happen if no EEI is passed in
+    this.ei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
 
     this.evm = new EVM({
       common: this._common,
-      vmState: this.eiFactory.state,
+      vmState: this.ei._state,
       blockchain: this.blockchain,
-      eiFactory: this.eiFactory,
+      ei: this.ei,
     })
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
@@ -268,24 +265,24 @@ export default class VM extends AsyncEventEmitter {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.eiFactory.state.generateCanonicalGenesis(this.blockchain.genesisState())
+        await this.ei._state.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.eiFactory.state.checkpoint()
+      await this.ei._state.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.eiFactory.state.getAccount(address)
+        const account = await this.ei._state.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
           const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
-          await this.eiFactory.state.putAccount(address, newAccount)
+          await this.ei._state.putAccount(address, newAccount)
         }
       }
-      await this.eiFactory.state.commit()
+      await this.ei._state.commit()
     }
     this._isInitialized = true
   }

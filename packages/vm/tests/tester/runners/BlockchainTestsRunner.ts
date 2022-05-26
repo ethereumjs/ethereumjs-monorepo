@@ -82,7 +82,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   // set up pre-state
-  await setupPreConditions(vm.eiFactory.state, testData)
+  await setupPreConditions(vm.ei._state, testData)
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
