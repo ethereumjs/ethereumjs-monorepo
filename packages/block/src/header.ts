@@ -1,4 +1,10 @@
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import Common, {
+  Chain,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  CliqueConfig,
+} from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,
@@ -657,7 +663,7 @@ export class BlockHeader {
     }
 
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      const period = this._common.consensusConfig().period
+      const period = (this._common.consensusConfig() as CliqueConfig).period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp + BigInt(period) > this.timestamp) {
         const msg = this._errorMsg('invalid timestamp diff (lower than period)')
@@ -835,7 +841,7 @@ export class BlockHeader {
    */
   cliqueIsEpochTransition(): boolean {
     this._requireClique('cliqueIsEpochTransition')
-    const epoch = BigInt(this._common.consensusConfig().epoch)
+    const epoch = BigInt((this._common.consensusConfig() as CliqueConfig).epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
     return this.number % epoch === BigInt(0)

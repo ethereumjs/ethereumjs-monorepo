@@ -9,6 +9,11 @@ import {
   GenesisBlock,
   GenesisState,
   Hardfork as HardforkParams,
+  ChainName,
+  ChainsType,
+  CliqueConfig,
+  EthashConfig,
+  CasperConfig,
 } from './types'
 import mainnet from './chains/mainnet.json'
 import ropsten from './chains/ropsten.json'
@@ -313,28 +318,28 @@ export default class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains: any = this._getInitializedChains()
-    return Boolean(initializedChains['names'][chainId.toString()])
+    const initializedChains: ChainsType = this._getInitializedChains()
+    return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
   private static _getChainParams(
     chain: string | number | Chain | bigint,
     customChains?: IChain[]
   ): IChain {
-    const initializedChains: any = this._getInitializedChains(customChains)
+    const initializedChains: ChainsType = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
-      if (initializedChains['names'][chain]) {
-        const name: string = initializedChains['names'][chain]
-        return initializedChains[name]
+      if ((initializedChains['names'] as ChainName)[chain]) {
+        const name: string = (initializedChains['names'] as ChainName)[chain]
+        return initializedChains[name] as IChain
       }
 
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
     if (initializedChains[chain]) {
-      return initializedChains[chain]
+      return initializedChains[chain] as IChain
     }
 
     throw new Error(`Chain with name ${chain} not supported`)
@@ -369,7 +374,7 @@ export default class Common extends EventEmitter {
    *     representation. Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
-  setChain(chain: string | number | Chain | bigint | object): any {
+  setChain(chain: string | number | Chain | bigint | object): IChain {
     if (typeof chain === 'number' || typeof chain === 'bigint' || typeof chain === 'string') {
       // Filter out genesis states if passed in to customChains
       let plainCustomChains: IChain[]
@@ -844,8 +849,8 @@ export default class Common extends EventEmitter {
    * @param forkHash Fork hash as a hex string
    * @returns Array with hardfork data (name, block, forkHash)
    */
-  hardforkForForkHash(forkHash: string): any | null {
-    const resArray = this.hardforks().filter((hf: any) => {
+  hardforkForForkHash(forkHash: string): HardforkParams | null {
+    const resArray = this.hardforks().filter((hf: HardforkParams) => {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
@@ -1023,7 +1028,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): { [key: string]: any } {
+  consensusConfig(): { [key: string]: CliqueConfig | EthashConfig | CasperConfig } {
     const hardfork = this.hardfork()
 
     let value
@@ -1038,7 +1043,7 @@ export default class Common extends EventEmitter {
       return value
     }
     const consensusAlgorithm = this.consensusAlgorithm()
-    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]
+    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]!
   }
 
   /**
@@ -1050,8 +1055,8 @@ export default class Common extends EventEmitter {
     return copy
   }
 
-  static _getInitializedChains(customChains?: IChain[]) {
-    const names: any = {
+  static _getInitializedChains(customChains?: IChain[]): ChainsType {
+    const names: ChainName = {
       '1': 'mainnet',
       '3': 'ropsten',
       '4': 'rinkeby',
@@ -1059,7 +1064,7 @@ export default class Common extends EventEmitter {
       '5': 'goerli',
       '11155111': 'sepolia',
     }
-    const chains: any = {
+    const chains: ChainsType = {
       mainnet,
       ropsten,
       rinkeby,
@@ -1079,3 +1084,5 @@ export default class Common extends EventEmitter {
     return chains
   }
 }
+
+export { CliqueConfig }
