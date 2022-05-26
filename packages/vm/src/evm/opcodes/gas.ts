@@ -266,7 +266,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const [_value, offset, length] = runState.stack.peek(3)
 
         if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, runState.eei.getAddress(), common, false)
+          gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
         }
 
         gas += subMemUsage(runState, offset, length, common)
@@ -429,7 +429,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, offset, length, common)
 
         if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, runState.eei.getAddress(), common, false)
+          gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
         }
 
         gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
@@ -544,7 +544,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let deductGas = false
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // EIP-161: State Trie Clearing
-          const balance = await runState.eei.getExternalBalance(runState.eei.getAddress())
+          const balance = await runState.eei.getExternalBalance(runState.interpreter.getAddress())
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
             // TODO: improve on the API here (EEI and StateManager)
