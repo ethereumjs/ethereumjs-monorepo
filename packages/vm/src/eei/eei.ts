@@ -176,13 +176,6 @@ export default class EEI {
   }
 
   /**
-   * Returns address of currently executing account.
-   */
-  getAddress(): Address {
-    return this._env.address
-  }
-
-  /**
    * Returns balance of the given account.
    * @param address - Address of account
    */

@@ -706,7 +706,7 @@ export default class EVM extends AsyncEventEmitter {
       eei._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 
-    const interpreter = new Interpreter(this, eei)
+    const interpreter = new Interpreter(this, eei, env)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result

@@ -10,9 +10,28 @@ import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import EOF from './eof'
 import Common from '@ethereumjs/common'
 import EVM from './evm'
+import { Block } from '@ethereumjs/block'
+import Blockchain from '@ethereumjs/blockchain'
 
 export interface InterpreterOpts {
   pc?: number
+}
+
+export interface Env {
+  blockchain: Blockchain
+  address: Address
+  caller: Address
+  callData: Buffer
+  callValue: bigint
+  code: Buffer
+  isStatic: boolean
+  depth: number
+  gasPrice: bigint
+  origin: Address
+  block: Block
+  contract: Account
+  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
+  auth?: Address /** EIP-3074 AUTH parameter */
 }
 
 export interface RunState {
@@ -28,7 +47,9 @@ export interface RunState {
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   vmState: VmState
   eei: EEI
+  env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
+  interpreter: Interpreter
 }
 
 export interface InterpreterResult {
@@ -67,11 +88,14 @@ export default class Interpreter {
   _eei: EEI
   _common: Common
   _evm: EVM
+  _env: Env
 
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(evm: EVM, eei: EEI) {
+  // TODO remove eei from constructor this can be directly read from EVM
+  // EEI gets created on EVM creation and will not be re-instantiated
+  constructor(evm: EVM, eei: EEI, env: Env) {
     this._evm = evm
     this._eei = eei
     this._state = eei._state
@@ -88,8 +112,11 @@ export default class Interpreter {
       validJumps: Uint8Array.from([]),
       vmState: this._state,
       eei: this._eei,
+      env: env,
       shouldDoJumpAnalysis: true,
+      interpreter: this,
     }
+    this._env = env
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -324,5 +351,16 @@ export default class Interpreter {
       }
     }
     return jumps
+  }
+
+  /**
+   * Logic extracted from EEI
+   */
+
+  /**
+   * Returns address of currently executing account.
+   */
+  getAddress(): Address {
+    return this._env.address
   }
 }
