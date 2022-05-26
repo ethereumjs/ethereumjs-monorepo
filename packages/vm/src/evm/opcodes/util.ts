@@ -179,7 +179,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
  * Writes data returned by eei.call* methods to memory
  */
 export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
-  const returnData = runState.eei.getReturnData()
+  const returnData = runState.interpreter.getReturnData()
   if (returnData.length > 0) {
     const memOffset = Number(outOffset)
     let dataLength = Number(outLength)
@@ -209,7 +209,7 @@ export function updateSstoreGas(
     return gas
   } else if (value.length === 0 && currentStorage.length > 0) {
     const gas = common.param('gasPrices', 'sstoreReset')
-    runState.eei.refundGas(common.param('gasPrices', 'sstoreRefund'), 'updateSstoreGas')
+    runState.interpreter.refundGas(common.param('gasPrices', 'sstoreRefund'), 'updateSstoreGas')
     return gas
   } else {
     /*
