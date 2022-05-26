@@ -1,15 +1,12 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
+import { Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
 import { VmError, ERROR } from '../exceptions'
 import Message from '../evm/message'
-import EVM, { EVMResult } from '../evm/evm'
-import { Log } from '../evm/types'
-import { TransientStorage } from '../state'
+import { EVMResult } from '../evm/evm'
+import { ExternalInterface, Log } from '../evm/types'
 import { addressToBuffer } from '../evm/opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
@@ -18,36 +15,14 @@ function trap(err: ERROR) {
   throw new VmError(err)
 }
 
-/**
- * Environment data which is made available to EVM bytecode.
- */
-export interface Env {
-  blockchain: Blockchain
-  address: Address
-  caller: Address
-  callData: Buffer
-  callValue: bigint
-  code: Buffer
-  isStatic: boolean
-  depth: number
-  gasPrice: bigint
-  origin: Address
-  block: Block
-  contract: Account
-  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
-  auth?: Address /** EIP-3074 AUTH parameter */
+interface Block {
+  header: {
+    hash(): Buffer
+  }
 }
 
-/**
- * Immediate (unprocessed) result of running an EVM bytecode.
- */
-export interface RunResult {
-  logs: Log[]
-  returnValue?: Buffer
-  /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
-   */
-  selfdestruct: { [k: string]: Buffer }
+interface Blockchain {
+  getBlock(number: Number): Promise<Block>
 }
 
 /**
@@ -58,36 +33,15 @@ export interface RunResult {
  * The EEI instance also keeps artifacts produced by the bytecode such as logs
  * and to-be-selfdestructed addresses.
  */
-export default class EEI {
-  _env: Env
-  _result: RunResult
+export default class EEI implements ExternalInterface {
   _state: VmState
-  _evm: EVM
-  _lastReturned: Buffer
   _common: Common
-  _gasLeft: bigint
-  _transientStorage: TransientStorage
+  _blockchain: Blockchain
 
-  constructor(
-    env: Env,
-    state: VmState,
-    evm: EVM,
-    common: Common,
-    gasLeft: bigint,
-    transientStorage: TransientStorage
-  ) {
-    this._env = env
+  constructor(state: VmState, common: Common, blockchain: Blockchain) {
     this._state = state
-    this._evm = evm
-    this._lastReturned = Buffer.alloc(0)
     this._common = common
-    this._gasLeft = gasLeft
-    this._result = {
-      logs: [],
-      returnValue: undefined,
-      selfdestruct: {},
-    }
-    this._transientStorage = transientStorage
+    this._blockchain = blockchain
   }
 
   /**
@@ -147,13 +101,6 @@ export default class EEI {
   }
 
   /**
-   * Returns address of currently executing account.
-   */
-  getAddress(): Address {
-    return this._env.address
-  }
-
-  /**
    * Returns balance of the given account.
    * @param address - Address of account
    */
@@ -166,66 +113,6 @@ export default class EEI {
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
     return account.balance
-  }
-
-  /**
-   * Returns balance of self.
-   */
-  getSelfBalance(): bigint {
-    return this._env.contract.balance
-  }
-
-  /**
-   * Returns caller address. This is the address of the account
-   * that is directly responsible for this execution.
-   */
-  getCaller(): bigint {
-    return bufferToBigInt(this._env.caller.buf)
-  }
-
-  /**
-   * Returns the deposited value by the instruction/transaction
-   * responsible for this execution.
-   */
-  getCallValue(): bigint {
-    return this._env.callValue
-  }
-
-  /**
-   * Returns input data in current environment. This pertains to the input
-   * data passed with the message call instruction or transaction.
-   */
-  getCallData(): Buffer {
-    return this._env.callData
-  }
-
-  /**
-   * Returns size of input data in current environment. This pertains to the
-   * input data passed with the message call instruction or transaction.
-   */
-  getCallDataSize(): bigint {
-    return BigInt(this._env.callData.length)
-  }
-
-  /**
-   * Returns the size of code running in current environment.
-   */
-  getCodeSize(): bigint {
-    return BigInt(this._env.code.length)
-  }
-
-  /**
-   * Returns the code running in current environment.
-   */
-  getCode(): Buffer {
-    return this._env.code
-  }
-
-  /**
-   * Returns true if the current call must be executed statically.
-   */
-  isStatic(): boolean {
-    return this._env.isStatic
   }
 
   /**
@@ -245,108 +132,6 @@ export default class EEI {
   async getExternalCode(address: bigint): Promise<Buffer> {
     const addr = new Address(addressToBuffer(address))
     return this._state.getContractCode(addr)
-  }
-
-  /**
-   * Returns size of current return data buffer. This contains the return data
-   * from the last executed call, callCode, callDelegate, callStatic or create.
-   * Note: create only fills the return data buffer in case of a failure.
-   */
-  getReturnDataSize(): bigint {
-    return BigInt(this._lastReturned.length)
-  }
-
-  /**
-   * Returns the current return data buffer. This contains the return data
-   * from last executed call, callCode, callDelegate, callStatic or create.
-   * Note: create only fills the return data buffer in case of a failure.
-   */
-  getReturnData(): Buffer {
-    return this._lastReturned
-  }
-
-  /**
-   * Returns price of gas in current environment.
-   */
-  getTxGasPrice(): bigint {
-    return this._env.gasPrice
-  }
-
-  /**
-   * Returns the execution's origination address. This is the
-   * sender of original transaction; it is never an account with
-   * non-empty associated code.
-   */
-  getTxOrigin(): bigint {
-    return bufferToBigInt(this._env.origin.buf)
-  }
-
-  /**
-   * Returns the block’s number.
-   */
-  getBlockNumber(): bigint {
-    return this._env.block.header.number
-  }
-
-  /**
-   * Returns the block's beneficiary address.
-   */
-  getBlockCoinbase(): bigint {
-    let coinbase: Address
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      coinbase = this._env.block.header.cliqueSigner()
-    } else {
-      coinbase = this._env.block.header.coinbase
-    }
-    return bufferToBigInt(coinbase.toBuffer())
-  }
-
-  /**
-   * Returns the block's timestamp.
-   */
-  getBlockTimestamp(): bigint {
-    return this._env.block.header.timestamp
-  }
-
-  /**
-   * Returns the block's difficulty.
-   */
-  getBlockDifficulty(): bigint {
-    return this._env.block.header.difficulty
-  }
-
-  /**
-   * Returns the block's prevRandao field.
-   */
-  getBlockPrevRandao(): bigint {
-    return bufferToBigInt(this._env.block.header.prevRandao)
-  }
-
-  /**
-   * Returns the block's gas limit.
-   */
-  getBlockGasLimit(): bigint {
-    return this._env.block.header.gasLimit
-  }
-
-  /**
-   * Returns the chain ID for current chain. Introduced for the
-   * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
-   */
-  getChainId(): bigint {
-    return this._common.chainId()
-  }
-
-  /**
-   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
-   */
-  getBlockBaseFee(): bigint {
-    const baseFee = this._env.block.header.baseFeePerGas
-    if (baseFee === undefined) {
-      // Sanity check
-      throw new Error('Block has no Base Fee')
-    }
-    return baseFee
   }
 
   /**
@@ -378,49 +163,6 @@ export default class EEI {
     } else {
       return this._state.getContractStorage(this._env.address, key)
     }
-  }
-
-  /**
-   * Store 256-bit a value in memory to transient storage.
-   * @param key - Storage key
-   * @param value - Storage value
-   */
-  transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._transientStorage.put(this._env.address, key, value)
-  }
-
-  /**
-   * Loads a 256-bit value to memory from transient storage.
-   * @param key - Storage key
-   */
-  transientStorageLoad(key: Buffer): Buffer {
-    return this._transientStorage.get(this._env.address, key)
-  }
-
-  /**
-   * Returns the current gasCounter.
-   */
-  getGasLeft(): bigint {
-    return this._gasLeft
-  }
-
-  /**
-   * Set the returning output data for the execution.
-   * @param returnData - Output data to return
-   */
-  finish(returnData: Buffer): void {
-    this._result.returnValue = returnData
-    trap(ERROR.STOP)
-  }
-
-  /**
-   * Set the returning output data for the execution. This will halt the
-   * execution immediately and set the execution result to "reverted".
-   * @param returnData - Output data to return
-   */
-  revert(returnData: Buffer): void {
-    this._result.returnValue = returnData
-    trap(ERROR.REVERT)
   }
 
   /**
