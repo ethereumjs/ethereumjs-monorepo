@@ -2,7 +2,6 @@ import { Account, Address, bufferToBigInt } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
-import EVM from '../evm/evm'
 import { ExternalInterfaceFactory } from '../evm/types'
 import { TransientStorage } from '../state'
 import { addressToBuffer } from '../evm/opcodes'
@@ -10,8 +9,6 @@ import { StateManager } from '@ethereumjs/statemanager'
 
 type CreateEIOptions = {
   transientStorage: TransientStorage
-  gasLeft: bigint
-  evm: EVM
   blockchain: Blockchain
 }
 
@@ -45,13 +42,7 @@ export class EIFactory implements ExternalInterfaceFactory {
   }
 
   createEI(options: CreateEIOptions) {
-    return new EEI(
-      this.state,
-      options.evm,
-      this.common,
-      options.transientStorage,
-      options.blockchain
-    )
+    return new EEI(this.state, this.common, options.transientStorage, options.blockchain)
   }
 }
 
@@ -73,20 +64,17 @@ type Blockchain = {
  */
 export default class EEI {
   _state: VmState
-  _evm: EVM
   _common: Common
   _transientStorage: TransientStorage
   _blockchain: Blockchain
 
   constructor(
     state: VmState,
-    evm: EVM,
     common: Common,
     transientStorage: TransientStorage,
     blockchain: Blockchain
   ) {
     this._state = state
-    this._evm = evm
     this._common = common
     this._transientStorage = transientStorage
     this._blockchain = blockchain

@@ -698,8 +698,6 @@ export default class EVM extends AsyncEventEmitter {
       codeAddress: message.codeAddress,
     }
     const eei = this._eiFactory.createEI({
-      evm: this,
-      gasLeft: message.gasLimit,
       transientStorage: this._transientStorage,
       blockchain: this._blockchain,
     })
