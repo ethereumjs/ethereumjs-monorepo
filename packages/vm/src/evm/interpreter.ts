@@ -370,4 +370,28 @@ export default class Interpreter {
   getSelfBalance(): bigint {
     return this._env.contract.balance
   }
+
+  /**
+   * Returns the deposited value by the instruction/transaction
+   * responsible for this execution.
+   */
+  getCallValue(): bigint {
+    return this._env.callValue
+  }
+
+  /**
+   * Returns input data in current environment. This pertains to the input
+   * data passed with the message call instruction or transaction.
+   */
+  getCallData(): Buffer {
+    return this._env.callData
+  }
+
+  /**
+   * Returns size of input data in current environment. This pertains to the
+   * input data passed with the message call instruction or transaction.
+   */
+  getCallDataSize(): bigint {
+    return BigInt(this._env.callData.length)
+  }
 }
