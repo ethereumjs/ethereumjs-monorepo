@@ -8,7 +8,7 @@ import Stack from './stack'
 import EEI from '../eei/eei'
 import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
-import Common from '@ethereumjs/common'
+import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM from './evm'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
@@ -438,5 +438,65 @@ export default class Interpreter {
    */
   getTxOrigin(): bigint {
     return bufferToBigInt(this._env.origin.buf)
+  }
+
+  /**
+   * Returns the block’s number.
+   */
+  getBlockNumber(): bigint {
+    return this._env.block.header.number
+  }
+
+  /**
+   * Returns the block's beneficiary address.
+   */
+  getBlockCoinbase(): bigint {
+    let coinbase: Address
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      coinbase = this._env.block.header.cliqueSigner()
+    } else {
+      coinbase = this._env.block.header.coinbase
+    }
+    return bufferToBigInt(coinbase.toBuffer())
+  }
+
+  /**
+   * Returns the block's timestamp.
+   */
+  getBlockTimestamp(): bigint {
+    return this._env.block.header.timestamp
+  }
+
+  /**
+   * Returns the block's difficulty.
+   */
+  getBlockDifficulty(): bigint {
+    return this._env.block.header.difficulty
+  }
+
+  /**
+   * Returns the block's prevRandao field.
+   */
+  getBlockPrevRandao(): bigint {
+    return bufferToBigInt(this._env.block.header.prevRandao)
+  }
+
+  /**
+   * Returns the block's gas limit.
+   */
+  getBlockGasLimit(): bigint {
+    return this._env.block.header.gasLimit
+  }
+
+  /**
+   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
+   */
+  getBlockBaseFee(): bigint {
+    const baseFee = this._env.block.header.baseFeePerGas
+    if (baseFee === undefined) {
+      // Sanity check
+      throw new Error('Block has no Base Fee')
+    }
+    return baseFee
   }
 }
