@@ -415,7 +415,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x33,
     function (runState) {
-      runState.stack.push(runState.eei.getCaller())
+      runState.stack.push(runState.interpreter.getCaller())
     },
   ],
   // 0x34: CALLVALUE
@@ -472,7 +472,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x38,
     function (runState) {
-      runState.stack.push(runState.eei.getCodeSize())
+      runState.stack.push(runState.interpreter.getCodeSize())
     },
   ],
   // 0x39: CODECOPY
@@ -482,7 +482,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, codeOffset, dataLength] = runState.stack.popN(3)
 
       if (dataLength !== BigInt(0)) {
-        const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
+        const data = getDataSlice(runState.interpreter.getCode(), codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
@@ -718,7 +718,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x56,
     function (runState) {
       const dest = runState.stack.pop()
-      if (dest > runState.eei.getCodeSize()) {
+      if (dest > runState.interpreter.getCodeSize()) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
@@ -737,7 +737,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [dest, cond] = runState.stack.popN(2)
       if (cond !== BigInt(0)) {
-        if (dest > runState.eei.getCodeSize()) {
+        if (dest > runState.interpreter.getCodeSize()) {
           trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
 
@@ -799,7 +799,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const dest = runState.stack.pop()
 
-      if (dest > runState.eei.getCodeSize()) {
+      if (dest > runState.interpreter.getCodeSize()) {
         trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
       }
 
@@ -832,7 +832,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_RANGE)
       }
       const loaded = bufferToBigInt(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.interpreter
+          .getCode()
+          .slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
@@ -890,7 +892,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xb4,
     function (runState) {
-      if (runState.eei.isStatic()) {
+      if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
       const [key, val] = runState.stack.popN(2)
@@ -930,7 +932,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf5,
     async function (runState) {
-      if (runState.eei.isStatic()) {
+      if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
