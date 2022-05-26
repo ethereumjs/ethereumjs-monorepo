@@ -306,7 +306,7 @@ export default class Interpreter {
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
-      gasRefund: this._eei._evm._refund,
+      gasRefund: this._evm._refund,
       opcode: {
         name: opcode.fullName,
         fee: opcode.fee,
