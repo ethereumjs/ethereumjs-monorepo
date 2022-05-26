@@ -235,29 +235,53 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('_calcForkHash()', function (st: tape.Test) {
+    const chains: [Chain, Buffer][] = [
+      [
+        Chain.Mainnet,
+        Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
+      ],
+      [
+        Chain.Ropsten,
+        Buffer.from('41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d', 'hex'),
+      ],
+      [
+        Chain.Rinkeby,
+        Buffer.from('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177', 'hex'),
+      ],
+      [
+        Chain.Kovan,
+        Buffer.from('a3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9', 'hex'),
+      ],
+      [
+        Chain.Goerli,
+        Buffer.from('bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a', 'hex'),
+      ],
+      [
+        Chain.Sepolia,
+        Buffer.from('25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9', 'hex'),
+      ],
+    ]
+
     let c = new Common({ chain: Chain.Mainnet })
+    const mainnetGenesisHash = chains[0][1]
     let msg = 'should calc correctly for chainstart (only genesis)'
-    st.equal(c._calcForkHash('chainstart'), '0xfc64ec04', msg)
+    st.equal(c._calcForkHash(Hardfork.Chainstart, mainnetGenesisHash), '0xfc64ec04', msg)
 
     msg = 'should calc correctly for first applied HF'
-    st.equal(c._calcForkHash('homestead'), '0x97c2c34c', msg)
+    st.equal(c._calcForkHash(Hardfork.Homestead, mainnetGenesisHash), '0x97c2c34c', msg)
 
     msg = 'should calc correctly for in-between applied HF'
-    st.equal(c._calcForkHash(Hardfork.Byzantium), '0xa00bc324', msg)
+    st.equal(c._calcForkHash(Hardfork.Byzantium, mainnetGenesisHash), '0xa00bc324', msg)
 
-    const chains = ['mainnet', 'ropsten', 'rinkeby', 'goerli', 'kovan']
-
-    chains.forEach((chain) => {
-      c = new Common({ chain: chain })
-
+    for (const [chain, genesisHash] of chains) {
+      c = new Common({ chain })
       for (const hf of c.hardforks()) {
         if (hf.forkHash && hf.forkHash !== null) {
-          const msg = `Verify forkHash calculation for: ${chain} -> ${hf.name}`
-          st.equal(c._calcForkHash(hf.name), hf.forkHash, msg)
+          const msg = `Verify forkHash calculation for: ${Chain[chain]} -> ${hf.name}`
+          st.equal(c._calcForkHash(hf.name, genesisHash), hf.forkHash, msg)
         }
       }
-    })
-
+    }
     st.end()
   })
 
@@ -268,6 +292,11 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'should provide correct forkHash for HF provided'
     st.equal(c.forkHash(Hardfork.SpuriousDragon), '0x3edd5b10', msg)
+    const genesisHash = Buffer.from(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      'hex'
+    )
+    st.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
     c = new Common({ chain: Chain.Kovan })
     let f = () => {

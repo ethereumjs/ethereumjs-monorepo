@@ -1,13 +1,14 @@
 import tape from 'tape'
+import Blockchain from '@ethereumjs/blockchain'
 import Common, { Hardfork } from '@ethereumjs/common'
 import testChain from './testdata/testnet.json'
 import VM from '../../src'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { AccountState } from '@ethereumjs/common/dist/types'
 import { Interface } from '@ethersproject/abi'
 import { Address } from 'ethereumjs-util'
 import testnetMerge from './testdata/testnetMerge.json'
+import type { AccountState } from '@ethereumjs/blockchain/dist/genesisStates'
 
 const storage: Array<[string, string]> = [
   [
@@ -40,14 +41,13 @@ const genesisState = {
 
 const common = new Common({
   chain: 'testnet',
-  hardfork: 'london',
-  customChains: [[testChain, genesisState]],
+  hardfork: Hardfork.Chainstart,
+  customChains: [testChain],
 })
 const block = Block.fromBlockData(
   {
     header: {
       gasLimit: 21_000,
-      baseFeePerGas: 7,
     },
   },
   {
@@ -59,24 +59,23 @@ const privateKey = Buffer.from(
   'hex'
 )
 
-tape('VM initialized with custom state ', (t) => {
+tape('VM initialized with custom state', (t) => {
   t.test('should transfer eth from already existent account', async (t) => {
-    const vm = await VM.create({ common, activateGenesisState: true })
+    const blockchain = await Blockchain.create({ common, genesisState })
+    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
 
     const to = '0x00000000000000000000000000000000000000ff'
-    const unsignedTransferTx = TransactionFactory.fromTxData(
+    const tx = TransactionFactory.fromTxData(
       {
-        type: 2,
+        type: 0,
         to,
         value: '0x1',
         gasLimit: 21_000,
-        maxFeePerGas: 7,
       },
       {
         common,
       }
-    )
-    const tx = unsignedTransferTx.sign(privateKey)
+    ).sign(privateKey)
     const result = await vm.runTx({
       tx,
       block,
@@ -90,7 +89,9 @@ tape('VM initialized with custom state ', (t) => {
   })
 
   t.test('should retrieve value from storage', async (t) => {
-    const vm = await VM.create({ common, activateGenesisState: true })
+    const blockchain = await Blockchain.create({ common, genesisState })
+    common.setHardfork(Hardfork.London)
+    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
     const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
 
     const callResult = await vm.evm.runCall({
@@ -99,7 +100,7 @@ tape('VM initialized with custom state ', (t) => {
       caller: Address.fromPrivateKey(privateKey),
     })
 
-    const [, , storage] = genesisState[contractAddress]
+    const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
     t.equal(callResult.execResult.returnValue.toString('hex'), storage[0][1].slice(2))

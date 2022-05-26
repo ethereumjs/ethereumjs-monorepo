@@ -7,7 +7,7 @@ import testnet from './testdata/testnet.json'
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
   const blocks: Block[] = []
   const londonBlockNumber = Number(common.hardforkBlock('london')!)
-  const genesis = Block.genesis({}, { common })
+  const genesis = blockchain.genesisBlock()
   blocks.push(genesis)
 
   for (let number = 1; number <= height; number++) {
@@ -65,7 +65,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
 
     t.equal(
       genesisHeader.hash().toString('hex'),
-      'ac9c82e94824e583ab7972ee0f48b520912ffd5456ae4c62943852c3fb31876d',
+      '3e0e17c453381eef61324c91a30fdc739a928dbe7b90c918857fd863e9915d88',
       'genesis hash matches'
     )
     await buildChain(blockchain, s.common, 15)

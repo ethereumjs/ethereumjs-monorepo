@@ -75,7 +75,7 @@ export class VMExecution extends Execution {
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
     if (number === BigInt(0)) {
-      await this.vm.vmState.generateCanonicalGenesis()
+      await this.vm.vmState.generateCanonicalGenesis(this.vm.blockchain.genesisState())
     }
   }
 

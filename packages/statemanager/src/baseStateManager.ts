@@ -146,6 +146,4 @@ export abstract class BaseStateManager {
   async flush(): Promise<void> {
     await this._cache.flush()
   }
-
-  abstract hasGenesisState(): Promise<boolean>
 }

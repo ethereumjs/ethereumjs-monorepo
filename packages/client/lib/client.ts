@@ -6,10 +6,14 @@ import { Event } from './types'
 import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+import type Blockchain from '@ethereumjs/blockchain'
 
 export interface EthereumClientOptions {
-  /* Client configuration */
+  /** Client configuration */
   config: Config
+
+  /** Custom blockchain (optional) */
+  blockchain?: Blockchain
 
   /**
    * Database to store blocks and metadata.

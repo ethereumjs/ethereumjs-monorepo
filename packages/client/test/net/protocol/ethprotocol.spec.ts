@@ -47,7 +47,7 @@ tape('[EthProtocol]', (t) => {
     })
     Object.defineProperty(chain, 'genesis', {
       get: () => {
-        return { hash: '0xbb' }
+        return { hash: () => '0xbb' }
       },
     })
     t.deepEquals(

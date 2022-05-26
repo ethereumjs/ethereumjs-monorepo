@@ -39,5 +39,6 @@ export function mockBlockchain(options: any = {}) {
     getCanonicalHeadHeader: () => {
       return Block.fromBlockData().header
     },
+    genesisBlock: () => block,
   }
 }

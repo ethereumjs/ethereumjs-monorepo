@@ -38,7 +38,7 @@ function createBlock(
         number,
         parentHash: parentBlock.hash(),
         timestamp,
-        gasLimit: BigInt(5000),
+        gasLimit: parentBlock.header.gasLimit,
         extraData: Buffer.from(extraData),
         uncleHash,
         baseFeePerGas,

@@ -154,26 +154,37 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       await blockchain.putBlock(block)
 
-      // This is a trick to avoid generating the canonical genesis
-      // state. Generating the genesis state is not needed because
-      // blockchain tests come with their own `pre` world state.
-      // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root
-      await vm.runBlockchain()
-      const headBlock = await vm.blockchain.getIteratorHead()
+      try {
+        await blockchain.iterator('vm', async (block: Block) => {
+          const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+          const parentState = parentBlock.header.stateRoot
+          // run block, update head if valid
+          try {
+            await vm.runBlock({ block, root: parentState })
+            // set as new head block
+          } catch (error: any) {
+            // remove invalid block
+            await blockchain!.delBlock(block.header.hash())
+            throw error
+          }
+        })
+      } catch (e: any) {
+        // if the test fails, then block.header is the prev because
+        // vm.runBlock has a check that prevents the actual postState from being
+        // imported if it is not equal to the expected postState. it is useful
+        // for debugging to skip this, so that verifyPostConditions will compare
+        // testData.postState to the actual postState, rather than to the preState.
+        if (!options.debug) {
+          // make sure the state is set before checking post conditions
+          const headBlock = await vm.blockchain.getIteratorHead()
+          vm.stateManager._trie.root = headBlock.header.stateRoot
+        }
 
-      // if the test fails, then block.header is the prev because
-      // vm.runBlock has a check that prevents the actual postState from being
-      // imported if it is not equal to the expected postState. it is useful
-      // for debugging to skip this, so that verifyPostConditions will compare
-      // testData.postState to the actual postState, rather than to the preState.
-      if (!options.debug) {
-        // make sure the state is set before checking post conditions
-        vm.stateManager._trie.root = headBlock.header.stateRoot
-      }
+        if (options.debug) {
+          await verifyPostConditions(state, testData.postState, t)
+        }
 
-      if (options.debug) {
-        await verifyPostConditions(state, testData.postState, t)
+        throw e
       }
 
       await cacheDB.close()
@@ -183,9 +194,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         return
       }
     } catch (error: any) {
-      if (options.debug) {
-        await verifyPostConditions(state, testData.postState, t)
-      }
       // caught an error, reduce block number
       currentBlock--
       await handleError(error, expectException)

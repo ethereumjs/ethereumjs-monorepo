@@ -111,7 +111,7 @@ Currently the following sync scenarios are **supported**:
 
 **Unsupported** sync scenarios:
 
-- **CL client ahead of EL client**: if the CL client has been synced without the EL client being connected and is therefore *ahead* of the EL client post Merge, sync will not be able to fully resume (this will need an optimistic sync implementation)
+- **CL client ahead of EL client**: if the CL client has been synced without the EL client being connected and is therefore _ahead_ of the EL client post Merge, sync will not be able to fully resume (this will need an optimistic sync implementation)
 
 ### Custom Chains
 
@@ -119,7 +119,7 @@ The EthereumJS client supports running custom chains based on a custom chain con
 
 #### Common-based Configuration
 
-We have got our own flexible chain configuration and genesis state configuration format applied in the `Common` library, see the `Common` [chain JSON files](../common/src/chains/) as well as corresponding [Genesis JSON files](../common/src/genesisStates/) for inspiration.
+We have got our own flexible chain configuration and genesis state configuration format applied in the `Common` library, see the `Common` [chain JSON files](../common/src/chains/) as well as corresponding blockchain [Genesis JSON files](../blockchain/src/genesisStates/) for inspiration.
 
 Custom chain files following this format can be passed in to the client with the following options:
 

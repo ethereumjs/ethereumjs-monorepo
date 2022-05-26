@@ -1,7 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { toBuffer } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
@@ -65,13 +64,6 @@ export interface ChainHeaders {
    * The height of the headerchain
    */
   height: bigint
-}
-
-/**
- * common.genesis() <any> with all values converted to Buffer
- */
-export interface GenesisBlockParams {
-  [key: string]: Buffer
 }
 
 /**
@@ -148,15 +140,10 @@ export class Chain {
   }
 
   /**
-   * Genesis block parameters
+   * Genesis block for the chain
    */
-  get genesis(): GenesisBlockParams {
-    const genesis = this.config.chainCommon.genesis()
-    const genesisParams: GenesisBlockParams = {}
-    Object.entries(genesis).forEach(([k, v]) => {
-      genesisParams[k] = toBuffer(v as string)
-    })
-    return genesisParams
+  get genesis() {
+    return this.blockchain.genesisBlock()
   }
 
   /**

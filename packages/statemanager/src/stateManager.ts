@@ -483,17 +483,6 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
-   * Checks whether the current instance has the canonical genesis state
-   * for the configured chain parameters.
-   * @returns {Promise<boolean>} - Whether the storage trie contains the
-   * canonical genesis state for the configured chain parameters.
-   */
-  async hasGenesisState(): Promise<boolean> {
-    const root = this._common.genesis().stateRoot
-    return await this._trie.checkRoot(toBuffer(root))
-  }
-
-  /**
    * Checks if the `account` corresponding to `address`
    * exists
    * @param address - Address of the `account` to check
