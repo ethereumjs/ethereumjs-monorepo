@@ -421,7 +421,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x34,
     function (runState) {
-      runState.stack.push(runState.eei.getCallValue())
+      runState.stack.push(runState.interpreter.getCallValue())
     },
   ],
   // 0x35: CALLDATALOAD
@@ -429,13 +429,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x35,
     function (runState) {
       const pos = runState.stack.pop()
-      if (pos > runState.eei.getCallDataSize()) {
+      if (pos > runState.interpreter.getCallDataSize()) {
         runState.stack.push(BigInt(0))
         return
       }
 
       const i = Number(pos)
-      let loaded = runState.eei.getCallData().slice(i, i + 32)
+      let loaded = runState.interpreter.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
       let r = bufferToBigInt(loaded)
       if (loaded.length < 32) {
@@ -448,7 +448,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x36,
     function (runState) {
-      const r = runState.eei.getCallDataSize()
+      const r = runState.interpreter.getCallDataSize()
       runState.stack.push(r)
     },
   ],
@@ -459,7 +459,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, dataOffset, dataLength] = runState.stack.popN(3)
 
       if (dataLength !== BigInt(0)) {
-        const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
+        const data = getDataSlice(runState.interpreter.getCallData(), dataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const dataLengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, dataLengthNum)
@@ -1000,7 +1000,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf4,
     async function (runState) {
-      const value = runState.eei.getCallValue()
+      const value = runState.interpreter.getCallValue()
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
