@@ -499,4 +499,12 @@ export default class Interpreter {
     }
     return baseFee
   }
+
+  /**
+   * Returns the chain ID for current chain. Introduced for the
+   * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
+   */
+  getChainId(): bigint {
+    return this._common.chainId()
+  }
 }
