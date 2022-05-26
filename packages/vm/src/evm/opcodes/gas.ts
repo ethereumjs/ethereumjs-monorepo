@@ -187,7 +187,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* SSTORE */
       0x55,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei.isStatic()) {
+        if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
         const [key, val] = runState.stack.peek(2)
@@ -237,7 +237,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* LOG */
       0xa0,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei.isStatic()) {
+        if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
 
@@ -260,7 +260,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* CREATE */
       0xf0,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei.isStatic()) {
+        if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
         const [_value, offset, length] = runState.stack.peek(3)
@@ -286,7 +286,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState.stack.peek(7)
         const toAddress = new Address(addressToBuffer(toAddr))
 
-        if (runState.eei.isStatic() && value !== BigInt(0)) {
+        if (runState.interpreter.isStatic() && value !== BigInt(0)) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
         gas += subMemUsage(runState, inOffset, inLength, common)
@@ -420,7 +420,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* CREATE2 */
       0xf5,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei.isStatic()) {
+        if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
 
@@ -544,7 +544,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* SELFDESTRUCT */
       0xff,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei.isStatic()) {
+        if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
         const selfdestructToaddressBigInt = runState.stack.peek()[0]

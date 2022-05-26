@@ -191,35 +191,6 @@ export default class EEI {
   }
 
   /**
-   * Returns caller address. This is the address of the account
-   * that is directly responsible for this execution.
-   */
-  getCaller(): bigint {
-    return bufferToBigInt(this._env.caller.buf)
-  }
-
-  /**
-   * Returns the size of code running in current environment.
-   */
-  getCodeSize(): bigint {
-    return BigInt(this._env.code.length)
-  }
-
-  /**
-   * Returns the code running in current environment.
-   */
-  getCode(): Buffer {
-    return this._env.code
-  }
-
-  /**
-   * Returns true if the current call must be executed statically.
-   */
-  isStatic(): boolean {
-    return this._env.isStatic
-  }
-
-  /**
    * Get size of an account’s code.
    * @param address - Address of account
    */

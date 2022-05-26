@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, bigIntToHex, intToHex } from '@ethereumjs/util'
+import { Account, Address, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { VmState } from '../eei/vmState'
 
 import { ERROR, VmError } from '../exceptions'
@@ -393,5 +393,34 @@ export default class Interpreter {
    */
   getCallDataSize(): bigint {
     return BigInt(this._env.callData.length)
+  }
+
+  /**
+   * Returns caller address. This is the address of the account
+   * that is directly responsible for this execution.
+   */
+  getCaller(): bigint {
+    return bufferToBigInt(this._env.caller.buf)
+  }
+
+  /**
+   * Returns the size of code running in current environment.
+   */
+  getCodeSize(): bigint {
+    return BigInt(this._env.code.length)
+  }
+
+  /**
+   * Returns the code running in current environment.
+   */
+  getCode(): Buffer {
+    return this._env.code
+  }
+
+  /**
+   * Returns true if the current call must be executed statically.
+   */
+  isStatic(): boolean {
+    return this._env.isStatic
   }
 }
