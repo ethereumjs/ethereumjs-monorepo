@@ -573,7 +573,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const number = runState.stack.pop()
 
-      const diff = runState.eei.getBlockNumber() - number
+      const diff = runState.interpreter.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
       if (diff > BigInt(256) || diff <= BigInt(0)) {
         runState.stack.push(BigInt(0))
@@ -588,21 +588,21 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x41,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockCoinbase())
+      runState.stack.push(runState.interpreter.getBlockCoinbase())
     },
   ],
   // 0x42: TIMESTAMP
   [
     0x42,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockTimestamp())
+      runState.stack.push(runState.interpreter.getBlockTimestamp())
     },
   ],
   // 0x43: NUMBER
   [
     0x43,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockNumber())
+      runState.stack.push(runState.interpreter.getBlockNumber())
     },
   ],
   // 0x44: DIFFICULTY (EIP-4399: supplanted as PREVRANDAO)
@@ -610,9 +610,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x44,
     function (runState, common) {
       if (common.isActivatedEIP(4399)) {
-        runState.stack.push(runState.eei.getBlockPrevRandao())
+        runState.stack.push(runState.interpreter.getBlockPrevRandao())
       } else {
-        runState.stack.push(runState.eei.getBlockDifficulty())
+        runState.stack.push(runState.interpreter.getBlockDifficulty())
       }
     },
   ],
@@ -620,7 +620,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x45,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockGasLimit())
+      runState.stack.push(runState.interpreter.getBlockGasLimit())
     },
   ],
   // 0x46: CHAINID
@@ -641,7 +641,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x48,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockBaseFee())
+      runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
   // 0x50 range - 'storage' and execution
