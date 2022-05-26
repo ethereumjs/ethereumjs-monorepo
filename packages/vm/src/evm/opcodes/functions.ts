@@ -390,7 +390,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = bufferToBigInt(runState.eei.getAddress().buf)
+      const address = bufferToBigInt(runState.interpreter.getAddress().buf)
       runState.stack.push(address)
     },
   ],

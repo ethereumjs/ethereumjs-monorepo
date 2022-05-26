@@ -42,7 +42,7 @@ export function addressToBuffer(address: bigint | Buffer) {
  */
 export function describeLocation(runState: RunState): string {
   const hash = bytesToHex(keccak256(runState.eei.getCode()))
-  const address = runState.eei.getAddress().buf.toString('hex')
+  const address = runState.interpreter.getAddress().buf.toString('hex')
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`
 }

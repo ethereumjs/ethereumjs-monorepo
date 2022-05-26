@@ -57,7 +57,7 @@ export function accessStorageEIP2929(
   if (!common.isActivatedEIP(2929)) return BigInt(0)
 
   const vmState = runState.vmState
-  const address = runState.eei.getAddress().buf
+  const address = runState.interpreter.getAddress().buf
   const slotIsCold = !vmState.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
@@ -90,7 +90,7 @@ export function adjustSstoreGasEIP2929(
   if (!common.isActivatedEIP(2929)) return defaultCost
 
   const vmState = runState.vmState
-  const address = runState.eei.getAddress().buf
+  const address = runState.interpreter.getAddress().buf
   const warmRead = common.param('gasPrices', 'warmstorageread')
   const coldSload = common.param('gasPrices', 'coldsload')
 
