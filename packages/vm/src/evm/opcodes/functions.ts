@@ -633,7 +633,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x47,
     function (runState) {
-      runState.stack.push(runState.eei.getSelfBalance())
+      runState.stack.push(runState.interpreter.getSelfBalance())
     },
   ],
   // 0x48: BASEFEE
