@@ -1,6 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { Account, Address } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import EEI from '../eei/eei'
+import { VmState } from '../eei/vmState'
 import EVM from './evm'
 import Message from './message'
 import { OpHandler } from './opcodes'
@@ -282,6 +284,8 @@ export interface ExternalInterface {
 
 export interface ExternalInterfaceFactory {
   createEI(options?: any): EEI // TODO change this to ExternalInterface
+  state: VmState
+  common: Common
 }
 
 type EVMResult = {

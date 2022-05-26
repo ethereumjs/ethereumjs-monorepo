@@ -74,7 +74,7 @@ export default class Interpreter {
   constructor(evm: EVM, eei: EEI) {
     this._evm = evm
     this._eei = eei
-    this._state = this._evm._state
+    this._state = eei._state
     this._common = this._evm._common
     this._runState = {
       programCounter: 0,

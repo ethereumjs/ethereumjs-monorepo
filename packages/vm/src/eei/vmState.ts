@@ -10,6 +10,7 @@ import { debug as createDebugLogger, Debugger } from 'debug'
 
 type AddressHex = string
 
+// TODO move me to EVM
 interface VmStateAccess extends StateAccess {
   touchAccount(address: Address): void
   addWarmedAddress(address: Buffer): void
