@@ -41,7 +41,7 @@ export function addressToBuffer(address: bigint | Buffer) {
  * Error message helper - generates location string
  */
 export function describeLocation(runState: RunState): string {
-  const hash = bytesToHex(keccak256(runState.eei.getCode()))
+  const hash = bytesToHex(keccak256(runState.interpreter.getCode()))
   const address = runState.interpreter.getAddress().buf.toString('hex')
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`
