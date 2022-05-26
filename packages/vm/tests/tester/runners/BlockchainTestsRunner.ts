@@ -154,23 +154,27 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       vm._common.genesis().stateRoot = vm.stateManager._trie.root
-      await vm.runBlockchain()
-      const headBlock = await vm.blockchain.getHead()
+      try {
+        await vm.runBlockchain()
+      } catch (e: any) {
+        const headBlock = await vm.blockchain.getHead()
 
-      // if the test fails, then block.header is the prev because
-      // vm.runBlock has a check that prevents the actual postState from being
-      // imported if it is not equal to the expected postState. it is useful
-      // for debugging to skip this, so that verifyPostConditions will compare
-      // testData.postState to the actual postState, rather than to the preState.
-      if (!options.debug) {
-        // make sure the state is set before checking post conditions
-        vm.stateManager._trie.root = headBlock.header.stateRoot
+        // if the test fails, then block.header is the prev because
+        // vm.runBlock has a check that prevents the actual postState from being
+        // imported if it is not equal to the expected postState. it is useful
+        // for debugging to skip this, so that verifyPostConditions will compare
+        // testData.postState to the actual postState, rather than to the preState.
+        if (!options.debug) {
+          // make sure the state is set before checking post conditions
+          vm.stateManager._trie.root = headBlock.header.stateRoot
+        }
+
+        if (options.debug) {
+          await verifyPostConditions(state, testData.postState, t)
+        }
+
+        throw e
       }
-
-      if (options.debug) {
-        await verifyPostConditions(state, testData.postState, t)
-      }
-
       await cacheDB.close()
 
       if (expectException) {

@@ -70,7 +70,7 @@ export function dumpState(state: any, cb: Function) {
   })
 }
 
-export function format(a: any, toZero: boolean = false, isHex: boolean = false) {
+export function format(a: any, toZero: boolean = false, isHex: boolean = false): Buffer {
   if (a === '') {
     return Buffer.alloc(0)
   }
@@ -144,14 +144,14 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        t.fail('invalid account in the trie: ' + <string>key)
+        t.comment('invalid account in the trie: ' + <string>key)
       }
     })
 
     stream.on('end', async function () {
       await Promise.all(queue)
       for (const [_key, address] of Object.entries(keyMap)) {
-        t.fail(`Missing account!: ${address}`)
+        t.comment(`Missing account!: ${address}`)
       }
       resolve()
     })
@@ -174,12 +174,19 @@ export function verifyAccountPostConditions(
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
-    t.ok(format(account.balance, true).equals(format(acctData.balance, true)), 'correct balance')
-    t.ok(format(account.nonce, true).equals(format(acctData.nonce, true)), 'correct nonce')
+    if (!format(account.balance, true).equals(format(acctData.balance, true))) {
+      t.comment(
+        `Expected balance of ${new BN(format(acctData.balance, true))}, but got ${account.balance}`
+      )
+    }
+    if (!format(account.nonce, true).equals(format(acctData.nonce, true))) {
+      t.comment(
+        `Expected nonce of ${new BN(format(acctData.nonce, true))}, but got ${account.nonce}`
+      )
+    }
 
     // validate storage
     const origRoot = state.root
-    const storageKeys = Object.keys(acctData.storage)
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
@@ -188,38 +195,40 @@ export function verifyAccountPostConditions(
       ] = acctData.storage[key]
     }
 
-    if (storageKeys.length > 0) {
-      state.root = account.stateRoot
-      const rs = state.createReadStream()
-      rs.on('data', function (data: any) {
-        let key = data.key.toString('hex')
-        const val = '0x' + rlp.decode(data.value).toString('hex')
+    state.root = account.stateRoot
+    const rs = state.createReadStream()
+    rs.on('data', function (data: any) {
+      let key = data.key.toString('hex')
+      const val = '0x' + rlp.decode(data.value).toString('hex')
 
-        if (key === '0x') {
-          key = '0x00'
-          acctData.storage['0x00'] = acctData.storage['0x00']
-            ? acctData.storage['0x00']
-            : acctData.storage['0x']
-          delete acctData.storage['0x']
+      if (key === '0x') {
+        key = '0x00'
+        acctData.storage['0x00'] = acctData.storage['0x00']
+          ? acctData.storage['0x00']
+          : acctData.storage['0x']
+        delete acctData.storage['0x']
+      }
+
+      if (val !== hashedStorage[key]) {
+        t.comment(
+          `Expected storage key 0x${data.key.toString('hex')} at address ${address} to have value ${
+            hashedStorage[key] ?? '0x'
+          }, but got ${val}}`
+        )
+      }
+      delete hashedStorage[key]
+    })
+
+    rs.on('end', function () {
+      for (const key in hashedStorage) {
+        if (hashedStorage[key] !== '0x00') {
+          t.comment(`key: ${key} not found in storage at address ${address}`)
         }
+      }
 
-        t.equal(val, hashedStorage[key], 'correct storage value')
-        delete hashedStorage[key]
-      })
-
-      rs.on('end', function () {
-        for (const key in hashedStorage) {
-          if (hashedStorage[key] !== '0x00') {
-            t.fail('key: ' + key + ' not found in storage')
-          }
-        }
-
-        state.root = origRoot
-        resolve()
-      })
-    } else {
+      state.root = origRoot
       resolve()
-    }
+    })
   })
 }
 
