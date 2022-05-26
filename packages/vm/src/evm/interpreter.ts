@@ -1,20 +1,43 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToHex,
+  bufferToBigInt,
+  intToHex,
+  MAX_UINT64,
+} from '@ethereumjs/util'
 import { VmState } from '../eei/vmState'
 
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from '../eei/eei'
-import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
+import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
 import EOF from './eof'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
-import EVM from './evm'
+import EVM, { EVMResult } from './evm'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
+import Message from './message'
+import { Log } from './types'
+
+const debugGas = createDebugLogger('vm:eei:gas')
 
 export interface InterpreterOpts {
   pc?: number
+}
+
+/**
+ * Immediate (unprocessed) result of running an EVM bytecode.
+ */
+export interface RunResult {
+  logs: Log[]
+  returnValue?: Buffer
+  /**
+   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   */
+  selfdestruct: { [k: string]: Buffer }
 }
 
 export interface Env {
@@ -90,12 +113,25 @@ export default class Interpreter {
   _evm: EVM
   _env: Env
 
+  // This buffer holds the last returned buffer. Each time a CALL* or CREATE* is done, this buffer is cleared/overwritten
+  // TODO: this should move into Env probably
+  _lastReturned: Buffer
+
+  // Current gas left
+  // TODO: should be moved into Env?
+  _gasLeft: bigint
+
+  // Keep track of this Interpreter run result
+  // TODO move into Env?
+  _result: RunResult
+
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
   // TODO remove eei from constructor this can be directly read from EVM
   // EEI gets created on EVM creation and will not be re-instantiated
-  constructor(evm: EVM, eei: EEI, env: Env) {
+  // TODO remove gasLeft as constructor argument
+  constructor(evm: EVM, eei: EEI, env: Env, gasLeft: bigint) {
     this._evm = evm
     this._eei = eei
     this._state = eei._state
@@ -117,6 +153,13 @@ export default class Interpreter {
       interpreter: this,
     }
     this._env = env
+    this._lastReturned = Buffer.alloc(0)
+    this._gasLeft = gasLeft
+    this._result = {
+      logs: [],
+      returnValue: undefined,
+      selfdestruct: {},
+    }
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -208,7 +251,7 @@ export default class Interpreter {
     let gas = BigInt(opInfo.fee)
     // clone the gas limit; call opcodes can add stipend,
     // which makes it seem like the gas left increases
-    const gasLimitClone = this._eei.getGasLeft()
+    const gasLimitClone = this.getGasLeft()
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
@@ -229,7 +272,7 @@ export default class Interpreter {
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(gas, `${opInfo.name} fee`)
+    this.useGas(gas, `${opInfo.name} fee`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -358,6 +401,81 @@ export default class Interpreter {
    */
 
   /**
+   * Subtracts an amount from the gas counter.
+   * @param amount - Amount of gas to consume
+   * @param context - Usage context for debugging
+   * @throws if out of gas
+   */
+  useGas(amount: bigint, context?: string): void {
+    this._gasLeft -= amount
+    if (this._evm.DEBUG) {
+      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
+    }
+    if (this._gasLeft < BigInt(0)) {
+      this._gasLeft = BigInt(0)
+      trap(ERROR.OUT_OF_GAS)
+    }
+  }
+
+  /**
+   * Adds a positive amount to the gas counter.
+   * @param amount - Amount of gas refunded
+   * @param context - Usage context for debugging
+   */
+  refundGas(amount: bigint, context?: string): void {
+    if (this._evm.DEBUG) {
+      debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
+    }
+    this._evm._refund += amount
+  }
+
+  /**
+   * Reduces amount of gas to be refunded by a positive value.
+   * @param amount - Amount to subtract from gas refunds
+   * @param context - Usage context for debugging
+   */
+  subRefund(amount: bigint, context?: string): void {
+    if (this._evm.DEBUG) {
+      debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
+    }
+    this._evm._refund -= amount
+    if (this._evm._refund < BigInt(0)) {
+      this._evm._refund = BigInt(0)
+      trap(ERROR.REFUND_EXHAUSTED)
+    }
+  }
+
+  /**
+   * Increments the internal gasLeft counter. Used for adding callStipend.
+   * @param amount - Amount to add
+   */
+  addStipend(amount: bigint): void {
+    if (this._evm.DEBUG) {
+      debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
+    }
+    this._gasLeft += amount
+  }
+
+  /**
+   * Set the returning output data for the execution.
+   * @param returnData - Output data to return
+   */
+  finish(returnData: Buffer): void {
+    this._result.returnValue = returnData
+    trap(ERROR.STOP)
+  }
+
+  /**
+   * Set the returning output data for the execution. This will halt the
+   * execution immediately and set the execution result to "reverted".
+   * @param returnData - Output data to return
+   */
+  revert(returnData: Buffer): void {
+    this._result.returnValue = returnData
+    trap(ERROR.REVERT)
+  }
+
+  /**
    * Returns address of currently executing account.
    */
   getAddress(): Address {
@@ -415,6 +533,31 @@ export default class Interpreter {
    */
   getCode(): Buffer {
     return this._env.code
+  }
+
+  /**
+   * Returns the current gasCounter.
+   */
+  getGasLeft(): bigint {
+    return this._gasLeft
+  }
+
+  /**
+   * Returns size of current return data buffer. This contains the return data
+   * from the last executed call, callCode, callDelegate, callStatic or create.
+   * Note: create only fills the return data buffer in case of a failure.
+   */
+  getReturnDataSize(): bigint {
+    return BigInt(this._lastReturned.length)
+  }
+
+  /**
+   * Returns the current return data buffer. This contains the return data
+   * from last executed call, callCode, callDelegate, callStatic or create.
+   * Note: create only fills the return data buffer in case of a failure.
+   */
+  getReturnData(): Buffer {
+    return this._lastReturned
   }
 
   /**
@@ -506,5 +649,292 @@ export default class Interpreter {
    */
   getChainId(): bigint {
     return this._common.chainId()
+  }
+
+  /**
+   * Sends a message with arbitrary data to a given address path.
+   */
+  async call(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.address,
+      gasLimit,
+      to: address,
+      value,
+      data,
+      isStatic: this._env.isStatic,
+      depth: this._env.depth + 1,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  /**
+   * Sends a message with arbitrary data to a given address path.
+   */
+  async authcall(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.auth,
+      gasLimit,
+      to: address,
+      value,
+      data,
+      isStatic: this._env.isStatic,
+      depth: this._env.depth + 1,
+      authcallOrigin: this._env.address,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  /**
+   * Message-call into this account with an alternative account's code.
+   */
+  async callCode(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.address,
+      gasLimit,
+      to: this._env.address,
+      codeAddress: address,
+      value,
+      data,
+      isStatic: this._env.isStatic,
+      depth: this._env.depth + 1,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  /**
+   * Sends a message with arbitrary data to a given address path, but disallow
+   * state modifications. This includes log, create, selfdestruct and call with
+   * a non-zero value.
+   */
+  async callStatic(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.address,
+      gasLimit,
+      to: address,
+      value,
+      data,
+      isStatic: true,
+      depth: this._env.depth + 1,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  /**
+   * Message-call into this account with an alternative account’s code, but
+   * persisting the current values for sender and value.
+   */
+  async callDelegate(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.caller,
+      gasLimit,
+      to: this._env.address,
+      codeAddress: address,
+      value,
+      data,
+      isStatic: this._env.isStatic,
+      delegatecall: true,
+      depth: this._env.depth + 1,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  async _baseCall(msg: Message): Promise<bigint> {
+    const selfdestruct = { ...this._result.selfdestruct }
+    msg.selfdestruct = selfdestruct
+
+    // empty the return data buffer
+    this._lastReturned = Buffer.alloc(0)
+
+    // Check if account has enough ether and max depth not exceeded
+    if (
+      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
+      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
+    ) {
+      return BigInt(0)
+    }
+
+    const results = await this._evm.runCall({ message: msg })
+
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
+    }
+
+    // this should always be safe
+    this.useGas(results.execResult.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+
+    // Set return value
+    if (
+      results.execResult.returnValue &&
+      (!results.execResult.exceptionError ||
+        results.execResult.exceptionError.error === ERROR.REVERT)
+    ) {
+      this._lastReturned = results.execResult.returnValue
+    }
+
+    if (!results.execResult.exceptionError) {
+      Object.assign(this._result.selfdestruct, selfdestruct)
+      // update stateRoot on current contract
+      const account = await this._state.getAccount(this._env.address)
+      this._env.contract = account
+    }
+
+    return this._getReturnCode(results)
+  }
+
+  /**
+   * Creates a new contract with a given value.
+   */
+  async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
+    const selfdestruct = { ...this._result.selfdestruct }
+    const caller = this._env.address
+    const depth = this._env.depth + 1
+
+    // empty the return data buffer
+    this._lastReturned = Buffer.alloc(0)
+
+    // Check if account has enough ether and max depth not exceeded
+    if (
+      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
+      this._env.contract.balance < value
+    ) {
+      return BigInt(0)
+    }
+
+    // EIP-2681 check
+    if (this._env.contract.nonce >= MAX_UINT64) {
+      return BigInt(0)
+    }
+
+    this._env.contract.nonce += BigInt(1)
+    await this._state.putAccount(this._env.address, this._env.contract)
+
+    if (this._common.isActivatedEIP(3860)) {
+      if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+        return BigInt(0)
+      }
+    }
+
+    const message = new Message({
+      caller,
+      gasLimit,
+      value,
+      data,
+      salt,
+      depth,
+      selfdestruct,
+    })
+
+    const results = await this._evm.runCall({ message })
+
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
+    }
+
+    // this should always be safe
+    this.useGas(results.execResult.gasUsed, 'CREATE')
+
+    // Set return buffer in case revert happened
+    if (
+      results.execResult.exceptionError &&
+      results.execResult.exceptionError.error === ERROR.REVERT
+    ) {
+      this._lastReturned = results.execResult.returnValue
+    }
+
+    if (
+      !results.execResult.exceptionError ||
+      results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
+    ) {
+      Object.assign(this._result.selfdestruct, selfdestruct)
+      // update stateRoot on current contract
+      const account = await this._state.getAccount(this._env.address)
+      this._env.contract = account
+      if (results.createdAddress) {
+        // push the created address to the stack
+        return bufferToBigInt(results.createdAddress.buf)
+      }
+    }
+
+    return this._getReturnCode(results)
+  }
+
+  /**
+   * Creates a new contract with a given value. Generates
+   * a deterministic address via CREATE2 rules.
+   */
+  async create2(gasLimit: bigint, value: bigint, data: Buffer, salt: Buffer): Promise<bigint> {
+    return this.create(gasLimit, value, data, salt)
+  }
+
+  /**
+   * Mark account for later deletion and give the remaining balance to the
+   * specified beneficiary address. This will cause a trap and the
+   * execution will be aborted immediately.
+   * @param toAddress - Beneficiary address
+   */
+  async selfDestruct(toAddress: Address): Promise<void> {
+    return this._selfDestruct(toAddress)
+  }
+
+  async _selfDestruct(toAddress: Address): Promise<void> {
+    // only add to refund if this is the first selfdestruct for the address
+    if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
+      this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
+    }
+
+    this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
+
+    // Add to beneficiary balance
+    const toAccount = await this._state.getAccount(toAddress)
+    toAccount.balance += this._env.contract.balance
+    await this._state.putAccount(toAddress, toAccount)
+
+    // Subtract from contract balance
+    await this._state.modifyAccountFields(this._env.address, {
+      balance: BigInt(0),
+    })
+
+    trap(ERROR.STOP)
+  }
+
+  /**
+   * Creates a new log in the current environment.
+   */
+  log(data: Buffer, numberOfTopics: number, topics: Buffer[]): void {
+    if (numberOfTopics < 0 || numberOfTopics > 4) {
+      trap(ERROR.OUT_OF_RANGE)
+    }
+
+    if (topics.length !== numberOfTopics) {
+      trap(ERROR.INTERNAL_ERROR)
+    }
+
+    const log: Log = [this._env.address.buf, topics, data]
+    this._result.logs.push(log)
+  }
+
+  private _getReturnCode(results: EVMResult) {
+    // This preserves the previous logic, but seems to contradict the EEI spec
+    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
+    if (results.execResult.exceptionError) {
+      return BigInt(0)
+    } else {
+      return BigInt(1)
+    }
   }
 }

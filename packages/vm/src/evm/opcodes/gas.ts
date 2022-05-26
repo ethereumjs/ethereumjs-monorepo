@@ -119,7 +119,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3)
 
-        if (returnDataOffset + dataLength > runState.eei.getReturnDataSize()) {
+        if (returnDataOffset + dataLength > runState.interpreter.getReturnDataSize()) {
           trap(ERROR.OUT_OF_GAS)
         }
 
@@ -271,7 +271,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, offset, length, common)
 
-        let gasLimit = BigInt(runState.eei.getGasLeft()) - gas
+        let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common)
 
         runState.messageGasLimit = gasLimit
@@ -313,23 +313,23 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         let gasLimit = maxCallGas(
           currentGasLimit,
-          runState.eei.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
           runState,
           common
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
-        if (gasLimit > runState.eei.getGasLeft() - gas) {
+        if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(ERROR.OUT_OF_GAS)
         }
 
-        if (gas > runState.eei.getGasLeft()) {
+        if (gas > runState.interpreter.getGasLeft()) {
           trap(ERROR.OUT_OF_GAS)
         }
 
         if (value !== BigInt(0)) {
           const callStipend = common.param('gasPrices', 'callStipend')
-          runState.eei.addStipend(callStipend)
+          runState.interpreter.addStipend(callStipend)
           gasLimit += callStipend
         }
 
@@ -357,18 +357,18 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         let gasLimit = maxCallGas(
           currentGasLimit,
-          runState.eei.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
           runState,
           common
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
-        if (gasLimit > runState.eei.getGasLeft() - gas) {
+        if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(ERROR.OUT_OF_GAS)
         }
         if (value !== BigInt(0)) {
           const callStipend = common.param('gasPrices', 'callStipend')
-          runState.eei.addStipend(callStipend)
+          runState.interpreter.addStipend(callStipend)
           gasLimit += callStipend
         }
 
@@ -402,13 +402,13 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         const gasLimit = maxCallGas(
           currentGasLimit,
-          runState.eei.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
           runState,
           common
         )
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
-        if (gasLimit > runState.eei.getGasLeft() - gas) {
+        if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(ERROR.OUT_OF_GAS)
         }
 
@@ -433,7 +433,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
-        let gasLimit = runState.eei.getGasLeft() - gas
+        let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
         return gas
@@ -489,8 +489,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         let gasLimit = maxCallGas(
-          runState.eei.getGasLeft() - gas,
-          runState.eei.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
           runState,
           common
         )
@@ -522,7 +522,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         const gasLimit = maxCallGas(
           currentGasLimit,
-          runState.eei.getGasLeft() - gas,
+          runState.interpreter.getGasLeft() - gas,
           runState,
           common
         ) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)

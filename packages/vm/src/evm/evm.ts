@@ -702,15 +702,17 @@ export default class EVM extends AsyncEventEmitter {
       gasLeft: message.gasLimit,
       transientStorage: this._transientStorage,
     })
+
+    const interpreter = new Interpreter(this, eei, env, message.gasLimit)
     if (message.selfdestruct) {
-      eei._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
+      // TODO move this logic into Interpreter. Probably pass message there?
+      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 
-    const interpreter = new Interpreter(this, eei, env)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
-    let result = eei._result
-    let gasUsed = message.gasLimit - eei._gasLeft
+    let result = interpreter._result
+    let gasUsed = message.gasLimit - interpreter._gasLeft
     if (interpreterRes.exceptionError) {
       if (
         interpreterRes.exceptionError.error !== ERROR.REVERT &&
@@ -735,7 +737,7 @@ export default class EVM extends AsyncEventEmitter {
         ...eei._env,
       },
       exceptionError: interpreterRes.exceptionError,
-      gas: eei._gasLeft,
+      gas: interpreter._gasLeft,
       gasUsed,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
