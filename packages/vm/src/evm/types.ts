@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Address } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import EVM from './evm'
 import Message from './message'
 import { OpHandler } from './opcodes'
@@ -221,9 +221,9 @@ export interface ExternalInterface {
    * Returns code of an account.
    * @param address - Address of account
    */
-  getExternalCode(address: Address): Promise<Buffer>
+  getCode(address: Address): Promise<Buffer>
   /**
-   * Returns Gets the hash of one of the 256 most recent complete blocks.
+   * Returns the hash of one of the 256 most recent complete blocks.
    * @param num - Number of block
    */
   getBlockHash(num: bigint): Promise<bigint>
@@ -240,6 +240,12 @@ export interface ExternalInterface {
   storageLoad(address: Address, key: Buffer): Promise<Buffer>
 
   /**
+   * Returns an account at the given `address
+   * @param address Address to lookup
+   */
+  getAccount(address: Address): Promise<Account>
+
+  /**
    * Returns true if account is empty or non-existent (according to EIP-161).
    * @param address - Address of account
    */
@@ -250,6 +256,20 @@ export interface ExternalInterface {
    * @param address - Address of account
    */
   accountExists(address: Address): Promise<boolean>
+
+  /**
+   * Checkpoints the current external state
+   */
+  checkpoint(): Promise<void>
+  /**
+   * Commits the current external state
+   * Note: can still be reverted at a higher level
+   */
+  commit(): Promise<void>
+  /**
+   * Revert the current external state
+   */
+  revert(): Promise<void>
 }
 
 type EVMResult = {
