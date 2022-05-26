@@ -3,7 +3,6 @@ import { promisify } from 'util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 const AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import {
@@ -16,7 +15,6 @@ import {
   MAX_INTEGER,
   short,
 } from 'ethereumjs-util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 import { ERROR, VmError } from '../exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
@@ -332,7 +330,8 @@ export default class EVM extends AsyncEventEmitter {
       }
     }
 
-    if (opts.vmState) {
+    this._state = opts.eiFactory.state
+    /*if (opts.vmState) {
       this._state = opts.vmState
     } else {
       const trie = new Trie()
@@ -341,7 +340,8 @@ export default class EVM extends AsyncEventEmitter {
         common: this._common,
       })
       this._state = new VmState({ common: this._common, stateManager })
-    }
+    }*/
+
     this._blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false

@@ -59,20 +59,20 @@ export interface RunResult {
 }
 
 export class EIFactory implements ExternalInterfaceFactory {
-  _common: Common
-  _state: VmState
+  public readonly common: Common
+  public readonly state: VmState
 
   constructor({ common, stateManager }: { common: Common; stateManager: StateManager }) {
-    this._common = common
-    this._state = new VmState({ common, stateManager })
+    this.common = common
+    this.state = new VmState({ common, stateManager })
   }
 
   createEI(options: CreateEIOptions) {
     return new EEI(
       options.env,
-      this._state,
+      this.state,
       options.evm,
-      this._common,
+      this.common,
       options.gasLeft,
       options.transientStorage
     )
