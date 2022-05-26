@@ -1,6 +1,4 @@
 import { Account, Address, bufferToBigInt } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
@@ -12,9 +10,9 @@ import { StateManager } from '@ethereumjs/statemanager'
 
 type CreateEIOptions = {
   transientStorage: TransientStorage
-  env: Env
   gasLeft: bigint
   evm: EVM
+  blockchain: Blockchain
 }
 
 /**
@@ -47,8 +45,22 @@ export class EIFactory implements ExternalInterfaceFactory {
   }
 
   createEI(options: CreateEIOptions) {
-    return new EEI(options.env, this.state, options.evm, this.common, options.transientStorage)
+    return new EEI(
+      this.state,
+      options.evm,
+      this.common,
+      options.transientStorage,
+      options.blockchain
+    )
   }
+}
+
+type Block = {
+  hash(): Buffer
+}
+
+type Blockchain = {
+  getBlock(blockId: number): Promise<Block>
 }
 
 /**
@@ -60,24 +72,24 @@ export class EIFactory implements ExternalInterfaceFactory {
  * and to-be-selfdestructed addresses.
  */
 export default class EEI {
-  _env: Env
   _state: VmState
   _evm: EVM
   _common: Common
   _transientStorage: TransientStorage
+  _blockchain: Blockchain
 
   constructor(
-    env: Env,
     state: VmState,
     evm: EVM,
     common: Common,
-    transientStorage: TransientStorage
+    transientStorage: TransientStorage,
+    blockchain: Blockchain
   ) {
-    this._env = env
     this._state = state
     this._evm = evm
     this._common = common
     this._transientStorage = transientStorage
+    this._blockchain = blockchain
   }
 
   /**
@@ -85,12 +97,6 @@ export default class EEI {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
-    // shortcut if current account
-    if (address.equals(this._env.address)) {
-      return this._env.contract.balance
-    }
-
-    // otherwise load account then return balance
     const account = await this._state.getAccount(address)
     return account.balance
   }
@@ -119,47 +125,51 @@ export default class EEI {
    * @param num - Number of block
    */
   async getBlockHash(num: bigint): Promise<bigint> {
-    const block = await this._env.blockchain.getBlock(Number(num))
+    const block = await this._blockchain.getBlock(Number(num))
     return bufferToBigInt(block.hash())
   }
 
   /**
-   * Store 256-bit a value in memory to persistent storage.
+   * Storage 256-bit value into storage of an address
+   * @param address Address to store into
+   * @param key Storage key
+   * @param value Storage value
    */
-  async storageStore(key: Buffer, value: Buffer): Promise<void> {
-    await this._state.putContractStorage(this._env.address, key, value)
-    const account = await this._state.getAccount(this._env.address)
-    this._env.contract = account
+  async storageStore(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    await this._state.putContractStorage(address, key, value)
   }
 
   /**
    * Loads a 256-bit value to memory from persistent storage.
-   * @param key - Storage key
-   * @param original - If true, return the original storage value (default: false)
+   * @param address Address to get storage key value from
+   * @param key Storage key
+   * @param original If true, return the original storage value (default: false)
    */
-  async storageLoad(key: Buffer, original = false): Promise<Buffer> {
+  async storageLoad(address: Address, key: Buffer, original = false): Promise<Buffer> {
     if (original) {
-      return this._state.getOriginalContractStorage(this._env.address, key)
+      return this._state.getOriginalContractStorage(address, key)
     } else {
-      return this._state.getContractStorage(this._env.address, key)
+      return this._state.getContractStorage(address, key)
     }
   }
 
   /**
    * Store 256-bit a value in memory to transient storage.
-   * @param key - Storage key
-   * @param value - Storage value
+   * @param address Address to use
+   * @param key Storage key
+   * @param value Storage value
    */
-  transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._transientStorage.put(this._env.address, key, value)
+  transientStorageStore(address: Address, key: Buffer, value: Buffer): void {
+    return this._transientStorage.put(address, key, value)
   }
 
   /**
    * Loads a 256-bit value to memory from transient storage.
-   * @param key - Storage key
+   * @param address Address to use
+   * @param key Storage key
    */
-  transientStorageLoad(key: Buffer): Buffer {
-    return this._transientStorage.get(this._env.address, key)
+  transientStorageLoad(address: Address, key: Buffer): Buffer {
+    return this._transientStorage.get(address, key)
   }
 
   /**

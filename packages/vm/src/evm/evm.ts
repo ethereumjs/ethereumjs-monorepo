@@ -26,13 +26,14 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import { TransientStorage } from '../state'
 import {
   CustomOpcode,
-  ExternalInterfaceFactory,
+  /*ExternalInterfaceFactory,*/
   Log,
   RunCallOpts,
   RunCodeOpts,
   TxContext,
 } from './types'
 import { VmState } from '../eei/vmState'
+import { EIFactory } from '../eei/eei'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -131,7 +132,7 @@ export interface EVMOpts {
   /*
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
-  eiFactory: ExternalInterfaceFactory
+  eiFactory: EIFactory /*ExternalInterfaceFactory*/ // TODO move to abstract interface (done this for quick TypeScript debugging)
 }
 
 /**
@@ -247,7 +248,7 @@ export default class EVM extends AsyncEventEmitter {
 
   _common: Common
 
-  private _eiFactory: ExternalInterfaceFactory
+  private _eiFactory: EIFactory /*ExternalInterfaceFactory*/
 
   protected _blockchain: Blockchain
 
@@ -697,10 +698,10 @@ export default class EVM extends AsyncEventEmitter {
       codeAddress: message.codeAddress,
     }
     const eei = this._eiFactory.createEI({
-      env: env,
       evm: this,
       gasLeft: message.gasLimit,
       transientStorage: this._transientStorage,
+      blockchain: this._blockchain,
     })
 
     const interpreter = new Interpreter(this, eei, env, message.gasLimit)
@@ -734,7 +735,7 @@ export default class EVM extends AsyncEventEmitter {
       runState: {
         ...interpreterRes.runState!,
         ...result,
-        ...eei._env,
+        ...interpreter._env,
       },
       exceptionError: interpreterRes.exceptionError,
       gas: interpreter._gasLeft,

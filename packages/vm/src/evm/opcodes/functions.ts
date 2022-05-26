@@ -400,7 +400,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
-      const balance = await runState.eei.getExternalBalance(address)
+      const balance = await runState.interpreter.getExternalBalance(address)
       runState.stack.push(balance)
     },
   ],
@@ -694,7 +694,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
-      const value = await runState.eei.storageLoad(keyBuf)
+      const value = await runState.interpreter.storageLoad(keyBuf)
       const valueBigInt = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBigInt)
     },
@@ -714,7 +714,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBuffer(val)
       }
 
-      await runState.eei.storageStore(keyBuf, value)
+      await runState.interpreter.storageStore(keyBuf, value)
     },
   ],
   // 0x56: JUMP
@@ -887,7 +887,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
-      const value = runState.eei.transientStorageLoad(keyBuf)
+      const value = runState.interpreter.transientStorageLoad(keyBuf)
       const valueBN = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBN)
     },
@@ -910,7 +910,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBuffer(val)
       }
 
-      runState.eei.transientStorageStore(keyBuf, value)
+      runState.interpreter.transientStorageStore(keyBuf, value)
     },
   ],
   // '0xf0' range - closures
@@ -1051,7 +1051,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.AUTH_INVALID_S)
       }
 
-      const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
+      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.buf, 32)
       const chainId = setLengthLeft(bigIntToBuffer(runState.interpreter.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
       const msgHash = Buffer.from(keccak256(message))
@@ -1062,12 +1062,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BigInt(0))
-        runState.eei._env.auth = undefined
+        runState.interpreter._env.auth = undefined
         return
       }
 
       const addressBuffer = publicToAddress(recover)
       const address = new Address(addressBuffer)
+      runState.interpreter._env.auth = address
 
       const expectedAddress = new Address(setLengthLeft(bigIntToBuffer(authority), 20))
 
