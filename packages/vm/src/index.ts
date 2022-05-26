@@ -233,7 +233,7 @@ export default class VM extends AsyncEventEmitter {
 
     const eiFactory = new EIFactory({
       common: this._common,
-      stateManager: this._stateManager,
+      stateManager: this.stateManager,
     })
 
     this.evm = new EVM({

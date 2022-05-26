@@ -699,7 +699,7 @@ export default class EVM extends AsyncEventEmitter {
     const eei = this._eiFactory.createEI({
       env: env,
       evm: this,
-      gasLimit: message.gasLimit,
+      gasLeft: message.gasLimit,
       transientStorage: this._transientStorage,
     })
     if (message.selfdestruct) {
