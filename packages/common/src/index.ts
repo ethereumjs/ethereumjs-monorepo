@@ -10,7 +10,10 @@ import {
   GenesisState,
   Hardfork as HardforkParams,
   ChainName,
-  chainsType,
+  ChainsType,
+  CliqueConfig,
+  EthashConfig,
+  CasperConfig,
 } from './types'
 import mainnet from './chains/mainnet.json'
 import ropsten from './chains/ropsten.json'
@@ -101,11 +104,6 @@ export enum ConsensusAlgorithm {
   Ethash = 'ethash',
   Clique = 'clique',
   Casper = 'casper',
-}
-
-export type CliqueConfig = {
-  period: number
-  epoch: number
 }
 
 interface BaseOpts {
@@ -320,7 +318,7 @@ export default class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains: chainsType = this._getInitializedChains()
+    const initializedChains: ChainsType = this._getInitializedChains()
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
@@ -328,7 +326,7 @@ export default class Common extends EventEmitter {
     chain: string | number | Chain | bigint,
     customChains?: IChain[]
   ): IChain {
-    const initializedChains: chainsType = this._getInitializedChains(customChains)
+    const initializedChains: ChainsType = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
@@ -1030,7 +1028,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): { [key: string]: {} | CliqueConfig } {
+  consensusConfig(): { [key: string]: CliqueConfig | EthashConfig | CasperConfig } {
     const hardfork = this.hardfork()
 
     let value
@@ -1045,7 +1043,7 @@ export default class Common extends EventEmitter {
       return value
     }
     const consensusAlgorithm = this.consensusAlgorithm()
-    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]
+    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]!
   }
 
   /**
@@ -1057,7 +1055,7 @@ export default class Common extends EventEmitter {
     return copy
   }
 
-  static _getInitializedChains(customChains?: IChain[]): chainsType {
+  static _getInitializedChains(customChains?: IChain[]): ChainsType {
     const names: ChainName = {
       '1': 'mainnet',
       '3': 'ropsten',
@@ -1066,7 +1064,7 @@ export default class Common extends EventEmitter {
       '5': 'goerli',
       '11155111': 'sepolia',
     }
-    const chains: chainsType = {
+    const chains: ChainsType = {
       mainnet,
       ropsten,
       rinkeby,
@@ -1086,3 +1084,5 @@ export default class Common extends EventEmitter {
     return chains
   }
 }
+
+export { CliqueConfig }

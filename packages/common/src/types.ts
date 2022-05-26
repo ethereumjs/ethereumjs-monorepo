@@ -1,5 +1,5 @@
 import { PrefixedHexString } from 'ethereumjs-util'
-import { CliqueConfig, ConsensusAlgorithm, ConsensusType, Hardfork as HardforkName } from '.'
+import { ConsensusAlgorithm, ConsensusType, Hardfork as HardforkName } from '.'
 
 export interface genesisStatesType {
   names: {
@@ -11,10 +11,18 @@ export interface genesisStatesType {
 export interface ChainName {
   [chainId: string]: string
 }
-export interface chainsType {
+export interface ChainsType {
   [key: string]: Chain | ChainName
 }
 
+export type CliqueConfig = {
+  period: number
+  epoch: number
+}
+
+export type EthashConfig = {}
+
+export type CasperConfig = {}
 export interface Chain {
   name: string
   chainId: number | bigint
@@ -32,8 +40,8 @@ export interface Chain {
     type: ConsensusType | string
     algorithm: ConsensusAlgorithm | string
     clique?: CliqueConfig
-    ethash?: any
-    casper?: any
+    ethash?: EthashConfig
+    casper?: CasperConfig
   }
 }
 
