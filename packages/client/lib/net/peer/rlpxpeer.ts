@@ -169,16 +169,17 @@ export class RlpxPeer extends Peer {
             // handshake. May be this conditional could be handled better or
             // somewhere else
             if (name === 'eth') {
-              const snapProtocolSender = rlpxPeer
+              const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
                 .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
               const snapProtocol =
-                snapProtocolSender &&
+                snapRlpxProtocol &&
                 this.protocols.find(
-                  (p) => p.name === snapProtocolSender?.constructor.name.toLowerCase()
+                  (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
                 )
               if (snapProtocol) {
-                return this.bindProtocol(snapProtocol, sender)
+                const snapSender = new RlpxSender(snapRlpxProtocol)
+                return this.bindProtocol(snapProtocol, snapSender)
               }
             }
           })

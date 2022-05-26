@@ -72,6 +72,20 @@ export class SnapSynchronizer extends Synchronizer {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
+    const stateRoot = latest.stateRoot
+
+    const rangeResult = await peer!.snap!.getAccountRange({
+      root: stateRoot,
+      origin: Buffer.from(
+        '0000000000000000000000000000000000000000000000000000000000000000',
+        'hex'
+      ),
+      limit: Buffer.from('0000000000000000000000000000000000000000000000000000000000000010', 'hex'),
+      bytes: new BN(100000),
+    })
+
+    console.log({ rangeResult })
+
     const height = latest.number
     if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
       this.config.syncTargetHeight = height

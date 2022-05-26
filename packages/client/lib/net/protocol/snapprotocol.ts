@@ -43,10 +43,12 @@ export class SnapProtocol extends Protocol {
       name: 'GetAccountRange',
       code: 0x00,
       response: 0x04,
-      encode: ({ reqId, root, origin, limit, bytes }: GetAccountRangeOpts) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-        [root, origin, limit, bytes],
-      ],
+      encode: ({ reqId, root, origin, limit, bytes }: GetAccountRangeOpts) => {
+        return [
+          (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+          [root, origin, limit, bytes],
+        ]
+      },
       decode: ([reqId, [root, origin, limit, bytes]]: any) => ({
         reqId: new BN(reqId),
         root,
