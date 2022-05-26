@@ -1,5 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Account, Address } from 'ethereumjs-util'
+import EEI, { Env } from '../eei/eei'
+import { TransientStorage } from '../state'
 import EVM from './evm'
 import Message from './message'
 import { OpHandler } from './opcodes'
@@ -217,6 +219,7 @@ export interface EVMEnvironment {
  * getting and storing storage, getting account balances, etc.
  */
 export interface ExternalInterface {
+  // TODO this is a skeleton and not implemented yet
   /**
    * Returns code of an account.
    * @param address - Address of account
@@ -270,6 +273,23 @@ export interface ExternalInterface {
    * Revert the current external state
    */
   revert(): Promise<void>
+
+  /**
+   * Returns an account at the given `address
+   * @param address Address to lookup
+   */
+  getAccount(address: Address): Promise<Account>
+}
+
+export type CreateEIOptions = {
+  transientStorage: TransientStorage
+  env: Env
+  gasLeft: bigint
+  evm: EVM
+}
+
+export interface ExternalInterfaceFactory {
+  createEI(options?: any): EEI // TODO change this to ExternalInterface
 }
 
 type EVMResult = {

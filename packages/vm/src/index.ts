@@ -11,6 +11,7 @@ const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { VmState } from './eei/vmState'
 import { getActivePrecompiles } from './evm/precompiles'
+import { EIFactory } from './eei/eei'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -237,10 +238,16 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
+    const eiFactory = new EIFactory({
+      common: this._common,
+      stateManager: this._stateManager,
+    })
+
     this.evm = new EVM({
       common: this._common,
       vmState: this.vmState,
       blockchain: this.blockchain,
+      eiFactory,
     })
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
