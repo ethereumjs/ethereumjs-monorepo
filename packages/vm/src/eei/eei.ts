@@ -2,15 +2,9 @@ import { Account, Address, bufferToBigInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
-import { ExternalInterfaceFactory } from '../evm/types'
 import { TransientStorage } from '../state'
 import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
-
-type CreateEIOptions = {
-  transientStorage: TransientStorage
-  blockchain: Blockchain
-}
 
 /**
  * Environment data which is made available to EVM bytecode.
@@ -32,20 +26,6 @@ export interface Env {
   auth?: Address /** EIP-3074 AUTH parameter */
 }
 
-export class EIFactory implements ExternalInterfaceFactory {
-  public readonly common: Common
-  public readonly state: VmState
-
-  constructor({ common, stateManager }: { common: Common; stateManager: StateManager }) {
-    this.common = common
-    this.state = new VmState({ common, stateManager })
-  }
-
-  createEI(options: CreateEIOptions) {
-    return new EEI(this.state, this.common, options.transientStorage, options.blockchain)
-  }
-}
-
 type Block = {
   hash(): Buffer
 }
@@ -63,21 +43,21 @@ type Blockchain = {
  * and to-be-selfdestructed addresses.
  */
 export default class EEI {
-  _state: VmState
+  _state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
   _common: Common
   _transientStorage: TransientStorage
   _blockchain: Blockchain
 
   constructor(
-    state: VmState,
+    stateManager: StateManager,
     common: Common,
     transientStorage: TransientStorage,
     blockchain: Blockchain
   ) {
-    this._state = state
     this._common = common
     this._transientStorage = transientStorage
     this._blockchain = blockchain
+    this._state = new VmState({ common, stateManager })
   }
 
   /**

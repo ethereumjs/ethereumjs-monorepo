@@ -95,7 +95,7 @@ export interface AfterBlockEvent extends RunBlockResult {
  * @ignore
  */
 export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.eiFactory.state
+  const state = this.ei._state
   const { root } = opts
   let { block } = opts
   const generateFields = !!opts.generate
@@ -378,7 +378,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.eiFactory.state
+  const state = this.ei._state
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
