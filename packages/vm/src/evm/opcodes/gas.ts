@@ -201,8 +201,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           value = bigIntToBuffer(val)
         }
 
-        const currentStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf))
-        const originalStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf, true))
+        const currentStorage = setLengthLeftStorage(await runState.interpreter.storageLoad(keyBuf))
+        const originalStorage = setLengthLeftStorage(
+          await runState.interpreter.storageLoad(keyBuf, true)
+        )
         if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
             runState,
@@ -443,7 +445,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* AUTHCALL */
       0xf7,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.eei._env.auth === undefined) {
+        if (runState.interpreter._env.auth === undefined) {
           trap(ERROR.AUTHCALL_UNSET)
         }
 
@@ -544,7 +546,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let deductGas = false
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // EIP-161: State Trie Clearing
-          const balance = await runState.eei.getExternalBalance(runState.interpreter.getAddress())
+          const balance = await runState.interpreter.getExternalBalance(
+            runState.interpreter.getAddress()
+          )
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
             // TODO: improve on the API here (EEI and StateManager)

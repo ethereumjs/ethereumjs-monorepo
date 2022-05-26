@@ -315,13 +315,13 @@ export default class Interpreter {
       },
       stack: this._runState.stack._store,
       returnStack: this._runState.returnStack._store,
-      depth: this._eei._env.depth,
-      address: this._eei._env.address,
-      account: this._eei._env.contract,
+      depth: this._env.depth,
+      address: this._env.address,
+      account: this._env.contract,
       vmState: this._runState.vmState,
       memory: this._runState.memory._store,
       memoryWordCount: this._runState.memoryWordCount,
-      codeAddress: this._eei._env.codeAddress,
+      codeAddress: this._env.codeAddress,
     }
 
     if (this._evm.DEBUG) {
@@ -454,6 +454,54 @@ export default class Interpreter {
       debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
     }
     this._gasLeft += amount
+  }
+
+  /**
+   * Returns balance of the given account.
+   * @param address - Address of account
+   */
+  async getExternalBalance(address: Address): Promise<bigint> {
+    // shortcut if current account
+    if (address.equals(this._env.address)) {
+      return this._env.contract.balance
+    }
+
+    return this._eei.getExternalBalance(address)
+  }
+
+  /**
+   * Store 256-bit a value in memory to persistent storage.
+   */
+  async storageStore(key: Buffer, value: Buffer): Promise<void> {
+    await this._eei.storageStore(this._env.address, key, value)
+    const account = await this._eei._state.getAccount(this._env.address)
+    this._env.contract = account
+  }
+
+  /**
+   * Loads a 256-bit value to memory from persistent storage.
+   * @param key - Storage key
+   * @param original - If true, return the original storage value (default: false)
+   */
+  async storageLoad(key: Buffer, original = false): Promise<Buffer> {
+    return this._eei.storageLoad(this._env.address, key, original)
+  }
+
+  /**
+   * Store 256-bit a value in memory to transient storage.
+   * @param key - Storage key
+   * @param value - Storage value
+   */
+  transientStorageStore(key: Buffer, value: Buffer): void {
+    return this._eei.transientStorageStore(this._env.address, key, value)
+  }
+
+  /**
+   * Loads a 256-bit value to memory from transient storage.
+   * @param key - Storage key
+   */
+  transientStorageLoad(key: Buffer): Buffer {
+    return this._eei.transientStorageLoad(this._env.address, key)
   }
 
   /**
