@@ -228,22 +228,6 @@ export default class EEI {
   }
 
   /**
-   * Returns price of gas in current environment.
-   */
-  getTxGasPrice(): bigint {
-    return this._env.gasPrice
-  }
-
-  /**
-   * Returns the execution's origination address. This is the
-   * sender of original transaction; it is never an account with
-   * non-empty associated code.
-   */
-  getTxOrigin(): bigint {
-    return bufferToBigInt(this._env.origin.buf)
-  }
-
-  /**
    * Returns the block’s number.
    */
   getBlockNumber(): bigint {
