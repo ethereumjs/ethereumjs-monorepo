@@ -8,9 +8,10 @@ import { VmState } from './vmState'
 import { VmError, ERROR } from '../exceptions'
 import Message from '../evm/message'
 import EVM, { EVMResult } from '../evm/evm'
-import { Log } from '../evm/types'
+import { CreateEIOptions, ExternalInterfaceFactory, Log } from '../evm/types'
 import { TransientStorage } from '../state'
 import { addressToBuffer } from '../evm/opcodes'
+import { StateManager } from '@ethereumjs/statemanager'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -48,6 +49,27 @@ export interface RunResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct: { [k: string]: Buffer }
+}
+
+export class EIFactory implements ExternalInterfaceFactory {
+  _common: Common
+  _state: VmState
+
+  constructor({ common, stateManager }: { common: Common; stateManager: StateManager }) {
+    this._common = common
+    this._state = new VmState({ common, stateManager })
+  }
+
+  createEI(options: CreateEIOptions) {
+    return new EEI(
+      options!.env,
+      this._state,
+      options!.evm,
+      this._common,
+      options!.gasLeft,
+      options!.transientStorage
+    )
+  }
 }
 
 /**

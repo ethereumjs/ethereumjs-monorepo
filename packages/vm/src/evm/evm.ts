@@ -18,7 +18,6 @@ import {
 } from '@ethereumjs/util'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 
-import EEI from '../eei/eei'
 import { ERROR, VmError } from '../exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import Message, { MessageWithTo } from './message'
@@ -27,7 +26,14 @@ import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
 import { TransientStorage } from '../state'
-import { CustomOpcode, Log, RunCallOpts, RunCodeOpts, TxContext } from './types'
+import {
+  CustomOpcode,
+  ExternalInterfaceFactory,
+  Log,
+  RunCallOpts,
+  RunCodeOpts,
+  TxContext,
+} from './types'
 import { VmState } from '../eei/vmState'
 
 const debug = createDebugLogger('vm:evm')
@@ -123,6 +129,11 @@ export interface EVMOpts {
    * Please ensure `PrecompileFunc` has exactly one parameter `input: PrecompileInput`
    */
   customPrecompiles?: CustomPrecompile[]
+
+  /*
+   * The External Interface Factory, used to build an External Interface when this is necessary
+   */
+  eiFactory: ExternalInterfaceFactory
 }
 
 /**
@@ -238,6 +249,8 @@ export default class EVM extends AsyncEventEmitter {
 
   _common: Common
 
+  private _eiFactory: ExternalInterfaceFactory
+
   protected _blockchain: Blockchain
 
   // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
@@ -294,6 +307,8 @@ export default class EVM extends AsyncEventEmitter {
 
   constructor(opts: EVMOpts) {
     super()
+
+    this._eiFactory = opts.eiFactory
 
     this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
@@ -681,14 +696,12 @@ export default class EVM extends AsyncEventEmitter {
       contract: await this._state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(
-      env,
-      this._state,
-      this,
-      this._common,
-      message.gasLimit,
-      this._transientStorage
-    )
+    const eei = this._eiFactory.createEI({
+      env: env,
+      evm: this,
+      gasLimit: message.gasLimit,
+      transientStorage: this._transientStorage,
+    })
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
