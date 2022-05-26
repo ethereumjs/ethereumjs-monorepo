@@ -626,7 +626,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x46,
     function (runState) {
-      runState.stack.push(runState.eei.getChainId())
+      runState.stack.push(runState.interpreter.getChainId())
     },
   ],
   // 0x47: SELFBALANCE
@@ -1032,7 +1032,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const commit = setLengthLeft(bigIntToBuffer(commitUnpadded), 32)
       const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
-      const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
+      const chainId = setLengthLeft(bigIntToBuffer(runState.interpreter.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
       const msgHash = Buffer.from(keccak256(message))
 
