@@ -363,4 +363,11 @@ export default class Interpreter {
   getAddress(): Address {
     return this._env.address
   }
+
+  /**
+   * Returns balance of self.
+   */
+  getSelfBalance(): bigint {
+    return this._env.contract.balance
+  }
 }
