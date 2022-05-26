@@ -8,7 +8,7 @@ import { VmState } from './vmState'
 import { VmError, ERROR } from '../exceptions'
 import Message from '../evm/message'
 import EVM, { EVMResult } from '../evm/evm'
-import { CreateEIOptions, ExternalInterfaceFactory, Log } from '../evm/types'
+import { ExternalInterfaceFactory, Log } from '../evm/types'
 import { TransientStorage } from '../state'
 import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
@@ -17,6 +17,13 @@ const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
+}
+
+type CreateEIOptions = {
+  transientStorage: TransientStorage
+  env: Env
+  gasLeft: bigint
+  evm: EVM
 }
 
 /**
@@ -62,12 +69,12 @@ export class EIFactory implements ExternalInterfaceFactory {
 
   createEI(options: CreateEIOptions) {
     return new EEI(
-      options!.env,
+      options.env,
       this._state,
-      options!.evm,
+      options.evm,
       this._common,
-      options!.gasLeft,
-      options!.transientStorage
+      options.gasLeft,
+      options.transientStorage
     )
   }
 }
