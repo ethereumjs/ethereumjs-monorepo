@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
+import Common, { ChainId, ConsensusType, CustomChain, HardforkName } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
@@ -10,7 +10,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
     'chain -> object: should provide correct access to private network chain parameters',
     function (st: tape.Test) {
-      const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
+      const c = new Common({ chain: testnet, hardfork: HardforkName.Byzantium })
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
       st.equal(c.chainId(), BigInt(12345), 'should return correct chain Id')
       st.equal(c.networkId(), BigInt(12345), 'should return correct network Id')
@@ -44,10 +44,10 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   )
 
   t.test('custom() -> base functionality', function (st: tape.Test) {
-    const mainnetCommon = new Common({ chain: Chain.Mainnet })
+    const mainnetCommon = new Common({ chain: ChainId.Mainnet })
 
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
+    const customChainCommon = Common.custom(customChainParams, { hardfork: HardforkName.Byzantium })
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
@@ -92,10 +92,10 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       'uses default hardfork when no options are present'
     )
 
-    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
+    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: HardforkName.Byzantium })
     st.equal(
       common.hardfork(),
-      Hardfork.Byzantium,
+      HardforkName.Byzantium,
       'should correctly set an option (default options present)'
     )
 
@@ -131,8 +131,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
   t.test('customChains parameter: initialization', (st) => {
     let c = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.Byzantium,
+      chain: ChainId.Mainnet,
+      hardfork: HardforkName.Byzantium,
       customChains: [testnet],
     })
     st.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
@@ -144,7 +144,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
     c = new Common({
       chain: 'testnet',
-      hardfork: Hardfork.Byzantium,
+      hardfork: HardforkName.Byzantium,
       customChains: [testnet],
     })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
@@ -158,7 +158,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const customChains = [testnet, testnet2, testnet3]
     c = new Common({
       chain: 'testnet2',
-      hardfork: Hardfork.Istanbul,
+      hardfork: HardforkName.Istanbul,
       customChains,
     })
     st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
@@ -178,7 +178,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
     c = new Common({
       chain: 'testnet',
-      hardfork: Hardfork.Istanbul,
+      hardfork: HardforkName.Istanbul,
       customChains: customChainsWithGenesis,
     })
     st.deepEqual(
