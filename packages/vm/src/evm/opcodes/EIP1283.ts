@@ -30,7 +30,7 @@ export function updateSstoreGasEIP1283(
     }
     if (value.length === 0) {
       // If new value is 0, add 15000 gas to refund counter.
-      runState.eei.refundGas(
+      runState.interpreter.refundGas(
         common.param('gasPrices', 'netSstoreClearRefund'),
         'EIP-1283 -> netSstoreClearRefund'
       )
@@ -43,13 +43,13 @@ export function updateSstoreGasEIP1283(
     // If original value is not 0
     if (currentStorage.length === 0) {
       // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
-      runState.eei.subRefund(
+      runState.interpreter.subRefund(
         common.param('gasPrices', 'netSstoreClearRefund'),
         'EIP-1283 -> netSstoreClearRefund'
       )
     } else if (value.length === 0) {
       // If new value is 0 (also means that current value is not 0), add 15000 gas to refund counter.
-      runState.eei.refundGas(
+      runState.interpreter.refundGas(
         common.param('gasPrices', 'netSstoreClearRefund'),
         'EIP-1283 -> netSstoreClearRefund'
       )
@@ -59,13 +59,13 @@ export function updateSstoreGasEIP1283(
     // If original value equals new value (this storage slot is reset)
     if (originalStorage.length === 0) {
       // If original value is 0, add 19800 gas to refund counter.
-      runState.eei.refundGas(
+      runState.interpreter.refundGas(
         common.param('gasPrices', 'netSstoreResetClearRefund'),
         'EIP-1283 -> netSstoreResetClearRefund'
       )
     } else {
       // Otherwise, add 4800 gas to refund counter.
-      runState.eei.refundGas(
+      runState.interpreter.refundGas(
         common.param('gasPrices', 'netSstoreResetRefund'),
         'EIP-1283 -> netSstoreResetRefund'
       )
