@@ -8,13 +8,21 @@ export interface genesisStatesType {
   [key: string]: {}
 }
 
-export interface chainsType {
-  names: {
-    [key: string]: string
-  }
-  [key: string]: any
+export interface ChainName {
+  [chainId: string]: string
+}
+export interface ChainsType {
+  [key: string]: Chain | ChainName
 }
 
+export type CliqueConfig = {
+  period: number
+  epoch: number
+}
+
+export type EthashConfig = {}
+
+export type CasperConfig = {}
 export interface Chain {
   name: string
   chainId: number | bigint
@@ -31,12 +39,9 @@ export interface Chain {
   consensus?: {
     type: ConsensusType | string
     algorithm: ConsensusAlgorithm | string
-    clique?: {
-      period: number
-      epoch: number
-    }
-    ethash?: any
-    casper?: any
+    clique?: CliqueConfig
+    ethash?: EthashConfig
+    casper?: CasperConfig
   }
 }
 

@@ -289,7 +289,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'should return the correct HF array for a matching forkHash'
-    const res = c.hardforkForForkHash('0x3edd5b10')
+    const res = c.hardforkForForkHash('0x3edd5b10')!
     st.equal(res.name, Hardfork.SpuriousDragon, msg)
 
     msg = 'should return null for a forkHash not matching any HF'
