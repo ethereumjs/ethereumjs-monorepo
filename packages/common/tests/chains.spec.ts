@@ -152,6 +152,12 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
       c.setChain('goerli')
       hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
       st.equal(c.genesis().hash, hash, 'goerli')
+      try {
+        c.setChain(1337)
+        st.fail('should throw with invalid chain ID')
+      } catch (err: any) {
+        st.equal(err.message, 'Chain with ID 1337 not supported', 'throws with invalid chain ID')
+      }
 
       st.end()
     }

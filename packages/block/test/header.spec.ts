@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import RLP from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, CliqueConfig, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
@@ -245,7 +245,7 @@ tape('[Block]: Header functions', function (t) {
       Buffer.alloc(20),
       Buffer.alloc(21),
     ])
-    const epoch = BigInt(common.consensusConfig().epoch)
+    const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
     header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
     try {
       await header.validate(blockchain)
