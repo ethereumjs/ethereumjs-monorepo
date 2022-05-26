@@ -26,6 +26,7 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import { TransientStorage } from '../state'
 import {
   CustomOpcode,
+  /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
   RunCallOpts,
@@ -33,7 +34,7 @@ import {
   TxContext,
 } from './types'
 import { VmState } from '../eei/vmState'
-import { EIFactory } from '../eei/eei'
+import EEI from '../eei/eei'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -132,7 +133,7 @@ export interface EVMOpts {
   /*
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
-  eiFactory: EIFactory /*ExternalInterfaceFactory*/ // TODO move to abstract interface (done this for quick TypeScript debugging)
+  ei: EEI // TODO edit this to ExternalInterface
 }
 
 /**
@@ -248,7 +249,7 @@ export default class EVM extends AsyncEventEmitter {
 
   _common: Common
 
-  private _eiFactory: EIFactory /*ExternalInterfaceFactory*/
+  protected _ei: EEI /*ExternalInterfaceFactory*/ // TODO probably rename this back into _eei
 
   protected _blockchain: Blockchain
 
@@ -307,7 +308,7 @@ export default class EVM extends AsyncEventEmitter {
   constructor(opts: EVMOpts) {
     super()
 
-    this._eiFactory = opts.eiFactory
+    this._ei = opts.ei
 
     this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
@@ -331,7 +332,8 @@ export default class EVM extends AsyncEventEmitter {
       }
     }
 
-    this._state = opts.eiFactory.state
+    // TODO _state should /NOT/ be in EVM
+    this._state = opts.ei._state
     /*if (opts.vmState) {
       this._state = opts.vmState
     } else {
@@ -697,12 +699,8 @@ export default class EVM extends AsyncEventEmitter {
       contract: await this._state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = this._eiFactory.createEI({
-      transientStorage: this._transientStorage,
-      blockchain: this._blockchain,
-    })
 
-    const interpreter = new Interpreter(this, eei, env, message.gasLimit)
+    const interpreter = new Interpreter(this, this._ei, env, message.gasLimit)
     if (message.selfdestruct) {
       // TODO move this logic into Interpreter. Probably pass message there?
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
