@@ -1,5 +1,5 @@
 /**
- * Generic EthereumJS error with metadata attached
+ * Generic EthereumJS error class with metadata attached
  *
  * Kudos to https://github.com/ChainSafe/lodestar monorepo
  * for the inspiration :-)
@@ -28,3 +28,21 @@ export class EthereumJSError<T extends {}> extends Error {
     }
   }
 }
+
+export type ValidationErrorType = {
+  received: string
+}
+
+/**
+ * Error along Object Validation
+ *
+ * Use directly or in a subclassed context for error comparison (`e instanceof ValidationError`)
+ */
+export class ValidationError<T extends ValidationErrorType> extends EthereumJSError<T> {}
+
+/**
+ * Error along API Usage
+ *
+ * Use directly or in a subclassed context for error comparison (`e instanceof UsageError`)
+ */
+export class UsageError<T extends {}> extends EthereumJSError<T> {}
