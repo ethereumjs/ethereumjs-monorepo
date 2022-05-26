@@ -40,8 +40,8 @@ export class ETH extends Protocol {
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
-  static eth64 = { name: 'eth', version: 64, length: 29, constructor: ETH }
-  static eth65 = { name: 'eth', version: 65, length: 29, constructor: ETH }
+  static eth64 = { name: 'eth', version: 64, length: 17, constructor: ETH }
+  static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
