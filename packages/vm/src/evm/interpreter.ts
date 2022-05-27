@@ -18,7 +18,6 @@ import * as eof from './opcodes/eof'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM, { EVMResult } from './evm'
 import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
 import Message from './message'
 import { Log } from './types'
 
@@ -105,7 +104,6 @@ export interface InterpreterStep {
  */
 export default class Interpreter {
   _vm: any
-  _state: VmState
   _runState: RunState
   _eei: EEI
   _common: Common
@@ -133,7 +131,6 @@ export default class Interpreter {
   constructor(evm: EVM, eei: EEI, env: Env, gasLeft: bigint) {
     this._evm = evm
     this._eei = eei
-    this._state = eei.state
     this._common = this._evm._common
     this._runState = {
       programCounter: 0,
@@ -145,7 +142,7 @@ export default class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
-      vmState: this._state,
+      vmState: this._eei.state,
       eei: this._eei,
       env: env,
       shouldDoJumpAnalysis: true,
@@ -492,7 +489,7 @@ export default class Interpreter {
    * @param value - Storage value
    */
   transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._runState.interpreter._evm._transientStorage.put(this._env.address, key, value)
+    return this._evm._transientStorage.put(this._env.address, key, value)
   }
 
   /**
@@ -500,7 +497,7 @@ export default class Interpreter {
    * @param key - Storage key
    */
   transientStorageLoad(key: Buffer): Buffer {
-    return this._runState.interpreter._evm._transientStorage.get(this._env.address, key)
+    return this._evm._transientStorage.get(this._env.address, key)
   }
 
   /**
@@ -836,7 +833,7 @@ export default class Interpreter {
     if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._state.getAccount(this._env.address)
+      const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
     }
 
@@ -868,7 +865,7 @@ export default class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._state.putAccount(this._env.address, this._env.contract)
+    await this._eei.state.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
@@ -909,7 +906,7 @@ export default class Interpreter {
     ) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._state.getAccount(this._env.address)
+      const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
       if (results.createdAddress) {
         // push the created address to the stack
@@ -947,12 +944,12 @@ export default class Interpreter {
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
 
     // Add to beneficiary balance
-    const toAccount = await this._state.getAccount(toAddress)
+    const toAccount = await this._eei.state.getAccount(toAddress)
     toAccount.balance += this._env.contract.balance
-    await this._state.putAccount(toAddress, toAccount)
+    await this._eei.state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
-    await this._state.modifyAccountFields(this._env.address, {
+    await this._eei.state.modifyAccountFields(this._env.address, {
       balance: BigInt(0),
     })
 
