@@ -169,15 +169,31 @@ export interface TxContext {
 }
 
 /**
+ * Frame logic: this frame logic represents the current state of the call/create frame
+ * This holds all the information which the EVM Interpreter needs
+ * ALL values are optional and will default to something if they are not present
+ * 
+ * How to know if a frame is a Call or a Create?
+ * Create: has a `code` field
+ * Call: has a `to` field
+ * Note: `to` defaults to the zero address
+ * Note: `code` defaults to the empty buffer
+ * Prior to defaulting those, it is thus clear whether it is a CallFrame or a CreateFrame
+ */
+
+/**
  * The base frame environment
  * This is available for both CALLs and CREATEs
  */
-interface BaseFrameEnvironment {
-  caller?: Address // The caller address
-  gasLeft?: bigint // The current gas left
-  depth?: number // The call depth (defaults to 0)
-  value?: bigint // The call/create value
-  code?: Buffer // Code in the current frame (this code is set as "calldata" in a CREATE frame, in a CREATE frame there is no `data` field)
+type BaseFrameEnvironment = {
+  caller?: Address    // The caller address
+  gasLeft?: bigint    // The current gas left
+  value?: bigint      // The call/create value
+  code?: Buffer       // Code in the current frame (this code is set as "calldata" in a CREATE frame, in a CREATE frame there is no `data` field)
+  to?: Address        // The target address (if set, this is a CallFrame, if not set, this is a CreateFrame)
+  depth?: number      // The call depth (defaults to 0)
+  isStatic?: boolean  // True if the current frame (and also next/deeper frames) are in static mode (no state modifications allowed)
+  selfdestruct?: { [k: string]: boolean } // address -> boolean map of already selfdestructed addresses (to prevent refunding selfdestructed addresses twice)
 }
 
 type CreateFrameEnvironment = BaseFrameEnvironment
@@ -196,7 +212,7 @@ export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
 /**
  * The global environment makes data available to the EVM which is necessary for some opcodes
  */
-export interface GlobalEnvironment {
+export type GlobalEnvironment = {
   origin: Address // The address which created this transaction
   gasPrice: bigint // The gasPrice of the transaction
   block: Block // Current block environment
@@ -206,7 +222,7 @@ export interface GlobalEnvironment {
 /**
  * The EVMEnvironment is used to setup the necessary context in order to run EVM calls/creates
  */
-export interface EVMEnvironment {
+export type EVMEnvironment = {
   FrameEnvironment: FrameEnvironment
   GlobalEnvironment: GlobalEnvironment
 }
