@@ -41,7 +41,6 @@ export interface RunResult {
 }
 
 export interface Env {
-  blockchain: Blockchain
   address: Address
   caller: Address
   callData: Buffer
