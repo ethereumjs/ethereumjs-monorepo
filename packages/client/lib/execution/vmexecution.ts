@@ -8,7 +8,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { bufferToHex } from 'ethereumjs-util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 import { Event } from '../types'
@@ -36,7 +36,7 @@ export class VMExecution extends Execution {
     super(options)
 
     if (!this.config.vm) {
-      const trie = new Trie({ db: this.stateDB })
+      const trie = new Trie({ db: new LevelDB(this.stateDB) })
 
       const stateManager = new DefaultStateManager({
         common: this.config.execCommon,

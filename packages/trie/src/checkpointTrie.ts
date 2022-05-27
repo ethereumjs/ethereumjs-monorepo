@@ -1,15 +1,18 @@
 import { Trie as BaseTrie, TrieOpts } from './baseTrie'
 import { CheckpointDB } from './checkpointDb'
+import { DB, MemoryDB } from './db'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}
  */
 export class CheckpointTrie extends BaseTrie {
   db: CheckpointDB
+  dbStorage: DB
 
-  constructor(opts: TrieOpts = {}) {
+  constructor(opts?: TrieOpts) {
     super(opts)
-    this.db = new CheckpointDB(opts.db)
+    this.dbStorage = opts?.db ?? new MemoryDB()
+    this.db = new CheckpointDB(this.dbStorage)
   }
 
   /**
@@ -62,9 +65,8 @@ export class CheckpointTrie extends BaseTrie {
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   copy(includeCheckpoints = true): CheckpointTrie {
-    const db = this.db.copy()
     const trie = new CheckpointTrie({
-      db: db._leveldb,
+      db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
     })
