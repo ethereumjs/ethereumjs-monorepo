@@ -4,7 +4,7 @@ import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
 
-import { AccountState, Chain as IChain, GenesisState } from '../src/types'
+import { AccountState, ChainConfig, GenesisState } from '../src/types'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
@@ -175,7 +175,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const genesisState = {
       '0x0000000000000000000000000000000000000000': '0x1',
     }
-    const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
+    const customChainsWithGenesis: [ChainConfig, GenesisState][] = [[testnet, genesisState]]
     c = new Common({
       chain: 'testnet',
       hardfork: Hardfork.Istanbul,

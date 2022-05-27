@@ -13,7 +13,7 @@ import EthereumClient from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
-import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
+import type { ChainConfig, GenesisState } from '@ethereumjs/common/dist/types'
 import type { FullEthereumService } from '../lib/service'
 const level = require('level')
 const yargs = require('yargs/yargs')
@@ -426,7 +426,7 @@ async function setupDevnet(prefundAddress: Address) {
   }
   const chainParams = await parseCustomParams(chainData, 'devnet')
   const genesisState = await parseGenesisState(chainData)
-  const customChainParams: [IChain, GenesisState][] = [[chainParams, genesisState]]
+  const customChainParams: [ChainConfig, GenesisState][] = [[chainParams, genesisState]]
   return new Common({
     chain: 'devnet',
     customChains: customChainParams,
