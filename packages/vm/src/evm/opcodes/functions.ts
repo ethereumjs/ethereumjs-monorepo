@@ -165,22 +165,12 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x0a: EXP
   [
     0x0a,
-    function (runState, common) {
+    function (runState) {
       const [base, exponent] = runState.stack.popN(2)
       if (exponent === BigInt(0)) {
         runState.stack.push(BigInt(1))
         return
       }
-      let byteLength = exponent.toString(2).length / 8
-      if (byteLength > Math.trunc(byteLength)) {
-        byteLength = Math.trunc(byteLength) + 1
-      }
-      if (byteLength < 1 || byteLength > 32) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
-      const gasPrice = common.param('gasPrices', 'expByte')
-      const amount = BigInt(byteLength) * gasPrice
-      runState.interpreter.useGas(amount, 'EXP opcode') // TODO Why is this not in gas.ts??
 
       if (base === BigInt(0)) {
         runState.stack.push(base)

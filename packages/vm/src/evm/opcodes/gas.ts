@@ -35,6 +35,26 @@ export interface SyncDynamicGasHandler {
 export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler> =
   new Map<number, AsyncDynamicGasHandler>([
     [
+      /* EXP */
+      0x0a,
+      async function (runState, gas, common): Promise<bigint> {
+        const [_base, exponent] = runState.stack.peek(2)
+        if (exponent === BigInt(0)) {
+          return gas
+        }
+        let byteLength = exponent.toString(2).length / 8
+        if (byteLength > Math.trunc(byteLength)) {
+          byteLength = Math.trunc(byteLength) + 1
+        }
+        if (byteLength < 1 || byteLength > 32) {
+          trap(ERROR.OUT_OF_RANGE)
+        }
+        const expPricePerByte = common.param('gasPrices', 'expByte')
+        gas += BigInt(byteLength) * expPricePerByte
+        return gas
+      },
+    ],
+    [
       /* SHA3 */
       0x20,
       async function (runState, gas, common): Promise<bigint> {
