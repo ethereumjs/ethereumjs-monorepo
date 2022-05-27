@@ -57,7 +57,7 @@ const opcodes: OpcodeEntry = {
   0x07: { name: 'SMOD', isAsync: false, dynamicGas: false },
   0x08: { name: 'ADDMOD', isAsync: false, dynamicGas: false },
   0x09: { name: 'MULMOD', isAsync: false, dynamicGas: false },
-  0x0a: { name: 'EXP', isAsync: false, dynamicGas: false },
+  0x0a: { name: 'EXP', isAsync: false, dynamicGas: true },
   0x0b: { name: 'SIGNEXTEND', isAsync: false, dynamicGas: false },
 
   // 0x10 range - bit ops
