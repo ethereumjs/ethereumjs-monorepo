@@ -108,6 +108,16 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BigIntLike
+
+  /**
+   * Use a custom EEI for the EVM. If this is not present, use the default EEI.
+   */
+  eei?: EEI // TODO change this type to the interface
+
+  /**
+   * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
+   */
+  evm?: EVM // TODO change this type to the interface
 }
 
 /**
@@ -132,7 +142,7 @@ export default class VM extends AsyncEventEmitter {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVM
+  readonly evm: EVM // TODO change type to interface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -237,15 +247,24 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
-    // TODO add options to pass in custom EEI. This should only happen if no EEI is passed in
-    this.ei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
+    // TODO tests
+    if (opts.eei) {
+      this.ei = opts.eei
+    } else {
+      this.ei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
+    }
 
-    this.evm = new EVM({
-      common: this._common,
-      vmState: this.ei._state,
-      blockchain: this.blockchain,
-      ei: this.ei,
-    })
+    // TODO tests
+    if (opts.evm) {
+      this.evm = opts.evm
+    } else {
+      this.evm = new EVM({
+        common: this._common,
+        vmState: this.ei._state,
+        blockchain: this.blockchain,
+        ei: this.ei,
+      })
+    }
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
       throw new Error(
