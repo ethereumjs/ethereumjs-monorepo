@@ -155,7 +155,7 @@ export class BlockBuilder {
     const coinbase = this.headerData.coinbase
       ? new Address(toBuffer(this.headerData.coinbase))
       : Address.zero()
-    await rewardAccount(this.vm.ei._state, coinbase, reward)
+    await rewardAccount(this.vm.eei.state, coinbase, reward)
   }
 
   /**

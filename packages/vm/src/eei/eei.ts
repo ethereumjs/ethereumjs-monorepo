@@ -43,7 +43,7 @@ type Blockchain = {
  * and to-be-selfdestructed addresses.
  */
 export default class EEI {
-  _state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
+  readonly state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
   _common: Common
   _transientStorage: TransientStorage
   _blockchain: Blockchain
@@ -57,7 +57,7 @@ export default class EEI {
     this._common = common
     this._transientStorage = transientStorage
     this._blockchain = blockchain
-    this._state = new VmState({ common, stateManager })
+    this.state = new VmState({ common, stateManager })
   }
 
   /**
@@ -65,7 +65,7 @@ export default class EEI {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
-    const account = await this._state.getAccount(address)
+    const account = await this.state.getAccount(address)
     return account.balance
   }
 
@@ -75,7 +75,7 @@ export default class EEI {
    */
   async getExternalCodeSize(address: bigint): Promise<bigint> {
     const addr = new Address(addressToBuffer(address))
-    const code = await this._state.getContractCode(addr)
+    const code = await this.state.getContractCode(addr)
     return BigInt(code.length)
   }
 
@@ -85,7 +85,7 @@ export default class EEI {
    */
   async getExternalCode(address: bigint): Promise<Buffer> {
     const addr = new Address(addressToBuffer(address))
-    return this._state.getContractCode(addr)
+    return this.state.getContractCode(addr)
   }
 
   /**
@@ -104,7 +104,7 @@ export default class EEI {
    * @param value Storage value
    */
   async storageStore(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    await this._state.putContractStorage(address, key, value)
+    await this.state.putContractStorage(address, key, value)
   }
 
   /**
@@ -115,9 +115,9 @@ export default class EEI {
    */
   async storageLoad(address: Address, key: Buffer, original = false): Promise<Buffer> {
     if (original) {
-      return this._state.getOriginalContractStorage(address, key)
+      return this.state.getOriginalContractStorage(address, key)
     } else {
-      return this._state.getContractStorage(address, key)
+      return this.state.getContractStorage(address, key)
     }
   }
 
@@ -145,7 +145,7 @@ export default class EEI {
    * @param address - Address of account
    */
   async isAccountEmpty(address: Address): Promise<boolean> {
-    return this._state.accountIsEmpty(address)
+    return this.state.accountIsEmpty(address)
   }
 
   /**
@@ -153,6 +153,6 @@ export default class EEI {
    * @param address - Address of account
    */
   async accountExists(address: Address): Promise<boolean> {
-    return this._state.accountExists(address)
+    return this.state.accountExists(address)
   }
 }
