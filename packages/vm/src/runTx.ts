@@ -129,7 +129,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error(msg)
   }
 
-  const state = this.ei._state
+  const state = this.eei.state
 
   if (opts.reportAccessList && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -232,7 +232,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.ei._state
+  const state = this.eei.state
 
   const { tx, block } = opts
 
