@@ -1,7 +1,6 @@
 import { nibblesToBuffer, nibblesCompare } from './util/nibbles'
 import { Trie } from './baseTrie'
 import { TrieNode, BranchNode, ExtensionNode, LeafNode, Nibbles } from './trieNode'
-import { LevelDB } from './db'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -318,7 +317,7 @@ async function verifyProof(
   key: Buffer,
   proof: Buffer[]
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  let proofTrie = new Trie({ db: new LevelDB(), root: rootHash })
+  let proofTrie = new Trie({ root: rootHash })
   try {
     proofTrie = await Trie.fromProof(proof, proofTrie)
   } catch (e) {
@@ -433,7 +432,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie()
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
@@ -484,7 +483,7 @@ export async function verifyRangeProof(
     )
   }
 
-  let trie = new Trie({ db: new LevelDB(), root: rootHash })
+  let trie = new Trie({ root: rootHash })
   trie = await Trie.fromProof(proof, trie)
 
   // Remove all nodes between two edge proofs

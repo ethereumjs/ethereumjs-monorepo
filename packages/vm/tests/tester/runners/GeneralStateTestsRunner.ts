@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { toBuffer } from 'ethereumjs-util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
@@ -68,7 +68,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const begin = Date.now()
   const common = options.common
 
-  const state = new Trie({ db: new LevelDB() })
+  const state = new Trie()
   const vm = await VM.create({ state, common })
 
   await setupPreConditions(vm.vmState, testData)

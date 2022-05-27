@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { BaseTrie as Trie, LevelDB } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Block } from '@ethereumjs/block'
@@ -309,7 +309,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BigInt(0)
-  const receiptTrie = new Trie({ db: new LevelDB() })
+  const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
 
@@ -481,7 +481,7 @@ async function _applyDAOHardfork(state: VmState) {
 }
 
 async function _genTxTrie(block: Block) {
-  const trie = new Trie({ db: new LevelDB() })
+  const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }

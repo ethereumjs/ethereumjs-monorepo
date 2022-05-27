@@ -5,7 +5,7 @@ import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 const level = require('level')
@@ -31,7 +31,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
-  const state = new Trie({ db: new LevelDB() })
+  const state = new Trie()
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)

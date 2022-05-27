@@ -3,7 +3,7 @@ import { Multiaddr, multiaddr } from 'multiaddr'
 import { BlockHeader } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
   addHexPrefix,
@@ -95,7 +95,7 @@ export function parseTransports(transports: string[]) {
  * @returns genesis storage trie
  */
 async function createStorageTrie(storage: any) {
-  const trie = new Trie({ db: new LevelDB() })
+  const trie = new Trie()
   for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
     const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
     const val = Buffer.from(
@@ -116,7 +116,7 @@ async function createStorageTrie(storage: any) {
  * @returns genesis state trie
  */
 async function createGethGenesisStateTrie(alloc: any) {
-  const trie = new Trie({ db: new LevelDB() })
+  const trie = new Trie()
   for (const [key, value] of Object.entries(alloc)) {
     const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
     const { balance, code, storage } = value as any

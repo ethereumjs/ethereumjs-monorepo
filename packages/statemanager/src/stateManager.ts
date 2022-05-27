@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
   Address,
@@ -79,7 +79,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   constructor(opts: DefaultStateManagerOpts = {}) {
     super(opts)
 
-    this._trie = opts.trie ?? new Trie({ db: new LevelDB() })
+    this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
 
     /*

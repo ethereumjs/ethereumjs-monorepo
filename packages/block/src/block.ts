@@ -1,4 +1,4 @@
-import { BaseTrie as Trie, LevelDB } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import RLP from 'rlp'
@@ -21,7 +21,7 @@ export class Block {
   public readonly header: BlockHeader
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
-  public readonly txTrie = new Trie({ db: new LevelDB() })
+  public readonly txTrie = new Trie()
   public readonly _common: Common
 
   /**

@@ -1,7 +1,7 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { KECCAK256_RLP } from 'ethereumjs-util'
-import { DB, BatchDBOp, PutBatch, LevelDB } from './db'
+import { DB, BatchDBOp, PutBatch, MemoryDB } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
 import { WalkController } from './util/walkController'
@@ -37,7 +37,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db: DB
+  db?: DB
   /**
    * A `Buffer` for the root of a previously stored trie
    */
@@ -68,15 +68,15 @@ export class Trie {
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
-  constructor(opts: TrieOpts) {
+  constructor(opts?: TrieOpts) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
 
-    this.db = opts.db
+    this.db = opts?.db ?? new MemoryDB()
     this._root = this.EMPTY_TRIE_ROOT
-    this._deleteFromDB = opts.deleteFromDB ?? false
+    this._deleteFromDB = opts?.deleteFromDB ?? false
 
-    if (opts.root) {
+    if (opts?.root) {
       this.root = opts.root
     }
   }
@@ -641,7 +641,7 @@ export class Trie {
     })
 
     if (!trie) {
-      trie = new Trie({ db: new LevelDB() })
+      trie = new Trie()
       if (opStack[0]) {
         trie.root = opStack[0].key
       }
@@ -683,7 +683,7 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    let proofTrie = new Trie({ db: new LevelDB(), root: rootHash })
+    let proofTrie = new Trie({ root: rootHash })
     try {
       proofTrie = await Trie.fromProof(proof, proofTrie)
     } catch (e: any) {
