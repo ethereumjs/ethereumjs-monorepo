@@ -1,5 +1,7 @@
 import { UsageError, ValidationError } from '@ethereumjs/util'
 
+import type { ValidationErrorType } from '@ethereumjs/util'
+
 /**
  * Always define error codes on the generic Util
  * error class level (e.g. associated to `ValidationError`)
@@ -12,10 +14,12 @@ export enum ValidationErrorCode {
  * Additional types extending the generic Util
  * error types (e.g. `ValidationErrorType`)
  */
-export type HeaderValidationErrorType = {
-  block: string
-  received: string
-}
+export type HeaderValidationErrorType =
+  | {
+      block: string
+      received: string
+    }
+  | ValidationErrorType
 export type HeaderUsageErrorType = {
   block: string
 }
