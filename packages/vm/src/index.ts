@@ -10,7 +10,6 @@ const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { getActivePrecompiles } from './evm/precompiles'
 import EEI from './eei/eei'
-import { TransientStorage } from './state'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -23,7 +22,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `MuirGlacier` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `London` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * ### Supported EIPs
@@ -72,8 +71,9 @@ export interface VMOpts {
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
    *
-   * If this parameter is false, the first call to each of them has to pay an extra 25000 gas
-   * for creating the account.
+   * If this parameter is false, each call to each of them has to pay an extra 25000 gas
+   * for creating the account. If the account is still empty after this call, it will be deleted,
+   * such that this extra cost has to be paid again.
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
