@@ -4,18 +4,17 @@ import { BigIntLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import {
-  BootstrapNode,
-  Chain,
-  GenesisBlock,
+  BootstrapNodeConfig,
+  ChainConfig,
+  GenesisBlockConfig,
   GenesisState,
-  Hardfork as HardforkParams,
+  HardforkConfig,
   ChainName,
-  ChainsType,
+  ChainsConfig,
   CliqueConfig,
   EthashConfig,
   CasperConfig,
   CommonOpts,
-  CustomChain,
   CustomCommonOpts,
 } from './types'
 import mainnet from './chains/mainnet.json'
@@ -24,7 +23,7 @@ import rinkeby from './chains/rinkeby.json'
 import kovan from './chains/kovan.json'
 import goerli from './chains/goerli.json'
 import sepolia from './chains/sepolia.json'
-import { HardforkName, ChainId, ConsensusAlgorithm, ConsensusType } from './enums'
+import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -35,12 +34,12 @@ import { HardforkName, ChainId, ConsensusAlgorithm, ConsensusType } from './enum
  * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
  */
 export class Common extends EventEmitter {
-  readonly DEFAULT_HARDFORK: string | HardforkName
+  readonly DEFAULT_HARDFORK: string | Hardfork
 
-  private _chainParams: Chain
-  private _hardfork: string | HardforkName
+  private _chainParams: ChainConfig
+  private _hardfork: string | Hardfork
   private _eips: number[] = []
-  private _customChains: Chain[] | [Chain, GenesisState][]
+  private _customChains: ChainConfig[] | [ChainConfig, GenesisState][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -67,7 +66,7 @@ export class Common extends EventEmitter {
    * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
    */
   static custom(
-    chainParamsOrName: Partial<Chain> | CustomChain,
+    chainParamsOrName: Partial<ChainConfig> | CustomChain,
     opts: CustomCommonOpts = {}
   ): Common {
     const baseChain = opts.baseChain ?? 'mainnet'
@@ -132,7 +131,7 @@ export class Common extends EventEmitter {
             networkId: 69,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: HardforkName.Berlin, ...opts }
+          { hardfork: Hardfork.Berlin, ...opts }
         )
       }
 
@@ -144,7 +143,7 @@ export class Common extends EventEmitter {
             networkId: 10,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: HardforkName.Berlin, ...opts }
+          { hardfork: Hardfork.Berlin, ...opts }
         )
       }
       throw new Error(`Custom chain ${chainParamsOrName} not supported`)
@@ -157,28 +156,28 @@ export class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains: ChainsType = this._getInitializedChains()
+    const initializedChains: ChainsConfig = this._getInitializedChains()
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
   private static _getChainParams(
-    chain: string | number | ChainId | bigint,
-    customChains?: Chain[]
-  ): Chain {
-    const initializedChains: ChainsType = this._getInitializedChains(customChains)
+    chain: string | number | Chain | bigint,
+    customChains?: ChainConfig[]
+  ): ChainConfig {
+    const initializedChains: ChainsConfig = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
       if ((initializedChains['names'] as ChainName)[chain]) {
         const name: string = (initializedChains['names'] as ChainName)[chain]
-        return initializedChains[name] as Chain
+        return initializedChains[name] as ChainConfig
       }
 
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
     if (initializedChains[chain]) {
-      return initializedChains[chain] as Chain
+      return initializedChains[chain] as ChainConfig
     }
 
     throw new Error(`Chain with name ${chain} not supported`)
@@ -192,7 +191,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? HardforkName.London
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
     for (const hf of this._chainParams.hardforks) {
       if (!hf.forkHash) {
         hf.forkHash = this._calcForkHash(hf.name)
@@ -213,18 +212,18 @@ export class Common extends EventEmitter {
    *     representation. Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
-  setChain(chain: string | number | ChainId | bigint | object): Chain {
+  setChain(chain: string | number | Chain | bigint | object): ChainConfig {
     if (typeof chain === 'number' || typeof chain === 'bigint' || typeof chain === 'string') {
       // Filter out genesis states if passed in to customChains
-      let plainCustomChains: Chain[]
+      let plainCustomChains: ChainConfig[]
       if (
         this._customChains &&
         this._customChains.length > 0 &&
         Array.isArray(this._customChains[0])
       ) {
-        plainCustomChains = (this._customChains as [Chain, GenesisState][]).map((e) => e[0])
+        plainCustomChains = (this._customChains as [ChainConfig, GenesisState][]).map((e) => e[0])
       } else {
-        plainCustomChains = this._customChains as Chain[]
+        plainCustomChains = this._customChains as ChainConfig[]
       }
       this._chainParams = Common._getChainParams(chain, plainCustomChains)
     } else if (typeof chain === 'object') {
@@ -239,7 +238,7 @@ export class Common extends EventEmitter {
           throw new Error(`Missing required chain parameter: ${param}`)
         }
       }
-      this._chainParams = chain as Chain
+      this._chainParams = chain as ChainConfig
     } else {
       throw new Error('Wrong input format')
     }
@@ -250,7 +249,7 @@ export class Common extends EventEmitter {
    * Sets the hardfork to get params for
    * @param hardfork String identifier (e.g. 'byzantium') or {@link Hardfork} enum
    */
-  setHardfork(hardfork: string | HardforkName): void {
+  setHardfork(hardfork: string | Hardfork): void {
     let existing = false
     for (const hfChanges of HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
@@ -282,7 +281,7 @@ export class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
-    let hardfork = HardforkName.Chainstart
+    let hardfork = Hardfork.Chainstart
     let minTdHF
     let maxTdHF
     let previousHF
@@ -297,7 +296,7 @@ export class Common extends EventEmitter {
         continue
       }
       if (blockNumber >= BigInt(hf.block)) {
-        hardfork = hf.name as HardforkName
+        hardfork = hf.name as Hardfork
       }
       if (td && hf.td) {
         if (td >= BigInt(hf.td)) {
@@ -351,7 +350,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | HardforkName): HardforkParams | null {
+  _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -414,7 +413,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns The value requested or `BigInt(0)` if not found
    */
-  paramByHardfork(topic: string, name: string, hardfork: string | HardforkName): bigint {
+  paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
@@ -506,10 +505,7 @@ export class Common extends EventEmitter {
    * @param blockNumber
    * @returns True if HF is active on block number
    */
-  hardforkIsActiveOnBlock(
-    hardfork: string | HardforkName | null,
-    blockNumber: BigIntLike
-  ): boolean {
+  hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BigIntLike): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlock(hardfork)
@@ -535,10 +531,7 @@ export class Common extends EventEmitter {
    * @param opts Hardfork options
    * @returns True if HF1 gte HF2
    */
-  hardforkGteHardfork(
-    hardfork1: string | HardforkName | null,
-    hardfork2: string | HardforkName
-  ): boolean {
+  hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
     hardfork1 = hardfork1 ?? this._hardfork
     const hardforks = this.hardforks()
 
@@ -558,7 +551,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns True if hardfork set is greater than hardfork provided
    */
-  gteHardfork(hardfork: string | HardforkName): boolean {
+  gteHardfork(hardfork: string | Hardfork): boolean {
     return this.hardforkGteHardfork(null, hardfork)
   }
 
@@ -567,7 +560,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if unscheduled
    */
-  hardforkBlock(hardfork?: string | HardforkName): bigint | null {
+  hardforkBlock(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
     const block = this._getHardfork(hardfork)?.['block']
     if (block === undefined || block === null) {
@@ -581,7 +574,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Total difficulty or null if no set
    */
-  hardforkTD(hardfork?: string | HardforkName): bigint | null {
+  hardforkTD(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
     const td = this._getHardfork(hardfork)?.['td']
     if (td === undefined || td === null) {
@@ -596,7 +589,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns True if blockNumber is HF block
    */
-  isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | HardforkName): boolean {
+  isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const block = this.hardforkBlock(hardfork)
@@ -608,7 +601,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
    */
-  nextHardforkBlock(hardfork?: string | HardforkName): bigint | null {
+  nextHardforkBlock(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock === null) {
@@ -618,7 +611,7 @@ export class Common extends EventEmitter {
     // Logic: if accumulator is still null and on the first occurrence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkParams) => {
+    const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkConfig) => {
       const block = BigInt(hf.block === null ? 0 : hf.block)
       return block > hfBlock && acc === null ? block : acc
     }, null)
@@ -631,7 +624,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns True if blockNumber is HF block
    */
-  isNextHardforkBlock(blockNumber: BigIntLike, hardfork?: string | HardforkName): boolean {
+  isNextHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const nextHardforkBlock = this.nextHardforkBlock(hardfork)
@@ -644,7 +637,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | HardforkName) {
+  _calcForkHash(hardfork: string | Hardfork) {
     const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
 
     let hfBuffer = Buffer.alloc(0)
@@ -676,7 +669,7 @@ export class Common extends EventEmitter {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string | HardforkName): string {
+  forkHash(hardfork?: string | Hardfork): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
@@ -694,8 +687,8 @@ export class Common extends EventEmitter {
    * @param forkHash Fork hash as a hex string
    * @returns Array with hardfork data (name, block, forkHash)
    */
-  hardforkForForkHash(forkHash: string): HardforkParams | null {
-    const resArray = this.hardforks().filter((hf: HardforkParams) => {
+  hardforkForForkHash(forkHash: string): HardforkConfig | null {
+    const resArray = this.hardforks().filter((hf: HardforkConfig) => {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
@@ -705,7 +698,7 @@ export class Common extends EventEmitter {
    * Returns the Genesis parameters of the current chain
    * @returns Genesis dictionary
    */
-  genesis(): GenesisBlock {
+  genesis(): GenesisBlockConfig {
     return this._chainParams['genesis']
   }
 
@@ -738,7 +731,7 @@ export class Common extends EventEmitter {
       this._customChains.length > 0 &&
       Array.isArray(this._customChains[0])
     ) {
-      for (const chainArrayWithGenesis of this._customChains as [Chain, GenesisState][]) {
+      for (const chainArrayWithGenesis of this._customChains as [ChainConfig, GenesisState][]) {
         if (chainArrayWithGenesis[0].name === this.chainName()) {
           return chainArrayWithGenesis[1]
         }
@@ -752,7 +745,7 @@ export class Common extends EventEmitter {
    * Returns the hardforks for current chain
    * @returns {Array} Array with arrays of hardforks
    */
-  hardforks(): HardforkParams[] {
+  hardforks(): HardforkConfig[] {
     return this._chainParams['hardforks']
   }
 
@@ -760,7 +753,7 @@ export class Common extends EventEmitter {
    * Returns bootstrap nodes for the current chain
    * @returns {Dictionary} Dict with bootstrap nodes
    */
-  bootstrapNodes(): BootstrapNode[] {
+  bootstrapNodes(): BootstrapNodeConfig[] {
     return this._chainParams['bootstrapNodes']
   }
 
@@ -776,7 +769,7 @@ export class Common extends EventEmitter {
    * Returns the hardfork set
    * @returns Hardfork name
    */
-  hardfork(): string | HardforkName {
+  hardfork(): string | Hardfork {
     return this._hardfork
   }
 
@@ -816,7 +809,7 @@ export class Common extends EventEmitter {
    * Returns the consensus type of the network
    * Possible values: "pow"|"poa"|"pos"
    *
-   * Note: This value can update along a HardforkName.
+   * Note: This value can update along a Hardfork.
    */
   consensusType(): string | ConsensusType {
     const hardfork = this.hardfork()
@@ -841,7 +834,7 @@ export class Common extends EventEmitter {
    * "clique" for "poa" consensus type or
    * "casper" for "pos" consensus type.
    *
-   * Note: This value can update along a HardforkName.
+   * Note: This value can update along a Hardfork.
    */
   consensusAlgorithm(): string | ConsensusAlgorithm {
     const hardfork = this.hardfork()
@@ -871,7 +864,7 @@ export class Common extends EventEmitter {
    * aura: -
    * casper: -
    *
-   * Note: This value can update along a HardforkName.
+   * Note: This value can update along a Hardfork.
    */
   consensusConfig(): { [key: string]: CliqueConfig | EthashConfig | CasperConfig } {
     const hardfork = this.hardfork()
@@ -900,7 +893,7 @@ export class Common extends EventEmitter {
     return copy
   }
 
-  static _getInitializedChains(customChains?: Chain[]): ChainsType {
+  static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
     const names: ChainName = {
       '1': 'mainnet',
       '3': 'ropsten',
@@ -909,7 +902,7 @@ export class Common extends EventEmitter {
       '5': 'goerli',
       '11155111': 'sepolia',
     }
-    const chains: ChainsType = {
+    const chains: ChainsConfig = {
       mainnet,
       ropsten,
       rinkeby,

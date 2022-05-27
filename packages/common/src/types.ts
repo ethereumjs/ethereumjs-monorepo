@@ -1,18 +1,11 @@
 import { PrefixedHexString } from 'ethereumjs-util'
-import { ConsensusAlgorithm, ConsensusType, HardforkName, ChainId } from './enums'
-
-export interface genesisStatesType {
-  names: {
-    [key: string]: string
-  }
-  [key: string]: {}
-}
+import { ConsensusAlgorithm, ConsensusType, Hardfork, Chain } from './enums'
 
 export interface ChainName {
   [chainId: string]: string
 }
-export interface ChainsType {
-  [key: string]: Chain | ChainName
+export interface ChainsConfig {
+  [key: string]: ChainConfig | ChainName
 }
 
 export type CliqueConfig = {
@@ -23,7 +16,7 @@ export type CliqueConfig = {
 export type EthashConfig = {}
 
 export type CasperConfig = {}
-export interface Chain {
+export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
@@ -31,9 +24,9 @@ export interface Chain {
   defaultHardfork?: string
   comment: string
   url: string
-  genesis: GenesisBlock
-  hardforks: Hardfork[]
-  bootstrapNodes: BootstrapNode[]
+  genesis: GenesisBlockConfig
+  hardforks: HardforkConfig[]
+  bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
   // TODO: make mandatory in next breaking release
   consensus?: {
@@ -57,11 +50,7 @@ export interface GenesisState {
   [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
-export interface eipsType {
-  [key: number]: any
-}
-
-export interface GenesisBlock {
+export interface GenesisBlockConfig {
   hash: string
   timestamp: string | null
   gasLimit: number
@@ -72,14 +61,14 @@ export interface GenesisBlock {
   baseFeePerGas?: string
 }
 
-export interface Hardfork {
-  name: HardforkName | string
+export interface HardforkConfig {
+  name: Hardfork | string
   block: number | null
   td?: number
   forkHash?: string | null
 }
 
-export interface BootstrapNode {
+export interface BootstrapNodeConfig {
   ip: string
   port: number | string
   network?: string
@@ -95,7 +84,7 @@ interface BaseOpts {
    *
    * Default: Hardfork.London
    */
-  hardfork?: string | HardforkName
+  hardfork?: string | Hardfork
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
    * (e.g. `eips: [ 2537, ]`)
@@ -156,7 +145,7 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
    * ```
    */
-  customChains?: Chain[] | [Chain, GenesisState][]
+  customChains?: ChainConfig[] | [ChainConfig, GenesisState][]
 }
 
 /**
@@ -167,49 +156,5 @@ export interface CustomCommonOpts extends BaseOpts {
    * The name (`mainnet`), id (`1`), or {@link Chain} enum of
    * a standard chain used to base the custom chain params on.
    */
-  baseChain?: string | number | ChainId | bigint
-}
-
-export enum CustomChain {
-  /**
-   * Polygon (Matic) Mainnet
-   *
-   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
-   */
-  PolygonMainnet = 'polygon-mainnet',
-
-  /**
-   * Polygon (Matic) Mumbai Testnet
-   *
-   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
-   */
-  PolygonMumbai = 'polygon-mumbai',
-
-  /**
-   * Arbitrum Rinkeby Testnet
-   *
-   * - [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
-   */
-  ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
-
-  /**
-   * xDai EVM sidechain with a native stable token
-   *
-   * - [Documentation](https://www.xdaichain.com/)
-   */
-  xDaiChain = 'x-dai-chain',
-
-  /**
-   * Optimistic Kovan - testnet for Optimism roll-up
-   *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
-   */
-  OptimisticKovan = 'optimistic-kovan',
-
-  /**
-   * Optimistic Ethereum - mainnet for Optimism roll-up
-   *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
-   */
-  OptimisticEthereum = 'optimistic-ethereum',
+  baseChain?: string | number | Chain | bigint
 }

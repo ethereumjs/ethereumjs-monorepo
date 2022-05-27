@@ -1,18 +1,18 @@
 import tape from 'tape'
-import Common, { ChainId, HardforkName } from '../src/'
+import Common, { Chain, Hardfork } from '../src/'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
-    const c = new Common({ chain: ChainId.Mainnet, eips: [2537] })
+    const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
     msg = 'Should return correct value for HF set in class'
-    c.setHardfork(HardforkName.Byzantium)
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), BigInt(500), msg)
-    c.setHardfork(HardforkName.Istanbul)
+    c.setHardfork(Hardfork.Istanbul)
     st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
-    c.setHardfork(HardforkName.MuirGlacier)
+    c.setHardfork(Hardfork.MuirGlacier)
     st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
 
     msg = 'Should return 0n for non-existing value'
@@ -32,7 +32,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
-    const c = new Common({ chain: ChainId.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet })
 
     const f = function () {
       c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
@@ -40,7 +40,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
-    c.setHardfork(HardforkName.Byzantium)
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(
       c.param('gasPrices', 'ecAdd'),
       BigInt(500),
@@ -51,7 +51,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Parameter updates', function (st: tape.Test) {
-    const c = new Common({ chain: ChainId.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return correct value for chain start'
     st.equal(
@@ -73,7 +73,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Access by block number, paramByBlock()', function (st: tape.Test) {
-    const c = new Common({ chain: ChainId.Mainnet, hardfork: HardforkName.Byzantium })
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
     st.equal(c.paramByBlock('pow', 'minerReward', 4370000), BigInt(3000000000000000000), msg)
 
@@ -89,7 +89,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
-    const c = new Common({ chain: ChainId.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
     st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
@@ -113,8 +113,8 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('returns the right block delay for EIP3554', function (st) {
-    for (const fork of [HardforkName.MuirGlacier, HardforkName.Berlin]) {
-      const c = new Common({ chain: ChainId.Mainnet, hardfork: fork })
+    for (const fork of [Hardfork.MuirGlacier, Hardfork.Berlin]) {
+      const c = new Common({ chain: Chain.Mainnet, hardfork: fork })
       let delay = c.param('pow', 'difficultyBombDelay')
       st.equal(delay, BigInt(9000000))
       c.setEIPs([3554])
