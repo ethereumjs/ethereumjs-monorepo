@@ -493,7 +493,7 @@ export default class Interpreter {
    * @param value - Storage value
    */
   transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._eei.transientStorageStore(this._env.address, key, value)
+    return this._runState.interpreter._evm._transientStorage.put(this._env.address, key, value)
   }
 
   /**
@@ -501,7 +501,7 @@ export default class Interpreter {
    * @param key - Storage key
    */
   transientStorageLoad(key: Buffer): Buffer {
-    return this._eei.transientStorageLoad(this._env.address, key)
+    return this._runState.interpreter._evm._transientStorage.get(this._env.address, key)
   }
 
   /**

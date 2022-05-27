@@ -252,7 +252,7 @@ export default class VM extends AsyncEventEmitter {
     if (opts.eei) {
       this.eei = opts.eei
     } else {
-      this.eei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
+      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
     }
 
     // TODO tests

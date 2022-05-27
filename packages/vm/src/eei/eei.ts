@@ -2,7 +2,6 @@ import { Account, Address, bufferToBigInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
-import { TransientStorage } from '../state'
 import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
 
@@ -45,17 +44,10 @@ type Blockchain = {
 export default class EEI {
   readonly state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
   _common: Common
-  _transientStorage: TransientStorage
   _blockchain: Blockchain
 
-  constructor(
-    stateManager: StateManager,
-    common: Common,
-    transientStorage: TransientStorage,
-    blockchain: Blockchain
-  ) {
+  constructor(stateManager: StateManager, common: Common, blockchain: Blockchain) {
     this._common = common
-    this._transientStorage = transientStorage
     this._blockchain = blockchain
     this.state = new VmState({ common, stateManager })
   }
@@ -119,25 +111,6 @@ export default class EEI {
     } else {
       return this.state.getContractStorage(address, key)
     }
-  }
-
-  /**
-   * Store 256-bit a value in memory to transient storage.
-   * @param address Address to use
-   * @param key Storage key
-   * @param value Storage value
-   */
-  transientStorageStore(address: Address, key: Buffer, value: Buffer): void {
-    return this._transientStorage.put(address, key, value)
-  }
-
-  /**
-   * Loads a 256-bit value to memory from transient storage.
-   * @param address Address to use
-   * @param key Storage key
-   */
-  transientStorageLoad(address: Address, key: Buffer): Buffer {
-    return this._transientStorage.get(address, key)
   }
 
   /**
