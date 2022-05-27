@@ -105,9 +105,8 @@ export class SecureTrie extends CheckpointTrie {
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   copy(includeCheckpoints = true): SecureTrie {
-    const db = this.db.copy()
     const secureTrie = new SecureTrie({
-      db: db._leveldb,
+      db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
     })

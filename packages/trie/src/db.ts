@@ -15,11 +15,45 @@ export interface DelBatch {
   key: Buffer
 }
 
+export interface DB {
+  /**
+   * Retrieves a raw value from leveldb.
+   * @param key
+   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+   */
+  get(key: Buffer): Promise<Buffer | null>
+
+  /**
+   * Writes a value directly to leveldb.
+   * @param key The key as a `Buffer`
+   * @param value The value to be stored
+   */
+  put(key: Buffer, val: Buffer): Promise<void>
+
+  /**
+   * Removes a raw value in the underlying leveldb.
+   * @param keys
+   */
+  del(key: Buffer): Promise<void>
+
+  /**
+   * Performs a batch operation on db.
+   * @param opStack A stack of levelup operations
+   */
+  batch(opStack: BatchDBOp[]): Promise<void>
+
+  /**
+   * Returns a copy of the DB instance, with a reference
+   * to the **same** underlying leveldb instance.
+   */
+  copy(): DB
+}
+
 /**
- * DB is a thin wrapper around the underlying levelup db,
+ * LevelDB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
-export class DB {
+export class LevelDB implements DB {
   _leveldb: LevelUp
 
   /**
@@ -32,9 +66,7 @@ export class DB {
   }
 
   /**
-   * Retrieves a raw value from leveldb.
-   * @param key
-   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+   * @inheritdoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     let value = null
@@ -51,35 +83,85 @@ export class DB {
   }
 
   /**
-   * Writes a value directly to leveldb.
-   * @param key The key as a `Buffer`
-   * @param value The value to be stored
+   * @inheritdoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
   /**
-   * Removes a raw value in the underlying leveldb.
-   * @param keys
+   * @inheritdoc
    */
   async del(key: Buffer): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 
   /**
-   * Performs a batch operation on db.
-   * @param opStack A stack of levelup operations
+   * @inheritdoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     await this._leveldb.batch(opStack, ENCODING_OPTS)
   }
 
   /**
-   * Returns a copy of the DB instance, with a reference
-   * to the **same** underlying leveldb instance.
+   * @inheritdoc
    */
   copy(): DB {
-    return new DB(this._leveldb)
+    return new LevelDB(this._leveldb)
+  }
+}
+
+export class MemoryDB implements DB {
+  _database: Map<string, Buffer>
+
+  constructor(database?: Map<string, Buffer> | null) {
+    this._database = database ?? new Map()
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async get(key: Buffer): Promise<Buffer | null> {
+    const value = this._database.get(key.toString('binary'))
+
+    if (value === undefined) {
+      return null
+    }
+
+    return value
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async put(key: Buffer, val: Buffer): Promise<void> {
+    this._database.set(key.toString('binary'), val)
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async del(key: Buffer): Promise<void> {
+    this._database.delete(key.toString('binary'))
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async batch(opStack: BatchDBOp[]): Promise<void> {
+    for (const op of opStack) {
+      if (op.type === 'del') {
+        await this.del(op.key)
+      } else if (op.type === 'put') {
+        await this.put(op.key, op.value)
+      }
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  copy(): DB {
+    return new MemoryDB(this._database)
   }
 }
