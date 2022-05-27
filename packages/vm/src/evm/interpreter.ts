@@ -134,7 +134,7 @@ export default class Interpreter {
   constructor(evm: EVM, eei: EEI, env: Env, gasLeft: bigint) {
     this._evm = evm
     this._eei = eei
-    this._state = eei._state
+    this._state = eei.state
     this._common = this._evm._common
     this._runState = {
       programCounter: 0,
@@ -474,7 +474,7 @@ export default class Interpreter {
    */
   async storageStore(key: Buffer, value: Buffer): Promise<void> {
     await this._eei.storageStore(this._env.address, key, value)
-    const account = await this._eei._state.getAccount(this._env.address)
+    const account = await this._eei.state.getAccount(this._env.address)
     this._env.contract = account
   }
 

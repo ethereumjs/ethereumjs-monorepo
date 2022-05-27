@@ -142,6 +142,7 @@ export default class VM extends AsyncEventEmitter {
    * The EVM used for bytecode execution
    */
   readonly evm: EVM // TODO change type to interface
+  readonly eei: EEI // TODO change type to interface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -242,9 +243,9 @@ export default class VM extends AsyncEventEmitter {
 
     // TODO tests
     if (opts.eei) {
-      this.ei = opts.eei
+      this.eei = opts.eei
     } else {
-      this.ei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
+      this.eei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
     }
 
     // TODO tests
@@ -253,9 +254,8 @@ export default class VM extends AsyncEventEmitter {
     } else {
       this.evm = new EVM({
         common: this._common,
-        vmState: this.ei._state,
         blockchain: this.blockchain,
-        ei: this.ei,
+        eei: this.eei,
       })
     }
 
@@ -284,24 +284,24 @@ export default class VM extends AsyncEventEmitter {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.ei._state.generateCanonicalGenesis(this.blockchain.genesisState())
+        await this.eei.state.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.ei._state.checkpoint()
+      await this.eei.state.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.ei._state.getAccount(address)
+        const account = await this.eei.state.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
           const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
-          await this.ei._state.putAccount(address, newAccount)
+          await this.eei.state.putAccount(address, newAccount)
         }
       }
-      await this.ei._state.commit()
+      await this.eei.state.commit()
     }
     this._isInitialized = true
   }
@@ -355,6 +355,7 @@ export default class VM extends AsyncEventEmitter {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
+    // TODO this needs custom EEI/EVM integration
     return VM.create({
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain.copy(),
