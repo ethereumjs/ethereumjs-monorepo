@@ -1,6 +1,5 @@
-import { DB, BatchDBOp, ENCODING_OPTS } from './db'
+import { DB, BatchDBOp } from './db'
 // eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 
 export type Checkpoint = {
   // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
@@ -13,16 +12,15 @@ export type Checkpoint = {
  * DB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
-export class CheckpointDB extends DB {
+export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
+  public db: DB
 
   /**
-   * Initialize a DB instance. If `leveldb` is not provided, DB
-   * defaults to an [in-memory store](https://github.com/Level/memdown).
-   * @param leveldb - An abstract-leveldown compliant store
+   * Initialize a DB instance.
    */
-  constructor(leveldb?: LevelUp | null) {
-    super(leveldb)
+  constructor(db: DB) {
+    this.db = db
     // Roots of trie at the moment of checkpoint
     this.checkpoints = []
   }
@@ -81,9 +79,7 @@ export class CheckpointDB extends DB {
   }
 
   /**
-   * Retrieves a raw value from leveldb.
-   * @param key
-   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+   * @inheritdoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
@@ -95,7 +91,7 @@ export class CheckpointDB extends DB {
     }
     // Nothing has been found in cache, look up from disk
 
-    const value = await super.get(key)
+    const value = await this.db.get(key)
     if (this.isCheckpoint) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
@@ -105,22 +101,19 @@ export class CheckpointDB extends DB {
   }
 
   /**
-   * Writes a value directly to leveldb.
-   * @param key The key as a `Buffer`
-   * @param value The value to be stored
+   * @inheritdoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.isCheckpoint) {
       // put value in cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
     } else {
-      await super.put(key, val)
+      await this.db.put(key, val)
     }
   }
 
   /**
-   * Removes a raw value in the underlying leveldb.
-   * @param keys
+   * @inheritdoc
    */
   async del(key: Buffer): Promise<void> {
     if (this.isCheckpoint) {
@@ -128,13 +121,12 @@ export class CheckpointDB extends DB {
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
     } else {
       // delete the value on disk
-      await this._leveldb.del(key, ENCODING_OPTS)
+      await this.db.del(key)
     }
   }
 
   /**
-   * Performs a batch operation on db.
-   * @param opStack A stack of levelup operations
+   * @inheritdoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     if (this.isCheckpoint) {
@@ -146,7 +138,14 @@ export class CheckpointDB extends DB {
         }
       }
     } else {
-      await super.batch(opStack)
+      await this.db.batch(opStack)
     }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  copy(): CheckpointDB {
+    return new CheckpointDB(this.db)
   }
 }

@@ -1,7 +1,7 @@
 import { pseudoRandomBytes } from 'crypto'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie, DB } from '../dist'
 
-export const iterTest = async (numOfIter: number) => {
+export const iterTest = async (db: DB, numOfIter: number) => {
   const keys: Buffer[] = []
   const vals: Buffer[] = []
 
@@ -10,7 +10,7 @@ export const iterTest = async (numOfIter: number) => {
     vals.push(pseudoRandomBytes(32))
   }
 
-  const trie = new CheckpointTrie()
+  const trie = new CheckpointTrie({ db })
 
   for (let i = 0; i < numOfIter; i++) {
     trie.checkpoint()
