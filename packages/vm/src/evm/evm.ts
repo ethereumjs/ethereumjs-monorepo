@@ -165,7 +165,7 @@ export interface ExecResult {
   /**
    * Amount of gas the code used to run
    */
-  gasUsed: bigint
+  gasUsed: bigint //TODO misleading; does not cover upfront cost (does it cover callvalue?)
   /**
    * Return value from the contract
    */
