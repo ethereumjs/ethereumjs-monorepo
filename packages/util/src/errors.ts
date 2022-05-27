@@ -4,18 +4,22 @@
  * Kudos to https://github.com/ChainSafe/lodestar monorepo
  * for the inspiration :-)
  */
-export class EthereumJSError<T extends {}> extends Error {
-  code: string
-  errorContext: T
+type EthereumJSErrorType = {
+  objectContext: string
+}
 
-  constructor(msg: string, code: string, errorContext: T) {
+export class EthereumJSError<T> extends Error {
+  code: string
+  context: T | {}
+
+  constructor(msg: string, code: string, context?: T) {
     super(msg)
     this.code = code
-    this.errorContext = errorContext
+    this.context = context ?? {}
   }
 
-  getErrorContext(): Record<string, string | number | null> {
-    return { code: this.code, ...this.errorContext }
+  getContext(): Record<string, string | number | null> {
+    return { code: this.code, ...this.context }
   }
 
   /**
@@ -23,26 +27,66 @@ export class EthereumJSError<T extends {}> extends Error {
    */
   toObject(): Record<string, string | number | null> {
     return {
-      ...this.getErrorContext(),
+      ...this.getContext(),
       stack: this.stack ?? '',
     }
   }
 }
 
-export type ValidationErrorType = {
-  received: string
+/**
+ * Error Codes
+ */
+export enum ErrorCode {
+  // Value Errors
+  INVALID_OBJECT = 'INVALID_OBJECT',
+  INVALID_VALUE = 'INVALID_VALUE',
+  INVALID_VALUE_LENGTH = 'INVALID_VALUE_LENGTH',
+  TOO_FEW_VALUES = 'TOO_FEW_VALUES',
+  TOO_MANY_VALUES = 'TOO_MANY_VALUES',
+
+  // Usage Errors
+  EIP_NOT_ACTIVATED = 'EIP_NOT_ACTIVATED',
+  INCOMPATIBLE_LIBRARY_VERSION = 'INCOMPATIBLE_LIBRARY_VERSION',
+  INVALID_OPTION_USAGE = 'INVALID_OPTION_USAGE',
+  INVALID_METHOD_CALL = 'INVALID_METHOD_CALL',
 }
 
 /**
- * Error along Object Validation
- *
- * Use directly or in a subclassed context for error comparison (`e instanceof ValidationError`)
+ * Generic error types
  */
-export class ValidationError<T extends ValidationErrorType> extends EthereumJSError<T> {}
+
+/**
+ * Type flavors for ValueError
+ */
+export type ValueErrorType =
+  | {
+      received: string
+    }
+  | {
+      objectContext: string
+      received: string
+    }
+  | EthereumJSErrorType
+
+/**
+ * Type flavors for UsageError
+ */
+export type UsageErrorType = EthereumJSErrorType
+
+/**
+ * Generic Errors
+ *
+ * Use directly or in a subclassed context for error comparison (`e instanceof ValueError`)
+ */
+
+/**
+ * Error along Object Value
+ */
+export class ValueError extends EthereumJSError<ValueErrorType> {}
 
 /**
  * Error along API Usage
  *
  * Use directly or in a subclassed context for error comparison (`e instanceof UsageError`)
  */
-export class UsageError<T extends {}> extends EthereumJSError<T> {}
+export class UsageError extends EthereumJSError<UsageErrorType> {}
