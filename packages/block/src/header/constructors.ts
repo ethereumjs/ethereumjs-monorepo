@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, equalsBytes } from '@ethereumjs/util'
+import { ErrorCode, ValueError, bigIntToBytes, equalsBytes } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
 import { numberToHex, valuesArrayToHeaderData } from '../helpers.js'
@@ -66,7 +66,7 @@ export function createBlockHeaderFromRLP(
 ) {
   const values = RLP.decode(serializedHeaderData)
   if (!Array.isArray(values)) {
-    throw new Error('Invalid serialized header input. Must be array')
+    throw new ValueError('Invalid serialized header input. Must be array', ErrorCode.INVALID_VALUE)
   }
   return createBlockHeaderFromBytesArray(values as Uint8Array[], opts)
 }
