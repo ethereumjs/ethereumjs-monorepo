@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { BN, AccountData as AccountDataBody } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 
@@ -9,7 +9,7 @@ interface SnapProtocolOptions extends ProtocolOptions {
 
 type AccountData = {
   hash: Buffer
-  body: Buffer
+  body: AccountDataBody
 }
 
 type GetAccountRangeOpts = {
@@ -26,7 +26,9 @@ type GetAccountRangeOpts = {
  * methods in camelCase to BoundProtocol.
  */
 export interface SnapProtocolMethods {
-  getAccountRange: (opts: GetAccountRangeOpts) => Promise<[BN, AccountData[], Buffer[][]]>
+  getAccountRange: (
+    opts: GetAccountRangeOpts
+  ) => Promise<{ reqId: BN; accounts: AccountData[]; proof: Buffer[][] }>
 }
 
 const id = new BN(0)
@@ -42,7 +44,7 @@ export class SnapProtocol extends Protocol {
     {
       name: 'GetAccountRange',
       code: 0x00,
-      response: 0x04,
+      response: 0x01,
       encode: ({ reqId, root, origin, limit, bytes }: GetAccountRangeOpts) => {
         return [
           (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
@@ -52,13 +54,41 @@ export class SnapProtocol extends Protocol {
           bytes,
         ]
       },
-      decode: ([reqId, root, origin, limit, bytes]: any) => ({
-        reqId: new BN(reqId),
-        root,
-        origin,
-        limit,
-        bytes: new BN(bytes),
-      }),
+      decode: ([reqId, root, origin, limit, bytes]: any) => {
+        return {
+          reqId: new BN(reqId),
+          root,
+          origin,
+          limit,
+          bytes: new BN(bytes),
+        }
+      },
+    },
+    {
+      name: 'AccountRange',
+      code: 0x01,
+      encode: ({
+        reqId,
+        accounts,
+        proof,
+      }: {
+        reqId: BN
+        accounts: AccountData[]
+        proof: Buffer[]
+      }) => {
+        return [
+          reqId.toArrayLike(Buffer),
+          accounts.map((account) => [account.hash, account.body]),
+          proof,
+        ]
+      },
+      decode: ([reqId, accounts, proof]: any) => {
+        return {
+          reqId: new BN(reqId),
+          accounts: accounts.map(([hash, body]: any) => ({ hash, body } as AccountData)),
+          proof,
+        }
+      },
     },
   ]
 
