@@ -1,9 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Account, Address } from 'ethereumjs-util'
+import { ReadableByteStreamController } from 'stream/web'
 import EVM from './evm'
+import Memory from './memory'
 import Message from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import Stack from './stack'
 
 /**
  * Log that the contract emits.
@@ -210,7 +213,7 @@ export interface TxContext {
  * The base frame environment
  * This is available for both CALLs and CREATEs
  */
-type BaseFrameEnvironment = {
+/*type BaseFrameEnvironment = {
   caller?: Address    // The caller address
   gasLeft?: bigint    // The current gas left
   value?: bigint      // The call/create value
@@ -221,38 +224,94 @@ type BaseFrameEnvironment = {
   depth?: number      // The call depth (defaults to 0)
   isStatic?: boolean  // True if the current frame (and also next/deeper frames) are in static mode (no state modifications allowed)
   selfdestruct?: { [k: string]: boolean } // address -> boolean map of already selfdestructed addresses (to prevent refunding selfdestructed addresses twice)
-}
+}*/
 
-type CreateFrameEnvironment = BaseFrameEnvironment
+/*type CreateFrameEnvironment = BaseFrameEnvironment
 type CallFrameEnvironment = BaseFrameEnvironment & {
   to: Address // If a `to` field is available this is automatically a CALL frame. Otherwise, it is a CREATE frame
   data?: Buffer // The calldata
-}
+}*/
 
 /**
  * The frame environment holds all info of the current call/create frame
  * Note that this will internally also hold information such as selfdestructed addresses,
  * if the frame is static (due to previous STATICCALL), whatever AUTH parameter is set, etc.
  */
-export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
+//export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
 
 /**
  * The global environment makes data available to the EVM which is necessary for some opcodes
  */
-export type GlobalEnvironment = {
-  origin: Address // The address which created this transaction
-  gasPrice: bigint // The gasPrice of the transaction
-  block: Block // Current block environment
-  chainId: bigint // The chainId of the current chain
-}
+/*export type GlobalEnvironment = {
+  origin?: Address // The address which created this transaction
+  gasPrice?: bigint // The gasPrice of the transaction
+  block?: Block // Current block environment
+  chainId?: bigint // The chainId of the current chain
+}*/
 
 /**
  * The EVMEnvironment is used to setup the necessary context in order to run EVM calls/creates
  */
-export type EVMEnvironment = {
+/*export type EVMEnvironment = {
   FrameEnvironment: FrameEnvironment
   GlobalEnvironment: GlobalEnvironment
+}*/
+
+// Minimal types to ensure runTx -> EVM step can be made
+export type BaseFrameEnvironment = {
+  caller?: Address    // The caller address
+  gasLimit?: bigint    // The gasLimit of the frame
+  value?: bigint      // The call/create value
+  data?: Buffer       // Data of the frame. In case no `to` field is present, this is the `code`, not the `callData`
+  to?: Address        // The target address (if set, this is a CallFrame, if not set, this is a CreateFrame)
 }
+
+export type CreateFrameEnvironment = BaseFrameEnvironment
+export type CallFrameEnvironment = BaseFrameEnvironment & {
+  to: Address // If a `to` field is available this is automatically a CALL frame. Otherwise, it is a CREATE frame
+}
+
+export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
+
+export type GlobalEnvironment = {
+  block?: Block,    // Block Tx runs in (TODO remove Block dependency and instead just ensure all necessary fields can be queried -> probably only need Header not entire block)
+  gasPrice?: bigint // Tx GasPrice
+}
+
+// Internally in EVM, members of this type are static (so the variables will /not/ change upon running contract code)
+// Note: these stay static inside the current call/create frame
+export type EVMEnvironment = {
+  frameEnvironment?: FrameEnvironment
+  globalEnvironment?: GlobalEnvironment
+}
+
+// MachineState: this is the internal state of the Machine and changes dynamically
+export type MachineState = {
+  gasLeft?: bigint, // Current gas left 
+  programCounter?: number, 
+  memory?: Memory,
+  memoryWordCount?: bigint, // This property is probably not necessary, can immediately read from memory.length since this is now properly resized
+  highestMemCost?: bigint, // TODO figure out what this is and why we need to keep track of this
+  stack?: Stack,
+  returnStack?: Stack,
+  validJumps?: Uint8Array, // TODO check if `shouldDoJumpAnalysis` can be removed -> if `validJumps === undefined` then do analysis
+  shouldDoJumpAnalysis?: boolean
+  selfdestruct?: { [k: string]: boolean } // address -> boolean map of already selfdestructed addresses (to prevent refunding selfdestructed addresses twice)
+}
+
+// Note: any precompile-related logic is removed, this should be retrieved into `runCall` (i.e. decide if it is a precompile or not)
+export type EVMEnvironmentExtended = EVMEnvironment & {
+  frameEnvironment: FrameEnvironment & {
+    machineState?: MachineState
+    // valueTransferFrom?: Address // Address to take value from in AUTHCALL -> probably not necessary can be handled in functions.ts
+    isStatic?: boolean // If frame is in static mode
+    depth?: number // Current calldepth
+    salt?: Buffer // Salt used for CREATE2
+    code?: Buffer // Code to run (either contract code or creation code in a CREATE frame)
+  }
+}
+
+
 
 /**
  * The ExternalInterface provides the interface which the EVM will use

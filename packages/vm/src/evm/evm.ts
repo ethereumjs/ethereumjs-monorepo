@@ -26,6 +26,8 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import { TransientStorage } from '../state'
 import {
   CustomOpcode,
+  EVMEnvironment,
+  EVMEnvironmentExtended,
   /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
@@ -34,6 +36,8 @@ import {
   TxContext,
 } from './types'
 import EEI from '../eei/eei'
+import Memory from './memory'
+import Stack from './stack'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -724,11 +728,61 @@ export default class EVM extends AsyncEventEmitter {
   }
 
   /**
+   * Normalizes an environment (sets default values for non-present values)
+   * @param env Environment to normalize
+   */
+  protected normalizeEnvironment(env: EVMEnvironmentExtended): void {
+    // Check frame + global
+    env.frameEnvironment = env.frameEnvironment ?? {}
+    env.globalEnvironment = env.globalEnvironment ?? {}
+
+    const frame = env.frameEnvironment 
+
+    frame.caller = frame.caller ?? Address.zero()
+    frame.gasLimit = frame.gasLimit ?? BigInt(0xffffff)
+    frame.value = frame.value ?? BigInt(0)
+    frame.data = frame.data ??  Buffer.alloc(0)
+    const isCreateFrame = frame.to === undefined
+    if (isCreateFrame) {
+      frame.code = frame.data
+      frame.data = Buffer.alloc(0) // Ensure "calldata" is empty (safeguard for CALLDATA* opcodes in CREATE frames)
+    }
+    frame.to = frame.to ?? Address.zero()
+    frame.isStatic = frame.isStatic ?? false
+    frame.depth = frame.depth ?? 0
+    //frame.salt = frame.salt ?? undefined // Only present in CREATE2, if undefined this is OK
+    frame.code = frame.code ?? Buffer.alloc(0)
+
+    frame.machineState = frame.machineState ?? {}
+    const machineState = frame.machineState
+
+    machineState.gasLeft = machineState.gasLeft ?? frame.gasLimit
+    machineState.programCounter = machineState.programCounter ?? 0
+    machineState.memory = machineState.memory ?? new Memory()
+    machineState.memoryWordCount = machineState.memoryWordCount ?? BigInt(0) 
+    machineState.highestMemCost = machineState.highestMemCost ?? BigInt(0)
+    machineState.stack = machineState.stack ?? new Stack() // limit this to 1024?
+    machineState.returnStack = machineState.returnStack ?? new Stack(1023) // 1023 return stack height limit per EIP 2315 spec
+    machineState.validJumps = machineState.validJumps ?? new Uint8Array() // TODO check if we can leave this undefined to remove `shouldDoJumpAnalysis`
+    machineState.shouldDoJumpAnalysis = machineState.shouldDoJumpAnalysis ?? false
+    machineState.selfdestruct = machineState.selfdestruct ?? {}
+
+    const globalEnv = env.globalEnvironment
+    globalEnv.block = globalEnv.block ?? Block.fromBlockData({}, { common: this._common })
+    globalEnv.gasPrice = globalEnv.gasPrice ?? BigInt(0)
+  }
+
+  /**
    * Executes an EVM message, determining whether it's a call or create
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-  async runCall(opts: RunCallOpts): Promise<EVMResult> {
+  async runCall(env: EVMEnvironment /*opts: RunCallOpts*/): Promise<EVMResult> {
+    this.normalizeEnvironment(env)
+
+
+
+
     let message = opts.message
     if (!message) {
       this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
