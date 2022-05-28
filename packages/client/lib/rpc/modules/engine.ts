@@ -20,7 +20,6 @@ export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
   INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
-  INVALID_TERMINAL_BLOCK = 'INVALID_TERMINAL_BLOCK',
   SYNCING = 'SYNCING',
   VALID = 'VALID',
 }
@@ -349,7 +348,6 @@ export class Engine {
    *        SYNCING - sync process is in progress
    *        ACCEPTED - blockHash is valid, doesn't extend the canonical chain, hasn't been fully validated
    *        INVALID_BLOCK_HASH - blockHash validation failed
-   *        INVALID_TERMINAL_BLOCK - block fails transition block validity
    *   2. latestValidHash: DATA|null - the hash of the most recent
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
@@ -396,9 +394,9 @@ export class Engine {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
-            status: Status.INVALID_TERMINAL_BLOCK,
+            status: Status.INVALID,
             validationError: null,
-            latestValidHash: null,
+            latestValidHash: bufferToHex(zeros(32)),
           }
           this.connectionManager.lastNewPayload({ payload: params[0], response })
           return response
@@ -471,7 +469,6 @@ export class Engine {
    *        VALID
    *        INVALID
    *        SYNCING
-   *        INVALID_TERMINAL_BLOCK
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    */
   async forkchoiceUpdatedV1(
@@ -522,9 +519,9 @@ export class Engine {
       if (!validTerminalBlock) {
         const response = {
           payloadStatus: {
-            status: Status.INVALID_TERMINAL_BLOCK,
+            status: Status.INVALID,
             validationError: null,
-            latestValidHash: null,
+            latestValidHash: bufferToHex(zeros(32)),
           },
           payloadId: null,
         }

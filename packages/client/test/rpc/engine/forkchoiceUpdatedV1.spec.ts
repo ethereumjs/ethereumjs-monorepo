@@ -6,6 +6,7 @@ import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import blocks from '../../testdata/blocks/beacon.json'
 import { batchBlocks } from './newPayloadV1.spec'
+import { bufferToHex, zeros } from 'ethereumjs-util'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -114,7 +115,8 @@ tape(`${method}: invalid terminal block with only genesis block`, async (t) => {
 
   const req = params(method, [validForkChoiceState, null])
   const expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.status, 'INVALID_TERMINAL_BLOCK')
+    t.equal(res.body.result.payloadStatus.status, 'INVALID')
+    t.equal(res.body.result.payloadStatus.latestValidHash, bufferToHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -149,7 +151,8 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
     null,
   ])
   const expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.status, 'INVALID_TERMINAL_BLOCK')
+    t.equal(res.body.result.payloadStatus.status, 'INVALID')
+    t.equal(res.body.result.payloadStatus.latestValidHash, bufferToHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
