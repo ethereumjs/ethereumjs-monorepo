@@ -68,7 +68,7 @@ export default class Message {
     this.isCompiled = opts.isCompiled ?? defaults.isCompiled
     this.salt = opts.salt
     this.selfdestruct = opts.selfdestruct
-    this.delegatecall = opts.delegatecall ?? defaults.delegatecall
+    this.delegatecall = opts.delegatecall ?? defaults.delegatecall // This is used to preserve CALLVALUE and to ensure we pass balance checks (do not actually send ETH)
     this.authcallOrigin = opts.authcallOrigin
 
     if (this.value < 0) {

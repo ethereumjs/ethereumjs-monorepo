@@ -179,6 +179,31 @@ export interface TxContext {
  * Note: `to` defaults to the zero address
  * Note: `code` defaults to the empty buffer
  * Prior to defaulting those, it is thus clear whether it is a CallFrame or a CreateFrame
+ * 
+ * Proposed behavior: in case `to` is set but no `code` then read code from `to` account to set it
+ * -> How to handle other call or create types?
+ *    All messages copy current isStatic and increase depth by 1
+ *      CALL
+ *         Caller: env.to
+ *         To:     (ENV stack item)
+ *         Code: (can optionally load this)
+ *      CALLCODE
+ *         Caller: env.to
+ *         To:     env.to
+ *         Code:   load address from stack and explicitly load this
+ *      DELEGATECALL
+ *          Caller: env.caller
+ *          To:     env.to
+ *          Code:   load address from stack and explictly load this
+ *      STATICCALL  
+ *          Same as CALL except:
+ *              IsStatic: true
+ *      AUTHCALL
+ *          Same as CALL except 
+ *              Caller: env.auth
+ *              TransferFrom: env.to
+ *              
+ * // Note possibly make an extra helper "env.currentCodeAddress" which is immediately set to "env.to" to make code more clear         
  */
 
 /**
@@ -189,6 +214,8 @@ type BaseFrameEnvironment = {
   caller?: Address    // The caller address
   gasLeft?: bigint    // The current gas left
   value?: bigint      // The call/create value
+  valueTransferFrom?: Address // Address to take value from (used in AUTHCALL, here value is taken from a different address than caller). Defaults to `caller`
+  // Note regarding AUTHCALL: if valueExt ever gets activated then this can be done in the AUTHCALL opcode directly (transfer funds from AUTH address to target address, throw if not enough balance)
   code?: Buffer       // Code in the current frame (this code is set as "calldata" in a CREATE frame, in a CREATE frame there is no `data` field)
   to?: Address        // The target address (if set, this is a CallFrame, if not set, this is a CreateFrame)
   depth?: number      // The call depth (defaults to 0)
