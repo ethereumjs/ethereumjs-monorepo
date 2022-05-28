@@ -16,7 +16,6 @@ import type { VMExecution } from '../../execution'
 import type { Config } from '../../config'
 import type { FullEthereumService } from '../../service'
 
-export const ZERO_VALID_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
@@ -397,7 +396,7 @@ export class Engine {
           const response = {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: ZERO_VALID_HASH,
+            latestValidHash: bufferToHex(zeros(32)),
           }
           this.connectionManager.lastNewPayload({ payload: params[0], response })
           return response
@@ -522,7 +521,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: ZERO_VALID_HASH,
+            latestValidHash: bufferToHex(zeros(32)),
           },
           payloadId: null,
         }

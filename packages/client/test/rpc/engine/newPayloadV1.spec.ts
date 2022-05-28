@@ -7,7 +7,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address } from 'ethereumjs-util'
 import blocks from '../../testdata/blocks/beacon.json'
 import { HttpServer } from 'jayson'
-import { ZERO_VALID_HASH } from '../../../lib/rpc/modules/engine'
+import { bufferToHex, zeros } from 'ethereumjs-util'
 
 const method = 'engine_newPayloadV1'
 
@@ -137,7 +137,7 @@ tape(`${method}: invalid terminal block`, async (t) => {
   const req = params(method, [blockData, null])
   const expectRes = (res: any) => {
     t.equal(res.body.result.status, 'INVALID')
-    t.equal(res.body.result.latestValidHash, ZERO_VALID_HASH)
+    t.equal(res.body.result.latestValidHash, bufferToHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
