@@ -25,12 +25,15 @@ import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
 import { TransientStorage } from '../state'
 import {
+  CallType,
   CustomOpcode,
   EVMEnvironment,
   EVMEnvironmentExtended,
+  EVMEnvironmentExtendedFilled,
   /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
+  RunCallOptions,
   RunCallOpts,
   RunCodeOpts,
   TxContext,
@@ -38,6 +41,7 @@ import {
 import EEI from '../eei/eei'
 import Memory from './memory'
 import Stack from './stack'
+import { EventEmitter } from 'stream'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -157,7 +161,7 @@ export interface EVMResult {
  * Result of executing a call via the {@link EVM}.
  */
 export interface ExecResult {
-  runState?: RunState
+  runState?: EVMEnvironmentExtendedFilled
   /**
    * Description of the exception, if any occurred
    */
@@ -181,7 +185,7 @@ export interface ExecResult {
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
-  selfdestruct?: { [k: string]: Buffer }
+  selfdestruct?: { [k: string]: boolean }
 }
 
 export interface NewContractEvent {
@@ -236,13 +240,13 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM extends AsyncEventEmitter {
+export default class EVM extends /*Async*/EventEmitter {
   _tx?: TxContext
   _block?: Block
   /**
    * Amount of gas to refund from deleting storage values
    */
-  _refund: bigint
+  //_refund: bigint
   _transientStorage: TransientStorage
 
   _common: Common
@@ -310,7 +314,6 @@ export default class EVM extends AsyncEventEmitter {
 
     this.eei = opts.eei
 
-    this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
 
     if (opts.common) {
@@ -396,32 +399,32 @@ export default class EVM extends AsyncEventEmitter {
     return data.opcodes
   }
 
-  async _executeCall(message: MessageWithTo): Promise<EVMResult> {
-    const account = await this.eei.state.getAccount(message.authcallOrigin ?? message.caller)
+  async _executeCall(env: EVMEnvironmentExtendedFilled): Promise<EVMResult> {
+    const account = await this.eei.state.getAccount(env.frameEnvironment.takeCallValueFrom)
     let errorMessage
     // Reduce tx value from sender
-    if (!message.delegatecall) {
+    if (!(env.frameEnvironment.callType === CallType.DelegateCall)) {
       try {
-        await this._reduceSenderBalance(account, message)
+        await this._reduceSenderBalance(account, env)
       } catch (e) {
         errorMessage = e
       }
     }
     // Load `to` account
-    const toAccount = await this.eei.state.getAccount(message.to)
+    const toAccount = await this.eei.state.getAccount(env.frameEnvironment.to)
     // Add tx value to the `to` account
-    if (!message.delegatecall) {
+    if (!(env.frameEnvironment.callType === CallType.DelegateCall)) {
       try {
-        await this._addToBalance(toAccount, message)
+        await this._addToBalance(toAccount, env)
       } catch (e: any) {
         errorMessage = e
       }
     }
 
     // Load code
-    await this._loadCode(message)
+    await this._loadCode(env)
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (!env.frameEnvironment.isPrecompile && env.frameEnvironment.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
@@ -444,20 +447,20 @@ export default class EVM extends AsyncEventEmitter {
     }
 
     let result: ExecResult
-    if (message.isCompiled) {
+    if (env.frameEnvironment.isPrecompile) {
       if (this.DEBUG) {
         debug(`Run precompile`)
       }
       result = await this.runPrecompile(
-        message.code as PrecompileFunc,
-        message.data,
-        message.gasLimit
+        this.getPrecompile(env.frameEnvironment.currentAddress)!,
+        env.frameEnvironment.data,
+        env.frameEnvironment.gasLimit
       )
     } else {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
-      result = await this.runInterpreter(message)
+      result = await this.runInterpreter(env)
     }
 
     return {
@@ -670,46 +673,24 @@ export default class EVM extends AsyncEventEmitter {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the {@link EEI}.
    */
-  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
-    const env = {
-      blockchain: this._blockchain, // Only used in BLOCKHASH
-      address: message.to ?? Address.zero(),
-      caller: message.caller ?? Address.zero(),
-      callData: message.data ?? Buffer.from([0]),
-      callValue: message.value ?? BigInt(0),
-      code: message.code as Buffer,
-      isStatic: message.isStatic ?? false,
-      depth: message.depth ?? 0,
-      gasPrice: this._tx!.gasPrice,
-      origin: this._tx!.origin ?? message.caller ?? Address.zero(),
-      block: this._block ?? new Block(),
-      contract: await this.eei.state.getAccount(message.to ?? Address.zero()),
-      codeAddress: message.codeAddress,
-    }
+  async runInterpreter(env: EVMEnvironmentExtendedFilled, opts: InterpreterOpts = {}): Promise<ExecResult> {
+    let result = await Interpreter.runInterpreter(this, this.eei, env, opts)
 
-    const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
-    if (message.selfdestruct) {
-      // TODO move this logic into Interpreter. Probably pass message there?
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
-    }
-
-    const interpreterRes = await interpreter.run(message.code as Buffer, opts)
-
-    let result = interpreter._result
-    let gasUsed = message.gasLimit - interpreter._gasLeft
-    if (interpreterRes.exceptionError) {
+    let gasUsed = env.frameEnvironment.gasLimit - env.frameEnvironment.machineState.gasLeft
+    if (result.exceptionError) {
       if (
-        interpreterRes.exceptionError.error !== ERROR.REVERT &&
-        interpreterRes.exceptionError.error !== ERROR.INVALID_EOF_FORMAT
+        result.exceptionError.error !== ERROR.REVERT &&
+        result.exceptionError.error !== ERROR.INVALID_EOF_FORMAT
       ) {
-        gasUsed = message.gasLimit
+        gasUsed = env.frameEnvironment.gasLimit
       }
 
       // Clear the result on error
+      const machineState = result.runState?.frameEnvironment.machineState!
+      machineState.logs = []
+      machineState.selfdestruct = {}
       result = {
         ...result,
-        logs: [],
-        selfdestruct: {},
       }
     }
 
@@ -728,10 +709,10 @@ export default class EVM extends AsyncEventEmitter {
   }
 
   /**
-   * Normalizes an environment (sets default values for non-present values)
-   * @param env Environment to normalize
+   * Loads missing parts of the environment (sets default values for non-present values)
+   * @param env Environment to fill
    */
-  protected normalizeEnvironment(env: EVMEnvironmentExtended): void {
+  protected async loadEnvironment(env: EVMEnvironmentExtended): Promise<EVMEnvironmentExtendedFilled> {
     // Check frame + global
     env.frameEnvironment = env.frameEnvironment ?? {}
     env.globalEnvironment = env.globalEnvironment ?? {}
@@ -740,23 +721,54 @@ export default class EVM extends AsyncEventEmitter {
 
     frame.caller = frame.caller ?? Address.zero()
     frame.gasLimit = frame.gasLimit ?? BigInt(0xffffff)
+
     frame.value = frame.value ?? BigInt(0)
     frame.data = frame.data ??  Buffer.alloc(0)
-    const isCreateFrame = frame.to === undefined
+    frame.takeCallValueFrom = frame.takeCallValueFrom ?? frame.caller
+
+    const callerAccount = await this.eei.state.getAccount(frame.caller)
+
+    const isCreateFrame = frame.to === undefined || frame.to === null
     if (isCreateFrame) {
-      frame.code = frame.data
+      frame.code = frame.code ?? frame.data
       frame.data = Buffer.alloc(0) // Ensure "calldata" is empty (safeguard for CALLDATA* opcodes in CREATE frames)
+      if (frame.salt) {
+        frame.currentAddress = new Address(generateAddress2(frame.caller!.buf, frame.salt, frame.code))
+        frame.callType = frame.callType ?? CallType.Create2
+      } else {
+        frame.currentAddress = new Address(generateAddress(frame.caller!.buf, bigIntToBuffer(callerAccount.nonce)))
+      }
+      if (this._common.isActivatedEIP(2929)) {
+        // This was originally here (in `evm/runCall`) - and looks a bit out-of-place here (is this only done to fix the warmed address for tx?)
+        this.eei.state.addWarmedAddress(frame.currentAddress!.buf)
+        frame.callType = frame.callType ?? CallType.Create
+      }
+    } else {
+      frame.currentAddress = frame.to!
+      frame.callType = frame.callType ?? CallType.Call
+
+      if (this.getPrecompile(frame.currentAddress)) {
+        frame.isPrecompile = true 
+      } else {
+        frame.code = frame.code ?? await this.eei.state.getContractCode(frame.currentAddress)
+      }
     }
-    frame.to = frame.to ?? Address.zero()
+
+    frame.to = frame.to ?? null
+    frame.isPrecompile = frame.isPrecompile ?? false
+
+
     frame.isStatic = frame.isStatic ?? false
     frame.depth = frame.depth ?? 0
     //frame.salt = frame.salt ?? undefined // Only present in CREATE2, if undefined this is OK
     frame.code = frame.code ?? Buffer.alloc(0)
+    frame.runtimeCode = frame.runtimeCode ?? Buffer.alloc(0)
 
     frame.machineState = frame.machineState ?? {}
     const machineState = frame.machineState
 
     machineState.gasLeft = machineState.gasLeft ?? frame.gasLimit
+    machineState.gasRefund = machineState.gasRefund ?? BigInt(0)
     machineState.programCounter = machineState.programCounter ?? 0
     machineState.memory = machineState.memory ?? new Memory()
     machineState.memoryWordCount = machineState.memoryWordCount ?? BigInt(0) 
@@ -766,10 +778,13 @@ export default class EVM extends AsyncEventEmitter {
     machineState.validJumps = machineState.validJumps ?? new Uint8Array() // TODO check if we can leave this undefined to remove `shouldDoJumpAnalysis`
     machineState.shouldDoJumpAnalysis = machineState.shouldDoJumpAnalysis ?? false
     machineState.selfdestruct = machineState.selfdestruct ?? {}
+    machineState.logs = machineState.logs ?? []
 
     const globalEnv = env.globalEnvironment
     globalEnv.block = globalEnv.block ?? Block.fromBlockData({}, { common: this._common })
     globalEnv.gasPrice = globalEnv.gasPrice ?? BigInt(0)
+
+    return <EVMEnvironmentExtendedFilled>env
   }
 
   /**
@@ -777,56 +792,27 @@ export default class EVM extends AsyncEventEmitter {
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-  async runCall(env: EVMEnvironment /*opts: RunCallOpts*/): Promise<EVMResult> {
-    this.normalizeEnvironment(env)
-
-
-
-
-    let message = opts.message
-    if (!message) {
-      this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
-      this._tx = {
-        gasPrice: opts.gasPrice ?? BigInt(0),
-        origin: opts.origin ?? opts.caller ?? Address.zero(),
-      }
-
-      const caller = opts.caller ?? Address.zero()
-      const value = opts.value ?? BigInt(0)
-      if (opts.skipBalance) {
-        // if skipBalance, add `value` to caller balance to ensure sufficient funds
-        const callerAccount = await this.eei.state.getAccount(caller)
-        callerAccount.balance += value
-        await this.eei.state.putAccount(caller, callerAccount)
-      }
-
-      message = new Message({
-        caller,
-        gasLimit: opts.gasLimit ?? BigInt(0xffffff),
-        to: opts.to,
-        value,
-        data: opts.data,
-        code: opts.code,
-        depth: opts.depth,
-        isCompiled: opts.isCompiled,
-        isStatic: opts.isStatic,
-        salt: opts.salt,
-        selfdestruct: opts.selfdestruct ?? {},
-        delegatecall: opts.delegatecall,
-      })
+  async runCall(environment: EVMEnvironment, opts: RunCallOptions = {} /*opts: RunCallOpts*/): Promise<EVMResult> {
+    const env = <EVMEnvironmentExtendedFilled> (await this.loadEnvironment(environment))
+    const frameEnv = env.frameEnvironment
+    console.log(env)
+    
+    if (opts.fundAccount) {
+      // if skipBalance, add `value` to caller balance to ensure sufficient funds
+      const callerAccount = await this.eei.state.getAccount(frameEnv.takeCallValueFrom)
+      callerAccount.balance += frameEnv.value
+      await this.eei.state.putAccount(frameEnv.takeCallValueFrom, callerAccount)
     }
 
-    await this._emit('beforeMessage', message)
+    await this._emit('beforeCall', env)
 
-    if (!message.to && this._common.isActivatedEIP(2929)) {
-      message.code = message.data
-      this.eei.state.addWarmedAddress((await this._generateAddress(message)).buf)
-    }
-
-    const oldRefund = this._refund
+    // TODO journal me
+    //const oldRefund = this._refund
 
     await this.eei.state.checkpoint()
-    this._transientStorage.checkpoint()
+    if (this._common.isActivatedEIP(1153)) {
+      this._transientStorage.checkpoint()
+    }
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -834,23 +820,25 @@ export default class EVM extends AsyncEventEmitter {
 
     let result
     if (this.DEBUG) {
-      const { caller, gasLimit, to, value, delegatecall } = message
       debug(
-        `New message caller=${caller} gasLimit=${gasLimit} to=${
-          to?.toString() ?? 'none'
-        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
+        `New message caller=${frameEnv.caller} gasLimit=${frameEnv.gasLimit} to=${
+          frameEnv.to?.toString() ?? 'none' // TODO fixme; on a CREATE this defaults to Address zero so "none" will never be printedz
+        } value=${frameEnv.value}` // delegatecall=${delegatecall ? 'yes' : 'no'}` -> add a Type to FrameEnvironment to determine call type (for debug purposes)?
       )
     }
-    if (message.to) {
+
+    const isCreate = frameEnv.callType === CallType.Create || frameEnv.callType === CallType.Create2
+
+    if (!isCreate) {
       if (this.DEBUG) {
-        debug(`Message CALL execution (to: ${message.to})`)
+        debug(`Message CALL execution (to: ${frameEnv.to})`)
       }
-      result = await this._executeCall(message as MessageWithTo)
+      result = await this._executeCall(env)
     } else {
       if (this.DEBUG) {
         debug(`Message CREATE execution (to undefined)`)
       }
-      result = await this._executeCreate(message)
+      result = await this._executeCreate(env)
     }
     if (this.DEBUG) {
       const { gasUsed, exceptionError, returnValue } = result.execResult
@@ -863,14 +851,21 @@ export default class EVM extends AsyncEventEmitter {
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then set the _refund tracker to the old refund value
+    /*if (err) {
+      frameEnv.machineState.selfdestruct = {}
+      frameEnv.machineState.gasRefund = BigInt(0)
+      frameEnv.machineState.logs = []
+    }*/
     if (err) {
-      this._refund = oldRefund
-      result.execResult.selfdestruct = {}
+      // this._refund = oldRefund TODO handle me
+      frameEnv.machineState.selfdestruct = {}
     }
-    result.gasRefund = this._refund
+    //result.gasRefund = this._refund // TODO handle me
+
+
     if (err) {
       if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
-        result.execResult.logs = []
+        frameEnv.machineState.logs = []
         await this.eei.state.revert()
         this._transientStorage.revert()
         if (this.DEBUG) {
@@ -892,6 +887,11 @@ export default class EVM extends AsyncEventEmitter {
         debug(`message checkpoint committed`)
       }
     }
+    result.execResult.selfdestruct = frameEnv.machineState.selfdestruct
+    result.gasRefund = frameEnv.machineState.gasRefund
+    result.execResult.logs = frameEnv.machineState.logs
+
+
     await this._emit('afterMessage', result)
 
     return result
@@ -954,19 +954,6 @@ export default class EVM extends AsyncEventEmitter {
     return code(opts)
   }
 
-  async _loadCode(message: Message): Promise<void> {
-    if (!message.code) {
-      const precompile = this.getPrecompile(message.codeAddress)
-      if (precompile) {
-        message.code = precompile
-        message.isCompiled = true
-      } else {
-        message.code = await this.eei.state.getContractCode(message.codeAddress)
-        message.isCompiled = false
-      }
-    }
-  }
-
   async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
@@ -979,14 +966,14 @@ export default class EVM extends AsyncEventEmitter {
     return new Address(addr)
   }
 
-  async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
-    account.balance -= message.value
+  async _reduceSenderBalance(account: Account, env: EVMEnvironmentExtendedFilled): Promise<void> {
+    account.balance -= env.frameEnvironment.value
     if (account.balance < BigInt(0)) {
       throw new VmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.eei.state.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.eei.state.putAccount(env.frameEnvironment.takeCallValueFrom, account)
     if (this.DEBUG) {
-      debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
+      debug(`Reduced sender (${env.frameEnvironment.takeCallValueFrom}) balance (-> ${account.balance})`)
     }
     return result
   }

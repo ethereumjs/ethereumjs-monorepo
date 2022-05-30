@@ -257,13 +257,17 @@ type CallFrameEnvironment = BaseFrameEnvironment & {
   GlobalEnvironment: GlobalEnvironment
 }*/
 
+export type RunCallOptions = {
+  fundAccount?: boolean // This fills the account with enough funds to cover value transfer (TODO rename me?)
+}
+
 // Minimal types to ensure runTx -> EVM step can be made
 export type BaseFrameEnvironment = {
   caller?: Address    // The caller address
   gasLimit?: bigint    // The gasLimit of the frame
   value?: bigint      // The call/create value
   data?: Buffer       // Data of the frame. In case no `to` field is present, this is the `code`, not the `callData`
-  to?: Address        // The target address (if set, this is a CallFrame, if not set, this is a CreateFrame)
+  to?: Address | null       // The target address (if set, this is a CallFrame, if not set, this is a CreateFrame)
 }
 
 export type CreateFrameEnvironment = BaseFrameEnvironment
@@ -276,6 +280,7 @@ export type FrameEnvironment = CreateFrameEnvironment | CallFrameEnvironment
 export type GlobalEnvironment = {
   block?: Block,    // Block Tx runs in (TODO remove Block dependency and instead just ensure all necessary fields can be queried -> probably only need Header not entire block)
   gasPrice?: bigint // Tx GasPrice
+  origin?: Address  // Tx Origin
 }
 
 // Internally in EVM, members of this type are static (so the variables will /not/ change upon running contract code)
@@ -288,6 +293,7 @@ export type EVMEnvironment = {
 // MachineState: this is the internal state of the Machine and changes dynamically
 export type MachineState = {
   gasLeft?: bigint, // Current gas left 
+  gasRefund?: bigint,   // Tracker of gas refund in this frame
   programCounter?: number, 
   memory?: Memory,
   memoryWordCount?: bigint, // This property is probably not necessary, can immediately read from memory.length since this is now properly resized
@@ -297,21 +303,61 @@ export type MachineState = {
   validJumps?: Uint8Array, // TODO check if `shouldDoJumpAnalysis` can be removed -> if `validJumps === undefined` then do analysis
   shouldDoJumpAnalysis?: boolean
   selfdestruct?: { [k: string]: boolean } // address -> boolean map of already selfdestructed addresses (to prevent refunding selfdestructed addresses twice)
+  logs?: Log[]
+}
+
+export enum CallType {
+  Call,
+  CallCode,
+  DelegateCall,
+  StaticCall, 
+  AuthCall, 
+  Create, 
+  Create2 
+}
+
+export type FrameEnvironmentExtended = FrameEnvironment & {
+    machineState?: MachineState
+    // valueTransferFrom?: Address // Address to take value from in AUTHCALL -> probably not necessary can be handled in functions.ts
+    isStatic?: boolean // If frame is in static mode
+    isPrecompile?: boolean // Signals that the target is a precompile
+    depth?: number // Current calldepth
+    salt?: Buffer // Salt used for CREATE2
+    code?: Buffer // Code of the account (either contract code or creation code in a CREATE frame)
+    takeCallValueFrom?: Address // Address to take the callvalue from (used in AUTHCALL). Defaults to `caller`
+    currentAddress?: Address // Address the frame is ran in (returned by ADDRESS opcode)
+    // TODO we can check here if call type is delegatecall?
+    skipValueTransfer?: boolean // If set to `true`, then the `CALLVALUE` will not be taken from `takeCallValueFrom` address and sent to `to` (used in DELEGATECALL)
+    callType?: CallType         // What Call/Create type this is (TODO change name?)
 }
 
 // Note: any precompile-related logic is removed, this should be retrieved into `runCall` (i.e. decide if it is a precompile or not)
 export type EVMEnvironmentExtended = EVMEnvironment & {
-  frameEnvironment: FrameEnvironment & {
-    machineState?: MachineState
-    // valueTransferFrom?: Address // Address to take value from in AUTHCALL -> probably not necessary can be handled in functions.ts
-    isStatic?: boolean // If frame is in static mode
-    depth?: number // Current calldepth
-    salt?: Buffer // Salt used for CREATE2
-    code?: Buffer // Code to run (either contract code or creation code in a CREATE frame)
+  frameEnvironment?: FrameEnvironmentExtended
+}
+
+type MachineStateFilled = Required<MachineState>
+type FrameEnvironmentExtendedFilled = Required<FrameEnvironmentExtended> & {
+  machineState: MachineStateFilled & {
+    auth?: Address
   }
 }
 
+export type EVMEnvironmentExtendedFilled = {
+  frameEnvironment: FrameEnvironmentExtendedFilled & {
+    runtimeCode?: Buffer
+  },
+  globalEnvironment: Required<GlobalEnvironment>
+}
 
+export type InterpreterEnvironment = EVMEnvironmentExtendedFilled & {
+  frameEnvironment: {
+    runtimeCode: Buffer
+    machineState: {
+      returnBuffer: Buffer
+    }
+  }
+}
 
 /**
  * The ExternalInterface provides the interface which the EVM will use

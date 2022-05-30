@@ -20,6 +20,7 @@ import type {
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
 } from './types'
+import { EVMEnvironment } from './evm/types'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -407,15 +408,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  const results = (await this.evm.runCall({
-    block,
-    gasPrice,
-    caller,
-    gasLimit,
-    to,
-    value,
-    data,
-  })) as RunTxResult
+  const env: EVMEnvironment = {
+    frameEnvironment: {
+      caller,
+      gasLimit,
+      value,
+      data,
+      to
+    },
+    globalEnvironment: {
+      block,
+      gasPrice,
+      origin: caller
+    }
+  }
+
+  const results = (await this.evm.runCall(env)) as RunTxResult
 
   if (this.DEBUG) {
     const { gasUsed, exceptionError, returnValue } = results.execResult

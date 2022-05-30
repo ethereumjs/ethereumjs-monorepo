@@ -19,7 +19,8 @@ import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM, { EVMResult } from './evm'
 import { Block } from '@ethereumjs/block'
 import Message from './message'
-import { Log } from './types'
+import { CallType, EVMEnvironment, EVMEnvironmentExtended, EVMEnvironmentExtendedFilled, FrameEnvironment, FrameEnvironmentExtended, InterpreterEnvironment, Log } from './types'
+import { env } from 'process'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -74,14 +75,14 @@ export interface RunState {
 }
 
 export interface InterpreterResult {
-  runState?: RunState
+  runState: InterpreterEnvironment
   exceptionError?: VmError
 }
 
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  vmState: VmState
+  //vmState: VmState
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -92,11 +93,11 @@ export interface InterpreterStep {
     dynamicFee?: bigint
     isAsync: boolean
   }
-  account: Account
+  //account: Account
   address: Address
   memory: Buffer
   memoryWordCount: bigint
-  codeAddress: Address
+  //codeAddress: Address
 }
 
 /**
@@ -104,23 +105,11 @@ export interface InterpreterStep {
  */
 export default class Interpreter {
   _vm: any
-  _runState: RunState
   _eei: EEI
   _common: Common
   _evm: EVM
-  _env: Env
+  _env: InterpreterEnvironment
 
-  // This buffer holds the last returned buffer. Each time a CALL* or CREATE* is done, this buffer is cleared/overwritten
-  // TODO: this should move into Env probably
-  _lastReturned: Buffer
-
-  // Current gas left
-  // TODO: should be moved into Env?
-  _gasLeft: bigint
-
-  // Keep track of this Interpreter run result
-  // TODO move into Env?
-  _result: RunResult
 
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
@@ -128,52 +117,33 @@ export default class Interpreter {
   // TODO remove eei from constructor this can be directly read from EVM
   // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
-  constructor(evm: EVM, eei: EEI, env: Env, gasLeft: bigint) {
+  protected constructor(evm: EVM, eei: EEI, env: InterpreterEnvironment) {
     this._evm = evm
     this._eei = eei
     this._common = this._evm._common
-    this._runState = {
-      programCounter: 0,
-      opCode: 0xfe, // INVALID opcode
-      memory: new Memory(),
-      memoryWordCount: BigInt(0),
-      highestMemCost: BigInt(0),
-      stack: new Stack(),
-      returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
-      code: Buffer.alloc(0),
-      validJumps: Uint8Array.from([]),
-      vmState: this._eei.state,
-      eei: this._eei,
-      env: env,
-      shouldDoJumpAnalysis: true,
-      interpreter: this,
-    }
     this._env = env
-    this._lastReturned = Buffer.alloc(0)
-    this._gasLeft = gasLeft
-    this._result = {
-      logs: [],
-      returnValue: undefined,
-      selfdestruct: {},
-    }
   }
 
-  async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
+  static async runInterpreter(evm: EVM, eei: EEI, env: EVMEnvironmentExtendedFilled, opts: InterpreterOpts) {
+    const code = env.frameEnvironment.code
+    const interpreterEnv = <InterpreterEnvironment>env;
+    const frame = interpreterEnv.frameEnvironment
+    const common = evm._common
+    if (!common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
-      this._runState.code = code
-    } else if (this._common.isActivatedEIP(3540)) {
+      frame.runtimeCode = code
+    } else if (common.isActivatedEIP(3540)) {
       if (code[1] !== eof.MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
-          runState: this._runState,
+          runState: interpreterEnv,
           exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
         }
       }
       if (code[2] !== eof.VERSION) {
         // Bytecode contains invalid EOF version number
         return {
-          runState: this._runState,
+          runState: interpreterEnv,
           exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
@@ -182,42 +152,47 @@ export default class Interpreter {
       if (!codeSections) {
         // Code is invalid EOF1 format if `codeSections` is falsy
         return {
-          runState: this._runState,
+          runState: interpreterEnv,
           exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
 
       if (codeSections.data) {
         // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.slice(10, 10 + codeSections!.code)
+        frame.runtimeCode = code.slice(10, 10 + codeSections!.code)
       } else {
         // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.slice(7, 7 + codeSections!.code)
+        frame.runtimeCode = code.slice(7, 7 + codeSections!.code)
       }
     }
-    this._runState.programCounter = opts.pc ?? this._runState.programCounter
+    frame.machineState.returnBuffer = Buffer.alloc(0)
+    return (new Interpreter(evm, eei, interpreterEnv)).run()
+  }
+
+  async run(): Promise<InterpreterResult> {
     // Check that the programCounter is in range
-    const pc = this._runState.programCounter
-    if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
+    const frame = this._env.frameEnvironment
+    const machineState = frame.machineState
+    const pc = machineState.programCounter
+    if (pc !== 0 && (pc < 0 || pc >= frame.runtimeCode.length)) {
       throw new Error('Internal error: program counter not in range')
     }
 
     let err
     // Iterate through the given ops until something breaks or we hit STOP
-    while (this._runState.programCounter < this._runState.code.length) {
-      const opCode = this._runState.code[this._runState.programCounter]
+    while (machineState.programCounter < frame.runtimeCode.length) {
+      const opCode = frame.runtimeCode[machineState.programCounter]
       if (
-        this._runState.shouldDoJumpAnalysis &&
+        machineState.shouldDoJumpAnalysis &&
         (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
-        this._runState.shouldDoJumpAnalysis = false
+        machineState.validJumps = this._getValidJumpDests(frame.runtimeCode)
+        machineState.shouldDoJumpAnalysis = false
       }
-      this._runState.opCode = opCode
 
       try {
-        await this.runStep()
+        await this.runStep(opCode)
       } catch (e: any) {
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'VmError')) {
@@ -232,7 +207,7 @@ export default class Interpreter {
     }
 
     return {
-      runState: this._runState,
+      runState: this._env,
       exceptionError: err,
     }
   }
@@ -241,8 +216,8 @@ export default class Interpreter {
    * Executes the opcode to which the program counter is pointing,
    * reducing its base gas cost, and increments the program counter.
    */
-  async runStep(): Promise<void> {
-    const opInfo = this.lookupOpInfo(this._runState.opCode)
+  async runStep(opcode: number): Promise<void> {
+    const opInfo = this.lookupOpInfo(opcode)
 
     let gas = BigInt(opInfo.fee)
     // clone the gas limit; call opcodes can add stipend,
@@ -250,16 +225,16 @@ export default class Interpreter {
     const gasLimitClone = this.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = this._evm._dynamicGasHandlers.get(opcode)!
       // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this._common)
+      gas = await dynamicGasHandler(this._env, gas, this._common)
     }
 
     if (this._evm.listenerCount('step') > 0 || this._evm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
-      await this._runStepHook(gas, gasLimitClone)
+      await this._runStepHook(opcode, gas, gasLimitClone)
     }
 
     // Check for invalid opcode
@@ -270,15 +245,15 @@ export default class Interpreter {
     // Reduce opcode's base fee
     this.useGas(gas, `${opInfo.name} fee`)
     // Advance program counter
-    this._runState.programCounter++
+    this._env.frameEnvironment.machineState.programCounter++
 
     // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
 
     if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this._common])
+      await (opFn as AsyncOpHandler).apply(null, [this._env, this._common])
     } else {
-      opFn.apply(null, [this._runState, this._common])
+      opFn.apply(null, [this._env, this._common])
     }
   }
 
@@ -297,27 +272,30 @@ export default class Interpreter {
     return this._evm._opcodes.get(op) ?? this._evm._opcodes.get(0xfe)!
   }
 
-  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcode = this.lookupOpInfo(this._runState.opCode)
+  async _runStepHook(opCode: number, dynamicFee: bigint, gasLeft: bigint): Promise<void> {
+    const opcode = this.lookupOpInfo(opCode)
+    const env = this._env
+    const frame = env.frameEnvironment
+    const machineState = frame.machineState
     const eventObj: InterpreterStep = {
-      pc: this._runState.programCounter,
+      pc: machineState.programCounter,
       gasLeft,
-      gasRefund: this._evm._refund,
+      gasRefund: this._env.frameEnvironment.machineState.gasRefund,
       opcode: {
         name: opcode.fullName,
         fee: opcode.fee,
         dynamicFee,
         isAsync: opcode.isAsync,
       },
-      stack: this._runState.stack._store,
-      returnStack: this._runState.returnStack._store,
-      depth: this._env.depth,
-      address: this._env.address,
-      account: this._env.contract,
-      vmState: this._runState.vmState,
-      memory: this._runState.memory._store,
-      memoryWordCount: this._runState.memoryWordCount,
-      codeAddress: this._env.codeAddress,
+      stack: machineState.stack._store,
+      returnStack: machineState.returnStack._store,
+      depth: frame.depth,
+      address: frame.currentAddress,
+      //account: this._env.contract,
+      //vmState: this._runState.vmState,
+      memory: machineState.memory._store,
+      memoryWordCount: machineState.memoryWordCount,
+      //codeAddress: this._env.codeAddress,
     }
 
     if (this._evm.DEBUG) {
@@ -403,12 +381,13 @@ export default class Interpreter {
    * @throws if out of gas
    */
   useGas(amount: bigint, context?: string): void {
-    this._gasLeft -= amount
+    const machineState = this._env.frameEnvironment.machineState
+    machineState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
+      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${machineState.gasLeft})`)
     }
-    if (this._gasLeft < BigInt(0)) {
-      this._gasLeft = BigInt(0)
+    if (machineState.gasLeft < BigInt(0)) {
+      machineState.gasLeft = BigInt(0)
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -419,10 +398,11 @@ export default class Interpreter {
    * @param context - Usage context for debugging
    */
   refundGas(amount: bigint, context?: string): void {
+    const machineState = this._env.frameEnvironment.machineState
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
+      debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${machineState.gasRefund})`)
     }
-    this._evm._refund += amount
+    machineState.gasRefund += amount
   }
 
   /**
@@ -431,12 +411,13 @@ export default class Interpreter {
    * @param context - Usage context for debugging
    */
   subRefund(amount: bigint, context?: string): void {
+    const machineState = this._env.frameEnvironment.machineState
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
+      debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${machineState.gasRefund})`)
     }
-    this._evm._refund -= amount
-    if (this._evm._refund < BigInt(0)) {
-      this._evm._refund = BigInt(0)
+    machineState.gasRefund -= amount
+    if (machineState.gasRefund < BigInt(0)) {
+      machineState.gasRefund = BigInt(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -446,10 +427,11 @@ export default class Interpreter {
    * @param amount - Amount to add
    */
   addStipend(amount: bigint): void {
+    const machineState = this._env.frameEnvironment.machineState
     if (this._evm.DEBUG) {
-      debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
+      debugGas(`add stipend ${amount} (-> ${machineState.gasLeft})`)
     }
-    this._gasLeft += amount
+    machineState.gasLeft += amount
   }
 
   /**
@@ -458,20 +440,20 @@ export default class Interpreter {
    */
   async getExternalBalance(address: Address): Promise<bigint> {
     // shortcut if current account
-    if (address.equals(this._env.address)) {
+    /*if (address.equals(this._env.address)) {
       return this._env.contract.balance
-    }
+    }*/
 
-    return this._eei.getExternalBalance(address)
+    return this._eei.getExternalBalance(address) // This is already cached in EEI or in StateManager
   }
 
   /**
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Buffer, value: Buffer): Promise<void> {
-    await this._eei.storageStore(this._env.address, key, value)
-    const account = await this._eei.state.getAccount(this._env.address)
-    this._env.contract = account
+    await this._eei.storageStore(this._env.frameEnvironment.currentAddress, key, value)
+    /*const account = await this._eei.state.getAccount(this._env.address)
+    this._env.contract = account*/
   }
 
   /**
@@ -480,7 +462,7 @@ export default class Interpreter {
    * @param original - If true, return the original storage value (default: false)
    */
   async storageLoad(key: Buffer, original = false): Promise<Buffer> {
-    return this._eei.storageLoad(this._env.address, key, original)
+    return this._eei.storageLoad(this._env.frameEnvironment.currentAddress, key, original)
   }
 
   /**
@@ -489,7 +471,7 @@ export default class Interpreter {
    * @param value - Storage value
    */
   transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._evm._transientStorage.put(this._env.address, key, value)
+    return this._evm._transientStorage.put(this._env.frameEnvironment.currentAddress, key, value)
   }
 
   /**
@@ -497,7 +479,7 @@ export default class Interpreter {
    * @param key - Storage key
    */
   transientStorageLoad(key: Buffer): Buffer {
-    return this._evm._transientStorage.get(this._env.address, key)
+    return this._evm._transientStorage.get(this._env.frameEnvironment.currentAddress, key)
   }
 
   /**
@@ -505,7 +487,7 @@ export default class Interpreter {
    * @param returnData - Output data to return
    */
   finish(returnData: Buffer): void {
-    this._result.returnValue = returnData
+    this._env.frameEnvironment.machineState.returnBuffer = returnData
     trap(ERROR.STOP)
   }
 
@@ -515,7 +497,7 @@ export default class Interpreter {
    * @param returnData - Output data to return
    */
   revert(returnData: Buffer): void {
-    this._result.returnValue = returnData
+    this._env.frameEnvironment.machineState.returnBuffer = returnData
     trap(ERROR.REVERT)
   }
 
@@ -523,14 +505,14 @@ export default class Interpreter {
    * Returns address of currently executing account.
    */
   getAddress(): Address {
-    return this._env.address
+    return this._env.frameEnvironment.currentAddress
   }
 
   /**
    * Returns balance of self.
    */
   getSelfBalance(): bigint {
-    return this._env.contract.balance
+    return this._env.contract.balance // TODO fixme
   }
 
   /**
@@ -538,7 +520,7 @@ export default class Interpreter {
    * responsible for this execution.
    */
   getCallValue(): bigint {
-    return this._env.callValue
+    return this._env.frameEnvironment.value
   }
 
   /**
@@ -546,7 +528,7 @@ export default class Interpreter {
    * data passed with the message call instruction or transaction.
    */
   getCallData(): Buffer {
-    return this._env.callData
+    return this._env.frameEnvironment.data
   }
 
   /**
@@ -554,7 +536,7 @@ export default class Interpreter {
    * input data passed with the message call instruction or transaction.
    */
   getCallDataSize(): bigint {
-    return BigInt(this._env.callData.length)
+    return BigInt(this.getCallData().length)
   }
 
   /**
@@ -562,28 +544,28 @@ export default class Interpreter {
    * that is directly responsible for this execution.
    */
   getCaller(): bigint {
-    return bufferToBigInt(this._env.caller.buf)
+    return bufferToBigInt(this._env.frameEnvironment.caller.buf)
   }
 
   /**
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.code.length)
+    return BigInt(this._env.frameEnvironment.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Buffer {
-    return this._env.code
+    return this._env.frameEnvironment.code
   }
 
   /**
    * Returns the current gasCounter.
    */
   getGasLeft(): bigint {
-    return this._gasLeft
+    return this._env.frameEnvironment.machineState.gasLeft
   }
 
   /**
@@ -592,7 +574,7 @@ export default class Interpreter {
    * Note: create only fills the return data buffer in case of a failure.
    */
   getReturnDataSize(): bigint {
-    return BigInt(this._lastReturned.length)
+    return BigInt(this.getReturnData().length)
   }
 
   /**
@@ -601,21 +583,21 @@ export default class Interpreter {
    * Note: create only fills the return data buffer in case of a failure.
    */
   getReturnData(): Buffer {
-    return this._lastReturned
+    return this._env.frameEnvironment.machineState.returnBuffer
   }
 
   /**
    * Returns true if the current call must be executed statically.
    */
   isStatic(): boolean {
-    return this._env.isStatic
+    return this._env.frameEnvironment.isStatic
   }
 
   /**
    * Returns price of gas in current environment.
    */
   getTxGasPrice(): bigint {
-    return this._env.gasPrice
+    return this._env.globalEnvironment.gasPrice
   }
 
   /**
@@ -624,14 +606,14 @@ export default class Interpreter {
    * non-empty associated code.
    */
   getTxOrigin(): bigint {
-    return bufferToBigInt(this._env.origin.buf)
+    return bufferToBigInt(this._env.globalEnvironment.origin.buf)
   }
 
   /**
    * Returns the block’s number.
    */
   getBlockNumber(): bigint {
-    return this._env.block.header.number
+    return this._env.globalEnvironment.block.header.number
   }
 
   /**
@@ -640,9 +622,9 @@ export default class Interpreter {
   getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      coinbase = this._env.block.header.cliqueSigner()
+      coinbase = this._env.globalEnvironment.block.header.cliqueSigner()
     } else {
-      coinbase = this._env.block.header.coinbase
+      coinbase = this._env.globalEnvironment.block.header.coinbase
     }
     return bufferToBigInt(coinbase.toBuffer())
   }
@@ -651,35 +633,35 @@ export default class Interpreter {
    * Returns the block's timestamp.
    */
   getBlockTimestamp(): bigint {
-    return this._env.block.header.timestamp
+    return this._env.globalEnvironment.block.header.timestamp
   }
 
   /**
    * Returns the block's difficulty.
    */
   getBlockDifficulty(): bigint {
-    return this._env.block.header.difficulty
+    return this._env.globalEnvironment.block.header.difficulty
   }
 
   /**
    * Returns the block's prevRandao field.
    */
   getBlockPrevRandao(): bigint {
-    return bufferToBigInt(this._env.block.header.prevRandao)
+    return bufferToBigInt(this._env.globalEnvironment.block.header.prevRandao)
   }
 
   /**
    * Returns the block's gas limit.
    */
   getBlockGasLimit(): bigint {
-    return this._env.block.header.gasLimit
+    return this._env.globalEnvironment.block.header.gasLimit
   }
 
   /**
    * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
    */
   getBlockBaseFee(): bigint {
-    const baseFee = this._env.block.header.baseFeePerGas
+    const baseFee = this._env.globalEnvironment.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
       throw new Error('Block has no Base Fee')
@@ -699,15 +681,16 @@ export default class Interpreter {
    * Sends a message with arbitrary data to a given address path.
    */
   async call(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
-    const msg = new Message({
-      caller: this._env.address,
+    const msg: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.currentAddress,
       gasLimit,
       to: address,
       value,
       data,
-      isStatic: this._env.isStatic,
-      depth: this._env.depth + 1,
-    })
+      isStatic: this._env.frameEnvironment.isStatic,
+      depth: this._env.frameEnvironment.depth + 1,
+      callType: CallType.Call
+    }
 
     return this._baseCall(msg)
   }
@@ -716,16 +699,17 @@ export default class Interpreter {
    * Sends a message with arbitrary data to a given address path.
    */
   async authcall(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
-    const msg = new Message({
-      caller: this._env.auth,
+    const msg: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.machineState.auth,
       gasLimit,
       to: address,
       value,
       data,
-      isStatic: this._env.isStatic,
-      depth: this._env.depth + 1,
-      authcallOrigin: this._env.address,
-    })
+      isStatic: this._env.frameEnvironment.isStatic,
+      depth: this._env.frameEnvironment.depth + 1,
+      takeCallValueFrom: this._env.frameEnvironment.currentAddress,
+      callType: CallType.AuthCall
+    }
 
     return this._baseCall(msg)
   }
@@ -734,16 +718,18 @@ export default class Interpreter {
    * Message-call into this account with an alternative account's code.
    */
   async callCode(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
-    const msg = new Message({
-      caller: this._env.address,
+    const code = await this._eei.state.getContractCode(address)
+    const msg: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.currentAddress,
       gasLimit,
-      to: this._env.address,
-      codeAddress: address,
+      to: this._env.frameEnvironment.currentAddress,
+      code: code,
       value,
       data,
-      isStatic: this._env.isStatic,
-      depth: this._env.depth + 1,
-    })
+      isStatic: this._env.frameEnvironment.isStatic,
+      depth: this._env.frameEnvironment.depth + 1,
+      callType: CallType.CallCode
+    }
 
     return this._baseCall(msg)
   }
@@ -759,15 +745,16 @@ export default class Interpreter {
     value: bigint,
     data: Buffer
   ): Promise<bigint> {
-    const msg = new Message({
-      caller: this._env.address,
+    const msg: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.currentAddress,
       gasLimit,
       to: address,
       value,
       data,
       isStatic: true,
-      depth: this._env.depth + 1,
-    })
+      depth: this._env.frameEnvironment.depth + 1,
+      callType: CallType.StaticCall
+    }
 
     return this._baseCall(msg)
   }
@@ -782,40 +769,49 @@ export default class Interpreter {
     value: bigint,
     data: Buffer
   ): Promise<bigint> {
-    const msg = new Message({
-      caller: this._env.caller,
+    const code = await this._eei.state.getContractCode(address)
+    const msg: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.currentAddress,
       gasLimit,
-      to: this._env.address,
-      codeAddress: address,
+      to: this._env.frameEnvironment.currentAddress,
+      code,
       value,
       data,
-      isStatic: this._env.isStatic,
-      delegatecall: true,
-      depth: this._env.depth + 1,
-    })
+      isStatic: this._env.frameEnvironment.isStatic,
+      depth: this._env.frameEnvironment.depth + 1,
+      callType: CallType.DelegateCall
+    }
 
     return this._baseCall(msg)
   }
 
-  async _baseCall(msg: Message): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
-    msg.selfdestruct = selfdestruct
+  async _baseCall(frameEnv: FrameEnvironmentExtended): Promise<bigint> {
+    frameEnv.machineState = frameEnv.machineState ?? {}
+    const selfdestruct = { ...this._env.frameEnvironment.machineState.selfdestruct }
+    frameEnv.machineState.selfdestruct = selfdestruct
+
+    const currentFrame = this._env.frameEnvironment
+    const currentMachineState = currentFrame.machineState
 
     // empty the return data buffer
-    this._lastReturned = Buffer.alloc(0)
+    this._env.frameEnvironment.machineState.returnBuffer = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
-      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
+      currentFrame.depth >= Number(this._common.param('vm', 'stackLimit'))
     ) {
       return BigInt(0)
     }
 
-    const results = await this._evm.runCall({ message: msg })
+    const evmEnvironment: EVMEnvironmentExtended = {
+      frameEnvironment: frameEnv,
+      globalEnvironment: this._env.globalEnvironment
+    }
+
+    const results = await this._evm.runCall(evmEnvironment)
 
     if (results.execResult.logs) {
-      this._result.logs = this._result.logs.concat(results.execResult.logs)
+      currentMachineState.logs = currentMachineState.logs.concat(results.execResult.logs)
     }
 
     // this should always be safe
@@ -827,14 +823,12 @@ export default class Interpreter {
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._lastReturned = results.execResult.returnValue
+      currentMachineState.returnBuffer = results.execResult.returnValue
     }
 
     if (!results.execResult.exceptionError) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
-      // update stateRoot on current contract
-      const account = await this._eei.state.getAccount(this._env.address)
-      this._env.contract = account
+      // Propagate any new selfdestructed addresses into current machine state
+      Object.assign(currentMachineState.selfdestruct, selfdestruct)
     }
 
     return this._getReturnCode(results)
@@ -844,28 +838,26 @@ export default class Interpreter {
    * Creates a new contract with a given value.
    */
   async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
-    const caller = this._env.address
-    const depth = this._env.depth + 1
+    const currentFrame = this._env.frameEnvironment
+    const currentMachineState = currentFrame.machineState
 
-    // empty the return data buffer
-    this._lastReturned = Buffer.alloc(0)
+    const selfdestruct = { ...this._env.frameEnvironment.machineState.selfdestruct }
+
+    const contract = await this._eei.state.getAccount(currentFrame.currentAddress)
+    const balance = contract.balance
 
     // Check if account has enough ether and max depth not exceeded
-    if (
-      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
-      this._env.contract.balance < value
-    ) {
+    if (currentFrame.depth >= Number(this._common.param('vm', 'stackLimit')) || balance < value ) {
       return BigInt(0)
     }
 
     // EIP-2681 check
-    if (this._env.contract.nonce >= MAX_UINT64) {
+    if (contract.nonce >= MAX_UINT64) {
       return BigInt(0)
     }
 
-    this._env.contract.nonce += BigInt(1)
-    await this._eei.state.putAccount(this._env.address, this._env.contract)
+    contract.nonce += BigInt(1)
+    await this._eei.state.putAccount(currentFrame.currentAddress, contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
@@ -873,20 +865,32 @@ export default class Interpreter {
       }
     }
 
-    const message = new Message({
-      caller,
-      gasLimit,
-      value,
-      data,
-      salt,
-      depth,
-      selfdestruct,
-    })
+    let callType: CallType 
+    if (salt) {
+      callType = CallType.Create2
+    } else {
+      callType = CallType.Create
+    }
 
-    const results = await this._evm.runCall({ message })
+    const createFrame: FrameEnvironmentExtended = {
+      caller: this._env.frameEnvironment.currentAddress,
+      gasLimit,
+      code: data,
+      value,
+      salt,
+      depth: this._env.frameEnvironment.depth + 1,
+      callType,
+    }
+
+    const evmEnvironment: EVMEnvironmentExtended = {
+      frameEnvironment: createFrame,
+      globalEnvironment: this._env.globalEnvironment
+    }
+
+    const results = await this._evm.runCall(evmEnvironment)
 
     if (results.execResult.logs) {
-      this._result.logs = this._result.logs.concat(results.execResult.logs)
+      currentMachineState.logs = currentMachineState.logs.concat(results.execResult.logs)
     }
 
     // this should always be safe
@@ -897,21 +901,15 @@ export default class Interpreter {
       results.execResult.exceptionError &&
       results.execResult.exceptionError.error === ERROR.REVERT
     ) {
-      this._lastReturned = results.execResult.returnValue
+      currentMachineState.returnBuffer = results.execResult.returnValue
     }
 
     if (
       !results.execResult.exceptionError ||
       results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
     ) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
-      // update stateRoot on current contract
-      const account = await this._eei.state.getAccount(this._env.address)
-      this._env.contract = account
-      if (results.createdAddress) {
-        // push the created address to the stack
-        return bufferToBigInt(results.createdAddress.buf)
-      }
+      Object.assign(currentMachineState.selfdestruct, selfdestruct)
+      return bufferToBigInt(results.execResult.runState?.frameEnvironment.currentAddress)
     }
 
     return this._getReturnCode(results)
@@ -936,20 +934,24 @@ export default class Interpreter {
   }
 
   async _selfDestruct(toAddress: Address): Promise<void> {
+    const currentFrame = this._env.frameEnvironment
+    const currentMachineState = currentFrame.machineState
+
     // only add to refund if this is the first selfdestruct for the address
-    if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
+    if (!currentMachineState.selfdestruct[currentFrame.currentAddress.buf.toString('hex')]) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
-    this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
+    currentMachineState.selfdestruct[currentFrame.currentAddress.buf.toString('hex')] = toAddress.buf
 
     // Add to beneficiary balance
     const toAccount = await this._eei.state.getAccount(toAddress)
-    toAccount.balance += this._env.contract.balance
+    const contract = await this._eei.state.getAccount(currentFrame.currentAddress)
+    toAccount.balance += contract.balance
     await this._eei.state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
-    await this._eei.state.modifyAccountFields(this._env.address, {
+    await this._eei.state.modifyAccountFields(currentFrame.currentAddress, {
       balance: BigInt(0),
     })
 
@@ -960,6 +962,8 @@ export default class Interpreter {
    * Creates a new log in the current environment.
    */
   log(data: Buffer, numberOfTopics: number, topics: Buffer[]): void {
+    const currentFrame = this._env.frameEnvironment
+    const currentMachineState = currentFrame.machineState
     if (numberOfTopics < 0 || numberOfTopics > 4) {
       trap(ERROR.OUT_OF_RANGE)
     }
@@ -968,8 +972,8 @@ export default class Interpreter {
       trap(ERROR.INTERNAL_ERROR)
     }
 
-    const log: Log = [this._env.address.buf, topics, data]
-    this._result.logs.push(log)
+    const log: Log = [currentFrame.currentAddress.buf, topics, data]
+    currentMachineState.logs.push(log)
   }
 
   private _getReturnCode(results: EVMResult) {
