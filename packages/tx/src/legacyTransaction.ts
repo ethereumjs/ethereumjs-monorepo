@@ -136,6 +136,18 @@ export default class Transaction extends BaseTransaction<Transaction> {
       }
     }
 
+    if (!this.supports(Capability.EIP155ReplayProtection)) {
+      // In case of a signed non-EIP155 tx, `ecrecover` does not get a `chainId` provided
+      // Internally, `ecrecover` will calculate the recovery bit by `v = v - 27`
+      // This recovery bit is either 0 or 1. Thus, any other value than `v = 27` or `v = 28` will
+      // throw upon calling `getSenderAddress` here. Thus throw early in the constructor
+      if (this.v !== undefined) {
+        if (!this.v.eqn(27) && !this.v.eqn(28)) {
+          throw new Error(`Non-EIP155 txs need either v = 27 or v = 28, got v = ${this.v}`)
+        }
+      }
+    }
+
     if (this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
     }
@@ -382,7 +394,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
       v !== undefined &&
-      !v.eqn(0) &&
+      !v.eqn(0) && // TODO fixme -> why overwrite/return default common when `v` is set to 0?
       (!common || common.gteHardfork('spuriousDragon')) &&
       !v.eqn(27) &&
       !v.eqn(28)
