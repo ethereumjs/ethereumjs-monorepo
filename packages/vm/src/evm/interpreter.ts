@@ -71,6 +71,7 @@ export interface RunState {
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
+  gasRefund: bigint // Tracks the current refund
 }
 
 export interface InterpreterResult {
@@ -147,6 +148,7 @@ export default class Interpreter {
       env: env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
+      gasRefund: BigInt(0),
     }
     this._env = env
     this._lastReturned = Buffer.alloc(0)
@@ -302,7 +304,7 @@ export default class Interpreter {
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
-      gasRefund: this._evm._refund,
+      gasRefund: this._runState.gasRefund,
       opcode: {
         name: opcode.fullName,
         fee: opcode.fee,
@@ -420,9 +422,11 @@ export default class Interpreter {
    */
   refundGas(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
+      debugGas(
+        `${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._runState.gasRefund})`
+      )
     }
-    this._evm._refund += amount
+    this._runState.gasRefund += amount
   }
 
   /**
@@ -432,11 +436,13 @@ export default class Interpreter {
    */
   subRefund(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
+      debugGas(
+        `${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._runState.gasRefund})`
+      )
     }
-    this._evm._refund -= amount
-    if (this._evm._refund < BigInt(0)) {
-      this._evm._refund = BigInt(0)
+    this._runState.gasRefund -= amount
+    if (this._runState.gasRefund < BigInt(0)) {
+      this._runState.gasRefund = BigInt(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -835,6 +841,7 @@ export default class Interpreter {
       // update stateRoot on current contract
       const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
+      this._runState.gasRefund += results.execResult.gasRefund ?? BigInt(0)
     }
 
     return this._getReturnCode(results)
@@ -908,6 +915,7 @@ export default class Interpreter {
       // update stateRoot on current contract
       const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
+      this._runState.gasRefund += results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
         // push the created address to the stack
         return bufferToBigInt(results.createdAddress.buf)

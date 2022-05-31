@@ -93,6 +93,10 @@ export interface RunCallOpts {
    */
   delegatecall?: boolean
   /**
+   * Refund counter. Defaults to `0`
+   */
+  gasRefund?: bigint
+  /**
    * Optionally pass in an already-built message.
    */
   message?: Message
