@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
@@ -184,7 +183,10 @@ async function main() {
 
   console.log('Greeting:', greeting)
 
-  assert.equal(greeting, INITIAL_GREETING)
+  if (greeting !== INITIAL_GREETING)
+    throw new Error(
+      `initial greeting not equal, received ${greeting}, expected ${INITIAL_GREETING}`
+    )
 
   console.log('Changing greeting...')
 
@@ -194,7 +196,8 @@ async function main() {
 
   console.log('Greeting:', greeting2)
 
-  assert.equal(greeting2, SECOND_GREETING)
+  if (greeting2 !== SECOND_GREETING)
+    throw new Error(`second greeting not equal, received ${greeting2}, expected ${SECOND_GREETING}`)
 
   // Now let's look at what we created. The transaction
   // should have created a new account for the contract

@@ -1,4 +1,3 @@
-import assert from 'assert'
 import snappy from 'snappyjs'
 import {
   arrToBufArr,
@@ -115,7 +114,7 @@ export class ETH extends Protocol {
         if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           this.debug('STATUS', msg)
-          throw new assert.AssertionError({ message: msg })
+          throw new Error(msg)
         }
       }
     }
@@ -123,7 +122,7 @@ export class ETH extends Protocol {
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
       this.debug('STATUS', msg)
-      throw new assert.AssertionError({ message: msg })
+      throw new Error(msg)
     }
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
@@ -131,7 +130,7 @@ export class ETH extends Protocol {
       if (peerNextFork === null || !nextHardforkBlock || nextHardforkBlock !== peerNextFork) {
         const msg = 'Outdated fork status, remote needs software update'
         this.debug('STATUS', msg)
-        throw new assert.AssertionError({ message: msg })
+        throw new Error(msg)
       }
     }
   }
