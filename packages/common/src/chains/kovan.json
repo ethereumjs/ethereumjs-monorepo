@@ -5,19 +5,20 @@
   "defaultHardfork": "london",
   "consensus": {
     "type": "poa",
-    "algorithm": "aura",
-    "aura": {}
+    "algorithm": "clique",
+    "clique": {
+      "period": 15,
+      "epoch": 30000
+    }
   },
   "comment": "Parity PoA test network",
   "url": "https://kovan-testnet.github.io/website/",
   "genesis": {
-    "hash": "0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9",
     "timestamp": null,
     "gasLimit": 6000000,
     "difficulty": 131072,
     "nonce": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "extraData": "0x",
-    "stateRoot": "0x2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2"
+    "extraData": "0x"
   },
   "hardforks": [
     {
@@ -64,7 +65,7 @@
       "name": "berlin",
       "block": 24770900,
       "forkHash": "0x1a0f10d9"
-    }, 
+    },
     {
       "name": "london",
       "block": 26741100,

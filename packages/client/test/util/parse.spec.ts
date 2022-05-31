@@ -1,11 +1,6 @@
 import tape from 'tape'
 import { multiaddr } from 'multiaddr'
-import {
-  parseMultiaddrs,
-  parseTransports,
-  parseCustomParams,
-  parseGenesisState,
-} from '../../lib/util'
+import { parseMultiaddrs, parseTransports, parseCustomParams } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
@@ -63,21 +58,9 @@ tape('[Util/Parse]', (t) => {
   })
 
   t.test('should parse geth params file', async (t) => {
-    t.plan(3)
     const json = require('../testdata/geth-genesis/testnet.json')
     const params = await parseCustomParams(json, 'rinkeby')
-    t.equals(
-      params.genesis.hash,
-      '0x7f09347ab897f9a0d76d8eacd1cc9803488309ba24b428406293ecd927dacdf3',
-      'parsed params correctly'
-    )
     t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
-    const rinkebyGenesisState = await parseGenesisState(json)
-    t.equals(
-      rinkebyGenesisState['0x4c2ae482593505f0163cdefc073e81c63cda4107'][0],
-      '0x152d02c7e14af6800000',
-      'parsed genesis state correctly'
-    )
   })
 
   t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
@@ -113,13 +96,8 @@ tape('[Util/Parse]', (t) => {
   t.test(
     'should generate expected hash with london block zero and base fee per gas defined',
     async (t) => {
-      t.plan(2)
       const json = require('../testdata/geth-genesis/post-merge.json')
       const params = await parseCustomParams(json, 'post-merge')
-      t.equals(
-        params.genesis.hash,
-        '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a'
-      )
       t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
     }
   )

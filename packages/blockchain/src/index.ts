@@ -1,10 +1,12 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { toBuffer } from 'ethereumjs-util'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
 import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
+import { GenesisState, genesisStateRoot } from './genesisStates'
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
@@ -105,6 +107,32 @@ export interface BlockchainOptions {
    * provided from the `common` will be used.
    */
   genesisBlock?: Block
+
+  /**
+   * If you are using a custom chain {@link Common}, pass the genesis state.
+   *
+   * Pattern 1 (with genesis state see {@link GenesisState} for format):
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   * }
+   * ```
+   *
+   * Pattern 2 (with complex genesis state, containing contract accounts and storage).
+   * Note that in {@link AccountState} there are two
+   * accepted types. This allows to easily insert accounts in the genesis state:
+   *
+   * A complex genesis state with Contract and EoA states would have the following format:
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[storageKey1, storageValue1], [storageKey2, storageValue2]]] // For contracts
+   * }
+   * ```
+   */
+  genesisState?: GenesisState
 }
 
 /**
@@ -115,7 +143,8 @@ export default class Blockchain implements BlockchainInterface {
   db: LevelUp
   dbManager: DBManager
 
-  private _genesis?: Buffer // the genesis hash of this blockchain
+  private _genesisBlock?: Block /** The genesis block of this blockchain */
+  private _customGenesisState?: GenesisState /** Custom genesis state */
 
   /**
    * The following two heads and the heads stored within the `_heads` always point
@@ -206,6 +235,7 @@ export default class Blockchain implements BlockchainInterface {
     this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
     this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
+    this._customGenesisState = opts.genesisState
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
@@ -288,9 +318,17 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (!genesisBlock) {
-      const common = this._common.copy()
-      common.setHardforkByBlockNumber(0)
-      genesisBlock = Block.genesis({}, { common })
+      let stateRoot
+      if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
+        // For mainnet use the known genesis stateRoot to quicken setup
+        stateRoot = Buffer.from(
+          'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
+          'hex'
+        )
+      } else {
+        stateRoot = await genesisStateRoot(this.genesisState())
+      }
+      genesisBlock = this.genesisBlock(stateRoot)
     }
 
     // If the DB has a genesis block, then verify that the genesis block in the
@@ -310,18 +348,16 @@ export default class Blockchain implements BlockchainInterface {
       dbOps.push(DBSetTD(genesisBlock.header.difficulty, BigInt(0), genesisHash))
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
       DBSaveLookups(genesisHash, BigInt(0)).map((op) => dbOps.push(op))
-
       await this.dbManager.batch(dbOps)
-
       await this.consensus.genesisInit(genesisBlock)
     }
 
     await this.consensus.setup()
 
-    // At this point, we can safely set genesisHash as the _genesis hash in this
-    // object: it is either the one we put in the DB, or it is equal to the one
+    // At this point, we can safely set the genesis:
+    // it is either the one we put in the DB, or it is equal to the one
     // which we read from the DB.
-    this._genesis = genesisHash
+    this._genesisBlock = genesisBlock
 
     // load verified iterator heads
     try {
@@ -690,7 +726,7 @@ export default class Blockchain implements BlockchainInterface {
   async getIteratorHead(name = 'vm'): Promise<Block> {
     return await this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
-      const hash = this._heads[name] || this._genesis
+      const hash = this._heads[name] ?? this._genesisBlock?.hash()
       if (!hash) {
         throw new Error('No head found.')
       }
@@ -894,11 +930,6 @@ export default class Blockchain implements BlockchainInterface {
           this._common.setHardforkByBlockNumber(blockNumber, td)
         }
 
-        // TODO SET THIS IN CONSTRUCTOR
-        if (block.isGenesis()) {
-          this._genesis = blockHash
-        }
-
         // delete higher number assignments and overwrite stale canonical chain
         await this._deleteCanonicalChainReferences(blockNumber + BigInt(1), blockHash, dbOps)
         // from the current header block, check the blockchain in reverse (i.e.
@@ -1048,9 +1079,9 @@ export default class Blockchain implements BlockchainInterface {
    */
   async delBlock(blockHash: Buffer) {
     // Q: is it safe to make this not wait for a lock? this is called from
-    // `runBlockchain` in case `runBlock` throws (i.e. the block is invalid).
+    // `BlockchainTestsRunner` in case `runBlock` throws (i.e. the block is invalid).
     // But is this the way to go? If we know this is called from the
-    // iterator/runBlockchain we are safe, but if this is called from anywhere
+    // iterator we are safe, but if this is called from anywhere
     // else then this might lead to a concurrency problem?
     await this._delBlock(blockHash)
   }
@@ -1152,7 +1183,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
     return await this.runWithLock<number>(async (): Promise<number> => {
-      const headHash = this._heads[name] || this._genesis
+      const headHash = this._heads[name] ?? this._genesisBlock?.hash()
       let lastBlock: Block | undefined
 
       if (!headHash) {
@@ -1203,7 +1234,7 @@ export default class Blockchain implements BlockchainInterface {
     })
   }
 
-  /* Methods regarding re-org operations */
+  /* Methods regarding reorg operations */
 
   /**
    * Find the common ancestor of the new block and the old block.
@@ -1429,6 +1460,70 @@ export default class Blockchain implements BlockchainInterface {
       }
       return false
     }
+  }
+
+  /**
+   * Returns the genesis {@link Block} for the blockchain.
+   * @param stateRoot When initializing the block, pass the genesis stateRoot.
+   *                  After the blockchain is initialized, this parameter is not used
+   *                  as the cached genesis block is returned.
+   */
+  genesisBlock(stateRoot?: Buffer): Block {
+    if (this._genesisBlock) {
+      return this._genesisBlock
+    }
+
+    if (!stateRoot) throw new Error('stateRoot required for genesis block creation')
+
+    const common = this._common.copy()
+    common.setHardforkByBlockNumber(0)
+
+    const { gasLimit, timestamp, difficulty, extraData, nonce, baseFeePerGas } = common.genesis()
+
+    const header: BlockData['header'] = {
+      number: 0,
+      gasLimit: BigInt(gasLimit),
+      timestamp: BigInt(timestamp ?? 0),
+      difficulty: BigInt(difficulty),
+      extraData: toBuffer(extraData),
+      nonce: toBuffer(nonce),
+      stateRoot,
+    }
+
+    if (baseFeePerGas !== undefined && common.gteHardfork(Hardfork.London)) {
+      header.baseFeePerGas = BigInt(baseFeePerGas)
+    }
+
+    return Block.fromBlockData({ header }, { common })
+  }
+
+  /**
+   * Returns the genesis state of the blockchain.
+   * All values are provided as hex-prefixed strings.
+   */
+  genesisState(): GenesisState {
+    if (this._customGenesisState) {
+      return this._customGenesisState
+    }
+    // Use require statements here in favor of import statements
+    // to load json files on demand
+    // (high memory usage by large mainnet.json genesis state file)
+    switch (this._common.chainName()) {
+      case 'mainnet':
+        return require('./genesisStates/mainnet.json')
+      case 'ropsten':
+        return require('./genesisStates/ropsten.json')
+      case 'rinkeby':
+        return require('./genesisStates/rinkeby.json')
+      case 'kovan':
+        return require('./genesisStates/kovan.json')
+      case 'goerli':
+        return require('./genesisStates/goerli.json')
+      case 'sepolia':
+        return require('./genesisStates/sepolia.json')
+    }
+
+    return {}
   }
 }
 

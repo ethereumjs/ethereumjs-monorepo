@@ -1,23 +1,10 @@
 import { URL } from 'url'
 import { Multiaddr, multiaddr } from 'multiaddr'
-import { BlockHeader } from '@ethereumjs/block'
-import Common, { Hardfork } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import {
-  Account,
-  addHexPrefix,
-  bigIntToHex,
-  bufferToHex,
-  intToHex,
-  isHexPrefixed,
-  stripHexPrefix,
-  toBuffer,
-  unpadBuffer,
-} from 'ethereumjs-util'
-import RLP from 'rlp'
+import { Hardfork } from '@ethereumjs/common'
+import { addHexPrefix, bigIntToHex, intToHex, isHexPrefixed, stripHexPrefix } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types'
-import type { GenesisState } from '@ethereumjs/common/dist/types'
+import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type Common from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -90,81 +77,6 @@ export function parseTransports(transports: string[]) {
 }
 
 /**
- * Returns initialized storage trie
- * @param storage - Object containing storage trie entries from geth genesis state
- * @returns genesis storage trie
- */
-async function createStorageTrie(storage: any) {
-  const trie = new Trie()
-  for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
-    const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
-    const val = Buffer.from(
-      RLP.encode(
-        Uint8Array.from(
-          unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
-        )
-      )
-    )
-    await trie.put(key, val)
-  }
-  return trie
-}
-
-/**
- * Derives state trie of genesis block bases on genesis allocations
- * @param alloc - Object containing genesis allocations from geth genesis block
- * @returns genesis state trie
- */
-async function createGethGenesisStateTrie(alloc: any) {
-  const trie = new Trie()
-  for (const [key, value] of Object.entries(alloc)) {
-    const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
-    const { balance, code, storage } = value as any
-    const account = new Account()
-    if (balance) {
-      account.balance = BigInt(balance)
-    }
-    if (code) {
-      account.codeHash = Buffer.from(keccak256(toBuffer(code)))
-    }
-    if (storage) {
-      const storageTrie = await createStorageTrie(storage)
-      account.stateRoot = storageTrie.root
-    }
-    await trie.put(address, account.serialize())
-  }
-  return trie
-}
-
-async function createGethGenesisBlockHeader(json: any) {
-  const { gasLimit, difficulty, extraData, nonce, timestamp, mixHash, alloc, baseFeePerGas } = json
-  const storageTrie = await createGethGenesisStateTrie(alloc)
-  const stateRoot = storageTrie.root
-  const headerData = {
-    number: 0,
-    gasLimit,
-    difficulty,
-    extraData,
-    nonce,
-    timestamp,
-    mixHash,
-    stateRoot,
-    baseFeePerGas,
-  }
-  let common = new Common({ chain: 1 })
-  if (json.config.londonBlock === 0) {
-    // chainId is not important here, we just want to set
-    // hardfork to London for baseFeePerGas support
-    const hardforks = common
-      .hardforks()
-      .map((h) => (h.name === Hardfork.London ? { ...h, block: 0 } : h))
-    common = Common.custom({ chainId: 1, hardforks })
-  }
-  common.setHardforkByBlockNumber(0)
-  return BlockHeader.fromHeaderData(headerData, { common })
-}
-
-/**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
  * @param nonce string parsed from the Geth genesis file
  * @returns nonce as a 0x-prefixed 8 byte string
@@ -210,13 +122,11 @@ async function parseGethParams(json: any) {
     )
   }
 
-  const header = await createGethGenesisBlockHeader({ ...json, extraData, timestamp, nonce })
   const params: any = {
     name,
     chainId,
     networkId: chainId,
     genesis: {
-      hash: bufferToHex(header.hash()),
       timestamp,
       gasLimit: parseInt(gasLimit), // geth gasLimit and difficulty are hex strings while ours are `number`s
       difficulty: parseInt(difficulty),
@@ -224,7 +134,6 @@ async function parseGethParams(json: any) {
       extraData,
       mixHash,
       coinbase,
-      stateRoot: bufferToHex(header.stateRoot),
       baseFeePerGas,
     },
     bootstrapNodes: [],
@@ -295,7 +204,7 @@ export async function parseCustomParams(json: any, name?: string) {
 }
 
 /**
- * Parses the geth genesis state into Common {@link GenesisState}
+ * Parses the geth genesis state into Blockchain {@link GenesisState}
  * @param json representing the `alloc` key in a Geth genesis file
  */
 export async function parseGenesisState(json: any) {
@@ -312,7 +221,7 @@ export async function parseGenesisState(json: any) {
 }
 
 /**
- * Returns Buffer from input hexadeicmal string or Buffer
+ * Returns Buffer from input hexadecimal string or Buffer
  * @param input hexadecimal string or Buffer
  */
 export function parseKey(input: string | Buffer) {
@@ -320,4 +229,17 @@ export function parseKey(input: string | Buffer) {
     return input
   }
   return Buffer.from(input, 'hex')
+}
+
+/**
+ * Sets any missing forkHashes on the passed-in {@link Common} instance
+ * @param common The {@link Common} to set the forkHashes for
+ * @param genesisHash The genesis block hash
+ */
+export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
+  for (const hf of (common as any)._chainParams.hardforks) {
+    if (!hf.forkHash && hf.block !== undefined && hf.block !== null) {
+      hf.forkHash = common.forkHash(hf.name, genesisHash)
+    }
+  }
 }

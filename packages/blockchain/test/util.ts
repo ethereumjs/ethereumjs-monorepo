@@ -13,7 +13,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const opts = { common }
 
   if (blocks.length === 0) {
-    const genesis = Block.genesis({ header: { gasLimit } }, opts)
+    const genesis = Block.fromBlockData({ header: { gasLimit } }, opts)
     blocks.push(genesis)
   }
 
@@ -107,7 +107,8 @@ export const isConsecutive = (blocks: Block[]) => {
 }
 
 export const createTestDB = async () => {
-  const genesis = Block.genesis()
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
   const db = level()
   await db.batch([
     {

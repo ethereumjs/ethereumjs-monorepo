@@ -13,6 +13,7 @@ import {
   bufArrToArr,
   bufferToBigInt,
   bufferToInt,
+  intToBuffer,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Chain } from './../../blockchain'
@@ -119,7 +120,12 @@ export class EthProtocol extends Protocol {
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
         bigIntToBuffer(reqId ?? ++id),
-        [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
+        [
+          typeof block === 'bigint' ? bigIntToBuffer(block) : block,
+          max === 0 ? Buffer.from([]) : intToBuffer(max),
+          skip === 0 ? Buffer.from([]) : intToBuffer(skip),
+          !reverse ? Buffer.from([]) : Buffer.from([1]),
+        ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
         reqId: bufferToBigInt(reqId),
@@ -316,7 +322,7 @@ export class EthProtocol extends Protocol {
       td:
         this.chain.blocks.td === BigInt(0) ? Buffer.from([]) : bigIntToBuffer(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
-      genesisHash: this.chain.genesis.hash,
+      genesisHash: this.chain.genesis.hash(),
       latestBlock: bigIntToBuffer(this.chain.blocks.latest!.header.number),
     }
   }
