@@ -443,7 +443,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  let gasRefund = results.gasRefund ?? BigInt(0)
+  let gasRefund = results.execResult.gasRefund ?? BigInt(0)
   const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
   if (gasRefund !== BigInt(0)) {
     const maxRefund = results.gasUsed / maxRefundQuotient
@@ -508,7 +508,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
-  this.evm._refund = BigInt(0)
+
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
   if (this._common.isActivatedEIP(1153)) this.evm._transientStorage.clear()
