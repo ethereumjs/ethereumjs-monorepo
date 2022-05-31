@@ -439,7 +439,7 @@ tape('[Transaction]', function (t) {
   )
 
   t.test(
-    'constructor: throw on non-EIP155 transactions which have v != 27 and v != 28',
+    'constructor: throw on legacy transactions which have v != 27 and v != 28 and v < 37',
     function (st) {
       function getTxData(v: number) {
         return {
@@ -450,8 +450,11 @@ tape('[Transaction]', function (t) {
         st.throws(() => Transaction.fromTxData(getTxData(n)))
       }
       st.throws(() => Transaction.fromTxData(getTxData(29)))
+      st.throws(() => Transaction.fromTxData(getTxData(36)))
+
       st.doesNotThrow(() => Transaction.fromTxData(getTxData(27)))
       st.doesNotThrow(() => Transaction.fromTxData(getTxData(28)))
+      st.doesNotThrow(() => Transaction.fromTxData(getTxData(37)))
       st.end()
     }
   )

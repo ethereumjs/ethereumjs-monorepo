@@ -136,18 +136,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
       }
     }
 
-    if (!this.supports(Capability.EIP155ReplayProtection)) {
-      // In case of a signed non-EIP155 tx, `ecrecover` does not get a `chainId` provided
-      // Internally, `ecrecover` will calculate the recovery bit by `v = v - 27`
-      // This recovery bit is either 0 or 1. Thus, any other value than `v = 27` or `v = 28` will
-      // throw upon calling `getSenderAddress` here. Thus throw early in the constructor
-      if (this.v !== undefined) {
-        if (!this.v.eqn(27) && !this.v.eqn(28)) {
-          throw new Error(`Non-EIP155 txs need either v = 27 or v = 28, got v = ${this.v}`)
-        }
-      }
-    }
-
     if (this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
     }
@@ -390,6 +378,17 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Validates tx's `v` value
    */
   private _validateTxV(v?: BN, common?: Common): Common {
+    // Check for valid v values in the scope of a signed legacy tx
+    if (v !== undefined) {
+      // v is 1. not matching the EIP-155 chainId included case and...
+      // v is 2. not matching the classic v=27 or v=28 case
+      if (v.ltn(37) && !v.eqn(27) && !v.eqn(28)) {
+        throw new Error(
+          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`
+        )
+      }
+    }
+
     let chainIdBN
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
