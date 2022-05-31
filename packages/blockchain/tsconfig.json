@@ -1,6 +1,6 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts"],
   "compilerOptions": {
     "types": ["node"],
     "typeRoots": ["node_modules/@types"]

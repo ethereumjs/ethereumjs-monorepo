@@ -103,7 +103,10 @@ rlpx.on('peer:added', (peer) => {
   let forkDrop: NodeJS.Timeout
   let forkVerified = false
   eth.once('status', () => {
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [1, [CHECK_BLOCK_NR, 1, 0, 0]])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
+      Buffer.from([1]),
+      [devp2p.int2buffer(CHECK_BLOCK_NR), Buffer.from([1]), Buffer.from([]), Buffer.from([])],
+    ])
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
     }, ms('15s'))
@@ -125,7 +128,10 @@ rlpx.on('peer:added', (peer) => {
           const blockHash = item[0]
           if (blocksCache.has(blockHash.toString('hex'))) continue
           setTimeout(() => {
-            eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [2, [blockHash, 1, 0, 0]])
+            eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
+              Buffer.from([2]),
+              [blockHash, Buffer.from([1]), Buffer.from([]), Buffer.from([])],
+            ])
             requests.headers.push(blockHash)
           }, ms('0.1s'))
         }
@@ -188,7 +194,10 @@ rlpx.on('peer:added', (peer) => {
             if (header.hash().equals(blockHash)) {
               isValidPayload = true
               setTimeout(() => {
-                eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [3, [blockHash]])
+                eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [
+                  Buffer.from([3]),
+                  [blockHash],
+                ])
                 requests.bodies.push(header)
               }, ms('0.1s'))
               break

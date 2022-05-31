@@ -22,7 +22,6 @@ import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unu
  * The following re-exported VM methods are tested within
  * their own files:
  *
- * runBlockchain.spec.ts
  * runBlock.spec.ts
  * runTx.spec.ts
  * runCall.spec.ts

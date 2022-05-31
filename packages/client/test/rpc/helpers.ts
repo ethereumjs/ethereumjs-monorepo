@@ -59,7 +59,7 @@ export function createClient(clientOpts: any = {}) {
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
   })
-  const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
+  const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
   const chain = clientOpts.chain ?? new Chain({ config, blockchain })
   chain.opened = true
@@ -194,11 +194,11 @@ export async function baseRequest(
  */
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = await parseCustomParams(genesisFile, chainName)
-  const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+  const genesisState = await parseGenesisState(genesisFile)
 
   const common = new Common({
     chain: chainName,
-    customChains: [[genesisParams, genesisState]],
+    customChains: [genesisParams],
   })
   common.setHardforkByBlockNumber(0, genesisParams.genesis.difficulty)
 
@@ -206,6 +206,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     common,
     validateBlocks: false,
     validateConsensus: false,
+    genesisState,
   })
   const client = createClient({
     ...clientOpts,
@@ -266,18 +267,13 @@ export async function runBlockWithTxs(
  * Formats a geth genesis file and sets all hardforks to block number zero
  */
 export function gethGenesisStartLondon(gethGenesis: any) {
-  const londonConfig = Object.entries(gethGenesis.config)
-    .map((p) => {
-      if (p[0].endsWith('Block')) {
-        p[1] = 0
-      }
-      return p
-    })
-    .reduce((accum: any, [k, v]: any) => {
-      accum[k] = v
-      return accum
-    }, {}) // when compiler is >=es2019 `reduce` can be replaced with `Object.fromEntries`
-  return { ...gethGenesis, config: { ...gethGenesis.config, ...londonConfig } }
+  const londonConfig = Object.entries(gethGenesis.config).map((p) => {
+    if (p[0].endsWith('Block')) {
+      p[1] = 0
+    }
+    return p
+  })
+  return { ...gethGenesis, config: { ...gethGenesis.config, ...Object.fromEntries(londonConfig) } }
 }
 
 /**

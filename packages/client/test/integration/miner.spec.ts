@@ -32,10 +32,6 @@ tape('[Integration:Miner]', async (t) => {
     },
     { baseChain: ChainCommon.Goerli }
   )
-  // set genesis stateRoot for this custom common
-  // that's derived after generateCanonicalGenesis()
-  ;(common as any)._chainParams['genesis'].stateRoot =
-    '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
   const accounts: [Address, Buffer][] = [
     [
       new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),

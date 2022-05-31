@@ -32,11 +32,11 @@ tape('[Chain]', (t) => {
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     t.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     t.equal(
-      chain.genesis.hash.toString('hex'),
+      chain.genesis.hash().toString('hex'),
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis'
     )
-    t.ok(chain.genesis.hash.equals(chain.blocks.latest!.hash()), 'get chain.block.latest')
+    t.ok(chain.genesis.hash().equals(chain.blocks.latest!.hash()), 'get chain.block.latest')
     await chain.close()
     t.end()
   })
@@ -50,7 +50,7 @@ tape('[Chain]', (t) => {
     const headerData: HeaderData = {
       number: BigInt(1),
       difficulty: BigInt(0xabcdffff),
-      parentHash: chain.genesis.hash,
+      parentHash: chain.genesis.hash(),
     }
     const block = Block.fromBlockData({ header: headerData } as BlockData, {
       common: config.chainCommon,
@@ -125,7 +125,7 @@ tape('[Chain]', (t) => {
     const headerData: HeaderData = {
       number: BigInt(1),
       difficulty: BigInt(0xabcdffff),
-      parentHash: chain.genesis.hash,
+      parentHash: chain.genesis.hash(),
     }
     const block = Block.fromBlockData({ header: headerData } as BlockData, {
       common: config.chainCommon,

@@ -6,15 +6,21 @@ import readline from 'readline'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Blockchain from '@ethereumjs/blockchain'
+import Common, { Chain, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
+import {
+  parseMultiaddrs,
+  parseGenesisState,
+  parseCustomParams,
+  setCommonForkHashes,
+} from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
-import type { ChainConfig, GenesisState } from '@ethereumjs/common/dist/types'
 import type { FullEthereumService } from '../lib/service'
+import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -349,15 +355,30 @@ async function startBlock(client: EthereumClient) {
 /**
  * Starts and returns the {@link EthereumClient}
  */
-async function startClient(config: Config) {
+async function startClient(config: Config, customGenesisState?: GenesisState) {
   config.logger.info(`Data directory: ${config.datadir}`)
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
   }
 
   const dbs = initDBs(config)
+
+  let blockchain
+  if (customGenesisState) {
+    const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
+    blockchain = await Blockchain.create({
+      genesisState: customGenesisState,
+      common: config.chainCommon,
+      hardforkByHeadBlockNumber: true,
+      validateBlocks: true,
+      validateConsensus,
+    })
+    setCommonForkHashes(config.chainCommon, blockchain.genesisBlock().hash())
+  }
+
   const client = new EthereumClient({
     config,
+    blockchain,
     ...dbs,
   })
 
@@ -378,7 +399,7 @@ async function startClient(config: Config) {
 }
 
 /**
- * Returns a configured common for devnet with a prefunded address
+ * Returns a configured blockchain and common for devnet with a prefunded address
  */
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
@@ -425,13 +446,13 @@ async function setupDevnet(prefundAddress: Address) {
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
   const chainParams = await parseCustomParams(chainData, 'devnet')
-  const genesisState = await parseGenesisState(chainData)
-  const customChainParams: [ChainConfig, GenesisState][] = [[chainParams, genesisState]]
-  return new Common({
+  const customGenesisState = await parseGenesisState(chainData)
+  const common = new Common({
     chain: 'devnet',
-    customChains: customChainParams,
+    customChains: [chainParams],
     hardfork: Hardfork.London,
   })
+  return { common, customGenesisState }
 }
 
 /**
@@ -533,6 +554,7 @@ async function run() {
     accounts.push(...(await inputAccounts()))
   }
 
+  let customGenesisState: GenesisState | undefined
   let common = new Common({ chain, hardfork: Hardfork.Chainstart })
 
   if (args.dev) {
@@ -544,7 +566,7 @@ async function run() {
       accounts.push(generateAccount())
     }
     const prefundAddress = accounts[0][0]
-    common = await setupDevnet(prefundAddress)
+    ;({ common, customGenesisState } = await setupDevnet(prefundAddress))
   }
 
   // Configure common based on args given
@@ -563,10 +585,10 @@ async function run() {
     }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
-      const genesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
+      customGenesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
-        customChains: [[customChainParams, genesisState]],
+        customChains: [customChainParams],
       })
     } catch (err: any) {
       console.error(`invalid chain parameters: ${err.message}`)
@@ -577,11 +599,11 @@ async function run() {
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     const genesisParams = await parseCustomParams(genesisFile, chainName)
-    const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,
-      customChains: [[genesisParams, genesisState]],
+      customChains: [genesisParams],
     })
+    customGenesisState = await parseGenesisState(genesisFile)
   }
 
   if (args.mine && accounts.length === 0) {
@@ -628,7 +650,7 @@ async function run() {
   })
   config.events.setMaxListeners(50)
 
-  const client = await startClient(config)
+  const client = await startClient(config, customGenesisState)
   const servers = args.rpc || args.rpcEngine ? startRPCServers(client, args) : []
 
   process.on('SIGINT', async () => {

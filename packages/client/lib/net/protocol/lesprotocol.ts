@@ -167,7 +167,10 @@ export class LesProtocol extends Protocol {
       }
     }
 
-    const forkHash = this.config.chainCommon.forkHash(this.config.chainCommon.hardfork())
+    const forkHash = this.config.chainCommon.forkHash(
+      this.config.chainCommon.hardfork(),
+      this.chain.genesis.hash()
+    )
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
     const forkID = [
       Buffer.from(forkHash.slice(2), 'hex'),
@@ -179,7 +182,7 @@ export class LesProtocol extends Protocol {
       headTd: bigIntToBuffer(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
       headNum: bigIntToBuffer(this.chain.headers.height),
-      genesisHash: this.chain.genesis.hash,
+      genesisHash: this.chain.genesis.hash(),
       forkID,
       recentTxLookup: intToBuffer(1),
       ...serveOptions,

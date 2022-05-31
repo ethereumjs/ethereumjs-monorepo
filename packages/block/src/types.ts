@@ -40,18 +40,6 @@ export interface BlockOptions {
    */
   hardforkByTD?: BigIntLike
   /**
-   * Turns the block header into the canonical genesis block header
-   *
-   * If set to `true` all other header data is ignored.
-   *
-   * If a {@link Common} instance is passed the instance need to be set to `chainstart` as a HF,
-   * otherwise usage of this option will throw
-   *
-   * Default: `false`
-   */
-  initWithGenesisHeader?: boolean
-
-  /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
    * difficulty takes precedence over a provided static `difficulty` value.

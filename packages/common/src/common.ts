@@ -3,11 +3,11 @@ import { buf as crc32Buffer } from 'crc-32'
 import { BigIntLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
+import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
 import {
   BootstrapNodeConfig,
   ChainConfig,
   GenesisBlockConfig,
-  GenesisState,
   HardforkConfig,
   ChainName,
   ChainsConfig,
@@ -23,7 +23,6 @@ import rinkeby from './chains/rinkeby.json'
 import kovan from './chains/kovan.json'
 import goerli from './chains/goerli.json'
 import sepolia from './chains/sepolia.json'
-import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -39,7 +38,7 @@ export class Common extends EventEmitter {
   private _chainParams: ChainConfig
   private _hardfork: string | Hardfork
   private _eips: number[] = []
-  private _customChains: ChainConfig[] | [ChainConfig, GenesisState][]
+  private _customChains: ChainConfig[]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -156,7 +155,7 @@ export class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains: ChainsConfig = this._getInitializedChains()
+    const initializedChains = this._getInitializedChains()
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
@@ -164,7 +163,7 @@ export class Common extends EventEmitter {
     chain: string | number | Chain | bigint,
     customChains?: ChainConfig[]
   ): ChainConfig {
-    const initializedChains: ChainsConfig = this._getInitializedChains(customChains)
+    const initializedChains = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
@@ -183,20 +182,11 @@ export class Common extends EventEmitter {
     throw new Error(`Chain with name ${chain} not supported`)
   }
 
-  /**
-   *
-   * @constructor
-   */
   constructor(opts: CommonOpts) {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
-    for (const hf of this._chainParams.hardforks) {
-      if (!hf.forkHash) {
-        hf.forkHash = this._calcForkHash(hf.name)
-      }
-    }
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork) {
       this.setHardfork(opts.hardfork)
@@ -208,24 +198,13 @@ export class Common extends EventEmitter {
 
   /**
    * Sets the chain
-   * @param chain String ('mainnet') or Number (1) chain
-   *     representation. Or, a Dictionary of chain parameters for a private network.
+   * @param chain String ('mainnet') or Number (1) chain representation.
+   *              Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
   setChain(chain: string | number | Chain | bigint | object): ChainConfig {
     if (typeof chain === 'number' || typeof chain === 'bigint' || typeof chain === 'string') {
-      // Filter out genesis states if passed in to customChains
-      let plainCustomChains: ChainConfig[]
-      if (
-        this._customChains &&
-        this._customChains.length > 0 &&
-        Array.isArray(this._customChains[0])
-      ) {
-        plainCustomChains = (this._customChains as [ChainConfig, GenesisState][]).map((e) => e[0])
-      } else {
-        plainCustomChains = this._customChains as ChainConfig[]
-      }
-      this._chainParams = Common._getChainParams(chain, plainCustomChains)
+      this._chainParams = Common._getChainParams(chain, this._customChains)
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
@@ -234,7 +213,7 @@ export class Common extends EventEmitter {
       }
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
       for (const param of required) {
-        if ((<any>chain)[param] === undefined) {
+        if (!(param in chain)) {
           throw new Error(`Missing required chain parameter: ${param}`)
         }
       }
@@ -635,11 +614,10 @@ export class Common extends EventEmitter {
   /**
    * Internal helper function to calculate a fork hash
    * @param hardfork Hardfork name
+   * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork) {
-    const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
-
+  _calcForkHash(hardfork: string | Hardfork, genesisHash: Buffer) {
     let hfBuffer = Buffer.alloc(0)
     let prevBlock = 0
     for (const hf of this.hardforks()) {
@@ -657,7 +635,7 @@ export class Common extends EventEmitter {
         prevBlock = block
       }
     }
-    const inputBuffer = Buffer.concat([genesis, hfBuffer])
+    const inputBuffer = Buffer.concat([genesisHash, hfBuffer])
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
@@ -668,18 +646,20 @@ export class Common extends EventEmitter {
   /**
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
+   * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
+    if (data === null || (data?.block === null && data?.td === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
-    if (data?.['forkHash'] !== null && data?.['forkHash'] !== undefined) {
-      return data['forkHash']
+    if (data?.forkHash !== null && data?.forkHash !== undefined) {
+      return data.forkHash
     }
-    return this._calcForkHash(hardfork)
+    if (!genesisHash) throw new Error('genesisHash required for forkHash calculation')
+    return this._calcForkHash(hardfork, genesisHash)
   }
 
   /**
@@ -699,46 +679,7 @@ export class Common extends EventEmitter {
    * @returns Genesis dictionary
    */
   genesis(): GenesisBlockConfig {
-    return this._chainParams['genesis']
-  }
-
-  /**
-   * Returns the Genesis state of the current chain,
-   * all values are provided as hex-prefixed strings.
-   */
-  genesisState(): GenesisState {
-    // Use require statements here in favor of import statements
-    // to load json files on demand
-    // (high memory usage by large mainnet.json genesis state file)
-    switch (this.chainName()) {
-      case 'mainnet':
-        return require('./genesisStates/mainnet.json')
-      case 'ropsten':
-        return require('./genesisStates/ropsten.json')
-      case 'rinkeby':
-        return require('./genesisStates/rinkeby.json')
-      case 'kovan':
-        return require('./genesisStates/kovan.json')
-      case 'goerli':
-        return require('./genesisStates/goerli.json')
-      case 'sepolia':
-        return require('./genesisStates/sepolia.json')
-    }
-
-    // Custom chains with genesis state provided
-    if (
-      this._customChains &&
-      this._customChains.length > 0 &&
-      Array.isArray(this._customChains[0])
-    ) {
-      for (const chainArrayWithGenesis of this._customChains as [ChainConfig, GenesisState][]) {
-        if (chainArrayWithGenesis[0].name === this.chainName()) {
-          return chainArrayWithGenesis[1]
-        }
-      }
-    }
-
-    return {}
+    return this._chainParams.genesis
   }
 
   /**
@@ -746,7 +687,7 @@ export class Common extends EventEmitter {
    * @returns {Array} Array with arrays of hardforks
    */
   hardforks(): HardforkConfig[] {
-    return this._chainParams['hardforks']
+    return this._chainParams.hardforks
   }
 
   /**
@@ -754,7 +695,7 @@ export class Common extends EventEmitter {
    * @returns {Dictionary} Dict with bootstrap nodes
    */
   bootstrapNodes(): BootstrapNodeConfig[] {
-    return this._chainParams['bootstrapNodes']
+    return this._chainParams.bootstrapNodes
   }
 
   /**
@@ -762,7 +703,7 @@ export class Common extends EventEmitter {
    * @returns {String[]} Array of DNS ENR urls
    */
   dnsNetworks(): string[] {
-    return this._chainParams['dnsNetworks']!
+    return this._chainParams.dnsNetworks!
   }
 
   /**
@@ -778,7 +719,7 @@ export class Common extends EventEmitter {
    * @returns chain Id
    */
   chainId(): bigint {
-    return BigInt(this._chainParams['chainId'])
+    return BigInt(this._chainParams.chainId)
   }
 
   /**
@@ -786,7 +727,7 @@ export class Common extends EventEmitter {
    * @returns chain name (lower case)
    */
   chainName(): string {
-    return this._chainParams['name']
+    return this._chainParams.name
   }
 
   /**
@@ -794,7 +735,7 @@ export class Common extends EventEmitter {
    * @returns network Id
    */
   networkId(): bigint {
-    return BigInt(this._chainParams['networkId'])
+    return BigInt(this._chainParams.networkId)
   }
 
   /**
@@ -894,13 +835,9 @@ export class Common extends EventEmitter {
   }
 
   static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
-    const names: ChainName = {
-      '1': 'mainnet',
-      '3': 'ropsten',
-      '4': 'rinkeby',
-      '42': 'kovan',
-      '5': 'goerli',
-      '11155111': 'sepolia',
+    const names: ChainName = {}
+    for (const [name, id] of Object.entries(Chain)) {
+      names[id] = name.toLowerCase()
     }
     const chains: ChainsConfig = {
       mainnet,
@@ -912,13 +849,12 @@ export class Common extends EventEmitter {
     }
     if (customChains) {
       for (const chain of customChains) {
-        const name = chain.name
+        const { name } = chain
         names[chain.chainId.toString()] = name
         chains[name] = chain
       }
     }
-
-    chains['names'] = names
+    chains.names = names
     return chains
   }
 }

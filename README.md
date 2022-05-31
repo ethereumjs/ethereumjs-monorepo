@@ -48,6 +48,7 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    trie --> client
    trie --> vm
    trie --> block
+   trie --> blockchain
    common --> block
    common --> blockchain
    common --> tx

@@ -37,20 +37,14 @@ tape('[Integration:Merge]', async (t) => {
     },
     { baseChain: ChainCommon.Goerli }
   )
-  // set genesis stateRoot for this custom common
-  // that's derived after generateCanonicalGenesis()
-  ;(commonPoA as any)._chainParams['genesis'].stateRoot =
-    '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
   const commonPoW = Common.custom(
     {
       genesis: {
-        hash: '0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d',
         timestamp: null,
         gasLimit: 16777216,
         difficulty: 1,
         nonce: '0x0000000000000042',
         extraData: '0x3535353535353535353535353535353535353535353535353535353535353535',
-        stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       },
       hardforks: [
         { name: 'london', block: 0 },

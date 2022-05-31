@@ -240,30 +240,14 @@ export class VmState implements VmStateAccess {
   }
 
   /**
-   * Generates a canonical genesis state on the instance based on the
-   * configured chain parameters. Will error if there are uncommitted
-   * checkpoints on the instance.
-   */
-  async generateCanonicalGenesis(): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    const genesis = await this._stateManager.hasGenesisState()
-    if (!genesis) {
-      await this.generateGenesis(this._common.genesisState())
-    }
-  }
-
-  /**
-   * Initializes the provided genesis state into the state trie
+   * Initializes the provided genesis state into the state trie.
+   * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
    */
-  async generateGenesis(initState: any): Promise<void> {
+  async generateCanonicalGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
-
     if (this.DEBUG) {
       this._debug(`Save genesis state into the state trie`)
     }
@@ -284,7 +268,7 @@ export class VmState implements VmStateAccess {
           await this.putContractCode(addr, toBuffer(code))
         }
         if (storage) {
-          for (const [key, value] of Object.values(storage) as [string, string][]) {
+          for (const [key, value] of storage) {
             await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
           }
         }

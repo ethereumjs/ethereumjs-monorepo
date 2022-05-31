@@ -7,7 +7,7 @@
     "typeRoots": ["node_modules/@types"],
     "composite": true,
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
     { "path": "../common/tsconfig.prod.json" },
     { "path": "../ethash/tsconfig.prod.json" },

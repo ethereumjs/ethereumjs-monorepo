@@ -6,7 +6,6 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import EVM from './evm/evm'
-import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { VmState } from './vmState'
@@ -82,7 +81,7 @@ export interface VMOpts {
    */
   activatePrecompiles?: boolean
   /**
-   * If true, the state of the VM will add the genesis state given by {@link Common} to a new
+   * If true, the state of the VM will add the genesis state given by {@link Blockchain.genesisState} to a newly
    * created state manager instance. Note that if stateManager option is also passed as argument
    * this flag won't have any effect.
    *
@@ -268,7 +267,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.vmState.generateCanonicalGenesis()
+        await this.vmState.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
@@ -288,17 +287,6 @@ export default class VM extends AsyncEventEmitter {
       await this.vmState.commit()
     }
     this._isInitialized = true
-  }
-
-  /**
-   * Processes blocks and adds them to the blockchain.
-   *
-   * This method modifies the state.
-   *
-   * @param blockchain -  A {@link Blockchain} object to process
-   */
-  async runBlockchain(blockchain?: Blockchain, maxBlocks?: number): Promise<void | number> {
-    return runBlockchain.bind(this)(blockchain, maxBlocks)
   }
 
   /**

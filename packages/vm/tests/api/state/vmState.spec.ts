@@ -1,5 +1,6 @@
 import tape from 'tape'
 import { Address } from 'ethereumjs-util'
+import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -21,7 +22,8 @@ tape('vmState', (t) => {
       const genesisData = getSingleFile('BasicTests/genesishashestest.json')
 
       const vmState = new VmState({ stateManager: new StateManager() })
-      await vmState.generateCanonicalGenesis()
+      const blockchain = await Blockchain.create()
+      await vmState.generateCanonicalGenesis(blockchain.genesisState())
       const stateRoot = await vmState.getStateRoot()
       st.equal(
         stateRoot.toString('hex'),
@@ -38,11 +40,15 @@ tape('vmState', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
+    const expectedStateRoot = Buffer.from(
+      'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
+      'hex'
+    )
     const stateManager = new StateManager({ common })
 
     const vmState = new VmState({ stateManager, common })
-    await vmState.generateCanonicalGenesis()
+    const blockchain = await Blockchain.create({ common })
+    await vmState.generateCanonicalGenesis(blockchain.genesisState())
     const stateRoot = await vmState.getStateRoot()
 
     st.true(
@@ -53,20 +59,41 @@ tape('vmState', (t) => {
   })
 
   t.test('should generate the genesis state root correctly for all other chains', async (st) => {
-    const chains = [Chain.Ropsten, Chain.Rinkeby, Chain.Kovan, Chain.Goerli]
+    const chains: [Chain, Buffer][] = [
+      [
+        Chain.Ropsten,
+        Buffer.from('217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b', 'hex'),
+      ],
+      [
+        Chain.Rinkeby,
+        Buffer.from('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d', 'hex'),
+      ],
+      [
+        Chain.Kovan,
+        Buffer.from('2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2', 'hex'),
+      ],
+      [
+        Chain.Goerli,
+        Buffer.from('5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008', 'hex'),
+      ],
+      [
+        Chain.Sepolia,
+        Buffer.from('5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494', 'hex'),
+      ],
+    ]
 
-    for (const chain of chains) {
-      const common = new Common({ chain: chain, hardfork: Hardfork.Petersburg })
-      const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
+    for (const [chain, expectedStateRoot] of chains) {
+      const common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
       const stateManager = new DefaultStateManager({ common })
       const vmState = new VmState({ stateManager, common })
 
-      await vmState.generateCanonicalGenesis()
+      const blockchain = await Blockchain.create({ common })
+      await vmState.generateCanonicalGenesis(blockchain.genesisState())
       const stateRoot = await vmState.getStateRoot()
 
       st.true(
         stateRoot.equals(expectedStateRoot),
-        `generateCanonicalGenesis should produce correct state root for ${chain}`
+        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`
       )
     }
     st.end()

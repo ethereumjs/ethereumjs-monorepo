@@ -17,7 +17,7 @@ tape('Clique: Initialization', (t) => {
     const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getIteratorHead()
-    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.ok(head.hash().equals(blockchain.genesisBlock().hash()), 'correct genesis hash')
 
     st.deepEquals(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
@@ -118,7 +118,10 @@ tape('Clique: Initialization', (t) => {
       ...signers.map((s) => s.address.toBuffer()),
       Buffer.alloc(65),
     ])
-    const genesisBlock = Block.genesis({ header: { gasLimit: GAS_LIMIT, extraData } }, { common })
+    const genesisBlock = Block.fromBlockData(
+      { header: { gasLimit: GAS_LIMIT, extraData } },
+      { common }
+    )
     blocks.push(genesisBlock)
 
     const blockchain = await Blockchain.create({
