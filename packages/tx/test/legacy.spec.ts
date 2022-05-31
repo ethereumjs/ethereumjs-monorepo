@@ -389,8 +389,6 @@ tape('[Transaction]', function (t) {
         'hex'
       )
 
-      const fixtureTxSignedWithEIP155 = Transaction.fromTxData(txData).sign(privateKey)
-
       const common = new Common({
         chain: Chain.Mainnet,
         hardfork: Hardfork.TangerineWhistle,
@@ -400,9 +398,7 @@ tape('[Transaction]', function (t) {
         common,
       }).sign(privateKey)
 
-      let signedWithEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithEIP155.toJSON()).sign(
-        privateKey
-      )
+      let signedWithEIP155 = Transaction.fromTxData(<any>txData).sign(privateKey)
 
       st.true(signedWithEIP155.verifySignature())
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
@@ -416,7 +412,7 @@ tape('[Transaction]', function (t) {
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      let signedWithoutEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithEIP155.toJSON(), {
+      let signedWithoutEIP155 = Transaction.fromTxData(<any>txData, {
         common,
       }).sign(privateKey)
 
@@ -427,7 +423,7 @@ tape('[Transaction]', function (t) {
         "v shouldn't be EIP155 encoded"
       )
 
-      signedWithoutEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithoutEIP155.toJSON(), {
+      signedWithoutEIP155 = Transaction.fromTxData(<any>txData, {
         common,
       }).sign(privateKey)
 
@@ -438,6 +434,27 @@ tape('[Transaction]', function (t) {
         "v shouldn' be EIP155 encoded"
       )
 
+      st.end()
+    }
+  )
+
+  t.test(
+    'constructor: throw on legacy transactions which have v != 27 and v != 28 and v < 37',
+    function (st) {
+      function getTxData(v: number) {
+        return {
+          v,
+        }
+      }
+      for (let n = 0; n < 27; n++) {
+        st.throws(() => Transaction.fromTxData(getTxData(n)))
+      }
+      st.throws(() => Transaction.fromTxData(getTxData(29)))
+      st.throws(() => Transaction.fromTxData(getTxData(36)))
+
+      st.doesNotThrow(() => Transaction.fromTxData(getTxData(27)))
+      st.doesNotThrow(() => Transaction.fromTxData(getTxData(28)))
+      st.doesNotThrow(() => Transaction.fromTxData(getTxData(37)))
       st.end()
     }
   )
