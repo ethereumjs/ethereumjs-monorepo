@@ -12,7 +12,7 @@ tape('[Header]: Clique PoA Functionality', function (t) {
       header.cliqueIsEpochTransition()
     }, 'cliqueIsEpochTransition() -> should throw on PoW networks')
 
-    header = BlockHeader.genesis({}, { common })
+    header = BlockHeader.fromHeaderData({}, { common })
     st.ok(
       header.cliqueIsEpochTransition(),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block'

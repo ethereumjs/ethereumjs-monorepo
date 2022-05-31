@@ -19,11 +19,13 @@ async function main() {
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
+  const genesisBlock = Block.fromBlockData({ header: testData.genesisBlockHeader }, { common })
+
   const blockchain = await Blockchain.create({
     common,
     validateConsensus: validatePow,
     validateBlocks,
-    genesisBlock: getGenesisBlock(common),
+    genesisBlock,
   })
 
   // When verifying PoW, setting this cache improves the
@@ -31,7 +33,7 @@ async function main() {
   // Note that this optimization is a bit hacky and might
   // not be working in the future though. :-)
   if (validatePow) {
-    (blockchain.consensus as EthashConsensus)._ethash.cacheDB = level('./.cachedb')
+    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = level('./.cachedb')
   }
 
   const vm = await VM.create({ blockchain, common })
@@ -40,48 +42,45 @@ async function main() {
 
   await putBlocks(blockchain, common, testData)
 
-  await vm.runBlockchain(blockchain)
+  await blockchain.iterator('vm', async (block: Block, reorg: boolean) => {
+    const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+    const parentState = parentBlock.header.stateRoot
+    // run block
+    await vm.runBlock({ block, root: parentState })
+  })
 
   const blockchainHead = await vm.blockchain.getIteratorHead()
 
-  console.log('--- Finished processing the BlockChain ---')
+  console.log('--- Finished processing the Blockchain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
   console.log('Expected:', testData.lastblockhash)
 }
 
-async function setupPreConditions(vm: VM, testData: any) {
+async function setupPreConditions(vm: VM, data: typeof testData) {
   await vm.stateManager.checkpoint()
 
-  for (const addr of Object.keys(testData.pre)) {
-    const { nonce, balance, storage, code } = testData.pre[addr]
+  for (const [addr, acct] of Object.entries(data.pre)) {
+    const { nonce, balance, storage, code } = acct
 
     const address = new Address(Buffer.from(addr.slice(2), 'hex'))
     const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
-    for (const hexStorageKey of Object.keys(storage)) {
-      const val = Buffer.from(storage[hexStorageKey], 'hex')
-      const storageKey = setLengthLeft(Buffer.from(hexStorageKey, 'hex'), 32)
-
-      await vm.stateManager.putContractStorage(address, storageKey, val)
+    for (const [key, val] of Object.entries(storage)) {
+      const storageKey = setLengthLeft(Buffer.from(key, 'hex'), 32)
+      const storageVal = Buffer.from(val as string, 'hex')
+      await vm.stateManager.putContractStorage(address, storageKey, storageVal)
     }
 
     const codeBuf = Buffer.from(code.slice(2), 'hex')
-
     await vm.stateManager.putContractCode(address, codeBuf)
   }
 
   await vm.stateManager.commit()
 }
 
-function getGenesisBlock(common: Common) {
-  const header = testData.genesisBlockHeader
-  const genesis = Block.genesis({ header }, { common })
-  return genesis
-}
-
-async function putBlocks(blockchain: any, common: Common, testData: any) {
-  for (const blockData of testData.blocks) {
+async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
+  for (const blockData of data.blocks) {
     const blockRlp = toBuffer(blockData.rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)

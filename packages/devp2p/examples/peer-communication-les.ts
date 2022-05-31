@@ -89,7 +89,10 @@ rlpx.on('peer:added', (peer) => {
   })
 
   les.once('status', (status: LES.Status) => {
-    const msg = [0, [devp2p.buffer2int(status['headNum']), 1, 0, 1]]
+    const msg = [
+      Buffer.from([]),
+      [devp2p.buffer2int(status['headNum']), Buffer.from([1]), Buffer.from([]), Buffer.from([1])],
+    ]
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
@@ -105,7 +108,10 @@ rlpx.on('peer:added', (peer) => {
         const header = BlockHeader.fromValuesArray(payload[2][0], { common })
 
         setTimeout(() => {
-          les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [1, [header.hash()]])
+          les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [
+            Buffer.from([1]),
+            [header.hash()],
+          ])
           requests.bodies.push(header)
         }, ms('0.1s'))
         break

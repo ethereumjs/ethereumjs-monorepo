@@ -1,4 +1,3 @@
-import { PrefixedHexString } from 'ethereumjs-util'
 import { ConsensusAlgorithm, ConsensusType, Hardfork, Chain } from './enums'
 
 export interface ChainName {
@@ -20,16 +19,14 @@ export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
-  // TODO: make mandatory in next breaking release
-  defaultHardfork?: string
+  defaultHardfork: string
   comment: string
   url: string
   genesis: GenesisBlockConfig
   hardforks: HardforkConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
-  // TODO: make mandatory in next breaking release
-  consensus?: {
+  consensus: {
     type: ConsensusType | string
     algorithm: ConsensusAlgorithm | string
     clique?: CliqueConfig
@@ -38,26 +35,12 @@ export interface ChainConfig {
   }
 }
 
-type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
-
-export type AccountState = [
-  balance: PrefixedHexString,
-  code: PrefixedHexString,
-  storage: Array<StoragePair>
-]
-
-export interface GenesisState {
-  [key: PrefixedHexString]: PrefixedHexString | AccountState
-}
-
 export interface GenesisBlockConfig {
-  hash: string
   timestamp: string | null
   gasLimit: number
   difficulty: number
   nonce: string
   extraData: string
-  stateRoot: string
   baseFeePerGas?: string
 }
 
@@ -108,44 +91,16 @@ export interface CommonOpts extends BaseOpts {
   chain: string | number | Chain | bigint | object
   /**
    * Initialize (in addition to the supported chains) with the selected
-   * custom chains
+   * custom chains. Custom genesis state should be passed to the Blockchain class if used.
    *
-   * Usage (directly with the respective chain intialization via the {@link CommonOpts.chain} option):
-   *
-   * Pattern 1 (without genesis state):
+   * Usage (directly with the respective chain initialization via the {@link CommonOpts.chain} option):
    *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
    * ```
-   *
-   * Pattern 2 (with genesis state see {@link GenesisState} for format):
-   *
-   * ```javascript
-   * const simpleState = {
-   *   '0x0...01': '0x100', // For EoA
-   * }
-   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-   * import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-   * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, simpleState ] ]})
-   * ```
-   *
-   * Pattern 3 (with complex genesis state, containing contract accounts and storage).
-   * Note that in {@link AccountState} there are two
-   * accepted types. This allows to easily insert accounts in the genesis state:
-   *
-   * A complex genesis state with Contract and EoA states would have the following format:
-   *
-   * ```javascript
-   * const complexState = {
-   *   '0x0...01': '0x100', // For EoA
-   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
-   * }
-   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-   * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
-   * ```
    */
-  customChains?: ChainConfig[] | [ChainConfig, GenesisState][]
+  customChains?: ChainConfig[]
 }
 
 /**

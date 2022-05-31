@@ -4,8 +4,6 @@ import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
 
-import { AccountState, ChainConfig, GenesisState } from '../src/types'
-
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
     'chain -> object: should provide correct access to private network chain parameters',
@@ -14,11 +12,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
       st.equal(c.chainId(), BigInt(12345), 'should return correct chain Id')
       st.equal(c.networkId(), BigInt(12345), 'should return correct network Id')
-      st.equal(
-        c.genesis().hash,
-        '0xaa00000000000000000000000000000000000000000000000000000000000000',
-        'should return correct genesis hash'
-      )
       st.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
       st.equal(c.bootstrapNodes()[1].ip, '10.0.0.2', 'should return a bootstrap node array')
 
@@ -149,11 +142,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock()!, BigInt(4), 'customChains, chain initialized with custom chain')
-    st.deepEqual(
-      c.genesisState(),
-      {},
-      'customChains, should fall back to empty genesis state if none provided'
-    )
 
     const customChains = [testnet, testnet2, testnet3]
     c = new Common({
@@ -171,60 +159,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       ConsensusType.ProofOfWork,
       'customChains, should allow to switch custom chain'
     )
-
-    const genesisState = {
-      '0x0000000000000000000000000000000000000000': '0x1',
-    }
-    const customChainsWithGenesis: [ChainConfig, GenesisState][] = [[testnet, genesisState]]
-    c = new Common({
-      chain: 'testnet',
-      hardfork: Hardfork.Istanbul,
-      customChains: customChainsWithGenesis,
-    })
-    st.deepEqual(
-      c.genesisState(),
-      genesisState,
-      'customChains, should allow to initialize with genesis state'
-    )
-
-    st.equal(c.hardforks()[3].forkHash, '0x215201ca', 'forkhash should be calculated correctly')
-
-    const contractAccount = '0x96fb4792cf2B3A7EF9842D1Af74f8c99C6F4fF63'
-    const eoaAccount = '0x0000000000000000000000000000000000000002'
-    const storage: Array<[string, string]> = [
-      ['0x000000000000000000000000000001', '0x3'],
-      ['0x000000000000000000000000000002', '0x4'],
-    ]
-
-    const contractState: AccountState = ['0x10000', '0xbca', storage]
-    const complexGenesisState = {
-      [contractAccount]: contractState,
-      [eoaAccount]: '0x100',
-    }
-
-    c = new Common({
-      chain: 'testnet',
-      customChains: [[testnet, complexGenesisState]],
-    })
-
-    // Retrieve balance from EoA
-    st.deepEqual(c.genesisState()[eoaAccount], complexGenesisState[eoaAccount])
-
-    // Retrieve code of the contract account
-    st.deepEqual(c.genesisState()[contractAccount][1], complexGenesisState[contractAccount][1])
-
-    // Retrieve value of first stored space in storage of account (state of contract)
-    st.deepEqual(
-      c.genesisState()[contractAccount][2][0][1],
-      complexGenesisState[contractAccount][2][0][1]
-    )
-
-    // Retrieve value of second stored space in storage of account (state of contract)
-    st.deepEqual(
-      c.genesisState()[contractAccount][2][1][1],
-      complexGenesisState[contractAccount][2][1][1]
-    )
-
     st.end()
   })
 })

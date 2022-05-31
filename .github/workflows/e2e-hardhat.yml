@@ -4,6 +4,7 @@ on:
     branches: [master]
     tags: ['*']
   pull_request:
+    branches: [master]
     types: [opened, reopened, synchronize]
 
 env:

@@ -14,7 +14,7 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-  const genesis = Block.genesis(undefined, { common })
+  const genesis = Block.fromBlockData({}, { common })
   const genesisResult = await e.verifyPOW(genesis)
   t.ok(genesisResult, 'genesis block should be valid')
 

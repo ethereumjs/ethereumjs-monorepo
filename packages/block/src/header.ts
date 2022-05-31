@@ -19,7 +19,6 @@ import {
   intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
-  toBuffer,
   toType,
   TypeOutput,
   zeros,
@@ -163,15 +162,6 @@ export class BlockHeader {
       opts
     )
   }
-
-  /**
-   * Alias for {@link BlockHeader.fromHeaderData} with {@link BlockOptions.initWithGenesisHeader} set to true.
-   */
-  public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
-    opts = { ...opts, initWithGenesisHeader: true }
-    return BlockHeader.fromHeaderData(headerData, opts)
-  }
-
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
@@ -186,9 +176,6 @@ export class BlockHeader {
       this._common = new Common({
         chain: Chain.Mainnet, // default
       })
-      if (options.initWithGenesisHeader) {
-        this._common.setHardforkByBlockNumber(0)
-      }
     }
 
     if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
@@ -221,19 +208,19 @@ export class BlockHeader {
     const coinbase = headerData.coinbase
       ? new Address(toType(headerData.coinbase, TypeOutput.Buffer))
       : defaults.coinbase
-    let stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
+    const stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
     const transactionsTrie =
       toType(headerData.transactionsTrie, TypeOutput.Buffer) ?? defaults.transactionsTrie
     const receiptTrie = toType(headerData.receiptTrie, TypeOutput.Buffer) ?? defaults.receiptTrie
     const logsBloom = toType(headerData.logsBloom, TypeOutput.Buffer) ?? defaults.logsBloom
-    let difficulty = toType(headerData.difficulty, TypeOutput.BigInt) ?? defaults.difficulty
-    let number = toType(headerData.number, TypeOutput.BigInt) ?? defaults.number
-    let gasLimit = toType(headerData.gasLimit, TypeOutput.BigInt) ?? defaults.gasLimit
+    const difficulty = toType(headerData.difficulty, TypeOutput.BigInt) ?? defaults.difficulty
+    const number = toType(headerData.number, TypeOutput.BigInt) ?? defaults.number
+    const gasLimit = toType(headerData.gasLimit, TypeOutput.BigInt) ?? defaults.gasLimit
     const gasUsed = toType(headerData.gasUsed, TypeOutput.BigInt) ?? defaults.gasUsed
-    let timestamp = toType(headerData.timestamp, TypeOutput.BigInt) ?? defaults.timestamp
-    let extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
+    const timestamp = toType(headerData.timestamp, TypeOutput.BigInt) ?? defaults.timestamp
+    const extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
     const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
-    let nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
+    const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
     let baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
@@ -257,34 +244,6 @@ export class BlockHeader {
     } else {
       if (baseFeePerGas) {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
-      }
-    }
-
-    if (options.initWithGenesisHeader) {
-      number = BigInt(0)
-      if (gasLimit === DEFAULT_GAS_LIMIT) {
-        gasLimit = BigInt(this._common.genesis().gasLimit)
-      }
-      if (timestamp === BigInt(0)) {
-        timestamp = BigInt(this._common.genesis().timestamp ?? 0)
-      }
-      if (difficulty === BigInt(0)) {
-        difficulty = BigInt(this._common.genesis().difficulty)
-      }
-      if (extraData.length === 0) {
-        extraData = toBuffer(this._common.genesis().extraData)
-      }
-      if (nonce.equals(zeros(8))) {
-        nonce = toBuffer(this._common.genesis().nonce)
-      }
-      if (stateRoot.equals(zeros(32))) {
-        stateRoot = toBuffer(this._common.genesis().stateRoot)
-      }
-      if (
-        this._common.gteHardfork(Hardfork.London) &&
-        this._common.genesis().baseFeePerGas !== undefined
-      ) {
-        baseFeePerGas = BigInt(this._common.genesis().baseFeePerGas!)
       }
     }
 

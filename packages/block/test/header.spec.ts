@@ -41,7 +41,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromHeaderData()', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.genesis(undefined, { common })
+    let header = BlockHeader.fromHeaderData(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
     st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
 
@@ -142,7 +142,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> Clique Blocks', function (st) {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.genesis(undefined, { common })
+    let header = BlockHeader.fromHeaderData(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
 
     header = BlockHeader.fromHeaderData({}, { common })
@@ -155,7 +155,7 @@ tape('[Block]: Header functions', function (t) {
     // PoW
     let blockchain = new Mockchain()
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    let genesis = Block.genesis({}, { common })
+    let genesis = Block.fromBlockData({}, { common })
     await blockchain.putBlock(genesis)
 
     const number = 1
@@ -201,7 +201,7 @@ tape('[Block]: Header functions', function (t) {
     // PoA
     blockchain = new Mockchain()
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    genesis = Block.genesis({}, { common })
+    genesis = Block.fromBlockData({}, { common })
     await blockchain.putBlock(genesis)
 
     parentHash = genesis.hash()
@@ -393,27 +393,8 @@ tape('[Block]: Header functions', function (t) {
     const header1 = BlockHeader.fromHeaderData({ number: 1 })
     st.equal(header1.isGenesis(), false)
 
-    const header2 = BlockHeader.genesis()
+    const header2 = BlockHeader.fromHeaderData()
     st.equal(header2.isGenesis(), true)
-    st.end()
-  })
-
-  t.test('should test genesis hashes (mainnet default)', function (st) {
-    const testDataGenesis = require('./testdata/genesishashestest.json').test
-    const header = BlockHeader.genesis()
-    st.strictEqual(
-      header.hash().toString('hex'),
-      testDataGenesis.genesis_hash,
-      'genesis hash match'
-    )
-    st.end()
-  })
-
-  t.test('should test genesis parameters (ropsten)', function (st) {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    const genesis = BlockHeader.genesis({}, { common })
-    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
-    st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
     st.end()
   })
 
@@ -433,27 +414,6 @@ tape('[Block]: Header functions', function (t) {
       '8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
       'correct PoA clique hash (goerli block 1)'
     )
-    st.end()
-  })
-
-  t.test('should return the baseFeePerGas from genesis if defined', function (st) {
-    const common = Common.custom(
-      {
-        genesis: {
-          hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-          timestamp: null,
-          gasLimit: 5000,
-          difficulty: 17179869184,
-          nonce: '0x0000000000000042',
-          extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
-          stateRoot: '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
-          baseFeePerGas: '0x1000',
-        },
-      },
-      { baseChain: Chain.Mainnet, hardfork: Hardfork.London }
-    )
-    const header = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
-    st.equal(header.baseFeePerGas!, BigInt(0x1000), 'correct baseFeePerGas')
     st.end()
   })
 })

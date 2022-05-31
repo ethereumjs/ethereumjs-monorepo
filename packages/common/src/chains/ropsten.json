@@ -11,13 +11,11 @@
   "comment": "PoW test network",
   "url": "https://github.com/ethereum/ropsten",
   "genesis": {
-    "hash": "0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d",
     "timestamp": null,
     "gasLimit": 16777216,
     "difficulty": 1048576,
     "nonce": "0x0000000000000042",
-    "extraData": "0x3535353535353535353535353535353535353535353535353535353535353535",
-    "stateRoot": "0x217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b"
+    "extraData": "0x3535353535353535353535353535353535353535353535353535353535353535"
   },
   "hardforks": [
     {
@@ -69,10 +67,10 @@
       "name": "berlin",
       "block": 9812189,
       "forkHash": "0xa157d377"
-    }, 
+    },
     {
       "name": "london",
-      "block": 10499401, 
+      "block": 10499401,
       "forkHash": "0x7119b6b3"
     },
     {

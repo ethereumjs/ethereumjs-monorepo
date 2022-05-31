@@ -342,7 +342,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     ).sign(otherUser.privateKey)
 
     // create block with the signer and txs
-    const block = Block.genesis(
+    const block = Block.fromBlockData(
       { transactions: [tx, tx] },
       { common, cliqueSigner: signer.privateKey }
     )
