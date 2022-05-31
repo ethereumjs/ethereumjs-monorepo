@@ -22,7 +22,7 @@ import EEI from './eei'
 import { ERROR, VmError } from '../exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import Message, { MessageWithTo } from './message'
-import * as eof from './opcodes/eof'
+import EOF from './eof'
 import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
@@ -581,13 +581,13 @@ export default class EVM extends AsyncEventEmitter {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
+      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
         if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = eof.codeAnalysis(result.returnValue)
+        const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
         if (!eof1CodeAnalysisResults?.code) {
           result = {
             ...result,
@@ -600,7 +600,7 @@ export default class EVM extends AsyncEventEmitter {
           // index 7 (if no data section is present) or index 10 (if a data section is present)
           // in the bytecode of the contract
           if (
-            !eof.validOpcodes(
+            !EOF.validOpcodes(
               result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
             )
           ) {

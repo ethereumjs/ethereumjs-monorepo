@@ -1,8 +1,8 @@
-import { handlers } from '.'
+import { handlers } from './opcodes'
 
-export const FORMAT = 0xef
-export const MAGIC = 0x00
-export const VERSION = 0x01
+const FORMAT = 0xef
+const MAGIC = 0x00
+const VERSION = 0x01
 
 /**
  *
@@ -12,7 +12,7 @@ export const VERSION = 0x01
  *
  * Note: See https://eips.ethereum.org/EIPS/eip-3540 for further details
  */
-export const codeAnalysis = (container: Buffer) => {
+const codeAnalysis = (container: Buffer) => {
   const secCode = 0x01
   const secData = 0x02
   const secTerminator = 0x00
@@ -62,7 +62,7 @@ export const codeAnalysis = (container: Buffer) => {
   return sectionSizes
 }
 
-export const validOpcodes = (code: Buffer) => {
+const validOpcodes = (code: Buffer) => {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
@@ -91,3 +91,6 @@ export const validOpcodes = (code: Buffer) => {
   }
   return true
 }
+
+const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }
+export default EOF
