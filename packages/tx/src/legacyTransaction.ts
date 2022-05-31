@@ -393,7 +393,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
       v !== undefined &&
-      !v.eqn(0) && // TODO fixme -> why overwrite/return default common when `v` is set to 0?
       (!common || common.gteHardfork('spuriousDragon')) &&
       !v.eqn(27) &&
       !v.eqn(28)
