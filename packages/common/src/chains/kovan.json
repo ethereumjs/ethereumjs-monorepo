@@ -14,7 +14,6 @@
   "comment": "Parity PoA test network",
   "url": "https://kovan-testnet.github.io/website/",
   "genesis": {
-    "timestamp": null,
     "gasLimit": 6000000,
     "difficulty": 131072,
     "nonce": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",

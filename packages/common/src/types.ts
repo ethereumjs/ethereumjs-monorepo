@@ -36,7 +36,7 @@ export interface ChainConfig {
 }
 
 export interface GenesisBlockConfig {
-  timestamp: string | null
+  timestamp?: string
   gasLimit: number
   difficulty: number
   nonce: string

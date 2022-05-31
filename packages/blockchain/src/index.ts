@@ -1,7 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { toBuffer } from 'ethereumjs-util'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -1183,20 +1182,10 @@ export default class Blockchain implements BlockchainInterface {
     const common = this._common.copy()
     common.setHardforkByBlockNumber(0)
 
-    const { gasLimit, timestamp, difficulty, extraData, nonce, baseFeePerGas } = common.genesis()
-
     const header: BlockData['header'] = {
+      ...common.genesis(),
       number: 0,
-      gasLimit: BigInt(gasLimit),
-      timestamp: BigInt(timestamp ?? 0),
-      difficulty: BigInt(difficulty),
-      extraData: toBuffer(extraData),
-      nonce: toBuffer(nonce),
       stateRoot,
-    }
-
-    if (baseFeePerGas !== undefined && common.gteHardfork(Hardfork.London)) {
-      header.baseFeePerGas = BigInt(baseFeePerGas)
     }
 
     return Block.fromBlockData({ header }, { common })
