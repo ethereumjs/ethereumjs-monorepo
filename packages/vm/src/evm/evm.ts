@@ -143,10 +143,6 @@ export interface EVMResult {
    * Contains the results from running the code, if any, as described in {@link runCode}
    */
   execResult: ExecResult
-  /**
-   * Total amount of gas to be refunded from all nested calls.
-   */
-  gasRefund?: bigint
 }
 
 /**
@@ -178,6 +174,10 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+  /**
+   * The gas refund counter
+   */
+  gasRefund?: bigint
 }
 
 export interface NewContractEvent {
@@ -238,7 +238,6 @@ export default class EVM extends AsyncEventEmitter {
   /**
    * Amount of gas to refund from deleting storage values
    */
-  _refund: bigint
   _transientStorage: TransientStorage
 
   _common: Common
@@ -306,7 +305,6 @@ export default class EVM extends AsyncEventEmitter {
 
     this.eei = opts.eei
 
-    this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
 
     if (opts.common) {
@@ -719,6 +717,7 @@ export default class EVM extends AsyncEventEmitter {
       exceptionError: interpreterRes.exceptionError,
       gas: interpreter._gasLeft,
       gasUsed,
+      gasRefund: interpreterRes.runState!.gasRefund,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
   }
@@ -769,8 +768,6 @@ export default class EVM extends AsyncEventEmitter {
       this.eei.state.addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
-    const oldRefund = this._refund
-
     await this.eei.state.checkpoint()
     this._transientStorage.checkpoint()
     if (this.DEBUG) {
@@ -803,17 +800,16 @@ export default class EVM extends AsyncEventEmitter {
       debug(
         `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${result.gasRefund ?? 0} ]`
+        } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
-    // If that is the case, then set the _refund tracker to the old refund value
+    // If that is the case, then all refunds are forfeited
     if (err) {
-      this._refund = oldRefund
       result.execResult.selfdestruct = {}
+      result.execResult.gasRefund = BigInt(0)
     }
-    result.gasRefund = this._refund
     if (err) {
       if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
