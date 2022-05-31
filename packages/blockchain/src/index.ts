@@ -327,7 +327,7 @@ export default class Blockchain implements BlockchainInterface {
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
-      genesisBlock = this.genesisBlock(stateRoot)
+      genesisBlock = this.createGenesisBlock(stateRoot)
     }
 
     // If the DB has a genesis block, then verify that the genesis block in the
@@ -1167,18 +1167,18 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns the genesis {@link Block} for the blockchain.
-   * @param stateRoot When initializing the block, pass the genesis stateRoot.
-   *                  After the blockchain is initialized, this parameter is not used
-   *                  as the cached genesis block is returned.
+   * The genesis {@link Block} for the blockchain.
    */
-  genesisBlock(stateRoot?: Buffer): Block {
-    if (this._genesisBlock) {
-      return this._genesisBlock
-    }
+  get genesisBlock(): Block {
+    if (!this._genesisBlock) throw new Error('genesis block not set (init may not be finished)')
+    return this._genesisBlock
+  }
 
-    if (!stateRoot) throw new Error('stateRoot required for genesis block creation')
-
+  /**
+   * Creates a genesis {@link Block} for the blockchain with params from {@link Common.genesis}
+   * @param stateRoot The genesis stateRoot
+   */
+  createGenesisBlock(stateRoot: Buffer): Block {
     const common = this._common.copy()
     common.setHardforkByBlockNumber(0)
 

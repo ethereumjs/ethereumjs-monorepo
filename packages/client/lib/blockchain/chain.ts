@@ -143,7 +143,7 @@ export class Chain {
    * Genesis block for the chain
    */
   get genesis() {
-    return this.blockchain.genesisBlock()
+    return this.blockchain.genesisBlock
   }
 
   /**
