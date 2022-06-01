@@ -214,12 +214,6 @@ export default class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   protected constructor(opts: BlockchainOptions = {}) {
-    // Throw on chain or hardfork options removed in latest major release to
-    // prevent implicit chain setup on a wrong chain
-    if ('chain' in opts || 'hardfork' in opts) {
-      throw new Error('Chain/hardfork options are not allowed any more on initialization')
-    }
-
     if (opts.common) {
       this._common = opts.common
     } else {
