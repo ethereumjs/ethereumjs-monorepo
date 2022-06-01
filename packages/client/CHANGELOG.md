@@ -24,7 +24,7 @@ See PR [#1878](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1878) for 
 
 ### TxPool Validation
 
-With this release our tx pool grows into a still simple but full-grown respectively base-feature-complete pool by adding all sorts of validation checks to ensure validity with consensus, see PR [#1852](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1852). This is another substantial step towards fullfilling the requirements for acting as an active block-producing client in an Ethereum network. Validation checks - like e.g. "tx nonce is greater than sender's current nonce" - are now run early on when a tx is send via RPC `eth_sendRawTransaction` and feedback (and eventual rejection of the tx) is provided early on. This allows to provide valid blocks when acting as a block producer.
+With this release our tx pool grows into a still simple but full-grown and base-feature-complete pool by adding all sorts of validation checks to ensure validity with consensus, see PR [#1852](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1852). This is another substantial step towards fullfilling the requirements for acting as an active block-producing client in an Ethereum network. Validation checks - like e.g. "tx nonce is greater than sender's current nonce" - are now run early on when a tx is send via RPC `eth_sendRawTransaction` and feedback (and eventual rejection of the tx) is provided at the point of submission. This allows for building valid blocks when acting as a block producer.
 
 ### Fixes
 

@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Additions / Features
 
-- Fixed expanded memory reporting in `step` event on reading prev. untouched location - thanks to @theNvN for the contribution ❤️, PR [#1887](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1887)
+- Fixed expanded memory reporting in `step` event on reading previously untouched location - thanks to @theNvN for the contribution ❤️, PR [#1887](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1887)
 - New optional `hasStateRoot` method on `StateManager` interface, PR [#1878](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1878)
-- `EIP-1153` Transient Storage (experimental): Improve the time complexity of commit by using a journal instead of stack of maps (potential DoS attack vector), PR [#1860](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1860)
+- `EIP-1153` Transient Storage (experimental): Improve the time taken to commit by using a journal instead of stack of maps (potential DoS attack vector), PR [#1860](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1860)
 - Additional guard for `ecrecover` precompile if used with `v` values other than `27` or `28`, PR [#1905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1905)
 
 ### Test Updates
