@@ -5,6 +5,10 @@ import { Address } from 'ethereumjs-util'
 
 tape('[Header]: Clique PoA Functionality', function (t) {
   const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+  const cliqueSigner = Buffer.from(
+    '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+    'hex'
+  )
 
   t.test('Header Data', function (st) {
     let header = BlockHeader.fromHeaderData({ number: 1 })
@@ -12,7 +16,7 @@ tape('[Header]: Clique PoA Functionality', function (t) {
       header.cliqueIsEpochTransition()
     }, 'cliqueIsEpochTransition() -> should throw on PoW networks')
 
-    header = BlockHeader.fromHeaderData({}, { common })
+    header = BlockHeader.fromHeaderData({}, { common, cliqueSigner })
     st.ok(
       header.cliqueIsEpochTransition(),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block'
@@ -86,7 +90,10 @@ tape('[Header]: Clique PoA Functionality', function (t) {
     st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
     st.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
 
-    header = BlockHeader.fromHeaderData({}, { common })
+    // TODO: fix this test
+    // passing in cliqueSigner is required for the header to initialize (i.e. to pass consensus validation)...
+    // but then that means header.cliqueSigner() is necessarily not zero address?
+    header = BlockHeader.fromHeaderData({}, { common, cliqueSigner })
     st.ok(
       header.cliqueSigner().equals(Address.zero()),
       'should return zero address on default block'

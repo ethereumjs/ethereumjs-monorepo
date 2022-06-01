@@ -1,7 +1,19 @@
 import Semaphore from 'semaphore-async-await'
-import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { toBuffer } from 'ethereumjs-util'
+import {
+  Block,
+  BlockData,
+  BlockHeader,
+  CLIQUE_DIFF_INTURN,
+  CLIQUE_DIFF_NOTURN,
+} from '@ethereumjs/block'
+import Common, {
+  Chain,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  CliqueConfig,
+} from '@ethereumjs/common'
+import { Address, toBuffer } from 'ethereumjs-util'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -587,7 +599,9 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        await block.validate(this, isHeader)
+        await this.validateBlockHeader(header)
+        await this.validateBlockUncles(block)
+        await block.validateData(isHeader)
       }
 
       if (this._validateConsensus) {
@@ -937,6 +951,327 @@ export default class Blockchain implements BlockchainInterface {
       this._heads[tag] = headHash
       await this._saveHeads()
     })
+  }
+
+  /**
+   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * It verifies the current block against the `parentHash`:
+   * - The `parentHash` is part of the blockchain (it is a valid header)
+   * - Current block number is parent block number + 1
+   * - Current block has a strictly higher timestamp
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Various extraData checks
+   *   - Checks on coinbase and mixHash
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param header - block header to validate
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  async validateBlockHeader(header: BlockHeader, height?: bigint): Promise<void> {
+    if (header.isGenesis()) {
+      return
+    }
+
+    let parentHeader
+    try {
+      parentHeader = (await this.getBlock(header.parentHash)).header
+    } catch (error: any) {
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+    }
+
+    if (!parentHeader) {
+      const msg = this._errorMsg('could not find parent header')
+      throw new Error(msg)
+    }
+
+    const { number } = header
+    if (number !== parentHeader.number + BigInt(1)) {
+      const msg = this._errorMsg('invalid number')
+      throw new Error(msg)
+    }
+
+    if (header.timestamp <= parentHeader.timestamp) {
+      const msg = this._errorMsg('invalid timestamp')
+      throw new Error(msg)
+    }
+
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      const period = (this._common.consensusConfig() as CliqueConfig).period
+      // Timestamp diff between blocks is lower than PERIOD (clique)
+      if (parentHeader.timestamp + BigInt(period) > header.timestamp) {
+        const msg = this._errorMsg('invalid timestamp diff (lower than period)')
+        throw new Error(msg)
+      }
+    }
+
+    this.validateDifficulty(header, parentHeader)
+    this.validateGasLimit(header, parentHeader)
+
+    if (height) {
+      const dif = height - parentHeader.number
+      if (!(dif < BigInt(8) && dif > BigInt(1))) {
+        const msg = this._errorMsg('uncle block has a parent that is too old or too young')
+        throw new Error(msg)
+      }
+    }
+
+    // check if the block used too much gas
+    if (header.gasUsed > header.gasLimit) {
+      const msg = this._errorMsg('Invalid block: too much gas used')
+      throw new Error(msg)
+    }
+
+    if (this._common.isActivatedEIP(1559)) {
+      if (!header.baseFeePerGas) {
+        const msg = this._errorMsg('EIP1559 block has no base fee field')
+        throw new Error(msg)
+      }
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = londonHfBlock && header.number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+        if (header.baseFeePerGas! !== initialBaseFee) {
+          const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
+          throw new Error(msg)
+        }
+      } else {
+        // check if the base fee is correct
+        const expectedBaseFee = parentHeader.calcNextBaseFee()
+
+        if (header.baseFeePerGas! !== expectedBaseFee) {
+          const msg = this._errorMsg('Invalid block: base fee not correct')
+          throw new Error(msg)
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks that the block's `difficulty` matches the canonical difficulty.
+   *
+   * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
+   *
+   * Returns false if invalid.
+   *
+   * @param blockHeader - the block header whose difficulty needs to be validated
+   * @param parentBlockHeader - the header from the parent `Block` of `blockHeader``
+   */
+  validateDifficulty(blockHeader: BlockHeader, parentBlockHeader: BlockHeader): void {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      if (
+        blockHeader.difficulty !== CLIQUE_DIFF_INTURN &&
+        blockHeader.difficulty !== CLIQUE_DIFF_NOTURN
+      ) {
+        const msg = this._errorMsg(
+          `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${blockHeader.difficulty}`
+        )
+        throw new Error(msg)
+      }
+      if ('cliqueActiveSigners' in this.consensus === false) {
+        const msg = this._errorMsg(
+          'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
+        )
+        throw new Error(msg)
+      }
+      const signers = (this as any).consensus.cliqueActiveSigners()
+      if (signers.length === 0) {
+        // abort if signers are unavailable
+        return
+      }
+      const signerIndex = signers.findIndex((address: Address) =>
+        address.equals(blockHeader.cliqueSigner())
+      )
+      const inTurn = blockHeader.number % BigInt(signers.length) === BigInt(signerIndex)
+      if (
+        (inTurn && blockHeader.difficulty !== CLIQUE_DIFF_INTURN) ||
+        (!inTurn && blockHeader.difficulty !== CLIQUE_DIFF_NOTURN)
+      ) {
+        const msg = this._errorMsg('invalid clique difficulty')
+        throw new Error(msg)
+      }
+    }
+    if (this._common.consensusType() === 'pow') {
+      if (blockHeader.canonicalDifficulty(parentBlockHeader) !== blockHeader.difficulty) {
+        const msg = this._errorMsg('invalid difficulty')
+        throw new Error(msg)
+      }
+    }
+  }
+
+  /**
+   * Validates if the block gasLimit remains in the
+   * boundaries set by the protocol.
+   *
+   * @param blockHeader - the block header used to validate gas limit
+   * @param parentBlockHeader - the header from the parent `Block` of `blockHeader`
+   */
+  validateGasLimit(blockHeader: BlockHeader, parentBlockHeader: BlockHeader): void {
+    let parentGasLimit = parentBlockHeader.gasLimit
+    // EIP-1559: assume double the parent gas limit on fork block
+    // to adopt to the new gas target centered logic
+    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
+    if (londonHardforkBlock && blockHeader.number === londonHardforkBlock) {
+      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
+      parentGasLimit = parentGasLimit * elasticity
+    }
+    const gasLimit = blockHeader.gasLimit
+    const hardfork = this._common.hardfork()
+
+    const a =
+      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+    const maxGasLimit = parentGasLimit + a
+    const minGasLimit = parentGasLimit - a
+
+    const isValid =
+      gasLimit < maxGasLimit &&
+      gasLimit > minGasLimit &&
+      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
+
+    if (!isValid) {
+      const msg = this._errorMsg('invalid gas limit')
+      throw new Error(msg)
+    }
+  }
+
+  /**
+   * Consistency checks and header validation for uncles included,
+   * in the block, if any.
+   *
+   * Throws if invalid.
+   *
+   * The rules of uncles are the following:
+   * Uncle Header is a valid header.
+   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
+   * Uncle Header is not already included as uncle in another block.
+   * Header has at most 2 uncles.
+   * Header does not count an uncle twice.
+   *
+   * @param block - block used to validate uncles
+   */
+  async validateBlockUncles(block: Block): Promise<void> {
+    if (block.isGenesis()) {
+      return
+    }
+
+    // Header has at most 2 uncles
+    if (block.uncleHeaders.length > 2) {
+      const msg = this._errorMsg('too many uncle headers')
+      throw new Error(msg)
+    }
+
+    // Header does not count an uncle twice.
+    const uncleHashes = block.uncleHeaders.map((header) => header.hash().toString('hex'))
+    if (!(new Set(uncleHashes).size === uncleHashes.length)) {
+      const msg = this._errorMsg('duplicate uncles')
+      throw new Error(msg)
+    }
+
+    await this._validateUncleHeaders(block)
+  }
+
+  /**
+   * The following rules are checked in this method:
+   * Uncle Header is a valid header.
+   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
+   * Uncle Header is not already included as uncle in another block.
+   *
+   * @param block - block used to validate uncles
+   */
+  private async _validateUncleHeaders(block: Block) {
+    if (block.uncleHeaders.length == 0) {
+      return
+    }
+
+    // Each Uncle Header is a valid header
+    await Promise.all(
+      block.uncleHeaders.map((uh) => this.validateBlockHeader(uh, block.header.number))
+    )
+
+    // Check how many blocks we should get in order to validate the uncle.
+    // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
+    const canonicalBlockMap: Block[] = []
+    let lowestUncleNumber = block.header.number
+
+    block.uncleHeaders.map((header) => {
+      if (header.number < lowestUncleNumber) {
+        lowestUncleNumber = header.number
+      }
+    })
+
+    // Helper variable: set hash to `true` if hash is part of the canonical chain
+    const canonicalChainHashes: { [key: string]: boolean } = {}
+
+    // Helper variable: set hash to `true` if uncle hash is included in any canonical block
+    const includedUncles: { [key: string]: boolean } = {}
+
+    // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
+    const getBlocks = Number(block.header.number - lowestUncleNumber + BigInt(1))
+
+    // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
+    // Here we get the necessary blocks from the chain.
+    let parentHash = block.header.parentHash
+    for (let i = 0; i < getBlocks; i++) {
+      const parentBlock = await this.getBlock(parentHash)
+      if (!parentBlock) {
+        const msg = this._errorMsg('could not find parent block')
+        throw new Error(msg)
+      }
+      canonicalBlockMap.push(parentBlock!)
+
+      // mark block hash as part of the canonical chain
+      canonicalChainHashes[parentBlock.hash().toString('hex')] = true
+
+      // for each of the uncles, mark the uncle as included
+      parentBlock.uncleHeaders.map((uh) => {
+        includedUncles[uh.hash().toString('hex')] = true
+      })
+
+      parentHash = parentBlock.header.parentHash
+    }
+
+    // Here we check:
+    // Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+    // Uncle Header is not already included as uncle in another block.
+    // Uncle Header has a parentHash which points to the canonical chain.
+
+    block.uncleHeaders.map((uh) => {
+      const uncleHash = uh.hash().toString('hex')
+      const parentHash = uh.parentHash.toString('hex')
+
+      if (!canonicalChainHashes[parentHash]) {
+        const msg = this._errorMsg(
+          'The parent hash of the uncle header is not part of the canonical chain'
+        )
+        throw new Error(msg)
+      }
+
+      if (includedUncles[uncleHash]) {
+        const msg = this._errorMsg('The uncle is already included in the canonical chain')
+        throw new Error(msg)
+      }
+
+      if (canonicalChainHashes[uncleHash]) {
+        const msg = this._errorMsg('The uncle is a canonical block')
+        throw new Error(msg)
+      }
+    })
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `Block header validation error: ${msg}`
   }
 
   /* Methods regarding reorg operations */

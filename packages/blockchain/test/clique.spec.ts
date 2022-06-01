@@ -222,6 +222,7 @@ tape('Clique: Initialization', (t) => {
 
   t.test('should throw on invalid difficulty', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
+    const parentBlock = blocks[blocks.length - 1]
     await addNextBlock(blockchain, blocks, A)
     ;(blockchain as any)._validateBlocks = false
 
@@ -234,7 +235,7 @@ tape('Clique: Initialization', (t) => {
     )
 
     try {
-      await block.validate(blockchain)
+      blockchain.validateDifficulty(block.header, parentBlock.header)
       st.fail('should fail')
     } catch (error: any) {
       if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
@@ -252,7 +253,7 @@ tape('Clique: Initialization', (t) => {
     )
 
     try {
-      await block.validate(blockchain)
+      blockchain.validateDifficulty(block.header, parentBlock.header)
       st.fail('should fail')
     } catch (error: any) {
       if (error.message.includes('invalid clique difficulty')) {

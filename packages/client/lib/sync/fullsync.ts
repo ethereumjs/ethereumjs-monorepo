@@ -280,7 +280,7 @@ export class FullSynchronizer extends Synchronizer {
       return
     }
     try {
-      await block.header.validate(this.chain.blockchain)
+      await this.chain.blockchain.validateBlockHeader(block.header)
     } catch (err) {
       this.config.logger.debug(
         `Error processing new block from peer ${
