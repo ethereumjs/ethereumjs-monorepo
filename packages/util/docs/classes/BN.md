@@ -121,7 +121,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Uint8Array` \| `Buffer` \| `number`[] |
+| `number` | `string` \| `number` \| `number`[] \| `Uint8Array` \| `Buffer` \| [`BN`](BN.md) |
 | `base?` | `number` \| ``"hex"`` |
 | `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
@@ -135,7 +135,7 @@ node_modules/@types/bn.js/index.d.ts:32
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Uint8Array` \| `Buffer` \| `number`[] |
+| `number` | `string` \| `number` \| `number`[] \| `Uint8Array` \| `Buffer` \| [`BN`](BN.md) |
 | `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
 #### Defined in
@@ -2135,7 +2135,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `reductionContext` | [`BN`](BN.md) \| [`IPrimeName`](../modules/BN.md#iprimename) |
+| `reductionContext` | [`IPrimeName`](../modules/BN.md#iprimename) \| [`BN`](BN.md) |
 
 #### Returns
 

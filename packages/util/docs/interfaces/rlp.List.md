@@ -98,7 +98,7 @@ Array.length
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1273
+node_modules/typescript/lib/lib.es5.d.ts:1279
 
 ## Methods
 
@@ -114,7 +114,7 @@ Iterator
 
 #### Inherited from
 
-Array.\_\_@iterator@83
+Array.\_\_@iterator@88
 
 #### Defined in
 
@@ -145,7 +145,7 @@ when they will be absent when used in a 'with' statement.
 
 #### Inherited from
 
-Array.\_\_@unscopables@85
+Array.\_\_@unscopables@90
 
 #### Defined in
 
@@ -204,7 +204,7 @@ Array.concat
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1297
+node_modules/typescript/lib/lib.es5.d.ts:1303
 
 ▸ **concat**(...`items`): [`Input`](../modules/rlp.md#input)[]
 
@@ -227,7 +227,7 @@ Array.concat
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1303
+node_modules/typescript/lib/lib.es5.d.ts:1309
 
 ___
 
@@ -309,7 +309,7 @@ Array.every
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1380
+node_modules/typescript/lib/lib.es5.d.ts:1386
 
 ▸ **every**(`predicate`, `thisArg?`): `boolean`
 
@@ -332,7 +332,7 @@ Array.every
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1389
+node_modules/typescript/lib/lib.es5.d.ts:1395
 
 ___
 
@@ -393,7 +393,7 @@ Array.filter
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1416
+node_modules/typescript/lib/lib.es5.d.ts:1422
 
 ▸ **filter**(`predicate`, `thisArg?`): [`Input`](../modules/rlp.md#input)[]
 
@@ -416,7 +416,7 @@ Array.filter
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1422
+node_modules/typescript/lib/lib.es5.d.ts:1428
 
 ___
 
@@ -437,7 +437,7 @@ otherwise.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `obj`: [`Input`](../modules/rlp.md#input)[]) => value is S | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined. |
+| `predicate` | (`this`: `void`, `value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `obj`: [`Input`](../modules/rlp.md#input)[]) => value is S | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined. |
 | `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead. |
 
 #### Returns
@@ -505,7 +505,7 @@ ___
 
 ### flat
 
-▸ **flat**<`A`, `D`\>(`depth?`): `FlatArray`<`A`, `D`\>[]
+▸ **flat**<`A`, `D`\>(`this`, `depth?`): `FlatArray`<`A`, `D`\>[]
 
 Returns a new array with all sub-array elements concatenated into it recursively up to the
 specified depth.
@@ -521,6 +521,7 @@ specified depth.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
+| `this` | `A` | - |
 | `depth?` | `D` | The maximum recursion depth |
 
 #### Returns
@@ -556,7 +557,7 @@ This is identical to a map followed by flat with depth 1.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callback` | (`value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `array`: [`Input`](../modules/rlp.md#input)[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
+| `callback` | (`this`: `This`, `value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `array`: [`Input`](../modules/rlp.md#input)[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
 | `thisArg?` | `This` | An object to which the this keyword can refer in the callback function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -596,7 +597,7 @@ Array.forEach
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1404
+node_modules/typescript/lib/lib.es5.d.ts:1410
 
 ___
 
@@ -650,7 +651,7 @@ Array.indexOf
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1365
+node_modules/typescript/lib/lib.es5.d.ts:1371
 
 ___
 
@@ -676,7 +677,7 @@ Array.join
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1308
+node_modules/typescript/lib/lib.es5.d.ts:1314
 
 ___
 
@@ -723,7 +724,7 @@ Array.lastIndexOf
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1371
+node_modules/typescript/lib/lib.es5.d.ts:1377
 
 ___
 
@@ -756,7 +757,7 @@ Array.map
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1410
+node_modules/typescript/lib/lib.es5.d.ts:1416
 
 ___
 
@@ -777,7 +778,7 @@ Array.pop
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1286
+node_modules/typescript/lib/lib.es5.d.ts:1292
 
 ___
 
@@ -803,7 +804,7 @@ Array.push
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1291
+node_modules/typescript/lib/lib.es5.d.ts:1297
 
 ___
 
@@ -829,7 +830,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1428
+node_modules/typescript/lib/lib.es5.d.ts:1434
 
 ▸ **reduce**(`callbackfn`, `initialValue`): [`Input`](../modules/rlp.md#input)
 
@@ -850,7 +851,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1429
+node_modules/typescript/lib/lib.es5.d.ts:1435
 
 ▸ **reduce**<`U`\>(`callbackfn`, `initialValue`): `U`
 
@@ -879,7 +880,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1435
+node_modules/typescript/lib/lib.es5.d.ts:1441
 
 ___
 
@@ -905,7 +906,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1441
+node_modules/typescript/lib/lib.es5.d.ts:1447
 
 ▸ **reduceRight**(`callbackfn`, `initialValue`): [`Input`](../modules/rlp.md#input)
 
@@ -926,7 +927,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1442
+node_modules/typescript/lib/lib.es5.d.ts:1448
 
 ▸ **reduceRight**<`U`\>(`callbackfn`, `initialValue`): `U`
 
@@ -955,7 +956,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1448
+node_modules/typescript/lib/lib.es5.d.ts:1454
 
 ___
 
@@ -976,7 +977,7 @@ Array.reverse
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1313
+node_modules/typescript/lib/lib.es5.d.ts:1319
 
 ___
 
@@ -997,7 +998,7 @@ Array.shift
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1318
+node_modules/typescript/lib/lib.es5.d.ts:1324
 
 ___
 
@@ -1026,7 +1027,7 @@ Array.slice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1328
+node_modules/typescript/lib/lib.es5.d.ts:1334
 
 ___
 
@@ -1053,7 +1054,7 @@ Array.some
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1398
+node_modules/typescript/lib/lib.es5.d.ts:1404
 
 ___
 
@@ -1080,7 +1081,7 @@ Array.sort
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1339
+node_modules/typescript/lib/lib.es5.d.ts:1345
 
 ___
 
@@ -1109,7 +1110,7 @@ Array.splice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1346
+node_modules/typescript/lib/lib.es5.d.ts:1352
 
 ▸ **splice**(`start`, `deleteCount`, ...`items`): [`Input`](../modules/rlp.md#input)[]
 
@@ -1135,7 +1136,7 @@ Array.splice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1354
+node_modules/typescript/lib/lib.es5.d.ts:1360
 
 ___
 
@@ -1155,7 +1156,7 @@ Array.toLocaleString
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1281
+node_modules/typescript/lib/lib.es5.d.ts:1287
 
 ___
 
@@ -1175,7 +1176,7 @@ Array.toString
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1277
+node_modules/typescript/lib/lib.es5.d.ts:1283
 
 ___
 
@@ -1257,7 +1258,7 @@ Array.unshift
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1359
+node_modules/typescript/lib/lib.es5.d.ts:1365
 
 ___
 

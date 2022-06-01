@@ -11,12 +11,12 @@
 - [MPrime](../interfaces/BN.MPrime.md)
 - [ReductionContext](../interfaces/BN.ReductionContext.md)
 
-### Type aliases
+### Type Aliases
 
 - [Endianness](BN.md#endianness)
 - [IPrimeName](BN.md#iprimename)
 
-## Type aliases
+## Type Aliases
 
 ### Endianness
 

@@ -6,18 +6,18 @@ Type output options
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [BN](TypeOutput.md#bn)
 - [Buffer](TypeOutput.md#buffer)
 - [Number](TypeOutput.md#number)
 - [PrefixedHexString](TypeOutput.md#prefixedhexstring)
 
-## Enumeration members
+## Enumeration Members
 
 ### BN
 
-• **BN** = `1`
+• **BN**
 
 #### Defined in
 
@@ -27,7 +27,7 @@ ___
 
 ### Buffer
 
-• **Buffer** = `2`
+• **Buffer**
 
 #### Defined in
 
@@ -37,7 +37,7 @@ ___
 
 ### Number
 
-• **Number** = `0`
+• **Number**
 
 #### Defined in
 
@@ -47,7 +47,7 @@ ___
 
 ### PrefixedHexString
 
-• **PrefixedHexString** = `3`
+• **PrefixedHexString**
 
 #### Defined in
 
