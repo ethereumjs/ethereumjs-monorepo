@@ -18,7 +18,7 @@ This client release comes with various last specification updates for the Merge 
 
 ### Merge: Optimistic (Beacon) Sync
 
-The client now supports [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (Beacon) sync where blocks are downloaded in reverse from the announced trusted head. This allows for a practically viable sync process in combination with a consensus client when running the client in a execution-consensus-client-combination setup on a Merge test network.
+The client now supports [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (Beacon) sync where blocks are downloaded in reverse from the announced trusted head. This allows for a practically viable sync process in combination with a consensus client when running the client in an execution-consensus-client-combination setup on a Merge test network.
 
 See PR [#1878](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1878) for the implementation and PR [#1858](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1858), PR [#1861](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1861) and PR [#1863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1863) which prepare the ground with some (larger scale) preparator refactor for the implementation.
 
