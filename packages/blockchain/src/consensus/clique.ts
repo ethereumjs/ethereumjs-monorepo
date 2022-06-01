@@ -136,12 +136,8 @@ export class CliqueConsensus implements Consensus {
     const { header } = block
     const commonAncestorNumber = commonAncestor?.number
     if (commonAncestorNumber !== undefined) {
-      await this._cliqueDeleteSnapshots(commonAncestorNumber! + BigInt(1))
-      for (
-        let number = commonAncestorNumber! + BigInt(1);
-        number <= header.number;
-        number += BigInt(1)
-      ) {
+      await this._cliqueDeleteSnapshots(commonAncestorNumber + BigInt(1))
+      for (let number = commonAncestorNumber + BigInt(1); number <= header.number; number++) {
         const canonicalHeader = await this.blockchain.getCanonicalHeader(number)
         await this._cliqueBuildSnapshots(canonicalHeader)
       }
