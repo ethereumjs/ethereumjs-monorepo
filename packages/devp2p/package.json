@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.6.2",
-    "@ethereumjs/tx": "^3.5.1",
+    "@ethereumjs/tx": "^3.5.2",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",
     "@types/ip": "^1.1.0",
