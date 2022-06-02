@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1654164957719,
+  "lastUpdate": 1654201196890,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ryan@ryanio.com",
-            "name": "Ryan Ghods",
-            "username": "ryanio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f91195fc04ccb6155a1e37df0e7feec45d86a1d3",
-          "message": "client: fix eth_call, add remoteBlocks to engine (#1830)\n\n* improve eth_call to use runCall\r\nformat and return vm internal errors so they display in json rpc\r\n\r\n* add remoteBlocks, refactor out assembleBlock, return `latestValidHash: null` when SYNCING to follow spec\r\n\r\n* engine: add parent hash equals to block hash test case in new payload\r\n\r\n* improve return type of assembleBlock\r\n\r\n* pass array of blocks to setHead to save pending receipts\r\n\r\nCo-authored-by: cbrzn <cesarbrazon10@gmail.com>",
-          "timestamp": "2022-04-06T17:21:40+02:00",
-          "tree_id": "2a5957be8e6316aee36d78caf41b24da8a27d361",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f91195fc04ccb6155a1e37df0e7feec45d86a1d3"
-        },
-        "date": 1649259037729,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 10846,
-            "range": "±28.62%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 14606,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "55 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 9488,
-            "range": "±26.36%",
-            "unit": "ops/sec",
-            "extra": "47 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 13358,
-            "range": "±3.02%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 15978,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "49 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 738,
-            "range": "±7.01%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 152,
-            "range": "±12.33%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 57.41,
-            "range": "±41.43%",
-            "unit": "ops/sec",
-            "extra": "17 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 16.04,
-            "range": "±6.60%",
-            "unit": "ops/sec",
-            "extra": "32 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±95.96%",
             "unit": "ops/sec",
             "extra": "33 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3e4e7bed681bfa6d1c95abbcc28f6508e828339d",
+          "message": "Blockchain: Clique-recently-signed False Positive Fix (#1931)\n\n* Blockchain: fixed a bug in Clique-related recently signed check to only compare on recently signed counts if block numbers are consecutive\r\n* Update packages/blockchain/src/index.ts\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>",
+          "timestamp": "2022-06-02T13:14:19-07:00",
+          "tree_id": "c11f4630dfc52852aae11c1f43b26f898d020742",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3e4e7bed681bfa6d1c95abbcc28f6508e828339d"
+        },
+        "date": 1654201195759,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 10612,
+            "range": "±12.96%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 13019,
+            "range": "±1.90%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 12463,
+            "range": "±3.36%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 6772,
+            "range": "±30.01%",
+            "unit": "ops/sec",
+            "extra": "41 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 14192,
+            "range": "±3.65%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 722,
+            "range": "±8.03%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 149,
+            "range": "±11.01%",
+            "unit": "ops/sec",
+            "extra": "63 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 36.58,
+            "range": "±107.90%",
+            "unit": "ops/sec",
+            "extra": "33 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 15.44,
+            "range": "±9.67%",
+            "unit": "ops/sec",
+            "extra": "30 samples"
           }
         ]
       }
