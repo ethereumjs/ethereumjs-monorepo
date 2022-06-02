@@ -478,6 +478,11 @@ export default class Blockchain implements BlockchainInterface {
     // construct recent block signers list with this block
     let signers = this._cliqueLatestBlockSigners
     signers = signers.slice(signers.length < limit ? 0 : 1)
+    if (signers.length > 0 && !signers[signers.length - 1][0].eq(header.number.subn(1))) {
+      // if the last signed block is not one minus the head we are trying to compare
+      // we do not have a complete picture of the state to verify if too recently signed
+      return false
+    }
     signers.push([header.number, header.cliqueSigner()])
     const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
     return seen > 1
