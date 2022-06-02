@@ -79,7 +79,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const tx = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData))
     await service.execution.vm.stateManager.putAccount(
       tx.getSenderAddress(),
-      new Account(new BN(0), new BN('40000000000100000'))
+      new Account(BigInt(0), BigInt('40000000000100000'))
     )
     await service.txPool.add(tx)
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })

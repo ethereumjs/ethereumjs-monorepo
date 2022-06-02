@@ -75,7 +75,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (count > BigInt(0) && tasks.length < maxTasks) {
       tasks.push({ first: first, count: Number(count) })
       pushedCount += count
-      count = BigInt(0);
+      count = BigInt(0)
     }
 
     // If we started with where this.first was, i.e. there are no gaps and hence
@@ -92,7 +92,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   nextTasks(): void {
     if (this.in.length === 0 && this.count > BigInt(0)) {
-      this.debug(`Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`)
+      this.debug(
+        `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
+      )
       const tasks = this.tasks(this.first, this.count)
       for (const task of tasks) {
         this.enqueueTask(task)

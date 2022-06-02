@@ -160,23 +160,7 @@ export class CLConnectionManager {
   }
 
   private timeDiffStr(block: Block) {
-    const timeDiff = new Date().getTime() / 1000 - Number(block.header.timestamp)
-    const min = 60
-    const hour = min * 60
-    const day = hour * 24
-    let timeDiffStr = ''
-    if (timeDiff > day) {
-      timeDiffStr = `${Math.floor(timeDiff / day)} day`
-    } else if (timeDiff > hour) {
-      timeDiffStr = `${Math.floor(timeDiff / hour)} hour`
-    } else if (timeDiff > min) {
-      timeDiffStr = `${Math.floor(timeDiff / min)} min`
-    } else {
-      timeDiffStr = `${Math.floor(timeDiff)} sec`
-    }
-    if (timeDiffStr.substring(0, 2) !== '1 ') {
-      timeDiffStr += 's'
-    }
+    const timeDiffStr = timeDiff(Number(block.header.timestamp))
     return timeDiffStr
   }
 

@@ -1,7 +1,6 @@
 import tape from 'tape'
 import td from 'testdouble'
 import { Block } from '@ethereumjs/block'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Skeleton } from '../../../lib/sync'
@@ -30,8 +29,8 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(10),
+      first: BigInt(10),
+      count: BigInt(10),
       timeout: 5,
     })
     fetcher.next = () => false
@@ -57,8 +56,8 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(10),
+      first: BigInt(10),
+      count: BigInt(10),
     })
     const blocks: any = [{ header: { number: 2 } }, { header: { number: 1 } }]
     t.deepEquals(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
@@ -77,11 +76,11 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(5),
+      first: BigInt(10),
+      count: BigInt(5),
     })
     const blocks: any = [{ header: { number: 3 } }, { header: { number: 2 } }]
-    const task = { count: 3, first: new BN(3) }
+    const task = { count: 3, first: BigInt(3) }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
@@ -108,8 +107,8 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(2),
+      first: BigInt(10),
+      count: BigInt(2),
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
@@ -127,12 +126,12 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(5),
+      first: BigInt(10),
+      count: BigInt(5),
     })
     const partialResult: any = [{ header: { number: 10 } }, { header: { number: 9 } }]
 
-    const task = { first: new BN(10), count: 5 }
+    const task = { first: BigInt(10), count: 5 }
     const peer = {
       eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
       id: 'random',
@@ -142,7 +141,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     await fetcher.request(job as any)
     td.verify(
       job.peer.eth.getBlockHeaders({
-        block: job.task.first.subn(partialResult.length),
+        block: job.task.first - BigInt(partialResult.length),
         max: job.task.count - partialResult.length,
         reverse: true,
       })
@@ -165,8 +164,8 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(10),
+      first: BigInt(10),
+      count: BigInt(10),
       timeout: 5,
     })
     td.when(skeleton.putBlocks(td.matchers.anything())).thenReject(new Error('err0'))
@@ -197,27 +196,36 @@ tape('[ReverseBlockFetcher]', async (t) => {
       pool,
       chain,
       skeleton,
-      first: new BN(10),
-      count: new BN(5),
+      first: BigInt(10),
+      count: BigInt(5),
       timeout: 5,
     })
-    const block47 = Block.fromBlockData({ header: { number: new BN(47) } })
-    const block48 = Block.fromBlockData({
-      header: { number: new BN(48), parentHash: block47.hash() },
-    })
-    const block49 = Block.fromBlockData({
-      header: { number: new BN(49), parentHash: block48.hash() },
-    })
+    const block47 = Block.fromBlockData(
+      { header: { number: BigInt(47) } },
+      { hardforkByBlockNumber: true }
+    )
+    const block48 = Block.fromBlockData(
+      {
+        header: { number: BigInt(48), parentHash: block47.hash() },
+      },
+      { hardforkByBlockNumber: true }
+    )
+    const block49 = Block.fromBlockData(
+      {
+        header: { number: BigInt(49), parentHash: block48.hash() },
+      },
+      { hardforkByBlockNumber: true }
+    )
     ;(skeleton as any).status.progress.subchains = [
-      { head: new BN(100), tail: new BN(50), next: block49.hash() },
-      { head: new BN(48), tail: new BN(5) },
+      { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
+      { head: BigInt(48), tail: BigInt(5) },
     ]
     await (skeleton as any).putBlock(block47)
     await fetcher.store([block49, block48])
     st.ok((skeleton as any).status.progress.subchains.length === 1, 'subchains should be merged')
     st.equal(
-      (skeleton as any).status.progress.subchains[0].tail.toNumber(),
-      5,
+      (skeleton as any).status.progress.subchains[0].tail,
+      BigInt(5),
       'subchain tail should be next segment'
     )
     st.notOk((fetcher as any).running, 'fetcher should stop')

@@ -45,6 +45,8 @@ export default class Memory {
       return
     }
 
+    this.extend(offset, size)
+
     if (value.length !== size) throw new Error('Invalid value size')
     if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 

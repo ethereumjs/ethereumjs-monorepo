@@ -1,5 +1,7 @@
 import { Block } from '@ethereumjs/block'
-import { BN, rlp } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
+import RLP from 'rlp'
+
 import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'
 import { short, timeDuration } from '../util'
 
@@ -26,8 +28,8 @@ type SkeletonProgress = {
  * enough to connect with a previous subchain.
  */
 type SkeletonSubchain = {
-  head: BN /** Block number of the newest header in the subchain */
-  tail: BN /** Block number of the oldest header in the subchain */
+  head: bigint /** Block number of the newest header in the subchain */
+  tail: bigint /** Block number of the oldest header in the subchain */
   next: Buffer /** Block hash of the next oldest header in the subchain */
 }
 type SkeletonSubchainRLP = [head: Buffer, tail: Buffer, next: Buffer]
@@ -61,7 +63,7 @@ export class Skeleton extends MetaDBManager {
 
   private started: number /** Timestamp when the skeleton syncer was created */
   private logged = 0 /** Timestamp when progress was last logged to user */
-  private pulled = new BN(0) /** Number of headers downloaded in this run */
+  private pulled = BigInt(0) /** Number of headers downloaded in this run */
   private filling = false /** Whether we are actively filling the canonical chain */
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
@@ -114,8 +116,8 @@ export class Skeleton extends MetaDBManager {
       // Start a fresh sync with a single subchain represented by the currently sent
       // chain head.
       this.status.progress.subchains.push({
-        head: number.clone(),
-        tail: number.clone(),
+        head: number,
+        tail: number,
         next: head.header.parentHash,
       })
       this.config.logger.debug(`Created initial skeleton subchain head=${number} tail=${number}`)
@@ -130,15 +132,15 @@ export class Skeleton extends MetaDBManager {
       // Create a new subchain for the head (unless the last can be extended),
       // trimming anything it would overwrite
       const headchain = {
-        head: number.clone(),
-        tail: number.clone(),
+        head: number,
+        tail: number,
         next: head.header.parentHash,
       }
 
       for (const _subchain of this.status.progress.subchains) {
         // If the last chain is above the new head, delete altogether
         const lastchain = this.status.progress.subchains[0]
-        if (lastchain.tail.gte(headchain.tail)) {
+        if (lastchain.tail >= headchain.tail) {
           this.config.logger.debug(
             `Dropping skeleton subchain head=${lastchain.head} tail=${lastchain.tail}`
           )
@@ -146,13 +148,13 @@ export class Skeleton extends MetaDBManager {
           continue
         }
         // Otherwise truncate the last chain if needed and abort trimming
-        if (lastchain.head.gte(headchain.tail)) {
+        if (lastchain.head >= headchain.tail) {
           this.config.logger.debug(
-            `Trimming skeleton subchain oldHead=${lastchain.head} newHead=${headchain.tail.subn(
-              1
-            )} tail=${lastchain.tail}`
+            `Trimming skeleton subchain oldHead=${lastchain.head} newHead=${
+              headchain.tail - BigInt(1)
+            } tail=${lastchain.tail}`
           )
-          lastchain.head = headchain.tail.subn(1)
+          lastchain.head = headchain.tail - BigInt(1)
         }
         break
       }
@@ -161,7 +163,7 @@ export class Skeleton extends MetaDBManager {
       let extended = false
       if (this.status.progress.subchains.length > 0) {
         const lastchain = this.status.progress.subchains[0]
-        if (lastchain.head.eq(headchain.tail.subn(1))) {
+        if (lastchain.head === headchain.tail - BigInt(1)) {
           const lasthead = await this.getBlock(lastchain.head)
           if (lasthead?.hash().equals(head.header.parentHash)) {
             this.config.logger.debug(
@@ -201,10 +203,10 @@ export class Skeleton extends MetaDBManager {
     const { number } = head.header
 
     const [lastchain] = this.status.progress.subchains
-    if (lastchain?.tail.gte(number)) {
+    if (lastchain?.tail >= number) {
       // If the chain is down to a single beacon header, and it is re-announced
       // once more, ignore it instead of tearing down sync for a noop.
-      if (lastchain.head.eq(lastchain.tail)) {
+      if (lastchain.head === lastchain.tail) {
         const block = await this.getBlock(number)
         if (block?.hash().equals(head.hash())) {
           return false
@@ -218,13 +220,13 @@ export class Skeleton extends MetaDBManager {
       }
       return true
     }
-    if (lastchain?.head.addn(1).lt(number)) {
+    if (lastchain.head && lastchain.head + BigInt(1) < number) {
       if (force) {
         this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
       }
       return true
     }
-    const parent = await this.getBlock(number.subn(1))
+    const parent = await this.getBlock(number - BigInt(1))
     if (parent && !parent.hash().equals(head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
@@ -263,11 +265,11 @@ export class Skeleton extends MetaDBManager {
     let merged = false
     for (const block of blocks) {
       await this.putBlock(block)
-      this.pulled.iaddn(1)
+      this.pulled += BigInt(1)
       const { number } = block.header
       // Extend subchain or create new segment if necessary
       if (this.status.progress.subchains[0].next.equals(block.hash())) {
-        this.status.progress.subchains[0].tail.isubn(1)
+        this.status.progress.subchains[0].tail -= BigInt(1)
         this.status.progress.subchains[0].next = block.header.parentHash
       } else {
         // See if the block can fit in an existing subchain. If not, create a new one.
@@ -276,18 +278,16 @@ export class Skeleton extends MetaDBManager {
         )
         if (foundSubchain) {
           // Extend
-          foundSubchain.tail.isubn(1)
+          foundSubchain.tail -= BigInt(1)
           foundSubchain.next = block.header.parentHash
         } else {
           // New subchain
           if (
-            number.lt(
-              this.status.progress.subchains[this.status.progress.subchains.length - 1].tail
-            )
+            number < this.status.progress.subchains[this.status.progress.subchains.length - 1].tail
           ) {
             const subchain = {
-              head: number.clone(),
-              tail: number.clone(),
+              head: number,
+              tail: number,
               next: block.header.parentHash,
             }
             this.status.progress.subchains.push(subchain)
@@ -299,14 +299,14 @@ export class Skeleton extends MetaDBManager {
       // the overlap. Since there could be many overlaps, do this in a loop.
       while (
         this.status.progress.subchains.length > 1 &&
-        this.status.progress.subchains[1].head.gte(this.status.progress.subchains[0].tail)
+        this.status.progress.subchains[1].head >= this.status.progress.subchains[0].tail
       ) {
         // Extract some stats from the second subchain
         const { head, tail, next } = this.status.progress.subchains[1]
 
         // Since we just overwrote part of the next subchain, we need to trim
         // its head independent of matching or mismatching content
-        if (tail.gte(this.status.progress.subchains[0].tail)) {
+        if (tail >= this.status.progress.subchains[0].tail) {
           // Fully overwritten, get rid of the subchain as a whole
           this.config.logger.debug(
             `Previous subchain fully overwritten head=${head} tail=${tail} next=${short(next)}`
@@ -318,7 +318,8 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.debug(
             `Previous subchain partially overwritten head=${head} tail=${tail} next=${short(next)}`
           )
-          this.status.progress.subchains[1].head = this.status.progress.subchains[0].tail.subn(1)
+          this.status.progress.subchains[1].head =
+            this.status.progress.subchains[0].tail - BigInt(1)
         }
         // If the old subchain is an extension of the new one, merge the two
         // and let the skeleton syncer restart (to clean internal state)
@@ -348,15 +349,15 @@ export class Skeleton extends MetaDBManager {
 
     // Print a progress report making the UX a bit nicer
     if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
-      let left = this.bounds().tail.subn(1).sub(this.chain.blocks.height)
-      if (this.isLinked()) left = new BN(0)
-      if (left.gtn(0)) {
+      let left = this.bounds().tail - BigInt(1) - this.chain.blocks.height
+      if (this.isLinked()) left = BigInt(0)
+      if (left > BigInt(0)) {
         this.logged = new Date().getTime()
-        if (this.pulled.isZero()) {
+        if (this.pulled === BigInt(0)) {
           this.config.logger.info(`Beacon sync starting left=${left}`)
         } else {
           const sinceStarted = (new Date().getTime() - this.started) / 1000
-          const eta = timeDuration((sinceStarted / this.pulled.toNumber()) * left.toNumber())
+          const eta = timeDuration((sinceStarted / Number(this.pulled)) * Number(left))
           this.config.logger.info(
             `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${eta}`
           )
@@ -380,7 +381,7 @@ export class Skeleton extends MetaDBManager {
   isLinked() {
     if (this.status.progress.subchains.length !== 1) return false
     const { tail } = this.bounds()
-    if (tail.lte(this.chain.blocks.height.addn(1))) {
+    if (tail <= this.chain.blocks.height + BigInt(1)) {
       return true
     }
     return false
@@ -392,15 +393,15 @@ export class Skeleton extends MetaDBManager {
   private async fillCanonicalChain() {
     if (this.filling) return
     this.filling = true
-    const canonicalHead = this.chain.blocks.height.clone()
-    const start = canonicalHead.clone()
+    let canonicalHead = this.chain.blocks.height
+    const start = canonicalHead
     const { head } = this.bounds()
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${this.chain.blocks.height} subchainHead=${head}`
     )
-    while (this.filling && canonicalHead.lt(head)) {
+    while (this.filling && canonicalHead < head) {
       // Get next block
-      const number = canonicalHead.addn(1)
+      const number = canonicalHead + BigInt(1)
       const block = await this.getBlock(number)
       if (!block) break
       // Insert into chain
@@ -413,7 +414,7 @@ export class Skeleton extends MetaDBManager {
       }
       // Delete skeleton block to clean up as we go
       await this.deleteBlock(block)
-      canonicalHead.iaddn(1)
+      canonicalHead += BigInt(1)
     }
     this.filling = false
     this.config.logger.debug(
@@ -425,11 +426,11 @@ export class Skeleton extends MetaDBManager {
    * Writes a skeleton block to the db by number
    */
   private async putBlock(block: Block): Promise<boolean> {
-    await this.put(DBKey.SkeletonBlock, block.header.number.toArrayLike(Buffer), block.serialize())
+    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), block.serialize())
     await this.put(
       DBKey.SkeletonBlockHashToNumber,
       block.hash(),
-      block.header.number.toArrayLike(Buffer)
+      bigIntToBuffer(block.header.number)
     )
     return true
   }
@@ -437,9 +438,9 @@ export class Skeleton extends MetaDBManager {
   /**
    * Gets a block from the skeleton or canonical db by number.
    */
-  async getBlock(number: BN, onlySkeleton = false): Promise<Block | undefined> {
+  async getBlock(number: bigint, onlySkeleton = false): Promise<Block | undefined> {
     try {
-      const rlp = await this.get(DBKey.SkeletonBlock, number.toArrayLike(Buffer))
+      const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBuffer(number))
       const block = Block.fromRLPSerializedBlock(rlp!, {
         common: this.config.chainCommon,
       })
@@ -461,7 +462,7 @@ export class Skeleton extends MetaDBManager {
   async getBlockByHash(hash: Buffer): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
     if (!number) return undefined
-    return this.getBlock(new BN(number))
+    return this.getBlock(bufferToBigInt(number))
   }
 
   /**
@@ -469,7 +470,7 @@ export class Skeleton extends MetaDBManager {
    */
   async deleteBlock(block: Block): Promise<boolean> {
     try {
-      await this.delete(DBKey.SkeletonBlock, block.header.number.toArrayLike(Buffer))
+      await this.delete(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number))
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
       return true
     } catch (error: any) {
@@ -507,11 +508,11 @@ export class Skeleton extends MetaDBManager {
    */
   private statusToRLP(): Buffer {
     const subchains: SkeletonSubchainRLP[] = this.status.progress.subchains.map((subchain) => [
-      subchain.head.toArrayLike(Buffer),
-      subchain.tail.toArrayLike(Buffer),
+      bigIntToBuffer(subchain.head),
+      bigIntToBuffer(subchain.tail),
       subchain.next,
     ])
-    return rlp.encode(subchains)
+    return Buffer.from(RLP.encode(subchains))
   }
 
   /**
@@ -519,10 +520,10 @@ export class Skeleton extends MetaDBManager {
    */
   private statusRLPtoObject(rawStatus: Buffer): SkeletonStatus {
     const status: SkeletonStatus = { progress: { subchains: [] } }
-    const rawSubchains = rlp.decode(rawStatus) as unknown as SkeletonSubchainRLP[]
+    const rawSubchains = RLP.decode(rawStatus) as unknown as SkeletonSubchainRLP[]
     const subchains: SkeletonSubchain[] = rawSubchains.map((raw) => ({
-      head: new BN(raw[0]),
-      tail: new BN(raw[1]),
+      head: bufferToBigInt(raw[0]),
+      tail: bufferToBigInt(raw[1]),
       next: raw[2],
     }))
     status.progress.subchains = subchains

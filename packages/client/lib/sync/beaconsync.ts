@@ -6,7 +6,6 @@ import type { Block } from '@ethereumjs/block'
 import type { Peer } from '../net/peer/peer'
 import { errSyncReorged, Skeleton } from './skeleton'
 import type { VMExecution } from '../execution'
-import type { BN } from 'ethereumjs-util'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -74,14 +73,14 @@ export class BeaconSynchronizer extends Synchronizer {
    * blockchain. Returns null if no valid peer is found
    */
   async best(): Promise<Peer | undefined> {
-    let best: [Peer, BN] | undefined
+    let best: [Peer, BigInt] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number.gte(this.chain.blocks.height)) || (best && best[1].lt(number))) {
+        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
           best = [peer, number]
         }
       }
@@ -197,18 +196,20 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
+    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     const { tail } = this.skeleton.bounds()
-    const first = tail.subn(1)
+    const first = tail - BigInt(1)
     // Sync from tail to next subchain or chain height
-    const count = first.sub(
-      (this.skeleton as any).status.progress.subchains[1]?.head.subn(1) ?? this.chain.blocks.height
-    )
-    if (count.gtn(0) && (!this.fetcher || this.fetcher.errored)) {
+    const count =
+      first -
+      ((this.skeleton as any).status.progress.subchains[1]?.head
+        ? (this.skeleton as any).status.progress.subchains[1].head - BigInt(1)
+        : this.chain.blocks.height)
+    if (count > BigInt(0) && (!this.fetcher || this.fetcher.errored)) {
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -248,8 +249,8 @@ export class BeaconSynchronizer extends Synchronizer {
     // Execute single block when within 50 blocks of head,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
-      this.chain.blocks.height.gt(this.skeleton.bounds().head.subn(50)) ||
-      this.chain.blocks.height.modrn(50) === 0
+      this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50) ||
+      this.chain.blocks.height % BigInt(50) === BigInt(0)
     ) {
       void this.execution.run(false)
     }

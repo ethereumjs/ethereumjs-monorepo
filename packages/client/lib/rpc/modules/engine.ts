@@ -515,7 +515,7 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty.gtn(0)) {
+    if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty > BigInt(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {

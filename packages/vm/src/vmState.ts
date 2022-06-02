@@ -204,6 +204,10 @@ export class VmState implements VmStateAccess {
     return await this._stateManager.getStateRoot()
   }
 
+  async hasStateRoot(root: Buffer): Promise<boolean> {
+    return await this._stateManager.hasStateRoot(root)
+  }
+
   /**
    * Marks an account as touched, according to the definition
    * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).

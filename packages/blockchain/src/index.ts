@@ -1,6 +1,8 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { BigIntLike } from 'ethereumjs-util'
+
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -388,7 +390,7 @@ export default class Blockchain implements BlockchainInterface {
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
       const td = await this.getTotalDifficulty(this._headHeaderHash)
-      this._common.setHardforkByBlockNumber(latestHeader.number, td)
+      this.checkAndTransitionHardForkByNumber(latestHeader.number, td)
     }
 
     this._isInitialized = true
@@ -409,301 +411,6 @@ export default class Blockchain implements BlockchainInterface {
     } finally {
       this._lock.release()
     }
-  }
-
-  private _requireClique() {
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-      throw new Error('Function call only supported for clique PoA networks')
-    }
-  }
-
-  /**
-   * Checks if signer was recently signed.
-   * Returns true if signed too recently: more than once per {@link Blockchain.cliqueSignerLimit} consecutive blocks.
-   * @param header BlockHeader
-   * @hidden
-   */
-  private cliqueCheckRecentlySigned(header: BlockHeader): boolean {
-    if (header.isGenesis() || header.number === BigInt(1)) {
-      // skip genesis, first block
-      return false
-    }
-    const limit = this.cliqueSignerLimit()
-    // construct recent block signers list with this block
-    let signers = this._cliqueLatestBlockSigners
-    signers = signers.slice(signers.length < limit ? 0 : 1)
-    if (signers.length > 0 && !signers[signers.length - 1][0].eq(header.number.subn(1))) {
-      // if the last signed block is not one minus the head we are trying to compare
-      // we do not have a complete picture of the state to verify if too recently signed
-      return false
-    }
-    signers.push([header.number, header.cliqueSigner()])
-    const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
-    return seen > 1
-  }
-
-  /**
-   * Save genesis signers to db
-   * @param genesisBlock genesis block
-   * @hidden
-   */
-  private async cliqueSaveGenesisSigners(genesisBlock: Block) {
-    const genesisSignerState: CliqueSignerState = [
-      BigInt(0),
-      genesisBlock.header.cliqueEpochTransitionSigners(),
-    ]
-    await this.cliqueUpdateSignerStates(genesisSignerState)
-    debug(`[Block 0] Genesis block -> update signer states`)
-    await this.cliqueUpdateVotes()
-  }
-
-  /**
-   * Save signer state to db
-   * @param signerState
-   * @hidden
-   */
-  private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
-    const dbOps: DBOp[] = []
-
-    if (signerState) {
-      this._cliqueLatestSignerStates.push(signerState)
-    }
-
-    // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const blockSigners = this._cliqueLatestBlockSigners
-    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
-    if (lastBlockNumber) {
-      const blockLimit = lastBlockNumber - BigInt(limit)
-      const states = this._cliqueLatestSignerStates
-      const lastItem = states[states.length - 1]
-      this._cliqueLatestSignerStates = states.filter((state) => state[0] >= blockLimit)
-      if (this._cliqueLatestSignerStates.length === 0) {
-        // always keep at least one item on the stack
-        this._cliqueLatestSignerStates.push(lastItem)
-      }
-    }
-
-    // save to db
-    const formatted = this._cliqueLatestSignerStates.map((state) => [
-      bigIntToBuffer(state[0]),
-      state[1].map((a) => a.toBuffer()),
-    ])
-    dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
-
-    await this.dbManager.batch(dbOps)
-    // Output active signers for debugging purposes
-    let i = 0
-    for (const signer of this.cliqueActiveSigners()) {
-      debug(`Clique signer [${i}]: ${signer}`)
-      i++
-    }
-  }
-
-  /**
-   * Update clique votes and save to db
-   * @param header BlockHeader
-   * @hidden
-   */
-  private async cliqueUpdateVotes(header?: BlockHeader) {
-    // Block contains a vote on a new signer
-    if (header && !header.coinbase.isZero()) {
-      const signer = header.cliqueSigner()
-      const beneficiary = header.coinbase
-      const nonce = header.nonce
-      const latestVote: CliqueVote = [header.number, [signer, beneficiary, nonce]]
-
-      // Do two rounds here, one to execute on a potential previously reached consensus
-      // on the newly touched beneficiary, one with the added new vote
-      for (let round = 1; round <= 2; round++) {
-        // See if there is a new majority consensus to update the signer list
-        const lastEpochBlockNumber =
-          header.number - (header.number % BigInt(this._common.consensusConfig().epoch))
-        const limit = this.cliqueSignerLimit()
-        let activeSigners = this.cliqueActiveSigners()
-        let consensus = false
-
-        // AUTH vote analysis
-        let votes = this._cliqueLatestVotes.filter((vote) => {
-          return (
-            vote[0] >= BigInt(lastEpochBlockNumber) &&
-            !vote[1][0].equals(signer) &&
-            vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_AUTH)
-          )
-        })
-        const beneficiaryVotesAUTH: Address[] = []
-        for (const vote of votes) {
-          const num = beneficiaryVotesAUTH.filter((voteCMP) => {
-            return voteCMP.equals(vote[1][0])
-          }).length
-          if (num === 0) {
-            beneficiaryVotesAUTH.push(vote[1][0])
-          }
-        }
-        let numBeneficiaryVotesAUTH = beneficiaryVotesAUTH.length
-        if (round === 2 && nonce.equals(CLIQUE_NONCE_AUTH)) {
-          numBeneficiaryVotesAUTH += 1
-        }
-        // Majority consensus
-        if (numBeneficiaryVotesAUTH >= limit) {
-          consensus = true
-          // Authorize new signer
-          activeSigners.push(beneficiary)
-          activeSigners.sort((a, b) => {
-            // Sort by buffer size
-            return a.toBuffer().compare(b.toBuffer())
-          })
-          // Discard votes for added signer
-          this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-            (vote) => !vote[1][1].equals(beneficiary)
-          )
-          debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
-        }
-        // DROP vote
-        votes = this._cliqueLatestVotes.filter((vote) => {
-          return (
-            vote[0] >= BigInt(lastEpochBlockNumber) &&
-            !vote[1][0].equals(signer) &&
-            vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_DROP)
-          )
-        })
-        const beneficiaryVotesDROP: Address[] = []
-        for (const vote of votes) {
-          const num = beneficiaryVotesDROP.filter((voteCMP) => {
-            return voteCMP.equals(vote[1][0])
-          }).length
-          if (num === 0) {
-            beneficiaryVotesDROP.push(vote[1][0])
-          }
-        }
-        let numBeneficiaryVotesDROP = beneficiaryVotesDROP.length
-
-        if (round === 2 && nonce.equals(CLIQUE_NONCE_DROP)) {
-          numBeneficiaryVotesDROP += 1
-        }
-        // Majority consensus
-        if (numBeneficiaryVotesDROP >= limit) {
-          consensus = true
-          // Drop signer
-          activeSigners = activeSigners.filter((signer) => !signer.equals(beneficiary))
-          this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-            // Discard votes from removed signer and for removed signer
-            (vote) => !vote[1][0].equals(beneficiary) && !vote[1][1].equals(beneficiary)
-          )
-          debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
-        }
-        if (round === 1) {
-          // Always add the latest vote to the history no matter if already voted
-          // the same vote or not
-          this._cliqueLatestVotes.push(latestVote)
-          debug(
-            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
-              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
-            }`
-          )
-        }
-        if (consensus) {
-          if (round === 1) {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`
-            )
-          } else {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`
-            )
-          }
-          const newSignerState: CliqueSignerState = [header.number, activeSigners]
-          await this.cliqueUpdateSignerStates(newSignerState)
-          return
-        }
-      }
-    }
-
-    // trim to lastEpochBlockNumber - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const blockSigners = this._cliqueLatestBlockSigners
-    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
-    if (lastBlockNumber) {
-      const lastEpochBlockNumber =
-        lastBlockNumber - (lastBlockNumber % BigInt(this._common.consensusConfig().epoch))
-      const blockLimit = lastEpochBlockNumber - BigInt(limit)
-      this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
-    }
-
-    // save votes to db
-    const dbOps: DBOp[] = []
-    const formatted = this._cliqueLatestVotes.map((v) => [
-      bigIntToBuffer(v[0]),
-      [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
-    ])
-    dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
-
-    await this.dbManager.batch(dbOps)
-  }
-
-  /**
-   * Update snapshot of latest clique block signers.
-   * Used for checking for 'recently signed' error.
-   * Length trimmed to {@link Blockchain.cliqueSignerLimit}.
-   * @param header BlockHeader
-   * @hidden
-   */
-  private async cliqueUpdateLatestBlockSigners(header?: BlockHeader) {
-    const dbOps: DBOp[] = []
-
-    if (header) {
-      if (header.isGenesis()) {
-        return
-      }
-      // add this block's signer
-      const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
-      this._cliqueLatestBlockSigners.push(signer)
-
-      // trim length to `this.cliqueSignerLimit()`
-      const length = this._cliqueLatestBlockSigners.length
-      const limit = this.cliqueSignerLimit()
-      if (length > limit) {
-        this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.slice(
-          length - limit,
-          length
-        )
-      }
-    }
-
-    // save to db
-    const formatted = this._cliqueLatestBlockSigners.map((b) => [
-      bigIntToBuffer(b[0]),
-      b[1].toBuffer(),
-    ])
-    dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, rlp.encode(formatted)))
-
-    await this.dbManager.batch(dbOps)
-  }
-
-  /**
-   * Returns a list with the current block signers
-   * (only clique PoA, throws otherwise)
-   */
-  public cliqueActiveSigners(): Address[] {
-    this._requireClique()
-    const signers = this._cliqueLatestSignerStates
-    if (signers.length === 0) {
-      return []
-    }
-    return [...signers[signers.length - 1][1]]
-  }
-
-  /**
-   * Number of consecutive blocks out of which a signer may only sign one.
-   * Defined as `Math.floor(SIGNER_COUNT / 2) + 1` to enforce majority consensus.
-   * signer count -> signer limit:
-   *   1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3, ...
-   * @hidden
-   */
-  private cliqueSignerLimit() {
-    return Math.floor(this.cliqueActiveSigners().length / 2) + 1
   }
 
   /**
@@ -908,7 +615,7 @@ export default class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this._common.setHardforkByBlockNumber(blockNumber, td)
+          this.checkAndTransitionHardForkByNumber(blockNumber, td)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -962,7 +669,7 @@ export default class Blockchain implements BlockchainInterface {
    * Gets total difficulty for a block specified by hash and number
    */
   public async getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint> {
-    if (!number) {
+    if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getTotalDifficulty(hash, number)
@@ -1408,6 +1115,30 @@ export default class Blockchain implements BlockchainInterface {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getHeader(hash, number)
+  }
+
+  protected checkAndTransitionHardForkByNumber(number: bigint, td?: BigIntLike): void {
+    this._common.setHardforkByBlockNumber(number, td)
+
+    switch (this._common.consensusAlgorithm()) {
+      case ConsensusAlgorithm.Casper:
+        if (!(this.consensus instanceof CasperConsensus)) {
+          this.consensus = new CasperConsensus({ blockchain: this })
+        }
+        break
+      case ConsensusAlgorithm.Clique:
+        if (!(this.consensus instanceof CliqueConsensus)) {
+          this.consensus = new CliqueConsensus({ blockchain: this })
+        }
+        break
+      case ConsensusAlgorithm.Ethash:
+        if (!(this.consensus instanceof EthashConsensus)) {
+          this.consensus = new EthashConsensus({ blockchain: this })
+        }
+        break
+      default:
+        throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
+    }
   }
 
   /**

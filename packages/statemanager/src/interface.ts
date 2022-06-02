@@ -29,6 +29,7 @@ export interface StateAccess {
   setStateRoot(stateRoot: Buffer): Promise<void>
   getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
+  hasStateRoot(root: Buffer): Promise<boolean>
 }
 
 export interface StateManager extends StateAccess {

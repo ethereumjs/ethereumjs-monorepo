@@ -139,7 +139,7 @@ tape('[FullEthereumService]', async (t) => {
       await service.switchToBeaconSync()
       t.ok(service.synchronizer instanceof BeaconSynchronizer, 'switched to BeaconSynchronizer')
       t.ok(service.beaconSync, 'can access BeaconSynchronizer')
-      await service.handle({ name: 'NewBlock', data: [{}, =BigInt(1)] }, 'eth', undefined as any)
+      await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
       await service.handle(
         { name: 'NewBlockHashes', data: [{}, BigInt(1)] },
         'eth',
@@ -189,7 +189,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should start on beacon sync when past merge', async (t) => {
     const params = await parseCustomParams(genesisJSON, 'post-merge')
     const common = new Common({ chain: params.name, customChains: [params] })
-    common.setHardforkByBlockNumber(new BN(0), new BN(0))
+    common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
     const config = new Config({ transports: [], common })
     const chain = new Chain({ config })
     let service = new FullEthereumService({ config, chain })
