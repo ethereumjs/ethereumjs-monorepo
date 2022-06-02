@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.5.0 - 2022-06-02
+
+### Merge: Kiln v2.1 Support
+
+This client release comes with various last specification updates for the Merge to conform with the execution engine API spec as defined in the "Ballast" [v1.0.0-alpha.9](https://github.com/ethereum/execution-apis/releases/tag/v1.0.0-alpha.9) pre-release of the execution API, also see the general Merge (aka "Paris" HF) [execution specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/paris.md).
+
+- Various `eth_` methods are now available on the engine API endpoint as of Kiln spec v2.1, PR [#1855](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1855)
+- Small engine API updates and fixes, PR [#1902](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1902)
+- Subsume engine's `INVALID_TERMINAL_BLOCK` into `INVALID` response, PR [#1919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1919)
+
+### Merge: Optimistic (Beacon) Sync
+
+The client now supports [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (Beacon) sync where blocks are downloaded in reverse from the announced trusted head. This allows for a practically viable sync process in combination with a consensus client when running the client in an execution-consensus-client-combination setup on a Merge test network.
+
+See PR [#1878](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1878) for the implementation and PR [#1858](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1858), PR [#1861](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1861) and PR [#1863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1863) which prepare the ground with some (larger scale) preparator refactor for the implementation.
+
+### TxPool Validation
+
+With this release our tx pool grows into a still simple but full-grown and base-feature-complete pool by adding all sorts of validation checks to ensure validity with consensus, see PR [#1852](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1852). This is another substantial step towards fullfilling the requirements for acting as an active block-producing client in an Ethereum network. Validation checks - like e.g. "tx nonce is greater than sender's current nonce" - are now run early on when a tx is send via RPC `eth_sendRawTransaction` and feedback (and eventual rejection of the tx) is provided at the point of submission. This allows for building valid blocks when acting as a block producer.
+
+### Fixes
+
+- Execution API: Added missing tx fields to `getBlockByHash` RPC method, PR [#1881](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1881)
+
+
 ## 0.4.1 - 2022-04-14
 
 - Allow `forkchoiceUpdated` method to properly work on a reorg if a previous block was sent as `headBlockHash`, PR [#1820](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1820)

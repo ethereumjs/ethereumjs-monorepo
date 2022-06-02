@@ -27,7 +27,7 @@ ethereumjs-util
 - [TransformableToArray](interfaces/TransformableToArray.md)
 - [TransformableToBuffer](interfaces/TransformableToBuffer.md)
 
-### Type aliases
+### Type Aliases
 
 - [AddressLike](README.md#addresslike)
 - [BNLike](README.md#bnlike)
@@ -120,7 +120,7 @@ ethereumjs-util
 - [zeroAddress](README.md#zeroaddress)
 - [zeros](README.md#zeros)
 
-## Type aliases
+## Type Aliases
 
 ### AddressLike
 
@@ -216,7 +216,7 @@ ___
 
 ### KECCAK256\_NULL
 
-• **KECCAK256\_NULL**: `Buffer`
+• `Const` **KECCAK256\_NULL**: `Buffer`
 
 Keccak-256 hash of null
 
@@ -228,7 +228,7 @@ ___
 
 ### KECCAK256\_NULL\_S
 
-• **KECCAK256\_NULL\_S**: ``"c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"``
+• `Const` **KECCAK256\_NULL\_S**: ``"c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"``
 
 Keccak-256 hash of null
 
@@ -240,7 +240,7 @@ ___
 
 ### KECCAK256\_RLP
 
-• **KECCAK256\_RLP**: `Buffer`
+• `Const` **KECCAK256\_RLP**: `Buffer`
 
 Keccak-256 hash of the RLP of null
 
@@ -252,7 +252,7 @@ ___
 
 ### KECCAK256\_RLP\_ARRAY
 
-• **KECCAK256\_RLP\_ARRAY**: `Buffer`
+• `Const` **KECCAK256\_RLP\_ARRAY**: `Buffer`
 
 Keccak-256 of an RLP of an empty array
 
@@ -264,7 +264,7 @@ ___
 
 ### KECCAK256\_RLP\_ARRAY\_S
 
-• **KECCAK256\_RLP\_ARRAY\_S**: ``"1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"``
+• `Const` **KECCAK256\_RLP\_ARRAY\_S**: ``"1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"``
 
 Keccak-256 of an RLP of an empty array
 
@@ -276,7 +276,7 @@ ___
 
 ### KECCAK256\_RLP\_S
 
-• **KECCAK256\_RLP\_S**: ``"56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"``
+• `Const` **KECCAK256\_RLP\_S**: ``"56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"``
 
 Keccak-256 hash of the RLP of null
 
@@ -288,7 +288,7 @@ ___
 
 ### MAX\_INTEGER
 
-• **MAX\_INTEGER**: [`BN`](classes/BN.md)
+• `Const` **MAX\_INTEGER**: [`BN`](classes/BN.md)
 
 The max integer that the evm can handle (2^256-1)
 
@@ -300,7 +300,7 @@ ___
 
 ### MAX\_UINT64
 
-• **MAX\_UINT64**: [`BN`](classes/BN.md)
+• `Const` **MAX\_UINT64**: [`BN`](classes/BN.md)
 
 2^64-1
 
@@ -312,7 +312,7 @@ ___
 
 ### TWO\_POW256
 
-• **TWO\_POW256**: [`BN`](classes/BN.md)
+• `Const` **TWO\_POW256**: [`BN`](classes/BN.md)
 
 2^256
 
@@ -324,7 +324,7 @@ ___
 
 ### addHexPrefix
 
-▸ `Const` **addHexPrefix**(`str`): `string`
+▸ **addHexPrefix**(`str`): `string`
 
 Adds "0x" to a given `String` if it does not already start with "0x".
 
@@ -425,7 +425,7 @@ ___
 
 ### baToJSON
 
-▸ `Const` **baToJSON**(`ba`): `any`
+▸ **baToJSON**(`ba`): `any`
 
 Converts a `Buffer` or `Array` to JSON.
 
@@ -572,7 +572,7 @@ ___
 
 ### bufferToHex
 
-▸ `Const` **bufferToHex**(`buf`): `string`
+▸ **bufferToHex**(`buf`): `string`
 
 Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
@@ -594,7 +594,7 @@ ___
 
 ### bufferToInt
 
-▸ `Const` **bufferToInt**(`buf`): `number`
+▸ **bufferToInt**(`buf`): `number`
 
 Converts a `Buffer` to a `Number`.
 
@@ -618,7 +618,7 @@ ___
 
 ### defineProperties
 
-▸ `Const` **defineProperties**(`self`, `fields`, `data?`): `void`
+▸ **defineProperties**(`self`, `fields`, `data?`): `void`
 
 Defines properties on a `Object`. It make the assumption that underlying data is binary.
 
@@ -644,9 +644,10 @@ ___
 
 ### ecrecover
 
-▸ `Const` **ecrecover**(`msgHash`, `v`, `r`, `s`, `chainId?`): `Buffer`
+▸ **ecrecover**(`msgHash`, `v`, `r`, `s`, `chainId?`): `Buffer`
 
 ECDSA public key recovery from signature.
+NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -666,7 +667,7 @@ Recovered public key
 
 #### Defined in
 
-[packages/util/src/signature.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L65)
+[packages/util/src/signature.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L69)
 
 ___
 
@@ -738,10 +739,12 @@ ___
 
 ### fromRpcSig
 
-▸ `Const` **fromRpcSig**(`sig`): [`ECDSASignature`](interfaces/ECDSASignature.md)
+▸ **fromRpcSig**(`sig`): [`ECDSASignature`](interfaces/ECDSASignature.md)
 
 Convert signature format of the `eth_sign` RPC method to signature parameters
 NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
+NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
+it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
 
 #### Parameters
 
@@ -755,13 +758,13 @@ NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issu
 
 #### Defined in
 
-[packages/util/src/signature.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L119)
+[packages/util/src/signature.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L127)
 
 ___
 
 ### fromSigned
 
-▸ `Const` **fromSigned**(`num`): [`BN`](classes/BN.md)
+▸ **fromSigned**(`num`): [`BN`](classes/BN.md)
 
 Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
 
@@ -807,7 +810,7 @@ ___
 
 ### generateAddress
 
-▸ `Const` **generateAddress**(`from`, `nonce`): `Buffer`
+▸ **generateAddress**(`from`, `nonce`): `Buffer`
 
 Generates an address of a newly created contract.
 
@@ -830,7 +833,7 @@ ___
 
 ### generateAddress2
 
-▸ `Const` **generateAddress2**(`from`, `salt`, `initCode`): `Buffer`
+▸ **generateAddress2**(`from`, `salt`, `initCode`): `Buffer`
 
 Generates an address for a contract created using CREATE2.
 
@@ -909,7 +912,7 @@ ___
 
 ### hashPersonalMessage
 
-▸ `Const` **hashPersonalMessage**(`message`): `Buffer`
+▸ **hashPersonalMessage**(`message`): `Buffer`
 
 Returns the keccak-256 hash of `message`, prefixed with the header used by the `eth_sign` RPC call.
 The output of this function can be fed into `ecsign` to produce the same signature as the `eth_sign`
@@ -928,13 +931,13 @@ used to produce the signature.
 
 #### Defined in
 
-[packages/util/src/signature.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L196)
+[packages/util/src/signature.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L205)
 
 ___
 
 ### importPublic
 
-▸ `Const` **importPublic**(`publicKey`): `Buffer`
+▸ **importPublic**(`publicKey`): `Buffer`
 
 Converts a public key to the Ethereum format.
 
@@ -956,7 +959,7 @@ ___
 
 ### intToBuffer
 
-▸ `Const` **intToBuffer**(`i`): `Buffer`
+▸ **intToBuffer**(`i`): `Buffer`
 
 Converts an `Number` to a `Buffer`
 
@@ -978,7 +981,7 @@ ___
 
 ### intToHex
 
-▸ `Const` **intToHex**(`i`): `string`
+▸ **intToHex**(`i`): `string`
 
 Converts a `Number` into a hex `String`
 
@@ -1051,7 +1054,7 @@ ___
 
 ### isValidAddress
 
-▸ `Const` **isValidAddress**(`hexAddress`): `boolean`
+▸ **isValidAddress**(`hexAddress`): `boolean`
 
 Checks if the address is a valid. Accepts checksummed addresses too.
 
@@ -1073,7 +1076,7 @@ ___
 
 ### isValidChecksumAddress
 
-▸ `Const` **isValidChecksumAddress**(`hexAddress`, `eip1191ChainId?`): `boolean`
+▸ **isValidChecksumAddress**(`hexAddress`, `eip1191ChainId?`): `boolean`
 
 Checks if the address is a valid checksummed address.
 
@@ -1098,7 +1101,7 @@ ___
 
 ### isValidPrivate
 
-▸ `Const` **isValidPrivate**(`privateKey`): `boolean`
+▸ **isValidPrivate**(`privateKey`): `boolean`
 
 Checks if the private key satisfies the rules of the curve secp256k1.
 
@@ -1120,7 +1123,7 @@ ___
 
 ### isValidPublic
 
-▸ `Const` **isValidPublic**(`publicKey`, `sanitize?`): `boolean`
+▸ **isValidPublic**(`publicKey`, `sanitize?`): `boolean`
 
 Checks if the public key satisfies the rules of the curve secp256k1
 and the requirements of Ethereum.
@@ -1144,9 +1147,10 @@ ___
 
 ### isValidSignature
 
-▸ `Const` **isValidSignature**(`v`, `r`, `s`, `homesteadOrLater?`, `chainId?`): `boolean`
+▸ **isValidSignature**(`v`, `r`, `s`, `homesteadOrLater?`, `chainId?`): `boolean`
 
 Validate a ECDSA signature.
+NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1164,13 +1168,13 @@ Validate a ECDSA signature.
 
 #### Defined in
 
-[packages/util/src/signature.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L155)
+[packages/util/src/signature.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L164)
 
 ___
 
 ### isZeroAddress
 
-▸ `Const` **isZeroAddress**(`hexAddress`): `boolean`
+▸ **isZeroAddress**(`hexAddress`): `boolean`
 
 Checks if a given address is the zero address.
 
@@ -1192,7 +1196,7 @@ ___
 
 ### keccak
 
-▸ `Const` **keccak**(`a`, `bits?`): `Buffer`
+▸ **keccak**(`a`, `bits?`): `Buffer`
 
 Creates Keccak hash of a Buffer input
 
@@ -1215,7 +1219,7 @@ ___
 
 ### keccak256
 
-▸ `Const` **keccak256**(`a`): `Buffer`
+▸ **keccak256**(`a`): `Buffer`
 
 Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
@@ -1237,7 +1241,7 @@ ___
 
 ### keccakFromArray
 
-▸ `Const` **keccakFromArray**(`a`, `bits?`): `Buffer`
+▸ **keccakFromArray**(`a`, `bits?`): `Buffer`
 
 Creates Keccak hash of a number array input
 
@@ -1260,7 +1264,7 @@ ___
 
 ### keccakFromHexString
 
-▸ `Const` **keccakFromHexString**(`a`, `bits?`): `Buffer`
+▸ **keccakFromHexString**(`a`, `bits?`): `Buffer`
 
 Creates Keccak hash of an 0x-prefixed string input
 
@@ -1283,7 +1287,7 @@ ___
 
 ### keccakFromString
 
-▸ `Const` **keccakFromString**(`a`, `bits?`): `Buffer`
+▸ **keccakFromString**(`a`, `bits?`): `Buffer`
 
 Creates Keccak hash of a utf-8 string input
 
@@ -1330,7 +1334,7 @@ ___
 
 ### privateToAddress
 
-▸ `Const` **privateToAddress**(`privateKey`): `Buffer`
+▸ **privateToAddress**(`privateKey`): `Buffer`
 
 Returns the ethereum address of a given private key.
 
@@ -1352,7 +1356,7 @@ ___
 
 ### privateToPublic
 
-▸ `Const` **privateToPublic**(`privateKey`): `Buffer`
+▸ **privateToPublic**(`privateKey`): `Buffer`
 
 Returns the ethereum public key of a given private key.
 
@@ -1374,7 +1378,7 @@ ___
 
 ### pubToAddress
 
-▸ `Const` **pubToAddress**(`pubKey`, `sanitize?`): `Buffer`
+▸ **pubToAddress**(`pubKey`, `sanitize?`): `Buffer`
 
 Returns the ethereum address of a given public key.
 Accepts "Ethereum public keys" and SEC1 encoded keys.
@@ -1398,7 +1402,7 @@ ___
 
 ### publicToAddress
 
-▸ `Const` **publicToAddress**(`pubKey`, `sanitize?`): `Buffer`
+▸ **publicToAddress**(`pubKey`, `sanitize?`): `Buffer`
 
 #### Parameters
 
@@ -1419,7 +1423,7 @@ ___
 
 ### ripemd160
 
-▸ `Const` **ripemd160**(`a`, `padded`): `Buffer`
+▸ **ripemd160**(`a`, `padded`): `Buffer`
 
 Creates RIPEMD160 hash of a Buffer input.
 
@@ -1442,7 +1446,7 @@ ___
 
 ### ripemd160FromArray
 
-▸ `Const` **ripemd160FromArray**(`a`, `padded`): `Buffer`
+▸ **ripemd160FromArray**(`a`, `padded`): `Buffer`
 
 Creates RIPEMD160 hash of a number[] input.
 
@@ -1465,7 +1469,7 @@ ___
 
 ### ripemd160FromString
 
-▸ `Const` **ripemd160FromString**(`a`, `padded`): `Buffer`
+▸ **ripemd160FromString**(`a`, `padded`): `Buffer`
 
 Creates RIPEMD160 hash of a string input.
 
@@ -1488,7 +1492,7 @@ ___
 
 ### rlphash
 
-▸ `Const` **rlphash**(`a`): `Buffer`
+▸ **rlphash**(`a`): `Buffer`
 
 Creates SHA-3 hash of the RLP encoded version of the input.
 
@@ -1510,7 +1514,7 @@ ___
 
 ### setLengthLeft
 
-▸ `Const` **setLengthLeft**(`msg`, `length`): `Buffer`
+▸ **setLengthLeft**(`msg`, `length`): `Buffer`
 
 Left Pads a `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
@@ -1536,7 +1540,7 @@ ___
 
 ### setLengthRight
 
-▸ `Const` **setLengthRight**(`msg`, `length`): `Buffer`
+▸ **setLengthRight**(`msg`, `length`): `Buffer`
 
 Right Pads a `Buffer` with trailing zeros till it has `length` bytes.
 it truncates the end if it exceeds.
@@ -1562,7 +1566,7 @@ ___
 
 ### sha256
 
-▸ `Const` **sha256**(`a`): `Buffer`
+▸ **sha256**(`a`): `Buffer`
 
 Creates SHA256 hash of a Buffer input.
 
@@ -1584,7 +1588,7 @@ ___
 
 ### sha256FromArray
 
-▸ `Const` **sha256FromArray**(`a`): `Buffer`
+▸ **sha256FromArray**(`a`): `Buffer`
 
 Creates SHA256 hash of a number[] input.
 
@@ -1606,7 +1610,7 @@ ___
 
 ### sha256FromString
 
-▸ `Const` **sha256FromString**(`a`): `Buffer`
+▸ **sha256FromString**(`a`): `Buffer`
 
 Creates SHA256 hash of a string input.
 
@@ -1628,7 +1632,7 @@ ___
 
 ### stripHexPrefix
 
-▸ `Const` **stripHexPrefix**(`str`): `string`
+▸ **stripHexPrefix**(`str`): `string`
 
 Removes '0x' from a given `String` if present
 
@@ -1676,7 +1680,7 @@ ___
 
 ### toBuffer
 
-▸ `Const` **toBuffer**(`v`): `Buffer`
+▸ **toBuffer**(`v`): `Buffer`
 
 Attempts to turn a value into a `Buffer`.
 Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BN` and other objects
@@ -1700,7 +1704,7 @@ ___
 
 ### toChecksumAddress
 
-▸ `Const` **toChecksumAddress**(`hexAddress`, `eip1191ChainId?`): `string`
+▸ **toChecksumAddress**(`hexAddress`, `eip1191ChainId?`): `string`
 
 Returns a checksummed address.
 
@@ -1732,9 +1736,10 @@ ___
 
 ### toCompactSig
 
-▸ `Const` **toCompactSig**(`v`, `r`, `s`, `chainId?`): `string`
+▸ **toCompactSig**(`v`, `r`, `s`, `chainId?`): `string`
 
 Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
+NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1753,15 +1758,16 @@ Signature
 
 #### Defined in
 
-[packages/util/src/signature.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L99)
+[packages/util/src/signature.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L105)
 
 ___
 
 ### toRpcSig
 
-▸ `Const` **toRpcSig**(`v`, `r`, `s`, `chainId?`): `string`
+▸ **toRpcSig**(`v`, `r`, `s`, `chainId?`): `string`
 
 Convert signature parameters into the format of `eth_sign` RPC method.
+NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1780,7 +1786,7 @@ Signature
 
 #### Defined in
 
-[packages/util/src/signature.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L85)
+[packages/util/src/signature.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L90)
 
 ___
 
@@ -1862,7 +1868,7 @@ ___
 
 ### toUnsigned
 
-▸ `Const` **toUnsigned**(`num`): `Buffer`
+▸ **toUnsigned**(`num`): `Buffer`
 
 Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
 
@@ -1884,7 +1890,7 @@ ___
 
 ### toUtf8
 
-▸ `Const` **toUtf8**(`hex`): `string`
+▸ **toUtf8**(`hex`): `string`
 
 Returns the utf8 string representation from a hex string.
 
@@ -1919,7 +1925,7 @@ ___
 
 ### unpadArray
 
-▸ `Const` **unpadArray**(`a`): `number`[]
+▸ **unpadArray**(`a`): `number`[]
 
 Trims leading zeros from an `Array` (of numbers).
 
@@ -1943,7 +1949,7 @@ ___
 
 ### unpadBuffer
 
-▸ `Const` **unpadBuffer**(`a`): `Buffer`
+▸ **unpadBuffer**(`a`): `Buffer`
 
 Trims leading zeros from a `Buffer`.
 
@@ -1967,7 +1973,7 @@ ___
 
 ### unpadHexString
 
-▸ `Const` **unpadHexString**(`a`): `string`
+▸ **unpadHexString**(`a`): `string`
 
 Trims leading zeros from a hex-prefixed `String`.
 
@@ -1991,7 +1997,7 @@ ___
 
 ### validateNoLeadingZeroes
 
-▸ `Const` **validateNoLeadingZeroes**(`values`): `void`
+▸ **validateNoLeadingZeroes**(`values`): `void`
 
 Checks provided Buffers for leading zeroes and throws if found.
 
@@ -2023,7 +2029,7 @@ ___
 
 ### zeroAddress
 
-▸ `Const` **zeroAddress**(): `string`
+▸ **zeroAddress**(): `string`
 
 Returns the zero address.
 
@@ -2039,7 +2045,7 @@ ___
 
 ### zeros
 
-▸ `Const` **zeros**(`bytes`): `Buffer`
+▸ **zeros**(`bytes`): `Buffer`
 
 Returns a buffer filled with 0s.
 

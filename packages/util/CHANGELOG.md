@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.1.5 - 2022-06-02
+
+- More flexible `signature` module methods now allow for passing in `v` values of `0` and `1` in the context of typed txs (e.g. EIP-1559 txs): `ecrecover()`, `toRpcSig()`, `toCompactSig()`, `isValidSignature()`, PR [#1905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1905)
+
 ## 7.1.4 - 2022-02-01
 
 ### Buffer <-> Uint8Array Conversion Helpers (RLP v3)

@@ -11,7 +11,7 @@
 - [Decoded](../interfaces/rlp.Decoded.md)
 - [List](../interfaces/rlp.List.md)
 
-### Type aliases
+### Type Aliases
 
 - [Input](rlp.md#input)
 
@@ -21,7 +21,7 @@
 - [encode](rlp.md#encode)
 - [getLength](rlp.md#getlength)
 
-## Type aliases
+## Type Aliases
 
 ### Input
 

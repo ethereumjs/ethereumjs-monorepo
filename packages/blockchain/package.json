@@ -37,7 +37,7 @@
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/ethash": "^1.1.0",
     "debug": "^4.3.3",
-    "ethereumjs-util": "^7.1.4",
+    "ethereumjs-util": "^7.1.5",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "semaphore-async-await": "^1.5.1"

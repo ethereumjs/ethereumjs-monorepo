@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "license": "MPL-2.0",
   "author": "mjbecze <mb@ethdev.com>",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^2.6.4",
-    "ethereumjs-util": "^7.1.4"
+    "ethereumjs-util": "^7.1.5"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

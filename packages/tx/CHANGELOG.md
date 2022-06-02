@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.5.2 - 2022-06-02
+
+- Fixed a bug where tx options would not propagate from an unsigned to a signed tx when using the `sign()` function (there are not that many tx options, this is therefore in most cases not practically relevant and rather a guard for future option additions), PR [#1884](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1884)
+- Stricter `v` value validation for legacy txs, PR [#1905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1905)
+
 ## 3.5.1 - 2022-03-15
 
 ### EIP-3860 Support: Limit and Meter Initcode

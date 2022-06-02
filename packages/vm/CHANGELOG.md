@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.9.1 - 2022-06-02
+
+### Additions / Features
+
+- Fixed expanded memory reporting in `step` event on reading previously untouched location - thanks to @theNvN for the contribution ❤️, PR [#1887](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1887)
+- New optional `hasStateRoot` method on `StateManager` interface, PR [#1878](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1878)
+- `EIP-1153` Transient Storage (experimental): Improve the time taken to commit by using a journal instead of stack of maps (potential DoS attack vector), PR [#1860](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1860)
+- Additional guard for `ecrecover` precompile if used with `v` values other than `27` or `28`, PR [#1905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1905)
+
+### Test Updates
+
+- Updated `ethereum/tests` to `v10.4`, PR [#1896](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1896)
+- Ensure verifyPostConditions works in `ethereum/tests` blockchain test runs, PR [#1900](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1900)
+
 ## 5.9.0 - 2022-04-14
 
 ### EIP-3651: Warm COINBASE (Shanghai CFI EIP)
