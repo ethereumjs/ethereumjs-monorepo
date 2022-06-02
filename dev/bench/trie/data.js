@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1654019968380,
+  "lastUpdate": 1654163600720,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ryan@ryanio.com",
-            "name": "Ryan Ghods",
-            "username": "ryanio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "053a3a178d76d1123e5bd2994115fc8cea26e977",
-          "message": "client/engine: speed and resiliency improvements (#1827)\n\n* CLConnectionManager: start on first updateStatus in case PreMerge wasn't reached before merge\r\n* chain: safer closing to not cause db corruption during engine requests\r\n* parse: some improvements and reorganization\r\n* vm/client/engine: add ability to add blocks to blockchain without setting the head. this allows us to do runBlock work in newPayload once, and not again in fcU\r\n* CLConnectionManager: improve logging output\r\n* use ellipsis character\r\n* add space to align with fcu log msg\r\n* add last payload txs count\r\n* add baseFee to last payload log\r\n* fix type doc ref\r\n* add gasUsed to last payload log\r\n* rename PreMerge to MergeForkBlock for increased clarity\r\nuse hardfork enums in vm supportedHardforks\r\n* format numbers to locale string, use compact num for gasUsed\r\nupdate from 5 to 4 chars on each side of hash\r\n* fix tests, use `pass` instead of `ok`\r\n* various fixes, remove toLocaleString, improve short func\r\n* add plural to timeDiffStr if not 1\r\n* Add coverage on `formatNonce`\r\n* Add CLConnectionManager test skeleton and fix `running` method\r\n* Add forkchoice/newpayload tests\r\n* Remove listeners on test\r\n* Tighten up tests to check for specific block\r\n* More connection manager constructor tests\r\n* nits\r\n* remove leading zeros on cumulative gas in eth_getTransactionsReceipt (thanks @cbrzn)\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-03-30T13:48:22-07:00",
-          "tree_id": "0e1a44a69868dab30bf223dfdc0b36a9fc2e1025",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/053a3a178d76d1123e5bd2994115fc8cea26e977"
-        },
-        "date": 1648673974808,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 15779,
-            "range": "±13.98%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 13180,
-            "range": "±20.64%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 15429,
-            "range": "±19.07%",
-            "unit": "ops/sec",
-            "extra": "55 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 15673,
-            "range": "±1.11%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 18218,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 895,
-            "range": "±6.59%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 100,
-            "range": "±87.40%",
-            "unit": "ops/sec",
-            "extra": "47 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 94.51,
-            "range": "±6.82%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 16.94,
-            "range": "±22.87%",
-            "unit": "ops/sec",
-            "extra": "33 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±30.54%",
             "unit": "ops/sec",
             "extra": "30 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "52c6d52230c02ecf2bc9c5438c3271bd9a092061",
+          "message": "Last round of master v5 Releases (#1927)\n\n* Monorepo: updated package-lock.json\r\n\r\n* Util: bumped version to v7.1.5, added CHANGELOG entry, updated upstream dependency versions\r\n\r\n* Util: rebuild documentation\r\n\r\n* Tx: bumped version to v3.5.2, added CHANGELOG entry, updated upstream dependency versions\r\n\r\n* VM: bumped version to v5.9.1, added CHANGELOG entry, updated upstream dependency versions\r\n\r\n* Client: bumped version to v0.5.0, added CHANGELOG entry, updated README\r\n\r\n* Nits\r\n\r\n* Update packages/client/README.md\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>\r\nCo-authored-by: g11tech <gajinder@g11.in>",
+          "timestamp": "2022-06-02T11:41:51+02:00",
+          "tree_id": "970b0d128b7a491190af9de19d8e87a3d973c357",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/52c6d52230c02ecf2bc9c5438c3271bd9a092061"
+        },
+        "date": 1654163599551,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 10791,
+            "range": "±13.83%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 14120,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 12373,
+            "range": "±13.09%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 7993,
+            "range": "±41.13%",
+            "unit": "ops/sec",
+            "extra": "59 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 15526,
+            "range": "±3.07%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 795,
+            "range": "±6.59%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 170,
+            "range": "±10.74%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 57.51,
+            "range": "±62.95%",
+            "unit": "ops/sec",
+            "extra": "21 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 18.3,
+            "range": "±5.40%",
+            "unit": "ops/sec",
+            "extra": "31 samples"
           }
         ]
       }
