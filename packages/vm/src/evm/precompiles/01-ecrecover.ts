@@ -21,12 +21,12 @@ export default function (opts: PrecompileInput): ExecResult {
 
   const msgHash = data.slice(0, 32)
   const v = data.slice(32, 64)
-  const vBN = new BN(v)
+  const vBigInt = bufferToBigInt(v)
 
   // Guard against util's `ecrecover`: without providing chainId this will return
   // a signature in most of the cases in the cases that `v=0` or `v=1`
   // However, this should throw, only 27 and 28 is allowed as input
-  if (!vBN.eqn(27) && !vBN.eqn(28)) {
+  if (vBigInt !== BigInt(27) && vBigInt !== BigInt(28)) {
     return {
       gasUsed,
       returnValue: Buffer.alloc(0),

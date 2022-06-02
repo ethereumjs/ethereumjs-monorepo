@@ -160,10 +160,20 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       vm._common.genesis().stateRoot = vm.stateManager._trie.root
       try {
-        await vm.runBlockchain()
+        await blockchain.iterator('vm', async (block: Block) => {
+          const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+          const parentState = parentBlock.header.stateRoot
+          // run block, update head if valid
+          try {
+            await vm.runBlock({ block, root: parentState })
+            // set as new head block
+          } catch (error: any) {
+            // remove invalid block
+            await blockchain!.delBlock(block.header.hash())
+            throw error
+          }
+        })
       } catch (e: any) {
-        const headBlock = await vm.blockchain.getHead()
-
         // if the test fails, then block.header is the prev because
         // vm.runBlock has a check that prevents the actual postState from being
         // imported if it is not equal to the expected postState. it is useful
@@ -171,6 +181,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         // testData.postState to the actual postState, rather than to the preState.
         if (!options.debug) {
           // make sure the state is set before checking post conditions
+          const headBlock = await vm.blockchain.getIteratorHead()
           vm.stateManager._trie.root = headBlock.header.stateRoot
         }
 
@@ -180,6 +191,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
         throw e
       }
+
       await cacheDB.close()
 
       if (expectException) {

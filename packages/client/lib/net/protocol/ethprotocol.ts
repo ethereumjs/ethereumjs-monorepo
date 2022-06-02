@@ -83,7 +83,7 @@ let id = BigInt(0)
  */
 export class EthProtocol extends Protocol {
   private chain: Chain
-  private nextReqId = new BN(0)
+  private nextReqId = BigInt(0)
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [

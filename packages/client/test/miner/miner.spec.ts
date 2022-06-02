@@ -4,7 +4,8 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { VmState } from '@ethereumjs/vm/dist/vmState'
-import { Address, keccak256 } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import VM from '@ethereumjs/vm'
 
@@ -63,7 +64,7 @@ tape('[Miner]', async (t) => {
         height: BigInt(0),
       }
     }
-    getLatestHeader() {
+    getCanonicalHeadHeader() {
       return BlockHeader.fromHeaderData()
     }
     blockchain: any = {
@@ -251,7 +252,11 @@ tape('[Miner]', async (t) => {
       { to: B.address, maxFeePerGas: 6 },
       { common }
     ).sign(A.privateKey)
-    await txPool.add(tx, true)
+    try {
+      await txPool.add(tx, true)
+    } catch {
+      t.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
+    }
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
@@ -339,15 +344,15 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
-    let privateKey = keccak256(Buffer.from(''))
+    let privateKey = Buffer.from(keccak256(Buffer.from('')))
     for (let i = 0; i < 1000; i++) {
       // In order not to pollute TxPool with too many txs from the same address
       // (or txs which are already known), keep generating a new address for each tx
       const address = Address.fromPrivateKey(privateKey)
-      await setBalance(vm.stateManager, address, new BN('200000000000001'))
+      await setBalance(vm, address, BigInt('200000000000001'))
       const tx = createTx({ address, privateKey })
       await txPool.add(tx)
-      privateKey = keccak256(privateKey)
+      privateKey = Buffer.from(keccak256(privateKey))
     }
 
     chain.putBlocks = () => {

@@ -13,6 +13,7 @@ import {
   Account,
   Address,
   bigIntToBuffer,
+  bufferToBigInt,
   bufferToHex,
   isHexPrefixed,
   setLengthLeft,
@@ -185,12 +186,16 @@ export function verifyAccountPostConditions(
     t.comment('Account: ' + address)
     if (!format(account.balance, true).equals(format(acctData.balance, true))) {
       t.comment(
-        `Expected balance of ${new BN(format(acctData.balance, true))}, but got ${account.balance}`
+        `Expected balance of ${bufferToBigInt(format(acctData.balance, true))}, but got ${
+          account.balance
+        }`
       )
     }
     if (!format(account.nonce, true).equals(format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${new BN(format(acctData.nonce, true))}, but got ${account.nonce}`
+        `Expected nonce of ${bufferToBigInt(format(acctData.nonce, true))}, but got ${
+          account.nonce
+        }`
       )
     }
 
@@ -207,7 +212,7 @@ export function verifyAccountPostConditions(
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = data.key.toString('hex')
-      const val = '0x' + rlp.decode(data.value).toString('hex')
+      const val = '0x' + Buffer.from(RLP.decode(data.value) as Uint8Array).toString('hex')
 
       if (key === '0x') {
         key = '0x00'

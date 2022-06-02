@@ -57,7 +57,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
 
 function calculateSigRecovery(v: BigIntLike, chainId?: BigIntLike): bigint {
   const vBigInt = bufferToBigInt(toBuffer(v))
-  if (vBigInt === BigInt(0) || vBigInt === BigInt(1)) return vBigInt;
+  if (vBigInt === BigInt(0) || vBigInt === BigInt(1)) return vBigInt
 
   if (!chainId) {
     return vBigInt - BigInt(27)

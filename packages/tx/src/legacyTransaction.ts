@@ -356,22 +356,24 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(v?: bigint, common?: Common): Common {
+  private _validateTxV(_v?: bigint, common?: Common): Common {
+    let chainIdBigInt
+    const v = _v !== undefined ? Number(_v) : undefined
     // Check for valid v values in the scope of a signed legacy tx
     if (v !== undefined) {
       // v is 1. not matching the EIP-155 chainId included case and...
       // v is 2. not matching the classic v=27 or v=28 case
-      if (v.ltn(37) && !v.eqn(27) && !v.eqn(28)) {
+      if (v < 37 && v !== 27 && v !== 28) {
         throw new Error(
           `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`
         )
       }
     }
 
-    let chainIdBN
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
       v !== undefined &&
+      v !== 0 &&
       (!common || common.gteHardfork('spuriousDragon')) &&
       v !== 27 &&
       v !== 28

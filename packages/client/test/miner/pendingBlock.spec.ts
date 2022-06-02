@@ -27,18 +27,22 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.vmState.checkpoint()
-  await vm.vmState.modifyAccountFields(address, { balance })
-  await vm.vmState.commit()
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.modifyAccountFields(address, { balance })
+  await vm.stateManager.commit()
 }
 
 const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
 const config = new Config({ transports: [], common })
 
 const setup = () => {
+  const stateManager = { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) }
   const service: any = {
-    chain: { headers: { height: BigInt(0), latest: BlockHeader.fromHeaderData({}, { common }) } },
-    execution: { vm: { vmState: { getAccount: () => new Account() } } },
+    chain: {
+      headers: { height: BigInt(0) },
+      getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
+    },
+    execution: { vm: { stateManager, vmState: { getAccount: () => stateManager.getAccount() } } },
   }
   const txPool = new TxPool({ config, service })
   return { txPool }
@@ -80,8 +84,8 @@ tape('[PendingBlock]', async (t) => {
   t.test('should start and build', async (t) => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
-    await setBalance(vm.stateManager, B.address, BigInt(5000000000000000))
+    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     const pendingBlock = new PendingBlock({ config, txPool })
@@ -120,7 +124,7 @@ tape('[PendingBlock]', async (t) => {
   t.test('should stop adding txs when block is full', async (t) => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     const txA03 = Transaction.fromTxData(
@@ -134,7 +138,6 @@ tape('[PendingBlock]', async (t) => {
     ).sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
-    const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)

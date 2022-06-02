@@ -10,8 +10,15 @@ import { Config } from '../../lib/config'
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
-    chain: { headers: { height: BigInt(0) } },
-    execution: { vm: { stateManager: { getAccount: () => new Account() } } },
+    chain: {
+      headers: { height: BigInt(0) },
+      getCanonicalHeadHeader: () => ({ height: BigInt(0) }),
+    },
+    execution: {
+      vm: {
+        stateManager: { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) },
+      },
+    },
   }
   const pool = new TxPool({ config, service })
   return { pool }
@@ -400,8 +407,8 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Tx nonce too low', {
-        getAccount: () => new Account(new BN(1), new BN('50000000000000000000')),
+      await handleTxs(txs, 'tx nonce too low', {
+        getAccount: () => new Account(BigInt(1), BigInt('50000000000000000000')),
       }),
       'successfully rejected tx with invalid nonce'
     )
@@ -421,7 +428,7 @@ tape('[TxPool]', async (t) => {
 
     t.notOk(
       await handleTxs(txs, 'exceeds the max data size', {
-        getAccount: () => new Account(new BN(0), new BN('50000000000000000000000')),
+        getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000000')),
       }),
       'successfully rejected tx with too much data'
     )
@@ -440,8 +447,8 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Insufficient balance', {
-        getAccount: () => new Account(new BN(0), new BN('0')),
+      await handleTxs(txs, 'insufficient balance', {
+        getAccount: () => new Account(BigInt(0), BigInt('0')),
       }),
       'successfully rejected account with too low balance'
     )
@@ -460,9 +467,9 @@ tape('[TxPool]', async (t) => {
 
     const { pool } = setup()
 
-    ;(<any>pool).service.chain.headers.latest = {
-      baseFeePerGas: new BN(3000000000),
-    }
+    ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
+      baseFeePerGas: BigInt(3000000000),
+    })
 
     t.notOk(
       await handleTxs(txs, 'not within 50% range of current basefee', undefined, pool),
@@ -486,9 +493,9 @@ tape('[TxPool]', async (t) => {
 
       const { pool } = setup()
 
-      ;(<any>pool).service.chain.headers.latest = {
-        gasLimit: new BN(5000),
-      }
+      ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
+        gasLimit: BigInt(5000),
+      })
 
       t.notOk(
         await handleTxs(txs, 'exceeds last block gas limit', undefined, pool),
