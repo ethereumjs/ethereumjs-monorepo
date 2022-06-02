@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1654163600720,
+  "lastUpdate": 1654164957719,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7a3549aed58836adfaf03bcb64bac4384096afc0",
-          "message": "devp2p: solve \"DPT discovers nodes when open_slots = 0\" (#1816)\n\n* devp2p: remove OpenSlots check\r\nin favor of queue length cap\r\n\r\n* devp2p/rlpx: remove extraneous `peer:` label\r\n\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>\r\n\r\n* devp2p/rlpx: add helper function\r\n`_getOpenQueueSlots()`\r\n\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>",
-          "timestamp": "2022-04-02T10:29:53+02:00",
-          "tree_id": "dd3ecb00abc26971e0d9a280e2ba52abdbed7cdc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7a3549aed58836adfaf03bcb64bac4384096afc0"
-        },
-        "date": 1648888498214,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 12507,
-            "range": "±10.60%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 13391,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 8732,
-            "range": "±21.66%",
-            "unit": "ops/sec",
-            "extra": "50 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 12449,
-            "range": "±3.77%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 14654,
-            "range": "±3.61%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 804,
-            "range": "±7.14%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 168,
-            "range": "±12.89%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 28.04,
-            "range": "±135.69%",
-            "unit": "ops/sec",
-            "extra": "20 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 15.94,
-            "range": "±26.13%",
-            "unit": "ops/sec",
-            "extra": "32 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±5.40%",
             "unit": "ops/sec",
             "extra": "31 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5e266fffa37ca3c154d9f7efa5ef2033f42f50a9",
+          "message": "Monorepo: updated package-lock.json (#1929)",
+          "timestamp": "2022-06-02T12:10:55+02:00",
+          "tree_id": "98a1c3465c82fb798c224bd1ba212b1abf7762cb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5e266fffa37ca3c154d9f7efa5ef2033f42f50a9"
+        },
+        "date": 1654164956470,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 18359,
+            "range": "±12.40%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 18830,
+            "range": "±7.10%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 11897,
+            "range": "±31.28%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 17631,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 20844,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 996,
+            "range": "±5.55%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 86.8,
+            "range": "±110.14%",
+            "unit": "ops/sec",
+            "extra": "38 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 104,
+            "range": "±6.49%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 9.89,
+            "range": "±95.96%",
+            "unit": "ops/sec",
+            "extra": "33 samples"
           }
         ]
       }
