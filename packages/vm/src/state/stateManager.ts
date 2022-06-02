@@ -430,22 +430,24 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot set state root with uncommitted checkpoints')
-    }
+    const oldRoot = await this.getStateRoot()
 
-    await this._cache.flush()
-
-    if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
-      const hasRoot = await this._trie.checkRoot(stateRoot)
-      if (!hasRoot) {
-        throw new Error('State trie does not contain state root')
+    if (!stateRoot.equals(oldRoot)) {
+      if (this._checkpointCount !== 0) {
+        throw new Error('Cannot set state root with uncommitted checkpoints')
       }
-    }
 
-    this._trie.root = stateRoot
-    this._cache.clear()
-    this._storageTries = {}
+      if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
+        const hasRoot = await this._trie.checkRoot(stateRoot)
+        if (!hasRoot) {
+          throw new Error('State trie does not contain state root')
+        }
+      }
+
+      this._trie.root = stateRoot
+      this._cache.clear()
+      this._storageTries = {}
+    }
   }
 
   /**

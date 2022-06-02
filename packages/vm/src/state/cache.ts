@@ -1,5 +1,5 @@
 import { Account, Address } from 'ethereumjs-util'
-const Tree = require('functional-red-black-tree')
+import createTree from 'functional-red-black-tree'
 
 export type getCb = (address: Address) => Promise<Account | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
@@ -15,7 +15,7 @@ export interface CacheOpts {
  * @ignore
  */
 export default class Cache {
-  _cache: any
+  _cache: createTree.Tree<string, any>
   _checkpoints: any[]
 
   _getCb: getCb
@@ -23,7 +23,7 @@ export default class Cache {
   _deleteCb: deleteCb
 
   constructor(opts: CacheOpts) {
-    this._cache = Tree()
+    this._cache = createTree<string, any>()
     this._getCb = opts.getCb
     this._putCb = opts.putCb
     this._deleteCb = opts.deleteCb
@@ -111,7 +111,7 @@ export default class Cache {
       if (it.value && it.value.modified && !it.value.deleted) {
         it.value.modified = false
         const accountRlp = it.value.val
-        const keyBuf = Buffer.from(it.key, 'hex')
+        const keyBuf = Buffer.from(it.key as string, 'hex')
         await this._putCb(keyBuf, accountRlp)
         next = it.hasNext
         it.next()
@@ -120,7 +120,7 @@ export default class Cache {
         it.value.deleted = true
         it.value.virtual = true
         it.value.val = new Account().serialize()
-        const keyBuf = Buffer.from(it.key, 'hex')
+        const keyBuf = Buffer.from(it.key as string, 'hex')
         await this._deleteCb(keyBuf)
         next = it.hasNext
         it.next()
@@ -157,7 +157,7 @@ export default class Cache {
    * Clears cache.
    */
   clear(): void {
-    this._cache = Tree()
+    this._cache = createTree<string, any>()
   }
 
   /**

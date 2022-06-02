@@ -64,6 +64,7 @@
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
+    "@types/functional-red-black-tree": "^1.0.1",
     "@types/lru-cache": "^5.1.0",
     "@types/minimist": "^1.2.2",
     "@types/node": "^16.11.7",
