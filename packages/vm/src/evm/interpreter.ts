@@ -7,7 +7,7 @@ import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
 import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
-import * as eof from './opcodes/eof'
+import EOF from './eof'
 import Common from '@ethereumjs/common'
 import EVM from './evm'
 
@@ -93,18 +93,18 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
+    if (!this._common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this._common.isActivatedEIP(3540)) {
-      if (code[1] !== eof.MAGIC) {
+      if (code[1] !== EOF.MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
           exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
         }
       }
-      if (code[2] !== eof.VERSION) {
+      if (code[2] !== EOF.VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
@@ -112,7 +112,7 @@ export default class Interpreter {
         }
       }
       // Code is EOF1 format
-      const codeSections = eof.codeAnalysis(code)
+      const codeSections = EOF.codeAnalysis(code)
       if (!codeSections) {
         // Code is invalid EOF1 format if `codeSections` is falsy
         return {

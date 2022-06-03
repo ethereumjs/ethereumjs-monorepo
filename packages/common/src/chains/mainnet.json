@@ -11,7 +11,6 @@
   "comment": "The Ethereum main chain",
   "url": "https://ethstats.net/",
   "genesis": {
-    "timestamp": null,
     "gasLimit": 5000,
     "difficulty": 17179869184,
     "nonce": "0x0000000000000042",

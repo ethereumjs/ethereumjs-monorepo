@@ -25,7 +25,7 @@ tape('blockchain test', (t) => {
     const iteratorHead = await blockchain.getIteratorHead()
 
     st.ok(
-      iteratorHead.hash().equals(blockchain.genesisBlock().hash()),
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
       'correct genesis hash (getIteratorHead())'
     )
 
@@ -843,7 +843,7 @@ tape('initialization tests', (t) => {
       hardfork: Hardfork.Chainstart,
     })
     const blockchain = await Blockchain.create({ common })
-    const genesisHash = blockchain.genesisBlock().hash()
+    const genesisHash = blockchain.genesisBlock.hash()
 
     st.ok(
       (await blockchain.getIteratorHead()).hash().equals(genesisHash),
@@ -946,8 +946,8 @@ tape('initialization tests', (t) => {
       '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
       'hex'
     )
-    st.ok(blockchain.genesisBlock().hash().equals(ropstenGenesisBlockHash))
-    st.ok(blockchain.genesisBlock().header.stateRoot.equals(ropstenGenesisStateRoot))
+    st.ok(blockchain.genesisBlock.hash().equals(ropstenGenesisBlockHash))
+    st.ok(blockchain.genesisBlock.header.stateRoot.equals(ropstenGenesisStateRoot))
     st.end()
   })
 })

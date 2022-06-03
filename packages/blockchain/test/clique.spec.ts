@@ -17,7 +17,7 @@ tape('Clique: Initialization', (t) => {
     const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getIteratorHead()
-    st.ok(head.hash().equals(blockchain.genesisBlock().hash()), 'correct genesis hash')
+    st.ok(head.hash().equals(blockchain.genesisBlock.hash()), 'correct genesis hash')
 
     st.deepEquals(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),

@@ -3,7 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from 'ethereumjs-util'
-import * as eof from '../../../src/evm/opcodes/eof'
+import EOF from '../../../src/evm/eof'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
@@ -30,14 +30,14 @@ tape('EIP 3540 tests', (t) => {
   })
 
   t.test('EOF > codeAnalysis() tests', async (st) => {
-    const eofHeader = Buffer.from([eof.FORMAT, eof.MAGIC, eof.VERSION])
+    const eofHeader = Buffer.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
     st.ok(
-      eof.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
+      EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
         ?.code! > 0,
       'valid code section'
     )
     st.ok(
-      eof.codeAnalysis(
+      EOF.codeAnalysis(
         Buffer.concat([
           eofHeader,
           Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa]),
@@ -46,13 +46,13 @@ tape('EIP 3540 tests', (t) => {
       'valid data section'
     )
     st.ok(
-      !eof.codeAnalysis(
+      !EOF.codeAnalysis(
         Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00])])
       ),
       'invalid container length (too long)'
     )
     st.ok(
-      !eof.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])),
+      !EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])),
       'invalid container length (too short)'
     )
     st.end()

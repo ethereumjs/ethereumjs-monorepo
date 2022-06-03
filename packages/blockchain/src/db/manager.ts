@@ -47,9 +47,9 @@ export class DBManager {
    */
   async getHeads(): Promise<{ [key: string]: Buffer }> {
     const heads = await this.get(DBTarget.Heads)
-    Object.keys(heads).forEach((key) => {
+    for (const key of Object.keys(heads)) {
       heads[key] = Buffer.from(heads[key])
-    })
+    }
     return heads
   }
 
