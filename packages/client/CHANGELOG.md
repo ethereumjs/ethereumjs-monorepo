@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.5.1 - 2022-06-03
+
+- Updated to a new `@ethereumjs/blockchain` library version containing a Clique-related bugfix on signer-validation, PR [#1930](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1930)
+
 ## 0.5.0 - 2022-06-02
 
 ### Merge: Kiln v2.1 Support

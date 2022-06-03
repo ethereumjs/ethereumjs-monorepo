@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.5.3 - 2022-06-03
+
+- Fixed a bug in `cliqueCheckRecentlySigned()` throwing a false-positive "recently signed" error when a PoS Clique block is added within a reorg scenario, PR [#1930](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1930)
+
 ## 5.5.2 - 2022-03-15
 
 - Fixed a bug where a delete-operation would be performed on DB but not in the cache leading to inconsistent behavior, PR [#1786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1786)
