@@ -440,6 +440,15 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       },
     ],
     [
+      /* AUTH */
+      0xf6,
+      async function (runState, gas, common): Promise<bigint> {
+        const [_address, memOffset, memLength] = runState.stack.peek(3)
+        gas += subMemUsage(runState, memOffset, memLength, common)
+        return gas
+      },
+    ],
+    [
       /* AUTHCALL */
       0xf7,
       async function (runState, gas, common): Promise<bigint> {
