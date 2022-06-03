@@ -1,4 +1,4 @@
-import { handlers } from '.'
+import { handlers } from './opcodes'
 
 export const FORMAT = 0xef
 export const MAGIC = 0x00
@@ -91,3 +91,6 @@ export const validOpcodes = (code: Buffer) => {
   }
   return true
 }
+
+const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }
+export default EOF

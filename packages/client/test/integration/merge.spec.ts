@@ -40,7 +40,6 @@ tape('[Integration:Merge]', async (t) => {
   const commonPoW = Common.custom(
     {
       genesis: {
-        timestamp: null,
         gasLimit: 16777216,
         difficulty: 1,
         nonce: '0x0000000000000042',

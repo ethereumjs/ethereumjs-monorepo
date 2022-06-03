@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { PeerInfo } from '../dpt'
 import { ENR } from './enr'
 import { debug as createDebugLogger } from 'debug'
@@ -174,9 +173,8 @@ export class DNS {
 
     const response = await dns.promises.resolve(location, 'TXT')
 
-    assert(response.length, 'Received empty result array while fetching TXT record')
-    assert(response[0].length, 'Received empty TXT record')
-
+    if (!response.length) throw new Error('Received empty result array while fetching TXT record')
+    if (!response[0].length) throw new Error('Received empty TXT record')
     // Branch entries can be an array of strings of comma delimited subdomains, with
     // some subdomain strings split across the array elements
     // (e.g btw end of arr[0] and beginning of arr[1])

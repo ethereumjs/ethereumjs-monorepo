@@ -2,7 +2,6 @@ import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
 import { gasDiscountPairs } from './util/bls12_381'
-const assert = require('assert')
 const {
   BLS12_381_ToG2Point,
   BLS12_381_ToFrPoint,
@@ -10,7 +9,7 @@ const {
 } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const mcl = opts._EVM._mcl
 

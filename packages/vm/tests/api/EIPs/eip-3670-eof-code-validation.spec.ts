@@ -3,7 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from 'ethereumjs-util'
-import * as eof from '../../../src/evm/opcodes/eof'
+import EOF from '../../../src/evm/eof'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -29,28 +29,28 @@ tape('EIP 3670 tests', (t) => {
   })
 
   t.test('EOF > validOpcodes() tests', (st) => {
-    st.ok(eof.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
-    st.ok(eof.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
-    st.ok(eof.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
+    st.ok(EOF.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
+    st.ok(EOF.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
+    st.ok(EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
 
     Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
       st.ok(
-        eof.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
+        EOF.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
         `code ends with valid terminating instruction 0x${opcode.toString(16)}`
       )
     })
 
-    st.notOk(eof.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
+    st.notOk(EOF.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
     st.notOk(
-      eof.validOpcodes(Buffer.from([0x7f, 0xaa, 0])),
+      EOF.validOpcodes(Buffer.from([0x7f, 0xaa, 0])),
       'invalid -- PUSH32 AA STOP -- truncated push'
     )
     st.notOk(
-      eof.validOpcodes(Buffer.from([0x61, 0xaa, 0])),
+      EOF.validOpcodes(Buffer.from([0x61, 0xaa, 0])),
       'invalid -- PUSH2 AA STOP -- truncated push'
     )
     st.notOk(
-      eof.validOpcodes(Buffer.from([0x60, 0xaa, 0x30])),
+      EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0x30])),
       'invalid -- PUSH1 AA ADDRESS -- invalid terminal opcode'
     )
     st.end()

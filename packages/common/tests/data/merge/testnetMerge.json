@@ -14,7 +14,6 @@
   "comment": "Private test network",
   "url": "[TESTNET_URL]",
   "genesis": {
-    "timestamp": null,
     "gasLimit": 1000000,
     "difficulty": 1,
     "nonce": "0xbb00000000000000",

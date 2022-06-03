@@ -1,5 +1,3 @@
-import assert from 'assert'
-
 const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
   if (r === 0) {
@@ -47,11 +45,8 @@ export default class Memory {
       return
     }
 
-    this.extend(offset, size)
-
-    assert(value.length === size, 'Invalid value size')
-    assert(offset + size <= this._store.length, 'Value exceeds memory capacity')
-    assert(Buffer.isBuffer(value), 'Invalid value type')
+    if (value.length !== size) throw new Error('Invalid value size')
+    if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 
     for (let i = 0; i < size; i++) {
       this._store[offset + i] = value[i]

@@ -373,7 +373,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       validateBlocks: true,
       validateConsensus,
     })
-    setCommonForkHashes(config.chainCommon, blockchain.genesisBlock().hash())
+    setCommonForkHashes(config.chainCommon, blockchain.genesisBlock.hash())
   }
 
   const client = new EthereumClient({

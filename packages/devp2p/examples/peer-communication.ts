@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { randomBytes } from 'crypto'
 import LRUCache from 'lru-cache'
 import ms from 'ms'
@@ -301,7 +300,7 @@ rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
 rlpx.on('peer:error', (peer, err) => {
   if (err.code === 'ECONNRESET') return
 
-  if (err instanceof assert.AssertionError) {
+  if (err instanceof Error) {
     const peerId = peer.getId()
     if (peerId !== null) dpt.banPeer(peerId, ms('5m'))
 

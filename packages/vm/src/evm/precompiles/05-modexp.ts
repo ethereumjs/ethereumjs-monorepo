@@ -1,7 +1,6 @@
 import { setLengthRight, setLengthLeft, bufferToBigInt, bigIntToBuffer } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
 
 function multComplexity(x: bigint): bigint {
   let fac1
@@ -75,7 +74,7 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data
 

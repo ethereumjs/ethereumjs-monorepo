@@ -1,14 +1,14 @@
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
-const assert = require('assert')
+
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 
 const zeroBuffer = Buffer.alloc(32, 0)
 const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const mcl = opts._EVM._mcl
 

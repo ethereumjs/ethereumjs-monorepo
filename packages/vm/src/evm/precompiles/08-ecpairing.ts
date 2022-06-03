@@ -1,10 +1,9 @@
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
 const bn128 = require('rustbn.js')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const inputData = opts.data
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case

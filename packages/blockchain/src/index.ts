@@ -1,7 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { toBuffer } from 'ethereumjs-util'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -215,12 +214,6 @@ export default class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   protected constructor(opts: BlockchainOptions = {}) {
-    // Throw on chain or hardfork options removed in latest major release to
-    // prevent implicit chain setup on a wrong chain
-    if ('chain' in opts || 'hardfork' in opts) {
-      throw new Error('Chain/hardfork options are not allowed any more on initialization')
-    }
-
     if (opts.common) {
       this._common = opts.common
     } else {
@@ -328,7 +321,7 @@ export default class Blockchain implements BlockchainInterface {
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
-      genesisBlock = this.genesisBlock(stateRoot)
+      genesisBlock = this.createGenesisBlock(stateRoot)
     }
 
     // If the DB has a genesis block, then verify that the genesis block in the
@@ -726,11 +719,7 @@ export default class Blockchain implements BlockchainInterface {
   async getIteratorHead(name = 'vm'): Promise<Block> {
     return await this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
-      const hash = this._heads[name] ?? this._genesisBlock?.hash()
-      if (!hash) {
-        throw new Error('No head found.')
-      }
-
+      const hash = this._heads[name] ?? this.genesisBlock.hash()
       const block = await this._getBlock(hash)
       return block
     })
@@ -750,11 +739,8 @@ export default class Blockchain implements BlockchainInterface {
   async getHead(name = 'vm'): Promise<Block> {
     return await this.runWithLock<Block>(async () => {
       // if the head is not found return the headHeader
-      const hash = this._heads[name] || this._headBlockHash
-      if (!hash) {
-        throw new Error('No head found.')
-      }
-
+      const hash = this._heads[name] ?? this._headBlockHash
+      if (!hash) throw new Error('No head found.')
       const block = await this._getBlock(hash)
       return block
     })
@@ -765,9 +751,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return await this.runWithLock<BlockHeader>(async () => {
-      if (!this._headHeaderHash) {
-        throw new Error('No head header set')
-      }
+      if (!this._headHeaderHash) throw new Error('No head header set')
       const block = await this._getBlock(this._headHeaderHash)
       return block.header
     })
@@ -778,10 +762,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
-      if (!this._headBlockHash) {
-        throw new Error('No head block set')
-      }
-
+      if (!this._headBlockHash) throw new Error('No head block set')
       const block = this._getBlock(this._headBlockHash)
       return block
     })
@@ -1183,12 +1164,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
     return await this.runWithLock<number>(async (): Promise<number> => {
-      const headHash = this._heads[name] ?? this._genesisBlock?.hash()
-      let lastBlock: Block | undefined
-
-      if (!headHash) {
-        return 0
-      }
+      const headHash = this._heads[name] ?? this.genesisBlock.hash()
 
       if (maxBlocks && maxBlocks < 0) {
         throw 'If maxBlocks is provided, it has to be a non-negative number'
@@ -1197,6 +1173,7 @@ export default class Blockchain implements BlockchainInterface {
       const headBlockNumber = await this.dbManager.hashToNumber(headHash)
       let nextBlockNumber = headBlockNumber + BigInt(1)
       let blocksRanCounter = 0
+      let lastBlock: Block | undefined
 
       while (maxBlocks !== blocksRanCounter) {
         try {
@@ -1205,7 +1182,7 @@ export default class Blockchain implements BlockchainInterface {
           const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
           lastBlock = nextBlock
           await onBlock(nextBlock, reorg)
-          nextBlockNumber += BigInt(1)
+          nextBlockNumber++
           blocksRanCounter++
         } catch (error: any) {
           if (error.type === 'NotFoundError') {
@@ -1241,10 +1218,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param newHeader - the new block header
    */
   private async findCommonAncestor(newHeader: BlockHeader) {
-    if (!this._headHeaderHash) {
-      throw new Error('No head header set')
-    }
-
+    if (!this._headHeaderHash) throw new Error('No head header set')
     const ancestorHeaders = new Set<BlockHeader>()
 
     let { header } = await this._getBlock(this._headHeaderHash)
@@ -1303,20 +1277,20 @@ export default class Blockchain implements BlockchainInterface {
       // instance, make the VM run "older" (i.e. lower number blocks than last
       // executed block) blocks to verify the chain up to the current, actual,
       // head.
-      Object.keys(this._heads).forEach((name) => {
+      for (const name of Object.keys(this._heads)) {
         if (this._heads[name].equals(<Buffer>hash)) {
           // explicitly cast as Buffer: it is not possible that `hash` is false
           // here, but TypeScript does not understand this.
           this._heads[name] = headHash
         }
-      })
+      }
 
       // reset stale headBlock to current canonical
       if (this._headBlockHash?.equals(hash)) {
         this._headBlockHash = headHash
       }
 
-      blockNumber += BigInt(1)
+      blockNumber++
 
       hash = await this.safeNumberToHash(blockNumber)
     }
@@ -1368,11 +1342,11 @@ export default class Blockchain implements BlockchainInterface {
 
       // mark each key `_heads` which is currently set to the hash in the DB as
       // stale to overwrite this later.
-      Object.keys(this._heads).forEach((name) => {
+      for (const name of Object.keys(this._heads)) {
         if (staleHash && this._heads[name].equals(staleHash)) {
           staleHeads.push(name)
         }
-      })
+      }
       // flag stale headBlock for reset
       if (staleHash && this._headBlockHash?.equals(staleHash)) {
         staleHeadBlock = true
@@ -1390,9 +1364,9 @@ export default class Blockchain implements BlockchainInterface {
     }
     // the stale hash is equal to the blockHash set stale heads to last
     // previously valid canonical block
-    staleHeads.forEach((name: string) => {
+    for (const name of staleHeads) {
       this._heads[name] = currentCanonicalHash
-    })
+    }
     // set stale headBlock to last previously valid canonical block
     if (staleHeadBlock) {
       this._headBlockHash = currentCanonicalHash
@@ -1463,35 +1437,25 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns the genesis {@link Block} for the blockchain.
-   * @param stateRoot When initializing the block, pass the genesis stateRoot.
-   *                  After the blockchain is initialized, this parameter is not used
-   *                  as the cached genesis block is returned.
+   * The genesis {@link Block} for the blockchain.
    */
-  genesisBlock(stateRoot?: Buffer): Block {
-    if (this._genesisBlock) {
-      return this._genesisBlock
-    }
+  get genesisBlock(): Block {
+    if (!this._genesisBlock) throw new Error('genesis block not set (init may not be finished)')
+    return this._genesisBlock
+  }
 
-    if (!stateRoot) throw new Error('stateRoot required for genesis block creation')
-
+  /**
+   * Creates a genesis {@link Block} for the blockchain with params from {@link Common.genesis}
+   * @param stateRoot The genesis stateRoot
+   */
+  createGenesisBlock(stateRoot: Buffer): Block {
     const common = this._common.copy()
     common.setHardforkByBlockNumber(0)
 
-    const { gasLimit, timestamp, difficulty, extraData, nonce, baseFeePerGas } = common.genesis()
-
     const header: BlockData['header'] = {
+      ...common.genesis(),
       number: 0,
-      gasLimit: BigInt(gasLimit),
-      timestamp: BigInt(timestamp ?? 0),
-      difficulty: BigInt(difficulty),
-      extraData: toBuffer(extraData),
-      nonce: toBuffer(nonce),
       stateRoot,
-    }
-
-    if (baseFeePerGas !== undefined && common.gteHardfork(Hardfork.London)) {
-      header.baseFeePerGas = BigInt(baseFeePerGas)
     }
 
     return Block.fromBlockData({ header }, { common })

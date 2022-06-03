@@ -1,4 +1,3 @@
-import assert from 'assert'
 import * as base32 from 'hi-base32'
 import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
@@ -49,10 +48,8 @@ export class ENR {
    * @return {PeerInfo}
    */
   static parseAndVerifyRecord(enr: string): PeerInfo {
-    assert(
-      enr.startsWith(this.RECORD_PREFIX),
-      `String encoded ENR must start with '${this.RECORD_PREFIX}'`
-    )
+    if (!enr.startsWith(this.RECORD_PREFIX))
+      throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
     const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
@@ -73,7 +70,7 @@ export class ENR {
       obj.secp256k1
     )
 
-    assert(isVerified, 'Unable to verify ENR signature')
+    if (!isVerified) throw new Error('Unable to verify ENR signature')
 
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
@@ -95,10 +92,8 @@ export class ENR {
    * @return {string} subdomain subdomain to retrieve branch records from.
    */
   static parseAndVerifyRoot(root: string, publicKey: string): string {
-    assert(
-      root.startsWith(this.ROOT_PREFIX),
-      `ENR root entry must start with '${this.ROOT_PREFIX}'`
-    )
+    if (!root.startsWith(this.ROOT_PREFIX))
+      throw new Error(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
 
     const rootVals = sscanf(
       root,
@@ -109,10 +104,10 @@ export class ENR {
       'signature'
     ) as ENRRootValues
 
-    assert.ok(rootVals.eRoot, "Could not parse 'e' value from ENR root entry")
-    assert.ok(rootVals.lRoot, "Could not parse 'l' value from ENR root entry")
-    assert.ok(rootVals.seq, "Could not parse 'seq' value from ENR root entry")
-    assert.ok(rootVals.signature, "Could not parse 'sig' value from ENR root entry")
+    if (!rootVals.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
+    if (!rootVals.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
+    if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
+    if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
     const decodedPublicKey = base32.decode.asBytes(publicKey)
 
@@ -126,7 +121,7 @@ export class ENR {
 
     const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
 
-    assert(isVerified, 'Unable to verify ENR root signature')
+    if (!isVerified) throw new Error('Unable to verify ENR root signature')
 
     return rootVals.eRoot
   }
@@ -140,10 +135,8 @@ export class ENR {
    * @return {ENRTreeValues}
    */
   static parseTree(tree: string): ENRTreeValues {
-    assert(
-      tree.startsWith(this.TREE_PREFIX),
-      `ENR tree entry must start with '${this.TREE_PREFIX}'`
-    )
+    if (!tree.startsWith(this.TREE_PREFIX))
+      throw new Error(`ENR tree entry must start with '${this.TREE_PREFIX}'`)
 
     const treeVals = sscanf(
       tree,
@@ -152,8 +145,8 @@ export class ENR {
       'domain'
     ) as ENRTreeValues
 
-    assert.ok(treeVals.publicKey, 'Could not parse public key from ENR tree entry')
-    assert.ok(treeVals.domain, 'Could not parse domain from ENR tree entry')
+    if (!treeVals.publicKey) throw new Error('Could not parse public key from ENR tree entry')
+    if (!treeVals.domain) throw new Error('Could not parse domain from ENR tree entry')
 
     return treeVals
   }
@@ -165,10 +158,8 @@ export class ENR {
    * @return {string[]}
    */
   static parseBranch(branch: string): string[] {
-    assert(
-      branch.startsWith(this.BRANCH_PREFIX),
-      `ENR branch entry must start with '${this.BRANCH_PREFIX}'`
-    )
+    if (!branch.startsWith(this.BRANCH_PREFIX))
+      throw new Error(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
 
     return branch.split(this.BRANCH_PREFIX)[1].split(',')
   }
