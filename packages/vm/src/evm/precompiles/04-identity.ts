@@ -1,9 +1,8 @@
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data
 

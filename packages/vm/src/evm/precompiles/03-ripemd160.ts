@@ -2,10 +2,9 @@ import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 import { setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data
 
