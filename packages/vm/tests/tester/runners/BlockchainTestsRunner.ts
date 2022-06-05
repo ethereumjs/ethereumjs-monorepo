@@ -3,11 +3,13 @@ import { Block } from '@ethereumjs/block'
 import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
+import VM from '@ethereumjs/vm'
 import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { setupPreConditions, verifyPostConditions } from '../../util'
+import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level')
 const levelMem = require('level-mem')
 
@@ -31,7 +33,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
-  const state = new Trie()
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)
@@ -68,25 +69,20 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
   }
 
-  let VM
-  if (options.dist) {
-    VM = require('../../../dist').default
-  } else {
-    VM = require('../../../src').default
-  }
-
   const begin = Date.now()
 
   const vm = await VM.create({
-    state,
     blockchain,
     common,
   })
 
   // set up pre-state
-  await setupPreConditions(vm.vmState, testData)
+  await setupPreConditions((vm as any).vmState, testData)
 
-  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.ok(
+    (vm.stateManager as any)._trie.root.equals(genesisBlock.header.stateRoot),
+    'correct pre stateRoot'
+  )
 
   async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
@@ -177,11 +173,11 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         if (!options.debug) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root = headBlock.header.stateRoot
+          ;(vm.stateManager as any)._trie.root = headBlock.header.stateRoot
         }
 
         if (options.debug) {
-          await verifyPostConditions(state, testData.postState, t)
+          await verifyPostConditions((vm.stateManager as any)._trie, testData.postState, t)
         }
 
         throw e

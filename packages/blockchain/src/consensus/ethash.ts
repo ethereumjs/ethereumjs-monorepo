@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
-import Blockchain from '..'
-import { Consensus, ConsensusOptions } from './interface'
+import Blockchain from '../index.js'
+import { Consensus, ConsensusOptions } from './interface.js'
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.

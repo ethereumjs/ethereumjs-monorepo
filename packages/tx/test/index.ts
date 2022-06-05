@@ -3,28 +3,28 @@ import minimist from 'minimist'
 const argv = minimist(process.argv.slice(2))
 
 if (argv.b) {
-  require('./base.spec')
+  import('./base.spec.js')
 } else if (argv.l) {
-  require('./legacy.spec')
+  import('./legacy.spec.js')
 } else if (argv.e) {
-  require('./typedTxsAndEIP2930.spec')
-  require('./eip1559.spec')
+  import('./typedTxsAndEIP2930.spec.js')
+  import('./eip1559.spec.js')
 } else if (argv.t) {
-  require('./transactionRunner')
+  import('./transactionRunner.js')
 } else if (argv.f) {
-  require('./transactionFactory.spec')
+  import('./transactionFactory.spec.js')
 } else if (argv.a) {
   // All manual API tests
-  require('./base.spec')
-  require('./legacy.spec')
-  require('./typedTxsAndEIP2930.spec')
-  require('./eip1559.spec')
-  require('./transactionFactory.spec')
+  import('./base.spec.js')
+  import('./legacy.spec.js')
+  import('./typedTxsAndEIP2930.spec.js')
+  import('./eip1559.spec.js')
+  import('./transactionFactory.spec.js')
 } else {
-  require('./transactionRunner')
-  require('./base.spec')
-  require('./legacy.spec')
-  require('./typedTxsAndEIP2930.spec')
-  require('./eip1559.spec')
-  require('./transactionFactory.spec')
+  import('./transactionRunner.js')
+  import('./base.spec.js')
+  import('./legacy.spec.js')
+  import('./typedTxsAndEIP2930.spec.js')
+  import('./eip1559.spec.js')
+  import('./transactionFactory.spec.js')
 }

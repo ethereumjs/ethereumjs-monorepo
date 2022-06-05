@@ -2,7 +2,10 @@ import { bufArrToArr, toBuffer } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import Blockchain from '../src'
+import Blockchain from '../src/index.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {

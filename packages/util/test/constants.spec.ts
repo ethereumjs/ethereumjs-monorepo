@@ -8,7 +8,7 @@ import {
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP_S,
   KECCAK256_RLP,
-} from '../src'
+} from '../src/index.js'
 
 tape('constants', function (t) {
   t.test('should match constants', function (st) {

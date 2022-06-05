@@ -1,3 +1,3 @@
-export { Block } from './block'
-export { BlockHeader } from './header'
-export * from './types'
+export { Block } from './block.js'
+export { BlockHeader } from './header.js'
+export * from './types.js'

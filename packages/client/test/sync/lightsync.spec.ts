@@ -1,8 +1,8 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Config } from '../../lib/config'
-import { Chain } from '../../lib/blockchain'
-import { Event } from '../../lib/types'
+import * as td from 'testdouble'
+import { Config } from '../../lib/config.js'
+import { Chain } from '../../lib/blockchain/index.js'
+import { Event } from '../../lib/types.js'
 import { BlockHeader } from '@ethereumjs/block'
 
 tape('[LightSynchronizer]', async (t) => {
@@ -20,7 +20,7 @@ tape('[LightSynchronizer]', async (t) => {
   HeaderFetcher.prototype.fetch = td.func<any>()
   td.replace('../../lib/sync/fetcher', { HeaderFetcher })
 
-  const { LightSynchronizer } = await import('../../lib/sync/lightsync')
+  const { LightSynchronizer } = await import('../../lib/sync/lightsync.js')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })

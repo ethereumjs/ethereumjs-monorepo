@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _KBucket = require('k-bucket')
-import { PeerInfo } from './dpt'
+import { PeerInfo } from './dpt.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3

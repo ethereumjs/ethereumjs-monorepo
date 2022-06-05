@@ -1,9 +1,9 @@
 import Common, { Hardfork } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
 import { setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
-import { ERROR, VmError } from './../../exceptions'
-import { RunState } from './../interpreter'
+import { ERROR, VmError } from './../../exceptions.js'
+import { RunState } from './../interpreter.js'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
@@ -41,7 +41,7 @@ export function addressToBuffer(address: bigint | Buffer) {
  * Error message helper - generates location string
  */
 export function describeLocation(runState: RunState): string {
-  const hash = bytesToHex(keccak256(runState.eei.getCode()))
+  const hash = ethCryptoUtils.bytesToHex(ethCryptoKeccak.keccak256(runState.eei.getCode()))
   const address = runState.eei.getAddress().buf.toString('hex')
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`

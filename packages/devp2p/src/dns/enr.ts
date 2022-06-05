@@ -1,13 +1,15 @@
 import * as base32 from 'hi-base32'
 import { sscanf } from 'scanf'
-import { ecdsaVerify } from 'secp256k1'
+import secp256k1 from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
-import base64url from 'base64url'
+import base64url = require('base64url')
 import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { PeerInfo } from '../dpt'
-import { toNewUint8Array, keccak256 } from '../util'
+import { PeerInfo } from '../dpt/index.js'
+import { toNewUint8Array, keccak256 } from '../util.js'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const Convert = require('multiaddr/src/convert')
 
 type ProtocolCodes = {
@@ -52,7 +54,7 @@ export class ENR {
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
+    const base64BufferEnr = base64url.default.toBuffer(enr.slice(this.RECORD_PREFIX.length))
     const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr))) as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
@@ -64,7 +66,7 @@ export class ENR {
     }
 
     // Validate sig
-    const isVerified = ecdsaVerify(
+    const isVerified = secp256k1.ecdsaVerify(
       signature,
       keccak256(Buffer.from(RLP.encode(bufArrToArr([seq, ...kvs])))),
       obj.secp256k1
@@ -109,17 +111,21 @@ export class ENR {
     if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
     if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
-    const decodedPublicKey = base32.decode.asBytes(publicKey)
+    const decodedPublicKey = base32.default.decode.asBytes(publicKey)
 
     // The signature is a 65-byte secp256k1 over the keccak256 hash
     // of the record content, excluding the `sig=` part, encoded as URL-safe base64 string
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(' sig')[0]
     const signedComponentBuffer = Buffer.from(signedComponent)
-    const signatureBuffer = base64url.toBuffer(rootVals.signature).slice(0, 64)
+    const signatureBuffer = base64url.default.toBuffer(rootVals.signature).slice(0, 64)
     const keyBuffer = Buffer.from(decodedPublicKey)
 
-    const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
+    const isVerified = secp256k1.ecdsaVerify(
+      signatureBuffer,
+      keccak256(signedComponentBuffer),
+      keyBuffer
+    )
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 

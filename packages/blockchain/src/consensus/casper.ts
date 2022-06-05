@@ -1,5 +1,5 @@
-import Blockchain from '..'
-import { Consensus, ConsensusOptions } from './interface'
+import Blockchain from '../index.js'
+import { Consensus, ConsensusOptions } from './interface.js'
 
 /**
  * This class encapsulates Casper-related consensus functionality when used with the Blockchain class.

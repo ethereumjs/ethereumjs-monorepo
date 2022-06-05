@@ -1,7 +1,10 @@
 import tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Ethash from '../src'
+import Ethash from '../src/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 const cacheDB = level()

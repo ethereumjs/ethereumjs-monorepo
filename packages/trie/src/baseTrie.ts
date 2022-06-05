@@ -1,10 +1,10 @@
-import Semaphore from 'semaphore-async-await'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import Semaphore = require('semaphore-async-await')
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { KECCAK256_RLP } from 'ethereumjs-util'
-import { DB, BatchDBOp, PutBatch, MemoryDB } from './db'
-import { TrieReadStream as ReadStream } from './readStream'
-import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import { WalkController } from './util/walkController'
+import { DB, BatchDBOp, PutBatch, MemoryDB } from './db.js'
+import { TrieReadStream as ReadStream } from './readStream.js'
+import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles.js'
+import { WalkController } from './util/walkController.js'
 import {
   TrieNode,
   decodeNode,
@@ -15,8 +15,8 @@ import {
   LeafNode,
   EmbeddedNode,
   Nibbles,
-} from './trieNode'
-import { verifyRangeProof } from './verifyRangeProof'
+} from './trieNode.js'
+import { verifyRangeProof } from './verifyRangeProof.js'
 
 export type Proof = Buffer[]
 
@@ -57,7 +57,7 @@ export interface TrieOpts {
 export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore
+  protected lock: Semaphore.default
 
   /** The backend DB */
   db: DB
@@ -70,7 +70,7 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
-    this.lock = new Semaphore(1)
+    this.lock = new Semaphore.default(1)
 
     this.db = opts?.db ?? new MemoryDB()
     this._root = this.EMPTY_TRIE_ROOT
@@ -576,7 +576,7 @@ export class Trie {
     if (rlpNode.length >= 32 || topLevel) {
       // Do not use TrieNode.hash() here otherwise serialize()
       // is applied twice (performance)
-      const hashRoot = Buffer.from(keccak256(rlpNode))
+      const hashRoot = Buffer.from(ethCryptoKeccak.keccak256(rlpNode))
 
       if (remove) {
         if (this._deleteFromDB) {
@@ -635,7 +635,7 @@ export class Trie {
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
-        key: Buffer.from(keccak256(nodeValue)),
+        key: Buffer.from(ethCryptoKeccak.keccak256(nodeValue)),
         value: nodeValue,
       } as PutBatch
     })

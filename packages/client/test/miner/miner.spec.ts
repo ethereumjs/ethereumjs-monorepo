@@ -1,19 +1,19 @@
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { VmState } from '@ethereumjs/vm/vmState'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { Address } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
 
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
-import { Chain } from '../../lib/blockchain'
-import { Miner } from '../../lib/miner'
-import { Event } from '../../lib/types'
-import { wait } from '../integration/util'
+import { Config } from '../../lib/config.js'
+import { FullEthereumService } from '../../lib/service/index.js'
+import { Chain } from '../../lib/blockchain/index.js'
+import { Miner } from '../../lib/miner/index.js'
+import { Event } from '../../lib/types.js'
+import { wait } from '../integration/util.js'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -44,7 +44,7 @@ tape('[Miner]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace('@ethereumjs/vm/vmState', { VmState })
 
   class FakeChain {
     open() {}

@@ -1,6 +1,6 @@
 import Benchmark from 'benchmark'
-import { runTrie } from './random'
-import { iterTest } from './checkpointing'
+import { runTrie } from './random.js'
+import { iterTest } from './checkpointing.js'
 import { MemoryDB, LevelDB } from '../dist'
 
 const suite = new Benchmark.Suite()

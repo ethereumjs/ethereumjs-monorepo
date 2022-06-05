@@ -7,8 +7,8 @@ import {
   Transaction,
   TxOptions,
 } from '@ethereumjs/tx'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
 import {
   Account,
   Address,
@@ -20,7 +20,7 @@ import {
   toBuffer,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { VmState } from '../src/vmState'
+import { VmState } from '../src/vmState.js'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -132,7 +132,9 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(Buffer.from(stripHexPrefix(key), 'hex')))
+      const hash = ethCryptoUtils.bytesToHex(
+        ethCryptoKeccak.keccak256(Buffer.from(stripHexPrefix(key), 'hex'))
+      )
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -192,8 +194,11 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)))] =
-        acctData.storage[key]
+      hashedStorage[
+        ethCryptoUtils.bytesToHex(
+          ethCryptoKeccak.keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32))
+        )
+      ] = acctData.storage[key]
     }
 
     if (storageKeys.length > 0) {
@@ -322,7 +327,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
     const address = new Address(addressBuf)
 
     const codeBuf = format(code)
-    const codeHash = keccak256(codeBuf)
+    const codeHash = ethCryptoKeccak.keccak256(codeBuf)
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {

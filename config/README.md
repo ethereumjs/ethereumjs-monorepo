@@ -36,7 +36,7 @@ Exposed CLI commands:
 Add `.eslintrc.cjs`:
 
 ```js
-module.exports = { extends: '../../config/eslint.js' }
+module.exports = { extends: '../../config/eslint.cjs' }
 ```
 
 In this file you can add rule adjustments or overrides for the specific package.
@@ -155,12 +155,14 @@ Add to your `package.json`:
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/types/index.d.ts",
+      "browser": "./dist/esm/index.js"
     },
     "./dist/*": {
       "import": "./dist/esm/*",
       "require": "./dist/cjs/*",
-      "types": "./dist/types/*"
+      "types": "./dist/types/*",
+      "browser": "./dist/esm/*"
     }
   },
 ```

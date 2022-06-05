@@ -5,8 +5,8 @@ import {
   TxData,
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,
-} from './types'
-import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
+} from './types.js'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from './index.js'
 
 export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.

@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest } from '../helpers'
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
+import { baseSetup, params, baseRequest } from '../helpers.js'
 import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'

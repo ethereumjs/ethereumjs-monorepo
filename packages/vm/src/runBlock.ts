@@ -1,17 +1,17 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import VM from './index'
-import Bloom from './bloom'
-import type { RunTxResult } from './runTx'
-import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
+import VM from './index.js'
+import Bloom from './bloom/index.js'
+import type { RunTxResult } from './runTx.js'
+import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types.js'
 import DAOConfig from './config/dao_fork_accounts_config.json'
-import { VmState } from './vmState'
+import { VmState } from './vmState.js'
 
-const debug = createDebugLogger('vm:block')
+const debug = debugPkg.debug('vm:block')
 
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts

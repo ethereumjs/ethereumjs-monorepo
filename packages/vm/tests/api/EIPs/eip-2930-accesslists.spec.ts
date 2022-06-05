@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Account, Address, bufferToHex } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
 const common = new Common({

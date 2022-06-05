@@ -1,7 +1,7 @@
 import tape from 'tape'
-import { Event } from '../../lib/types'
-import { wait, setup, destroy } from './util'
-import { SyncMode } from '../../lib/config'
+import { Event } from '../../lib/types.js'
+import { wait, setup, destroy } from './util.js'
+import { SyncMode } from '../../lib/config.js'
 
 tape('[Integration:LightSync]', async (t) => {
   t.test('should sync headers', async (t) => {

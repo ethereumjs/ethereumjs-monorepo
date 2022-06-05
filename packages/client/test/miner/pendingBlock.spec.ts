@@ -1,14 +1,14 @@
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { VmState } from '@ethereumjs/vm/vmState'
 import { Address, Account } from 'ethereumjs-util'
-import { Config } from '../../lib/config'
-import { TxPool } from '../../lib/service/txpool'
-import { PendingBlock } from '../../lib/miner'
+import { Config } from '../../lib/config.js'
+import { TxPool } from '../../lib/service/txpool.js'
+import { PendingBlock } from '../../lib/miner/index.js'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -51,7 +51,7 @@ tape('[PendingBlock]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace('@ethereumjs/vm/vmState', { VmState })
 
   const createTx = (
     from = A,

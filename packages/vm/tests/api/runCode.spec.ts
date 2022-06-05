@@ -1,5 +1,5 @@
 import tape from 'tape'
-import VM from '../../src'
+import VM from '../../src/index.js'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const STOP = '00'

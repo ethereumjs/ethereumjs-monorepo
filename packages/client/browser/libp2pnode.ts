@@ -8,6 +8,9 @@ import LibP2p from 'libp2p'
 import PeerId from 'peer-id'
 import { Multiaddr } from 'multiaddr'
 import Bootstrap from 'libp2p-bootstrap'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const MPLEX = require('libp2p-mplex')
@@ -37,7 +40,7 @@ export class Libp2pNode extends LibP2p {
       modules: {
         transport: [Websockets],
         streamMuxer: [MPLEX],
-        connEncryption: [NOISE],
+        connEncryption: [NOISE as any],
         [<any>'peerDiscovery']: [Bootstrap],
       },
       config: {

@@ -1,7 +1,6 @@
-import { sha256 } from 'ethereum-cryptography/sha256'
-import { toBuffer } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import ethCryptoSha256 = require('ethereum-cryptography/sha256')
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
 
 export default function (opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
@@ -17,6 +16,6 @@ export default function (opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    returnValue: toBuffer(sha256(data)),
+    returnValue: Buffer.from(ethCryptoSha256.sha256(data)),
   }
 }

@@ -1,9 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
-import { Event } from '../types'
+import { Peer } from '../net/peer/peer.js'
+import { short } from '../util/index.js'
+import { Synchronizer, SynchronizerOptions } from './sync.js'
+import { HeaderFetcher } from './fetcher/index.js'
+import { Event } from '../types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 /**

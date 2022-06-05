@@ -1,4 +1,4 @@
-import { Log } from './evm/types'
+import { Log } from './evm/types.js'
 
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 

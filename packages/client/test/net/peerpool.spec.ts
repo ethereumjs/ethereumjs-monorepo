@@ -1,16 +1,16 @@
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { EventEmitter } from 'events'
-import { Config } from '../../lib/config'
-import { RlpxServer } from '../../lib/net/server'
-import { Event } from '../../lib/types'
-import MockPeer from '../integration/mocks/mockpeer'
+import { Config } from '../../lib/config.js'
+import { RlpxServer } from '../../lib/net/server/index.js'
+import { Event } from '../../lib/types.js'
+import MockPeer from '../integration/mocks/mockpeer.js'
 
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
   })
-  const { PeerPool } = await import('../../lib/net/peerpool')
+  const { PeerPool } = await import('../../lib/net/peerpool.js')
 
   t.test('should initialize', (t) => {
     const config = new Config({ transports: [] })

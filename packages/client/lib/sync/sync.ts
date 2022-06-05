@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
-import { PeerPool } from '../net/peerpool'
-import { Peer } from '../net/peer/peer'
-import { FlowControl } from '../net/protocol'
-import { Config } from '../config'
-import { Chain } from '../blockchain'
-import { Event } from '../types'
+import { PeerPool } from '../net/peerpool.js'
+import { Peer } from '../net/peer/peer.js'
+import { FlowControl } from '../net/protocol/index.js'
+import { Config } from '../config.js'
+import { Chain } from '../blockchain/index.js'
+import { Event } from '../types.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-import { BlockFetcher, HeaderFetcher } from './fetcher'
-import { short } from '../util'
+import { BlockFetcher, HeaderFetcher } from './fetcher/index.js'
+import { short } from '../util/index.js'
 
 export interface SynchronizerOptions {
   /* Config */

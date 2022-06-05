@@ -1,3 +1,6 @@
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+
 export const EIPs: { [key: number]: any } = {
   1153: require('./1153.json'),
   1559: require('./1559.json'),

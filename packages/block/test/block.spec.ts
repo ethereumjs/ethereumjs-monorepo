@@ -1,18 +1,18 @@
 import tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
 import { bufArrToArr, NestedUint8Array, toBuffer, zeros } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Block, BlockBuffer, BlockHeader } from '../src'
-import blockFromRpc from '../src/from-rpc'
-import { Mockchain } from './mockchain'
-import { createBlock } from './util'
+import { Block, BlockBuffer, BlockHeader } from '../src/index.js'
+import blockFromRpc from '../src/from-rpc.js'
+import { Mockchain } from './mockchain.js'
+import { createBlock } from './util.js'
 import testnetMerge from './testdata/testnetMerge.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
-import * as testDataGenesis from './testdata/genesishashestest.json'
-import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
+import testDataPreLondon from './testdata/testdata_pre-london.json'
+import testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
+import testDataGenesis from './testdata/genesishashestest.json'
+import testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -598,7 +598,10 @@ tape('[Block]: block functions', function (t) {
       })
 
       forkBlock2HeaderData.uncleHash =
-        '0x' + bytesToHex(keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
+        '0x' +
+        ethCryptoUtils.bytesToHex(
+          ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()])))
+        )
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {

@@ -4,10 +4,10 @@ import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from 'ethereumjs-util'
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
 import { checkError } from '../util'
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../lib/service/index.js'
 
 const method = 'eth_getBalance'
 

@@ -5,7 +5,7 @@ import Common, {
   Hardfork,
   CliqueConfig,
 } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import {
   Address,
   arrToBufArr,
@@ -24,13 +24,13 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
-} from './clique'
+} from './clique.js'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -760,12 +760,14 @@ export class BlockHeader {
   hash(): Buffer {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+        this.cache.hash = Buffer.from(
+          ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(this.raw())))
+        )
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+    return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(this.raw()))))
   }
 
   /**
@@ -791,7 +793,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(raw))))
+    return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(raw))))
   }
 
   /**

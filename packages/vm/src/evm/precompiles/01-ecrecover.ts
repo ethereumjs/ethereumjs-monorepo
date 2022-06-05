@@ -5,8 +5,8 @@ import {
   publicToAddress,
   bufferToBigInt,
 } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
 
 export default function (opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')

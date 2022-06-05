@@ -1,6 +1,8 @@
 import tape from 'tape'
-import { SecureTrie } from '../src'
-import { MemoryDB, LevelDB } from '../src/db'
+import { SecureTrie } from '../src/index.js'
+import { MemoryDB, LevelDB } from '../src/db.js'
+import tests from './fixtures/trietest_secureTrie.json'
+const jsonTests = tests.tests as any
 
 for (const DB of [MemoryDB, LevelDB]) {
   tape('SecureTrie', function (t) {
@@ -36,7 +38,6 @@ for (const DB of [MemoryDB, LevelDB]) {
 
     tape('secure tests', function (it) {
       let trie = new SecureTrie({ db: new DB() })
-      const jsonTests = require('./fixtures/trietest_secureTrie.json').tests
 
       it.test('empty values', async function (t) {
         for (const row of jsonTests.emptyValues.in) {

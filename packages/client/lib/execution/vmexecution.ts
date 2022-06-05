@@ -3,20 +3,20 @@ import {
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
-} from '@ethereumjs/blockchain/dist/db/helpers'
+} from '@ethereumjs/blockchain/db/helpers.js'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { bufferToHex } from 'ethereumjs-util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from 'merkle-patricia-tree'
-import { short } from '../util'
-import { debugCodeReplayBlock } from '../util/debug'
-import { Event } from '../types'
-import { Execution, ExecutionOptions } from './execution'
-import { ReceiptsManager } from './receipt'
+import { short } from '../util/index.js'
+import { debugCodeReplayBlock } from '../util/debug.js'
+import { Event } from '../types.js'
+import { Execution, ExecutionOptions } from './execution.js'
+import { ReceiptsManager } from './receipt.js'
 import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts } from '@ethereumjs/vm/dist/runBlock'
-import type { TxReceipt } from '@ethereumjs/vm/dist/types'
+import type { RunBlockOpts } from '@ethereumjs/vm/runBlock.js'
+import type { TxReceipt } from '@ethereumjs/vm/types.js'
 
 export class VMExecution extends Execution {
   public vm: VM

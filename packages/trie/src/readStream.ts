@@ -1,8 +1,11 @@
-import { nibblesToBuffer } from './util/nibbles'
-import { Trie as BaseTrie } from './baseTrie'
-const Readable = require('readable-stream').Readable
+import { nibblesToBuffer } from './util/nibbles.js'
+import { Trie as BaseTrie } from './baseTrie.js'
 
-export class TrieReadStream extends Readable {
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const Readable = require('readable-stream')
+
+export class TrieReadStream extends Readable.Readable {
   private trie: BaseTrie
   private _started: boolean
 

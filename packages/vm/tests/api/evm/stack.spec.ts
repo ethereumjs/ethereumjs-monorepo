@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Account, Address, bigIntToBuffer, setLengthLeft } from 'ethereumjs-util'
-import VM from '../../../src'
-import Stack from '../../../src/evm/stack'
-import { createAccount } from '../utils'
+import VM from '../../../src/index.js'
+import Stack from '../../../src/evm/stack.js'
+import { createAccount } from '../utils.js'
 
 tape('Stack', (t) => {
   t.test('should be empty initially', (st) => {

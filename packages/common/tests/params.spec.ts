@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '../src/'
+import Common, { Chain, Hardfork } from '../src//index.js'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {

@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
 import { checkError } from '../util'
 
 function createChain() {

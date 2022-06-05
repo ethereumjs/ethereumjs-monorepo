@@ -1,5 +1,8 @@
 import tape from 'tape'
-import { Libp2pSender } from '../../../lib/net/protocol'
+import { Libp2pSender } from '../../../lib/net/protocol/index.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const DuplexPair = require('it-pair/duplex')
 
 tape('[Libp2pSender]', (t) => {

@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
@@ -12,10 +12,10 @@ import {
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
-import { BaseTransaction } from './baseTransaction'
+import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types.js'
+import { BaseTransaction } from './baseTransaction.js'
 import Common from '@ethereumjs/common'
-import { checkMaxInitCodeSize } from './util'
+import { checkMaxInitCodeSize } from './util.js'
 
 const TRANSACTION_TYPE = 0
 
@@ -220,7 +220,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getMessageToSign(hashMessage = true) {
     const message = this._getMessageToSign()
     if (hashMessage) {
-      return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
+      return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(message))))
     } else {
       return message
     }
@@ -265,12 +265,14 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+        this.cache.hash = Buffer.from(
+          ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(this.raw())))
+        )
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+    return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(this.raw()))))
   }
 
   /**
@@ -282,7 +284,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       throw new Error(msg)
     }
     const message = this._getMessageToSign()
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
+    return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(message))))
   }
 
   /**

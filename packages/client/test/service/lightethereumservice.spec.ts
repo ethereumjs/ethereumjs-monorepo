@@ -1,8 +1,8 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
-import { Chain } from '../../lib/blockchain'
+import * as td from 'testdouble'
+import { Config } from '../../lib/config.js'
+import { Event } from '../../lib/types.js'
+import { Chain } from '../../lib/blockchain/index.js'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool {
@@ -29,7 +29,7 @@ tape('[LightEthereumService]', async (t) => {
   LightSynchronizer.prototype.close = td.func<any>()
   td.replace('../../lib/sync/lightsync', { LightSynchronizer })
 
-  const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
+  const { LightEthereumService } = await import('../../lib/service/lightethereumservice.js')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })

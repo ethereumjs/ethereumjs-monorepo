@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import {
   arrToBufArr,
   bigIntToHex,
@@ -12,7 +12,7 @@ import {
 } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common from '@ethereumjs/common'
-import { BaseTransaction } from './baseTransaction'
+import { BaseTransaction } from './baseTransaction.js'
 import {
   AccessList,
   AccessListBuffer,
@@ -20,8 +20,8 @@ import {
   FeeMarketEIP1559ValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+} from './types.js'
+import { AccessLists, checkMaxInitCodeSize } from './util.js'
 
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
@@ -298,7 +298,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
     ])
     if (hashMessage) {
-      return Buffer.from(keccak256(message))
+      return Buffer.from(ethCryptoKeccak.keccak256(message))
     } else {
       return message
     }
@@ -318,12 +318,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(this.serialize()))
+        this.cache.hash = Buffer.from(ethCryptoKeccak.keccak256(this.serialize()))
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(this.serialize()))
+    return Buffer.from(ethCryptoKeccak.keccak256(this.serialize()))
   }
 
   /**

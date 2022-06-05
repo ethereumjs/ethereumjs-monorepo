@@ -14,7 +14,7 @@ import {
   AccessListEIP2930Transaction,
   AccessListBufferItem,
   FeeMarketEIP1559Transaction,
-} from '../src'
+} from '../src/index.js'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)

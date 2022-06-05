@@ -2,13 +2,13 @@ import tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Hardfork } from '@ethereumjs/common'
 import testChain from './testdata/testnet.json'
-import VM from '../../src'
+import VM from '../../src/index.js'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { Interface } from '@ethersproject/abi'
 import { Address } from 'ethereumjs-util'
 import testnetMerge from './testdata/testnetMerge.json'
-import type { AccountState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { AccountState } from '@ethereumjs/blockchain/genesisStates/index.js'
 
 const storage: Array<[string, string]> = [
   [

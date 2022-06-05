@@ -1,12 +1,12 @@
-import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
+import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal.js'
 import {
   PrefixedHexString,
   TransformableToArray,
   TransformableToBuffer,
   NestedBufferArray,
   NestedUint8Array,
-} from './types'
-import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+} from './types.js'
+import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers.js'
 
 /**
  * Converts a `Number` into a hex `String`

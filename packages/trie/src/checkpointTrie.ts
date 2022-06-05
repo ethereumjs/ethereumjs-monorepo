@@ -1,6 +1,6 @@
-import { Trie as BaseTrie, TrieOpts } from './baseTrie'
-import { CheckpointDB } from './checkpointDb'
-import { DB, MemoryDB } from './db'
+import { Trie as BaseTrie, TrieOpts } from './baseTrie.js'
+import { CheckpointDB } from './checkpointDb.js'
+import { DB, MemoryDB } from './db.js'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}

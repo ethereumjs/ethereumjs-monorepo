@@ -8,8 +8,8 @@ import {
   FeeMarketEIP1559Transaction,
   FeeMarketEIP1559TxData,
 } from '@ethereumjs/tx'
-import VM from '../../src'
-import { createAccount, getTransaction, setBalance } from './utils'
+import VM from '../../src/index.js'
+import { createAccount, getTransaction, setBalance } from './utils.js'
 
 const TRANSACTION_TYPES = [
   {

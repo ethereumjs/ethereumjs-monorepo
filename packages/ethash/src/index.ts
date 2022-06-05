@@ -1,4 +1,4 @@
-import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import {
   zeros,
   TWO_POW256,
@@ -17,10 +17,13 @@ import {
   getCacheSize,
   getFullSize,
   getSeed,
-} from './util'
+} from './util.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const xor = require('buffer-xor')
 
 export type Solution = {
@@ -161,17 +164,17 @@ export default class Ethash {
   mkcache(cacheSize: number, seed: Buffer) {
     // console.log(`generating cache\nsize: ${cacheSize}\nseed: ${seed.toString('hex')}`)
     const n = Math.floor(cacheSize / params.HASH_BYTES)
-    const o = [Buffer.from(keccak512(seed))]
+    const o = [Buffer.from(ethCryptoKeccak.keccak512(seed))]
 
     let i
     for (i = 1; i < n; i++) {
-      o.push(Buffer.from(keccak512(o[o.length - 1])))
+      o.push(Buffer.from(ethCryptoKeccak.keccak512(o[o.length - 1])))
     }
 
     for (let _ = 0; _ < params.CACHE_ROUNDS; _++) {
       for (i = 0; i < n; i++) {
         const v = o[i].readUInt32LE(0) % n
-        o[i] = Buffer.from(keccak512(xor(o[(i - 1 + n) % n], o[v])))
+        o[i] = Buffer.from(ethCryptoKeccak.keccak512(xor(o[(i - 1 + n) % n], o[v])))
       }
     }
 
@@ -184,12 +187,12 @@ export default class Ethash {
     const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES)
     let mix = Buffer.from(this.cache[i % n])
     mix.writeInt32LE(mix.readUInt32LE(0) ^ i, 0)
-    mix = Buffer.from(keccak512(mix))
+    mix = Buffer.from(ethCryptoKeccak.keccak512(mix))
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
       const cacheIndex = fnv(i ^ j, mix.readUInt32LE((j % r) * 4))
       mix = fnvBuffer(mix, this.cache[cacheIndex % n])
     }
-    return Buffer.from(keccak512(mix))
+    return Buffer.from(ethCryptoKeccak.keccak512(mix))
   }
 
   run(val: Buffer, nonce: Buffer, fullSize?: number) {
@@ -201,7 +204,7 @@ export default class Ethash {
     }
     const n = Math.floor(fullSize / params.HASH_BYTES)
     const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
-    const s = Buffer.from(keccak512(Buffer.concat([val, bufReverse(nonce)])))
+    const s = Buffer.from(ethCryptoKeccak.keccak512(Buffer.concat([val, bufReverse(nonce)])))
     const mixhashes = Math.floor(params.MIX_BYTES / params.HASH_BYTES)
     let mix = Buffer.concat(Array(mixhashes).fill(s))
 
@@ -227,16 +230,16 @@ export default class Ethash {
 
     return {
       mix: cmix,
-      hash: Buffer.from(keccak256(Buffer.concat([s, cmix]))),
+      hash: Buffer.from(ethCryptoKeccak.keccak256(Buffer.concat([s, cmix]))),
     }
   }
 
   cacheHash() {
-    return Buffer.from(keccak256(Buffer.concat(this.cache)))
+    return Buffer.from(ethCryptoKeccak.keccak256(Buffer.concat(this.cache)))
   }
 
   headerHash(rawHeader: Buffer[]) {
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(rawHeader.slice(0, -2)))))
+    return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr(rawHeader.slice(0, -2)))))
   }
 
   /**

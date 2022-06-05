@@ -1,8 +1,8 @@
 import tape from 'tape'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { toBuffer } from 'ethereumjs-util'
-import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
-import type { InterpreterStep } from '../../../src/evm/interpreter'
+import VM from '@ethereumjs/vm'
+import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util.js'
+import type { InterpreterStep } from '../../../src/evm/interpreter.js'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -59,19 +59,12 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  let VM
-  if (options.dist) {
-    VM = require('../../../dist').default
-  } else {
-    VM = require('../../../src').default
-  }
   const begin = Date.now()
   const common = options.common
 
-  const state = new Trie()
-  const vm = await VM.create({ state, common })
+  const vm = await VM.create({ common })
 
-  await setupPreConditions(vm.vmState, testData)
+  await setupPreConditions((vm as any).vmState, testData)
 
   let execInfo = ''
   let tx
@@ -107,7 +100,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         })
         vm.on('afterTx', async () => {
           const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
+            stateRoot: (vm.stateManager as any)._trie.root.toString('hex'),
           }
           t.comment(JSON.stringify(stateRoot))
         })
@@ -123,7 +116,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  const stateManagerStateRoot = vm.stateManager._trie.root
+  const stateManagerStateRoot = (vm.stateManager as any)._trie.root
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
   const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
 

@@ -1,9 +1,9 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
-import { Point, utils } from 'ethereum-cryptography/secp256k1'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
+import ethCryptoSecp256k1 = require('ethereum-cryptography/secp256k1')
 import RLP from 'rlp'
-import { stripHexPrefix } from './internal'
-import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
+import { stripHexPrefix } from './internal.js'
+import { KECCAK256_RLP, KECCAK256_NULL } from './constants.js'
 import {
   arrToBufArr,
   bigIntToUnpaddedBuffer,
@@ -12,9 +12,9 @@ import {
   bufferToHex,
   toBuffer,
   zeros,
-} from './bytes'
-import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BigIntLike, BufferLike } from './types'
+} from './bytes.js'
+import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers.js'
+import { BigIntLike, BufferLike } from './types.js'
 
 const _0n = BigInt(0)
 
@@ -161,7 +161,7 @@ export const toChecksumAddress = function (
   }
 
   const buf = Buffer.from(prefix + address, 'utf8')
-  const hash = bytesToHex(keccak256(buf))
+  const hash = ethCryptoUtils.bytesToHex(ethCryptoKeccak.keccak256(buf))
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
@@ -199,11 +199,13 @@ export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, null] as any)))).slice(-20)
+    return Buffer.from(
+      ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr([from, null] as any)))
+    ).slice(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, nonce])))).slice(-20)
+  return Buffer.from(ethCryptoKeccak.keccak256(RLP.encode(bufArrToArr([from, nonce])))).slice(-20)
 }
 
 /**
@@ -224,8 +226,8 @@ export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: 
     throw new Error('Expected salt to be of length 32')
   }
 
-  const address = keccak256(
-    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)])
+  const address = ethCryptoKeccak.keccak256(
+    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, ethCryptoKeccak.keccak256(initCode)])
   )
 
   return toBuffer(address).slice(-20)
@@ -235,7 +237,7 @@ export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: 
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
 export const isValidPrivate = function (privateKey: Buffer): boolean {
-  return utils.isValidPrivateKey(privateKey)
+  return ethCryptoSecp256k1.utils.isValidPrivateKey(privateKey)
 }
 
 /**
@@ -250,7 +252,7 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
     // Convert to SEC1 for secp256k1
     // Automatically checks whether point is on curve
     try {
-      Point.fromHex(Buffer.concat([Buffer.from([4]), publicKey]))
+      ethCryptoSecp256k1.Point.fromHex(Buffer.concat([Buffer.from([4]), publicKey]))
       return true
     } catch (e) {
       return false
@@ -262,7 +264,7 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
   }
 
   try {
-    Point.fromHex(publicKey)
+    ethCryptoSecp256k1.Point.fromHex(publicKey)
     return true
   } catch (e) {
     return false
@@ -278,13 +280,13 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
 export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false): Buffer {
   assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = Buffer.from(Point.fromHex(pubKey).toRawBytes(false).slice(1))
+    pubKey = Buffer.from(ethCryptoSecp256k1.Point.fromHex(pubKey).toRawBytes(false).slice(1))
   }
   if (pubKey.length !== 64) {
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return Buffer.from(keccak256(pubKey)).slice(-20)
+  return Buffer.from(ethCryptoKeccak.keccak256(pubKey)).slice(-20)
 }
 export const publicToAddress = pubToAddress
 
@@ -295,7 +297,7 @@ export const publicToAddress = pubToAddress
 export const privateToPublic = function (privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
-  return Buffer.from(Point.fromPrivateKey(privateKey).toRawBytes(false).slice(1))
+  return Buffer.from(ethCryptoSecp256k1.Point.fromPrivateKey(privateKey).toRawBytes(false).slice(1))
 }
 
 /**
@@ -312,7 +314,7 @@ export const privateToAddress = function (privateKey: Buffer): Buffer {
 export const importPublic = function (publicKey: Buffer): Buffer {
   assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = Buffer.from(Point.fromHex(publicKey).toRawBytes(false).slice(1))
+    publicKey = Buffer.from(ethCryptoSecp256k1.Point.fromHex(publicKey).toRawBytes(false).slice(1))
   }
   return publicKey
 }

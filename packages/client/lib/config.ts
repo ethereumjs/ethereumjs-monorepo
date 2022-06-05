@@ -3,12 +3,15 @@ import VM from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from 'ethereumjs-util'
 import { Multiaddr } from 'multiaddr'
-import { Logger, getLogger } from './logging'
-import { Libp2pServer, RlpxServer } from './net/server'
-import { parseTransports } from './util'
-import { EventBus, EventBusType } from './types'
+import { Logger, getLogger } from './logging.js'
+import { Libp2pServer, RlpxServer } from './net/server/index.js'
+import { parseTransports } from './util/index.js'
+import { EventBus, EventBusType } from './types.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level')
 
 export enum DataDirectory {

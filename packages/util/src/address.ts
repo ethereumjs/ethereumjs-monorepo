@@ -1,11 +1,11 @@
-import { toBuffer, zeros, bigIntToBuffer, bufferToBigInt } from './bytes'
+import { toBuffer, zeros, bigIntToBuffer, bufferToBigInt } from './bytes.js'
 import {
   isValidAddress,
   pubToAddress,
   privateToAddress,
   generateAddress,
   generateAddress2,
-} from './account'
+} from './account.js'
 
 export class Address {
   public readonly buf: Buffer

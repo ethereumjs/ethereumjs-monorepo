@@ -1,9 +1,9 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Config } from '../../lib/config'
-import { Chain } from '../../lib/blockchain'
-import { Synchronizer } from '../../lib/sync/sync'
-import { Event } from '../../lib/types'
+import * as td from 'testdouble'
+import { Config } from '../../lib/config.js'
+import { Chain } from '../../lib/blockchain/index.js'
+import { Synchronizer } from '../../lib/sync/sync.js'
+import { Event } from '../../lib/types.js'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {

@@ -1,4 +1,7 @@
 import { EventEmitter } from 'events'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const DuplexPair = require('it-pair/duplex')
 
 const Stream = function (protocols: string[]) {

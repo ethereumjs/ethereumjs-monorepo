@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events'
-import { buf as crc32Buffer } from 'crc-32'
+import crc32 from 'crc-32'
 import { BigIntLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
-import { EIPs } from './eips'
-import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
+import { hardforks as HARDFORK_CHANGES } from './hardforks/index.js'
+import { EIPs } from './eips/index.js'
+import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums.js'
 import {
   BootstrapNodeConfig,
   ChainConfig,
@@ -16,7 +16,7 @@ import {
   CasperConfig,
   CommonOpts,
   CustomCommonOpts,
-} from './types'
+} from './types.js'
 import mainnet from './chains/mainnet.json'
 import ropsten from './chains/ropsten.json'
 import rinkeby from './chains/rinkeby.json'
@@ -639,7 +639,7 @@ export class Common extends EventEmitter {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = intToBuffer(crc32Buffer(inputBuffer) >>> 0).toString('hex')
+    const forkhash = intToBuffer(crc32.buf(inputBuffer) >>> 0).toString('hex')
     return `0x${forkhash}`
   }
 

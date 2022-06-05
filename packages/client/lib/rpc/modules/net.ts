@@ -1,9 +1,9 @@
-import { middleware } from '../validation'
+import { middleware } from '../validation.js'
 import { addHexPrefix } from 'ethereumjs-util'
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { PeerPool } from '../../net/peerpool'
-import type { EthereumService } from '../../service/ethereumservice'
+import type { EthereumClient } from '../../index.js'
+import type { Chain } from '../../blockchain/index.js'
+import type { PeerPool } from '../../net/peerpool.js'
+import type { EthereumService } from '../../service/ethereumservice.js'
 
 /**
  * net_* RPC module

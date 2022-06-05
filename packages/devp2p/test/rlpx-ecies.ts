@@ -1,8 +1,8 @@
 import { randomBytes } from 'crypto'
-import * as secp256k1 from 'secp256k1'
+import secp256k1 from 'secp256k1'
 import test, { Test } from 'tape'
-import * as util from '../src/util'
-import { ECIES } from '../src/rlpx/ecies'
+import * as util from '../src/util.js'
+import { ECIES } from '../src/rlpx/ecies.js'
 
 import testdata from './testdata.json'
 

@@ -3,9 +3,9 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { Account } from 'ethereumjs-util'
-import { PeerPool } from '../../lib/net/peerpool'
-import { TxPool } from '../../lib/service/txpool'
-import { Config } from '../../lib/config'
+import { PeerPool } from '../../lib/net/peerpool.js'
+import { TxPool } from '../../lib/service/txpool.js'
+import { Config } from '../../lib/config.js'
 
 const setup = () => {
   const config = new Config({ transports: [] })

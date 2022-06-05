@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { ETH as Devp2pETH } from '@ethereumjs/devp2p'
-import { RlpxSender } from '../../../lib/net/protocol'
+import { RlpxSender } from '../../../lib/net/protocol/index.js'
 
 tape('[RlpxSender]', (t) => {
   t.test('should send status', (t) => {

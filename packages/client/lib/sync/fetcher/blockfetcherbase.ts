@@ -1,5 +1,5 @@
-import { Fetcher, FetcherOptions } from './fetcher'
-import { Chain } from '../../blockchain'
+import { Fetcher, FetcherOptions } from './fetcher.js'
+import { Chain } from '../../blockchain/index.js'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /* Blockchain */

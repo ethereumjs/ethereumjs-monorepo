@@ -3,17 +3,17 @@ import { EventEmitter } from 'events'
 import BufferList = require('bl')
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
+import debugPkg from 'debug'
+import { devp2pDebug } from '../util.js'
 import Common from '@ethereumjs/common'
 import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { ETH, LES } from '../'
-import { int2buffer, buffer2int, formatLogData } from '../util'
-import { ECIES } from './ecies'
+import { ETH, LES } from '..//index.js'
+import { int2buffer, buffer2int, formatLogData } from '../util.js'
+import { ECIES } from './ecies.js'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugPkg.debug('verbose').enabled
 
 export const BASE_PROTOCOL_VERSION = 5
 export const BASE_PROTOCOL_LENGTH = 16
@@ -93,14 +93,14 @@ export class Peer extends EventEmitter {
   _nextPacketSize: number
   _socket: Socket
   _socketData: BufferList
-  _pingIntervalId: NodeJS.Timeout | null
+  _pingIntervalId: NodeJS.Timeout | null /* global NodeJS */
   _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
   _connected: boolean
   _disconnectReason?: DISCONNECT_REASONS
   _disconnectWe: any
   _pingTimeout: number
-  _logger: Debugger
+  _logger: debugPkg.Debugger
 
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on

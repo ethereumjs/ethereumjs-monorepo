@@ -1,15 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { Event } from '../../types'
-import { short } from '../../util'
-import type { Config } from '../../config'
+import { Event } from '../../types.js'
+import { short } from '../../util/index.js'
+import type { Config } from '../../config.js'
 import {
   ExecutionPayloadV1,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
   Status,
-} from '../modules/engine'
+} from '../modules/engine.js'
 
 export enum ConnectionStatus {
   Connected = 'connected',

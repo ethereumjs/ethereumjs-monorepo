@@ -1,11 +1,13 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
-import Blockchain from '../src'
-import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import Blockchain from '../src/index.js'
+import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util.js'
+import testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 tape('blockchain test', (t) => {

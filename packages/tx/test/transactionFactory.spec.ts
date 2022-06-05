@@ -5,7 +5,7 @@ import {
   TransactionFactory,
   Transaction,
   FeeMarketEIP1559Transaction,
-} from '../src'
+} from '../src/index.js'
 
 const common = new Common({
   chain: Chain.Mainnet,

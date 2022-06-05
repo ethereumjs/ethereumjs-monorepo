@@ -1,6 +1,6 @@
-import { DataDirectory } from '../'
+import { DataDirectory } from '..//index.js'
 import type { Block } from '@ethereumjs/block'
-import type { VMExecution } from '../execution'
+import type { VMExecution } from '../execution/index.js'
 
 /**
  * Generates a code snippet which can be used to replay an erraneous block
@@ -22,13 +22,15 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
  * 
  */
 
-const level = require('level')
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import VM from './lib'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { DefaultStateManager } from './lib/state'
 import Blockchain from '@ethereumjs/blockchain'
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const level = require('level')
 
 const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${

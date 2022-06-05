@@ -1,15 +1,15 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
-import { VmState } from '../vmState'
+import { VmState } from '../vmState.js'
 
-import { ERROR, VmError } from '../exceptions'
-import Memory from './memory'
-import Stack from './stack'
-import EEI from './eei'
-import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
-import EOF from './eof'
+import { ERROR, VmError } from '../exceptions.js'
+import Memory from './memory.js'
+import Stack from './stack.js'
+import EEI from './eei.js'
+import { Opcode, OpHandler, AsyncOpHandler } from './opcodes/index.js'
+import EOF from './eof.js'
 import Common from '@ethereumjs/common'
-import EVM from './evm'
+import EVM from './evm.js'
 
 export interface InterpreterOpts {
   pc?: number
@@ -273,7 +273,7 @@ export default class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
+        this.opDebuggers[name] = debugPkg.debug(`vm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }

@@ -2,9 +2,9 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Address } from 'ethereumjs-util'
 import tape from 'tape'
-import Blockchain from '../src'
-import { CliqueConsensus, CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
-import { generateConsecutiveBlock } from './util'
+import Blockchain from '../src/index.js'
+import { CliqueConsensus, CLIQUE_NONCE_AUTH } from '../src/consensus/clique.js'
+import { generateConsecutiveBlock } from './util.js'
 
 tape('reorg tests', (t) => {
   t.test(

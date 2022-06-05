@@ -1,12 +1,12 @@
-import { PrecompileInput } from './types'
-import { VmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, VmError } from '../../exceptions'
-import { gasDiscountPairs } from './util/bls12_381'
-const {
+import { PrecompileInput } from './types.js'
+import { VmErrorResult, ExecResult, OOGResult } from '../evm.js'
+import { ERROR, VmError } from '../../exceptions.js'
+import { gasDiscountPairs } from './util/bls12_381.js'
+import {
   BLS12_381_ToG2Point,
   BLS12_381_ToFrPoint,
   BLS12_381_FromG2Point,
-} = require('./util/bls12_381')
+} from './util/bls12_381.js'
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')

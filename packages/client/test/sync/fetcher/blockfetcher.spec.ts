@@ -1,9 +1,9 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Config } from '../../../lib/config'
-import { Chain } from '../../../lib/blockchain/chain'
-import { wait } from '../../integration/util'
-import { Event } from '../../../lib/types'
+import * as td from 'testdouble'
+import { Config } from '../../../lib/config.js'
+import { Chain } from '../../../lib/blockchain/chain.js'
+import { wait } from '../../integration/util.js'
+import { Event } from '../../../lib/types.js'
 
 tape('[BlockFetcher]', async (t) => {
   class PeerPool {
@@ -13,7 +13,7 @@ tape('[BlockFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
+  const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher.js')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })

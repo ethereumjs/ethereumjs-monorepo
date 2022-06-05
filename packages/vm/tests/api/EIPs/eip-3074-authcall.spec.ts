@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import {
   Address,
   bigIntToBuffer,
@@ -11,11 +11,11 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { ERROR } from '../../../src/exceptions'
-import { InterpreterStep } from '../../../src/evm/interpreter'
+import { ERROR } from '../../../src/exceptions.js'
+import { InterpreterStep } from '../../../src/evm/interpreter.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -67,7 +67,7 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
   const paddedInvokerAddress = setLengthLeft(address.buf, 32)
   const chainId = setLengthLeft(bigIntToBuffer(common.chainId()), 32)
   const message = Buffer.concat([Buffer.from('03', 'hex'), chainId, paddedInvokerAddress, commit])
-  const msgHash = Buffer.from(keccak256(message))
+  const msgHash = Buffer.from(ethCryptoKeccak.keccak256(message))
   return ecsign(msgHash, privateKey, 0)
 }
 

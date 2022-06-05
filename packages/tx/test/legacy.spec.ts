@@ -10,11 +10,10 @@ import {
 } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Transaction, TxData } from '../src'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import { Transaction, TxData } from '../src/index.js'
 
-const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
-const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
+import txFixtures from './json/txs.json'
+import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
 
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []

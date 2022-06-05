@@ -1,8 +1,8 @@
 import { Multiaddr } from 'multiaddr'
-import { Config } from '../../config'
-import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types'
-import { parseKey, parseMultiaddrs } from '../../util/parse'
-import { Protocol } from '../protocol/protocol'
+import { Config } from '../../config.js'
+import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types.js'
+import { parseKey, parseMultiaddrs } from '../../util/parse.js'
+import { Protocol } from '../protocol/protocol.js'
 
 export interface ServerOptions {
   /* Config */

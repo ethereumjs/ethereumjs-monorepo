@@ -1,15 +1,15 @@
 import { EventEmitter } from 'events'
 import * as dgram from 'dgram'
 import ms from 'ms'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import debugPkg from 'debug'
 import LRUCache = require('lru-cache')
-import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
-import { DPT, PeerInfo } from './dpt'
+import { encode, decode } from './message.js'
+import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util.js'
+import { DPT, PeerInfo } from './dpt.js'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
 const DEBUG_BASE_NAME = 'dpt:server'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugPkg.debug('verbose').enabled
 
 const VERSION = 0x04
 
@@ -45,7 +45,7 @@ export class Server extends EventEmitter {
   _parityRequestMap: Map<string, string>
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
-  _debug: Debugger
+  _debug: debugPkg.Debugger
 
   constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
     super()

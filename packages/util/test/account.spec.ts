@@ -15,8 +15,8 @@ import {
   isValidAddress,
   toChecksumAddress,
   bufferToBigInt,
-} from '../src'
-const eip1014Testdata = require('./testdata/eip1014Examples.json')
+} from '../src/index.js'
+import eip1014Testdata from './testdata/eip1014Examples.json'
 
 const _0n = BigInt(0)
 

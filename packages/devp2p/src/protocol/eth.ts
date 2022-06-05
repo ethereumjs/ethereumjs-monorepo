@@ -7,9 +7,9 @@ import {
   bufferToHex,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
-import { Peer } from '../rlpx/peer'
-import { EthProtocol, Protocol, SendMethod } from './protocol'
+import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util.js'
+import { Peer } from '../rlpx/peer.js'
+import { EthProtocol, Protocol, SendMethod } from './protocol.js'
 
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null = null

@@ -1,9 +1,9 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Log } from '@ethereumjs/vm/dist/evm/types'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
-import { Chain } from '../../lib/blockchain'
+import * as td from 'testdouble'
+import { Log } from '@ethereumjs/vm/evm/types'
+import { Config } from '../../lib/config.js'
+import { Event } from '../../lib/types.js'
+import { Chain } from '../../lib/blockchain/index.js'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
@@ -44,7 +44,7 @@ tape('[FullEthereumService]', async (t) => {
     }
   }
   td.replace('@ethereumjs/block', { Block })
-  const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
+  const { FullEthereumService } = await import('../../lib/service/fullethereumservice.js')
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })

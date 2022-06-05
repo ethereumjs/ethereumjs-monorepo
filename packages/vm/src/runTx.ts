@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { Address, KECCAK256_NULL, toBuffer, short } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -11,18 +11,18 @@ import {
   TypedTransaction,
   Capability,
 } from '@ethereumjs/tx'
-import VM from './index'
-import Bloom from './bloom'
-import { EVMResult } from './evm/evm'
+import VM from './index.js'
+import Bloom from './bloom/index.js'
+import { EVMResult } from './evm/evm.js'
 import type {
   TxReceipt,
   BaseTxReceipt,
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
-} from './types'
+} from './types.js'
 
-const debug = createDebugLogger('vm:tx')
-const debugGas = createDebugLogger('vm:tx:gas')
+const debug = debugPkg.debug('vm:tx')
+const debugGas = debugPkg.debug('vm:tx:gas')
 
 /**
  * Options for the `runTx` method.

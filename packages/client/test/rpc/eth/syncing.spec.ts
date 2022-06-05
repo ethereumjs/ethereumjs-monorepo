@@ -1,7 +1,7 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
-import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
+import * as td from 'testdouble'
+import { INTERNAL_ERROR } from '../../../lib/rpc/error-code.js'
+import { baseRequest, createManager, createClient, params, startRPC } from '../helpers.js'
 import { checkError } from '../util'
 
 const method = 'eth_syncing'

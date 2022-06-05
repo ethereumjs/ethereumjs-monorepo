@@ -1,12 +1,12 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import ip from 'ip'
 import secp256k1 from 'secp256k1'
 import { bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
-import { PeerInfo } from './dpt'
+import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util.js'
+import { PeerInfo } from './dpt.js'
 
-const debug = createDebugLogger('devp2p:dpt:server')
+const debug = debugPkg.debug('devp2p:dpt:server')
 
 function getTimestamp() {
   return (Date.now() / 1000) | 0

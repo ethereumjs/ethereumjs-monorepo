@@ -7,14 +7,17 @@
   "engines": {
     "npm": ">=7"
   },
+  "type": "module",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-config-typestrict": "^1.0.0",
-    "eslint-plugin-implicit-dependencies": "^1.0.4",
-    "eslint-plugin-prettier": "^3.1.3",
-    "eslint-plugin-sonarjs": "^0.5.0",
+    "@chainsafe/eslint-plugin-node": "^11.2.3",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "eslint-formatter-codeframe": "^7.32.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-typestrict": "^1.0.5",
+    "eslint-plugin-implicit-dependencies": "^1.1.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-sonarjs": "^0.13.0",
     "husky": "^4.2.5",
     "nyc-report-lcov-absolute": "^1.0.0",
     "typedoc-plugin-markdown": "^3.10.4",
@@ -27,15 +30,13 @@
   },
   "scripts": {
     "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces",
+    "postinstall": "npm run tapeHotFix && npm run build --workspaces",
+    "tapeHotFix": "sed -i -e 's/js/ts/g' node_modules/tape/bin/import-or-require.js",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "examples": "npm run examples --workspaces --if-present",
     "clean": "./config/cli/clean-root.sh",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js"
-  },
-  "dependencies": {
-    "bigint-crypto-utils": "^3.0.23"
   }
 }

@@ -12,6 +12,9 @@ import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import VM from '../'
 import { testData } from './helpers/blockchain-mock-data'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level')
 
 async function main() {

@@ -1,8 +1,8 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+import { BlockHeader } from '../src/header.js'
 import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
-import { Block } from '../src/block'
+import { Block } from '../src/block.js'
 
 const common = new Common({
   chain: Chain.Mainnet,

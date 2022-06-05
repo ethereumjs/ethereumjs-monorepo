@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { getLogger } from '../lib/logging'
+import { getLogger } from '../lib/logging.js'
 
 tape('[Logging]', (t) => {
   const logger = getLogger()

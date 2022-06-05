@@ -1,8 +1,8 @@
 import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
-import { FlowControl } from './flowcontrol'
+import { Chain } from './../../blockchain/index.js'
+import { Message, Protocol, ProtocolOptions } from './protocol.js'
+import { FlowControl } from './flowcontrol.js'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */

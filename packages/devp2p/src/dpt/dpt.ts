@@ -1,15 +1,14 @@
 import ms from 'ms'
 import { EventEmitter } from 'events'
-import { publicKeyCreate } from 'secp256k1'
+import secp256k1 from 'secp256k1'
 import { randomBytes } from 'crypto'
-// import { debug as createDebugLogger } from 'debug'
-import { devp2pDebug } from '../util'
-import { buffer2int, pk2id } from '../util'
-import { KBucket } from './kbucket'
-import { BanList } from './ban-list'
-import { Server as DPTServer } from './server'
-import { DNS } from '../dns'
-import { Debugger } from 'debug'
+import { devp2pDebug } from '../util.js'
+import { buffer2int, pk2id } from '../util.js'
+import { KBucket } from './kbucket.js'
+import { BanList } from './ban-list.js'
+import { Server as DPTServer } from './server.js'
+import { DNS } from '../dns/index.js'
+import debugPkg from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
@@ -89,12 +88,12 @@ export class DPT extends EventEmitter {
   privateKey: Buffer
   banlist: BanList
   dns: DNS
-  _debug: Debugger
+  _debug: debugPkg.Debugger
 
   private _id: Buffer | undefined
   private _kbucket: KBucket
   private _server: DPTServer
-  private _refreshIntervalId: NodeJS.Timeout
+  private _refreshIntervalId: NodeJS.Timeout /* global NodeJS */
   private _refreshIntervalSelectionCounter: number = 0
   private _shouldFindNeighbours: boolean
   private _shouldGetDnsPeers: boolean
@@ -106,7 +105,7 @@ export class DPT extends EventEmitter {
     super()
 
     this.privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(publicKeyCreate(this.privateKey, false)))
+    this._id = pk2id(Buffer.from(secp256k1.publicKeyCreate(this.privateKey, false)))
     this._shouldFindNeighbours = options.shouldFindNeighbours === false ? false : true
     this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s

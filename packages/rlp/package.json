@@ -28,7 +28,8 @@
     "./*": {
       "import": "./dist/esm/*",
       "require": "./dist/cjs/*",
-      "types": "./dist/types/*"
+      "types": "./dist/types/*",
+      "browser": "./dist/esm/*"
     }
   },
   "scripts": {

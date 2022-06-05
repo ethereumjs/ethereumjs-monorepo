@@ -1,16 +1,19 @@
 import tape from 'tape'
-import { CheckpointTrie } from '../src'
-import { MemoryDB, LevelDB } from '../src/db'
+import { CheckpointTrie } from '../src/index.js'
+import { MemoryDB, LevelDB } from '../src/db.js'
+import trieTestsJSON from './fixtures/trietest.json'
+import trieAnyOrderTestsJSON from './fixtures/trieanyorder.json'
+const trieTests = trieTestsJSON.tests as any
+const trieAnyOrderTests = trieAnyOrderTestsJSON.tests as any
 
 for (const DB of [MemoryDB, LevelDB]) {
   tape('official tests', async function (t) {
-    const jsonTests = require('./fixtures/trietest.json').tests
-    const testNames = Object.keys(jsonTests)
+    const testNames = Object.keys(trieTests)
     let trie = new CheckpointTrie({ db: new DB() })
 
     for (const testName of testNames) {
-      const inputs = jsonTests[testName].in
-      const expect = jsonTests[testName].root
+      const inputs = trieTests[testName].in
+      const expect = trieTests[testName].root
       for (const input of inputs) {
         for (let i = 0; i < 2; i++) {
           if (input[i] && input[i].slice(0, 2) === '0x') {
@@ -28,11 +31,10 @@ for (const DB of [MemoryDB, LevelDB]) {
   })
 
   tape('official tests any order', async function (t) {
-    const jsonTests = require('./fixtures/trieanyorder.json').tests
-    const testNames = Object.keys(jsonTests)
+    const testNames = Object.keys(trieAnyOrderTests)
     let trie = new CheckpointTrie({ db: new DB() })
     for (const testName of testNames) {
-      const test = jsonTests[testName]
+      const test = trieAnyOrderTests[testName]
       const keys = Object.keys(test.in)
       let key: any
       for (key of keys) {

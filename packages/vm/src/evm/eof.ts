@@ -1,4 +1,4 @@
-import { handlers } from './opcodes'
+import { handlers } from './opcodes/index.js'
 
 export const FORMAT = 0xef
 export const MAGIC = 0x00

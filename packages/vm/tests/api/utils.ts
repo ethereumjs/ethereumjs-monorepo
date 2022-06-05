@@ -1,11 +1,13 @@
 import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import VM from '../../src/index'
-import { VMOpts } from '../../src'
+import VM from '../../src/index.js'
+import { VMOpts } from '../../src/index.js'
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import Common from '@ethereumjs/common'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {

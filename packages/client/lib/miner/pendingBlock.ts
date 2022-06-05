@@ -1,11 +1,11 @@
 import { randomBytes } from 'crypto'
 import type VM from '@ethereumjs/vm'
-import type { TxReceipt } from '@ethereumjs/vm/dist/types'
-import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
+import type { TxReceipt } from '@ethereumjs/vm/types.js'
+import type { BlockBuilder } from '@ethereumjs/vm/buildBlock.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { TxPool } from '../service/txpool'
-import type { Config } from '../config'
+import type { TxPool } from '../service/txpool.js'
+import type { Config } from '../config.js'
 
 interface PendingBlockOpts {
   /* Config */

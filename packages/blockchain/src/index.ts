@@ -1,14 +1,23 @@
-import Semaphore from 'semaphore-async-await'
+import Semaphore = require('semaphore-async-await')
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { DBManager } from './db/manager'
-import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
-import { DBTarget } from './db/operation'
-import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
-import { GenesisState, genesisStateRoot } from './genesisStates'
+import { DBManager } from './db/manager.js'
+import {
+  DBOp,
+  DBSetBlockOrHeader,
+  DBSetTD,
+  DBSetHashToNumber,
+  DBSaveLookups,
+} from './db/helpers.js'
+import { DBTarget } from './db/operation.js'
+import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus/index.js'
+import { GenesisState, genesisStateRoot } from './genesisStates/index.js'
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -164,7 +173,7 @@ export default class Blockchain implements BlockchainInterface {
   private _heads: { [key: string]: Buffer }
 
   protected _isInitialized = false
-  private _lock: Semaphore
+  private _lock: Semaphore.default
 
   _common: Common
   private _hardforkByHeadBlockNumber: boolean
@@ -264,7 +273,7 @@ export default class Blockchain implements BlockchainInterface {
 
     this._heads = {}
 
-    this._lock = new Semaphore(1)
+    this._lock = new Semaphore.default(1)
 
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'

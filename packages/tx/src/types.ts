@@ -1,8 +1,8 @@
 import { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { default as Transaction } from './legacyTransaction'
-import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
+import { default as Transaction } from './legacyTransaction.js'
+import { default as AccessListEIP2930Transaction } from './eip2930Transaction.js'
+import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 
 /**
  * Can be used in conjunction with {@link Transaction.supports}

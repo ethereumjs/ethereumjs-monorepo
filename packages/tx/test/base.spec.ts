@@ -5,9 +5,9 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Capability,
-} from '../src'
-import { TxsJsonEntry } from './types'
-import { BaseTransaction } from '../src/baseTransaction'
+} from '../src/index.js'
+import { TxsJsonEntry } from './types.js'
+import { BaseTransaction } from '../src/baseTransaction.js'
 import {
   privateToPublic,
   toBuffer,
@@ -16,24 +16,23 @@ import {
   SECP256K1_ORDER,
   bufferToBigInt,
 } from 'ethereumjs-util'
+import legacyFixtures from './json/txs.json'
+import eip2930Fixtures from './json/eip2930txs.json'
+import eip1559Fixtures from './json/eip1559txs.json'
 
 tape('[BaseTransaction]', function (t) {
-  // EIP-2930 is not enabled in Common by default (2021-03-06)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-  const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
   legacyFixtures.slice(0, 4).forEach(function (tx: TxsJsonEntry) {
     legacyTxs.push(Transaction.fromTxData(tx.data, { common }))
   })
 
-  const eip2930Fixtures = require('./json/eip2930txs.json')
   const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
   eip2930Fixtures.forEach(function (tx: any) {
     eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
   })
 
-  const eip1559Fixtures = require('./json/eip1559txs.json')
   const eip1559Txs: BaseTransaction<FeeMarketEIP1559Transaction>[] = []
   eip1559Fixtures.forEach(function (tx: any) {
     eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))

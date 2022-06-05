@@ -1,4 +1,7 @@
 import Ethash from '../src'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 const cacheDB = level()

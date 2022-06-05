@@ -1,5 +1,5 @@
 import test from 'tape'
-import { ENR } from '../src/dns'
+import { ENR } from '../src/dns/index.js'
 import testdata from './testdata.json'
 
 const dns = testdata.dns

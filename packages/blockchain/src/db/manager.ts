@@ -2,11 +2,14 @@ import { arrToBufArr, bufferToBigInt } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import Cache from './cache'
-import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+import Cache from './cache.js'
+import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation.js'
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 /**

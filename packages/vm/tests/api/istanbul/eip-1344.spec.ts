@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
-import { ERROR } from '../../../src/exceptions'
+import VM from '../../../src/index.js'
+import { ERROR } from '../../../src/exceptions.js'
 import { bufferToBigInt } from 'ethereumjs-util'
 
 const testCases = [

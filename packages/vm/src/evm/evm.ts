@@ -4,8 +4,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-const AsyncEventEmitter = require('async-eventemitter')
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import {
   Account,
   Address,
@@ -18,20 +17,24 @@ import {
 } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
-import EEI from './eei'
-import { ERROR, VmError } from '../exceptions'
-import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
-import Message, { MessageWithTo } from './message'
-import EOF from './eof'
-import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
-import { TransientStorage } from '../state'
-import { CustomOpcode, Log, RunCallOpts, RunCodeOpts, TxContext } from './types'
-import { VmState } from '../vmState'
+import EEI from './eei.js'
+import { ERROR, VmError } from '../exceptions.js'
+import { default as Interpreter, InterpreterOpts, RunState } from './interpreter.js'
+import Message, { MessageWithTo } from './message.js'
+import EOF from './eof.js'
+import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes/index.js'
+import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles/index.js'
+import { TransientStorage } from '../state/index.js'
+import { CustomOpcode, Log, RunCallOpts, RunCodeOpts, TxContext } from './types.js'
+import { VmState } from '../vmState.js'
 
-const debug = createDebugLogger('vm:evm')
-const debugGas = createDebugLogger('vm:evm:gas')
+const debug = debugPkg.debug('vm:evm')
+const debugGas = debugPkg.debug('vm:evm:gas')
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const AsyncEventEmitter = require('async-eventemitter')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')

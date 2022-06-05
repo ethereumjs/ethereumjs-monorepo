@@ -1,5 +1,5 @@
 import { Address } from 'ethereumjs-util'
-import { PrecompileFunc } from './precompiles'
+import { PrecompileFunc } from './precompiles/index.js'
 
 const defaults = {
   value: BigInt(0),

@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../../src'
-import { getActivePrecompiles } from '../../../../src/evm/precompiles'
+import VM from '../../../../src/index.js'
+import { getActivePrecompiles } from '../../../../src/evm/precompiles/index.js'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {

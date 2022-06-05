@@ -2,5 +2,5 @@
  * @module miner
  */
 
-export * from './miner'
-export * from './pendingBlock'
+export * from './miner.js'
+export * from './pendingBlock.js'

@@ -1,5 +1,5 @@
 import tape from 'tape'
-const { Sender } = require('../../../lib/net/protocol')
+import { Sender } from '../../../lib/net/protocol/index.js'
 
 tape('[Sender]', (t) => {
   t.test('should get/set status', (t) => {
@@ -12,8 +12,8 @@ tape('[Sender]', (t) => {
 
   t.test('should error on abstract method calls', (t) => {
     const sender = new Sender()
-    t.throws(() => sender.sendStatus(), /Unimplemented/)
-    t.throws(() => sender.sendMessage(), /Unimplemented/)
+    t.throws(() => sender.sendStatus({}), /Unimplemented/)
+    t.throws(() => sender.sendMessage(0, []), /Unimplemented/)
     t.end()
   })
 })

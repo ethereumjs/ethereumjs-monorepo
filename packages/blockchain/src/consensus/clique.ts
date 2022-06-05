@@ -1,12 +1,12 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Address, bigIntToBuffer, bufferToBigInt, arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
-import Blockchain from '..'
-import { Consensus, ConsensusOptions } from './interface'
+import Blockchain from '../index.js'
+import { Consensus, ConsensusOptions } from './interface.js'
 import { CliqueConfig } from '@ethereumjs/common'
 
-const debug = createDebugLogger('blockchain:clique')
+const debug = debugPkg.debug('blockchain:clique')
 
 // Clique Signer State
 type CliqueSignerState = [blockNumber: bigint, signers: Address[]]

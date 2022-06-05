@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { setup, destroy } from './util'
+import { setup, destroy } from './util.js'
 
 tape('[Integration:LightEthereumService]', async (t) => {
   t.test('should handle LES requests', async (t) => {

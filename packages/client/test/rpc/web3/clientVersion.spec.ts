@@ -1,6 +1,7 @@
 import tape from 'tape'
 import { platform } from 'os'
-import { baseSetup, params, baseRequest } from '../helpers'
+import { baseSetup, params, baseRequest } from '../helpers.js'
+import packageJSON from '../../../package.json'
 
 const method = 'web3_clientVersion'
 
@@ -10,9 +11,8 @@ tape(`${method}: call`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const { result } = res.body
-    const { version } = require('../../../package.json')
     const expectedClientTitle = 'EthereumJS'
-    const expectedPackageVersion = version
+    const expectedPackageVersion = packageJSON.version
     const expectedPlatform = platform()
     const expectedNodeVersion = `node${process.version.substring(1)}`
 

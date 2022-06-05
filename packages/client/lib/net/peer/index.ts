@@ -2,7 +2,7 @@
  * @module net/peer
  */
 
-export * from './peer'
-export * from './rlpxpeer'
-export * from './libp2ppeer'
-export * from './libp2pnode'
+export * from './peer.js'
+export * from './rlpxpeer.js'
+export * from './libp2ppeer.js'
+export * from './libp2pnode.js'

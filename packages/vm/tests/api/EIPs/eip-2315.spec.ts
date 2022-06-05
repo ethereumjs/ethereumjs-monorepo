@@ -1,5 +1,5 @@
 import tape from 'tape'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {

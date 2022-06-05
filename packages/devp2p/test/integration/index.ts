@@ -1,6 +1,6 @@
-import './dpt-simulator'
-import './eth-simulator'
-import './les-simulator'
-import './rlpx-simulator'
+import './dpt-simulator.js'
+import './eth-simulator.js'
+import './les-simulator.js'
+import './rlpx-simulator.js'
 
-export * from './util'
+export * from './util.js'

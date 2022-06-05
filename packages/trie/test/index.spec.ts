@@ -1,12 +1,12 @@
 import tape from 'tape'
 import { bufArrToArr, KECCAK256_NULL } from 'ethereumjs-util'
 import RLP from 'rlp'
-import { BaseTrie, CheckpointTrie } from '../src'
+import { BaseTrie, CheckpointTrie } from '../src/index.js'
 
 // explicitly import buffer,
 // needed for karma-typescript bundling
 import { Buffer } from 'buffer'
-import { MemoryDB, LevelDB } from '../src/db'
+import { MemoryDB, LevelDB } from '../src/db.js'
 
 for (const DB of [MemoryDB, LevelDB]) {
   tape('simple save and retrieve', function (tester) {

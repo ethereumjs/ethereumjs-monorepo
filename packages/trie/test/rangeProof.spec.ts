@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 import tape from 'tape'
 import { setLengthLeft, toBuffer } from 'ethereumjs-util'
-import { BaseTrie } from '../src'
-import { DB, MemoryDB, LevelDB } from '../src/db'
+import { BaseTrie } from '../src/index.js'
+import { DB, MemoryDB, LevelDB } from '../src/db.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 

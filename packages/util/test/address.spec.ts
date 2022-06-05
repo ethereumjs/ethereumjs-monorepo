@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { Address, toBuffer } from '../src'
-const eip1014Testdata = require('./testdata/eip1014Examples.json')
+import { Address, toBuffer } from '../src/index.js'
+import eip1014Testdata from './testdata/eip1014Examples.json'
 
 tape('Address', (t) => {
   const ZERO_ADDR_S = '0x0000000000000000000000000000000000000000'

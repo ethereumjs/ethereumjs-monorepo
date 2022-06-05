@@ -1,8 +1,8 @@
 /// <reference path="./testdouble-timers.d.ts" />
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import timers from 'testdouble-timers'
-import { FlowControl } from '../../../lib/net/protocol'
+import { FlowControl } from '../../../lib/net/protocol/index.js'
 
 timers.use(td)
 

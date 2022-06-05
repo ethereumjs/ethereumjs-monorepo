@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Address } from 'ethereumjs-util'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { InterpreterStep } from '../../../src/evm/interpreter'
+import { InterpreterStep } from '../../../src/evm/interpreter.js'
 import { Transaction } from '@ethereumjs/tx'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))

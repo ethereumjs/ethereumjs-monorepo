@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { toBuffer } from 'ethereumjs-util'
-import { CheckpointTrie } from '../src'
-import { MemoryDB, LevelDB } from '../src/db'
+import { CheckpointTrie } from '../src/index.js'
+import { MemoryDB, LevelDB } from '../src/db.js'
 
 for (const DB of [MemoryDB, LevelDB]) {
   const trie = new CheckpointTrie({ db: new DB() })

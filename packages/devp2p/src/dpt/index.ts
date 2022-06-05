@@ -1,7 +1,7 @@
 'use strict'
 
-export * from './ban-list'
-export * from './dpt'
-export * from './kbucket'
-export * from './message'
-export * from './server'
+export * from './ban-list.js'
+export * from './dpt.js'
+export * from './kbucket.js'
+export * from './message.js'
+export * from './server.js'

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { bigIntToHex } from 'ethereumjs-util'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
 
 const method = 'eth_blockNumber'
 

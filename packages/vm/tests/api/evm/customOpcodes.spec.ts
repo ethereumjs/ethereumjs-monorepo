@@ -1,8 +1,8 @@
 import tape from 'tape'
-import VM from '../../../src'
-import { AddOpcode } from '../../../src/evm/types'
-import { InterpreterStep, RunState } from '../../../src/evm/interpreter'
-import EVM from '../../../src/evm/evm'
+import VM from '../../../src/index.js'
+import { AddOpcode } from '../../../src/evm/types.js'
+import { InterpreterStep, RunState } from '../../../src/evm/interpreter.js'
+import EVM from '../../../src/evm/evm.js'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333

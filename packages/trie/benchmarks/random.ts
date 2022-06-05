@@ -1,6 +1,6 @@
 'use strict'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { CheckpointTrie as Trie, DB } from '../dist'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import { CheckpointTrie as Trie, DB } from '../dist.js'
 
 // References:
 // https://eth.wiki/en/fundamentals/benchmarks#the-trie
@@ -14,12 +14,12 @@ export const runTrie = async (db: DB, eraSize = 9, symmetric = false) => {
   let key = Buffer.alloc(KEY_SIZE)
 
   for (let i = 0; i <= ROUNDS; i++) {
-    key = Buffer.from(keccak256(key))
+    key = Buffer.from(ethCryptoKeccak.keccak256(key))
 
     if (symmetric) {
       await trie.put(key, key)
     } else {
-      const val = Buffer.from(keccak256(key))
+      const val = Buffer.from(ethCryptoKeccak.keccak256(key))
       await trie.put(key, val)
     }
 

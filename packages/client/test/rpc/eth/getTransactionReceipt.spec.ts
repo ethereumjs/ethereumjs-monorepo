@@ -8,7 +8,7 @@ import {
   runBlockWithTxs,
   gethGenesisStartLondon,
   dummy,
-} from '../helpers'
+} from '../helpers.js'
 import pow from './../../testdata/geth-genesis/pow.json'
 
 const method = 'eth_getTransactionReceipt'

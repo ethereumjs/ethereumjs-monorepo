@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { Account, isHexPrefixed, toBuffer, unpadBuffer, PrefixedHexString } from 'ethereumjs-util'
 import RLP from 'rlp'
 
@@ -31,7 +31,7 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         account.balance = BigInt(balance)
       }
       if (code) {
-        account.codeHash = Buffer.from(keccak256(toBuffer(code)))
+        account.codeHash = Buffer.from(ethCryptoKeccak.keccak256(toBuffer(code)))
       }
       if (storage) {
         const storageTrie = new Trie()

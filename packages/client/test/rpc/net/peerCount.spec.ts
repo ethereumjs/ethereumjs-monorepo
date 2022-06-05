@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
 
 const method = 'net_peerCount'
 

@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events'
 import tape from 'tape'
-import td from 'testdouble'
-import { Peer } from '../../../lib/net/peer'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import * as td from 'testdouble'
+import { Peer } from '../../../lib/net/peer/index.js'
+import { Config } from '../../../lib/config.js'
+import { Event } from '../../../lib/types.js'
 
 tape('[Peer]', (t) => {
   const config = new Config({ transports: [] })

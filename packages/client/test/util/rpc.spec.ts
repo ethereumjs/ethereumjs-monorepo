@@ -1,14 +1,17 @@
 import tape from 'tape'
-import { RPCManager } from '../../lib/rpc'
+import { RPCManager } from '../../lib/rpc/index.js'
 import {
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
   MethodConfig,
-} from '../../lib/util/rpc'
-import Client from '../../lib/client'
-import { Config } from '../../lib/config'
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+} from '../../lib/util/rpc.js'
+import Client from '../../lib/client.js'
+import { Config } from '../../lib/config.js'
+import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {

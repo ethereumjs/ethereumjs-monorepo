@@ -11,10 +11,10 @@ import {
   getTestDirs,
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
-} from './config'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
-import stateTestsRunner from './runners/GeneralStateTestsRunner'
-import blockchainTestsRunner from './runners/BlockchainTestsRunner'
+} from './config.js'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
+import stateTestsRunner from './runners/GeneralStateTestsRunner.js'
+import blockchainTestsRunner from './runners/BlockchainTestsRunner.js'
 
 /**
  * Test runner
@@ -32,7 +32,6 @@ import blockchainTestsRunner from './runners/BlockchainTestsRunner'
  * --customTestsPath: custom directory to look for tests (e.g. '../../my_custom_test_folder')
  * --customStateTest: run a file with a custom state test (not in test directory)
  * --jsontrace: enable json step tracing in state tests
- * --dist: use the compiled version of the VM
  * --data: only run this state test if the transaction has this calldata
  * --gas: only run this state test if the transaction has this gasLimit
  * --value: only run this state test if the transaction has this call value

@@ -27,7 +27,7 @@ import {
   bigIntToBuffer,
   bigIntToUnpaddedBuffer,
   bigIntToHex,
-} from '../src'
+} from '../src/index.js'
 
 tape('zeros function', function (t) {
   t.test('should produce lots of 0s', function (st) {

@@ -5,9 +5,9 @@ import {
   EthProtocolMethods,
   LesProtocolMethods,
   Sender,
-} from '../protocol'
-import { Server } from '../server'
-import { Config } from '../../config'
+} from '../protocol/index.js'
+import { Server } from '../server/index.js'
+import { Config } from '../../config.js'
 
 export interface PeerOptions {
   /* Config */

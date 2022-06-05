@@ -1,20 +1,19 @@
 import * as net from 'net'
 import * as os from 'os'
 import ms from 'ms'
-import { publicKeyCreate } from 'secp256k1'
+import secp256k1 from 'secp256k1'
 import { EventEmitter } from 'events'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
+import debugPkg from 'debug'
+import { devp2pDebug } from '../util.js'
 import LRUCache from 'lru-cache'
 import Common from '@ethereumjs/common'
-// note: relative path only valid in .js file in dist
-const { version: pVersion } = require('../../package.json')
-import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
-import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
-import { DPT, PeerInfo } from '../dpt'
+import packageJSON from '../../package.json'
+import { pk2id, createDeferred, formatLogId, buffer2int } from '../util.js'
+import { Peer, DISCONNECT_REASONS, Capabilities } from './peer.js'
+import { DPT, PeerInfo } from '../dpt/index.js'
 
 const DEBUG_BASE_NAME = 'rlpx'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugPkg.debug('verbose').enabled
 
 export interface RLPxOptions {
   clientId?: Buffer
@@ -32,7 +31,7 @@ export interface RLPxOptions {
 export class RLPx extends EventEmitter {
   _privateKey: Buffer
   _id: Buffer
-  _debug: Debugger
+  _debug: debugPkg.Debugger
   _timeout: number
   _maxPeers: number
   _clientId: Buffer
@@ -47,14 +46,14 @@ export class RLPx extends EventEmitter {
   _server: net.Server | null
   _peers: Map<string, net.Socket | Peer>
 
-  _refillIntervalId: NodeJS.Timeout
+  _refillIntervalId: NodeJS.Timeout /* global NodeJS */
   _refillIntervalSelectionCounter: number = 0
 
   constructor(privateKey: Buffer, options: RLPxOptions) {
     super()
 
     this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(publicKeyCreate(this._privateKey, false)))
+    this._id = pk2id(Buffer.from(secp256k1.publicKeyCreate(this._privateKey, false)))
 
     // options
     this._timeout = options.timeout ?? ms('10s')
@@ -62,7 +61,9 @@ export class RLPx extends EventEmitter {
 
     this._clientId = options.clientId
       ? Buffer.from(options.clientId)
-      : Buffer.from(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+      : Buffer.from(
+          `ethereumjs-devp2p/v${packageJSON.version}/${os.platform()}-${os.arch()}/nodejs`
+        )
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities

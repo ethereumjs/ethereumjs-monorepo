@@ -5,8 +5,8 @@ import { decode, TAlgorithm } from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
 import cors from 'cors'
 import { inspect } from 'util'
-import { RPCManager } from '../rpc'
-import { Logger } from '../logging'
+import { RPCManager } from '../rpc/index.js'
+import { Logger } from '../logging.js'
 
 const algorithm: TAlgorithm = 'HS256'
 

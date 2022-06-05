@@ -1,7 +1,7 @@
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import testdata from './testdata.json'
-import { DNS } from '../src/dns'
+import { DNS } from '../src/dns/index.js'
 
 tape('DNS', async (t) => {
   const mockData = testdata.dns

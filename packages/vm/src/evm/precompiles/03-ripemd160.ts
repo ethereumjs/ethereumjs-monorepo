@@ -1,7 +1,7 @@
-import { ripemd160 } from 'ethereum-cryptography/ripemd160'
-import { setLengthLeft, toBuffer } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import ethCryptoRipemd160 = require('ethereum-cryptography/ripemd160')
+import { setLengthLeft } from 'ethereumjs-util'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
 
 export default function (opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
@@ -17,6 +17,6 @@ export default function (opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    returnValue: setLengthLeft(toBuffer(ripemd160(data)), 32),
+    returnValue: setLengthLeft(Buffer.from(ethCryptoRipemd160.ripemd160(data)), 32),
   }
 }

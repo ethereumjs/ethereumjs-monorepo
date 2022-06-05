@@ -1,49 +1,52 @@
 import Common, { Chain } from '@ethereumjs/common'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level')
 
 // Blockchain
-export * from '../lib/blockchain/chain'
+export * from '../lib/blockchain/chain.js'
 
 // Peer
-export * from '../lib/net/peer/peer'
-export * from '../lib/net/peer/libp2ppeer'
-export * from './libp2pnode'
+export * from '../lib/net/peer/peer.js'
+export * from '../lib/net/peer/libp2ppeer.js'
+export * from './libp2pnode.js'
 
 // Peer Pool
-export * from '../lib/net/peerpool'
+export * from '../lib/net/peerpool.js'
 
 // Protocol
-export * from '../lib/net/protocol/protocol'
-export * from '../lib/net/protocol/ethprotocol'
-export * from '../lib/net/protocol/lesprotocol'
-export * from '../lib/net/protocol/flowcontrol'
+export * from '../lib/net/protocol/protocol.js'
+export * from '../lib/net/protocol/ethprotocol.js'
+export * from '../lib/net/protocol/lesprotocol.js'
+export * from '../lib/net/protocol/flowcontrol.js'
 
 // Server
-export * from '../lib/net/server/server'
-export * from '../lib/net/server/libp2pserver'
+export * from '../lib/net/server/server.js'
+export * from '../lib/net/server/libp2pserver.js'
 
 // EthereumClient
-export * from '../lib/client'
-import EthereumClient from '../lib/client'
+export * from '../lib/client.js'
+import EthereumClient from '../lib/client.js'
 
 // Service
-export * from '../lib/service/service'
-export * from '../lib/service/fullethereumservice'
-export * from '../lib/service/lightethereumservice'
+export * from '../lib/service/service.js'
+export * from '../lib/service/fullethereumservice.js'
+export * from '../lib/service/lightethereumservice.js'
 
 // Synchronizer
-export * from '../lib/sync/sync'
-export * from '../lib/sync/fullsync'
-export * from '../lib/sync/lightsync'
+export * from '../lib/sync/sync.js'
+export * from '../lib/sync/fullsync.js'
+export * from '../lib/sync/lightsync.js'
 
 // Utilities
-export * from '../lib/util'
-import { parseMultiaddrs } from '../lib/util'
-import { Config } from '../lib/config'
+export * from '../lib/util/index.js'
+import { parseMultiaddrs } from '../lib/util/index.js'
+import { Config } from '../lib/config.js'
 
 // Logging
-export * from './logging'
-import { getLogger } from './logging'
+export * from './logging.js'
+import { getLogger } from './logging.js'
 
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })

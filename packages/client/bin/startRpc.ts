@@ -1,15 +1,15 @@
 import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
-import { RPCManager } from '../lib/rpc'
-import EthereumClient from '../lib/client'
+import { RPCManager } from '../lib/rpc/index.js'
+import EthereumClient from '../lib/client.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../lib/util'
-import * as modules from '../lib/rpc/modules'
-import { Config } from '../lib/config'
+} from '../lib/util/index.js'
+import * as modules from '../lib/rpc/modules/index.js'
+import { Config } from '../lib/config.js'
 
 type RPCArgs = {
   rpc: boolean

@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events'
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { multiaddr } from 'multiaddr'
-import { getLogger } from '../../../lib/logging'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
-import { wait } from '../../integration/util'
+import { getLogger } from '../../../lib/logging.js'
+import { Config } from '../../../lib/config.js'
+import { Event } from '../../../lib/types.js'
+import { wait } from '../../integration/util.js'
 
 tape('[Libp2pServer]', async (t) => {
   const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
@@ -37,7 +37,7 @@ tape('[Libp2pServer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve()
   td.when(Libp2pNode.prototype.stop()).thenResolve()
 
-  const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver')
+  const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver.js')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })

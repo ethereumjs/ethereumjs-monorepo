@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events'
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { multiaddr } from 'multiaddr'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../lib/config.js'
+import { Event } from '../../../lib/types.js'
 
 tape('[RlpxServer]', async (t) => {
   class RlpxPeer extends EventEmitter {
@@ -36,7 +36,7 @@ tape('[RlpxServer]', async (t) => {
 
   td.replace('@ethereumjs/devp2p', { DPT, RLPx })
 
-  const { RlpxServer } = await import('../../../lib/net/server/rlpxserver')
+  const { RlpxServer } = await import('../../../lib/net/server/rlpxserver.js')
 
   td.when(
     RlpxPeer.prototype.accept(td.matchers.anything(), td.matchers.isA(RlpxServer))

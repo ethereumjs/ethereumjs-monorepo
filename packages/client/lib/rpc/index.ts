@@ -1,7 +1,7 @@
-import { Config } from '../config'
-import EthereumClient from '../client'
-import * as modules from './modules'
-import { INTERNAL_ERROR } from './error-code'
+import { Config } from '../config.js'
+import EthereumClient from '../client.js'
+import * as modules from './modules/index.js'
+import { INTERNAL_ERROR } from './error-code.js'
 
 /**
  * @module rpc

@@ -2,8 +2,8 @@ import tape from 'tape'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import vm from 'vm'
-import RLP from '../src'
-import { bytesToUtf8 } from './utils'
+import RLP from '../src/index.js'
+import { bytesToUtf8 } from './utils.js'
 import official from './fixture/rlptest.json'
 
 tape('Distribution', (t) => {
@@ -19,7 +19,7 @@ const execAsync = promisify(exec)
 
 tape('CLI command', (t) => {
   t.test('should be able to run CLI command', async (st) => {
-    const result = await execAsync('./bin/rlp encode "[ 5 ]"')
+    const result = await execAsync('./bin/rlp.mjs encode "[ 5 ]"')
     const resultFormatted = result.stdout.trim()
     st.deepEqual(resultFormatted, '0xc105')
     st.end()
@@ -35,7 +35,7 @@ tape('CLI command', (t) => {
       }
 
       const json = JSON.stringify(incoming)
-      const encodeResult = await execAsync(`./bin/rlp encode '${json}'`)
+      const encodeResult = await execAsync(`./bin/rlp.mjs encode '${json}'`)
       const encodeResultTrimmed = encodeResult.stdout.trim()
       st.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
     }

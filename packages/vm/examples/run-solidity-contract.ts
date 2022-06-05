@@ -4,9 +4,12 @@ import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import VM from '..'
+import VM from '../src/index.js'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
 import { getAccountNonce, insertAccount } from './helpers/account-utils'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'

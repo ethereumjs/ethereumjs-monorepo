@@ -2,14 +2,17 @@ import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-uti
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
-import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
-import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
-import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
-import EVM from './evm/evm'
-const AsyncEventEmitter = require('async-eventemitter')
+import { default as runTx, RunTxOpts, RunTxResult } from './runTx.js'
+import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock.js'
+import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock.js'
+import EVM from './evm/evm.js'
 import { promisify } from 'util'
-import { VmState } from './vmState'
-import { getActivePrecompiles } from './evm/precompiles'
+import { VmState } from './vmState.js'
+import { getActivePrecompiles } from './evm/precompiles/index.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const AsyncEventEmitter = require('async-eventemitter')
 
 /**
  * Options for instantiating a {@link VM}.

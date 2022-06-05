@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Address } from 'ethereumjs-util'
-import EVM from './evm'
-import Message from './message'
-import { OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import EVM from './evm.js'
+import Message from './message.js'
+import { OpHandler } from './opcodes/index.js'
+import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 
 /**
  * Log that the contract emits.

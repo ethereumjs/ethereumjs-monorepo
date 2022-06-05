@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
-import { ExecResult } from '../evm'
-import EVM from '../evm'
+import { ExecResult } from '../evm.js'
+import EVM from '../evm.js'
 
 export interface PrecompileFunc {
   (input: PrecompileInput): Promise<ExecResult> | ExecResult

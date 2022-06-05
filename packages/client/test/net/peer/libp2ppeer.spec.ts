@@ -1,10 +1,10 @@
 import tape from 'tape'
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { multiaddr } from 'multiaddr'
-import { Config } from '../../../lib/config'
-import { Protocol } from '../../../lib/net/protocol'
-import { Event } from '../../../lib/types'
-import { Libp2pPeer } from '../../../lib/net/peer'
+import { Config } from '../../../lib/config.js'
+import { Protocol } from '../../../lib/net/protocol/index.js'
+import { Event } from '../../../lib/types.js'
+import { Libp2pPeer } from '../../../lib/net/peer/index.js'
 
 tape('[Libp2pPeer]', async (t) => {
   const _PeerId = td.replace('peer-id')
@@ -16,7 +16,7 @@ tape('[Libp2pPeer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve(null)
   td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)
 
-  const { Libp2pPeer } = await import('../../../lib/net/peer/libp2ppeer')
+  const { Libp2pPeer } = await import('../../../lib/net/peer/libp2ppeer.js')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config()

@@ -1,8 +1,8 @@
-import { Message, Protocol } from '../protocol/protocol'
-import { Peer } from '../peer/peer'
-import { Sender } from './sender'
-import { Config } from '../../config'
-import { Event } from '../../types'
+import { Message, Protocol } from '../protocol/protocol.js'
+import { Peer } from '../peer/peer.js'
+import { Sender } from './sender.js'
+import { Config } from '../../config.js'
+import { Event } from '../../types.js'
 
 export interface BoundProtocolOptions {
   /* Config */

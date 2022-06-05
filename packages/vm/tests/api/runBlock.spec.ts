@@ -10,15 +10,15 @@ import {
   FeeMarketEIP1559Transaction,
   Capability,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
-import { setupPreConditions, getDAOCommon } from '../util'
-import { setupVM, createAccount } from './utils'
+import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock.js'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types.js'
+import { setupPreConditions, getDAOCommon } from '../util.js'
+import { setupVM, createAccount } from './utils.js'
 import testnet from './testdata/testnet.json'
-import VM from '../../src/index'
-import { setBalance } from './utils'
+import VM from '../../src/index.js'
+import { setBalance } from './utils.js'
+import testData from './testdata/blockchain.json'
 
-const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
@@ -53,7 +53,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   }
 
   async function uncleRun(vm: VM, st: tape.Test) {
-    const testData = require('./testdata/uncleData.json')
+    import testData from './testdata/uncleData.json'
 
     //@ts-ignore
     await setupPreConditions(vm.vmState, testData)

@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Address, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
-import { createAccount } from '../utils'
+import VM from '../../../src/index.js'
+import { createAccount } from '../utils.js'
 
 /**
  * Tests taken from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1283.md

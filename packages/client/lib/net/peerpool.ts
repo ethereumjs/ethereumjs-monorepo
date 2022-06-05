@@ -1,7 +1,7 @@
-import { Config } from '../config'
-import { Event } from '../types'
-import { Peer } from './peer'
-import { RlpxServer } from './server'
+import { Config } from '../config.js'
+import { Event } from '../types.js'
+import { Peer } from './peer/index.js'
+import { RlpxServer } from './server/index.js'
 
 export interface PeerPoolOptions {
   /* Config */

@@ -2,9 +2,9 @@ import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { EthProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../lib/blockchain/chain.js'
+import { Config } from '../../../lib/config.js'
+import { EthProtocol } from '../../../lib/net/protocol/index.js'
 import { bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
 
 tape('[EthProtocol]', (t) => {

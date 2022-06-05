@@ -2,9 +2,9 @@ import { arrToBufArr, bigIntToBuffer, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-import { EthProtocol, Protocol, SendMethod } from './protocol'
+import { int2buffer, buffer2int, assertEq, formatLogData } from '../util.js'
+import { Peer, DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { EthProtocol, Protocol, SendMethod } from './protocol.js'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 

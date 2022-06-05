@@ -7,8 +7,8 @@ import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { arrToBufArr } from 'ethereumjs-util'
 import RLP from 'rlp'
-import * as devp2p from '../src/index'
-import { ETH, Peer } from '../src/index'
+import * as devp2p from '../src/index.js'
+import { ETH, Peer } from '../src/index.js'
 
 const PRIVATE_KEY = randomBytes(32)
 
@@ -99,7 +99,7 @@ rlpx.on('peer:added', (peer) => {
   })
 
   // check CHECK_BLOCK
-  let forkDrop: NodeJS.Timeout
+  let forkDrop: NodeJS.Timeout /* global NodeJS */
   let forkVerified = false
   eth.once('status', () => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [

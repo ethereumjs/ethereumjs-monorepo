@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { CheckpointTrie } from '../src'
-import { MemoryDB, LevelDB } from '../src/db'
+import { CheckpointTrie } from '../src/index.js'
+import { MemoryDB, LevelDB } from '../src/db.js'
 
 for (const DB of [MemoryDB, LevelDB]) {
   tape('simple merkle proofs generation and verification', function (tester) {

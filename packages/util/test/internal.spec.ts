@@ -8,7 +8,7 @@ import {
   toAscii,
   getKeys,
   isHexString,
-} from '../src/internal'
+} from '../src/internal.js'
 
 const buf = Buffer.from('hello')
 

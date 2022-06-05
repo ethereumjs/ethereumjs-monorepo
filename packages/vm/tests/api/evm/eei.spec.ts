@@ -2,9 +2,9 @@ import tape from 'tape'
 import { Account, Address } from 'ethereumjs-util'
 import { DefaultStateManager as StateManager } from '@ethereumjs/statemanager'
 
-import EEI from '../../../src/evm/eei'
-import { TransientStorage } from '../../../src/state'
-import { VmState } from '../../../src/vmState'
+import EEI from '../../../src/evm/eei.js'
+import { TransientStorage } from '../../../src/state/index.js'
+import { VmState } from '../../../src/vmState.js'
 
 const ZeroAddress = Address.zero()
 

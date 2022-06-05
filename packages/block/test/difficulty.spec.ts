@@ -1,7 +1,10 @@
 import tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { bufferToInt } from 'ethereumjs-util'
-import { Block } from '../src'
+import { Block } from '../src/index.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 
 function runDifficultyTests(
   st: tape.Test,

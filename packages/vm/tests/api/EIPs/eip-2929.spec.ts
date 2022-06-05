@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Account, Address } from 'ethereumjs-util'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 

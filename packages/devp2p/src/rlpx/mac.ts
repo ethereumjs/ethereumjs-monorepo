@@ -1,6 +1,9 @@
 import { createCipheriv } from 'crypto'
-import createKeccakHash from 'keccak'
-import { xor } from '../util'
+import { xor } from '../util.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const createKeccakHash = require('keccak')
 
 export class MAC {
   _hash: any

@@ -1,7 +1,10 @@
 import tape from 'tape'
 import { encode, TAlgorithm } from 'jwt-simple'
-import { startRPC, closeRPC } from './helpers'
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { startRPC, closeRPC } from './helpers.js'
+import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const request = require('supertest')
 
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))

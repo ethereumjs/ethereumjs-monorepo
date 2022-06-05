@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Config, DataDirectory } from '../lib/config'
+import { Config, DataDirectory } from '../lib/config.js'
 import Common, { Chain } from '@ethereumjs/common'
 
 tape('[Config]', (t) => {

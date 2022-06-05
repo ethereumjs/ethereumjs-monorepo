@@ -6,11 +6,11 @@ import {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import { Address } from 'ethereumjs-util'
-import { Config } from '../config'
-import { Peer } from '../net/peer'
+import { Config } from '../config.js'
+import { Peer } from '../net/peer/index.js'
 import type VM from '@ethereumjs/vm'
-import type { FullEthereumService } from './fullethereumservice'
-import type { PeerPool } from '../net/peerpool'
+import type { FullEthereumService } from './fullethereumservice.js'
+import type { PeerPool } from '../net/peerpool.js'
 import type { Block } from '@ethereumjs/block'
 
 export interface TxPoolOptions {

@@ -1,5 +1,5 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoSecp256k1 = require('ethereum-cryptography/secp256k1')
 import {
   toBuffer,
   setLengthLeft,
@@ -7,10 +7,10 @@ import {
   bufferToHex,
   bufferToInt,
   bufferToBigInt,
-} from './bytes'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBuffer } from './helpers'
-import { BigIntLike, toType, TypeOutput } from './types'
+} from './bytes.js'
+import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'
+import { assertIsBuffer } from './helpers.js'
+import { BigIntLike, toType, TypeOutput } from './types.js'
 
 export interface ECDSASignature {
   v: number
@@ -34,7 +34,10 @@ export function ecsign(
   chainId: BigIntLike
 ): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
-  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
+  const [signature, recovery] = ethCryptoSecp256k1.signSync(msgHash, privateKey, {
+    recovered: true,
+    der: false,
+  })
 
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
@@ -86,7 +89,7 @@ export const ecrecover = function (
     throw new Error('Invalid signature v value')
   }
 
-  const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
+  const senderPubKey = ethCryptoSecp256k1.recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
 }
 
@@ -217,5 +220,5 @@ export const isValidSignature = function (
 export const hashPersonalMessage = function (message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
-  return Buffer.from(keccak256(Buffer.concat([prefix, message])))
+  return Buffer.from(ethCryptoKeccak.keccak256(Buffer.concat([prefix, message])))
 }

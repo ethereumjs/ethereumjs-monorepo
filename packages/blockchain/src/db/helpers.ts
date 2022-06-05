@@ -1,8 +1,8 @@
-import { DBOp, DBTarget } from './operation'
+import { DBOp, DBTarget } from './operation.js'
 import { bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { bufBE8 } from './constants'
+import { bufBE8 } from './constants.js'
 
 /*
  * This extra helper file serves as an interface between the blockchain API functionality

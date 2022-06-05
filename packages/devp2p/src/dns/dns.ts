@@ -1,15 +1,17 @@
-import { PeerInfo } from '../dpt'
-import { ENR } from './enr'
-import { debug as createDebugLogger } from 'debug'
+import { PeerInfo } from '../dpt/index.js'
+import { ENR } from './enr.js'
+import debugPkg from 'debug'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 let dns: any
 try {
   dns = require('dns')
 } catch (e: any) {
-  dns = require('../browser/dns')
+  dns = require('../browser/dns.js')
 }
 
-const debug = createDebugLogger('devp2p:dns:dns')
+const debug = debugPkg.debug('devp2p:dns:dns')
 
 type SearchContext = {
   domain: string

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BatchDBOp, MemoryDB, LevelDB } from '../src/db'
+import { BatchDBOp, MemoryDB, LevelDB } from '../src/db.js'
 
 for (const DB of [MemoryDB, LevelDB]) {
   tape('DB tests', (t) => {

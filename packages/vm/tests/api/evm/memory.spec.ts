@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Memory from '../../../src/evm/memory'
+import Memory from '../../../src/evm/memory.js'
 
 tape('Memory', (t) => {
   const m = new Memory()

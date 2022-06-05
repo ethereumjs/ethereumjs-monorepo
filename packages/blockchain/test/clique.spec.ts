@@ -8,8 +8,8 @@ import Common, {
 } from '@ethereumjs/common'
 import { Address } from 'ethereumjs-util'
 import tape from 'tape'
-import Blockchain from '../src'
-import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
+import Blockchain from '../src/index.js'
+import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
 
 tape('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {

@@ -1,5 +1,8 @@
 import chalk from 'chalk'
 import { createLogger, format, transports as wTransports, Logger as WinstonLogger } from 'winston'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const DailyRotateFile = require('winston-daily-rotate-file')
 
 export type Logger = WinstonLogger
@@ -55,7 +58,7 @@ function logFormat(colors = false) {
 
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-      const color = chalk.keyword(colorLevel).bind(chalk)
+      const color = chalk[colorLevel].bind(chalk)
       level = color(level)
 
       const regex = /(\w+)=(.+?)(?:\s|$)/g

@@ -14,13 +14,16 @@ import {
   parseGenesisState,
   parseCustomParams,
   setCommonForkHashes,
-} from '../lib/util'
-import EthereumClient from '../lib/client'
-import { Config, DataDirectory } from '../lib/config'
-import { Logger, getLogger } from '../lib/logging'
-import { startRPCServers, helprpc } from './startRpc'
-import type { FullEthereumService } from '../lib/service'
-import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+} from '../lib/util/index.js'
+import EthereumClient from '../lib/client.js'
+import { Config, DataDirectory } from '../lib/config.js'
+import { Logger, getLogger } from '../lib/logging.js'
+import { startRPCServers, helprpc } from './startRpc.js'
+import type { FullEthereumService } from '../lib/service/index.js'
+import { GenesisState } from '@ethereumjs/blockchain/genesisStates/index.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')

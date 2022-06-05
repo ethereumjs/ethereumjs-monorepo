@@ -1,9 +1,9 @@
 import Common from '@ethereumjs/common'
 import tape from 'tape'
-import { Config } from '../../../lib'
-import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
-import { parseCustomParams } from '../../../lib/util'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../lib/index.js'
+import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager.js'
+import { parseCustomParams } from '../../../lib/util/index.js'
+import { Event } from '../../../lib/types.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const payload = {

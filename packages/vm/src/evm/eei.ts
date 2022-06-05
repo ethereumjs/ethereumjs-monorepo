@@ -1,18 +1,18 @@
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 
-import { VmState } from '../vmState'
-import { VmError, ERROR } from '../exceptions'
-import Message from './message'
-import EVM, { EVMResult } from './evm'
-import { Log } from './types'
-import { TransientStorage } from '../state'
-import { addressToBuffer } from './opcodes'
+import { VmState } from '../vmState.js'
+import { VmError, ERROR } from '../exceptions.js'
+import Message from './message.js'
+import EVM, { EVMResult } from './evm.js'
+import { Log } from './types.js'
+import { TransientStorage } from '../state/index.js'
+import { addressToBuffer } from './opcodes/index.js'
 
-const debugGas = createDebugLogger('vm:eei:gas')
+const debugGas = debugPkg.debug('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)

@@ -1,4 +1,4 @@
 'use strict'
 
-export * from './eth'
-export * from './les'
+export * from './eth.js'
+export * from './les.js'

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
+import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src//index.js'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'

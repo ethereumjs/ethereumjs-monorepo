@@ -1,8 +1,8 @@
 import ms from 'ms'
-import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
-import { devp2pDebug } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import debugPkg from 'debug'
+import { devp2pDebug } from '../util.js'
+import { Peer, DISCONNECT_REASONS } from '../rlpx/peer.js'
 
 export enum EthProtocol {
   ETH = 'eth',
@@ -17,9 +17,9 @@ export class Protocol extends EventEmitter {
   _version: number
   _peer: Peer
   _send: SendMethod
-  _statusTimeoutId: NodeJS.Timeout
+  _statusTimeoutId: NodeJS.Timeout /* global NodeJS */
   _messageCodes: MessageCodes
-  _debug: Debugger
+  _debug: debugPkg.Debugger
   _verbose: boolean
 
   /**
@@ -49,7 +49,7 @@ export class Protocol extends EventEmitter {
     }, ms('5s'))
 
     this._debug = devp2pDebug.extend(protocol)
-    this._verbose = createDebugLogger('verbose').enabled
+    this._verbose = debugPkg.debug('verbose').enabled
     this.initMsgDebuggers(protocol)
   }
 

@@ -1,12 +1,13 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-const Set = require('core-js-pure/es/set')
-
 import { StateManager, StateAccess, AccountFields } from '@ethereumjs/statemanager'
+import { ripemdPrecompileAddress } from './evm/precompiles/index.js'
+import debugPkg from 'debug'
 
-import { ripemdPrecompileAddress } from './evm/precompiles'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const Set = require('core-js-pure/es/set')
 
 type AddressHex = string
 
@@ -25,7 +26,7 @@ interface VmStateAccess extends StateAccess {
 
 export class VmState implements VmStateAccess {
   _common: Common
-  _debug: Debugger
+  _debug: debugPkg.Debugger
 
   _checkpointCount: number
   _stateManager: StateManager
@@ -64,7 +65,7 @@ export class VmState implements VmStateAccess {
     if (process !== undefined && process.env.DEBUG) {
       this.DEBUG = true
     }
-    this._debug = createDebugLogger('vm:state')
+    this._debug = debugPkg.debug('vm:state')
   }
 
   /**

@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { zeros } from 'ethereumjs-util'
 
 const BYTE_SIZE = 256
@@ -23,7 +23,7 @@ export default class Bloom {
    * @param e - The element to add
    */
   add(e: Buffer) {
-    e = Buffer.from(keccak256(e))
+    e = Buffer.from(ethCryptoKeccak.keccak256(e))
     const mask = 2047 // binary 11111111111
 
     for (let i = 0; i < 3; i++) {
@@ -40,7 +40,7 @@ export default class Bloom {
    * @param e - The element to check
    */
   check(e: Buffer): boolean {
-    e = Buffer.from(keccak256(e))
+    e = Buffer.from(ethCryptoKeccak.keccak256(e))
     const mask = 2047 // binary 11111111111
     let match = true
 

@@ -1,5 +1,8 @@
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const bn128 = require('rustbn.js')
 
 export default function (opts: PrecompileInput): ExecResult {

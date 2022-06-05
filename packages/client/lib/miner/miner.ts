@@ -2,11 +2,13 @@ import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'
-import { Event } from '../types'
-import { Config } from '../config'
-import { FullEthereumService } from '../service'
-import { VMExecution } from '../execution'
+import { Event } from '../types.js'
+import { Config } from '../config.js'
+import { FullEthereumService } from '../service/index.js'
+import { VMExecution } from '../execution/index.js'
 
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const level = require('level-mem')
 
 export interface MinerOptions {

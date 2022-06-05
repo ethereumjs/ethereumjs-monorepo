@@ -2,8 +2,8 @@ import { URL } from 'url'
 import { Multiaddr, multiaddr } from 'multiaddr'
 import { Hardfork } from '@ethereumjs/common'
 import { addHexPrefix, bigIntToHex, intToHex, isHexPrefixed, stripHexPrefix } from 'ethereumjs-util'
-import type { MultiaddrLike } from '../types'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { MultiaddrLike } from '../types.js'
+import type { GenesisState } from '@ethereumjs/blockchain/genesisStates/index.js'
 import type Common from '@ethereumjs/common'
 
 /**

@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Block, BlockData, HeaderData } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
+import { Chain } from '../../lib/blockchain/index.js'
+import { Config } from '../../lib/config.js'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling

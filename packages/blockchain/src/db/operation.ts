@@ -7,9 +7,9 @@ import {
   bodyKey,
   numberToHashKey,
   hashToNumberKey,
-} from './constants'
+} from './constants.js'
 
-import { CacheMap } from './manager'
+import { CacheMap } from './manager.js'
 
 export enum DBTarget {
   Heads,

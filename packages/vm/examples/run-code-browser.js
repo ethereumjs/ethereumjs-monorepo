@@ -1,14 +1,12 @@
 /*
  * Example - Running code on an ethereum-vm
  *
- *
  * To run this example in the browser, bundle this file
  * with browserify using `browserify index.js -o bundle.js`
  * and then load this folder onto a HTTP WebServer (e.g.
  * using node-static or `python -mSimpleHTTPServer`).
  */
-const BN = require('bn.js')
-const VM = require('../dist.browser').default
+const VM = require('../dist/cjs').default
 
 const run = async () => {
   // Create a new VM instance
@@ -28,7 +26,7 @@ const run = async () => {
 
   vm.runCode({
     code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff),
+    gasLimit: BigInt(0xffff),
   })
     .then((results) => {
       console.log(`Returned: ${results.returnValue.toString('hex')}`)

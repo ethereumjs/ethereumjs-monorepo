@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common, { Hardfork } from '../src'
+import Common, { Hardfork } from '../src/index.js'
 import testnetMerge from './data/merge/testnetMerge.json'
 import testnetPOS from './data/merge/testnetPOS.json'
 

@@ -1,7 +1,7 @@
 import tape from 'tape'
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../lib/blockchain/index.js'
+import { Config } from '../../../lib/config.js'
+import { FlowControl, LesProtocol } from '../../../lib/net/protocol/index.js'
 
 tape('[LesProtocol]', (t) => {
   t.test('should get properties', (t) => {

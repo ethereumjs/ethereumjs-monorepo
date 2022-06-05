@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events'
 import tape from 'tape'
-import td from 'testdouble'
-import { Sender } from '../../../lib/net/protocol/sender'
-import { BoundProtocol } from '../../../lib/net/protocol'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import * as td from 'testdouble'
+import { Sender } from '../../../lib/net/protocol/sender.js'
+import { BoundProtocol } from '../../../lib/net/protocol/index.js'
+import { Config } from '../../../lib/config.js'
+import { Event } from '../../../lib/types.js'
 
 tape('[BoundProtocol]', (t) => {
   const peer = td.object('Peer') as any

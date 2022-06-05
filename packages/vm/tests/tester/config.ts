@@ -1,5 +1,5 @@
 import path from 'path'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -156,18 +156,18 @@ export function getRequiredForkConfigAlias(forkConfig: string) {
 }
 
 const normalHardforks = [
-  'chainstart',
-  'homestead',
-  'dao',
-  'tangerineWhistle',
-  'spuriousDragon',
-  'byzantium',
-  'constantinople',
-  'petersburg',
-  'istanbul',
-  'muirGlacier',
-  'berlin',
-  'london',
+  Hardfork.Chainstart,
+  Hardfork.Homestead,
+  Hardfork.Dao,
+  Hardfork.TangerineWhistle,
+  Hardfork.SpuriousDragon,
+  Hardfork.Byzantium,
+  Hardfork.Constantinople,
+  Hardfork.Petersburg,
+  Hardfork.Istanbul,
+  Hardfork.MuirGlacier,
+  Hardfork.Berlin,
+  Hardfork.London,
 ]
 
 const transitionNetworks: any = {
@@ -176,42 +176,42 @@ const transitionNetworks: any = {
     constantinople: 5,
     petersburg: 5,
     dao: null,
-    finalSupportedFork: 'petersburg',
-    startFork: 'byzantium',
+    finalSupportedFork: Hardfork.Petersburg,
+    startFork: Hardfork.Byzantium,
   },
   EIP158ToByzantiumAt5: {
     spuriousDragon: 0,
     byzantium: 5,
     dao: null,
-    finalSupportedFork: 'byzantium',
-    startFork: 'spuriousDragon',
+    finalSupportedFork: Hardfork.Byzantium,
+    startFork: Hardfork.SpuriousDragon,
   },
   FrontierToHomesteadAt5: {
     chainstart: 0,
     homestead: 5,
     dao: null,
-    finalSupportedFork: 'homestead',
-    startFork: 'chainstart',
+    finalSupportedFork: Hardfork.Homestead,
+    startFork: Hardfork.Chainstart,
   },
   HomesteadToDaoAt5: {
     homestead: 0,
     dao: 5,
-    finalSupportedFork: 'dao',
-    startFork: 'homestead',
+    finalSupportedFork: Hardfork.Dao,
+    startFork: Hardfork.Homestead,
   },
   HomesteadToEIP150At5: {
     homestead: 0,
     tangerineWhistle: 5,
     dao: null,
-    finalSupportedFork: 'tangerineWhistle',
-    startFork: 'homestead',
+    finalSupportedFork: Hardfork.TangerineWhistle,
+    startFork: Hardfork.Homestead,
   },
   BerlinToLondonAt5: {
     berlin: 0,
     london: 5,
     dao: null,
-    finalSupportedFork: 'london',
-    startFork: 'berlin',
+    finalSupportedFork: Hardfork.London,
+    startFork: Hardfork.Berlin,
   },
 }
 

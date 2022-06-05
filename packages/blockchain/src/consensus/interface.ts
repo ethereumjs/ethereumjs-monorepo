@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Blockchain from '..'
+import Blockchain from '../index.js'
 
 /**
  * Interface that a consensus class needs to implement.

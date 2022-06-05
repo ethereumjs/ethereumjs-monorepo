@@ -1,12 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Event } from '../types'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { BlockFetcher } from './fetcher'
-import { VMExecution } from '../execution'
+import { Peer } from '../net/peer/peer.js'
+import { short } from '../util/index.js'
+import { Event } from '../types.js'
+import { Synchronizer, SynchronizerOptions } from './sync.js'
+import { BlockFetcher } from './fetcher/index.js'
+import { VMExecution } from '../execution/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { TxPool } from '../service/txpool'
+import type { TxPool } from '../service/txpool.js'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */

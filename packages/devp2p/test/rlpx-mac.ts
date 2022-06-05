@@ -1,5 +1,5 @@
 import test from 'tape'
-import { MAC } from '../src/rlpx/mac'
+import { MAC } from '../src/rlpx/mac.js'
 
 const secret = Buffer.from(
   '4caf4671e713d083128973de159d02688dc86f51535a80178264631e193ed2ea',

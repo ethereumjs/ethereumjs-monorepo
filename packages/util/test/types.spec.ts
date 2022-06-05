@@ -9,7 +9,7 @@ import {
   bigIntToHex,
   bigIntToBuffer,
   bufferToBigInt,
-} from '../src'
+} from '../src/index.js'
 
 tape('toType', function (t) {
   t.test('from null and undefined', function (st) {

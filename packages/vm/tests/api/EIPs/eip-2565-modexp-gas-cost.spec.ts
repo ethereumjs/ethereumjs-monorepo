@@ -1,10 +1,10 @@
 import tape from 'tape'
 import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
+import VM from '../../../src/index.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
-const testData = require('../testdata/eip-2565.json')
+import testData from '../testdata/eip-2565.json'
 
 tape('EIP-2565 ModExp gas cost tests', (t) => {
   t.test('Test return data, gas cost and execution status against testdata', async (st) => {

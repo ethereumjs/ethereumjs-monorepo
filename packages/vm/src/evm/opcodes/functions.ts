@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
 import {
   Address,
   KECCAK256_NULL,
@@ -25,10 +25,10 @@ import {
   mod,
   fromTwos,
   toTwos,
-} from './util'
-import { ERROR } from '../../exceptions'
-import { RunState } from './../interpreter'
-import { exponentation } from '.'
+} from './util.js'
+import { ERROR } from '../../exceptions.js'
+import { RunState } from './../interpreter.js'
+import { exponentation } from './index.js'
 
 const EIP3074MAGIC = Buffer.from('03', 'hex')
 
@@ -381,7 +381,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt('0x' + bytesToHex(keccak256(data)))
+      const r = BigInt('0x' + ethCryptoUtils.bytesToHex(ethCryptoKeccak.keccak256(data)))
       runState.stack.push(r)
     },
   ],
@@ -534,7 +534,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      runState.stack.push(BigInt('0x' + bytesToHex(keccak256(code))))
+      runState.stack.push(BigInt('0x' + ethCryptoUtils.bytesToHex(ethCryptoKeccak.keccak256(code))))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -1048,7 +1048,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
       const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
-      const msgHash = Buffer.from(keccak256(message))
+      const msgHash = Buffer.from(ethCryptoKeccak.keccak256(message))
 
       let recover
       try {

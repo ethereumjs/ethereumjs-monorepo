@@ -4,8 +4,8 @@
 import { platform } from 'os'
 import { version as packageVersion } from '../../package.json'
 
-export * from './parse'
-export * from './rpc'
+export * from './parse.js'
+export * from './rpc.js'
 
 export function short(buf: Buffer | string): string {
   const bufStr = Buffer.isBuffer(buf) ? `0x${buf.toString('hex')}` : buf

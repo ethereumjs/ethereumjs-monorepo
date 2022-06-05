@@ -1,8 +1,8 @@
 import tape from 'tape'
-import td from 'testdouble'
-import { Config } from '../../lib/config'
-import { Chain } from '../../lib/blockchain'
-import { Event } from '../../lib/types'
+import * as td from 'testdouble'
+import { Config } from '../../lib/config.js'
+import { Chain } from '../../lib/blockchain/index.js'
+import { Event } from '../../lib/types.js'
 import { Block } from '@ethereumjs/block'
 
 tape('[FullSynchronizer]', async (t) => {
@@ -27,7 +27,7 @@ tape('[FullSynchronizer]', async (t) => {
   BlockFetcher.prototype.destroy = td.func<any>()
   td.replace('../../lib/sync/fetcher', { BlockFetcher })
 
-  const { FullSynchronizer } = await import('../../lib/sync/fullsync')
+  const { FullSynchronizer } = await import('../../lib/sync/fullsync.js')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })

@@ -1,11 +1,11 @@
 import LRUCache from 'lru-cache'
-import { debug as createDebugLogger } from 'debug'
-import { KBucket } from './kbucket'
-import { formatLogId } from '../util'
-import { PeerInfo } from './dpt'
+import debugPkg from 'debug'
+import { KBucket } from './kbucket.js'
+import { formatLogId } from '../util.js'
+import { PeerInfo } from './dpt.js'
 
-const debug = createDebugLogger('devp2p:dpt:ban-list')
-const verbose = createDebugLogger('verbose').enabled
+const debug = debugPkg.debug('devp2p:dpt:ban-list')
+const verbose = debugPkg.debug('verbose').enabled
 
 export class BanList {
   private lru: LRUCache<string, boolean>

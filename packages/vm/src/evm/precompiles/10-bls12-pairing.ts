@@ -1,8 +1,7 @@
-import { PrecompileInput } from './types'
-import { VmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, VmError } from '../../exceptions'
-
-const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
+import { PrecompileInput } from './types.js'
+import { VmErrorResult, ExecResult, OOGResult } from '../evm.js'
+import { ERROR, VmError } from '../../exceptions.js'
+import { BLS12_381_ToG1Point, BLS12_381_ToG2Point } from './util/bls12_381.js'
 
 const zeroBuffer = Buffer.alloc(32, 0)
 const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])

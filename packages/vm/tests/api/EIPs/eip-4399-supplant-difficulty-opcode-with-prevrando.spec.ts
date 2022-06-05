@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
-import type { InterpreterStep } from '../../../src/evm/interpreter'
+import VM from '../../../src/index.js'
+import type { InterpreterStep } from '../../../src/evm/interpreter.js'
 import { bufferToBigInt } from 'ethereumjs-util'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {

@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { ConsensusType } from '@ethereumjs/common'
@@ -11,8 +11,8 @@ import {
   Transaction,
   Capability,
 } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
+import { BlockHeader } from './header.js'
+import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types.js'
 
 /**
  * An object that represents the block.
@@ -317,7 +317,7 @@ export class Block {
   validateUnclesHash(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(bufArrToArr(uncles))
-    return Buffer.from(keccak256(raw)).equals(this.header.uncleHash)
+    return Buffer.from(ethCryptoKeccak.keccak256(raw)).equals(this.header.uncleHash)
   }
 
   /**
