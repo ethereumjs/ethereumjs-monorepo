@@ -2,7 +2,6 @@
 set -e
 # Purposefully not using `set -o xtrace`, for friendlier output.
 
-
 # Presentational variables and functions declaration.
 
 BLUE="\033[0;34m"
@@ -28,57 +27,35 @@ dim() {
     printf "${DIM}$1${NOCOLOR}"
 }
 
+# Build functions declaration.
 
-# Build function declaration.
+build_esm() {
+    blue "[ESM build] "
+    echo "Using tsconfig.esm.json"
 
-build_node() {
-    blue "[Node build] "
-    echo "Using tsconfig.prod.json"
+    echo "> tsc --build ./tsconfig.esm.json"
+    printf "${BLUE}[ESM build] Working... "
 
-    echo "> tsc --build ./tsconfig.prod.json"
-    printf "${BLUE}[Node build] Working... "
-
-    tsc --build ./tsconfig.prod.json
+    tsc --build ./tsconfig.esm.json
     green "DONE"
 
     echo "\n";
 }
 
-build_browser() {
-    if [ -f ./tsconfig.browser.json ];
-    then
-        blue "[Browser build] "
-        echo "Using tsconfig.browser.json"
-        echo "> tsc -p ./tsconfig.browser.json"
+build_cjs() {
+    blue "[CJS build] "
+    echo "Using tsconfig.cjs.json"
 
-        blue "[Browser build] "
-        printf "Working... "
+    echo "> tsc --build ./tsconfig.cjs.json"
+    printf "${BLUE}[CJS build] Working... "
 
-        tsc -p ./tsconfig.browser.json
-        RETURN_CODE=$?
-
-        if [ $RETURN_CODE -eq 0 ]; then
-            green "DONE"
-        else
-            exit $RETURN_CODE
-        fi
-    else
-        dim "Skipping browser build, because no tsconfig.browser.json file is present."
-    fi
+    tsc -p ./tsconfig.cjs.json
+    green "DONE"
 
     echo "\n";
 }
 
-
 # Begin build process.
 
-if [ "$1" = "node" ];
-then
-    build_node
-elif [ "$1" = "browser" ];
-then
-    build_browser
-else
-    build_node
-    build_browser
-fi
+build_esm
+#build_cjs

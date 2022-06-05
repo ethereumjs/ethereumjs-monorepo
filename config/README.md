@@ -33,17 +33,15 @@ Exposed CLI commands:
 
 ### Usage
 
-Add `.eslintrc.js`:
+Add `.eslintrc.cjs`:
 
 ```js
-module.exports = {
-  extends: '../../config/eslint.js',
-}
+module.exports = { extends: '../../config/eslint.js' }
 ```
 
 In this file you can add rule adjustments or overrides for the specific package.
 
-Add `prettier.config.js`:
+Add `prettier.config.cjs`:
 
 ```js
 module.exports = require('../../config/prettier.config')
@@ -110,26 +108,28 @@ Add `tsconfig.json`:
 }
 ```
 
-Add `tsconfig.prod.json`:
+Add `tsconfig.esm.json`:
 
 ```json
 {
-  "extends": "../../config/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.esm.json",
   "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist/esm"
   }
 }
 ```
 
-Add `tsconfig.browser.json`:
+Add `tsconfig.cjs.json`:
 
 ```json
 {
-  "extends": "../../config/tsconfig.browser.json",
+  "extends": "./tsconfig.esm.json",
   "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "outDir": "./dist.browser"
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist/cjs"
   }
 }
 ```
@@ -145,25 +145,33 @@ Use CLI commands above in your `package.json`:
   }
 ```
 
-The default production target is ES2017. To support shipping the ES5 target for browsers, add to your `package.json`:
+Add to your `package.json`:
 
 ```json
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
-  "files": [
-    "dist",
-    "dist.browser"
-  ]
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./dist/*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
+  },
 ```
 
 ## Documentation
 
-Add `typedoc.js` to a package that extends the generic TypeDoc configuration:
+Add `typedoc.cjs` to a package that extends the generic TypeDoc configuration:
 
 ```js
-module.exports = {
-  extends: '../../config/typedoc.js',
+export default {
+  extends: '../../config/typedoc.cjs',
   // Additional directives
 }
 ```

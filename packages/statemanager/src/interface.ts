@@ -1,5 +1,5 @@
 import { Account, Address } from 'ethereumjs-util'
-import { Proof } from './stateManager'
+import { Proof } from './stateManager.js'
 
 /**
  * Storage values of an account

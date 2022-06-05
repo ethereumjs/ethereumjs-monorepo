@@ -1,9 +1,9 @@
 {
-  "extends": "../../config/tsconfig.browser.json",
+  "extends": "./tsconfig.esm.json",
   "include": ["browser/index.ts"],
   "exclude": ["lib/index.js"],
   "compilerOptions": {
-    "outDir": "dist.browser",
+    "outDir": "./dist/browser",
     "typeRoots": ["node_modules/@types", "lib/@types"],
   }
 }

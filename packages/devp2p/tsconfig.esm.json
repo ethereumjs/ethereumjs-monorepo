@@ -1,0 +1,16 @@
+{
+  "extends": "../../config/tsconfig.base.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+    "typeRoots": ["node_modules/@types", "src/@types"],
+  },
+  "references": [
+    { "path": "../common/tsconfig.esm.json" },
+    { "path": "../rlp/tsconfig.esm.json" },
+    { "path": "../util/tsconfig.esm.json" }
+  ],
+}

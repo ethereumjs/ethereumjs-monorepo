@@ -1,0 +1,20 @@
+{
+  "extends": "../../config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "references": [
+    { "path": "../block/tsconfig.esm.json" },
+    { "path": "../blockchain/tsconfig.esm.json" },
+    { "path": "../common/tsconfig.esm.json" },
+    { "path": "../rlp/tsconfig.esm.json" },
+    { "path": "../statemanager/tsconfig.esm.json" },
+    { "path": "../trie/tsconfig.esm.json" },
+    { "path": "../tx/tsconfig.esm.json" },
+    { "path": "../util/tsconfig.esm.json" }
+  ],
+}

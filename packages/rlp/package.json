@@ -7,28 +7,42 @@
     "rlp",
     "ethereum"
   ],
+  "type": "module",
   "files": [
     "dist",
     "bin",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
   "bin": {
-    "rlp": "bin/rlp"
+    "rlp": "./bin/rlp.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
   },
   "scripts": {
-    "build": "../../config/cli/ts-build.sh node",
+    "build": "../../config/cli/ts-build.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "tape": "tape -r ts-node/register",
+    "tape": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "npm run tape -- test/*.spec.ts",
-    "test:browser": "karma start karma.conf.js"
+    "test:browser": "karma start karma.conf.cjs"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
@@ -42,7 +56,7 @@
     "prettier": "^2.4.1",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "typescript": "^4.7.2"
   },
   "author": {
     "name": "martin becze",

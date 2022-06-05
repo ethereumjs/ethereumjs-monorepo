@@ -1,0 +1,16 @@
+{
+  "extends": "../../config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "references": [
+    { "path": "../common/tsconfig.esm.json" },
+    { "path": "../ethash/tsconfig.esm.json" },
+    { "path": "../rlp/tsconfig.esm.json" },
+    { "path": "../util/tsconfig.esm.json" }
+  ],
+}

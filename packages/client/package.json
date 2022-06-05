@@ -15,41 +15,56 @@
   "engines": {
     "node": ">=12.0.0"
   },
+  "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "lib"
   ],
-  "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
-  "browser": "dist/bundle.js",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
   "bin": {
-    "ethereumjs": "dist/bin/cli.js"
+    "ethereumjs": "./dist/bin/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
   },
   "scripts": {
     "preinstall": "npm run binWorkaround",
     "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
-    "build": "npm run build:node && npm run build:browser",
-    "build:node": "../../config/cli/ts-build.sh node",
-    "build:browser": "../../config/cli/ts-build.sh browser && npm run bundle && rm -rf dist.browser",
+    "postinstall": "npm run esmHotFixModuleDep && npm run esmHotFixModuleDep2",
+    "esmHotFixModuleDep": "npx json -I -f ../../node_modules/multiformats/package.json -e \"this.exports['./cid'].types='./types/src/cid.d.ts'\"",
+    "esmHotFixModuleDep2": "npx json -I -f ../../node_modules/multiformats/package.json -e  \"this.exports['./hashes/interface']={types:'./types/src/hashes/interface.d.ts'}\"",
+    "build": "../../config/cli/ts-build.sh",
+    "bundle": "webpack",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "bundle": "webpack",
     "client:start": "ts-node bin/cli.ts",
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --transports=rlpx --port=30304 --datadir=datadir-dev2",
     "coverage": "nyc npm run test:unit",
-    "docs:build": "typedoc --options typedoc.js --tsconfig tsconfig.prod.json",
+    "docs:build": "typedoc --options typedoc.cjs --tsconfig tsconfig.esm.json",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "tape": "tape -r ts-node/register",
+    "tape": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape",
     "test": "npm run test:unit && npm run test:integration && npm run test:browser",
     "test:unit": "npm run tape -- 'test/!(integration|cli)/**/*.spec.ts' 'test/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
-    "test:browser": "karma start karma.conf.js",
+    "test:browser": "karma start karma.conf.cjs",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^4.1.1",
+    "@chainsafe/libp2p-noise": "^6.2.0",
     "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.4",
@@ -59,15 +74,15 @@
     "@ethereumjs/tx": "^3.5.1",
     "@ethereumjs/vm": "^5.9.0",
     "body-parser": "^1.19.2",
-    "chalk": "^4.1.2",
+    "chalk": "^5.0.1",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.4",
     "fs-extra": "^10.0.0",
-    "it-pipe": "^1.1.0",
-    "it-pushable": "^1.4.2",
+    "it-pipe": "^2.0.3",
+    "it-pushable": "^2.0.1",
     "jayson": "^3.4.4",
     "jwt-simple": "^0.5.6",
     "level": "^6.0.0",
@@ -99,7 +114,7 @@
     "@types/tape": "^4.13.2",
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
-    "eslint": "^6.8.0",
+    "eslint": "^8.16.0",
     "file-replace-loader": "^1.2.0",
     "it-pair": "^1.0.0",
     "karma": "^6.3.2",
@@ -107,7 +122,7 @@
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.2.0",
     "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
     "pino": "^5.8.0",
@@ -122,12 +137,9 @@
     "testdouble-timers": "^0.1.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2",
+    "typescript": "^4.7.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0"
-  },
-  "devDependenciesComments": {
-    "node-fetch": "Hotfix for client browser build error in older Node versions (12/14), #1305, 2021-06-18"
   },
   "repository": {
     "type": "git",

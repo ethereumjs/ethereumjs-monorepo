@@ -8,18 +8,28 @@
     "ethereum",
     "VM"
   ],
+  "type": "module",
   "files": [
     "dist",
-    "dist.browser",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
+  },
   "scripts": {
-    "build": "npm run build:node && npm run build:browser",
-    "build:node": "../../config/cli/ts-build.sh node",
-    "build:browser": "../../config/cli/ts-build.sh browser",
+    "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "profiling": "0x ./benchmarks/run.js profiling",
@@ -27,9 +37,9 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "nyc npm run coverage:test",
     "coverage:test": "npm run test:API && npm run tester -- --state",
-    "docs:build": "typedoc --options typedoc.js",
-    "tape": "tape -r ts-node/register --stack-size=1500",
-    "tester": "ts-node ./tests/tester --stack-size=1500",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "tape": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape --stack-size=1500",
+    "tester": "NODE_OPTIONS='--experimental-json-modules' ts-node ./tests/tester/index.ts --stack-size=1500",
     "test:state": "npm run tester -- --state",
     "test:state:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
     "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg Berlin London' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
@@ -38,7 +48,7 @@
     "test:blockchain": "npm run tester -- --blockchain",
     "test:blockchain:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
     "test:API": "npm run tape -- './tests/api/**/*.spec.ts'",
-    "test:API:browser": "karma start karma.conf.js",
+    "test:API:browser": "karma start karma.conf.cjs",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -73,7 +83,7 @@
     "@types/node-dir": "^0.0.34",
     "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
-    "eslint": "^6.8.0",
+    "eslint": "^8.16.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
@@ -89,7 +99,7 @@
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2",
+    "typescript": "^4.7.2",
     "solc": "^0.8.1"
   },
   "contributors": [

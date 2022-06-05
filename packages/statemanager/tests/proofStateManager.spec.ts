@@ -1,8 +1,8 @@
 import tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { Address, toBuffer, zeros } from 'ethereumjs-util'
 import { SecureTrie } from 'merkle-patricia-tree'
-import { DefaultStateManager } from '../src'
+import { DefaultStateManager } from '../src/index.js'
 import ropsten_validAccount from './testdata/ropsten_validAccount.json'
 import ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
 import ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
@@ -45,7 +45,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_validAccount.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const key = Buffer.from(ethCryptoKeccak.keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -72,7 +72,7 @@ tape('ProofStateManager', (t) => {
       let stateRoot: Buffer | undefined
       for (const proofData of ropsten_nonexistentAccount.accountProof) {
         const bufferData = toBuffer(proofData)
-        const key = Buffer.from(keccak256(bufferData))
+        const key = Buffer.from(ethCryptoKeccak.keccak256(bufferData))
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -100,7 +100,7 @@ tape('ProofStateManager', (t) => {
       let stateRoot: Buffer | undefined
       for (const proofData of ropsten_contractWithStorage.accountProof) {
         const bufferData = toBuffer(proofData)
-        const key = Buffer.from(keccak256(bufferData))
+        const key = Buffer.from(ethCryptoKeccak.keccak256(bufferData))
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -112,7 +112,7 @@ tape('ProofStateManager', (t) => {
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
         storageKeys.push(toBuffer(storageProofsData.key))
         for (const storageProofData of storageProofsData.proof) {
-          const key = Buffer.from(keccak256(toBuffer(storageProofData)))
+          const key = Buffer.from(ethCryptoKeccak.keccak256(toBuffer(storageProofData)))
           await storageTrie.db.put(key, toBuffer(storageProofData))
         }
       }
@@ -140,7 +140,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const key = Buffer.from(ethCryptoKeccak.keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -152,7 +152,7 @@ tape('ProofStateManager', (t) => {
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
       storageKeys.push(toBuffer(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = Buffer.from(keccak256(toBuffer(storageProofData)))
+        const key = Buffer.from(ethCryptoKeccak.keccak256(toBuffer(storageProofData)))
         await storageTrie.db.put(key, toBuffer(storageProofData))
       }
     }
@@ -207,7 +207,7 @@ tape('ProofStateManager', (t) => {
     let stateRoot: Buffer | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
       const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const key = Buffer.from(ethCryptoKeccak.keccak256(bufferData))
       if (stateRoot === undefined) {
         stateRoot = key
       }

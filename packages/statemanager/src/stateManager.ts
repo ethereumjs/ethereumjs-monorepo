@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
@@ -15,9 +15,9 @@ import {
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import RLP from 'rlp'
-import { StateManager, StorageDump } from './interface'
-import Cache, { getCb, putCb } from './cache'
-import { BaseStateManager } from './'
+import { StateManager, StorageDump } from './interface.js'
+import Cache, { getCb, putCb } from './cache.js'
+import { BaseStateManager } from './/index.js'
 
 type StorageProof = {
   key: PrefixedHexString
@@ -122,7 +122,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Buffer): Promise<void> {
-    const codeHash = Buffer.from(keccak256(value))
+    const codeHash = Buffer.from(ethCryptoKeccak.keccak256(value))
 
     if (codeHash.equals(KECCAK256_NULL)) {
       return
@@ -355,7 +355,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = Buffer.from(keccak256(toBuffer(proof.accountProof[0])))
+    const rootHash = Buffer.from(ethCryptoKeccak.keccak256(toBuffer(proof.accountProof[0])))
     const key = toBuffer(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       toBuffer(rlpString)

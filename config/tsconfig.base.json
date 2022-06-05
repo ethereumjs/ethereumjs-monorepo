@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "downlevelIteration": true,
+    "lib": ["ES2020", "DOM"],
+    "module": "node16",
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2020",
+  },
+  "ts-node": {
+    "esm": true
+  }
+}

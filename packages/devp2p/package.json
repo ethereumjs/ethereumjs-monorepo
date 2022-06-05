@@ -10,34 +10,44 @@
     "dpt",
     "rlpx",
     "eth",
-    "eth64",
-    "eth65",
-    "les",
-    "les2"
+    "les"
   ],
   "engines": {
-    "node": ">=10.0"
+    "node": ">=12"
   },
+  "type": "module",
   "files": [
     "dist",
-    "dist.browser",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
+  },
   "scripts": {
-    "build": "npm run build:node && npm run build:browser",
-    "build:node": "../../config/cli/ts-build.sh node",
-    "build:browser": "../../config/cli/ts-build.sh browser",
+    "postinstall": "npm run esmHotFixModuleDep && npm run esmHotFixModuleDep2",
+    "esmHotFixModuleDep": "npx json -I -f ../../node_modules/@types/ms/package.json -e \"this.types='./index.d.ts'\"",
+    "esmHotFixModuleDep2": "npx json -I -f ../../node_modules/@types/ip/package.json -e \"this.types='./index.d.ts'\"",
+    "build": "../../config/cli/ts-build.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "tape": "tape -r ts-node/register",
+    "tape": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape",
     "test": "npm run tape -- ./test/index.ts"
   },
   "dependencies": {
@@ -55,7 +65,7 @@
     "k-bucket": "^5.0.0",
     "keccak": "^3.0.1",
     "lru-cache": "^5.1.1",
-    "ms": "^0.7.1",
+    "ms": "^2.1.3",
     "multiaddr": "^10.0.1",
     "rlp": "^3.0.0",
     "scanf": "^1.1.2",
@@ -65,23 +75,21 @@
   "devDependencies": {
     "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/tx": "^3.5.1",
-    "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",
     "@types/ip": "^1.1.0",
-    "@types/keccak": "^3.0.1",
     "@types/ms": "^0.7.30",
     "@types/node": "^16.11.7",
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",
-    "chalk": "^2.4.2",
-    "eslint": "^6.8.0",
+    "chalk": "^5.0.1",
+    "eslint": "^8.16.0",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "testdouble": "^3.8.2",
     "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "typescript": "^4.7.2"
   },
   "repository": {
     "type": "git",

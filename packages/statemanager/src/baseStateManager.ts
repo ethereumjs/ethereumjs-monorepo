@@ -1,9 +1,9 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import debugPkg from 'debug'
 import { Account, Address } from 'ethereumjs-util'
-import Cache from './cache'
-import { AccountFields } from './interface'
-import { DefaultStateManagerOpts } from './stateManager'
+import Cache from './cache.js'
+import { AccountFields } from './interface.js'
+import { DefaultStateManagerOpts } from './stateManager.js'
 
 /**
  * Abstract BaseStateManager class for the non-storage-backend
@@ -19,7 +19,7 @@ import { DefaultStateManagerOpts } from './stateManager'
  */
 export abstract class BaseStateManager {
   _common: Common
-  _debug: Debugger
+  _debug: debugPkg.Debugger
   _cache!: Cache
 
   /**
@@ -46,7 +46,7 @@ export abstract class BaseStateManager {
     if (process !== undefined && process.env.DEBUG) {
       this.DEBUG = true
     }
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugPkg.debug('statemanager:statemanager')
   }
 
   /**

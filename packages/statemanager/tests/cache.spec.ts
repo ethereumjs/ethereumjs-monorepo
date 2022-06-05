@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address } from 'ethereumjs-util'
-import Cache, { getCb, putCb } from '../src/cache'
-import { createAccount } from './util'
+import Cache, { getCb, putCb } from '../src/cache.js'
+import { createAccount } from './util.js'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {

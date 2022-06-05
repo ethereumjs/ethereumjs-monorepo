@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import ethCryptoKeccak = require('ethereum-cryptography/keccak')
+import ethCryptoUtils = require('ethereum-cryptography/utils')
 import {
   Account,
   Address,
@@ -11,8 +11,8 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '../src'
-import { createAccount } from './util'
+import { DefaultStateManager } from '../src/index.js'
+import { createAccount } from './util.js'
 
 // explicitly import `inherits` to fix karma-typescript issue
 import { inherits } from 'util' // eslint-disable-line
@@ -258,7 +258,7 @@ tape('StateManager', (t) => {
     await stateManager.putContractStorage(address, key, value)
 
     const data = await stateManager.dumpStorage(address)
-    const expect = { [bytesToHex(keccak256(key))]: '0a' }
+    const expect = { [ethCryptoUtils.bytesToHex(ethCryptoKeccak.keccak256(key))]: '0a' }
     st.deepEqual(data, expect, 'should dump storage value')
 
     st.end()
@@ -316,7 +316,7 @@ tape('StateManager', (t) => {
       This preimage is used as codeHash
 
       NOTE: Currently, the only problem which this code prefix fixes, is putting 0x80 as contract code
-      -> This hashes to the empty trie node hash (0x80 = RLP([])), so keccak256(0x80) = empty trie node hash
+      -> This hashes to the empty trie node hash (0x80 = RLP([])), so ethCryptoKeccak.keccak256(0x80) = empty trie node hash
       -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/trie
     */
 

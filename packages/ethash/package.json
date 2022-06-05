@@ -9,26 +9,39 @@
     "ethereum",
     "POW"
   ],
+  "type": "module",
   "files": [
     "dist",
-    "dist.browser",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/cjs/*",
+      "types": "./dist/types/*"
+    }
+  },
   "scripts": {
-    "build": "npm run build:node && npm run build:browser",
-    "build:node": "../../config/cli/ts-build.sh node",
-    "build:browser": "../../config/cli/ts-build.sh browser",
+    "postinstall": "npm run esmHotFixModuleDep && npm run esmHotFixModuleDep2",
+    "esmHotFixModuleDep": "npx json -I -f ../../node_modules/bigint-crypto-utils/package.json -e \"this.exports['.'].node.types='./types/index.d.ts'\"",
+    "esmHotFixModuleDep2": "npx json -I -f ../../node_modules/bigint-mod-arith/package.json -e \"this.exports['.'].node.types='./types/index.d.ts'\"",
+    "build": "../../config/cli/ts-build.sh",
     "tsc": "../../config/cli/ts-compile.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
-    "test": "tape -r ts-node/register test/*.spec.ts",
-    "docs:build": "typedoc --options typedoc.js"
+    "test": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape test/*.spec.ts",
+    "docs:build": "typedoc --options typedoc.cjs"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.6.2",
@@ -42,14 +55,14 @@
   "devDependencies": {
     "@ethereumjs/common": "^2.6.4",
     "@types/tape": "^4.13.2",
-    "eslint": "^6.8.0",
+    "eslint": "^8.16.0",
     "level-mem": "^5.0.1",
     "typedoc": "^0.22.4",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "typescript": "^4.7.2"
   },
   "repository": {
     "type": "git",

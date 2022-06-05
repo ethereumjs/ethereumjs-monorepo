@@ -1,4 +1,7 @@
 import { Account, Address } from 'ethereumjs-util'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const Tree = require('functional-red-black-tree')
 
 export type getCb = (address: Address) => Promise<Account | undefined>
