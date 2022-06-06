@@ -1052,13 +1052,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BigInt(0))
-        runState.interpreter._env.auth = undefined
+        runState.auth = undefined
         return
       }
 
       const addressBuffer = publicToAddress(recover)
       const address = new Address(addressBuffer)
-      runState.interpreter._env.auth = address
+      runState.auth = address
 
       const expectedAddress = new Address(setLengthLeft(bigIntToBuffer(authority), 20))
 

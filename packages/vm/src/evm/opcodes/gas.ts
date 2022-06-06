@@ -474,7 +474,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* AUTHCALL */
       0xf7,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.interpreter._env.auth === undefined) {
+        if (runState.auth === undefined) {
           trap(ERROR.AUTHCALL_UNSET)
         }
 
