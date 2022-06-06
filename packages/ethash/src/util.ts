@@ -1,4 +1,4 @@
-import bigintCryptoUtils from 'bigint-crypto-utils'
+import bigintCryptoUtils = require('bigint-crypto-utils')
 import ethCryptoKeccak = require('ethereum-cryptography/keccak')
 
 export const params = {

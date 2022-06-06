@@ -11,7 +11,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
 tape('POW tests', async function (t) {
   for (const key of tests) {
-    const test = powTests[key]
+    const test = (powTests as any)[key]
     const header = BlockHeader.fromRLPSerializedHeader(Buffer.from(test.header, 'hex'), { common })
 
     const headerHash = ethash.headerHash(header.raw())
