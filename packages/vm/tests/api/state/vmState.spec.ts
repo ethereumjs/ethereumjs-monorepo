@@ -19,7 +19,7 @@ tape('vmState', (t) => {
         st.skip('skip slow test when running in karma')
         return st.end()
       }
-      const genesisData = getSingleFile('BasicTests/genesishashestest.json')
+      const genesisData = await getSingleFile('BasicTests/genesishashestest.json')
 
       const vmState = new VmState({ stateManager: new StateManager() })
       const blockchain = await Blockchain.create()

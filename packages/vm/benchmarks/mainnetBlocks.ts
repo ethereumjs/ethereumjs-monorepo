@@ -4,7 +4,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '@ethereumjs/vm'
-import { getPreState, getBlockchain, verifyResult } from './util'
+import { getPreState, getBlockchain, verifyResult } from './util.js'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 

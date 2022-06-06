@@ -32,7 +32,7 @@
   },
   "scripts": {
     "postinstall": "npm run esmHotFixModuleDep && npm run esmHotFixModuleDep2",
-    "esmHotFixModuleDep": "npx json -I -f ../../node_modules/bigint-crypto-utils/package.json -e \"this.exports['.'].node.types='./types/index.d.ts'\"",
+    "esmHotFixModuleDep": "npx json -I -f ../../node_modules/bigint-crypto-utils/package.json -e \"this.exports['.'].node.types='./types/index.d.ts';this.exports['.'].node.import='./dist/cjs/index.node.cjs'\"",
     "esmHotFixModuleDep2": "npx json -I -f ../../node_modules/bigint-mod-arith/package.json -e \"this.exports['.'].node.types='./types/index.d.ts'\"",
     "build": "../../config/cli/ts-build.sh",
     "tsc": "../../config/cli/ts-compile.sh",

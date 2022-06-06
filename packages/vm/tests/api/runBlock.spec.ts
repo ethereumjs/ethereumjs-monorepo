@@ -18,6 +18,7 @@ import testnet from './testdata/testnet.json'
 import VM from '../../src/index.js'
 import { setBalance } from './utils.js'
 import testData from './testdata/blockchain.json'
+import testDataUncleData from './testdata/uncleData.json'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
@@ -29,19 +30,16 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
-    //@ts-ignore
     await setupPreConditions(vm.vmState, testData)
 
     st.ok(
-      //@ts-ignore
-      vm.stateManager._trie.root.equals(genesis.header.stateRoot),
+      (vm.stateManager as any)._trie.root.equals(genesis.header.stateRoot),
       'genesis state root should match calculated state root'
     )
 
     const res = await vm.runBlock({
       block,
-      // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: (vm.stateManager as any)._trie.root,
       skipBlockValidation: true,
     })
 
@@ -53,35 +51,29 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   }
 
   async function uncleRun(vm: VM, st: tape.Test) {
-    import testData from './testdata/uncleData.json'
+    await setupPreConditions(vm.vmState, testDataUncleData)
 
-    //@ts-ignore
-    await setupPreConditions(vm.vmState, testData)
-
-    const block1Rlp = toBuffer(testData.blocks[0].rlp)
+    const block1Rlp = toBuffer(testDataUncleData.blocks[0].rlp)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp)
     await vm.runBlock({
       block: block1,
-      // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: (vm.stateManager as any)._trie.root,
       skipBlockValidation: true,
     })
 
-    const block2Rlp = toBuffer(testData.blocks[1].rlp)
+    const block2Rlp = toBuffer(testDataUncleData.blocks[1].rlp)
     const block2 = Block.fromRLPSerializedBlock(block2Rlp)
     await vm.runBlock({
       block: block2,
-      // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: (vm.stateManager as any)._trie.root,
       skipBlockValidation: true,
     })
 
-    const block3Rlp = toBuffer(testData.blocks[2].rlp)
+    const block3Rlp = toBuffer(testDataUncleData.blocks[2].rlp)
     const block3 = Block.fromRLPSerializedBlock(block3Rlp)
     await vm.runBlock({
       block: block3,
-      // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: (vm.stateManager as any)._trie.root,
       skipBlockValidation: true,
     })
 
@@ -93,7 +85,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
 
     st.equal(
       `0x${uncleReward}`,
-      testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
+      testDataUncleData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'
     )
   }
@@ -205,7 +197,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
 
     const block = Block.fromBlockData({
       header: {
-        ...testData.blocks[0].header,
+        ...testData.blocks[0].blockHeader,
         gasLimit: Buffer.from('8000000000000000', 'hex'),
       },
     })
@@ -263,7 +255,6 @@ tape('runBlock() -> runtime behavior', async (t) => {
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1, { common })
-    // @ts-ignore
     await setupPreConditions(vm.vmState, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
@@ -404,7 +395,6 @@ async function runWithHf(hardfork: string) {
   const blockRlp = toBuffer(testData.blocks[0].rlp)
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-  // @ts-ignore
   await setupPreConditions(vm.vmState, testData)
 
   const res = await vm.runBlock({
@@ -449,7 +439,6 @@ tape('runBlock() -> tx types', async (t) => {
       block.header.baseFeePerGas = BigInt(7)
     }
 
-    //@ts-ignore
     await setupPreConditions(vm.vmState, testData)
 
     const res = await vm.runBlock({

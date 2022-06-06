@@ -7,10 +7,13 @@ import debugPkg from 'debug'
 import { devp2pDebug } from '../util.js'
 import LRUCache from 'lru-cache'
 import Common from '@ethereumjs/common'
-import packageJSON from '../../package.json'
 import { pk2id, createDeferred, formatLogId, buffer2int } from '../util.js'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer.js'
 import { DPT, PeerInfo } from '../dpt/index.js'
+
+// @ts-ignore Silence package.json error for file not under 'rootDir'
+//            We are going three levels up from dist/esm/rlpx
+import packageJSON from '../../../package.json'
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugPkg.debug('verbose').enabled

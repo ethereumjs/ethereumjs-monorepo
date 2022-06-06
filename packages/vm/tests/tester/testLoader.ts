@@ -156,6 +156,6 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
  * Returns a single file from the ethereum-tests git submodule
  * @param file
  */
-export function getSingleFile(file: string) {
-  return require(path.join(DEFAULT_TESTS_PATH, file))
+export async function getSingleFile(file: string) {
+  return (await import(path.join(DEFAULT_TESTS_PATH, file))).default
 }

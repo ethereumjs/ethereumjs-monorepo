@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark'
-import { BenchmarksType } from './util'
+import { BenchmarksType } from './util.js'
 import { mainnetBlocks } from './mainnetBlocks'
 
 // Add an import and a BENCHMARKS entry to list a new benchmark
