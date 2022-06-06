@@ -1,10 +1,12 @@
 /// <reference path="./testdouble-timers.d.ts" />
 import tape from 'tape'
-import * as td from 'testdouble'
-import timers from 'testdouble-timers'
 import { FlowControl } from '../../../lib/net/protocol/index.js'
 
-timers.use(td)
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const td = require('testdouble')
+const timers = require('testdouble-timers')
+timers.default.use(td)
 
 tape('[FlowControl]', (t) => {
   const settings = {

@@ -10,15 +10,15 @@ tape('[LightSynchronizer]', async (t) => {
     open() {}
     close() {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
+  PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
   class HeaderFetcher {
     fetch() {}
     clear() {}
     destroy() {}
   }
-  HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { HeaderFetcher })
+  HeaderFetcher.prototype.fetch = td.func()
+  td.replace('../../lib/sync/fetcher.js', { HeaderFetcher })
 
   const { LightSynchronizer } = await import('../../lib/sync/lightsync.js')
 
@@ -70,8 +70,8 @@ tape('[LightSynchronizer]', async (t) => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
+    sync.best = td.func()
+    sync.latest = td.func()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
@@ -107,8 +107,8 @@ tape('[LightSynchronizer]', async (t) => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
+    sync.best = td.func()
+    sync.latest = td.func()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
@@ -141,8 +141,8 @@ tape('[LightSynchronizer]', async (t) => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
+    sync.best = td.func()
+    sync.latest = td.func()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),

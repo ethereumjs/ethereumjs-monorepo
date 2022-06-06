@@ -54,7 +54,7 @@ tape('[Protocol]', (t) => {
   t.test('should perform handshake (status now)', async (t) => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = td.func()
     sender.status = [1]
     t.deepEquals(await p.handshake(sender), { id: 1 }, 'got status now')
     t.end()
@@ -63,7 +63,7 @@ tape('[Protocol]', (t) => {
   t.test('should perform handshake (status later)', async (t) => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = td.func()
     setTimeout(() => {
       sender.emit('status', [1])
     }, 100)
@@ -76,7 +76,7 @@ tape('[Protocol]', (t) => {
   t.test('should handle handshake timeout', async (t) => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = td.func()
     p.timeout = 100
     setTimeout(() => {
       sender.emit('status', [1])
@@ -107,7 +107,7 @@ tape('[Protocol]', (t) => {
     const p = new TestProtocol()
     const peer = td.object('Peer') as any
     const sender = new Sender()
-    BoundProtocol.prototype.handshake = td.func<BoundProtocol['handshake']>()
+    BoundProtocol.prototype.handshake = td.func()
     td.when(BoundProtocol.prototype.handshake(td.matchers.isA(Sender))).thenResolve()
     const bound = await p.bind(peer, sender)
     t.ok(bound instanceof BoundProtocol, 'correct bound protocol')

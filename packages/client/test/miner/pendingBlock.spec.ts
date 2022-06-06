@@ -4,7 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/vmState'
+import { VmState } from '@ethereumjs/vm/vmState.js'
 import { Address, Account } from 'ethereumjs-util'
 import { Config } from '../../lib/config.js'
 import { TxPool } from '../../lib/service/txpool.js'
@@ -46,12 +46,12 @@ const setup = () => {
 
 tape('[PendingBlock]', async (t) => {
   const originalValidate = BlockHeader.prototype.validate
-  BlockHeader.prototype.validate = td.func<any>()
+  BlockHeader.prototype.validate = td.func()
   td.replace('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
-  VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/vmState', { VmState })
+  VmState.prototype.setStateRoot = td.func()
+  td.replace('@ethereumjs/vm/vmState.js', { VmState })
 
   const createTx = (
     from = A,

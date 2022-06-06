@@ -1,4 +1,4 @@
-import { Server as RPCServer } from 'jayson/promise'
+import jayson from 'jayson/promise/index.js'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc/index.js'
 import EthereumClient from '../lib/client.js'
@@ -58,7 +58,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const { config } = client
-  const servers: RPCServer[] = []
+  const servers: jayson.Server[] = []
   const {
     rpc,
     rpcaddr,

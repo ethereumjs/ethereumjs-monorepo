@@ -14,18 +14,18 @@ tape('[FullSynchronizer]', async (t) => {
     idle() {}
     ban(_peer: any) {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.idle = td.func<any>()
+  PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
+  PeerPool.prototype.idle = td.func()
   class BlockFetcher {
     fetch() {}
     clear() {}
     destroy() {}
   }
-  BlockFetcher.prototype.fetch = td.func<any>()
-  BlockFetcher.prototype.clear = td.func<any>()
-  BlockFetcher.prototype.destroy = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { BlockFetcher })
+  BlockFetcher.prototype.fetch = td.func()
+  BlockFetcher.prototype.clear = td.func()
+  BlockFetcher.prototype.destroy = td.func()
+  td.replace('../../lib/sync/fetcher.js', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync.js')
 
@@ -49,7 +49,7 @@ tape('[FullSynchronizer]', async (t) => {
       txPool,
       execution,
     })
-    ;(sync as any).pool.open = td.func<PeerPool['open']>()
+    ;(sync as any).pool.open = td.func()
     ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
@@ -119,8 +119,8 @@ tape('[FullSynchronizer]', async (t) => {
       txPool,
       execution,
     })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
+    sync.best = td.func()
+    sync.latest = td.func()
     td.when(sync.best()).thenReturn('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: BigInt(2),
@@ -202,7 +202,7 @@ tape('[FullSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
 
-    Block.prototype.validateDifficulty = td.func<any>()
+    Block.prototype.validateDifficulty = td.func()
     td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
     const chainTip = Block.fromBlockData({
       header: {},
@@ -212,8 +212,8 @@ tape('[FullSynchronizer]', async (t) => {
         parentHash: chainTip.hash(),
       },
     })
-    chain.getCanonicalHeadBlock = td.func<any>()
-    chain.putBlocks = td.func<any>()
+    chain.getCanonicalHeadBlock = td.func()
+    chain.putBlocks = td.func()
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
 

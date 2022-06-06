@@ -93,7 +93,7 @@ tape('[BoundProtocol]', (t) => {
   t.test('should perform send', (t) => {
     const config = new Config({ transports: [] })
     const sender = new Sender()
-    sender.sendMessage = td.func<Sender['sendMessage']>()
+    sender.sendMessage = td.func()
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -116,7 +116,7 @@ tape('[BoundProtocol]', (t) => {
       peer,
       sender,
     })
-    sender.sendMessage = td.func<Sender['sendMessage']>()
+    sender.sendMessage = td.func()
     td.when(protocol.encode(testMessage, 1)).thenReturn('1')
     td.when(protocol.decode(testResponse, '2')).thenReturn(2)
     td.when(sender.sendMessage(0x01, '1' as any)).thenDo(() => {
@@ -137,7 +137,7 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should timeout request', async (t) => {
     const config = new Config({ transports: [] })
-    const sender = td.object<Sender>('Sender')
+    const sender = td.object('Sender')
     const bound = new BoundProtocol({
       config,
       protocol,

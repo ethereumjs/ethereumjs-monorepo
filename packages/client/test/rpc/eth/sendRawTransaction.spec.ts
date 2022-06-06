@@ -4,7 +4,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from 'ethereumjs-util'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code.js'
 import { baseSetup, params, baseRequest } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 
 const method = 'eth_sendRawTransaction'
 

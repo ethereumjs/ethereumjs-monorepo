@@ -10,8 +10,8 @@ tape('[BlockFetcher]', async (t) => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = td.func()
+  PeerPool.prototype.ban = td.func()
 
   const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher.js')
 
@@ -165,7 +165,7 @@ tape('[BlockFetcher]', async (t) => {
 
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
+      eth: { getBlockBodies: td.func(), getBlockHeaders: td.func() },
       id: 'random',
       address: 'random',
     }
@@ -187,7 +187,7 @@ tape('[BlockFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    chain.putBlocks = td.func<any>()
+    chain.putBlocks = td.func()
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -203,7 +203,7 @@ tape('[BlockFetcher]', async (t) => {
       st.equal(err.message, 'err0', 'store() threw on invalid block')
     }
     td.reset()
-    chain.putBlocks = td.func<any>()
+    chain.putBlocks = td.func()
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve(1)
     config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
       st.pass('store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')

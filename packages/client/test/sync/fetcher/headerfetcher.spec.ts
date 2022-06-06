@@ -9,9 +9,9 @@ tape('[HeaderFetcher]', async (t) => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  PeerPool.prototype.idle = td.func()
+  PeerPool.prototype.ban = td.func()
+  td.replace('../../lib/net/peerpool.js', { PeerPool })
 
   const { HeaderFetcher } = await import('../../../lib/sync/fetcher/headerfetcher.js')
 
@@ -81,7 +81,7 @@ tape('[HeaderFetcher]', async (t) => {
     const partialResult = [{ number: 1 }, { number: 2 }]
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      les: { getBlockHeaders: td.func<any>() },
+      les: { getBlockHeaders: td.func() },
       id: 'random',
       address: 'random',
     }
@@ -102,7 +102,7 @@ tape('[HeaderFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    chain.putHeaders = td.func<any>()
+    chain.putHeaders = td.func()
     const fetcher = new HeaderFetcher({
       config,
       pool,

@@ -9,25 +9,25 @@ tape('[LightEthereumService]', async (t) => {
     open() {}
     close() {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
+  td.replace('../../lib/net/peerpool.js', { PeerPool })
   const MockChain = td.constructor([] as any)
   MockChain.prototype.open = td.func()
-  td.replace('../../lib/blockchain', { MockChain })
+  td.replace('../../lib/blockchain.js', { MockChain })
   const LesProtocol = td.constructor([] as any)
-  td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace('../../lib/net/protocol/lesprotocol.js', { LesProtocol })
   class LightSynchronizer {
     start() {}
     stop() {}
     open() {}
     close() {}
   }
-  LightSynchronizer.prototype.start = td.func<any>()
-  LightSynchronizer.prototype.stop = td.func<any>()
-  LightSynchronizer.prototype.open = td.func<any>()
-  LightSynchronizer.prototype.close = td.func<any>()
-  td.replace('../../lib/sync/lightsync', { LightSynchronizer })
+  LightSynchronizer.prototype.start = td.func()
+  LightSynchronizer.prototype.stop = td.func()
+  LightSynchronizer.prototype.open = td.func()
+  LightSynchronizer.prototype.close = td.func()
+  td.replace('../../lib/sync/lightsync.js', { LightSynchronizer })
 
   const { LightEthereumService } = await import('../../lib/service/lightethereumservice.js')
 

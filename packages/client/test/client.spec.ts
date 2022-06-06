@@ -12,10 +12,10 @@ tape('[EthereumClient]', async (t) => {
     config = config
     pool = new PeerPool({ config })
   }
-  FullEthereumService.prototype.open = td.func<any>()
-  FullEthereumService.prototype.start = td.func<any>()
-  FullEthereumService.prototype.stop = td.func<any>()
-  td.replace('../lib/service', { FullEthereumService })
+  FullEthereumService.prototype.open = td.func()
+  FullEthereumService.prototype.start = td.func()
+  FullEthereumService.prototype.stop = td.func()
+  td.replace('../lib/service.js', { FullEthereumService })
   td.when(FullEthereumService.prototype.open()).thenResolve()
   td.when(FullEthereumService.prototype.start()).thenResolve()
   td.when(FullEthereumService.prototype.stop()).thenResolve()
@@ -26,11 +26,11 @@ tape('[EthereumClient]', async (t) => {
     stop() {}
     bootstrap() {}
   }
-  Server.prototype.open = td.func<any>()
-  Server.prototype.start = td.func<any>()
-  Server.prototype.stop = td.func<any>()
-  Server.prototype.bootstrap = td.func<any>()
-  td.replace('../lib/net/server/server', { Server })
+  Server.prototype.open = td.func()
+  Server.prototype.start = td.func()
+  Server.prototype.stop = td.func()
+  Server.prototype.bootstrap = td.func()
+  td.replace('../lib/net/server/server.js', { Server })
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()

@@ -22,8 +22,8 @@ tape('[Fetcher]', (t) => {
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
-    fetcher.next = td.func<FetcherTest['next']>()
-    fetcher.wait = td.func<FetcherTest['wait']>()
+    fetcher.next = td.func()
+    fetcher.wait = td.func()
     td.when(fetcher.wait()).thenResolve(undefined)
     ;(fetcher as any).success(job, undefined)
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
@@ -36,7 +36,7 @@ tape('[Fetcher]', (t) => {
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
-    fetcher.next = td.func<FetcherTest['next']>()
+    fetcher.next = td.func()
     config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
@@ -52,8 +52,8 @@ tape('[Fetcher]', (t) => {
     })
     const job = { index: 0 }
     const peer = { idle: true }
-    fetcher.peer = td.func<FetcherTest['peer']>()
-    fetcher.request = td.func<FetcherTest['request']>()
+    fetcher.peer = td.func()
+    fetcher.request = td.func()
     td.when(fetcher.peer()).thenReturn(peer)
     td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
       new Error('err0')
@@ -104,10 +104,10 @@ tape('[Fetcher]', (t) => {
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
     const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }
-    fetcher.next = td.func<FetcherTest['next']>()
+    fetcher.next = td.func()
     fetcher.write()
     ;(fetcher as any).running = true
-    fetcher.store = td.func<FetcherTest['store']>()
+    fetcher.store = td.func()
     td.when(fetcher.store(td.matchers.anything())).thenReject(
       new Error('could not find parent header')
     )

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import * as td from 'testdouble'
-import { Log } from '@ethereumjs/vm/evm/types'
+import { Log } from '@ethereumjs/vm/evm/types.js'
 import { Config } from '../../lib/config.js'
 import { Event } from '../../lib/types.js'
 import { Chain } from '../../lib/blockchain/index.js'
@@ -12,18 +12,18 @@ tape('[FullEthereumService]', async (t) => {
     start() {}
     stop() {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.start = td.func<any>()
-  PeerPool.prototype.stop = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
+  PeerPool.prototype.start = td.func()
+  PeerPool.prototype.stop = td.func()
+  td.replace('../../lib/net/peerpool.js', { PeerPool })
   const MockChain = td.constructor([] as any)
-  MockChain.prototype.open = td.func<any>()
-  td.replace('../../lib/blockchain', { Chain: MockChain })
+  MockChain.prototype.open = td.func()
+  td.replace('../../lib/blockchain/index.js', { Chain: MockChain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
-  td.replace('../../lib/net/protocol/ethprotocol', { EthProtocol })
-  td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace('../../lib/net/protocol/ethprotocol.js', { EthProtocol })
+  td.replace('../../lib/net/protocol/lesprotocol.js', { LesProtocol })
   class FullSynchronizer {
     start() {}
     stop() {}
@@ -31,12 +31,12 @@ tape('[FullEthereumService]', async (t) => {
     close() {}
     handleNewBlock() {}
   }
-  FullSynchronizer.prototype.start = td.func<any>()
-  FullSynchronizer.prototype.stop = td.func<any>()
-  FullSynchronizer.prototype.open = td.func<any>()
-  FullSynchronizer.prototype.close = td.func<any>()
-  FullSynchronizer.prototype.handleNewBlock = td.func<any>()
-  td.replace('../../lib/sync/fullsync', { FullSynchronizer })
+  FullSynchronizer.prototype.start = td.func()
+  FullSynchronizer.prototype.stop = td.func()
+  FullSynchronizer.prototype.open = td.func()
+  FullSynchronizer.prototype.close = td.func()
+  FullSynchronizer.prototype.handleNewBlock = td.func()
+  td.replace('../../lib/sync/fullsync.js', { FullSynchronizer })
 
   class Block {
     static fromValuesArray() {
@@ -119,7 +119,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = new Chain({ config })
     const service = new FullEthereumService({ config, chain })
     service.execution = {
-      receiptsManager: { getReceipts: td.func<any>() },
+      receiptsManager: { getReceipts: td.func() },
     } as any
     const blockHash = Buffer.alloc(32, 1)
     const receipts = [

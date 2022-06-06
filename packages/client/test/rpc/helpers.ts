@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Server as RPCServer, HttpServer } from 'jayson/promise'
+import jayson from 'jayson/promise/index.js'
 import { BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain as ChainEnum } from '@ethereumjs/common'
@@ -19,11 +19,11 @@ import type { IncomingMessage } from 'connect'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type EthereumClient from '../../lib/client.js'
 import type { FullEthereumService } from '../../lib/service/index.js'
-const request = require('supertest')
 
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const level = require('level-mem')
+const request = require('supertest')
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -37,7 +37,7 @@ export function startRPC(
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   const httpServer = wsServer
     ? createWsRPCServerListener({ server, withEngineMiddleware })
     : createRPCServerListener({ server, withEngineMiddleware })
@@ -46,7 +46,7 @@ export function startRPC(
   return httpServer
 }
 
-export function closeRPC(server: HttpServer) {
+export function closeRPC(server: jayson.HttpServer) {
   server.close()
 }
 
@@ -166,7 +166,7 @@ export function params(method: string, params: Array<any> = []) {
 
 export async function baseRequest(
   t: tape.Test,
-  server: HttpServer,
+  server: jayson.HttpServer,
   req: Object,
   expect: number,
   expectRes: Function,

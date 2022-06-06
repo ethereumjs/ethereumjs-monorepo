@@ -2,7 +2,7 @@ import tape from 'tape'
 import { middleware, validators } from '../../lib/rpc/validation.js'
 import { INVALID_PARAMS } from '../../lib/rpc/error-code.js'
 import { startRPC, baseRequest } from './helpers.js'
-import { checkError } from './util'
+import { checkError } from './util.js'
 
 const prefix = 'rpc/validation:'
 

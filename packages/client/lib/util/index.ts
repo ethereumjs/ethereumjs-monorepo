@@ -2,7 +2,7 @@
  * @module util
  */
 import { platform } from 'os'
-import { version as packageVersion } from '../../package.json'
+import packageJSON from '../../package.json'
 
 export * from './parse.js'
 export * from './rpc.js'
@@ -18,5 +18,5 @@ export function short(buf: Buffer | string): string {
 
 export function getClientVersion() {
   const { version } = process
-  return `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
+  return `EthereumJS/${packageJSON.version}/${platform()}/node${version.substring(1)}`
 }

@@ -6,7 +6,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bufferToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 import type { FullEthereumService } from '../../../lib/service/index.js'
 
 const method = 'eth_call'

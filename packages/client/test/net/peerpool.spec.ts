@@ -7,7 +7,7 @@ import { Event } from '../../lib/types.js'
 import MockPeer from '../integration/mocks/mockpeer.js'
 
 tape('[PeerPool]', async (t) => {
-  const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
+  const Peer = td.replace('../../lib/net/peer/peer.js', function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
   })
   const { PeerPool } = await import('../../lib/net/peerpool.js')

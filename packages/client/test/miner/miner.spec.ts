@@ -3,7 +3,7 @@ import * as td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { VmState } from '@ethereumjs/vm/vmState'
+import { VmState } from '@ethereumjs/vm/vmState.js'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { Address } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
@@ -39,12 +39,12 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 
 tape('[Miner]', async (t) => {
   const originalValidate = BlockHeader.prototype.validate
-  BlockHeader.prototype.validate = td.func<any>()
+  BlockHeader.prototype.validate = td.func()
   td.replace('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
-  VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/vmState', { VmState })
+  VmState.prototype.setStateRoot = td.func()
+  td.replace('@ethereumjs/vm/vmState.js', { VmState })
 
   class FakeChain {
     open() {}

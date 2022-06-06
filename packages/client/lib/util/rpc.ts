@@ -1,14 +1,14 @@
 import { createServer } from 'http'
-import { Server as RPCServer, HttpServer } from 'jayson/promise'
-import { json as jsonParser } from 'body-parser'
-import { decode, TAlgorithm } from 'jwt-simple'
+import jayson from 'jayson/promise/index.js'
+import bodyParser from 'body-parser'
+import jwt from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
 import cors from 'cors'
 import { inspect } from 'util'
 import { RPCManager } from '../rpc/index.js'
 import { Logger } from '../logging.js'
 
-const algorithm: TAlgorithm = 'HS256'
+const algorithm: jwt.TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
@@ -16,16 +16,16 @@ type CreateRPCServerOpts = {
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: RPCServer
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
-  server: RPCServer
+  server: jayson.Server
   withEngineMiddleware?: WithEngineMiddleware
 }
-type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
+type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
@@ -133,7 +133,7 @@ export function createRPCServer(
     }
   }
 
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
@@ -146,19 +146,19 @@ function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
   if (!header) throw Error(`Missing auth header`)
   const token = header.trim().split(' ')[1]
   if (!token) throw Error(`Missing jwt token`)
-  const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
+  const claims = jwt.decode(token.trim(), jwtSecret as never as string, false, algorithm)
   if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
     throw Error('Stale jwt token')
   }
 }
 
-export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
+export function createRPCServerListener(opts: CreateRPCServerListenerOpts): jayson.HttpServer {
   const { server, withEngineMiddleware, rpcCors } = opts
 
   const app = Connect()
   if (rpcCors) app.use(cors({ origin: rpcCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
-  app.use(jsonParser({ limit: '11mb' }))
+  app.use(bodyParser.json({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
@@ -183,7 +183,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   return httpServer
 }
 
-export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
+export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.HttpServer | undefined {
   const { server, withEngineMiddleware, rpcCors } = opts
 
   // Get the server to hookup upgrade request on

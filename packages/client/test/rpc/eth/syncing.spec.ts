@@ -2,7 +2,7 @@ import tape from 'tape'
 import * as td from 'testdouble'
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code.js'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 
 const method = 'eth_syncing'
 
@@ -44,7 +44,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
   const rpcServer = startRPC(manager.getMethods())
 
   const synchronizer = client.services[0].synchronizer
-  synchronizer.best = td.func<typeof synchronizer['best']>()
+  synchronizer.best = td.func()
   td.when(synchronizer.best()).thenReturn('peer')
 
   client.config.synchronized = false
@@ -62,8 +62,8 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   const rpcServer = startRPC(manager.getMethods())
 
   const synchronizer = client.services[0].synchronizer
-  synchronizer.best = td.func<typeof synchronizer['best']>()
-  synchronizer.latest = td.func<typeof synchronizer['latest']>()
+  synchronizer.best = td.func()
+  synchronizer.latest = td.func()
   td.when(synchronizer.best()).thenReturn('peer')
   td.when(synchronizer.latest('peer' as any)).thenResolve({ number: BigInt(2) })
 

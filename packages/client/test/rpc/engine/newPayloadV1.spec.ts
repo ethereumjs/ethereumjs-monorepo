@@ -1,7 +1,7 @@
 import tape, { Test } from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address } from 'ethereumjs-util'

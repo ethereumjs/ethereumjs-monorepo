@@ -19,20 +19,20 @@ tape('[RlpxServer]', async (t) => {
     }
     _socket = { remoteAddress: 'mock', remotePort: 101 }
   }
-  RlpxPeer.prototype.accept = td.func<any>()
-  RlpxPeer.capabilities = td.func<any>()
-  td.replace('../../../lib/net/peer/rlpxpeer', { RlpxPeer })
+  RlpxPeer.prototype.accept = td.func()
+  RlpxPeer.capabilities = td.func()
+  td.replace('../../../lib/net/peer/rlpxpeer.js', { RlpxPeer })
 
   class RLPx extends EventEmitter {
     listen(_: any, _2: any) {}
   }
-  RLPx.prototype.listen = td.func<any>()
+  RLPx.prototype.listen = td.func()
   class DPT extends EventEmitter {
     bind(_: any, _2: any) {}
     getDnsPeers() {}
   }
-  DPT.prototype.bind = td.func<any>()
-  DPT.prototype.getDnsPeers = td.func<any>()
+  DPT.prototype.bind = td.func()
+  DPT.prototype.getDnsPeers = td.func()
 
   td.replace('@ethereumjs/devp2p', { DPT, RLPx })
 
@@ -65,8 +65,8 @@ tape('[RlpxServer]', async (t) => {
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     })
-    ;(server as any).initDpt = td.func<typeof server['initDpt']>()
-    ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
+    ;(server as any).initDpt = td.func()
+    ;(server as any).initRlpx = td.func()
     server.dpt = td.object()
     server.rlpx = td.object()
     td.when(
@@ -96,10 +96,10 @@ tape('[RlpxServer]', async (t) => {
       config,
       dnsNetworks: ['enrtree:A'],
     })
-    ;(server as any).initDpt = td.func<typeof server['initDpt']>()
-    ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
+    ;(server as any).initDpt = td.func()
+    ;(server as any).initRlpx = td.func()
     server.rlpx = td.object()
-    server.dpt = td.object<typeof server['dpt']>()
+    server.dpt = td.object()
     td.when(server.dpt!.getDnsPeers()).thenResolve([dnsPeerInfo])
     await server.start()
     await server.bootstrap()
@@ -115,9 +115,9 @@ tape('[RlpxServer]', async (t) => {
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     })
-    ;(server as any).initDpt = td.func<typeof server['initDpt']>()
-    ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
-    server.dpt = td.object<typeof server['dpt']>()
+    ;(server as any).initDpt = td.func()
+    ;(server as any).initRlpx = td.func()
+    server.dpt = td.object()
     ;(server as any).rlpx = td.object({
       _id: mockId,
       destroy: td.func(),

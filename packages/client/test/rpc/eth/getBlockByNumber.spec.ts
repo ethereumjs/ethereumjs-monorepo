@@ -3,7 +3,7 @@ import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 
 const mockedTxData = {
   nonce: '0x',

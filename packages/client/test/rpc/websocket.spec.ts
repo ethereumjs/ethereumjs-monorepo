@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { encode, TAlgorithm } from 'jwt-simple'
+import jwt from 'jwt-simple'
 import { startRPC, closeRPC } from './helpers.js'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code.js'
 
@@ -13,7 +13,7 @@ const wsPort = 3000
 tape('call JSON-RPC auth protected server with valid token', (t) => {
   const server = startRPC({}, { wsServer: true }, { jwtSecret })
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-  const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+  const token = jwt.encode(claims, jwtSecret as never as string, 'HS256' as jwt.TAlgorithm)
   const req = {
     jsonrpc: '2.0',
     method: 'METHOD_DOES_NOT_EXIST',

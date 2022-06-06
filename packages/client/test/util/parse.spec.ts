@@ -86,8 +86,8 @@ tape('[Util/Parse]', (t) => {
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches'
     )
-    json.nonce = '00'
-    params = await parseCustomParams(json, 'poa')
+    poa.nonce = '00'
+    params = await parseCustomParams(poa, 'poa')
     t.equals(
       params.genesis.nonce,
       '0x0000000000000000',

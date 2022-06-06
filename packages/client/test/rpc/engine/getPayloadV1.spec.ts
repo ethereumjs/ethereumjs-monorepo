@@ -1,9 +1,9 @@
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { validPayload } from './forkchoiceUpdatedV1.spec'
+import { validPayload } from './forkchoiceUpdatedV1.spec.js'
 
 const method = 'engine_getPayloadV1'
 

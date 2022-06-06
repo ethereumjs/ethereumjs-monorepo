@@ -8,7 +8,7 @@ import { Event } from '../../../lib/types.js'
 import { wait } from '../../integration/util.js'
 
 tape('[Libp2pServer]', async (t) => {
-  const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
+  const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer.js')
   Libp2pPeer.id = 'id0'
 
   class Libp2pNode extends EventEmitter {
@@ -19,9 +19,9 @@ tape('[Libp2pServer]', async (t) => {
     connectionManager = new EventEmitter()
     addressManager = { getListenAddrs: () => ['ma0'] }
   }
-  Libp2pNode.prototype.handle = td.func<any>()
-  Libp2pNode.prototype.start = td.func<any>()
-  Libp2pNode.prototype.stop = td.func<any>()
+  Libp2pNode.prototype.handle = td.func()
+  Libp2pNode.prototype.start = td.func()
+  Libp2pNode.prototype.stop = td.func()
   td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
 
   const conn0 = 'conn0' as any
@@ -70,7 +70,7 @@ tape('[Libp2pServer]', async (t) => {
   t.test('should get peer info', async (t) => {
     const config = new Config({ transports: [] })
     const server = new Libp2pServer({ config })
-    const connection = td.object<any>()
+    const connection = td.object()
     connection.remotePeer = 'id0'
     t.equals(server.getPeerInfo(connection)[0], 'id0', 'got id')
     t.end()
@@ -100,15 +100,15 @@ tape('[Libp2pServer]', async (t) => {
       { name: 'proto', versions: [1] },
       { name: 'proto', versions: [2] },
     ]
-    const peer = td.object<any>()
+    const peer = td.object()
     const peer2 = td.object({ id: 'id2', bindProtocols: td.func() }) as any
     protos.forEach((p: any) => {
       p.open = td.func()
       td.when(p.open()).thenResolve(null)
     })
-    server.createPeer = td.func<typeof server['createPeer']>()
-    server.getPeerInfo = td.func<typeof server['getPeerInfo']>()
-    server.getPeerId = td.func<typeof server['getPeerId']>()
+    server.createPeer = td.func()
+    server.getPeerInfo = td.func()
+    server.getPeerId = td.func()
     const peerId = {
       toB58String() {
         return 'id'

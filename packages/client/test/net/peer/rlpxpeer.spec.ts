@@ -10,7 +10,7 @@ tape('[RlpxPeer]', async (t) => {
   class RLPx extends EventEmitter {
     connect(_: any) {}
   }
-  RLPx.prototype.connect = td.func<any>()
+  RLPx.prototype.connect = td.func()
   td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, RLPx })
   const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer.js')
 
@@ -71,7 +71,7 @@ tape('[RlpxPeer]', async (t) => {
     const config = new Config({ transports: [] })
     const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: td.func() } as any
-    ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
+    ;(peer as any).bindProtocols = td.func()
     peer.rlpxPeer = rlpxPeer
     td.when((peer as any).bindProtocols(rlpxPeer)).thenResolve(undefined)
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
@@ -89,7 +89,7 @@ tape('[RlpxPeer]', async (t) => {
     peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.emit('peer:added', rlpxPeer)
     peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
-    ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
+    ;(peer as any).bindProtocols = td.func()
     peer.rlpxPeer = rlpxPeer
     await peer.connect()
     td.when((peer as any).bindProtocols(rlpxPeer)).thenReject(new Error('err1'))
@@ -105,7 +105,7 @@ tape('[RlpxPeer]', async (t) => {
   t.test('should accept peer connection', async (t) => {
     const config = new Config({ transports: [] })
     const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
-    peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
+    peer.bindProtocols = td.func()
     td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve(null)
     await peer.accept('rlpxpeer' as any, 'server')
     t.equals(peer.server, 'server', 'server set')
@@ -118,7 +118,7 @@ tape('[RlpxPeer]', async (t) => {
     const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
     const proto0 = new (class Proto0 extends EventEmitter {})()
     const rlpxPeer = { getProtocols: td.func() } as any
-    ;(peer as any).bindProtocol = td.func<typeof peer['bindProtocol']>()
+    ;(peer as any).bindProtocol = td.func()
     td.when(rlpxPeer.getProtocols()).thenReturn([proto0])
     await (peer as any).bindProtocols(rlpxPeer)
     td.verify((peer as any).bindProtocol({ name: 'proto0' } as any, td.matchers.isA(RlpxSender)))

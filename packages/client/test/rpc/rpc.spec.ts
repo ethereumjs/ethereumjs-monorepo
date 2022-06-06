@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { encode, TAlgorithm } from 'jwt-simple'
+import jwt from 'jwt-simple'
 import { startRPC, closeRPC } from './helpers.js'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code.js'
 
@@ -56,7 +56,7 @@ tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) 
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-  const token = encode(claims, jwtSecret as never as string, 'HS512' as TAlgorithm)
+  const token = jwt.encode(claims, jwtSecret as never as string, 'HS512' as jwt.TAlgorithm)
 
   request(server)
     .post('/')
@@ -73,7 +73,7 @@ tape('call JSON-RPC auth protected server with a valid token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-  const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+  const token = jwt.encode(claims, jwtSecret as never as string, 'HS256' as jwt.TAlgorithm)
 
   request(server)
     .post('/')
@@ -90,7 +90,7 @@ tape('call JSON-RPC auth protected server with a valid but stale token', (t) => 
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000 - 6) }
-  const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+  const token = jwt.encode(claims, jwtSecret as never as string, 'HS256' as jwt.TAlgorithm)
 
   request(server)
     .post('/')
@@ -205,7 +205,7 @@ tape('call JSON-RPC auth protected server with protected method with token', (t)
     id: 1,
   }
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-  const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+  const token = jwt.encode(claims, jwtSecret as never as string, 'HS256' as jwt.TAlgorithm)
 
   request(server)
     .post('/')

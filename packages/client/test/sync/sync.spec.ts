@@ -22,8 +22,8 @@ tape('[Synchronizer]', async (t) => {
     open() {}
     close() {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
+  PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
 
   t.test('should sync', async (t) => {
     const config = new Config({ transports: [] })

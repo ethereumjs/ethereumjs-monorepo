@@ -2,10 +2,10 @@ import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code.js'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { checkError } from '../util.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import blocks from '../../testdata/blocks/beacon.json'
-import { batchBlocks } from './newPayloadV1.spec'
+import { batchBlocks } from './newPayloadV1.spec.js'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

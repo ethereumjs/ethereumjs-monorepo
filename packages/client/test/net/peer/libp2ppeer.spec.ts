@@ -11,7 +11,7 @@ tape('[Libp2pPeer]', async (t) => {
 
   const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
   td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
-  const Libp2pSender = td.replace('../../../lib/net/protocol/libp2psender')
+  const Libp2pSender = td.replace('../../../lib/net/protocol/libp2psender.js')
 
   td.when(Libp2pNode.prototype.start()).thenResolve(null)
   td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)
@@ -42,7 +42,7 @@ tape('[Libp2pPeer]', async (t) => {
   t.test('should accept peer connection', async (t) => {
     const config = new Config()
     const peer: any = new Libp2pPeer({ config })
-    peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
+    peer.bindProtocol = td.func()
     td.when(peer.bindProtocol('proto' as any, 'conn' as any)).thenResolve(null)
     await peer.accept('proto', 'conn', 'server')
     t.equals(peer.server, 'server', 'server set')
@@ -56,9 +56,9 @@ tape('[Libp2pPeer]', async (t) => {
     const badProto = { name: 'bad', versions: [1], open: () => {} } as Protocol
     const peer: any = new Libp2pPeer({ config, protocols: [protocol, badProto] })
     const node = new Libp2pNode() as any
-    peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
-    protocol.open = td.func<Protocol['open']>()
-    badProto.open = td.func<Protocol['open']>()
+    peer.bindProtocol = td.func()
+    protocol.open = td.func()
+    badProto.open = td.func()
     td.when(peer.bindProtocol(protocol, td.matchers.isA(Libp2pSender))).thenResolve(null)
     td.when(protocol.open()).thenResolve()
     td.when(node.dialProtocol(td.matchers.anything(), '/proto/1')).thenResolve(null)
