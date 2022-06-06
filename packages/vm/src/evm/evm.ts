@@ -430,6 +430,7 @@ export default class EVM extends AsyncEventEmitter {
     if (exit) {
       return {
         execResult: {
+          gasRefund: message.gasRefund,
           gasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
@@ -447,6 +448,7 @@ export default class EVM extends AsyncEventEmitter {
         message.data,
         message.gasLimit
       )
+      result.gasRefund = message.gasRefund
     } else {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
@@ -544,6 +546,7 @@ export default class EVM extends AsyncEventEmitter {
         createdAddress: message.to,
         execResult: {
           gasUsed: BigInt(0),
+          gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
@@ -679,6 +682,7 @@ export default class EVM extends AsyncEventEmitter {
       block: this._block ?? new Block(),
       contract: await this.eei.state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
+      gasRefund: message.gasRefund,
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
