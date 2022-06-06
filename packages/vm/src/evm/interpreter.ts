@@ -52,7 +52,6 @@ export interface Env {
   block: Block
   contract: Account
   codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
-  auth?: Address /** EIP-3074 AUTH parameter */
 }
 
 export interface RunState {
@@ -72,6 +71,7 @@ export interface RunState {
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
+  auth?: Address /** EIP-3074 AUTH parameter */
 }
 
 export interface InterpreterResult {
@@ -723,7 +723,7 @@ export default class Interpreter {
    */
   async authcall(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
     const msg = new Message({
-      caller: this._env.auth,
+      caller: this._runState.auth,
       gasLimit,
       to: address,
       value,
