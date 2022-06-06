@@ -72,6 +72,7 @@ export interface RunState {
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   auth?: Address /** EIP-3074 AUTH parameter */
+  returnBuffer: Buffer /* Current bytes in the return buffer. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
 export interface InterpreterResult {
@@ -111,10 +112,6 @@ export default class Interpreter {
   _evm: EVM
   _env: Env
 
-  // This buffer holds the last returned buffer. Each time a CALL* or CREATE* is done, this buffer is cleared/overwritten
-  // TODO: this should move into Env probably
-  _lastReturned: Buffer
-
   // Current gas left
   // TODO: should be moved into Env?
   _gasLeft: bigint
@@ -149,9 +146,9 @@ export default class Interpreter {
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: BigInt(0),
+      returnBuffer: Buffer.alloc(0),
     }
     this._env = env
-    this._lastReturned = Buffer.alloc(0)
     this._gasLeft = gasLeft
     this._result = {
       logs: [],
@@ -598,7 +595,7 @@ export default class Interpreter {
    * Note: create only fills the return data buffer in case of a failure.
    */
   getReturnDataSize(): bigint {
-    return BigInt(this._lastReturned.length)
+    return BigInt(this._runState.returnBuffer.length)
   }
 
   /**
@@ -607,7 +604,7 @@ export default class Interpreter {
    * Note: create only fills the return data buffer in case of a failure.
    */
   getReturnData(): Buffer {
-    return this._lastReturned
+    return this._runState.returnBuffer
   }
 
   /**
@@ -808,7 +805,7 @@ export default class Interpreter {
     msg.selfdestruct = selfdestruct
 
     // empty the return data buffer
-    this._lastReturned = Buffer.alloc(0)
+    this._runState.returnBuffer = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -833,7 +830,7 @@ export default class Interpreter {
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._lastReturned = results.execResult.returnValue
+      this._runState.returnBuffer = results.execResult.returnValue
     }
 
     if (!results.execResult.exceptionError) {
@@ -856,7 +853,7 @@ export default class Interpreter {
     const depth = this._env.depth + 1
 
     // empty the return data buffer
-    this._lastReturned = Buffer.alloc(0)
+    this._runState.returnBuffer = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -904,7 +901,7 @@ export default class Interpreter {
       results.execResult.exceptionError &&
       results.execResult.exceptionError.error === ERROR.REVERT
     ) {
-      this._lastReturned = results.execResult.returnValue
+      this._runState.returnBuffer = results.execResult.returnValue
     }
 
     if (
