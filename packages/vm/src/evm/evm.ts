@@ -694,7 +694,7 @@ export default class EVM extends AsyncEventEmitter {
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = interpreter._result
-    let gasUsed = message.gasLimit - interpreter._gasLeft
+    let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
     if (interpreterRes.exceptionError) {
       if (
         interpreterRes.exceptionError.error !== ERROR.REVERT &&
@@ -719,7 +719,7 @@ export default class EVM extends AsyncEventEmitter {
         ...interpreter._env,
       },
       exceptionError: interpreterRes.exceptionError,
-      gas: interpreter._gasLeft,
+      gas: interpreterRes.runState?.gasLeft,
       gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),

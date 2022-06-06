@@ -72,12 +72,13 @@ export interface RunState {
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
+  gasLeft: bigint // Current gas left
   auth?: Address /** EIP-3074 AUTH parameter */
   returnBuffer: Buffer /* Current bytes in the return buffer. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
 export interface InterpreterResult {
-  runState?: RunState
+  runState: RunState
   exceptionError?: VmError
 }
 
@@ -113,10 +114,6 @@ export default class Interpreter {
   _evm: EVM
   _env: Env
 
-  // Current gas left
-  // TODO: should be moved into Env?
-  _gasLeft: bigint
-
   // Keep track of this Interpreter run result
   // TODO move into Env?
   _result: RunResult
@@ -147,10 +144,10 @@ export default class Interpreter {
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
+      gasLeft,
       returnBuffer: Buffer.alloc(0),
     }
     this._env = env
-    this._gasLeft = gasLeft
     this._result = {
       logs: [],
       returnValue: undefined,
@@ -403,12 +400,12 @@ export default class Interpreter {
    * @throws if out of gas
    */
   useGas(amount: bigint, context?: string): void {
-    this._gasLeft -= amount
+    this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
+      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
-    if (this._gasLeft < BigInt(0)) {
-      this._gasLeft = BigInt(0)
+    if (this._runState.gasLeft < BigInt(0)) {
+      this._runState.gasLeft = BigInt(0)
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -451,9 +448,9 @@ export default class Interpreter {
    */
   addStipend(amount: bigint): void {
     if (this._evm.DEBUG) {
-      debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
+      debugGas(`add stipend ${amount} (-> ${this._runState.gasLeft})`)
     }
-    this._gasLeft += amount
+    this._runState.gasLeft += amount
   }
 
   /**
@@ -587,7 +584,7 @@ export default class Interpreter {
    * Returns the current gasCounter.
    */
   getGasLeft(): bigint {
-    return this._gasLeft
+    return this._runState.gasLeft
   }
 
   /**
