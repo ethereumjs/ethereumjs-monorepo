@@ -51,7 +51,8 @@ export interface Env {
   origin: Address
   block: Block
   contract: Account
-  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
+  codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
+  gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
 }
 
 export interface RunState {
@@ -145,7 +146,7 @@ export default class Interpreter {
       env: env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
-      gasRefund: BigInt(0),
+      gasRefund: env.gasRefund,
       returnBuffer: Buffer.alloc(0),
     }
     this._env = env
@@ -803,6 +804,7 @@ export default class Interpreter {
   async _baseCall(msg: Message): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     msg.selfdestruct = selfdestruct
+    msg.gasRefund = this._runState.gasRefund
 
     // empty the return data buffer
     this._runState.returnBuffer = Buffer.alloc(0)
@@ -838,7 +840,7 @@ export default class Interpreter {
       // update stateRoot on current contract
       const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
-      this._runState.gasRefund += results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
     }
 
     return this._getReturnCode(results)
@@ -885,6 +887,7 @@ export default class Interpreter {
       salt,
       depth,
       selfdestruct,
+      gasRefund: this._runState.gasRefund,
     })
 
     const results = await this._evm.runCall({ message })
@@ -912,7 +915,7 @@ export default class Interpreter {
       // update stateRoot on current contract
       const account = await this._eei.state.getAccount(this._env.address)
       this._env.contract = account
-      this._runState.gasRefund += results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
         // push the created address to the stack
         return bufferToBigInt(results.createdAddress.buf)

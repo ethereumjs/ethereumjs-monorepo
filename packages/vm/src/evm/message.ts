@@ -9,6 +9,7 @@ const defaults = {
   isStatic: false,
   isCompiled: false,
   delegatecall: false,
+  gasRefund: BigInt(0),
 }
 
 interface MessageOpts {
@@ -29,6 +30,7 @@ interface MessageOpts {
   selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
   delegatecall?: boolean
   authcallOrigin?: Address
+  gasRefund?: bigint
 }
 
 export default class Message {
@@ -54,6 +56,7 @@ export default class Message {
    * the purpose is to figure out where `value` should be taken from (not from `caller`)
    */
   authcallOrigin?: Address
+  gasRefund: bigint // Keeps track of the gasRefund at the start of the frame (used for journaling purposes)
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -70,6 +73,7 @@ export default class Message {
     this.selfdestruct = opts.selfdestruct
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
+    this.gasRefund = opts.gasRefund ?? defaults.gasRefund
 
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
