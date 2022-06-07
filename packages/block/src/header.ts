@@ -16,12 +16,12 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   toType,
   TypeOutput,
   zeros,
+  bigIntToBuffer,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
@@ -833,7 +833,11 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
+    const signatureB = Buffer.concat([
+      signature.r,
+      signature.s,
+      bigIntToBuffer(signature.v - BigInt(27)),
+    ])
 
     const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])

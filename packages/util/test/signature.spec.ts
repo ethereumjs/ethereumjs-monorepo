@@ -21,7 +21,7 @@ const ecprivkey = Buffer.from(
   '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1',
   'hex'
 )
-const chainId = 3 // ropsten
+const chainId = BigInt(3) // ropsten
 
 tape('ecsign', function (t) {
   t.test('should produce a signature', function (st) {
@@ -36,7 +36,7 @@ tape('ecsign', function (t) {
         Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
       )
     )
-    st.equal(sig.v, 27)
+    st.equal(sig.v, BigInt(27))
     st.end()
   })
 
@@ -52,7 +52,7 @@ tape('ecsign', function (t) {
         Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
       )
     )
-    st.equal(sig.v, 41)
+    st.equal(sig.v, BigInt(41))
     st.end()
   })
 
@@ -65,27 +65,12 @@ tape('ecsign', function (t) {
       '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
       'hex'
     )
-    const expectedSigV = Buffer.from('014f', 'hex')
 
-    const sig = ecsign(echash, ecprivkey, 150)
+    const sig = ecsign(echash, ecprivkey, BigInt(150))
     st.ok(sig.r.equals(expectedSigR))
     st.ok(sig.s.equals(expectedSigS))
-    st.equal(sig.v, 150 * 2 + 35)
+    st.equal(sig.v, BigInt(150 * 2 + 35))
 
-    let sigBuffer = ecsign(echash, ecprivkey, BigInt(150))
-    st.ok(sigBuffer.r.equals(expectedSigR))
-    st.ok(sigBuffer.s.equals(expectedSigS))
-    st.ok(sigBuffer.v.equals(expectedSigV))
-
-    sigBuffer = ecsign(echash, ecprivkey, Buffer.from([150]))
-    st.ok(sigBuffer.v.equals(expectedSigV))
-
-    sigBuffer = ecsign(echash, ecprivkey, '0x96')
-    st.ok(sigBuffer.v.equals(expectedSigV))
-
-    st.throws(function () {
-      ecsign(echash, ecprivkey, '96')
-    })
     st.end()
   })
 
@@ -101,25 +86,13 @@ tape('ecsign', function (t) {
         '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
         'hex'
       )
-      const expectedSigV = Buffer.from('f2ded8deec6713', 'hex')
+      const expectedSigV = BigInt('68361967398315795')
 
-      let sigBuffer = ecsign(echash, ecprivkey, bufferToBigInt(chainIDBuffer))
+      const sigBuffer = ecsign(echash, ecprivkey, bufferToBigInt(chainIDBuffer))
       st.ok(sigBuffer.r.equals(expectedSigR))
       st.ok(sigBuffer.s.equals(expectedSigS))
-      st.ok(sigBuffer.v.equals(expectedSigV))
+      st.equal(sigBuffer.v, expectedSigV)
 
-      sigBuffer = ecsign(echash, ecprivkey, chainIDBuffer)
-      st.ok(sigBuffer.v.equals(expectedSigV))
-
-      sigBuffer = ecsign(echash, ecprivkey, '0x' + chainIDBuffer.toString('hex'))
-      st.ok(sigBuffer.v.equals(expectedSigV))
-
-      const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-      st.throws(() => {
-        // If we would use a number for the `chainId` parameter then it should throw.
-        // (The numbers are too high to perform arithmetic on)
-        ecsign(echash, ecprivkey, chainIDNumber)
-      })
       st.end()
     }
   )
@@ -375,7 +348,7 @@ tape('message sig', function (t) {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
     st.equal(toRpcSig(27, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: 27,
+      v: BigInt(27),
       r,
       s,
     })
@@ -387,7 +360,7 @@ tape('message sig', function (t) {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(27, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: 27,
+      v: BigInt(27),
       r,
       s,
     })
@@ -399,7 +372,7 @@ tape('message sig', function (t) {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(28, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: 28,
+      v: BigInt(28),
       r,
       s,
     })
@@ -424,7 +397,7 @@ tape('message sig', function (t) {
       sig
     )
     st.deepEqual(fromRpcSig(sig), {
-      v,
+      v: BigInt(v),
       r,
       s,
     })
