@@ -1052,7 +1052,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let recover
       try {
-        recover = ecrecover(msgHash, Number(yParity) + 27, r, s)
+        recover = ecrecover(msgHash, yParity + BigInt(27), r, s)
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BigInt(0))
