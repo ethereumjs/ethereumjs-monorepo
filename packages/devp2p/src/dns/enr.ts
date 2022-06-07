@@ -1,12 +1,12 @@
 import * as base32 from 'hi-base32'
 import { sscanf } from 'scanf'
-import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
 import base64url from 'base64url'
 import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { PeerInfo } from '../dpt'
 import { toNewUint8Array, keccak256 } from '../util'
+import { verify } from 'ethereum-cryptography/secp256k1'
 
 const Convert = require('multiaddr/src/convert')
 
@@ -64,7 +64,7 @@ export class ENR {
     }
 
     // Validate sig
-    const isVerified = ecdsaVerify(
+    const isVerified = verify(
       signature,
       keccak256(Buffer.from(RLP.encode(bufArrToArr([seq, ...kvs])))),
       obj.secp256k1
@@ -119,7 +119,7 @@ export class ENR {
     const signatureBuffer = base64url.toBuffer(rootVals.signature).slice(0, 64)
     const keyBuffer = Buffer.from(decodedPublicKey)
 
-    const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
+    const isVerified = verify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 

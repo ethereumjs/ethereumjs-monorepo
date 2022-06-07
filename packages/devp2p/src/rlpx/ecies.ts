@@ -1,6 +1,6 @@
 import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { unstrictDecode } from '../util'
@@ -17,6 +17,8 @@ import {
   buffer2int,
   zfill,
 } from '../util'
+import { ecdh } from 'secp256k1'
+import { ecdsaSign, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
@@ -80,7 +82,7 @@ export class ECIES {
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = Buffer.from(publicKeyCreate(this._ephemeralPrivateKey, false))
+    this._ephemeralPublicKey = Buffer.from(getPublicKey(this._ephemeralPrivateKey, false))
   }
 
   _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
@@ -106,7 +108,7 @@ export class ECIES {
       .update(Buffer.concat([dataIV, sharedMacData]))
       .digest()
 
-    const publicKey = publicKeyCreate(privateKey, false)
+    const publicKey = getPublicKey(privateKey, false)
     return Buffer.concat([publicKey, dataIV, tag])
   }
 
