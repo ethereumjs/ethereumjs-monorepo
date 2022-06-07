@@ -347,7 +347,7 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract toJSON(): JsonTx
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
+  protected abstract _processSignature(v: bigint, r: Buffer, s: Buffer): TransactionObject
 
   /**
    * Does chain ID checks on common and returns a common
