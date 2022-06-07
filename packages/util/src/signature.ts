@@ -113,7 +113,9 @@ export const toCompactSig = function (
 
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
- * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
+ *
+ * NOTE: For an extracted `v` value < 27 (see Geth bug https://github.com/ethereum/go-ethereum/issues/2053)
+ * `v + 27` is returned for the `v` value
  */
 export const fromRpcSig = function (sig: string): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
