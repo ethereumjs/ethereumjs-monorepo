@@ -3,7 +3,6 @@ import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt, bufferToBigInt } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
-import { BigIntLike, toType, TypeOutput } from './types'
 
 export interface ECDSASignature {
   v: bigint
@@ -32,18 +31,15 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   return { r, s, v }
 }
 
-function calculateSigRecovery(v: BigIntLike, chainId?: BigIntLike): bigint {
-  const vBigInt = bufferToBigInt(toBuffer(v))
-  if (!chainId) {
-    return vBigInt - BigInt(27)
+function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (chainId === undefined) {
+    return v - BigInt(27)
   }
-  const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
-  return vBigInt - (chainIdBigInt * BigInt(2) + BigInt(35))
+  return v - (chainId * BigInt(2) + BigInt(35))
 }
 
-function isValidSigRecovery(recovery: number | bigint): boolean {
-  const rec = BigInt(recovery)
-  return rec === BigInt(0) || rec === BigInt(1)
+function isValidSigRecovery(recovery: bigint): boolean {
+  return recovery === BigInt(0) || recovery === BigInt(1)
 }
 
 /**
@@ -52,10 +48,10 @@ function isValidSigRecovery(recovery: number | bigint): boolean {
  */
 export const ecrecover = function (
   msgHash: Buffer,
-  v: BigIntLike,
+  v: bigint,
   r: Buffer,
   s: Buffer,
-  chainId?: BigIntLike
+  chainId?: bigint
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
@@ -71,12 +67,7 @@ export const ecrecover = function (
  * Convert signature parameters into the format of `eth_sign` RPC method.
  * @returns Signature
  */
-export const toRpcSig = function (
-  v: BigIntLike,
-  r: Buffer,
-  s: Buffer,
-  chainId?: BigIntLike
-): string {
+export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -90,20 +81,14 @@ export const toRpcSig = function (
  * Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
  * @returns Signature
  */
-export const toCompactSig = function (
-  v: BigIntLike,
-  r: Buffer,
-  s: Buffer,
-  chainId?: BigIntLike
-): string {
+export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
 
-  const vn = toType(v, TypeOutput.Number)
   let ss = s
-  if ((vn > 28 && vn % 2 === 1) || vn === 1 || vn === 28) {
+  if ((v > BigInt(28) && v % BigInt(2) === BigInt(1)) || v === BigInt(1) || v === BigInt(28)) {
     ss = Buffer.from(s)
     ss[0] |= 0x80
   }
@@ -154,11 +139,11 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function (
-  v: BigIntLike,
+  v: bigint,
   r: Buffer,
   s: Buffer,
   homesteadOrLater: boolean = true,
-  chainId?: BigIntLike
+  chainId?: bigint
 ): boolean {
   if (r.length !== 32 || s.length !== 32) {
     return false

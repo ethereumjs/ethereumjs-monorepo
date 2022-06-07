@@ -8,7 +8,6 @@ import {
   fromRpcSig,
   toRpcSig,
   toCompactSig,
-  intToBuffer,
   bufferToBigInt,
   bigIntToBuffer,
 } from '../src'
@@ -102,7 +101,7 @@ tape('ecrecover', function (t) {
   t.test('should recover a public key', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 27
+    const v = BigInt(27)
     const pubkey = ecrecover(echash, v, r, s)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
@@ -110,16 +109,16 @@ tape('ecrecover', function (t) {
   t.test('should recover a public key (chainId = 3)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 41
+    const v = BigInt(41)
     const pubkey = ecrecover(echash, v, r, s, chainId)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
   t.test('should recover a public key (chainId = 150)', function (st) {
-    const chainId = 150
+    const chainId = BigInt(150)
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = chainId * 2 + 35
+    const v = BigInt(chainId * BigInt(2) + BigInt(35))
     const pubkey = ecrecover(echash, v, r, s, chainId)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
@@ -128,7 +127,7 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.throws(function () {
-      ecrecover(echash, 21, r, s)
+      ecrecover(echash, BigInt(21), r, s)
     })
     st.end()
   })
@@ -136,7 +135,7 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.throws(function () {
-      ecrecover(echash, 29, r, s)
+      ecrecover(echash, BigInt(29), r, s)
     })
     st.end()
   })
@@ -144,7 +143,7 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.throws(function () {
-      ecrecover(echash, 27, s, r)
+      ecrecover(echash, BigInt(27), s, r)
     })
     st.end()
   })
@@ -175,35 +174,10 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
 
-    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
-    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-    let sender = ecrecover(msgHash, vBuffer, r, s, chainIDBuffer)
+    const v = BigInt('68361967398315796')
+    const chainID = BigInt('34180983699157880')
+    const sender = ecrecover(msgHash, v, r, s, chainID)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
-
-    const vBigInt = bufferToBigInt(vBuffer)
-    const chainIDBigInt = bufferToBigInt(chainIDBuffer)
-    sender = ecrecover(msgHash, vBigInt, r, s, chainIDBigInt)
-    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BigInt)')
-
-    const vHexString = '0xf2ded8deec6714'
-    const chainIDHexString = '0x796f6c6f763378'
-    sender = ecrecover(msgHash, vHexString, r, s, chainIDHexString)
-    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
-
-    st.throws(function () {
-      ecrecover(msgHash, 'f2ded8deec6714', r, s, chainIDHexString)
-    })
-    st.throws(function () {
-      ecrecover(msgHash, vHexString, r, s, '796f6c6f763378')
-    })
-
-    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-    const vNumber = parseInt(vBuffer.toString('hex'), 16)
-    st.throws(() => {
-      // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
-      // (The numbers are too high to perform arithmetic on)
-      ecrecover(msgHash, vNumber, r, s, chainIDNumber)
-    })
     st.end()
   })
 })
@@ -232,25 +206,25 @@ tape('isValidSignature', function (t) {
   t.test('should fail on an invalid signature (shorter r))', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.notOk(isValidSignature(27, r, s))
+    st.notOk(isValidSignature(BigInt(27), r, s))
     st.end()
   })
   t.test('should fail on an invalid signature (shorter s))', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca', 'hex')
-    st.notOk(isValidSignature(27, r, s))
+    st.notOk(isValidSignature(BigInt(27), r, s))
     st.end()
   })
   t.test('should fail on an invalid signature (v = 21)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.notOk(isValidSignature(21, r, s))
+    st.notOk(isValidSignature(BigInt(21), r, s))
     st.end()
   })
   t.test('should fail on an invalid signature (v = 29)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.notOk(isValidSignature(29, r, s))
+    st.notOk(isValidSignature(BigInt(29), r, s))
     st.end()
   })
   t.test('should fail when on homestead and s > secp256k1n/2', function (st) {
@@ -261,7 +235,7 @@ tape('isValidSignature', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
 
-    const v = 27
+    const v = BigInt(27)
     st.notOk(isValidSignature(v, r, s, true))
     st.end()
   })
@@ -272,71 +246,32 @@ tape('isValidSignature', function (t) {
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
-    const v = 27
+    const v = BigInt(27)
     st.ok(isValidSignature(v, r, s, false))
     st.end()
   })
   t.test('should work otherwise', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 27
+    const v = BigInt(27)
     st.ok(isValidSignature(v, r, s))
     st.end()
   })
   t.test('should work otherwise (chainId=3)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 41
+    const v = BigInt(41)
     st.ok(isValidSignature(v, r, s, false, chainId))
     st.end()
   })
   t.test('should work otherwise (chainId=150)', function (st) {
-    const chainId = 150
+    const chainId = BigInt(150)
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = chainId * 2 + 35
+    const v = BigInt(chainId * BigInt(2) + BigInt(35))
     st.ok(isValidSignature(v, r, s, false, chainId))
-    st.ok(isValidSignature(intToBuffer(v), r, s, false, intToBuffer(chainId)))
-    st.ok(isValidSignature(BigInt(v), r, s, false, BigInt(chainId)))
-    st.ok(
-      isValidSignature(
-        '0x' + intToBuffer(v).toString('hex'),
-        r,
-        s,
-        false,
-        '0x' + intToBuffer(chainId).toString('hex')
-      )
-    )
     st.end()
   })
-  t.test('should work otherwise (chainId larger than MAX_INTEGER)', function (st) {
-    const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
-    const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
-
-    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
-    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-    st.ok(isValidSignature(vBuffer, r, s, false, chainIDBuffer))
-    st.ok(isValidSignature(bufferToBigInt(vBuffer), r, s, false, bufferToBigInt(chainIDBuffer)))
-    st.ok(
-      isValidSignature(
-        '0x' + vBuffer.toString('hex'),
-        r,
-        s,
-        false,
-        '0x' + chainIDBuffer.toString('hex')
-      )
-    )
-
-    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-    const vNumber = parseInt(vBuffer.toString('hex'), 16)
-    st.throws(() => {
-      // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
-      // (The numbers are too high to perform arithmetic on)
-      isValidSignature(vNumber, r, s, false, chainIDNumber)
-    })
-    st.end()
-  })
-  // FIXME: add homestead test
 })
 
 tape('message sig', function (t) {
@@ -346,7 +281,7 @@ tape('message sig', function (t) {
   t.test('should return hex strings that the RPC can use', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    st.equal(toRpcSig(27, r, s), sig)
+    st.equal(toRpcSig(BigInt(27), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(27),
       r,
@@ -358,7 +293,7 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation (EIP-2098)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(27, r, s), sig)
+    st.equal(toCompactSig(BigInt(27), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(27),
       r,
@@ -370,7 +305,7 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation 2 (EIP-2098)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(28, r, s), sig)
+    st.equal(toCompactSig(BigInt(28), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(28),
       r,
@@ -382,22 +317,11 @@ tape('message sig', function (t) {
   t.test('should return hex strings that the RPC can use (chainId=150)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
-    const chainId = 150
-    const v = chainId * 2 + 35
+    const chainId = BigInt(150)
+    const v = chainId * BigInt(2) + BigInt(35)
     st.equal(toRpcSig(v, r, s, chainId), sig)
-    st.equal(toRpcSig(intToBuffer(v), r, s, intToBuffer(chainId)), sig)
-    st.equal(toRpcSig(BigInt(v), r, s, BigInt(chainId)), sig)
-    st.equal(
-      toRpcSig(
-        '0x' + intToBuffer(v).toString('hex'),
-        r,
-        s,
-        '0x' + intToBuffer(chainId).toString('hex')
-      ),
-      sig
-    )
     st.deepEqual(fromRpcSig(sig), {
-      v: BigInt(v),
+      v,
       r,
       s,
     })
@@ -409,20 +333,9 @@ tape('message sig', function (t) {
     function (st) {
       const sig =
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
-      const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-      const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
-      st.equal(toRpcSig(vBuffer, r, s, chainIDBuffer), sig)
-      st.equal(toRpcSig(bufferToBigInt(vBuffer), r, s, bufferToBigInt(chainIDBuffer)), sig)
-      st.equal(
-        toRpcSig('0x' + vBuffer.toString('hex'), r, s, '0x' + chainIDBuffer.toString('hex')),
-        sig
-      )
-
-      const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-      const vNumber = parseInt(vBuffer.toString('hex'), 16)
-      st.throws(function () {
-        toRpcSig(vNumber, r, s, chainIDNumber)
-      })
+      const chainID = BigInt('34180983699157880')
+      const v = BigInt('68361967398315796')
+      st.equal(toRpcSig(v, r, s, chainID), sig)
       st.end()
     }
   )
@@ -441,7 +354,7 @@ tape('message sig', function (t) {
 
   t.test('pad short r and s values', function (st) {
     st.equal(
-      toRpcSig(27, r.slice(20), s.slice(20)),
+      toRpcSig(BigInt(27), r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b'
     )
     st.end()
@@ -449,7 +362,7 @@ tape('message sig', function (t) {
 
   t.test('should throw on invalid v value', function (st) {
     st.throws(function () {
-      toRpcSig(1, r, s)
+      toRpcSig(BigInt(1), r, s)
     })
     st.end()
   })
