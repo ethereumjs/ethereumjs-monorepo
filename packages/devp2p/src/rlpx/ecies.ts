@@ -17,8 +17,7 @@ import {
   buffer2int,
   zfill,
 } from '../util'
-import { ecdh } from 'secp256k1'
-import { ecdsaSign, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat'
+import { ecdsaSign, ecdsaRecover, ecdh } from 'ethereum-cryptography/secp256k1-compat'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
@@ -28,10 +27,9 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
     const pubKey = new Uint8Array(33)
     pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
     pubKey.set(x, 1)
-    return pubKey
+    return pubKey.slice(1)
   }
-  // @ts-ignore
-  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(33)).slice(1))
+  return Buffer.from(ecdh(publicKey, privateKey, { hashfn: hashfn }, Buffer.alloc(32)))
 }
 
 // a straigth rip from python interop w/go ecies implementation
