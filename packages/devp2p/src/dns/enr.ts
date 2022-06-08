@@ -1,12 +1,12 @@
 import * as base32 from 'hi-base32'
 import { sscanf } from 'scanf'
-import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
 import base64url from 'base64url'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { PeerInfo } from '../dpt'
 import { toNewUint8Array, keccak256 } from '../util'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 
 const Convert = require('multiaddr/src/convert')
 
