@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
 import { rlp } from 'ethereumjs-util'
-import secp256k1 from 'secp256k1'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
 import { PeerInfo } from './dpt'
 
@@ -172,7 +172,7 @@ export function encode<T>(typename: string, data: T, privateKey: Buffer) {
   const typedata = Buffer.concat([Buffer.from([type]), rlp.encode(encodedMsg)])
 
   const sighash = keccak256(typedata)
-  const sig = secp256k1.ecdsaSign(sighash, privateKey)
+  const sig = ecdsaSign(sighash, privateKey)
   const hashdata = Buffer.concat([Buffer.from(sig.signature), Buffer.from([sig.recid]), typedata])
   const hash = keccak256(hashdata)
   return Buffer.concat([hash, hashdata])
@@ -191,7 +191,7 @@ export function decode(buffer: Buffer) {
   const sighash = keccak256(typedata)
   const signature = buffer.slice(32, 96)
   const recoverId = buffer[96]
-  const publicKey = Buffer.from(secp256k1.ecdsaRecover(signature, recoverId, sighash, false))
+  const publicKey = Buffer.from(ecdsaRecover(signature, recoverId, sighash, false))
 
   return { typename, data, publicKey }
 }
