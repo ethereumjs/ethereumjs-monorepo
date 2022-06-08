@@ -59,7 +59,6 @@
     "ms": "^0.7.1",
     "multiaddr": "^10.0.1",
     "scanf": "^1.1.2",
-    "secp256k1": "^4.0.2",
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
@@ -71,7 +70,6 @@
     "@types/keccak": "^3.0.1",
     "@types/ms": "^0.7.30",
     "@types/node": "^16.11.7",
-    "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",
     "chalk": "^2.4.2",
     "eslint": "^6.8.0",
