@@ -419,7 +419,7 @@ tape('EIP-3074 AUTH', (t) => {
 
 // Setups the environment for the VM, puts `code` at contractAddress and also puts the STORECALLER bytecode at the contractStorageAddress
 async function setupVM(code: Buffer) {
-  const vm = await VM.create({ common })
+  const vm = await VM.create({ common: common.copy() })
   await vm.stateManager.putContractCode(contractAddress, code)
   await vm.stateManager.putContractCode(contractStorageAddress, STORECALLER)
   const account = await vm.stateManager.getAccount(callerAddress)
