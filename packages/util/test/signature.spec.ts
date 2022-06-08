@@ -126,7 +126,7 @@ tape('ecrecover', function (t) {
   t.test('should recover a public key (v = 0)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 0
+    const v = BigInt(0)
     const pubkey = ecrecover(echash, v, r, s)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
@@ -268,14 +268,14 @@ tape('isValidSignature', function (t) {
   t.test('should work otherwise (v=0)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 0
+    const v = BigInt(0)
     st.ok(isValidSignature(v, r, s))
     st.end()
   })
   t.test('should work otherwise (v=1)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    const v = 1
+    const v = BigInt(1)
     st.ok(isValidSignature(v, r, s))
     st.end()
   })
@@ -327,9 +327,9 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation (EIP-2098) (v=0)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(0, r, s), sig)
+    st.equal(toCompactSig(BigInt(0), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: 27,
+      v: BigInt(27),
       r,
       s,
     })
@@ -351,9 +351,9 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation 2 (EIP-2098) (v=1)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(1, r, s), sig)
+    st.equal(toCompactSig(BigInt(1), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: 28,
+      v: BigInt(28),
       r,
       s,
     })
