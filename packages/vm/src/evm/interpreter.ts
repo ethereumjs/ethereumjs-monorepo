@@ -107,11 +107,11 @@ export interface InterpreterStep {
  * Parses and executes EVM bytecode.
  */
 export default class Interpreter {
-  _vm: any
-  _runState: RunState
-  _eei: EEI
-  _common: Common
-  _evm: EVM
+  protected _vm: any
+  protected _runState: RunState
+  protected _eei: EEI
+  protected _common: Common
+  protected _evm: EVM
   _env: Env
 
   // Keep track of this Interpreter run result
