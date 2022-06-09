@@ -18,8 +18,7 @@
     "src"
   ],
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "module": "dist/index.es.js",
   "scripts": {
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
@@ -41,6 +40,8 @@
     "rlp": "^3.0.0"
   },
   "devDependencies": {
+    "rollup": "^2.75.6",
+    "rollup-plugin-typescript2": "^0.32.1",
     "@types/bn.js": "^5.1.0",
     "@types/node": "^16.11.7",
     "@types/secp256k1": "^4.0.1",

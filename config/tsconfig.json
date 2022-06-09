@@ -2,7 +2,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "declaration": true,
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
