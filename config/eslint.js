@@ -13,6 +13,7 @@ module.exports = {
     'prettier.config.js',
     'typedoc.js',
     'karma.conf.js',
+    'rollup.config.js'
   ],
   extends: ['typestrict', 'eslint:recommended'],
   rules: {
