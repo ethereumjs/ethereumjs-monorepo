@@ -45,7 +45,7 @@ export class PendingBlock {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vm.vmState.setStateRoot(parentBlock.header.stateRoot)
+    await vm.eei.state.setStateRoot(parentBlock.header.stateRoot)
 
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
