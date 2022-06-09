@@ -9,7 +9,10 @@ module.exports = function(config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/
       },
-      tsconfig: './tsconfig.json'
+      tsconfig: './tsconfig.json'   ,
+      compilerOptions: {
+        module: 'commonjs'
+      }
     },
     colors: true,
     reporters: ['progress', 'karma-typescript'],
