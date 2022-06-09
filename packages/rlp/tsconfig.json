@@ -2,6 +2,6 @@
   "extends": "../../config/tsconfig.json",
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "compilerOptions": {
-    "target": "es2020"
+    "module": "ESNext"
   }
 }

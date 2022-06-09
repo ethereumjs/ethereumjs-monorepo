@@ -18,7 +18,7 @@
     "rlp": "bin/rlp"
   },
   "scripts": {
-    "build": "../../config/cli/ts-build.sh node",
+    "build": "rollup -c",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",

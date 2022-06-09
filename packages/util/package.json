@@ -20,7 +20,7 @@
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "scripts": {
-    "build": "npm run build:node && npm run build:browser",
+    "build": "rollup -c",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
     "prepublishOnly": "../../config/cli/prepublish.sh",
