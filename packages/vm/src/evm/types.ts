@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Account, Address } from '@ethereumjs/util'
-import EVM from './evm'
+import EVM, { NewContractEvent } from './evm'
+import { InterpreterStep } from './interpreter'
 import Message from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
@@ -291,4 +292,11 @@ type EVMResult = {
 
 export interface EVMInterface {
   runMessage(environment: EVMEnvironment): Promise<EVMResult>
+}
+
+export type EVMEvents = {
+  newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
+  beforeMessage: (data: Message, resolve?: (result: any) => void) => void
+  afterTx: (data: EVMResult, resolve?: (result: any) => void) => void
+  step: (data: InterpreterStep, resolve?: (result: any) => void) => void
 }
