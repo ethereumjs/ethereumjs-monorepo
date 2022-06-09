@@ -6,10 +6,11 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import EVM from './evm/evm'
-const AsyncEventEmitter = require('async-eventemitter')
+import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { getActivePrecompiles } from './evm/precompiles'
 import EEI from './eei/eei'
+import { VMEvents } from './types'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -125,7 +126,7 @@ export interface VMOpts {
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export default class VM extends AsyncEventEmitter {
+export default class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The StateManager used by the VM
    */
@@ -245,7 +246,7 @@ export default class VM extends AsyncEventEmitter {
     if (opts.eei) {
       this.eei = opts.eei
     } else {
-      this.eei = new EEI(this.stateManager, this._common, new TransientStorage(), this.blockchain)
+      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
     }
 
     // TODO tests
@@ -275,7 +276,7 @@ export default class VM extends AsyncEventEmitter {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
   }
 
   async init(): Promise<void> {
