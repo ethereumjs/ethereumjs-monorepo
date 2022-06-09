@@ -3,7 +3,7 @@ import { promisify } from 'util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-const AsyncEventEmitter = require('async-eventemitter')
+import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import {
   Account,
@@ -26,6 +26,7 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import { TransientStorage } from '../state'
 import {
   CustomOpcode,
+  EVMEvents,
   /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
@@ -232,7 +233,7 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM extends AsyncEventEmitter {
+export default class EVM extends AsyncEventEmitter<EVMEvents> {
   _tx?: TxContext
   _block?: Block
   /**
@@ -355,7 +356,7 @@ export default class EVM extends AsyncEventEmitter {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
   }
 
   async init(): Promise<void> {

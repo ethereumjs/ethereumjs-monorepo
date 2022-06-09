@@ -48,14 +48,9 @@ export default class EEI {
   _transientStorage: TransientStorage
   _blockchain: Blockchain
 
-  constructor(
-    stateManager: StateManager,
-    common: Common,
-    transientStorage: TransientStorage,
-    blockchain: Blockchain
-  ) {
+  constructor(stateManager: StateManager, common: Common, blockchain: Blockchain) {
     this._common = common
-    this._transientStorage = transientStorage
+    this._transientStorage = new TransientStorage()
     this._blockchain = blockchain
     this.state = new VmState({ common, stateManager })
   }
