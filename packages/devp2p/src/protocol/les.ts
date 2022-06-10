@@ -1,4 +1,4 @@
-import { arrToBufArr, bigIntToBuffer, bufArrToArr } from 'ethereumjs-util'
+import { arrToBufArr, bigIntToBuffer, bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import ms from 'ms'
 import snappy from 'snappyjs'

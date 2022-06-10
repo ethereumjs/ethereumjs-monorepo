@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
-import { bufferToBigInt } from 'ethereumjs-util'
+import { bufferToBigInt } from '@ethereumjs/util'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {

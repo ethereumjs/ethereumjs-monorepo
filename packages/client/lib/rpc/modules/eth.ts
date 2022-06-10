@@ -18,7 +18,7 @@ import {
   setLengthLeft,
   toType,
   TypeOutput,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'

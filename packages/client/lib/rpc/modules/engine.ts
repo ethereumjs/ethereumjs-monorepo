@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { bufferToHex, toBuffer, zeros } from 'ethereumjs-util'
+import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'

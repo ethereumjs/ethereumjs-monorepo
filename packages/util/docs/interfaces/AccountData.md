@@ -1,4 +1,4 @@
-[ethereumjs-util](../README.md) / AccountData
+[@ethereumjs/util](../README.md) / AccountData
 
 # Interface: AccountData
 
@@ -15,7 +15,7 @@
 
 ### balance
 
-• `Optional` **balance**: [`BNLike`](../README.md#bnlike)
+• `Optional` **balance**: [`BigIntLike`](../README.md#bnlike)
 
 #### Defined in
 

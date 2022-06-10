@@ -1,6 +1,6 @@
-ethereumjs-util
+@ethereumjs/util
 
-# ethereumjs-util
+# @ethereumjs/util
 
 ## Table of contents
 

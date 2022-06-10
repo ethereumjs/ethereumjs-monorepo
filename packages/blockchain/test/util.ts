@@ -1,4 +1,4 @@
-import { bufArrToArr, toBuffer } from 'ethereumjs-util'
+import { bufArrToArr, toBuffer } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'

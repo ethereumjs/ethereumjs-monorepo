@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
+import { Account, Address, MAX_UINT64, bufferToBigInt } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'

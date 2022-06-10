@@ -6,7 +6,7 @@ import {
   bufArrToArr,
   bufferToBigInt,
   setLengthLeft,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import {
   params,

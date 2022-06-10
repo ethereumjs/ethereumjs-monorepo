@@ -14,7 +14,7 @@ import {
   bufferToBigInt,
   bufferToInt,
   intToBuffer,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'

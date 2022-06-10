@@ -9,7 +9,7 @@ import {
   KECCAK256_RLP_S,
   unpadBuffer,
   zeros,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../src'
 import { createAccount } from './util'

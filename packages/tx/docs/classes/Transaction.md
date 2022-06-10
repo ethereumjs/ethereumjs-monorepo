@@ -339,9 +339,9 @@ Note: the raw message message format for the legacy tx is not RLP encoded
 and you might need to do yourself with:
 
 ```javascript
-import { rlp } from 'ethereumjs-util'
+import RLP from 'rlp'
 const message = tx.getMessageToSign(false)
-const serializedMessage = rlp.encode(message) // use this for the HW wallet input
+const serializedMessage = RLP.encode(message) // use this for the HW wallet input
 ```
 
 #### Parameters

@@ -11,7 +11,7 @@ import {
   bufferToHex,
   bufferToBigInt,
   SECP256K1_ORDER_DIV_2,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import {
   TxData,
   JsonTx,

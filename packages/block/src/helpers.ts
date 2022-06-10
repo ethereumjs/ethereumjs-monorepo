@@ -1,4 +1,4 @@
-import { isHexString } from 'ethereumjs-util'
+import { isHexString } from '@ethereumjs/util'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.

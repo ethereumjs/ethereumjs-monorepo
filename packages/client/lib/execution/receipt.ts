@@ -9,7 +9,7 @@ import {
   bufferToBigInt,
   bufferToInt,
   intToBuffer,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import { MetaDBManager, DBKey } from '../util/metaDBManager'
 import type { Block } from '@ethereumjs/block'

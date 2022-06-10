@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'

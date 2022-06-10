@@ -5,7 +5,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
-import { bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {

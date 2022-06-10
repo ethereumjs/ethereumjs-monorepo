@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { bufferToHex, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {

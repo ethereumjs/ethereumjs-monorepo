@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 import { CheckpointTrie } from '../src'
 import { MemoryDB, LevelDB } from '../src/db'
 

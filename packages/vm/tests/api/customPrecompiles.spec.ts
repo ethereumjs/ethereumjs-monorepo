@@ -1,6 +1,6 @@
 import tape from 'tape'
 import VM from '../../src'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import { PrecompileInput } from '../../src/evm/precompiles'
 import EVM, { ExecResult } from '../../src/evm/evm'
 

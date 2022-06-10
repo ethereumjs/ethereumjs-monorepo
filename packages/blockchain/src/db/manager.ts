@@ -1,4 +1,4 @@
-import { arrToBufArr, bufferToBigInt } from 'ethereumjs-util'
+import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'

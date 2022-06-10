@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import EVM from './evm'
 import Message from './message'
 import { OpHandler } from './opcodes'

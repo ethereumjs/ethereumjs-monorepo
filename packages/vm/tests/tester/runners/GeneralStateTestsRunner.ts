@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
 

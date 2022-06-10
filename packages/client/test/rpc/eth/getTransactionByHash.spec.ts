@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { bufferToHex } from 'ethereumjs-util'
+import { bufferToHex } from '@ethereumjs/util'
 import {
   params,
   baseRequest,

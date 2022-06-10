@@ -46,14 +46,13 @@ See the following example on how to use the new `Miner` class:
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 const level = require('level-mem')
 
 const cacheDB = level()
 const block = Block.fromBlockData({
   header: {
-    difficulty: new BN(100),
-    number: new BN(1),
+    difficulty: BigInt(100),
+    number: BigInt(1),
   },
 })
 

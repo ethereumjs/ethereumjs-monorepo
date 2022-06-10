@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { bufArrToArr, KECCAK256_NULL } from 'ethereumjs-util'
+import { bufArrToArr, KECCAK256_NULL } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { BaseTrie, CheckpointTrie } from '../src'
 

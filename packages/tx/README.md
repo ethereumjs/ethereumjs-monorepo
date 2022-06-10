@@ -266,7 +266,7 @@ Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 ```typescript
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Common, { Chain } from '@ethereumjs/common'
-import { bufArrToArr } from 'ethereumjs-util'
+import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
@@ -306,10 +306,10 @@ run()
 
 ### Fake Transaction
 
-Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
+Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) like so:
 
 ```typescript
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import { Transaction } from '@ethereumjs/tx'
 
 _getFakeTransaction(txParams: TxParams): Transaction {

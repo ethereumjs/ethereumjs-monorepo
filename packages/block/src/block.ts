@@ -1,6 +1,6 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from '@ethereumjs/util'
 import RLP from 'rlp'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {

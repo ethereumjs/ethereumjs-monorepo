@@ -1,4 +1,4 @@
-[ethereumjs-util](../README.md) / TypeOutput
+[@ethereumjs/util](../README.md) / TypeOutput
 
 # Enumeration: TypeOutput
 
@@ -8,22 +8,11 @@ Type output options
 
 ### Enumeration Members
 
-- [BN](TypeOutput.md#bn)
 - [Buffer](TypeOutput.md#buffer)
 - [Number](TypeOutput.md#number)
 - [PrefixedHexString](TypeOutput.md#prefixedhexstring)
 
 ## Enumeration Members
-
-### BN
-
-• **BN**
-
-#### Defined in
-
-[packages/util/src/types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L84)
-
-___
 
 ### Buffer
 

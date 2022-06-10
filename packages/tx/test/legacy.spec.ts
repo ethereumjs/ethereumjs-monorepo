@@ -7,7 +7,7 @@ import {
   intToBuffer,
   toBuffer,
   unpadBuffer,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'

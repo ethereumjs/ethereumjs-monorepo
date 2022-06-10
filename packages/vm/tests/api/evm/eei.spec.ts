@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager as StateManager } from '@ethereumjs/statemanager'
 
 import EEI from '../../../src/evm/eei'

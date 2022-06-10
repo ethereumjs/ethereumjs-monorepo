@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'

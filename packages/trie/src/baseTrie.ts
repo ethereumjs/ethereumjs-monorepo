@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { KECCAK256_RLP } from 'ethereumjs-util'
+import { KECCAK256_RLP } from '@ethereumjs/util'
 import { DB, BatchDBOp, PutBatch, MemoryDB } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'

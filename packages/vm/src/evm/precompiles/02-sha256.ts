@@ -1,5 +1,5 @@
 import { sha256 } from 'ethereum-cryptography/sha256'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
