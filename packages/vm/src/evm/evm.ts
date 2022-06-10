@@ -35,6 +35,7 @@ import {
   TxContext,
 } from './types'
 import { EEIInterface } from './types'
+import TransientStorage from './transientStorage'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -243,6 +244,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
   protected _blockchain: Blockchain
 
+  public readonly _transientStorage: TransientStorage
+
   /**
    * This opcode data is always set since `getActiveOpcodes()` is called in the constructor
    * @hidden
@@ -315,6 +318,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     super()
 
     this.eei = opts.eei
+
+    this._transientStorage = new TransientStorage()
 
     if (opts.common) {
       this._common = opts.common
@@ -463,6 +468,10 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         debug(`Start bytecode processing...`)
       }
       result = await this.runInterpreter(message)
+    }
+
+    if (message.depth === 0) {
+      this.postMessageCleanup()
     }
 
     return {
@@ -785,7 +794,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
 
     await this.eei.state.checkpoint()
-    this.eei._transientStorage.checkpoint()
+    this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -830,7 +839,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
         await this.eei.state.revert()
-        this.eei._transientStorage.revert()
+        this._transientStorage.revert()
         if (this.DEBUG) {
           debug(`message checkpoint reverted`)
         }
@@ -838,14 +847,14 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         // we are in chainstart and the error was the code deposit error
         // we do like nothing happened.
         await this.eei.state.commit()
-        this.eei._transientStorage.commit()
+        this._transientStorage.commit()
         if (this.DEBUG) {
           debug(`message checkpoint committed`)
         }
       }
     } else {
       await this.eei.state.commit()
-      this.eei._transientStorage.commit()
+      this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -966,5 +975,12 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   protected async _touchAccount(address: Address): Promise<void> {
     const account = await this.eei.state.getAccount(address)
     return this.eei.state.putAccount(address, account)
+  }
+
+  /**
+   * Once the interpreter has finished depth 0, a post-message cleanup should be done
+   */
+  private postMessageCleanup() {
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 }

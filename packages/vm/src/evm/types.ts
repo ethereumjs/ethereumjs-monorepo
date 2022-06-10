@@ -289,7 +289,6 @@ export interface ExternalInterface {
 export type EVMEvents = {
   newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result: any) => void) => void
-  afterTx: (data: EVMResult, resolve?: (result: any) => void) => void
   step: (data: InterpreterStep, resolve?: (result: any) => void) => void
 }
 
@@ -318,7 +317,6 @@ export interface VmStateAccess extends StateAccess {
 }
 
 export interface EEIInterface {
-  _transientStorage: TransientStorageInterface
   state: VmStateAccess
   getExternalBalance(address: Address): Promise<bigint>
   getExternalCodeSize(address: bigint): Promise<bigint>
@@ -326,8 +324,6 @@ export interface EEIInterface {
   getBlockHash(num: bigint): Promise<bigint>
   storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
   storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
-  transientStorageStore(address: Address, key: Buffer, value: Buffer): void
-  transientStorageLoad(address: Address, key: Buffer): Buffer
   isAccountEmpty(address: Address): Promise<boolean>
   accountExists(address: Address): Promise<boolean>
 }

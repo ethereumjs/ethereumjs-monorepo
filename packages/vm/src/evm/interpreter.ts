@@ -485,19 +485,21 @@ export default class Interpreter {
 
   /**
    * Store 256-bit a value in memory to transient storage.
-   * @param key - Storage key
-   * @param value - Storage value
+   * @param address Address to use
+   * @param key Storage key
+   * @param value Storage value
    */
   transientStorageStore(key: Buffer, value: Buffer): void {
-    return this._eei.transientStorageStore(this._env.address, key, value)
+    return this._evm._transientStorage.put(this._env.address, key, value)
   }
 
   /**
    * Loads a 256-bit value to memory from transient storage.
-   * @param key - Storage key
+   * @param address Address to use
+   * @param key Storage key
    */
   transientStorageLoad(key: Buffer): Buffer {
-    return this._eei.transientStorageLoad(this._env.address, key)
+    return this._evm._transientStorage.get(this._env.address, key)
   }
 
   /**
