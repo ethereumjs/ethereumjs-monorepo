@@ -4,7 +4,7 @@ import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
-import { VmState } from '../../../src/vmState'
+import { VmState } from '../../../src/eei/vmState'
 import { getSingleFile } from '../../tester/testLoader'
 import { isRunningInKarma } from '../../util'
 import { createAccount } from '../utils'

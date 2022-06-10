@@ -3,6 +3,7 @@ import VM from '../../../src'
 import { AddOpcode } from '../../../src/evm/types'
 import { InterpreterStep, RunState } from '../../../src/evm/interpreter'
 import EVM from '../../../src/evm/evm'
+import { getEEI } from '../utils'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
@@ -25,6 +26,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should add custom opcodes to the VM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
+      eei: await getEEI(),
     })
     const gas = 123456
     let correctOpcodeName = false
@@ -45,6 +47,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should delete opcodes from the VM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
+      eei: await getEEI(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -59,6 +62,7 @@ tape('VM: custom opcodes', (t) => {
     // Thus, each time you recreate a VM, it is in a clean state
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
+      eei: await getEEI(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -77,7 +81,7 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 01 // RETURNDATA length
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
-    const result = await vmDefault.evm.runCode({
+    const result = await vmDefault.evm.runCode!({
       code: Buffer.from('60046001016000526001601FF3', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -88,6 +92,7 @@ tape('VM: custom opcodes', (t) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
+      eei: await getEEI(),
     })
     const gas = 123456
     const res = await evm.runCode({

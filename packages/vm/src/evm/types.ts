@@ -178,6 +178,7 @@ export interface TxContext {
 export type EVMEvents = {
   newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result: any) => void) => void
+  afterMessage: (data: EVMResult, resolve?: (result: any) => void) => void
   step: (data: InterpreterStep, resolve?: (result: any) => void) => void
 }
 
