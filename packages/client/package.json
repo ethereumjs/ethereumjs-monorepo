@@ -79,7 +79,7 @@
     "libp2p-mplex": "^0.10.2",
     "libp2p-tcp": "^0.15.3",
     "libp2p-websockets": "^0.15.1",
-    "merkle-patricia-tree": "^4.2.4",
+    "@ethereumjs/trie": "^5.0.0",
     "multiaddr": "^10.0.1",
     "peer-id": "^0.14.3",
     "qheap": "^1.4.0",

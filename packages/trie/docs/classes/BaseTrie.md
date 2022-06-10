@@ -1,8 +1,8 @@
-[merkle-patricia-tree](../README.md) / BaseTrie
+[@ethereumjs/trie](../README.md) / BaseTrie
 
 # Class: BaseTrie
 
-The basic trie interface, use with `import { BaseTrie as Trie } from 'merkle-patricia-tree'`.
+The basic trie interface, use with `import { BaseTrie as Trie } from '@ethereumjs/trie'`.
 In Ethereum applications stick with the [SecureTrie](SecureTrie.md) overlay.
 The API for the base and the secure interface are about the same.
 

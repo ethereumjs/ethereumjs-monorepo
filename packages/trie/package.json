@@ -1,9 +1,9 @@
 {
-  "name": "merkle-patricia-tree",
-  "version": "4.2.4",
+  "name": "@ethereumjs/trie",
+  "version": "5.0.0",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
+  "author": "EthereumJS Team",
   "keywords": [
     "merkle",
     "radix",

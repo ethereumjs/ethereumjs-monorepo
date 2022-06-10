@@ -41,7 +41,7 @@
     "ethereum-cryptography": "^1.0.3",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
-    "merkle-patricia-tree": "^4.2.4",
+    "@ethereumjs/trie": "^5.0.0",
     "rlp": "^3.0.0",
     "semaphore-async-await": "^1.5.1"
   },

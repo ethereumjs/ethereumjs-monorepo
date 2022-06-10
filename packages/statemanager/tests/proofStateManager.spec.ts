@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Address, toBuffer, zeros } from '@ethereumjs/util'
-import { SecureTrie } from 'merkle-patricia-tree'
+import { SecureTrie } from '@ethereumjs/trie'
 import { DefaultStateManager } from '../src'
 import ropsten_validAccount from './testdata/ropsten_validAccount.json'
 import ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'

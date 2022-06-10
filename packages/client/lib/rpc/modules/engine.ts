@@ -2,7 +2,7 @@ import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 import { Hardfork } from '@ethereumjs/common'
 
 import { middleware, validators } from '../validation'

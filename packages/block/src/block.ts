@@ -1,4 +1,4 @@
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from '@ethereumjs/util'
 import RLP from 'rlp'

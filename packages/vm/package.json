@@ -52,7 +52,7 @@
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/tx": "^3.5.2",
     "@ethereumjs/statemanager": "^1.0.0",
-    "merkle-patricia-tree": "^4.2.4",
+    "@ethereumjs/trie": "^5.0.0",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",

@@ -1,6 +1,6 @@
-merkle-patricia-tree
+@ethereumjs/trie
 
-# merkle-patricia-tree
+# @ethereumjs/trie
 
 ## Table of contents
 
