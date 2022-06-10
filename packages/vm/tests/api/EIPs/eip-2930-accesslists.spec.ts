@@ -3,6 +3,7 @@ import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import EVM from '../../../src/evm/evm'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -63,7 +64,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
 
     let trace: any = []
 
-    vm.evm.on('step', (o: any) => {
+    ;(<EVM>vm.evm).on('step', (o: any) => {
       trace.push([o.opcode.name, o.gasLeft])
     })
 

@@ -4,6 +4,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { Address } from '@ethereumjs/util'
+import EVM from '../../../src/evm/evm'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 
@@ -70,8 +71,7 @@ tape('EIP 3541 tests', (t) => {
 
     const vm = await VM.create({ common })
     let address: Address
-
-    vm.evm.on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }
@@ -107,8 +107,7 @@ tape('EIP 3541 tests', (t) => {
 
     const vm = await VM.create({ common })
     let address: Address
-
-    vm.evm.on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }

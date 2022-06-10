@@ -3,6 +3,7 @@ import VM from '../../src'
 import { Address } from '@ethereumjs/util'
 import { PrecompileInput } from '../../src/evm/precompiles'
 import EVM, { ExecResult } from '../../src/evm/evm'
+import { getEEI } from './utils'
 
 const sender = new Address(Buffer.from('44'.repeat(20), 'hex'))
 const newPrecompile = new Address(Buffer.from('ff'.repeat(20), 'hex'))
@@ -26,6 +27,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
+      eei: await getEEI(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -44,6 +46,7 @@ tape('EVM -> custom precompiles', (t) => {
           address: shaAddress,
         },
       ],
+      eei: await getEEI(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -63,6 +66,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
+      eei: await getEEI(),
     })
     const result = await EVMOverride.runCall({
       to: newPrecompile,
@@ -89,6 +93,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
+      eei: await getEEI(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
