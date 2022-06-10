@@ -33,7 +33,7 @@ import {
   RunCodeOpts,
   TxContext,
 } from './types'
-import EEI from '../eei/eei'
+import { EEIInterface } from '../types'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -128,7 +128,7 @@ export interface EVMOpts {
   /*
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
-  eei: EEI // TODO edit this to ExternalInterface
+  eei: EEIInterface // TODO edit this to ExternalInterface
 }
 
 /**
@@ -238,7 +238,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> {
 
   readonly _common: Common
 
-  protected readonly eei: EEI /*ExternalInterfaceFactory*/ // TODO probably rename this back into _eei
+  protected readonly eei: EEIInterface
 
   protected _blockchain: Blockchain
 

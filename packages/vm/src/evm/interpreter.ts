@@ -7,12 +7,10 @@ import {
   intToHex,
   MAX_UINT64,
 } from 'ethereumjs-util'
-import { VmState } from '../eei/vmState'
 
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
-import EEI from '../eei/eei'
 import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
 import * as eof from './opcodes/eof'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -20,6 +18,7 @@ import EVM, { EVMResult } from './evm'
 import { Block } from '@ethereumjs/block'
 import Message from './message'
 import { Log } from './types'
+import { EEIInterface, VmStateAccess } from '../types'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -66,8 +65,8 @@ export interface RunState {
   code: Buffer
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  vmState: VmState
-  eei: EEI
+  vmState: VmStateAccess
+  eei: EEIInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
@@ -85,7 +84,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  vmState: VmState
+  vmState: VmStateAccess
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -109,7 +108,7 @@ export interface InterpreterStep {
 export default class Interpreter {
   protected _vm: any
   protected _runState: RunState
-  protected _eei: EEI
+  protected _eei: EEIInterface
   protected _common: Common
   protected _evm: EVM
   _env: Env
@@ -124,7 +123,7 @@ export default class Interpreter {
   // TODO remove eei from constructor this can be directly read from EVM
   // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
-  constructor(evm: EVM, eei: EEI, env: Env, gasLeft: bigint) {
+  constructor(evm: EVM, eei: EEIInterface, env: Env, gasLeft: bigint) {
     this._evm = evm
     this._eei = eei
     this._common = this._evm._common

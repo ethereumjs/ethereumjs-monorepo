@@ -76,6 +76,7 @@ export interface VmStateAccess extends StateAccess {
   getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
   clearOriginalStorageCache(): void
   cleanupTouchedAccounts(): Promise<void>
+  generateCanonicalGenesis(): Promise<void>
 }
 
 export interface EEIInterface {
