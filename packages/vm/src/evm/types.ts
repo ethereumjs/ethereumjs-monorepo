@@ -314,7 +314,7 @@ export interface VmStateAccess extends StateAccess {
   getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
   clearOriginalStorageCache(): void
   cleanupTouchedAccounts(): Promise<void>
-  generateCanonicalGenesis(): Promise<void>
+  generateCanonicalGenesis(initState: any): Promise<void>
 }
 
 export interface EEIInterface {
