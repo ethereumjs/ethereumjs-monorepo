@@ -1,30 +1,11 @@
-import { Account, Address, bufferToBigInt } from '@ethereumjs/util'
+import { Address, bufferToBigInt } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
-import { TransientStorage } from '../state'
+import TransientStorage from './transientStorage'
 import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
-
-/**
- * Environment data which is made available to EVM bytecode.
- */
-export interface Env {
-  blockchain: Blockchain
-  address: Address
-  caller: Address
-  callData: Buffer
-  callValue: bigint
-  code: Buffer
-  isStatic: boolean
-  depth: number
-  gasPrice: bigint
-  origin: Address
-  block: Block
-  contract: Account
-  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
-  auth?: Address /** EIP-3074 AUTH parameter */
-}
+import { EEIInterface } from '../types'
 
 type Block = {
   hash(): Buffer
@@ -42,11 +23,11 @@ type Blockchain = {
  * The EEI instance also keeps artifacts produced by the bytecode such as logs
  * and to-be-selfdestructed addresses.
  */
-export default class EEI {
+export default class EEI implements EEIInterface {
   readonly state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
-  _common: Common
+  protected _common: Common
   _transientStorage: TransientStorage
-  _blockchain: Blockchain
+  protected _blockchain: Blockchain
 
   constructor(stateManager: StateManager, common: Common, blockchain: Blockchain) {
     this._common = common
