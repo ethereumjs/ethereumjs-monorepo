@@ -2,9 +2,9 @@ import tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
+const cacheDB = new MemoryLevel()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
 tape('Check if miner works as expected', async function (t) {

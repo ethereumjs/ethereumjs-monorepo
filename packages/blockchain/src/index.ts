@@ -10,7 +10,7 @@ import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './
 import { GenesisState, genesisStateRoot } from './genesisStates'
 
 import { Level } from 'level'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -76,7 +76,7 @@ export interface BlockchainOptions {
    * For example:
    *   `levelup(encode(leveldown('./db1')))`
    * or use the `level` convenience package:
-   *   `level('./db1')`
+   *   `new MemoryLevel('./db1')`
    */
   db?: Level<string | Buffer, string | Buffer>
 
@@ -231,7 +231,7 @@ export default class Blockchain implements BlockchainInterface {
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db ? opts.db : level()
+    this.db = opts.db ?? (new MemoryLevel() as Level<string | Buffer, string | Buffer>)
     this.dbManager = new DBManager(this.db, this._common)
 
     switch (this._common.consensusAlgorithm()) {

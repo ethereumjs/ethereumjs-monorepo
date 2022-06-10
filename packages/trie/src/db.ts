@@ -1,6 +1,6 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { Level } from 'level'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
@@ -62,7 +62,7 @@ export class LevelDB implements DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(leveldb?: Level<string | Buffer, Buffer> | null) {
-    this._leveldb = leveldb ?? level()
+    this._leveldb = leveldb ?? (new MemoryLevel(ENCODING_OPTS) as Level<string | Buffer, Buffer>)
   }
 
   /**

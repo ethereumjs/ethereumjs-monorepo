@@ -3,7 +3,7 @@ import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -109,7 +109,7 @@ export const isConsecutive = (blocks: Block[]) => {
 export const createTestDB = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
-  const db = level()
+  const db = new MemoryLevel()
   await db.batch([
     {
       type: 'put',

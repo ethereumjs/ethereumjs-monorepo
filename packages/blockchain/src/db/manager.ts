@@ -6,7 +6,21 @@ import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 import { Level } from 'level'
-const level = require('level-mem')
+
+export class NotFoundError extends Error {
+  public type: string = 'NotFoundError'
+
+  public constructor() {
+    super()
+
+    Object.defineProperty(this, 'name', {
+      enumerable: false,
+      value: this.constructor.name,
+    })
+
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
 
 /**
  * @hidden
@@ -150,7 +164,7 @@ export class DBManager {
    */
   async numberToHash(blockNumber: bigint): Promise<Buffer> {
     if (blockNumber < BigInt(0)) {
-      throw new level.errors.NotFoundError()
+      throw new NotFoundError()
     }
 
     return this.get(DBTarget.NumberToHash, { blockNumber })

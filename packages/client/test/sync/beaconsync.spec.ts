@@ -5,7 +5,7 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Skeleton } from '../../lib/sync'
 import { wait } from '../integration/util'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
@@ -40,7 +40,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     t.equal(sync.type, 'beacon', 'beacon type')
@@ -51,7 +51,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
@@ -67,7 +67,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
@@ -84,7 +84,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).running = true
@@ -112,7 +112,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
@@ -153,7 +153,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(skeleton as any).status.progress.subchains = [
@@ -181,7 +181,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
+    const metaDB = new MemoryLevel()
     const skeleton = new Skeleton({ chain, config, metaDB })
     skeleton.isLinked = () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })

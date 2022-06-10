@@ -1,7 +1,7 @@
 import Ethash from '../src'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
+const cacheDB = new MemoryLevel()
 const ethash = new Ethash(cacheDB)
 
 const verifySubmit = async (

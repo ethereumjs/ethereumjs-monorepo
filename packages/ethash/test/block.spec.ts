@@ -3,9 +3,9 @@ import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from 'ethereumjs-util'
 import Ethash from '../src'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
+const cacheDB = new MemoryLevel()
 
 const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 
