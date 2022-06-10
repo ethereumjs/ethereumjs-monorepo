@@ -5,7 +5,7 @@ import { VmState } from './vmState'
 import TransientStorage from './transientStorage'
 import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
-import { EEIInterface } from '../types'
+import { EEIInterface } from '../evm/types'
 
 type Block = {
   hash(): Buffer

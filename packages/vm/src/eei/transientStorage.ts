@@ -1,5 +1,5 @@
 import { Address } from 'ethereumjs-util'
-import { TransientStorageInterface } from '../types'
+import { TransientStorageInterface } from '../evm/types'
 
 type TransientStorageCurrent = Map<string, Map<string, Buffer>>
 

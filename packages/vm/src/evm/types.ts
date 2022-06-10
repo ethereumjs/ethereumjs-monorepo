@@ -1,6 +1,8 @@
 import { Block } from '@ethereumjs/block'
+import { StateAccess } from '@ethereumjs/statemanager'
+import { AccessList } from '@ethereumjs/tx'
 import { Account, Address } from 'ethereumjs-util'
-import EVM, { NewContractEvent } from './evm'
+import EVM, { EVMResult, ExecResult, NewContractEvent } from './evm'
 import { InterpreterStep } from './interpreter'
 import Message from './message'
 import { OpHandler } from './opcodes'
@@ -284,19 +286,54 @@ export interface ExternalInterface {
   getAccount(address: Address): Promise<Account>
 }
 
-type EVMResult = {
-  error?: any // TODO Add error type
-  returnData: Buffer
-  logs: Log[]
-}
-
-export interface EVMInterface {
-  runMessage(environment: EVMEnvironment): Promise<EVMResult>
-}
-
 export type EVMEvents = {
   newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result: any) => void) => void
   afterTx: (data: EVMResult, resolve?: (result: any) => void) => void
   step: (data: InterpreterStep, resolve?: (result: any) => void) => void
+}
+
+export interface TransientStorageInterface {
+  get(addr: Address, key: Buffer): Buffer
+  put(addr: Address, key: Buffer, value: Buffer): void
+  commit(): void
+  checkpoint(): void
+  revert(): void
+  toJSON(): { [address: string]: { [key: string]: string } }
+  clear(): void
+}
+
+export interface VmStateAccess extends StateAccess {
+  touchAccount(address: Address): void
+  addWarmedAddress(address: Buffer): void
+  isWarmedAddress(address: Buffer): boolean
+  addWarmedStorage(address: Buffer, slot: Buffer): void
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  clearWarmedAccounts(): void
+  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
+  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  clearOriginalStorageCache(): void
+  cleanupTouchedAccounts(): Promise<void>
+  generateCanonicalGenesis(): Promise<void>
+}
+
+export interface EEIInterface {
+  _transientStorage: TransientStorageInterface
+  state: VmStateAccess
+  getExternalBalance(address: Address): Promise<bigint>
+  getExternalCodeSize(address: bigint): Promise<bigint>
+  getExternalCode(address: bigint): Promise<Buffer>
+  getBlockHash(num: bigint): Promise<bigint>
+  storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
+  storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
+  transientStorageStore(address: Address, key: Buffer, value: Buffer): void
+  transientStorageLoad(address: Address, key: Buffer): Buffer
+  isAccountEmpty(address: Address): Promise<boolean>
+  accountExists(address: Address): Promise<boolean>
+}
+
+export interface EVMInterface {
+  runCall(opts: RunCallOpts): Promise<EVMResult>
+  runCode?(opts: RunCodeOpts): Promise<ExecResult>
+  precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
 }
