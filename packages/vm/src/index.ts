@@ -10,7 +10,7 @@ import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { getActivePrecompiles } from './evm/precompiles'
 import EEI from './eei/eei'
-import { VMEvents } from './types'
+import { EEIInterface, VMEvents } from './types'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -112,7 +112,7 @@ export interface VMOpts {
   /**
    * Use a custom EEI for the EVM. If this is not present, use the default EEI.
    */
-  eei?: EEI // TODO change this type to the interface
+  eei?: EEIInterface
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
@@ -143,7 +143,7 @@ export default class VM extends AsyncEventEmitter<VMEvents> {
    * The EVM used for bytecode execution
    */
   readonly evm: EVM // TODO change type to interface
-  readonly eei: EEI // TODO change type to interface
+  readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
