@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 
 tape('[Header]: Clique PoA Functionality', function (t) {
   const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })

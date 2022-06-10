@@ -1,4 +1,4 @@
-import { intToBuffer } from 'ethereumjs-util'
+import { intToBuffer } from '@ethereumjs/util'
 import { Chain } from '../blockchain'
 import { Config } from '../config'
 // eslint-disable-next-line implicit-dependencies/no-implicit

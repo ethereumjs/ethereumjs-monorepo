@@ -1,4 +1,4 @@
-import { bufferToHex } from 'ethereumjs-util'
+import { bufferToHex } from '@ethereumjs/util'
 import { getClientVersion } from '../../util'
 import { middleware } from '../validation'
 import type { Chain } from '../../blockchain'

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'

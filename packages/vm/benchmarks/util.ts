@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer } from 'ethereumjs-util'
+import { Account, Address, toBuffer } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'

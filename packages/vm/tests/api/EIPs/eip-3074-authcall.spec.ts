@@ -9,7 +9,7 @@ import {
   setLengthLeft,
   toBuffer,
   zeros,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { Transaction } from '@ethereumjs/tx'

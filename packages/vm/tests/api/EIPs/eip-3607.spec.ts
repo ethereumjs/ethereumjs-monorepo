@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import VM from '../../../src'
 
 tape('EIP-3607 tests', (t) => {

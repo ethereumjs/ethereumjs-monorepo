@@ -6,7 +6,7 @@ import VM from '../../src'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { Interface } from '@ethersproject/abi'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import testnetMerge from './testdata/testnetMerge.json'
 import type { AccountState } from '@ethereumjs/blockchain/dist/genesisStates'
 

@@ -1,5 +1,5 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address, toBuffer } from 'ethereumjs-util'
+import { Address, toBuffer } from '@ethereumjs/util'
 import tape from 'tape'
 import VM from '../../../src'
 

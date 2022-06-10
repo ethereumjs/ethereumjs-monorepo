@@ -1,5 +1,5 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
 import { Peer } from '../../net/peer'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'

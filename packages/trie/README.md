@@ -135,7 +135,7 @@ trie
 ```typescript
 import level from 'level'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, BN, bufferToHex } from 'ethereumjs-util'
+import { Account, bufferToHex } from '@ethereumjs/util'
 import RLP from 'rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'

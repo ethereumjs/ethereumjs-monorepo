@@ -15,7 +15,7 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   short,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 import EEI from './eei'

@@ -1,4 +1,4 @@
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import { Block, Blockchain } from '../src'
 
 // Helper class to setup a mock Blockchain

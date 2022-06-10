@@ -7,7 +7,7 @@ import {
   SECP256K1_ORDER_DIV_2,
   privateToAddress,
   bufferToBigInt,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import tape from 'tape'
 import {
   AccessList,

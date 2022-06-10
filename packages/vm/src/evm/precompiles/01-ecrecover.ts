@@ -4,7 +4,7 @@ import {
   ecrecover,
   publicToAddress,
   bufferToBigInt,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 

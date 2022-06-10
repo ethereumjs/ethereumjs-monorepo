@@ -1,4 +1,4 @@
-import { MAX_INTEGER_BIGINT } from 'ethereumjs-util'
+import { MAX_INTEGER_BIGINT } from '@ethereumjs/util'
 import { ERROR, VmError } from '../exceptions'
 
 /**

@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from '@ethereumjs/util'
 import { Block } from '../src/block'
 
 const common = new Common({

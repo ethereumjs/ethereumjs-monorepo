@@ -7,7 +7,7 @@ import {
   trap,
   updateSstoreGas,
 } from '.'
-import { Address, bigIntToBuffer, setLengthLeft } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import { ERROR } from '../../exceptions'
 import { RunState } from '../interpreter'
 import Common, { Hardfork } from '@ethereumjs/common'

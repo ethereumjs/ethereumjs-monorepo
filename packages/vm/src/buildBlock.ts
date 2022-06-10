@@ -1,4 +1,4 @@
-import { Address, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import RLP from 'rlp'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'

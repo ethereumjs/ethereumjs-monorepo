@@ -1,5 +1,5 @@
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
-import { setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 

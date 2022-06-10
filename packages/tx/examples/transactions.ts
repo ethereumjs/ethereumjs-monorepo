@@ -3,7 +3,7 @@
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
 import { Transaction } from '../src'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.

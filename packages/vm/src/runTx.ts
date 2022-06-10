@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, KECCAK256_NULL, toBuffer, short } from 'ethereumjs-util'
+import { Address, KECCAK256_NULL, toBuffer, short } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {

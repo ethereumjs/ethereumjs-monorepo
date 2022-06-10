@@ -1,5 +1,5 @@
 import { middleware } from '../validation'
-import { addHexPrefix } from 'ethereumjs-util'
+import { addHexPrefix } from '@ethereumjs/util'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { PeerPool } from '../../net/peerpool'

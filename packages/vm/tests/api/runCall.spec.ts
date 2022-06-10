@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Account, Address, MAX_UINT64, padToEven } from 'ethereumjs-util'
+import { Account, Address, MAX_UINT64, padToEven } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'

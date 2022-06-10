@@ -1,4 +1,4 @@
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 
 type TransientStorageCurrent = Map<string, Map<string, Buffer>>
 

@@ -1,4 +1,4 @@
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../src/index'
 import { VMOpts } from '../../src'

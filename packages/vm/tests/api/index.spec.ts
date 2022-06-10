@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { KECCAK256_RLP } from 'ethereumjs-util'
+import { KECCAK256_RLP } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 

@@ -1,9 +1,9 @@
 {
-  "name": "ethereumjs-util",
-  "version": "7.1.5",
+  "name": "@ethereumjs/util",
+  "version": "8.0.0",
   "description": "A collection of utility functions for Ethereum",
   "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
+  "author": "EthereumJS Team",
   "keywords": [
     "ethereum",
     "utilities",

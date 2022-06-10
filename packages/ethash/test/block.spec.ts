@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 import Ethash from '../src'
 const level = require('level-mem')
 

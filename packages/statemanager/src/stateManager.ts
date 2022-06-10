@@ -12,7 +12,7 @@ import {
   KECCAK256_RLP,
   setLengthLeft,
   short,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 import RLP from 'rlp'
 import { StateManager, StorageDump } from './interface'

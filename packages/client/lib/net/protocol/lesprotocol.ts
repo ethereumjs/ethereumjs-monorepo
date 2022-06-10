@@ -1,4 +1,4 @@
-import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from '@ethereumjs/util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'

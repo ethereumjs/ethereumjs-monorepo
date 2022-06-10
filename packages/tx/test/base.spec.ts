@@ -15,7 +15,7 @@ import {
   MAX_UINT64,
   SECP256K1_ORDER,
   bufferToBigInt,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)

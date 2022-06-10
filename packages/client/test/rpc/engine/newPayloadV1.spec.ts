@@ -4,10 +4,10 @@ import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import blocks from '../../testdata/blocks/beacon.json'
 import { HttpServer } from 'jayson'
-import { bufferToHex, zeros } from 'ethereumjs-util'
+import { bufferToHex, zeros } from '@ethereumjs/util'
 
 const method = 'engine_newPayloadV1'
 

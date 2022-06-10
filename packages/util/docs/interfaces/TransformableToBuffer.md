@@ -1,4 +1,4 @@
-[ethereumjs-util](../README.md) / TransformableToBuffer
+[@ethereumjs/util](../README.md) / TransformableToBuffer
 
 # Interface: TransformableToBuffer
 

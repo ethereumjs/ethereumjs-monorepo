@@ -63,7 +63,7 @@
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "debug": "^4.3.3",
-    "ethereumjs-util": "^7.1.5",
+    "@ethereumjs/util": "^8.0.0",
     "ethereum-cryptography": "^1.0.3",
     "fs-extra": "^10.0.0",
     "it-pipe": "^1.1.0",

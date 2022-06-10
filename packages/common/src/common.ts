@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
-import { BigIntLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
+import { BigIntLike, toType, TypeOutput, intToBuffer } from '@ethereumjs/util'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'

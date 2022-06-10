@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, bufferToHex } from 'ethereumjs-util'
+import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
