@@ -7,9 +7,7 @@ import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
-const level = require('level')
+import { Level } from 'level'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -373,9 +371,8 @@ export class Config {
   /**
    * Returns the config level db.
    */
-  static getConfigDB(networkDir: string): LevelUp {
-    const db = level(`${networkDir}/config` as any)
-    return db
+  static getConfigDB(networkDir: string) {
+    return new Level<string | Buffer, Buffer>(`${networkDir}/config` as any)
   }
 
   /**

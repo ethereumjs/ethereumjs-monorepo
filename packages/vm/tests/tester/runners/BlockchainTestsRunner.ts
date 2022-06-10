@@ -8,7 +8,7 @@ import RLP from 'rlp'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
-const level = require('level')
+const { Level } = require('level')
 const levelMem = require('level-mem')
 
 function formatBlockHeader(data: any) {
@@ -30,7 +30,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   const blockchainDB = levelMem()
-  const cacheDB = level('./.cachedb')
+  const cacheDB = new Level('./.cachedb')
   const state = new Trie()
 
   const { common }: { common: Common } = options

@@ -2,21 +2,20 @@ import { FlowControl } from '../net/protocol/flowcontrol'
 import { Chain } from '../blockchain'
 import { Service, ServiceOptions } from './service'
 import { Synchronizer } from '../sync'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 
 export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain */
   chain: Chain
 
   /* Blockchain database */
-  chainDB?: LevelUp
+  chainDB?: Level<string | Buffer, Buffer>
 
   /* State database */
-  stateDB?: LevelUp
+  stateDB?: Level<string | Buffer, Buffer>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: LevelUp
+  metaDB?: Level<string | Buffer, Buffer>
 
   /* Sync retry interval in ms (default: 8000) */
   interval?: number

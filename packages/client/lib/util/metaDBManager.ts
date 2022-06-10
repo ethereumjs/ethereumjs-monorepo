@@ -1,8 +1,7 @@
 import { intToBuffer } from 'ethereumjs-util'
 import { Chain } from '../blockchain'
 import { Config } from '../config'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 
 const encodingOpts = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
@@ -29,7 +28,7 @@ export interface MetaDBManagerOptions {
   config: Config
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB: LevelUp
+  metaDB: Level<string | Buffer, Buffer>
 }
 
 /**
@@ -38,7 +37,7 @@ export interface MetaDBManagerOptions {
 export class MetaDBManager {
   protected chain: Chain
   protected config: Config
-  private metaDB: LevelUp
+  private metaDB: Level<string | Buffer, Buffer>
 
   constructor(options: MetaDBManagerOptions) {
     this.chain = options.chain

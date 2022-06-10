@@ -8,8 +8,8 @@ for (const DB of [MemoryDB, LevelDB]) {
 
     let trie: CheckpointTrie
     let trieCopy: CheckpointTrie
-    let preRoot: String
-    let postRoot: String
+    let preRoot: string
+    let postRoot: string
 
     it('setup', async function (t) {
       trie = new CheckpointTrie({ db: new DB() })

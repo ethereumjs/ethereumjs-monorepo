@@ -1,5 +1,5 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 const level = require('level-mem')
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
@@ -54,14 +54,14 @@ export interface DB {
  * which validates inputs and sets encoding type.
  */
 export class LevelDB implements DB {
-  _leveldb: LevelUp
+  _leveldb: Level<string | Buffer, Buffer>
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
    * defaults to an [in-memory store](https://github.com/Level/memdown).
    * @param leveldb - An abstract-leveldown compliant store
    */
-  constructor(leveldb?: LevelUp | null) {
+  constructor(leveldb?: Level<string | Buffer, Buffer> | null) {
     this._leveldb = leveldb ?? level()
   }
 

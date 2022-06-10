@@ -1,17 +1,16 @@
 import { Config } from '../config'
 import { Chain } from '../blockchain'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 
 export interface ExecutionOptions {
   /* Config */
   config: Config
 
   /* State database */
-  stateDB?: LevelUp
+  stateDB?: Level<string | Buffer, Buffer>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: LevelUp
+  metaDB?: Level<string | Buffer, Buffer>
 
   /** Chain */
   chain: Chain
@@ -20,8 +19,8 @@ export interface ExecutionOptions {
 export abstract class Execution {
   public config: Config
 
-  protected stateDB?: LevelUp
-  protected metaDB?: LevelUp
+  protected stateDB?: Level<string | Buffer, Buffer>
+  protected metaDB?: Level<string | Buffer, Buffer>
   protected chain: Chain
 
   public running: boolean = false

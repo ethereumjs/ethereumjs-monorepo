@@ -5,8 +5,7 @@ import Common from '@ethereumjs/common'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 const level = require('level-mem')
 
 /**
@@ -28,9 +27,9 @@ export type CacheMap = { [key: string]: Cache<Buffer> }
 export class DBManager {
   private _cache: CacheMap
   private _common: Common
-  private _db: LevelUp
+  private _db: Level<string | Buffer, string | Buffer>
 
-  constructor(db: LevelUp, common: Common) {
+  constructor(db: Level<string | Buffer, string | Buffer>, common: Common) {
     this._db = db
     this._common = common
     this._cache = {
@@ -176,7 +175,15 @@ export class DBManager {
 
       let value = this._cache[cacheString].get(dbKey)
       if (!value) {
-        value = <Buffer>await this._db.get(dbKey, dbOpts)
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        value = await this._db.get(dbKey, dbOpts)
+
+        if (value === undefined) {
+          throw new Error(
+            `Expected ${dbKey.toString('hex')} to have a value but received undefined.`
+          )
+        }
+
         this._cache[cacheString].set(dbKey, value)
       }
 

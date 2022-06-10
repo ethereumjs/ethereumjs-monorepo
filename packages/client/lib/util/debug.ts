@@ -14,15 +14,15 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
  * Script for locally executing a block in the EthereumJS VM,
  * meant to be used from packages/vm directory within the
  * https://github.com/ethereumjs/ethereumjs-monorepo repository.
- * 
+ *
  * Block: ${block.header.number}
  * Hardfork: ${execution.hardfork}
- * 
+ *
  * Run with: DEBUG=vm:*:*,vm:*,-vm:ops:* ts-node [SCRIPT_NAME].ts
- * 
+ *
  */
 
-const level = require('level')
+import { Level } from 'level';
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import VM from './lib'
@@ -38,7 +38,7 @@ const main = async () => {
     .serialize()
     .toString('hex')}', 'hex'), { common })
 
-  const stateDB = level('${execution.config.getDataDirectory(DataDirectory.State)}')
+  const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
@@ -47,7 +47,7 @@ const main = async () => {
   ).toString('hex')}', 'hex'))
 
 
-  const chainDB = level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
+  const chainDB = new Level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
   const blockchain = await Blockchain.create({
     db: chainDB,
     common,

@@ -1,5 +1,5 @@
 import Common, { Chain } from '@ethereumjs/common'
-const level = require('level')
+import { Level } from 'level'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -65,7 +65,7 @@ export async function createClient(args: any) {
     discDns: false,
   })
   config.events.setMaxListeners(50)
-  const chainDB = level(`${datadir}/${common.chainName()}`)
+  const chainDB = new Level<string | Buffer, Buffer>(`${datadir}/${common.chainName()}`)
   return new EthereumClient({ config, chainDB })
 }
 

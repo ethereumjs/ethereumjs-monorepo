@@ -30,10 +30,10 @@ export enum DBTarget {
  * @hidden
  */
 export interface DBOpData {
-  type?: String
+  type?: string
   key: Buffer | string
-  keyEncoding: String
-  valueEncoding?: String
+  keyEncoding: string
+  valueEncoding?: string
   value?: Buffer | object
 }
 

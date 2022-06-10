@@ -18,8 +18,7 @@ import {
   getFullSize,
   getSeed,
 } from './util'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
 const xor = require('buffer-xor')
 
@@ -141,16 +140,26 @@ export class Miner {
   }
 }
 
+export type EthashCacheDB = Level<
+  Buffer,
+  {
+    cache: Buffer[]
+    fullSize: number
+    cacheSize: number
+    seed: Buffer
+  }
+>
+
 export default class Ethash {
   dbOpts: Object
-  cacheDB?: LevelUp
+  cacheDB?: EthashCacheDB
   cache: Buffer[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
   seed?: Buffer
 
-  constructor(cacheDB?: LevelUp) {
+  constructor(cacheDB?: EthashCacheDB) {
     this.dbOpts = {
       valueEncoding: 'json',
     }

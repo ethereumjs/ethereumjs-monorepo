@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Ethash from '@ethereumjs/ethash'
+import Ethash, { EthashCacheDB } from '@ethereumjs/ethash'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
 
@@ -12,7 +12,7 @@ export class EthashConsensus implements Consensus {
 
   constructor({ blockchain }: ConsensusOptions) {
     this.blockchain = blockchain
-    this._ethash = new Ethash(this.blockchain.db)
+    this._ethash = new Ethash(this.blockchain.db as unknown as EthashCacheDB)
   }
 
   async validate(block: Block): Promise<void> {

@@ -9,8 +9,7 @@ import { DBTarget } from './db/operation'
 import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
 import { GenesisState, genesisStateRoot } from './genesisStates'
 
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { Level } from 'level'
 const level = require('level-mem')
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -79,7 +78,7 @@ export interface BlockchainOptions {
    * or use the `level` convenience package:
    *   `level('./db1')`
    */
-  db?: LevelUp
+  db?: Level<string | Buffer, string | Buffer>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm
@@ -141,7 +140,7 @@ export interface BlockchainOptions {
  */
 export default class Blockchain implements BlockchainInterface {
   consensus: Consensus
-  db: LevelUp
+  db: Level<string | Buffer, string | Buffer>
   dbManager: DBManager
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
