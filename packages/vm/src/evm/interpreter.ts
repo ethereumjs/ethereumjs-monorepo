@@ -18,7 +18,7 @@ import EVM, { EVMResult } from './evm'
 import { Block } from '@ethereumjs/block'
 import Message from './message'
 import { Log } from './types'
-import { EEIInterface, VmStateAccess } from '../types'
+import { EEIInterface, VmStateAccess } from './types'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 

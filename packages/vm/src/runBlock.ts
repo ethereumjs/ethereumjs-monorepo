@@ -7,13 +7,9 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
 import type { RunTxResult } from './runTx'
-import type {
-  TxReceipt,
-  PreByzantiumTxReceipt,
-  PostByzantiumTxReceipt,
-  VmStateAccess,
-} from './types'
+import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
 import DAOConfig from './config/dao_fork_accounts_config.json'
+import { VmStateAccess } from './evm/types'
 
 const debug = createDebugLogger('vm:block')
 
