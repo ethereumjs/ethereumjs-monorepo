@@ -7,9 +7,13 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
 import type { RunTxResult } from './runTx'
-import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
+import type {
+  TxReceipt,
+  PreByzantiumTxReceipt,
+  PostByzantiumTxReceipt,
+  VmStateAccess,
+} from './types'
 import DAOConfig from './config/dao_fork_accounts_config.json'
-import { VmState } from './eei/vmState'
 
 const debug = createDebugLogger('vm:block')
 
@@ -419,7 +423,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: VmState,
+  state: VmStateAccess,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -459,7 +463,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: VmState) {
+async function _applyDAOHardfork(state: VmStateAccess) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
     await state.putAccount(DAORefundContractAddress, new Account())
