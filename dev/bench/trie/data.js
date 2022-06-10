@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1654885754303,
+  "lastUpdate": 1654893522146,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1f4463730eaf081c19102816829926a9b699d1f9",
-          "message": "Common: fixed non-option passing on custom() method (#1851)\n\n* Common: fixed non-option passing on custom() method\r\n* Common: custom options test sanity check (review suggestion)\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n* lint, fix test\r\nCo-authored-by: Ryan Ghods <ryan@ryanio.com>",
-          "timestamp": "2022-04-09T10:53:02-07:00",
-          "tree_id": "da80442adf461a715b48e66e0219bb3d69de4546",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1f4463730eaf081c19102816829926a9b699d1f9"
-        },
-        "date": 1649527103151,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 10749,
-            "range": "±18.05%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 12881,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 8161,
-            "range": "±23.50%",
-            "unit": "ops/sec",
-            "extra": "51 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 11893,
-            "range": "±3.94%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 13891,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 735,
-            "range": "±7.02%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 153,
-            "range": "±10.55%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 26.3,
-            "range": "±139.54%",
-            "unit": "ops/sec",
-            "extra": "22 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 16.84,
-            "range": "±4.98%",
-            "unit": "ops/sec",
-            "extra": "32 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2799,6 +2712,156 @@ window.BENCHMARK_DATA = {
             "range": "±36.40%",
             "unit": "ops/sec",
             "extra": "33 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ab9a9d6f68a0e8c75aab1e9a8e363a1816160477",
+          "message": "move mpt package to @ethereumjs namespace (#1953)",
+          "timestamp": "2022-06-10T22:32:47+02:00",
+          "tree_id": "5cba0582722f16cf002d0d2be5826806b8a3a01c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ab9a9d6f68a0e8c75aab1e9a8e363a1816160477"
+        },
+        "date": 1654893521558,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "[MemoryDB] 1k-3-32-ran",
+            "value": 31401,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "[MemoryDB] 1k-5-32-ran",
+            "value": 29262,
+            "range": "±6.42%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "[MemoryDB] 1k-9-32-ran",
+            "value": 31271,
+            "range": "±1.12%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "[MemoryDB] 1k-1k-32-ran",
+            "value": 31079,
+            "range": "±1.28%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "[MemoryDB] 1k-1k-32-mir",
+            "value": 53233,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "93 samples"
+          },
+          {
+            "name": "[MemoryDB] Checkpointing: 100 iterations",
+            "value": 816,
+            "range": "±43.09%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "[MemoryDB] Checkpointing: 500 iterations",
+            "value": 205,
+            "range": "±8.38%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "[MemoryDB] Checkpointing: 1000 iterations",
+            "value": 98.73,
+            "range": "±16.20%",
+            "unit": "ops/sec",
+            "extra": "63 samples"
+          },
+          {
+            "name": "[MemoryDB] Checkpointing: 5000 iterations",
+            "value": 20.3,
+            "range": "±8.18%",
+            "unit": "ops/sec",
+            "extra": "39 samples"
+          },
+          {
+            "name": "[LevelDB] 1k-3-32-ran",
+            "value": 27932,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "[LevelDB] 1k-5-32-ran",
+            "value": 28522,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "[LevelDB] 1k-9-32-ran",
+            "value": 19720,
+            "range": "±60.44%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "[LevelDB] 1k-1k-32-ran",
+            "value": 24611,
+            "range": "±23.88%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "[LevelDB] 1k-1k-32-mir",
+            "value": 47675,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "[LevelDB] Checkpointing: 100 iterations",
+            "value": 995,
+            "range": "±4.65%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "[LevelDB] Checkpointing: 500 iterations",
+            "value": 89.86,
+            "range": "±106.45%",
+            "unit": "ops/sec",
+            "extra": "35 samples"
+          },
+          {
+            "name": "[LevelDB] Checkpointing: 1000 iterations",
+            "value": 77.25,
+            "range": "±36.40%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "[LevelDB] Checkpointing: 5000 iterations",
+            "value": 18.32,
+            "range": "±5.45%",
+            "unit": "ops/sec",
+            "extra": "34 samples"
           }
         ]
       }
