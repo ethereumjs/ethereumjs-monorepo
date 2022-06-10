@@ -26,7 +26,7 @@ const level = require('level')
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import VM from './lib'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { DefaultStateManager } from './lib/state'
 import Blockchain from '@ethereumjs/blockchain'
 

@@ -16,7 +16,7 @@ import {
   MAX_INTEGER,
   short,
 } from '@ethereumjs/util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 import EEI from './eei'
 import { ERROR, VmError } from '../exceptions'

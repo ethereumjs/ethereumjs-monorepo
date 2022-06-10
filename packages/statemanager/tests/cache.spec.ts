@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Account, Address } from '@ethereumjs/util'
 import Cache, { getCb, putCb } from '../src/cache'
 import { createAccount } from './util'

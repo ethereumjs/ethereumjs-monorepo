@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) / WalkController
+[@ethereumjs/trie](../README.md) / WalkController
 
 # Class: WalkController
 

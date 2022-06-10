@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Block } from '@ethereumjs/block'

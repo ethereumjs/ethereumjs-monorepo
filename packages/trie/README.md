@@ -1,4 +1,4 @@
-# merkle-patricia-tree
+# @ethereumjs/trie
 
 [![NPM Package][trie-npm-badge]][trie-npm-link]
 [![GitHub Issues][trie-issues-badge]][trie-issues-link]
@@ -14,7 +14,7 @@ The only backing store supported is LevelDB through the `levelup` module.
 
 # INSTALL
 
-`npm install merkle-patricia-tree`
+`npm install @ethereumjs/trie`
 
 # USAGE
 
@@ -26,7 +26,7 @@ By default, trie nodes are not deleted from the underlying DB to not corrupt old
 
 ```typescript
 import level from 'level'
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 
 const db = level('./testdb')
 const trie = new Trie({ db })
@@ -112,7 +112,7 @@ The `Trie.verifyRangeProof()` function can be used to check whether the given le
 
 ```typescript
 import level from 'level'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
@@ -134,7 +134,7 @@ trie
 
 ```typescript
 import level from 'level'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import RLP from 'rlp'
 
@@ -229,8 +229,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[trie-npm-badge]: https://img.shields.io/npm/v/merkle-patricia-tree.svg
-[trie-npm-link]: https://www.npmjs.com/package/merkle-patricia-tree
+[trie-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/trie.svg
+[trie-npm-link]: https://www.npmjs.com/package/@ethereumjs/trie
 [trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20trie?label=issues
 [trie-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
 [trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Trie/badge.svg
