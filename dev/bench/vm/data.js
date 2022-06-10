@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1654686687331,
+  "lastUpdate": 1654885676769,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ryan@ryanio.com",
-            "name": "Ryan Ghods",
-            "username": "ryanio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1bd84986578095565600f668ec86453675ec4294",
-          "message": "client: move TxPool to FullEthereumService (#1853)\n\n* move txpool from FullSync to FullEthereumService\r\nremove execution from client class\r\n* move execution init to service\r\n* use pool peer count directly now\r\n* nit (dedupe `any` cast)",
-          "timestamp": "2022-04-09T10:41:43-07:00",
-          "tree_id": "3f5834e55ed34f683845856e138227947c588469",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1bd84986578095565600f668ec86453675ec4294"
-        },
-        "date": 1649526512040,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19331,
-            "range": "±8.14%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20740,
-            "range": "±2.14%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16419,
-            "range": "±17.26%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19994,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19254,
-            "range": "±4.07%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.60%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5c093afe6030d572b31364761ae711f2cec75943",
+          "message": "util: move package util to @ethereumjs namespace (#1952)\n\n* move package util to @ethereumjs namespace\r\n\r\n* fix the missed import\r\n\r\n* lint client",
+          "timestamp": "2022-06-10T23:52:41+05:30",
+          "tree_id": "fa3425d2c2c1652ae5ea41b8d9fa34dba015ed1c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5c093afe6030d572b31364761ae711f2cec75943"
+        },
+        "date": 1654885675828,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 29813,
+            "range": "±6.83%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30899,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26965,
+            "range": "±9.31%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 29859,
+            "range": "±6.04%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 28755,
+            "range": "±2.48%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
