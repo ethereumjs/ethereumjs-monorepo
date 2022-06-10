@@ -26,6 +26,7 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import {
   CustomOpcode,
   EVMEvents,
+  EVMInterface,
   /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
@@ -33,7 +34,7 @@ import {
   RunCodeOpts,
   TxContext,
 } from './types'
-import { EEIInterface } from '../types'
+import { EEIInterface } from './types'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -232,7 +233,7 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM extends AsyncEventEmitter<EVMEvents> {
+export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   protected _tx?: TxContext
   protected _block?: Block
 
@@ -675,7 +676,10 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the {@link EEI}.
    */
-  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
+  protected async runInterpreter(
+    message: Message,
+    opts: InterpreterOpts = {}
+  ): Promise<ExecResult> {
     const env = {
       blockchain: this._blockchain, // Only used in BLOCKHASH
       address: message.to ?? Address.zero(),
