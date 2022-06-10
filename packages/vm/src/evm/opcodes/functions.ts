@@ -817,10 +817,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x60: PUSH
   [
     0x60,
-    function (runState) {
+    function (runState, common) {
       const numToPush = runState.opCode - 0x5f
       if (
-        runState.eei._common.isActivatedEIP(3540) &&
+        common.isActivatedEIP(3540) &&
         runState.programCounter + numToPush > runState.code.length
       ) {
         trap(ERROR.OUT_OF_RANGE)
