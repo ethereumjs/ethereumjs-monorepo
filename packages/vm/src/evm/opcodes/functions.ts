@@ -1065,11 +1065,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (!expectedAddress.equals(address)) {
         // expected address does not equal the recovered address, clear auth variable
         runState.stack.push(BigInt(0))
-        runState.eei._env.auth = undefined
+        runState.auth = undefined
         return
       }
 
-      runState.eei._env.auth = address
+      runState.auth = address
       runState.stack.push(BigInt(1))
     },
   ],
