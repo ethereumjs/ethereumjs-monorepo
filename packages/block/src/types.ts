@@ -3,6 +3,7 @@ import Common from '@ethereumjs/common'
 import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { Block } from './block'
 import { BlockHeader } from './header'
+import { CLIQUE_DIFF_INTURN, CLIQUE_DIFF_NOTURN } from './clique'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -147,3 +148,5 @@ export interface JsonHeader {
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
 }
+
+export { CLIQUE_DIFF_INTURN, CLIQUE_DIFF_NOTURN }
