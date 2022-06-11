@@ -6,7 +6,7 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Address, bufferToHex } from 'ethereumjs-util'
+import { Address, bufferToHex } from '@ethereumjs/util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import type VM from '@ethereumjs/vm'

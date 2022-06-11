@@ -1,5 +1,5 @@
 import { Transaction } from '../src'
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const txData = toBuffer(

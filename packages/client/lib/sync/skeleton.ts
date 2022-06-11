@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 import RLP from 'rlp'
 
 import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'

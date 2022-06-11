@@ -8,7 +8,7 @@ import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
-import { Address, toBuffer } from 'ethereumjs-util'
+import { Address, toBuffer } from '@ethereumjs/util'
 import {
   parseMultiaddrs,
   parseGenesisState,

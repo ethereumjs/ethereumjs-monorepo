@@ -1,14 +1,14 @@
 import Common, { Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
+import { setLengthRight, setLengthLeft, bigIntToBuffer } from '@ethereumjs/util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
 /**
- * Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
+ * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
  * length buffer in case the buffer is full of zeros.
  * @param value Buffer which we want to pad
  */

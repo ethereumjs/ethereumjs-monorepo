@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import tape from 'tape'
-import { setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { BaseTrie } from '../src'
 import { DB, LevelDB } from '../src/db'
 

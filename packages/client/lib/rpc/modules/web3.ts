@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { addHexPrefix, toBuffer } from 'ethereumjs-util'
+import { addHexPrefix, toBuffer } from '@ethereumjs/util'
 import { middleware, validators } from '../validation'
 import { getClientVersion } from '../../util'
 import type { EthereumClient } from '../..'

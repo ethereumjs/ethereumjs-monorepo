@@ -1,4 +1,4 @@
-# ethereumjs-util
+# @ethereumjs/util
 
 [![NPM Package][util-npm-badge]][util-npm-link]
 [![GitHub Issues][util-issues-badge]][util-issues-link]
@@ -10,19 +10,18 @@ A collection of utility functions for Ethereum. It can be used in Node.js and in
 
 # INSTALL
 
-`npm install ethereumjs-util`
+`npm install @ethereumjs/util`
 
 # USAGE
 
 ```js
 import assert from 'assert'
-import { isValidChecksumAddress, unpadBuffer, BN } from 'ethereumjs-util'
+import { isValidChecksumAddress, unpadBuffer } from '@ethereumjs/util'
 
 assert.ok(isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'))
 
 assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
 
-assert.ok(new BN('dead', 16).add(new BN('101010', 2)).eqn(57047))
 ```
 
 # API
@@ -71,20 +70,7 @@ The following methods are available by an internalized version of the [ethjs-uti
 They can be imported by name:
 
 ```js
-import { stripHexPrefix } from 'ethereumjs-util'
-```
-
-### Re-Exports
-
-`ethereumjs-util` re-exports the following commonly-used libraries:
-
-- [BN.js](https://github.com/indutny/bn.js) (version `5.x`)
-- [rlp](https://github.com/ethereumjs/rlp) (version `2.x`)
-
-They can be imported by name:
-
-```js
-import { BN, rlp } from 'ethereumjs-util'
+import { stripHexPrefix } from '@ethereumjs/util'
 ```
 
 # EthereumJS
@@ -97,8 +83,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 MPL-2.0
 
-[util-npm-badge]: https://img.shields.io/npm/v/ethereumjs-util.svg
-[util-npm-link]: https://www.npmjs.org/package/ethereumjs-util
+[util-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/util.svg
+[util-npm-link]: https://www.npmjs.org/package/@ethereumjs/util
 [util-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20util?label=issues
 [util-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+util"
 [util-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Util/badge.svg

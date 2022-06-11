@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from 'ethereumjs-util'
+import { Address, bigIntToHex } from '@ethereumjs/util'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import type { FullEthereumService } from '../../../lib/service'
 

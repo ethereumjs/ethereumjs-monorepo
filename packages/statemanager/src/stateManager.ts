@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -12,7 +12,7 @@ import {
   KECCAK256_RLP,
   setLengthLeft,
   short,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 import RLP from 'rlp'
 import { StateManager, StorageDump } from './interface'
@@ -67,7 +67,7 @@ export interface DefaultStateManagerOpts {
  * and storage slots.
  *
  * The default state manager implementation uses a
- * `merkle-patricia-tree` trie as a data backend.
+ * `@ethereumjs/trie` trie as a data backend.
  */
 export default class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie

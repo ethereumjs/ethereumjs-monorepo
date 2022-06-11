@@ -6,7 +6,7 @@ import Common, {
   ConsensusAlgorithm,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'

@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
-import { arrToBufArr } from 'ethereumjs-util'
+import { arrToBufArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { ETH } from './protocol/eth'
 import { LES } from './protocol/les'

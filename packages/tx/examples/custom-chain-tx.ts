@@ -1,4 +1,4 @@
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '../src'
 

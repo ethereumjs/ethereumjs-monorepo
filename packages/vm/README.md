@@ -16,7 +16,6 @@
 # USAGE
 
 ```typescript
-import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
@@ -38,7 +37,7 @@ vm.evm.on('step', function (data) {
 vm.evm
   .runCode({
     code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff),
+    gasLimit: BigInt(0xffff),
   })
   .then((results) => {
     console.log(`Returned: ${results.returnValue.toString('hex')}`)

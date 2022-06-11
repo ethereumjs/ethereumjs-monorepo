@@ -1,4 +1,4 @@
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'

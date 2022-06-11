@@ -6,7 +6,7 @@ import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import blocks from '../../testdata/blocks/beacon.json'
 import { batchBlocks } from './newPayloadV1.spec'
-import { bufferToHex, zeros } from 'ethereumjs-util'
+import { bufferToHex, zeros } from '@ethereumjs/util'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { bufArrToArr, NestedUint8Array, toBuffer, zeros } from 'ethereumjs-util'
+import { bufArrToArr, NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'

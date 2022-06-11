@@ -19,7 +19,7 @@ import {
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import RLP from 'rlp'
 import { VmState } from '../src/vmState'
 

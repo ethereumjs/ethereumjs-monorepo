@@ -1,4 +1,4 @@
-import { setLengthRight, setLengthLeft, bufferToBigInt, bigIntToBuffer } from 'ethereumjs-util'
+import { setLengthRight, setLengthLeft, bufferToBigInt, bigIntToBuffer } from '@ethereumjs/util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
@@ -129,7 +129,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-  const maxSize = BigInt(2147483647) // ethereumjs-util setLengthRight limitation
+  const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     return OOGResult(opts.gasLimit)

@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
+import { Account, Address, bigIntToHex, intToHex } from '@ethereumjs/util'
 import { VmState } from '../vmState'
 
 import { ERROR, VmError } from '../exceptions'

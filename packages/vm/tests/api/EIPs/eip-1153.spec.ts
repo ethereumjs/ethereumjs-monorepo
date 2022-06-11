@@ -1,7 +1,7 @@
 import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Account, Address, bufferToInt, privateToAddress } from 'ethereumjs-util'
+import { Account, Address, bufferToInt, privateToAddress } from '@ethereumjs/util'
 import { Transaction } from '@ethereumjs/tx'
 
 interface Test {

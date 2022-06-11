@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, privateToAddress } from 'ethereumjs-util'
+import { Address, privateToAddress } from '@ethereumjs/util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'

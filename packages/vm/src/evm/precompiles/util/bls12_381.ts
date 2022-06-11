@@ -1,4 +1,4 @@
-import { padToEven, bufferToBigInt } from 'ethereumjs-util'
+import { padToEven, bufferToBigInt } from '@ethereumjs/util'
 import { VmError, ERROR } from '../../../exceptions'
 
 // base field modulus as described in the EIP

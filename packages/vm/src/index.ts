@@ -1,4 +1,4 @@
-import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-util'
+import { Account, Address, BigIntLike, toType, TypeOutput } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'

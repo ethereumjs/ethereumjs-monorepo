@@ -1,9 +1,9 @@
 {
-  "name": "merkle-patricia-tree",
-  "version": "4.2.4",
+  "name": "@ethereumjs/trie",
+  "version": "5.0.0",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
+  "author": "EthereumJS Team",
   "keywords": [
     "merkle",
     "radix",
@@ -37,6 +37,7 @@
     "test:node": "tape -r ts-node/register test/*.ts"
   },
   "dependencies": {
+    "@ethereumjs/util": "^8.0.0",
     "ethereum-cryptography": "^1.0.3",
     "ethereumjs-util": "^7.1.5",
     "level": "^8.0.0",

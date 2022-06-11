@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { bufferToNibbles, nibblesToBuffer } from './util/nibbles'
 import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'

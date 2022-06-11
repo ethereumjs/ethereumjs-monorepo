@@ -1,6 +1,6 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bufArrToArr } from 'ethereumjs-util'
+import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Block, BlockHeader } from '../src'
 

@@ -13,7 +13,7 @@ import {
   publicToAddress,
   SECP256K1_ORDER_DIV_2,
   setLengthRight,
-} from 'ethereumjs-util'
+} from '@ethereumjs/util'
 import {
   addressToBuffer,
   describeLocation,

@@ -1,4 +1,4 @@
-[ethereumjs-util](../README.md) / Address
+[@ethereumjs/util](../README.md) / Address
 
 # Class: Address
 

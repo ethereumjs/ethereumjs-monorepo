@@ -1,4 +1,4 @@
-[ethereumjs-util](../README.md) / TransformableToArray
+[@ethereumjs/util](../README.md) / TransformableToArray
 
 # Interface: TransformableToArray
 

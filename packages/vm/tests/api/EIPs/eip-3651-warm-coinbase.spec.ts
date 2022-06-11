@@ -2,7 +2,7 @@ import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from 'ethereumjs-util'
+import { Address, privateToAddress } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt(1000000000)
