@@ -7,9 +7,8 @@ import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from 'ethereu
 import RLP from 'rlp'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
-
-const { Level } = require('level')
-const levelMem = require('level-mem')
+import { Level } from 'level'
+import { MemoryLevel } from 'memory-level'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -29,7 +28,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  const blockchainDB = levelMem()
+  const blockchainDB = new MemoryLevel()
   const cacheDB = new Level('./.cachedb')
   const state = new Trie()
 
@@ -57,7 +56,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   }
 
   const blockchain = await Blockchain.create({
-    db: blockchainDB,
+    db: blockchainDB as Level<string | Buffer, string | Buffer>,
     common,
     validateBlocks: true,
     validateConsensus: validatePow,
@@ -65,7 +64,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
+    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB as any
   }
 
   let VM

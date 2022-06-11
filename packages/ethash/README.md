@@ -22,7 +22,7 @@ Note: this `README` reflects the state of the library from `v1.0.0` onwards. See
 ```typescript
 import Ethash from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 const cacheDB = level()
 
@@ -47,9 +47,9 @@ import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
+const cacheDB = new MemoryLevel()
 const block = Block.fromBlockData({
   header: {
     difficulty: new BN(100),

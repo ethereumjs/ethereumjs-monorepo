@@ -6,7 +6,7 @@ import { MemoryDB, LevelDB } from '../dist'
 const suite = new Benchmark.Suite()
 
 for (const [name, DB] of Object.entries({ MemoryDB, LevelDB })) {
-  const db = new DB()
+  const db = new LevelDB()
 
   // random.ts
   // Test ID is defined as: `pair_count`-`era_size`-`key_size`-`value_type`
