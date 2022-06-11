@@ -1,10 +1,22 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork, CliqueConfig } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import { Address, toBuffer } from 'ethereumjs-util'
+import RLP from 'rlp'
 import tape from 'tape'
 import Blockchain from '../src'
-import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
+import {
+  generateBlockchain,
+  generateBlocks,
+  isConsecutive,
+  createTestDB,
+  createBlock,
+} from './util'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
+const blocksTestDataPreLondon = require('./testdata/blocks_testdata_pre-london.json')
+const blocksTestDataPreLondon2 = require('./testdata/blocks_testdata_pre-london-2.json')
 
 const level = require('level-mem')
 
@@ -948,6 +960,1067 @@ tape('initialization tests', (t) => {
     )
     st.ok(blockchain.genesisBlock.hash().equals(ropstenGenesisBlockHash))
     st.ok(blockchain.genesisBlock.header.stateRoot.equals(ropstenGenesisStateRoot))
+    st.end()
+  })
+})
+
+tape('block & block header validation tests', (t) => {
+  t.test('should validate extraData', async function (st) {
+    // PoW
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    let blockchain = await Blockchain.create({ common })
+    let genesis = Block.fromBlockData({}, { common })
+
+    const number = 1
+    let parentHash = genesis.hash()
+    const timestamp = Date.now()
+    let { gasLimit } = genesis.header
+    let data = { number, parentHash, timestamp, gasLimit }
+    let opts = { common, calcDifficultyFromHeader: genesis.header }
+
+    // valid extraData: at limit
+    let testCase = 'pow block should validate with 32 bytes of extraData'
+    let extraData = Buffer.alloc(32)
+    let header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await blockchain.validateBlockHeader(header)
+      st.pass(testCase)
+    } catch (error: any) {
+      st.fail(testCase)
+    }
+
+    // valid extraData: fewer than limit
+    testCase = 'pow block should validate with 12 bytes of extraData'
+    extraData = Buffer.alloc(12)
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await blockchain.validateBlockHeader(header)
+      st.ok(testCase)
+    } catch (error: any) {
+      st.fail(testCase)
+    }
+
+    // extraData beyond limit
+    testCase = 'pow block should throw with excess amount of extraData'
+    extraData = Buffer.alloc(42)
+    try {
+      header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+      st.fail(testCase)
+    } catch (error: any) {
+      st.ok(error.message.includes('invalid amount of extra data'), testCase)
+    }
+
+    // PoA
+    common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    blockchain = await Blockchain.create({ common })
+    genesis = Block.fromBlockData({}, { common })
+
+    parentHash = genesis.hash()
+    gasLimit = genesis.header.gasLimit
+    data = { number, parentHash, timestamp, gasLimit, difficulty: BigInt(1) } as any
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
+    opts = { common, cliqueSigner } as any
+
+    // valid extraData (32 byte vanity + 65 byte seal)
+    testCase =
+      'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
+    extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65)])
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await blockchain.validateBlockHeader(header)
+      t.pass(testCase)
+    } catch (error: any) {
+      t.fail(testCase)
+    }
+
+    // invalid extraData length
+    testCase = 'clique block should throw on invalid extraData length'
+    extraData = Buffer.alloc(32)
+    try {
+      header = BlockHeader.fromHeaderData({ ...data, extraData }, { common })
+      await blockchain.validateBlockHeader(header)
+      t.fail(testCase)
+    } catch (error: any) {
+      t.ok(
+        error.message.includes(
+          'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
+        ),
+        testCase
+      )
+    }
+
+    // signer list indivisible by 20
+    testCase = 'clique blocks should throw on invalid extraData length: indivisible by 20'
+    extraData = Buffer.concat([
+      Buffer.alloc(32),
+      Buffer.alloc(65),
+      Buffer.alloc(20),
+      Buffer.alloc(21),
+    ])
+    const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
+    try {
+      header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
+      await blockchain.validateBlockHeader(header)
+      st.fail(testCase)
+    } catch (error: any) {
+      st.ok(
+        error.message.includes(
+          'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
+        ),
+        testCase
+      )
+    }
+
+    st.end()
+  })
+
+  // TODO: fix these tests
+  // consensus validation is failing because "coinbase must be filled with zeros on epoch transition blocks".
+  // problem with testdata or problem with the code?
+  t.test('header validation -> poa checks', async function (st) {
+    const headerData = blocksTestDataPreLondon.blocks[0].blockHeader
+
+    let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
+
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
+    let opts = { common, cliqueSigner } as any
+
+    const genesisRlp = toBuffer(blocksTestDataPreLondon.genesisRLP)
+    const block = Block.fromRLPSerializedBlock(genesisRlp, opts)
+    const blockchain = await Blockchain.create({ common, genesisBlock: block })
+
+    headerData.number = 1
+    headerData.timestamp = BigInt(1422494850)
+    headerData.extraData = Buffer.alloc(97)
+    headerData.mixHash = Buffer.alloc(32)
+    headerData.difficulty = BigInt(2)
+
+    let header: BlockHeader, parentHeader: BlockHeader
+
+    let testCase = 'should throw on lower than period timestamp diffs'
+    try {
+      header = BlockHeader.fromHeaderData(headerData, opts)
+      await blockchain.validateBlockHeader(header)
+      st.fail(testCase)
+    } catch (error: any) {
+      st.ok(error.message.includes('invalid timestamp diff (lower than period)'), testCase)
+    }
+
+    testCase = 'should not throw on timestamp diff equal to period'
+    headerData.timestamp = BigInt(1422494864)
+    try {
+      header = BlockHeader.fromHeaderData(headerData, opts)
+      await blockchain.validateBlockHeader(header)
+      st.pass(testCase)
+    } catch (error: any) {
+      st.fail(testCase)
+    }
+
+    testCase = 'should throw on non-zero beneficiary (coinbase) for epoch transition block'
+    headerData.number = common.consensusConfig().epoch
+    headerData.coinbase = Address.fromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
+    try {
+      header = BlockHeader.fromHeaderData(headerData, opts)
+      await blockchain.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (error: any) {
+      if (error.message.includes('coinbase must be filled with zeros on epoch transition blocks')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.number = 1
+    headerData.coinbase = Address.zero()
+
+    testCase = 'should throw on non-zero mixHash'
+    headerData.mixHash = Buffer.alloc(32).fill(1)
+    try {
+      header = BlockHeader.fromHeaderData(headerData, opts)
+      await blockchain.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (error: any) {
+      if (error.message.includes('mixHash must be filled with zeros')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.mixHash = Buffer.alloc(32)
+
+    testCase = 'should throw on invalid clique difficulty'
+    headerData.difficulty = BigInt(3)
+    try {
+      header = BlockHeader.fromHeaderData(headerData, opts)
+      parentHeader = (await blockchain.getBlock(header.parentHash)).header
+      blockchain.validateDifficulty(header, parentHeader)
+      st.fail(testCase)
+    } catch (error: any) {
+      if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
+        st.pass('error thrown on invalid clique difficulty')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+
+    testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
+    headerData.difficulty = BigInt(2)
+    common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    opts = { common, cliqueSigner } as any
+
+    const poaBlockchain = await Blockchain.create({ common })
+    const poaBlock = Block.fromRLPSerializedBlock(blocksTestDataPreLondon.genesisRLP, {
+      common,
+      cliqueSigner,
+    })
+    await poaBlockchain.putBlock(poaBlock)
+
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    parentHeader = (await poaBlockchain.getBlock(header.parentHash)).header
+    try {
+      const res = poaBlockchain.validateDifficulty(header, parentHeader)
+      st.equal(res, true, testCase)
+    } catch (error: any) {
+      st.fail(testCase)
+    }
+
+    testCase =
+      'validateCliqueDifficulty() should return false with INTURN difficulty and one signer'
+    headerData.difficulty = BigInt(1)
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    parentHeader = (await poaBlockchain.getBlock(header.parentHash)).header
+    try {
+      const res = poaBlockchain.validateDifficulty(header, parentHeader)
+      st.equal(res, false, testCase)
+    } catch (error: any) {
+      st.fail(testCase)
+    }
+    st.end()
+  })
+
+  t.test('should test validateDifficulty() for pow chains', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const genesis = Block.fromBlockData({}, { common })
+    const blockchain = await Blockchain.create({ common })
+
+    const nextBlockHeaderData = {
+      number: genesis.header.number + BigInt(1),
+      timestamp: genesis.header.timestamp + BigInt(10),
+    }
+
+    const blockWithDifficultyCalculation = Block.fromBlockData(
+      {
+        header: nextBlockHeaderData,
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+      }
+    )
+
+    st.ok(
+      blockchain.validateDifficulty(blockWithDifficultyCalculation.header, genesis.header),
+      'difficulty should be valid if difficulty header is provided'
+    )
+
+    st.end()
+  })
+
+  t.test('should test validateGasLimit()', async function (st) {
+    const testData = require('./testdata/bcBlockGasLimitTest.json').tests
+    const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
+
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const blockchain = await Blockchain.create({ common })
+
+    Object.keys(bcBlockGasLimitTestData).forEach((key) => {
+      const genesisRlp = bcBlockGasLimitTestData[key].genesisRLP
+      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
+      const blockRlp = bcBlockGasLimitTestData[key].blocks[0].rlp
+      const block = Block.fromRLPSerializedBlock(blockRlp)
+      st.equal(blockchain.validateGasLimit(block.header, parentBlock.header), true)
+    })
+
+    st.end()
+  })
+
+  t.test('should test uncles hash validation', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const blockchain = await Blockchain.create({ common })
+    const blockRlp = toBuffer(blocksTestDataPreLondon2.blocks[2].rlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    st.equal(block.validateUnclesHash(), true)
+    ;(block.header as any).uncleHash = Buffer.alloc(32)
+    try {
+      await blockchain.validateBlockUncles(block)
+      st.fail('should throw')
+    } catch (error: any) {
+      st.ok(error.message.includes('invalid uncle hash'))
+    }
+    st.end()
+  })
+
+  t.test('should throw if an uncle is listed twice', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock1 = createBlock(genesis, 'uncle', [], common)
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block1', [uncleBlock1.header, uncleBlock1.header], common)
+
+    await blockchain.putBlock(uncleBlock1)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await blockchain.validateBlockUncles(block2)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws if the uncle is included twice in the block')
+    }
+  })
+
+  t.test('should throw if an uncle is included before', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
+    const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+    await blockchain.putBlock(block3)
+
+    await blockchain.validateBlockUncles(uncleBlock)
+
+    await blockchain.validateBlockUncles(block1)
+    await blockchain.validateBlockUncles(block2)
+
+    try {
+      await blockchain.validateBlockUncles(block3)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws if uncle is already included')
+    }
+  })
+
+  t.test(
+    'should throw if the uncle parent block is not part of the canonical chain',
+    async function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const blockchain = await Blockchain.create({ common })
+
+      const genesis = Block.fromBlockData({}, { common })
+
+      const emptyBlock = Block.fromBlockData({ header: { number: BigInt(1) } }, { common })
+
+      //assertion
+      if (emptyBlock.hash().equals(genesis.hash())) {
+        st.fail('should create an unique bogus block')
+      }
+
+      await blockchain.putBlock(emptyBlock)
+
+      const uncleBlock = createBlock(emptyBlock, 'uncle', [], common)
+      const block1 = createBlock(genesis, 'block1', [], common)
+      const block2 = createBlock(block1, 'block2', [], common)
+      const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
+
+      await blockchain.putBlock(uncleBlock)
+      await blockchain.putBlock(block1)
+      await blockchain.putBlock(block2)
+      await blockchain.putBlock(block3)
+
+      try {
+        await blockchain.validateBlockUncles(block3)
+        st.fail('cannot reach this')
+      } catch (e: any) {
+        st.pass('block throws if uncle parent hash is not part of the canonical chain')
+      }
+    }
+  )
+
+  t.test('should throw if the uncle is too old', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
+
+    let lastBlock = genesis
+    for (let i = 0; i < 7; i++) {
+      const block = createBlock(lastBlock, 'block' + i.toString(), [], common)
+      await blockchain.putBlock(block)
+      lastBlock = block
+    }
+
+    const blockWithUnclesTooOld = createBlock(
+      lastBlock,
+      'too-old-uncle',
+      [uncleBlock.header],
+      common
+    )
+
+    try {
+      await blockchain.validateBlockUncles(blockWithUnclesTooOld)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws uncle is too old')
+    }
+  })
+
+  t.test('should throw if uncle is too young', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
+    const block1 = createBlock(genesis, 'block1', [uncleBlock.header], common)
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+
+    try {
+      await blockchain.validateBlockUncles(block1)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws uncle is too young')
+    }
+  })
+
+  t.test('should throw if the uncle header is invalid', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock = Block.fromBlockData(
+      {
+        header: {
+          number: genesis.header.number + BigInt(1),
+          parentHash: genesis.hash(),
+          timestamp: genesis.header.timestamp + BigInt(1),
+          gasLimit: BigInt(5000),
+          difficulty: BigInt(0), // invalid difficulty
+        },
+      },
+      { common }
+    )
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await blockchain.validateBlockUncles(block2)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws uncle header is invalid')
+    }
+  })
+
+  t.test('throws if more than 2 uncles included', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock1 = createBlock(genesis, 'uncle1', [], common)
+    const uncleBlock2 = createBlock(genesis, 'uncle2', [], common)
+    const uncleBlock3 = createBlock(genesis, 'uncle3', [], common)
+
+    // sanity check
+    if (
+      uncleBlock1.hash().equals(uncleBlock2.hash()) ||
+      uncleBlock2.hash().equals(uncleBlock3.hash())
+    ) {
+      st.fail('uncles 1/2/3 should be unique')
+    }
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(
+      block1,
+      'block1',
+      [uncleBlock1.header, uncleBlock2.header, uncleBlock3.header],
+      common
+    )
+
+    await blockchain.putBlock(uncleBlock1)
+    await blockchain.putBlock(uncleBlock2)
+    await blockchain.putBlock(uncleBlock3)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await blockchain.validateBlockUncles(block2)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws if more than 2 uncles are included')
+    }
+  })
+
+  t.test('throws if uncle is a canonical block', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [block1.header], common)
+
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await blockchain.validateBlockUncles(block2)
+      st.fail('cannot reach this')
+    } catch (e: any) {
+      st.pass('block throws if an uncle is a canonical block')
+    }
+  })
+
+  t.test('successfully validates uncles', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blockchain = await Blockchain.create({ common })
+
+    const genesis = Block.fromBlockData({}, { common })
+
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
+    await blockchain.putBlock(uncleBlock)
+
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
+
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    await blockchain.validateBlockUncles(block1)
+    await blockchain.validateBlockUncles(block2)
+    st.pass('uncle blocks validated succesfully')
+  })
+
+  t.test(
+    'should select the right hardfork for uncles at a hardfork transition',
+    async function (st) {
+      /**
+       * This test creates a chain around mainnet fork blocks:
+       *      berlin         london
+       *                |     |-> u <---|
+       * @ -> @ -> @ ---|---> @ -> @ -> @
+       * |-> u <---|               | -> @
+       *    ^----------------------------
+       * @ = block
+       * u = uncle block
+       *
+       * There are 3 pre-fork blocks, with 1 pre-fork uncle
+       * There are 3 blocks after the fork, with 1 uncle after the fork
+       *
+       * The following situations are tested:
+       * Pre-fork block can have legacy uncles
+       * London block has london uncles
+       * London block has legacy uncles
+       * London block has legacy uncles, where hardforkByBlockNumber set to false (this should throw)
+       *    In this situation, the london block creates a london uncle, but this london uncle should be
+       *    a berlin block, and therefore has no base fee. But, since common is still london, base fee
+       *    is expected
+       * It is tested that common does not change
+       */
+
+      const common = new Common({ chain: Chain.Mainnet })
+      common.setHardfork(Hardfork.Berlin)
+
+      const blockchain = await Blockchain.create({ common })
+
+      const mainnetForkBlock = common.hardforkBlock(Hardfork.London)
+      const rootBlock = Block.fromBlockData(
+        {
+          header: {
+            number: mainnetForkBlock! - BigInt(3),
+            gasLimit: BigInt(5000),
+          },
+        },
+        { common }
+      )
+
+      await blockchain.putBlock(rootBlock)
+
+      const unclePreFork = createBlock(rootBlock, 'unclePreFork', [], common)
+      const canonicalBlock = createBlock(rootBlock, 'canonicalBlock', [], common)
+      await blockchain.putBlock(canonicalBlock)
+      const preForkBlock = createBlock(
+        canonicalBlock,
+        'preForkBlock',
+        [unclePreFork.header],
+        common
+      )
+      await blockchain.putBlock(preForkBlock)
+      common.setHardfork(Hardfork.London)
+      const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
+      await blockchain.putBlock(forkBlock)
+      const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)
+      const canonicalBlock2 = createBlock(forkBlock, 'canonicalBlock2', [], common)
+      const forkBlock2 = createBlock(canonicalBlock2, 'forkBlock2', [uncleFork.header], common)
+      await blockchain.putBlock(canonicalBlock2)
+      await blockchain.putBlock(forkBlock)
+      await blockchain.validateBlockUncles(preForkBlock)
+
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+      await blockchain.validateBlockUncles(forkBlock2)
+
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+
+      const forkBlock2HeaderData = forkBlock2.header.toJSON()
+      const uncleHeaderData = unclePreFork.header.toJSON()
+
+      uncleHeaderData.extraData = '0xffff'
+      const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
+        common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+      })
+
+      forkBlock2HeaderData.uncleHash = '0x' + bytesToHex(keccak256(RLP.encode([uncleHeader.raw()])))
+
+      const forkBlock_ValidCommon = Block.fromBlockData(
+        {
+          header: forkBlock2HeaderData,
+          uncleHeaders: [uncleHeaderData],
+        },
+        {
+          common,
+        }
+      )
+
+      await blockchain.validateBlockUncles(forkBlock_ValidCommon)
+
+      st.pass('successfully validated a pre-london uncle on a london block')
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+
+      const forkBlock_InvalidCommon = Block.fromBlockData(
+        {
+          header: forkBlock2HeaderData,
+          uncleHeaders: [uncleHeaderData],
+        },
+        {
+          common,
+          hardforkByBlockNumber: false,
+        }
+      )
+
+      try {
+        await blockchain.validateBlockUncles(forkBlock_InvalidCommon)
+        st.fail('cannot reach this')
+      } catch (e: any) {
+        st.ok(
+          e.message.includes('with EIP1559 being activated'),
+          'explicitly set hardforkByBlockNumber to false, pre-london block interpreted as london block and succesfully failed'
+        )
+      }
+
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    }
+  )
+})
+
+tape('EIP1559 header validation tests', async (t) => {
+  const common = new Common({
+    eips: [1559],
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.London,
+  })
+
+  const blockchain1 = await Blockchain.create({ common })
+  const blockchain2 = await Blockchain.create({ common })
+
+  const genesis = Block.fromBlockData({})
+
+  // Small hack to hack in the activation block number
+  // (Otherwise there would be need for a custom chain only for testing purposes)
+  common.hardforkBlock = function (hardfork: string | undefined) {
+    if (hardfork === 'london') {
+      return BigInt(1)
+    } else if (hardfork === 'dao') {
+      // Avoid DAO HF side-effects
+      return BigInt(99)
+    }
+    return BigInt(0)
+  }
+
+  t.test('Initialize test suite', async function (st) {
+    await blockchain1.putBlock(genesis)
+    await blockchain2.putBlock(genesis)
+    st.end()
+  })
+
+  t.test('Header -> validate()', async function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        timestamp: BigInt(1),
+        baseFeePerGas: 100,
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+        freeze: false,
+      }
+    )
+
+    try {
+      await blockchain1.validateBlockHeader(header)
+      st.fail('should throw when baseFeePerGas is not set to initial base fee')
+    } catch (e: any) {
+      const expectedError = 'Initial EIP1559 block does not have initial base fee'
+      st.ok(
+        e.message.includes(expectedError),
+        'should throw if base fee is not set to initial value'
+      )
+    }
+
+    try {
+      ;(header as any).baseFeePerGas = undefined
+      await blockchain1.validateBlockHeader(header)
+    } catch (e: any) {
+      const expectedError = 'EIP1559 block has no base fee field'
+      st.ok(
+        e.message.includes(expectedError),
+        'should throw with no base fee field when EIP1559 is activated'
+      )
+    }
+
+    ;(header as any).baseFeePerGas = BigInt(7) // reset for next test
+    const block = Block.fromBlockData({ header }, { common })
+    try {
+      const blockchain = Object.create(blockchain1)
+      await blockchain.putBlock(block)
+      const header = BlockHeader.fromHeaderData(
+        {
+          number: BigInt(2),
+          parentHash: block.hash(),
+          gasLimit: block.header.gasLimit,
+          timestamp: BigInt(10),
+          baseFeePerGas: BigInt(1000),
+        },
+        {
+          calcDifficultyFromHeader: block.header,
+          common,
+        }
+      )
+      await blockchain.validateBlockHeader(header)
+    } catch (e: any) {
+      const expectedError = 'Invalid block: base fee not correct'
+      st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
+    }
+
+    st.end()
+  })
+
+  const block1 = Block.fromBlockData(
+    {
+      header: {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        timestamp: BigInt(1),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+    },
+    {
+      calcDifficultyFromHeader: genesis.header,
+      common,
+    }
+  )
+
+  t.test('Header -> validate() -> success case', async function (st) {
+    await blockchain1.validateBlockHeader(block1.header)
+    await blockchain2.putBlock(block1)
+    st.pass('Valid initial EIP1559 header should be valid')
+
+    st.end()
+  })
+
+  t.test('Header -> validate()', async function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        baseFeePerGas: BigInt(1000),
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        timestamp: BigInt(1),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+
+    try {
+      await blockchain1.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
+    }
+    st.end()
+  })
+
+  t.test('Header -> validate() -> success cases', async function (st) {
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: BigInt(2),
+          parentHash: block1.hash(),
+          timestamp: BigInt(2),
+          gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+          baseFeePerGas: Buffer.from('342770c0', 'hex'),
+        },
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    // blockchain2 has block 1 added at this moment (see test above)
+    await blockchain2.validateBlockHeader(block.header)
+    st.pass('should correctly validate subsequent EIP-1559 blocks')
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gas usage', async function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        gasUsed:
+          genesis.header.gasLimit *
+            (common.param('gasConfig', 'elasticityMultiplier') ?? BigInt(0)) +
+          BigInt(1),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+
+    try {
+      await blockchain1.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
+    }
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gas usage', async function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        gasUsed: genesis.header.gasLimit * BigInt(2),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+
+    await blockchain1.validateBlockHeader(header)
+    st.pass('should not throw when elasticity is exactly matched')
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gasLimit -> success cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit * BigInt(2)
+    let header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: parentGasLimit + parentGasLimit / BigInt(1024) - BigInt(1),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    await blockchain1.validateBlockHeader(header)
+    st.pass('should not throw if gas limit is between bounds (HF transition block)')
+
+    header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: parentGasLimit - parentGasLimit / BigInt(1024) + BigInt(1),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    await blockchain1.validateBlockHeader(header)
+    st.pass('should not throw if gas limit is between bounds (HF transition block)')
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(2),
+        parentHash: block1.hash(),
+        timestamp: BigInt(2),
+        gasLimit: parentGasLimit + parentGasLimit / BigInt(1024) - BigInt(1),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    await blockchain2.validateBlockHeader(header)
+    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
+
+    header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(2),
+        parentHash: block1.hash(),
+        timestamp: BigInt(2),
+        gasLimit: parentGasLimit - parentGasLimit / BigInt(1024) + BigInt(1),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    await blockchain2.validateBlockHeader(header)
+    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gasLimit -> error cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit * BigInt(2)
+    let header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: parentGasLimit + parentGasLimit / BigInt(1024),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    try {
+      await blockchain1.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is increased too much (HF transition block)'
+      )
+    }
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(2),
+        parentHash: block1.hash(),
+        timestamp: BigInt(2),
+        gasLimit: parentGasLimit + parentGasLimit / BigInt(1024),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    try {
+      await blockchain2.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is increased too much (post-HF transition block)'
+      )
+    }
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gasLimit -> error cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit * BigInt(2)
+    let header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        timestamp: BigInt(1),
+        gasLimit: parentGasLimit - parentGasLimit / BigInt(1024),
+        baseFeePerGas: common.param('gasConfig', 'initialBaseFee'),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    try {
+      await blockchain1.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is decreased too much (HF transition block)'
+      )
+    }
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(2),
+        parentHash: block1.hash(),
+        timestamp: BigInt(2),
+        gasLimit: parentGasLimit - parentGasLimit / BigInt(1024),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    try {
+      await blockchain2.validateBlockHeader(header)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is decreased too much (post-HF transition block)'
+      )
+    }
     st.end()
   })
 })
