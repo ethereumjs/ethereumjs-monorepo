@@ -2,23 +2,19 @@ import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
+import { AbstractLevel } from 'abstract-level'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
-import { Level } from 'level'
+class NotFoundError extends Error {
+  public code: string = 'LEVEL_NOT_FOUND'
 
-export class NotFoundError extends Error {
-  public type: string = 'NotFoundError'
+  constructor(blockNumber: bigint) {
+    super(`Key ${blockNumber.toString()} was not found`)
 
-  public constructor() {
-    super()
-
-    Object.defineProperty(this, 'name', {
-      enumerable: false,
-      value: this.constructor.name,
-    })
-
-    Error.captureStackTrace(this, this.constructor)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor)
+    }
   }
 }
 
@@ -41,9 +37,12 @@ export type CacheMap = { [key: string]: Cache<Buffer> }
 export class DBManager {
   private _cache: CacheMap
   private _common: Common
-  private _db: Level<string | Buffer, string | Buffer>
+  private _db: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
-  constructor(db: Level<string | Buffer, string | Buffer>, common: Common) {
+  constructor(
+    db: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>,
+    common: Common
+  ) {
     this._db = db
     this._common = common
     this._cache = {
@@ -106,7 +105,7 @@ export class DBManager {
     try {
       body = await this.getBody(hash, number)
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
     }
@@ -164,7 +163,7 @@ export class DBManager {
    */
   async numberToHash(blockNumber: bigint): Promise<Buffer> {
     if (blockNumber < BigInt(0)) {
-      throw new NotFoundError()
+      throw new NotFoundError(blockNumber)
     }
 
     return this.get(DBTarget.NumberToHash, { blockNumber })
@@ -189,16 +188,11 @@ export class DBManager {
 
       let value = this._cache[cacheString].get(dbKey)
       if (!value) {
-        // eslint-disable-next-line @typescript-eslint/await-thenable
         value = await this._db.get(dbKey, dbOpts)
 
-        if (value === undefined) {
-          throw new Error(
-            `Expected ${dbKey.toString('hex')} to have a value but received undefined.`
-          )
+        if (value) {
+          this._cache[cacheString].set(dbKey, value)
         }
-
-        this._cache[cacheString].set(dbKey, value)
       }
 
       return value

@@ -2,20 +2,20 @@ import { FlowControl } from '../net/protocol/flowcontrol'
 import { Chain } from '../blockchain'
 import { Service, ServiceOptions } from './service'
 import { Synchronizer } from '../sync'
-import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 
 export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain */
   chain: Chain
 
   /* Blockchain database */
-  chainDB?: Level<string | Buffer, Buffer>
+  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* State database */
-  stateDB?: Level<string | Buffer, Buffer>
+  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: Level<string | Buffer, Buffer>
+  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* Sync retry interval in ms (default: 8000) */
   interval?: number

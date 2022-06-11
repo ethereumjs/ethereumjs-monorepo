@@ -1,16 +1,16 @@
 import { Config } from '../config'
 import { Chain } from '../blockchain'
-import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 
 export interface ExecutionOptions {
   /* Config */
   config: Config
 
   /* State database */
-  stateDB?: Level<string | Buffer, Buffer>
+  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: Level<string | Buffer, Buffer>
+  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /** Chain */
   chain: Chain
@@ -19,8 +19,8 @@ export interface ExecutionOptions {
 export abstract class Execution {
   public config: Config
 
-  protected stateDB?: Level<string | Buffer, Buffer>
-  protected metaDB?: Level<string | Buffer, Buffer>
+  protected stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  protected metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
   protected chain: Chain
 
   public running: boolean = false

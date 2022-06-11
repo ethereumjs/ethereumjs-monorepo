@@ -683,7 +683,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should save headers', async (st) => {
-    const db = new MemoryLevel()
+    const db = new MemoryLevel<string | Buffer, string | Buffer>()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

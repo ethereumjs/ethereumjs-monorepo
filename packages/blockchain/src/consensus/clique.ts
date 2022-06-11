@@ -33,8 +33,8 @@ const CLIQUE_VOTES_KEY = 'CliqueVotes'
 const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 
 const DB_OPTS = {
-  keyEncoding: 'binary',
-  valueEncoding: 'binary',
+  keyEncoding: 'buffer',
+  valueEncoding: 'buffer',
 }
 
 /**
@@ -473,7 +473,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error
@@ -499,7 +499,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, [signer, beneficiary, nonce]]
       }) as CliqueLatestVotes
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error
@@ -523,7 +523,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error

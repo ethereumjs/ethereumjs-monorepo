@@ -1,4 +1,4 @@
-import Ethash, { Solution, Miner as EthashMiner, EthashCacheDB } from '@ethereumjs/ethash'
+import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'
@@ -54,7 +54,7 @@ export class Miner {
       ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
-      this.ethash = new Ethash(new MemoryLevel() as EthashCacheDB)
+      this.ethash = new Ethash(new MemoryLevel())
     }
   }
 

@@ -18,8 +18,8 @@ import {
   getFullSize,
   getSeed,
 } from './util'
-import { Level } from 'level'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+import { AbstractLevel } from 'abstract-level'
 const xor = require('buffer-xor')
 
 export type Solution = {
@@ -140,8 +140,9 @@ export class Miner {
   }
 }
 
-export type EthashCacheDB = Level<
-  Buffer,
+export type EthashCacheDB = AbstractLevel<
+  string | Buffer | Uint8Array,
+  string | Buffer,
   {
     cache: Buffer[]
     fullSize: number
@@ -273,7 +274,7 @@ export default class Ethash {
       try {
         data = await this.cacheDB!.get(epoc, this.dbOpts)
       } catch (error: any) {
-        if (error.type !== 'NotFoundError') {
+        if (error.code !== 'LEVEL_NOT_FOUND') {
           throw error
         }
       }
@@ -288,7 +289,7 @@ export default class Ethash {
     try {
       data = await this.cacheDB!.get(epoc, this.dbOpts)
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
     }

@@ -22,6 +22,7 @@ import { startRPCServers, helprpc } from './startRpc'
 import type { FullEthereumService } from '../lib/service'
 import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 
@@ -275,21 +276,25 @@ const args = yargs(hideBin(process.argv))
 /**
  * Initializes and returns the databases needed for the client
  */
-function initDBs(config: Config) {
+function initDBs(config: Config): {
+  chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+} {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
   ensureDirSync(chainDataDir)
-  const chainDB = new Level<string | Buffer, Buffer>(chainDataDir)
+  const chainDB = new Level<string | Buffer, string | Buffer>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = new Level<string | Buffer, Buffer>(stateDataDir)
+  const stateDB = new Level<string | Buffer, string | Buffer>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
   ensureDirSync(metaDataDir)
-  const metaDB = new Level<string | Buffer, Buffer>(metaDataDir)
+  const metaDB = new Level<string | Buffer, string | Buffer>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
 }

@@ -28,7 +28,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  const blockchainDB = new MemoryLevel()
   const cacheDB = new Level('./.cachedb')
   const state = new Trie()
 
@@ -56,7 +55,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   }
 
   const blockchain = await Blockchain.create({
-    db: blockchainDB as Level<string | Buffer, string | Buffer>,
+    db: new MemoryLevel(),
     common,
     validateBlocks: true,
     validateConsensus: validatePow,

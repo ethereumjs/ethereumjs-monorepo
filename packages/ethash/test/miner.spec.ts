@@ -8,7 +8,7 @@ const cacheDB = new MemoryLevel()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
 tape('Check if miner works as expected', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const block = Block.fromBlockData(
     {
@@ -52,7 +52,7 @@ tape('Check if miner works as expected', async function (t) {
 })
 
 tape('Check if it is possible to mine Blocks and BlockHeaders', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const block = Block.fromBlockData(
     {
@@ -78,7 +78,7 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
 })
 
 tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const block = Block.fromBlockData(
     {
@@ -101,7 +101,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
 })
 
 tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const block: any = {}
 
@@ -113,7 +113,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
 })
 
 tape('Should keep common when mining blocks or headers', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const block = Block.fromBlockData(
     {

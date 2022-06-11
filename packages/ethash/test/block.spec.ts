@@ -10,7 +10,7 @@ const cacheDB = new MemoryLevel()
 const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 
 tape('Verify POW for valid and invalid blocks', async function (t) {
-  const e = new Ethash(cacheDB)
+  const e = new Ethash(cacheDB as any)
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 

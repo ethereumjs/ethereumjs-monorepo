@@ -381,13 +381,13 @@ export class Config {
   static async getClientKey(datadir: string, common: Common) {
     const networkDir = `${datadir}/${common.chainName()}`
     const db = this.getConfigDB(networkDir)
-    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'binary' }
+    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'buffer' }
     const dbKey = 'config:client_key'
     let key
     try {
       key = await db.get(dbKey, encodingOpts)
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         // generate and save a new key
         key = genPrivateKey()
         await db.put(dbKey, key, encodingOpts)

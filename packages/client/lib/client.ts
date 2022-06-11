@@ -5,7 +5,7 @@ import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 import { Chain } from './blockchain'
 import type Blockchain from '@ethereumjs/blockchain'
-import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -20,7 +20,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  chainDB?: Level<string | Buffer, Buffer>
+  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Database to store the state.
@@ -28,7 +28,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: Level<string | Buffer, Buffer>
+  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Database to store tx receipts, logs, and indexes.
@@ -36,7 +36,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created in datadir folder
    */
-  metaDB?: Level<string | Buffer, Buffer>
+  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* List of bootnodes to use for discovery */
   bootnodes?: MultiaddrLike[]

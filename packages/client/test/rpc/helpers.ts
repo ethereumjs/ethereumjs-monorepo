@@ -99,7 +99,7 @@ export function createClient(clientOpts: any = {}) {
 
   let execution
   if (clientOpts.includeVM) {
-    const metaDB = clientOpts.enableMetaDB ? new MemoryLevel() : undefined
+    const metaDB: any = clientOpts.enableMetaDB ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
 

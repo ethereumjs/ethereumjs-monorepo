@@ -9,8 +9,8 @@ import { DBTarget } from './db/operation'
 import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
 import { GenesisState, genesisStateRoot } from './genesisStates'
 
-import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+import { AbstractLevel } from 'abstract-level'
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -78,7 +78,7 @@ export interface BlockchainOptions {
    * or use the `level` convenience package:
    *   `new MemoryLevel('./db1')`
    */
-  db?: Level<string | Buffer, string | Buffer>
+  db?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm
@@ -140,7 +140,7 @@ export interface BlockchainOptions {
  */
 export default class Blockchain implements BlockchainInterface {
   consensus: Consensus
-  db: Level<string | Buffer, string | Buffer>
+  db: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
   dbManager: DBManager
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
@@ -231,7 +231,7 @@ export default class Blockchain implements BlockchainInterface {
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db ?? (new MemoryLevel() as Level<string | Buffer, string | Buffer>)
+    this.db = opts.db ? opts.db : new MemoryLevel()
     this.dbManager = new DBManager(this.db, this._common)
 
     switch (this._common.consensusAlgorithm()) {
@@ -306,7 +306,7 @@ export default class Blockchain implements BlockchainInterface {
       const genesisHash = await this.dbManager.numberToHash(BigInt(0))
       dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
     }
@@ -358,7 +358,7 @@ export default class Blockchain implements BlockchainInterface {
       const heads = await this.dbManager.getHeads()
       this._heads = heads
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
       this._heads = {}
@@ -369,7 +369,7 @@ export default class Blockchain implements BlockchainInterface {
       const hash = await this.dbManager.getHeadHeader()
       this._headHeaderHash = hash
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
       this._headHeaderHash = genesisHash
@@ -380,7 +380,7 @@ export default class Blockchain implements BlockchainInterface {
       const hash = await this.dbManager.getHeadBlock()
       this._headBlockHash = hash
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
       this._headBlockHash = genesisHash
@@ -697,7 +697,7 @@ export default class Blockchain implements BlockchainInterface {
         try {
           block = await this._getBlock(blockId)
         } catch (error: any) {
-          if (error.type !== 'NotFoundError') {
+          if (error.code !== 'LEVEL_NOT_FOUND') {
             throw error
           }
           return
@@ -738,7 +738,7 @@ export default class Blockchain implements BlockchainInterface {
         try {
           number = await this.dbManager.hashToNumber(hashes[mid])
         } catch (error: any) {
-          if (error.type !== 'NotFoundError') {
+          if (error.code !== 'LEVEL_NOT_FOUND') {
             throw error
           }
         }
@@ -845,7 +845,7 @@ export default class Blockchain implements BlockchainInterface {
       const childHeader = await this.getCanonicalHeader(blockNumber + BigInt(1))
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
     }
@@ -891,7 +891,7 @@ export default class Blockchain implements BlockchainInterface {
           nextBlockNumber++
           blocksRanCounter++
         } catch (error: any) {
-          if (error.type === 'NotFoundError') {
+          if (error.code === 'LEVEL_NOT_FOUND') {
             break
           } else {
             throw error
@@ -1062,7 +1062,7 @@ export default class Blockchain implements BlockchainInterface {
         header = await this._getHeader(header.parentHash, --currentNumber)
       } catch (error: any) {
         staleHeads = []
-        if (error.type !== 'NotFoundError') {
+        if (error.code !== 'LEVEL_NOT_FOUND') {
           throw error
         }
         break
@@ -1159,7 +1159,7 @@ export default class Blockchain implements BlockchainInterface {
       const hash = await this.dbManager.numberToHash(number)
       return hash
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
       return false
