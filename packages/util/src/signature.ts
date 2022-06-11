@@ -22,12 +22,11 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
 
-  if (chainId === undefined) {
-    const v = BigInt(recovery + 27)
-    return { r, s, v }
-  }
+  const v =
+    chainId === undefined
+      ? BigInt(recovery + 27)
+      : BigInt(recovery + 35) + BigInt(chainId) * BigInt(2)
 
-  const v = BigInt(recovery) + (BigInt(chainId) * BigInt(2) + BigInt(35))
   return { r, s, v }
 }
 
