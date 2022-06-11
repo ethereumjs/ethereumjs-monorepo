@@ -1,18 +1,12 @@
 import tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
-import { bufArrToArr, NestedUint8Array, toBuffer, zeros } from 'ethereumjs-util'
+import { NestedUint8Array, toBuffer, zeros } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Block, BlockBuffer, BlockHeader } from '../src'
-import blockFromRpc from '../src/from-rpc'
-import { Mockchain } from './mockchain'
-import { createBlock } from './util'
+import { Block, BlockBuffer } from '../src'
 import testnetMerge from './testdata/testnetMerge.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataGenesis from './testdata/genesishashestest.json'
-import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -72,6 +66,10 @@ tape('[Block]: block functions', function (t) {
       hardfork: Hardfork.Istanbul,
       customChains,
     })
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
 
     let block = Block.fromBlockData(
       {
@@ -79,7 +77,7 @@ tape('[Block]: block functions', function (t) {
           number: 12, // Berlin block
         },
       },
-      { common, hardforkByBlockNumber: true }
+      { common, hardforkByBlockNumber: true, cliqueSigner }
     )
     st.equal(block._common.hardfork(), Hardfork.Berlin, 'should use hardforkByBlockNumber option')
 
@@ -103,7 +101,7 @@ tape('[Block]: block functions', function (t) {
           number: 12, // Berlin block
         },
       },
-      { common, hardforkByTD: 3000 }
+      { common, hardforkByTD: 3000, cliqueSigner }
     )
     st.equal(
       block._common.hardfork(),
@@ -112,7 +110,10 @@ tape('[Block]: block functions', function (t) {
     )
 
     try {
-      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      Block.fromBlockData(
+        {},
+        { common, hardforkByBlockNumber: true, hardforkByTD: 3000, cliqueSigner }
+      )
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
@@ -159,55 +160,6 @@ tape('[Block]: block functions', function (t) {
     }
   )
 
-  t.test('should test block validation on pow chain', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-    const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon.genesisRLP), {
-      common,
-    })
-    await blockchain.putBlock(genesisBlock)
-    try {
-      await block.validate(blockchain)
-      st.pass('should pass')
-    } catch (error: any) {
-      st.fail('should not throw')
-    }
-  })
-
-  t.test('should test block validation on poa chain', async function (st) {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-    const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
-
-    const genesis = Block.fromBlockData({}, { common })
-    await blockchain.putBlock(genesis)
-
-    const parentBlock = Block.fromBlockData(
-      {
-        header: {
-          number: block.header.number - BigInt(1),
-          timestamp: block.header.timestamp - BigInt(1000),
-          gasLimit: block.header.gasLimit,
-        },
-      },
-      { common, freeze: false }
-    )
-    parentBlock.hash = () => {
-      return block.header.parentHash
-    }
-    await blockchain.putBlock(parentBlock)
-
-    await blockchain.putBlock(block)
-    try {
-      await block.validate(blockchain)
-      st.pass('does not throw')
-    } catch (error: any) {
-      st.fail('error thrown')
-    }
-  })
-
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.ok(block.validateTransactions())
     st.ok(await block.validateTransactionsTrie())
@@ -232,9 +184,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
+    // TODO: bad test data?
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
     const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false, cliqueSigner })
     await testTransactionValidation(st, block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
     const result = block.validateTransactions(true)
@@ -257,388 +214,6 @@ tape('[Block]: block functions', function (t) {
       st.ok(error.message.includes('invalid uncle hash'))
     }
   })
-
-  t.test('should throw if an uncle is listed twice', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock1 = createBlock(genesis, 'uncle', [], common)
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(block1, 'block1', [uncleBlock1.header, uncleBlock1.header], common)
-
-    await blockchain.putBlock(uncleBlock1)
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-
-    try {
-      await block2.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws if the uncle is included twice in the block')
-    }
-  })
-
-  t.test('should throw if an uncle is included before', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock = createBlock(genesis, 'uncle', [], common)
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
-    const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
-
-    await blockchain.putBlock(uncleBlock)
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-    await blockchain.putBlock(block3)
-
-    await uncleBlock.validate(blockchain)
-
-    await block1.validate(blockchain)
-    await block2.validate(blockchain)
-
-    try {
-      await block3.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws if uncle is already included')
-    }
-  })
-
-  t.test(
-    'should throw if the uncle parent block is not part of the canonical chain',
-    async function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-      const blockchain = new Mockchain()
-
-      const genesis = Block.fromBlockData({})
-      await blockchain.putBlock(genesis)
-
-      const emptyBlock = Block.fromBlockData({ header: { number: BigInt(1) } }, { common })
-
-      //assertion
-      if (emptyBlock.hash().equals(genesis.hash())) {
-        st.fail('should create an unique bogus block')
-      }
-
-      await blockchain.putBlock(emptyBlock)
-
-      const uncleBlock = createBlock(emptyBlock, 'uncle', [], common)
-      const block1 = createBlock(genesis, 'block1', [], common)
-      const block2 = createBlock(block1, 'block2', [], common)
-      const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
-
-      await blockchain.putBlock(uncleBlock)
-      await blockchain.putBlock(block1)
-      await blockchain.putBlock(block2)
-      await blockchain.putBlock(block3)
-
-      try {
-        await block3.validate(blockchain)
-        st.fail('cannot reach this')
-      } catch (e: any) {
-        st.pass('block throws if uncle parent hash is not part of the canonical chain')
-      }
-    }
-  )
-
-  t.test('should throw if the uncle is too old', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock = createBlock(genesis, 'uncle', [], common)
-
-    let lastBlock = genesis
-    for (let i = 0; i < 7; i++) {
-      const block = createBlock(lastBlock, 'block' + i.toString(), [], common)
-      await blockchain.putBlock(block)
-      lastBlock = block
-    }
-
-    const blockWithUnclesTooOld = createBlock(
-      lastBlock,
-      'too-old-uncle',
-      [uncleBlock.header],
-      common
-    )
-
-    try {
-      await blockWithUnclesTooOld.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws uncle is too old')
-    }
-  })
-
-  t.test('should throw if uncle is too young', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock = createBlock(genesis, 'uncle', [], common)
-    const block1 = createBlock(genesis, 'block1', [uncleBlock.header], common)
-
-    await blockchain.putBlock(uncleBlock)
-    await blockchain.putBlock(block1)
-
-    try {
-      await block1.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws uncle is too young')
-    }
-  })
-
-  t.test('should throw if the uncle header is invalid', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock = Block.fromBlockData(
-      {
-        header: {
-          number: genesis.header.number + BigInt(1),
-          parentHash: genesis.hash(),
-          timestamp: genesis.header.timestamp + BigInt(1),
-          gasLimit: BigInt(5000),
-          difficulty: BigInt(0), // invalid difficulty
-        },
-      },
-      { common }
-    )
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
-
-    await blockchain.putBlock(uncleBlock)
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-
-    try {
-      await block2.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws uncle header is invalid')
-    }
-  })
-
-  t.test('throws if more than 2 uncles included', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock1 = createBlock(genesis, 'uncle1', [], common)
-    const uncleBlock2 = createBlock(genesis, 'uncle2', [], common)
-    const uncleBlock3 = createBlock(genesis, 'uncle3', [], common)
-
-    // sanity check
-    if (
-      uncleBlock1.hash().equals(uncleBlock2.hash()) ||
-      uncleBlock2.hash().equals(uncleBlock3.hash())
-    ) {
-      st.fail('uncles 1/2/3 should be unique')
-    }
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(
-      block1,
-      'block1',
-      [uncleBlock1.header, uncleBlock2.header, uncleBlock3.header],
-      common
-    )
-
-    await blockchain.putBlock(uncleBlock1)
-    await blockchain.putBlock(uncleBlock2)
-    await blockchain.putBlock(uncleBlock3)
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-
-    try {
-      await block2.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws if more than 2 uncles are included')
-    }
-  })
-
-  t.test('throws if uncle is a canonical block', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(block1, 'block2', [block1.header], common)
-
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-
-    try {
-      await block2.validate(blockchain)
-      st.fail('cannot reach this')
-    } catch (e: any) {
-      st.pass('block throws if an uncle is a canonical block')
-    }
-  })
-
-  t.test('successfully validates uncles', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-
-    const genesis = Block.fromBlockData({})
-    await blockchain.putBlock(genesis)
-
-    const uncleBlock = createBlock(genesis, 'uncle', [], common)
-    await blockchain.putBlock(uncleBlock)
-
-    const block1 = createBlock(genesis, 'block1', [], common)
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
-
-    await blockchain.putBlock(block1)
-    await blockchain.putBlock(block2)
-
-    await block1.validate(blockchain)
-    await block2.validate(blockchain)
-    st.pass('uncle blocks validated succesfully')
-  })
-
-  t.test(
-    'should select the right hardfork for uncles at a hardfork transition',
-    async function (st) {
-      /**
-       * This test creates a chain around mainnet fork blocks:
-       *      berlin         london
-       *                |     |-> u <---|
-       * @ -> @ -> @ ---|---> @ -> @ -> @
-       * |-> u <---|               | -> @
-       *    ^----------------------------
-       * @ = block
-       * u = uncle block
-       *
-       * There are 3 pre-fork blocks, with 1 pre-fork uncle
-       * There are 3 blocks after the fork, with 1 uncle after the fork
-       *
-       * The following situations are tested:
-       * Pre-fork block can have legacy uncles
-       * London block has london uncles
-       * London block has legacy uncles
-       * London block has legacy uncles, where hardforkByBlockNumber set to false (this should throw)
-       *    In this situation, the london block creates a london uncle, but this london uncle should be
-       *    a berlin block, and therefore has no base fee. But, since common is still london, base fee
-       *    is expected
-       * It is tested that common does not change
-       */
-      const blockchain = new Mockchain()
-
-      const common = new Common({ chain: Chain.Mainnet })
-      common.setHardfork(Hardfork.Berlin)
-
-      const mainnetForkBlock = common.hardforkBlock(Hardfork.London)
-      const rootBlock = Block.fromBlockData(
-        {
-          header: {
-            number: mainnetForkBlock! - BigInt(3),
-            gasLimit: BigInt(5000),
-          },
-        },
-        { common }
-      )
-
-      await blockchain.putBlock(rootBlock)
-
-      const unclePreFork = createBlock(rootBlock, 'unclePreFork', [], common)
-      const canonicalBlock = createBlock(rootBlock, 'canonicalBlock', [], common)
-      await blockchain.putBlock(canonicalBlock)
-      const preForkBlock = createBlock(
-        canonicalBlock,
-        'preForkBlock',
-        [unclePreFork.header],
-        common
-      )
-      await blockchain.putBlock(preForkBlock)
-      common.setHardfork(Hardfork.London)
-      const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
-      await blockchain.putBlock(forkBlock)
-      const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)
-      const canonicalBlock2 = createBlock(forkBlock, 'canonicalBlock2', [], common)
-      const forkBlock2 = createBlock(canonicalBlock2, 'forkBlock2', [uncleFork.header], common)
-      await blockchain.putBlock(canonicalBlock2)
-      await blockchain.putBlock(forkBlock)
-      await preForkBlock.validate(blockchain)
-
-      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-      await forkBlock2.validate(blockchain)
-
-      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-
-      const forkBlock2HeaderData = forkBlock2.header.toJSON()
-      const uncleHeaderData = unclePreFork.header.toJSON()
-
-      uncleHeaderData.extraData = '0xffff'
-      const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
-        common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
-      })
-
-      forkBlock2HeaderData.uncleHash =
-        '0x' + bytesToHex(keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
-
-      const forkBlock_ValidCommon = Block.fromBlockData(
-        {
-          header: forkBlock2HeaderData,
-          uncleHeaders: [uncleHeaderData],
-        },
-        {
-          common,
-        }
-      )
-
-      await forkBlock_ValidCommon.validate(blockchain)
-
-      st.pass('successfully validated a pre-london uncle on a london block')
-      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-
-      const forkBlock_InvalidCommon = Block.fromBlockData(
-        {
-          header: forkBlock2HeaderData,
-          uncleHeaders: [uncleHeaderData],
-        },
-        {
-          common,
-          hardforkByBlockNumber: false,
-        }
-      )
-
-      try {
-        await forkBlock_InvalidCommon.validate(blockchain)
-        st.fail('cannot reach this')
-      } catch (e: any) {
-        st.ok(
-          e.message.includes('with EIP1559 being activated'),
-          'explicitly set hardforkByBlockNumber to false, pre-london block interpreted as london block and succesfully failed'
-        )
-      }
-
-      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-    }
-  )
 
   t.test('should test isGenesis (mainnet default)', function (st) {
     const block = Block.fromBlockData({ header: { number: 1 } })
@@ -752,10 +327,6 @@ tape('[Block]: block functions', function (t) {
         blockWithDifficultyCalculation.header.canonicalDifficulty(genesis.header) ===
           blockWithDifficultyCalculation.header.difficulty,
         'header difficulty is canonical difficulty if difficulty header is given'
-      )
-      st.ok(
-        blockWithDifficultyCalculation.header.validateDifficulty(genesis.header),
-        'difficulty should be valid if difficulty header is provided'
       )
 
       // test if we can provide a block which is too far ahead to still calculate difficulty
