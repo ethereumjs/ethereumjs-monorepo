@@ -22,8 +22,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -49,8 +48,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -69,8 +67,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -100,8 +97,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -119,8 +115,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -156,8 +151,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton.putBlocks = td.func<any>()
     const fetcher = new ReverseBlockFetcher({
       config,
@@ -188,8 +182,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
 
     const fetcher = new ReverseBlockFetcher({
       config,

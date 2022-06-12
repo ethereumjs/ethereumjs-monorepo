@@ -159,8 +159,7 @@ tape('[Skeleton]', async (t) => {
     for (const [testCaseIndex, testCase] of testCases.entries()) {
       const config = new Config({ common, transports: [] })
       const chain = new Chain({ config })
-      const metaDB: any = new MemoryLevel()
-      const skeleton = new Skeleton({ chain, config, metaDB })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
       for (const block of testCase.blocks ?? []) {
@@ -257,8 +256,7 @@ tape('[Skeleton]', async (t) => {
     for (const [testCaseIndex, testCase] of testCases.entries()) {
       const config = new Config({ common, transports: [] })
       const chain = new Chain({ config })
-      const metaDB: any = new MemoryLevel()
-      const skeleton = new Skeleton({ chain, config, metaDB })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
       await skeleton.initSync(testCase.head)
@@ -305,8 +303,7 @@ tape('[Skeleton]', async (t) => {
     const chain = new Chain({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     ;(chain.blockchain as any)._validateConsensus = false
-    const metaDB: any = new MemoryLevel()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
     const genesis = await chain.getBlock(BigInt(0))
@@ -374,8 +371,7 @@ tape('[Skeleton]', async (t) => {
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
-      const metaDB: any = new MemoryLevel()
-      const skeleton = new Skeleton({ chain, config, metaDB })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await chain.open()
       await skeleton.open()
 
@@ -489,8 +485,7 @@ tape('[Skeleton]', async (t) => {
         { common }
       )
 
-      const metaDB: any = new MemoryLevel()
-      const skeleton = new Skeleton({ chain, config, metaDB })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
       await skeleton.initSync(block4PoW)
@@ -584,8 +579,7 @@ tape('[Skeleton]', async (t) => {
         { common }
       )
 
-      const metaDB: any = new MemoryLevel()
-      const skeleton = new Skeleton({ chain, config, metaDB })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
       await skeleton.initSync(block2PoS)
