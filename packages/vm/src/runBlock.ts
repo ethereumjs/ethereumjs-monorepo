@@ -283,7 +283,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       if (this.DEBUG) {
         debug(`Validate block`)
       }
-      await block.validate(this.blockchain)
+      await this.blockchain.validateBlockHeader(block.header)
     }
   }
   // Apply transactions
