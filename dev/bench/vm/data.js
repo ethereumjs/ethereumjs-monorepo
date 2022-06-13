@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655114312839,
+  "lastUpdate": 1655116616477,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "moodysalem@users.noreply.github.com",
-            "name": "Moody Salem",
-            "username": "moodysalem"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2707449df4521bfc5c3edc728d70e582b2320f3a",
-          "message": "VM: revert TSTORE opcode if in static context (#1821)\n\n* revert TSTORE opcode if in static context\r\n\r\n* merge transient storage on commit",
-          "timestamp": "2022-04-13T19:23:21+02:00",
-          "tree_id": "8e7c41f48ee92dcbde34df1e4bd10f516114c9fd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2707449df4521bfc5c3edc728d70e582b2320f3a"
-        },
-        "date": 1649870849588,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19320,
-            "range": "±6.17%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20507,
-            "range": "±2.00%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16590,
-            "range": "±15.19%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20034,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19744,
-            "range": "±3.84%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.42%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4c379ab7baa96fa30afb3828dcc0d34cc1234ea",
+          "message": "refactor: migrate to `8.0.0` of `level` (#1949)\n\n* refactor: migrate to `8.0.0` of `level`\r\n\r\n* refactor: replace `level-mem` with `memory-level`\r\n\r\n* refactor: remove `MemoryDB`\r\n\r\n* refactor: https://github.com/Level/memory-level/blob/main/UPGRADING.md\r\n\r\n* wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2022-06-13T12:31:48+02:00",
+          "tree_id": "fe35fbfb4937d305e64fadbdf28dd211ab4a201e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a4c379ab7baa96fa30afb3828dcc0d34cc1234ea"
+        },
+        "date": 1655116615989,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30657,
+            "range": "±4.62%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30788,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28361,
+            "range": "±7.19%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26803,
+            "range": "±11.12%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 28443,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
