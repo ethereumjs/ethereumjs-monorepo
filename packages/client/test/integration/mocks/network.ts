@@ -47,12 +47,10 @@ export function destroyStream(id: string, location: string) {
 
 export async function destroyServer(location: string) {
   return new Promise<void>((resolve) => {
-    while (servers[location]) {
-      for (const id of Object.keys(servers[location].streams)) {
-        destroyStream(id, location)
-      }
-      delete servers[location]
+    for (const id of Object.keys(servers[location].streams)) {
+      destroyStream(id, location)
     }
+    delete servers[location]
     resolve()
   })
 }
