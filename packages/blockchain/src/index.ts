@@ -1035,7 +1035,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
    *
-   * Returns false if invalid.
+   * Throws if invalid.
    *
    * @param blockHeader - the block header whose difficulty needs to be validated
    * @param parentBlockHeader - the header from the parent `Block` of `blockHeader``
