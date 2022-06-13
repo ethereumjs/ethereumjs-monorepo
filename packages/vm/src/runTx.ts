@@ -97,7 +97,7 @@ export interface RunTxResult extends EVMResult {
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
-  gasRefund?: bigint
+  gasRefund: bigint
 
   /**
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
@@ -444,6 +444,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Process any gas refund
   let gasRefund = results.execResult.gasRefund ?? BigInt(0)
+  results.gasRefund = gasRefund
   const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
   if (gasRefund !== BigInt(0)) {
     const maxRefund = results.gasUsed / maxRefundQuotient
