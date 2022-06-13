@@ -23,6 +23,9 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'should be valid')
 
+  // TODO: fix test
+  // it's throwing on the Block.fromRLPSerializedBlock() because the block is invalid.
+  // should this test just be removed?
   const invalidRlp = Buffer.from(invalidBlockRlp, 'hex')
   const invalidBlock = Block.fromRLPSerializedBlock(invalidRlp, { common })
   const invalidBlockResult = await e.verifyPOW(invalidBlock)
