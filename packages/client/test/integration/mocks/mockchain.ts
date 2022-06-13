@@ -29,7 +29,6 @@ export default class MockChain extends Chain {
         {
           header: {
             number: number + 1,
-            difficulty: 1,
             parentHash: number ? blocks[number - 1].hash() : this.genesis.hash(),
           },
         },
