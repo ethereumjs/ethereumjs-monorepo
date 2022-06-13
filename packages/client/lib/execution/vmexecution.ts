@@ -330,7 +330,7 @@ export class VMExecution extends Execution {
           if (allTxs || txHashes.includes(txHash)) {
             const res = await vm.runTx({ block, tx })
             this.config.logger.info(
-              `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
+              `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`
             )
             count += 1
           }

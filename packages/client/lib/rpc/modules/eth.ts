@@ -235,7 +235,7 @@ const jsonRpcReceipt = async (
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
   to: tx.to?.toString() ?? null,
-  cumulativeGasUsed: bigIntToHex(receipt.gasUsed),
+  cumulativeGasUsed: bigIntToHex(receipt.cumulativeBlockGasUsed),
   effectiveGasPrice: bigIntToHex(effectiveGasPrice),
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
@@ -518,13 +518,13 @@ export class Eth {
     }
 
     try {
-      const { gasUsed } = await vm.runTx({
+      const { totalGasSpent } = await vm.runTx({
         tx,
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
       })
-      return `0x${gasUsed.toString(16)}`
+      return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -767,10 +767,10 @@ export class Eth {
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
       })
-      const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
+      const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
       return jsonRpcReceipt(
         receipt,
-        gasUsed,
+        totalGasSpent,
         effectiveGasPrice,
         block,
         tx,
