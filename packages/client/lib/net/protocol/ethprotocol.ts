@@ -75,8 +75,6 @@ export interface EthProtocolMethods {
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
-let id = BigInt(0)
-
 /**
  * Implements eth/66 protocol
  * @memberof module:net/protocol
@@ -119,7 +117,7 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? ++id),
+        bigIntToBuffer(reqId ?? ++this.nextReqId),
         [
           typeof block === 'bigint' ? bigIntToBuffer(block) : block,
           max === 0 ? Buffer.from([]) : intToBuffer(max),
@@ -160,7 +158,10 @@ export class EthProtocol extends Protocol {
       name: 'GetBlockBodies',
       code: 0x05,
       response: 0x06,
-      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [bigIntToBuffer(reqId ?? ++id), hashes],
+      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
+        bigIntToBuffer(reqId ?? ++this.nextReqId),
+        hashes,
+      ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
         reqId: bufferToBigInt(reqId),
         hashes,
@@ -196,7 +197,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        bigIntToBuffer(reqId ?? ++id),
+        bigIntToBuffer(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -231,7 +232,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        bigIntToBuffer(reqId ?? ++id),
+        bigIntToBuffer(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({

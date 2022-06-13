@@ -23,7 +23,7 @@ export async function setup(
   const minPeers = options.minPeers ?? 1
 
   const lightserv = syncmode === 'full'
-  const common = options.common
+  const common = options.common?.copy()
   const config = new Config({ syncmode, lightserv, minPeers, common, safeReorgDistance: 0 })
 
   const server = new MockServer({ config, location })

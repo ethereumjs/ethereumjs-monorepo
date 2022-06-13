@@ -249,7 +249,8 @@ export class BeaconSynchronizer extends Synchronizer {
     // Execute single block when within 50 blocks of head,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
-      this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50) ||
+      (this.skeleton.bounds() &&
+        this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)) ||
       this.chain.blocks.height % BigInt(50) === BigInt(0)
     ) {
       void this.execution.run(false)
