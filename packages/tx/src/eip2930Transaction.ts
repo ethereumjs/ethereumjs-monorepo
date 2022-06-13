@@ -331,7 +331,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
   }
 
-  _processSignature(v: number, r: Buffer, s: Buffer) {
+  _processSignature(v: bigint, r: Buffer, s: Buffer) {
     const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(
@@ -344,7 +344,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: BigInt(v - 27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bufferToBigInt(r),
         s: bufferToBigInt(s),
       },
