@@ -4,6 +4,7 @@ import {
   Address,
   bigIntToBuffer,
   bufferToBigInt,
+  ECDSASignature,
   ecsign,
   privateToAddress,
   setLengthLeft,
@@ -68,7 +69,7 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
   const chainId = setLengthLeft(bigIntToBuffer(common.chainId()), 32)
   const message = Buffer.concat([Buffer.from('03', 'hex'), chainId, paddedInvokerAddress, commit])
   const msgHash = Buffer.from(keccak256(message))
-  return ecsign(msgHash, privateKey, 0)
+  return ecsign(msgHash, privateKey)
 }
 
 /**
@@ -80,18 +81,18 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
  */
 function getAuthCode(
   commitUnpadded: Buffer,
-  signature: any,
+  signature: ECDSASignature,
   address: Address,
   msizeBuffer?: Buffer
 ) {
   const commit = setLengthLeft(commitUnpadded, 32)
-  let v
-  if (signature.v == 27) {
+  let v: Buffer
+  if (signature.v === BigInt(27)) {
     v = setLengthLeft(Buffer.from('00', 'hex'), 32)
-  } else if (signature.v == 28) {
+  } else if (signature.v === BigInt(28)) {
     v = setLengthLeft(Buffer.from('01', 'hex'), 32)
   } else {
-    setLengthLeft(toBuffer(signature.v), 32)
+    v = setLengthLeft(toBuffer(signature.v), 32)
   }
 
   const PUSH32 = Buffer.from('7F', 'hex')
