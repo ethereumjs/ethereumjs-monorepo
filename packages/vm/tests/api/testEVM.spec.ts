@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, MAX_INTEGER } from 'ethereumjs-util'
+import { Account, Address, MAX_INTEGER } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
