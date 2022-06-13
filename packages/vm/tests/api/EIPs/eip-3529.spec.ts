@@ -221,7 +221,7 @@ tape('EIP-3529 tests', (t) => {
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
     st.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    st.ok(result.gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
+    st.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()
   })
 })

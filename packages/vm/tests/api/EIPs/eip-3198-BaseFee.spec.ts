@@ -91,7 +91,7 @@ tape('EIP3198 tests', (t) => {
       block,
     })
     const txBaseFee = block.transactions[0].getBaseFee()
-    const gasUsed = results.gasUsed - txBaseFee
+    const gasUsed = results.totalGasSpent - txBaseFee
     st.equal(gasUsed, BigInt(2), 'gas used correct')
     st.equal(stack[0], fee, 'right item pushed on stack')
     st.end()

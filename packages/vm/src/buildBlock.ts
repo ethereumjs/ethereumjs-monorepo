@@ -191,7 +191,7 @@ export class BlockBuilder {
 
     this.transactions.push(tx)
     this.transactionResults.push(result)
-    this.gasUsed += result.gasUsed
+    this.gasUsed += result.totalGasSpent
 
     return result
   }

@@ -391,7 +391,7 @@ tape('EIP-3074 AUTH', (t) => {
       result.execResult.returnValue.slice(31).equals(Buffer.from('80', 'hex')),
       'reported msize is correct'
     )
-    const gas = result.execResult.gasUsed
+    const gas = result.execResult.executionGasUsed
 
     const code2 = Buffer.concat([
       getAuthCode(message, signature, authAddress, Buffer.from('90', 'hex')),
@@ -414,7 +414,7 @@ tape('EIP-3074 AUTH', (t) => {
       result2.execResult.returnValue.slice(31).equals(Buffer.from('a0', 'hex')),
       'reported msize is correct'
     )
-    st.ok(result2.execResult.gasUsed > gas, 'charged more gas for memory expansion')
+    st.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
     st.end()
   })
 })

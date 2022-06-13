@@ -39,7 +39,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('21', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed === totalFee, 'succesfully charged correct gas')
+    st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
     st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
     st.ok(correctOpcodeName, 'succesfully set opcode name')
   })
@@ -54,7 +54,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed === gas, 'succesfully deleted opcode')
+    st.ok(res.executionGasUsed === gas, 'succesfully deleted opcode')
   })
 
   t.test('should not override default opcodes', async (st) => {
@@ -69,7 +69,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('01', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed === gas, 'succesfully deleted opcode')
+    st.ok(res.executionGasUsed === gas, 'succesfully deleted opcode')
 
     const vmDefault = await VM.create()
 
@@ -99,7 +99,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed === totalFee, 'succesfully charged correct gas')
+    st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
     st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
   })
 })

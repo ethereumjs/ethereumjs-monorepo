@@ -13,7 +13,7 @@ const expectedGas = BigInt(10)
 
 function customPrecompile(_input: PrecompileInput): ExecResult {
   return {
-    gasUsed: expectedGas,
+    executionGasUsed: expectedGas,
     returnValue: expectedReturn,
   }
 }
@@ -36,7 +36,7 @@ tape('EVM -> custom precompiles', (t) => {
       caller: sender,
     })
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
-    st.ok(result.execResult.gasUsed === expectedGas, 'gas used is correct')
+    st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
   })
 
   t.test('should delete existing precompiles', async (st) => {
@@ -55,7 +55,7 @@ tape('EVM -> custom precompiles', (t) => {
       caller: sender,
     })
     st.ok(result.execResult.returnValue.equals(Buffer.from('')), 'return value is correct')
-    st.ok(result.execResult.gasUsed === BigInt(0), 'gas used is correct')
+    st.ok(result.execResult.executionGasUsed === BigInt(0), 'gas used is correct')
   })
 
   t.test('should add precompiles', async (st) => {
@@ -75,7 +75,7 @@ tape('EVM -> custom precompiles', (t) => {
       caller: sender,
     })
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
-    st.ok(result.execResult.gasUsed === expectedGas, 'gas used is correct')
+    st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
   })
 
   t.test('should not persist changes to precompiles', async (st) => {
@@ -103,7 +103,7 @@ tape('EVM -> custom precompiles', (t) => {
     })
     // sanity: check we have overridden
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
-    st.ok(result.execResult.gasUsed === expectedGas, 'gas used is correct')
+    st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
     VMSha = await VM.create()
     const shaResult2 = await VMSha.evm.runCall({
       to: shaAddress,
@@ -116,7 +116,7 @@ tape('EVM -> custom precompiles', (t) => {
       'restored sha precompile - returndata correct'
     )
     st.ok(
-      shaResult.execResult.gasUsed === shaResult2.execResult.gasUsed,
+      shaResult.execResult.executionGasUsed === shaResult2.execResult.executionGasUsed,
       'restored sha precompile - gas correct'
     )
   })

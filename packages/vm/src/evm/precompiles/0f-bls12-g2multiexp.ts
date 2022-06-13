@@ -88,7 +88,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const returnValue = BLS12_381_FromG2Point(result)
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: returnValue,
   }
 }

@@ -13,7 +13,7 @@ export interface BaseTxReceipt {
   /**
    * Cumulative gas used in the block including this tx
    */
-  gasUsed: bigint
+  cumulativeBlockGasUsed: bigint
   /**
    * Bloom bitvector
    */

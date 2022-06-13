@@ -822,7 +822,7 @@ export default class Interpreter {
     }
 
     // this should always be safe
-    this.useGas(results.execResult.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+    this.useGas(results.execResult.executionGasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
 
     // Set return value
     if (
@@ -895,7 +895,7 @@ export default class Interpreter {
     }
 
     // this should always be safe
-    this.useGas(results.execResult.gasUsed, 'CREATE')
+    this.useGas(results.execResult.executionGasUsed, 'CREATE')
 
     // Set return buffer in case revert happened
     if (

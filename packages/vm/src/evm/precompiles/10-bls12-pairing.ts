@@ -105,7 +105,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: returnValue,
   }
 }

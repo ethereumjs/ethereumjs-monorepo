@@ -28,7 +28,7 @@ export default function (opts: PrecompileInput): ExecResult {
   // However, this should throw, only 27 and 28 is allowed as input
   if (vBigInt !== BigInt(27) && vBigInt !== BigInt(28)) {
     return {
-      gasUsed,
+      executionGasUsed: gasUsed,
       returnValue: Buffer.alloc(0),
     }
   }
@@ -41,13 +41,13 @@ export default function (opts: PrecompileInput): ExecResult {
     publicKey = ecrecover(msgHash, bufferToBigInt(v), r, s)
   } catch (e: any) {
     return {
-      gasUsed,
+      executionGasUsed: gasUsed,
       returnValue: Buffer.alloc(0),
     }
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: setLengthLeft(publicToAddress(publicKey), 32),
   }
 }

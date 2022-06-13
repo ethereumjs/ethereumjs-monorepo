@@ -163,7 +163,7 @@ export interface ExecResult {
   /**
    * Amount of gas the code used to run
    */
-  gasUsed: bigint //TODO misleading; does not cover upfront cost (does it cover callvalue?)
+  executionGasUsed: bigint //TODO misleading; does not cover upfront cost (does it cover callvalue?)
   /**
    * Return value from the contract
    */
@@ -191,7 +191,7 @@ export interface NewContractEvent {
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
-    gasUsed: gasLimit,
+    executionGasUsed: gasLimit,
     exceptionError: new VmError(ERROR.OUT_OF_GAS),
   }
 }
@@ -199,7 +199,7 @@ export function OOGResult(gasLimit: bigint): ExecResult {
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
-    gasUsed: gasUsedCreateCode,
+    executionGasUsed: gasUsedCreateCode,
     exceptionError: new VmError(ERROR.CODESTORE_OUT_OF_GAS),
   }
 }
@@ -207,7 +207,7 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
-    gasUsed: gasLimit,
+    executionGasUsed: gasLimit,
     exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
   }
 }
@@ -215,7 +215,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
-    gasUsed: gasLimit,
+    executionGasUsed: gasLimit,
     exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
   }
 }
@@ -223,7 +223,7 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
 export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
-    gasUsed: gasUsed,
+    executionGasUsed: gasUsed,
     exceptionError: error,
   }
 }
@@ -445,7 +445,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       return {
         execResult: {
           gasRefund: message.gasRefund,
-          gasUsed: BigInt(0),
+          executionGasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
@@ -491,7 +491,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
           execResult: {
             returnValue: Buffer.alloc(0),
             exceptionError: new VmError(ERROR.INITCODE_SIZE_VIOLATION),
-            gasUsed: message.gasLimit,
+            executionGasUsed: message.gasLimit,
           },
         }
       }
@@ -518,7 +518,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         execResult: {
           returnValue: Buffer.alloc(0),
           exceptionError: new VmError(ERROR.CREATE_COLLISION),
-          gasUsed: message.gasLimit,
+          executionGasUsed: message.gasLimit,
         },
       }
     }
@@ -563,7 +563,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       return {
         createdAddress: message.to,
         execResult: {
-          gasUsed: BigInt(0),
+          executionGasUsed: BigInt(0),
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
@@ -577,7 +577,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     let result = await this.runInterpreter(message)
     // fee for size of the return value
-    let totalGas = result.gasUsed
+    let totalGas = result.executionGasUsed
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
@@ -629,11 +629,11 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
               ...INVALID_EOF_RESULT(message.gasLimit),
             }
           } else {
-            result.gasUsed = totalGas
+            result.executionGasUsed = totalGas
           }
         }
       } else {
-        result.gasUsed = totalGas
+        result.executionGasUsed = totalGas
       }
     } else {
       if (this._common.gteHardfork(Hardfork.Homestead)) {
@@ -741,7 +741,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       },
       exceptionError: interpreterRes.exceptionError,
       gas: interpreterRes.runState?.gasLeft,
-      gasUsed,
+      executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
@@ -821,9 +821,9 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       result = await this._executeCreate(message)
     }
     if (this.DEBUG) {
-      const { gasUsed, exceptionError, returnValue } = result.execResult
+      const { executionGasUsed, exceptionError, returnValue } = result.execResult
       debug(
-        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
+        `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
         } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
       )

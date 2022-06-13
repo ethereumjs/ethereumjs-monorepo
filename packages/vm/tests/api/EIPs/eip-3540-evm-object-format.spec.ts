@@ -161,7 +161,10 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = generateInvalidEOFCode('60016001F3')
     const res2 = await runTx(vm, data, 1)
-    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
+    st.ok(
+      res.result.totalGasSpent > res2.result.totalGasSpent,
+      'invalid initcode did not consume all gas'
+    )
   })
 
   t.test('case: create', async (st) => {
@@ -182,7 +185,10 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
 
-    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
+    st.ok(
+      res.result.totalGasSpent > res2.result.totalGasSpent,
+      'invalid initcode did not consume all gas'
+    )
   })
 
   t.test('case: create2', async (st) => {
@@ -202,6 +208,9 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
-    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
+    st.ok(
+      res.result.totalGasSpent > res2.result.totalGasSpent,
+      'invalid initcode did not consume all gas'
+    )
   })
 })

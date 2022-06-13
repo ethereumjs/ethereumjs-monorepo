@@ -160,7 +160,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (data.length !== 213) {
     return {
       returnValue: Buffer.alloc(0),
-      gasUsed: opts.gasLimit,
+      executionGasUsed: opts.gasLimit,
       exceptionError: new VmError(ERROR.OUT_OF_RANGE),
     }
   }
@@ -168,7 +168,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (lastByte !== 1 && lastByte !== 0) {
     return {
       returnValue: Buffer.alloc(0),
-      gasUsed: opts.gasLimit,
+      executionGasUsed: opts.gasLimit,
       exceptionError: new VmError(ERROR.OUT_OF_RANGE),
     }
   }
@@ -209,7 +209,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: output,
   }
 }

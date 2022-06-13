@@ -46,7 +46,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     })
 
     st.equal(
-      res.results[0].gasUsed.toString(16),
+      res.results[0].totalGasSpent.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
@@ -173,12 +173,12 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       generate: true,
     })
     st.equal(
-      txResultChainstart.results[0].gasUsed,
+      txResultChainstart.results[0].totalGasSpent,
       BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
     st.equal(
-      txResultMuirGlacier.results[0].gasUsed,
+      txResultMuirGlacier.results[0].totalGasSpent,
       BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
     )
@@ -461,7 +461,7 @@ tape('runBlock() -> tx types', async (t) => {
     st.equal(
       res.gasUsed,
       res.receipts
-        .map((r) => r.gasUsed)
+        .map((r) => r.cumulativeBlockGasUsed)
         .reduce((prevValue, currValue) => prevValue + currValue, BigInt(0)),
       "gas used should equal transaction's total gasUsed"
     )

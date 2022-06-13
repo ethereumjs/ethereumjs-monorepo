@@ -347,9 +347,9 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed += txRes.gasUsed
+    gasUsed += txRes.totalGasSpent
     if (this.DEBUG) {
-      debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+      debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
     // Combine blooms via bitwise OR
@@ -440,7 +440,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
           ((receipt as PostByzantiumTxReceipt).status === 0
             ? Buffer.from([])
             : Buffer.from('01', 'hex')),
-        bigIntToBuffer(receipt.gasUsed),
+        bigIntToBuffer(receipt.cumulativeBlockGasUsed),
         receipt.bitvector,
         receipt.logs,
       ])

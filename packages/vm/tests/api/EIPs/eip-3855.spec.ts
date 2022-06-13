@@ -30,7 +30,7 @@ tape('EIP 3541 tests', (t) => {
 
     st.ok(stack!.length == 1)
     st.equal(stack![0], BigInt(0))
-    st.equal(result.gasUsed, common.param('gasPrices', 'push0'))
+    st.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
     st.end()
   })
 
@@ -55,7 +55,7 @@ tape('EIP 3541 tests', (t) => {
         st.fail('stack element is not 0')
       }
     })
-    st.equal(result.gasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
+    st.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
     st.end()
   })
 

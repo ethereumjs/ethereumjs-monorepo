@@ -16,7 +16,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: toBuffer(sha256(data)),
   }
 }

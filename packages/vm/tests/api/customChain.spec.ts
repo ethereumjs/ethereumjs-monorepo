@@ -83,7 +83,7 @@ tape('VM initialized with custom state', (t) => {
     const toAddress = Address.fromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
-    t.equal(result.gasUsed.toString(), '21000')
+    t.equal(result.totalGasSpent.toString(), '21000')
     t.equal(receiverAddress.balance.toString(), '1')
     t.end()
   })
