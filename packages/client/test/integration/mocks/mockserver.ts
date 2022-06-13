@@ -42,6 +42,9 @@ export default class MockServer extends Server {
   }
 
   async stop(): Promise<boolean> {
+    // This wait is essential to clear out the pending setTimeout in the
+    // createStream in ./network.ts
+    await this.wait(20)
     while (servers[this.location]) {
       await destroyServer(this.location)
     }
