@@ -11,7 +11,7 @@ tape('EEI', (t) => {
   t.test('should return false on non-existing accounts', async (st) => {
     const eei = new EEI(
       new StateManager(),
-      new Common({ chain: 'mainnet ' }),
+      new Common({ chain: 'mainnet' }),
       await Blockchain.create()
     ) // create a dummy EEI (no VM, no EVM, etc.)
     st.notOk(await eei.accountExists(ZeroAddress))
@@ -24,7 +24,7 @@ tape('EEI', (t) => {
     async (st) => {
       const eei = new EEI(
         new StateManager(),
-        new Common({ chain: 'mainnet ' }),
+        new Common({ chain: 'mainnet' }),
         await Blockchain.create()
       ) // create a dummy EEI (no VM, no EVM, etc.)
       // create empty account
@@ -43,7 +43,7 @@ tape('EEI', (t) => {
   t.test('should return true on existing accounts', async (st) => {
     const eei = new EEI(
       new StateManager(),
-      new Common({ chain: 'mainnet ' }),
+      new Common({ chain: 'mainnet' }),
       await Blockchain.create()
     ) // create a dummy EEI (no VM, no EVM, etc.)
     // create empty account
