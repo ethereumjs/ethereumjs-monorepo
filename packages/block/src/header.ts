@@ -264,7 +264,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
 
-    this._validateHeaderFields()
+    this._genericFormatvalidation()
     this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -298,7 +298,7 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _validateHeaderFields() {
+  _genericFormatvalidation() {
     const {
       parentHash,
       uncleHash,
