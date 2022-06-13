@@ -12,7 +12,7 @@ const solc = require('solc')
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
 /**
  * This function creates the input for the Solidity compiler.

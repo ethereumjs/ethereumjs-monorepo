@@ -215,21 +215,6 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .catch((e) => t.ok(e.message.includes('Invalid block')))
   })
 
-  t.test('should fail when block validation fails', async (t) => {
-    const vm = await VM.create({ common })
-
-    const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
-    block.validate = async () => {
-      throw new Error('test')
-    }
-
-    await vm
-      .runBlock({ block })
-      .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes('test')))
-  })
-
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
     const vm = await VM.create({ common })
 

@@ -147,7 +147,7 @@ tape('BlockBuilder', async (t) => {
 
     st.ok(block.header.mixHash.equals(sealOpts.mixHash))
     st.ok(block.header.nonce.equals(sealOpts.nonce))
-    st.ok(block.validateDifficulty(genesisBlock))
+    st.doesNotThrow(() => blockchain.validateDifficulty(block.header, genesisBlock.header))
     st.end()
   })
 
