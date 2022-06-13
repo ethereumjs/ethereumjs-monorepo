@@ -18,9 +18,8 @@ import {
   getFullSize,
   getSeed,
 } from './util'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+import { AbstractLevel } from 'abstract-level'
 const xor = require('buffer-xor')
 
 export type Solution = {
@@ -141,16 +140,27 @@ export class Miner {
   }
 }
 
+export type EthashCacheDB = AbstractLevel<
+  string | Buffer | Uint8Array,
+  string | Buffer,
+  {
+    cache: Buffer[]
+    fullSize: number
+    cacheSize: number
+    seed: Buffer
+  }
+>
+
 export default class Ethash {
   dbOpts: Object
-  cacheDB?: LevelUp
+  cacheDB?: EthashCacheDB
   cache: Buffer[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
   seed?: Buffer
 
-  constructor(cacheDB?: LevelUp) {
+  constructor(cacheDB?: EthashCacheDB) {
     this.dbOpts = {
       valueEncoding: 'json',
     }
@@ -264,7 +274,7 @@ export default class Ethash {
       try {
         data = await this.cacheDB!.get(epoc, this.dbOpts)
       } catch (error: any) {
-        if (error.type !== 'NotFoundError') {
+        if (error.code !== 'LEVEL_NOT_FOUND') {
           throw error
         }
       }
@@ -279,7 +289,7 @@ export default class Ethash {
     try {
       data = await this.cacheDB!.get(epoc, this.dbOpts)
     } catch (error: any) {
-      if (error.type !== 'NotFoundError') {
+      if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
     }

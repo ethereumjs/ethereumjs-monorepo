@@ -1,8 +1,7 @@
-import Ethash from '../src'
-const level = require('level-mem')
+import Ethash, { EthashCacheDB } from '../src'
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
-const ethash = new Ethash(cacheDB)
+const ethash = new Ethash(new MemoryLevel())
 
 const verifySubmit = async (
   ethash: Ethash,
@@ -11,7 +10,7 @@ const verifySubmit = async (
   nonce: Buffer
 ): Promise<Buffer> => {
   console.log('Verifying number: ', number)
-  await ethash.loadEpoc(number)
+  await ethash.loadEpoc(BigInt(number))
   console.log('EPOC set')
   console.log('Seed: ', ethash.seed!.toString('hex'))
   const a = ethash.run(headerHash, nonce)

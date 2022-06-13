@@ -945,7 +945,7 @@ export class BlockHeader {
       const header = (await blockchain.getBlock(hash)).header
       return header
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return undefined
       } else {
         throw error

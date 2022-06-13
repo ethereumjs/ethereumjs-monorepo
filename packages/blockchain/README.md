@@ -27,12 +27,12 @@ This module performs write operations. Making a backup of your data before tryin
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain } from '@ethereumjs/common'
 
-const level = require('level')
+const { Level } = require('level')
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
 
 const common = new Common({ chain: Chain.Ropsten })
-const db = level(gethDbPath)
+const db = new Level(gethDbPath)
 // Use the safe static constructor which awaits the init method
 const blockchain = Blockchain.create({ common, db })
 

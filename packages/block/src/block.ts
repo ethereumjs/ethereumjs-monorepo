@@ -488,7 +488,7 @@ export class Block {
       const block = await blockchain.getBlock(hash)
       return block
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return undefined
       } else {
         throw error

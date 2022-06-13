@@ -33,8 +33,8 @@ const CLIQUE_VOTES_KEY = 'CliqueVotes'
 const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 
 const DB_OPTS = {
-  keyEncoding: 'binary',
-  valueEncoding: 'binary',
+  keyEncoding: 'buffer',
+  valueEncoding: 'buffer',
 }
 
 /**
@@ -465,7 +465,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
-      const signerStates = await this.blockchain.db.get(CLIQUE_SIGNERS_KEY, DB_OPTS)
+      const signerStates = await this.blockchain.db.get<string, Buffer>(CLIQUE_SIGNERS_KEY, DB_OPTS)
       const states = arrToBufArr(RLP.decode(Uint8Array.from(signerStates))) as [Buffer, Buffer[]]
       return states.map((state) => {
         const blockNum = bufferToBigInt(state[0] as Buffer)
@@ -473,7 +473,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error
@@ -486,7 +486,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
-      const signerVotes = await this.blockchain.db.get(CLIQUE_VOTES_KEY, DB_OPTS)
+      const signerVotes = await this.blockchain.db.get<string, Buffer>(CLIQUE_VOTES_KEY, DB_OPTS)
       const votes = arrToBufArr(RLP.decode(Uint8Array.from(signerVotes))) as [
         Buffer,
         [Buffer, Buffer, Buffer]
@@ -499,7 +499,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, [signer, beneficiary, nonce]]
       }) as CliqueLatestVotes
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error
@@ -512,7 +512,10 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     try {
-      const blockSigners = await this.blockchain.db.get(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY, DB_OPTS)
+      const blockSigners = await this.blockchain.db.get<string, Buffer>(
+        CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
+        DB_OPTS
+      )
       const signers = arrToBufArr(RLP.decode(Uint8Array.from(blockSigners))) as [Buffer, Buffer][]
       return signers.map((s) => {
         const blockNum = bufferToBigInt(s[0] as Buffer)
@@ -520,7 +523,7 @@ export class CliqueConsensus implements Consensus {
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return []
       }
       throw error

@@ -5,7 +5,7 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Skeleton } from '../../lib/sync'
 import { wait } from '../integration/util'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
@@ -40,8 +40,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     t.equal(sync.type, 'beacon', 'beacon type')
     t.end()
@@ -51,8 +50,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
     ;(sync as any).pool.peers = []
@@ -67,8 +65,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
     const headers = [{ number: BigInt(5) }]
@@ -84,8 +81,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).running = true
     const peers = [
@@ -112,8 +108,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
@@ -153,8 +148,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(skeleton as any).status.progress.subchains = [
       {
@@ -181,8 +175,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton.isLinked = () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     await sync.open()

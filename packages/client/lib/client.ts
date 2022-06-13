@@ -4,9 +4,8 @@ import { Config, SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 import { Chain } from './blockchain'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 import type Blockchain from '@ethereumjs/blockchain'
+import { AbstractLevel } from 'abstract-level'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -21,7 +20,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  chainDB?: LevelUp
+  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Database to store the state.
@@ -29,7 +28,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: LevelUp
+  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Database to store tx receipts, logs, and indexes.
@@ -37,7 +36,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created in datadir folder
    */
-  metaDB?: LevelUp
+  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* List of bootnodes to use for discovery */
   bootnodes?: MultiaddrLike[]

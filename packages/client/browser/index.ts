@@ -1,5 +1,4 @@
 import Common, { Chain } from '@ethereumjs/common'
-const level = require('level')
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -44,6 +43,7 @@ import { Config } from '../lib/config'
 // Logging
 export * from './logging'
 import { getLogger } from './logging'
+import { Level } from 'level'
 
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })
@@ -65,7 +65,7 @@ export async function createClient(args: any) {
     discDns: false,
   })
   config.events.setMaxListeners(50)
-  const chainDB = level(`${datadir}/${common.chainName()}`)
+  const chainDB = new Level<string | Buffer, string | Buffer>(`${datadir}/${common.chainName()}`)
   return new EthereumClient({ config, chainDB })
 }
 

@@ -21,7 +21,8 @@ import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { FullEthereumService } from '../lib/service'
 import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-const level = require('level')
+import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 
@@ -235,8 +236,8 @@ const args = yargs(hideBin(process.argv))
     default: false,
   })
   .option('unlock', {
-    describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock - 
-      currently only the first account is used (for sealing PoA blocks and as the default coinbase). 
+    describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
+      currently only the first account is used (for sealing PoA blocks and as the default coinbase).
       You will be prompted for a 0x-prefixed private key if you pass a list of accounts
       FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH`,
     string: true,
@@ -275,21 +276,25 @@ const args = yargs(hideBin(process.argv))
 /**
  * Initializes and returns the databases needed for the client
  */
-function initDBs(config: Config) {
+function initDBs(config: Config): {
+  chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+} {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
   ensureDirSync(chainDataDir)
-  const chainDB = level(chainDataDir)
+  const chainDB = new Level<string | Buffer, string | Buffer>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = level(stateDataDir)
+  const stateDB = new Level<string | Buffer, string | Buffer>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
   ensureDirSync(metaDataDir)
-  const metaDB = level(metaDataDir)
+  const metaDB = new Level<string | Buffer, string | Buffer>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
 }

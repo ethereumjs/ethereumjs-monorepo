@@ -6,7 +6,7 @@ import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from 
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
 
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
@@ -683,7 +683,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should save headers', async (st) => {
-    const db = level()
+    const db = new MemoryLevel<string | Buffer, string | Buffer>()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

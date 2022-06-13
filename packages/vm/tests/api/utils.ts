@@ -6,7 +6,7 @@ import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import Common from '@ethereumjs/common'
 
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -20,7 +20,7 @@ export async function setBalance(vm: VM, address: Address, balance = BigInt(1000
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
-  const db = level()
+  const db: any = new MemoryLevel()
   const { common, genesisBlock } = opts
   if (!opts.blockchain) {
     opts.blockchain = await Blockchain.create({

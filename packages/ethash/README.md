@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
-| --- |
+| ------------------------------------------------------------------------------------ |
 
 Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceding release.
 
@@ -22,7 +22,7 @@ Note: this `README` reflects the state of the library from `v1.0.0` onwards. See
 ```typescript
 import Ethash from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 const cacheDB = level()
 
@@ -46,9 +46,10 @@ See the following example on how to use the new `Miner` class:
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
-const level = require('level-mem')
+import { BN } from 'ethereumjs-util'
+import { MemoryLevel } from 'memory-level'
 
-const cacheDB = level()
+const cacheDB = new MemoryLevel()
 const block = Block.fromBlockData({
   header: {
     difficulty: BigInt(100),
