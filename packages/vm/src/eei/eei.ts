@@ -23,7 +23,7 @@ type Blockchain = {
  * and to-be-selfdestructed addresses.
  */
 export default class EEI implements EEIInterface {
-  readonly state: VmState // TODO this is part of the interface, remove underscore (search .ei._state, replace all)
+  readonly state: VmState
   protected _common: Common
   protected _blockchain: Blockchain
 

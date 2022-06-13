@@ -130,7 +130,7 @@ export interface EVMOpts {
   /*
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
-  eei: EEIInterface // TODO edit this to ExternalInterface
+  eei: EEIInterface
 }
 
 /**
@@ -163,7 +163,7 @@ export interface ExecResult {
   /**
    * Amount of gas the code used to run
    */
-  executionGasUsed: bigint //TODO misleading; does not cover upfront cost (does it cover callvalue?)
+  executionGasUsed: bigint
   /**
    * Return value from the contract
    */
@@ -708,7 +708,6 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
     if (message.selfdestruct) {
-      // TODO move this logic into Interpreter. Probably pass message there?
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 

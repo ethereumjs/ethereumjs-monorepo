@@ -580,7 +580,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
-            // TODO: improve on the API here (EEI and StateManager)
             const empty = await runState.eei.isAccountEmpty(selfdestructToAddress)
             if (empty) {
               deductGas = true
