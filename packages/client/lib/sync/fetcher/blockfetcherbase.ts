@@ -68,12 +68,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
       tasks.push({ first: first, count: max })
-      first += BigInt(max)
+      !this.reverse ? (first += BigInt(max)) : (first -= BigInt(max))
       count -= BigInt(max)
       pushedCount += BigInt(max)
     }
     if (count > BigInt(0) && tasks.length < maxTasks) {
       tasks.push({ first: first, count: Number(count) })
+      !this.reverse ? (first += BigInt(count)) : (first -= BigInt(count))
       pushedCount += count
       count = BigInt(0)
     }

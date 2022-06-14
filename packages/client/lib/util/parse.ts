@@ -244,7 +244,7 @@ export function parseKey(input: string | Buffer) {
  */
 export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
   for (const hf of (common as any)._chainParams.hardforks) {
-    if (!hf.forkHash && hf.block !== undefined && hf.block !== null) {
+    if (!hf.forkHash && hf.block !== undefined && (hf.block !== null || hf.td !== undefined)) {
       hf.forkHash = common.forkHash(hf.name, genesisHash)
     }
   }
