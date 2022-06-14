@@ -406,8 +406,8 @@ export class Skeleton extends MetaDBManager {
       const block = await this.getBlock(number)
       if (!block) break
       // Insert into chain
-      const num = await this.chain.putBlocks([block], true)
-      if (num !== 1) {
+      const numBlocksInserted = await this.chain.putBlocks([block], true)
+      if (numBlocksInserted !== 1) {
         this.config.logger.error(
           `Failed to put block num=${number} from skeleton chain to canonical`
         )
@@ -415,8 +415,8 @@ export class Skeleton extends MetaDBManager {
       }
       // Delete skeleton block to clean up as we go
       await this.deleteBlock(block)
-      canonicalHead += BigInt(num)
-      fillLogIndex += num
+      canonicalHead += BigInt(numBlocksInserted)
+      fillLogIndex += numBlocksInserted
       if (fillLogIndex > 50) {
         this.config.logger.info(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${head}`
