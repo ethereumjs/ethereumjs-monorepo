@@ -372,6 +372,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (customGenesisState) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
+      db: dbs.chainDB,
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
