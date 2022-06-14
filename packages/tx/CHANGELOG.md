@@ -6,6 +6,70 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0 - [ UNRELEASED ]
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following in 2-3 weeks if things go well)! 🎉
+
+The EthereumJS Team
+
+### London Hardfork Default
+
+In this release the underlying `@ethereumjs/common` version is updated to `v3` which sets the default HF to `London` (before: `Istanbul`).
+
+This means that a Transaction object instantiated without providing an explicit `Common` is using `London` as the default hardfork as well and behavior of the library changes according to up-to-`London` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### BigInt-Related API Changes
+
+All the transaction parameters which have been previously taken in as `BNLike` (see `Util` library) - like `gasPrice` or `nonce` - are now taken in as `BigIntLike` and internally stored as a `BigInt`.
+
+Have a look at your object instantiations on how you do things and if you need to update.
+
+The following method signatures have been changed along the update and need some attention:
+
+- `getBaseFee(): bigint`
+- `getDataFee(): bigint`
+- `getUpfrontCost(): bigint`
+
+### API Method/Getter Removals
+
+Additionally the following deprecated methods/getters have been removed from the API, see PR [#1742](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1742):
+
+- `get transactionType()`
+- `get senderR()` (alias for `r`)
+- `get senderS()` (`alias for s`)
+- `get yParity()` (`alias for v`)
+- `tx.fromRlpSerializedTx()`
+- `TransactionFactory.getTransactionClass()`
+
+### Other Changes
+
+- The `hash()` function is now throwing when called on an unsigned legacy tx (this aligns the behavior with the other tx types), PR [#1894](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1894)
+- Signature processing code has been updated to use `@ethereumjs/util` `v8`, PR [#1945](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1945)
+
 ## 3.5.2 - 2022-06-02
 
 - Fixed a bug where tx options would not propagate from an unsigned to a signed tx when using the `sign()` function (there are not that many tx options, this is therefore in most cases not practically relevant and rather a guard for future option additions), PR [#1884](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1884)
