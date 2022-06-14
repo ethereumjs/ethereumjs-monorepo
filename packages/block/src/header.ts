@@ -265,6 +265,7 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
 
     this._genericFormatvalidation()
+    this._consensusFormatValidation()
     this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -534,26 +535,10 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
-   * It verifies the current block against the `parentHash`:
-   * - The `parentHash` is part of the blockchain (it is a valid header)
-   * - Current block number is parent block number + 1
-   * - Current block has a strictly higher timestamp
-   * - Additional PoW checks ->
-   *   - Current block has valid difficulty and gas limit
-   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
-   * - Additional PoA clique checks ->
-   *   - Various extraData checks
-   *   - Checks on coinbase and mixHash
-   *   - Current block has a timestamp diff greater or equal to PERIOD
-   *   - Current block has difficulty correctly marked as INTURN or NOTURN
-   * @param blockchain - validate against an @ethereumjs/blockchain
-   * @param height - If this is an uncle header, this is the height of the block that is including it
+   * Checks static parameters related to consensus algorithm
+   * @throws if any check fails
    */
-  async validate(blockchain: Blockchain, height?: bigint): Promise<void> {
-    if (this.isGenesis()) {
-      return
-    }
+  _consensusFormatValidation() {
     const hardfork = this._common.hardfork()
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
@@ -597,12 +582,30 @@ export class BlockHeader {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
         throw new Error(msg)
       }
-      if (!this.validateCliqueDifficulty(blockchain)) {
-        const msg = this._errorMsg(`invalid clique difficulty`)
-        throw new Error(msg)
-      }
     }
+  }
 
+  /**
+   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * It verifies the current block against the `parentHash`:
+   * - The `parentHash` is part of the blockchain (it is a valid header)
+   * - Current block number is parent block number + 1
+   * - Current block has a strictly higher timestamp
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Various extraData checks
+   *   - Checks on coinbase and mixHash
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param blockchain - validate against an @ethereumjs/blockchain
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  async validate(blockchain: Blockchain, height?: bigint): Promise<void> {
+    if (this.isGenesis()) {
+      return
+    }
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
 
     if (!parentHeader) {
@@ -626,6 +629,10 @@ export class BlockHeader {
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp + BigInt(period) > this.timestamp) {
         const msg = this._errorMsg('invalid timestamp diff (lower than period)')
+        throw new Error(msg)
+      }
+      if (!this.validateCliqueDifficulty(blockchain)) {
+        const msg = this._errorMsg(`invalid clique difficulty`)
         throw new Error(msg)
       }
     }
