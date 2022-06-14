@@ -275,7 +275,6 @@ export class Block {
    * @param onlyHeader - if should only validate the header (skips validating txTrie and unclesHash) (default: false)
    */
   async validate(blockchain: Blockchain, onlyHeader: boolean = false): Promise<void> {
-    await this.header.validate(blockchain)
     await this.validateUncles(blockchain)
     await this.validateData(onlyHeader)
   }
@@ -405,13 +404,14 @@ export class Block {
    * @param uncleHeaders - list of uncleHeaders
    * @param blockchain - pointer to the blockchain
    */
+  // TODO: Move validateUncleHeaders to blockchain
   private async _validateUncleHeaders(uncleHeaders: BlockHeader[], blockchain: Blockchain) {
     if (uncleHeaders.length == 0) {
       return
     }
 
     // Each Uncle Header is a valid header
-    await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
+    //  await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
 
     // Check how many blocks we should get in order to validate the uncle.
     // In the worst case, we get 8 blocks, in the best case, we only get 1 block.

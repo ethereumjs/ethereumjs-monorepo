@@ -66,7 +66,10 @@ tape('reorg tests', (t) => {
     'should correctly reorg a poa chain and remove blocks from clique snapshots',
     async (st) => {
       const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-      const genesisBlock = Block.fromBlockData({}, { common })
+      const genesisBlock = Block.fromBlockData(
+        { header: { extraData: Buffer.alloc(97) } },
+        { common }
+      )
       const blockchain = await Blockchain.create({
         validateBlocks: false,
         validateConsensus: false,

@@ -547,7 +547,6 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
-    await this.validateHeader(item instanceof Block ? item.header : item)
     await this.runWithLock<void>(async () => {
       const block =
         item instanceof BlockHeader
@@ -576,6 +575,7 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
+        await this.validateHeader(item instanceof Block ? item.header : item)
         await block.validate(this, isHeader)
       }
 
@@ -699,7 +699,7 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (this._common.consensusType() === 'pow') {
+    if (header._common.consensusType() === 'pow') {
       if (!header.validateDifficulty(parentHeader)) {
         const msg = header._errorMsg('invalid difficulty')
         throw new Error(msg)
@@ -713,7 +713,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (height) {
       const dif = height - parentHeader.number
-      console.log('the height dif is', dif)
+
       if (!(dif < BigInt(8) && dif > BigInt(1))) {
         const msg = header._errorMsg('uncle block has a parent that is too old or too young')
         throw new Error(msg)

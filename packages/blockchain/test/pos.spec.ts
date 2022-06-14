@@ -65,7 +65,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
 
     t.equal(
       genesisHeader.hash().toString('hex'),
-      '3e0e17c453381eef61324c91a30fdc739a928dbe7b90c918857fd863e9915d88',
+      '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
       'genesis hash matches'
     )
     await buildChain(blockchain, s.common, 15)
