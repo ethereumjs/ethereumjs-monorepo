@@ -36,7 +36,17 @@ With the `v3` release the default `Common` hardfork changes from `Istanbul` to `
 
 **Breaking:** Please check your upper-level library instantiations (e.g. for Tx, VM,...) where you use an implicit default Common (so: do not explcitly pass in a Common instance).
 
-### API and BigInt Changes
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) for the core `BigInt` transition PRs.
+
+### General and BigInt-Related API Changes
 
 Various methods have been renamed and various method signatures have been changed along with the `BigInt` transition.
 
