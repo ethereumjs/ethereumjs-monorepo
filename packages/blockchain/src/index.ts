@@ -1,6 +1,12 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import Common, {
+  Chain,
+  CliqueConfig,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+} from '@ethereumjs/common'
 import { BigIntLike } from '@ethereumjs/util'
 
 import { DBManager } from './db/manager'
@@ -541,6 +547,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
+    await this.validateHeader(item instanceof Block ? item.header : item)
     await this.runWithLock<void>(async () => {
       const block =
         item instanceof BlockHeader
@@ -639,6 +646,109 @@ export default class Blockchain implements BlockchainInterface {
 
       await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
     })
+  }
+
+  /**
+   * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * It verifies the current block against the `parentHash`:
+   * - The `parentHash` is part of the blockchain (it is a valid header)
+   * - Current block number is parent block number + 1
+   * - Current block has a strictly higher timestamp
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Checks on coinbase and mixHash
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param header - header to be validated
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  private async validateHeader(header: BlockHeader, height?: bigint) {
+    if (header.isGenesis()) {
+      return
+    }
+    const parentHeader = (await this.getBlock(header.parentHash)).header
+
+    if (!parentHeader) {
+      const msg = header._errorMsg('could not find parent header')
+      throw new Error(msg)
+    }
+
+    const { number } = header
+    if (number !== parentHeader.number + BigInt(1)) {
+      const msg = header._errorMsg('invalid number')
+      throw new Error(msg)
+    }
+
+    if (header.timestamp <= parentHeader.timestamp) {
+      const msg = header._errorMsg('invalid timestamp')
+      throw new Error(msg)
+    }
+
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      const period = (this._common.consensusConfig() as CliqueConfig).period
+      // Timestamp diff between blocks is lower than PERIOD (clique)
+      if (parentHeader.timestamp + BigInt(period) > header.timestamp) {
+        const msg = header._errorMsg('invalid timestamp diff (lower than period)')
+        throw new Error(msg)
+      }
+      if (!header.validateCliqueDifficulty(this)) {
+        const msg = header._errorMsg(`invalid clique difficulty`)
+        throw new Error(msg)
+      }
+    }
+
+    if (this._common.consensusType() === 'pow') {
+      if (!header.validateDifficulty(parentHeader)) {
+        const msg = header._errorMsg('invalid difficulty')
+        throw new Error(msg)
+      }
+    }
+
+    if (!header.validateGasLimit(parentHeader)) {
+      const msg = header._errorMsg('invalid gas limit')
+      throw new Error(msg)
+    }
+
+    if (height) {
+      const dif = height - parentHeader.number
+      console.log('the height dif is', dif)
+      if (!(dif < BigInt(8) && dif > BigInt(1))) {
+        const msg = header._errorMsg('uncle block has a parent that is too old or too young')
+        throw new Error(msg)
+      }
+    }
+
+    // check if the block used too much gas
+    if (header.gasUsed > header.gasLimit) {
+      const msg = header._errorMsg('Invalid block: too much gas used')
+      throw new Error(msg)
+    }
+
+    if (this._common.isActivatedEIP(1559)) {
+      if (!header.baseFeePerGas) {
+        const msg = header._errorMsg('EIP1559 block has no base fee field')
+        throw new Error(msg)
+      }
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = londonHfBlock && header.number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+        if (header.baseFeePerGas! !== initialBaseFee) {
+          const msg = header._errorMsg('Initial EIP1559 block does not have initial base fee')
+          throw new Error(msg)
+        }
+      } else {
+        // check if the base fee is correct
+        const expectedBaseFee = parentHeader.calcNextBaseFee()
+
+        if (header.baseFeePerGas! !== expectedBaseFee) {
+          const msg = header._errorMsg('Invalid block: base fee not correct')
+          throw new Error(msg)
+        }
+      }
+    }
   }
 
   /**

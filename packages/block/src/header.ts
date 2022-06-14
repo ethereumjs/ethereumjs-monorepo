@@ -586,109 +586,6 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
-   * It verifies the current block against the `parentHash`:
-   * - The `parentHash` is part of the blockchain (it is a valid header)
-   * - Current block number is parent block number + 1
-   * - Current block has a strictly higher timestamp
-   * - Additional PoW checks ->
-   *   - Current block has valid difficulty and gas limit
-   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
-   * - Additional PoA clique checks ->
-   *   - Various extraData checks
-   *   - Checks on coinbase and mixHash
-   *   - Current block has a timestamp diff greater or equal to PERIOD
-   *   - Current block has difficulty correctly marked as INTURN or NOTURN
-   * @param blockchain - validate against an @ethereumjs/blockchain
-   * @param height - If this is an uncle header, this is the height of the block that is including it
-   */
-  async validate(blockchain: Blockchain, height?: bigint): Promise<void> {
-    if (this.isGenesis()) {
-      return
-    }
-    const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
-
-    if (!parentHeader) {
-      const msg = this._errorMsg('could not find parent header')
-      throw new Error(msg)
-    }
-
-    const { number } = this
-    if (number !== parentHeader.number + BigInt(1)) {
-      const msg = this._errorMsg('invalid number')
-      throw new Error(msg)
-    }
-
-    if (this.timestamp <= parentHeader.timestamp) {
-      const msg = this._errorMsg('invalid timestamp')
-      throw new Error(msg)
-    }
-
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      const period = (this._common.consensusConfig() as CliqueConfig).period
-      // Timestamp diff between blocks is lower than PERIOD (clique)
-      if (parentHeader.timestamp + BigInt(period) > this.timestamp) {
-        const msg = this._errorMsg('invalid timestamp diff (lower than period)')
-        throw new Error(msg)
-      }
-      if (!this.validateCliqueDifficulty(blockchain)) {
-        const msg = this._errorMsg(`invalid clique difficulty`)
-        throw new Error(msg)
-      }
-    }
-
-    if (this._common.consensusType() === 'pow') {
-      if (!this.validateDifficulty(parentHeader)) {
-        const msg = this._errorMsg('invalid difficulty')
-        throw new Error(msg)
-      }
-    }
-
-    if (!this.validateGasLimit(parentHeader)) {
-      const msg = this._errorMsg('invalid gas limit')
-      throw new Error(msg)
-    }
-
-    if (height) {
-      const dif = height - parentHeader.number
-      if (!(dif < BigInt(8) && dif > BigInt(1))) {
-        const msg = this._errorMsg('uncle block has a parent that is too old or too young')
-        throw new Error(msg)
-      }
-    }
-
-    // check if the block used too much gas
-    if (this.gasUsed > this.gasLimit) {
-      const msg = this._errorMsg('Invalid block: too much gas used')
-      throw new Error(msg)
-    }
-
-    if (this._common.isActivatedEIP(1559)) {
-      if (!this.baseFeePerGas) {
-        const msg = this._errorMsg('EIP1559 block has no base fee field')
-        throw new Error(msg)
-      }
-      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
-      if (isInitialEIP1559Block) {
-        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (this.baseFeePerGas! !== initialBaseFee) {
-          const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
-          throw new Error(msg)
-        }
-      } else {
-        // check if the base fee is correct
-        const expectedBaseFee = parentHeader.calcNextBaseFee()
-
-        if (this.baseFeePerGas! !== expectedBaseFee) {
-          const msg = this._errorMsg('Invalid block: base fee not correct')
-          throw new Error(msg)
-        }
-      }
-    }
-  }
-
-  /**
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
@@ -1007,12 +904,12 @@ export class BlockHeader {
   }
 
   /**
-   * Internal helper function to create an annotated error message
+   * Helper function to create an annotated error message
    *
    * @param msg Base error message
    * @hidden
    */
-  protected _errorMsg(msg: string) {
+  public _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
   }
 }

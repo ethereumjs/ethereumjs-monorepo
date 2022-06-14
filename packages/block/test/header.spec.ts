@@ -256,7 +256,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
   /*
-  TODO: Move these tests to blockchain
+  TODO: Decide if we need to move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
     const headerData = testDataPreLondon.blocks[0].blockHeader
 
