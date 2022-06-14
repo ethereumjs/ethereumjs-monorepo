@@ -142,10 +142,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> Clique Blocks', function (st) {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.fromHeaderData(undefined, { common })
-    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
-
-    header = BlockHeader.fromHeaderData({}, { common })
+    const header = BlockHeader.fromHeaderData({ extraData: Buffer.alloc(97) }, { common })
     st.ok(header.hash().toString('hex'), 'default block should initialize')
 
     st.end()
@@ -168,9 +165,9 @@ tape('[Block]: Header functions', function (t) {
     // valid extraData: at limit
     let testCase = 'pow block should validate with 32 bytes of extraData'
     let extraData = Buffer.alloc(32)
-    let header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       st.pass(testCase)
     } catch (error: any) {
       st.fail(testCase)
@@ -179,9 +176,9 @@ tape('[Block]: Header functions', function (t) {
     // valid extraData: fewer than limit
     testCase = 'pow block should validate with 12 bytes of extraData'
     extraData = Buffer.alloc(12)
-    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       st.ok(testCase)
     } catch (error: any) {
       st.fail(testCase)
@@ -190,9 +187,9 @@ tape('[Block]: Header functions', function (t) {
     // extraData beyond limit
     testCase = 'pow block should throw with excess amount of extraData'
     extraData = Buffer.alloc(42)
-    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       st.fail(testCase)
     } catch (error: any) {
       st.ok(error.message.includes('invalid amount of extra data'), testCase)
@@ -201,7 +198,7 @@ tape('[Block]: Header functions', function (t) {
     // PoA
     blockchain = new Mockchain()
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    genesis = Block.fromBlockData({}, { common })
+    genesis = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
     await blockchain.putBlock(genesis)
 
     parentHash = genesis.hash()
@@ -213,9 +210,8 @@ tape('[Block]: Header functions', function (t) {
     testCase =
       'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
     extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65)])
-    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       t.pass(testCase)
     } catch (error: any) {
       t.fail(testCase)
@@ -224,9 +220,8 @@ tape('[Block]: Header functions', function (t) {
     // invalid extraData length
     testCase = 'clique block should throw on invalid extraData length'
     extraData = Buffer.alloc(32)
-    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       t.fail(testCase)
     } catch (error: any) {
       t.ok(
@@ -246,9 +241,8 @@ tape('[Block]: Header functions', function (t) {
       Buffer.alloc(21),
     ])
     const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
-    header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
     try {
-      await header.validate(blockchain)
+      BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
       st.fail(testCase)
     } catch (error: any) {
       st.ok(
@@ -261,7 +255,8 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
-
+  /*
+  TODO: Move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
     const headerData = testDataPreLondon.blocks[0].blockHeader
 
@@ -373,7 +368,7 @@ tape('[Block]: Header functions', function (t) {
     }
     st.end()
   })
-
+*/
   t.test('should test validateGasLimit()', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
