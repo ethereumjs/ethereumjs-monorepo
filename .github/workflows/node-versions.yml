@@ -20,7 +20,7 @@ jobs:
           node-version: 16
 
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(npx testable-node-versions)"
+        run: echo "::set-output name=matrix::[14,16,18]"
 
   tests:
     needs: get-node-versions
@@ -49,6 +49,7 @@ jobs:
       - name: Test Block
         run: npm run test
         working-directory: packages/block
+        if: ${{ matrix.node-version >= 15 }}
 
       - name: Test Blockchain
         run: npm run test
