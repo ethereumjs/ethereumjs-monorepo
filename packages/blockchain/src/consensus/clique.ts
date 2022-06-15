@@ -32,6 +32,11 @@ const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
 const CLIQUE_VOTES_KEY = 'CliqueVotes'
 const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 
+// Block difficulty for in-turn signatures
+export const CLIQUE_DIFF_INTURN = BigInt(2)
+// Block difficulty for out-of-turn signatures
+export const CLIQUE_DIFF_NOTURN = BigInt(1)
+
 const DB_OPTS = {
   keyEncoding: 'buffer',
   valueEncoding: 'buffer',
@@ -129,6 +134,40 @@ export class CliqueConsensus implements Consensus {
         }
       }
     }
+  }
+
+  async validateDifficulty(header: BlockHeader): Promise<void> {
+    header._requireClique('validateCliqueDifficulty')
+    if (header.difficulty !== CLIQUE_DIFF_INTURN && header.difficulty !== CLIQUE_DIFF_NOTURN) {
+      const msg = header._errorMsg(
+        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
+      )
+      throw new Error(msg)
+    }
+    if ('cliqueActiveSigners' in this === false) {
+      const msg = header._errorMsg(
+        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
+      )
+      throw new Error(msg)
+    }
+    const signers = this.cliqueActiveSigners()
+    if (signers.length === 0) {
+      // abort if signers are unavailable
+      const msg = header._errorMsg('no signers available')
+      throw new Error(msg)
+    }
+    const signerIndex = signers.findIndex((address: Address) =>
+      address.equals(header.cliqueSigner())
+    )
+    const inTurn = header.number % BigInt(signers.length) === BigInt(signerIndex)
+    if (
+      (inTurn && header.difficulty === CLIQUE_DIFF_INTURN) ||
+      (!inTurn && header.difficulty === CLIQUE_DIFF_NOTURN)
+    ) {
+      return
+    }
+    const msg = header._errorMsg('invalid clique difficulty')
+    throw new Error(msg)
   }
 
   async newBlock(block: Block, commonAncestor: BlockHeader | undefined): Promise<void> {

@@ -25,12 +25,7 @@ import {
 } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import {
-  CLIQUE_EXTRA_VANITY,
-  CLIQUE_EXTRA_SEAL,
-  CLIQUE_DIFF_INTURN,
-  CLIQUE_DIFF_NOTURN,
-} from './clique'
+import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -461,49 +456,6 @@ export class BlockHeader {
   }
 
   /**
-   * Checks that the block's `difficulty` matches the canonical difficulty.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
-   */
-  validateDifficulty(parentBlockHeader: BlockHeader): boolean {
-    return this.canonicalDifficulty(parentBlockHeader) === this.difficulty
-  }
-
-  /**
-   * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
-   * Returns false if invalid.
-   */
-  validateCliqueDifficulty(blockchain: Blockchain): boolean {
-    this._requireClique('validateCliqueDifficulty')
-    if (this.difficulty !== CLIQUE_DIFF_INTURN && this.difficulty !== CLIQUE_DIFF_NOTURN) {
-      const msg = this._errorMsg(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
-      )
-      throw new Error(msg)
-    }
-    if ('cliqueActiveSigners' in (blockchain as any).consensus === false) {
-      const msg = this._errorMsg(
-        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
-      )
-      throw new Error(msg)
-    }
-    const signers = (blockchain as any).consensus.cliqueActiveSigners()
-    if (signers.length === 0) {
-      // abort if signers are unavailable
-      return true
-    }
-    const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
-    const inTurn = this.number % BigInt(signers.length) === BigInt(signerIndex)
-    if (
-      (inTurn && this.difficulty === CLIQUE_DIFF_INTURN) ||
-      (!inTurn && this.difficulty === CLIQUE_DIFF_NOTURN)
-    ) {
-      return true
-    }
-    return false
-  }
-
-  /**
    * Validates if the block gasLimit remains in the
    * boundaries set by the protocol.
    *
@@ -679,7 +631,7 @@ export class BlockHeader {
     return this.number === BigInt(0)
   }
 
-  private _requireClique(name: string) {
+  public _requireClique(name: string) {
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       const msg = this._errorMsg(
         `BlockHeader.${name}() call only supported for clique PoA networks`

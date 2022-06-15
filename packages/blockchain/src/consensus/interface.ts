@@ -22,6 +22,7 @@ export interface Consensus {
    */
   validate(block: Block): Promise<void>
 
+  validateDifficulty(header: BlockHeader): Promise<void>
   /**
    * Update consensus on new block
    * @param block new block

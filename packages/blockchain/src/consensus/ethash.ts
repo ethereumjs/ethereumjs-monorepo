@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash, { EthashCacheDB } from '@ethereumjs/ethash'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
@@ -19,6 +19,18 @@ export class EthashConsensus implements Consensus {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
       throw new Error('invalid POW')
+    }
+  }
+
+  /**
+   * Checks that the block's `difficulty` matches the canonical difficulty of the parent header.
+   * @param header - header of block to be checked
+   */
+  async validateDifficulty(header: BlockHeader) {
+    const parentHeader = (await this.blockchain.getBlock(header.parentHash)).header
+    if (header.canonicalDifficulty(parentHeader) !== header.difficulty) {
+      const msg = header._errorMsg('invalid difficulty')
+      throw new Error(msg)
     }
   }
 

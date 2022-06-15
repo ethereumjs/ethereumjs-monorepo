@@ -693,17 +693,12 @@ export default class Blockchain implements BlockchainInterface {
         const msg = header._errorMsg('invalid timestamp diff (lower than period)')
         throw new Error(msg)
       }
-      if (!header.validateCliqueDifficulty(this)) {
-        const msg = header._errorMsg(`invalid clique difficulty`)
-        throw new Error(msg)
-      }
+      // Validate clique difficulty
+      await this.consensus.validateDifficulty(header)
     }
 
     if (header._common.consensusType() === 'pow') {
-      if (!header.validateDifficulty(parentHeader)) {
-        const msg = header._errorMsg('invalid difficulty')
-        throw new Error(msg)
-      }
+      await this.consensus.validateDifficulty(header)
     }
 
     if (!header.validateGasLimit(parentHeader)) {

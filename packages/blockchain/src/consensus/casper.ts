@@ -1,3 +1,4 @@
+import { BlockHeader } from '@ethereumjs/block'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
 
@@ -14,5 +15,11 @@ export class CasperConsensus implements Consensus {
   public async genesisInit(): Promise<void> {}
   public async setup(): Promise<void> {}
   public async validate(): Promise<void> {}
+  public async validateDifficulty(header: BlockHeader): Promise<void> {
+    if (header.difficulty !== BigInt(0)) {
+      const msg = header._errorMsg('invalid difficulty.  PoS blocks must have difficulty 0')
+      throw new Error(msg)
+    }
+  }
   public async newBlock(): Promise<void> {}
 }

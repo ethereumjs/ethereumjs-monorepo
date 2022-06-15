@@ -366,15 +366,6 @@ export class Block {
   }
 
   /**
-   * Checks that the block's `difficulty` matches the canonical difficulty.
-   *
-   * @param parentBlock - the parent of this `Block`
-   */
-  validateDifficulty(parentBlock: Block): boolean {
-    return this.header.validateDifficulty(parentBlock.header)
-  }
-
-  /**
    * Validates if the block gasLimit remains in the
    * boundaries set by the protocol.
    *
@@ -411,7 +402,7 @@ export class Block {
     }
 
     // Each Uncle Header is a valid header
-    //  await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
+    //   await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
 
     // Check how many blocks we should get in order to validate the uncle.
     // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
