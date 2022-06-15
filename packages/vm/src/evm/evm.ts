@@ -269,6 +269,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
   protected _precompiles!: Map<string, PrecompileFunc>
 
+  protected readonly _optsCached: EVMOpts
+
   public get precompiles() {
     return this._precompiles
   }
@@ -316,6 +318,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
   constructor(opts: EVMOpts) {
     super()
+
+    this._optsCached = opts
 
     this.eei = opts.eei
 
@@ -981,5 +985,15 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
    */
   private postMessageCleanup() {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
+  }
+
+  public copy() {
+    const opts = {
+      ...this._optsCached,
+      common: this._common.copy(),
+      eei: this.eei.copy(),
+      blockchain: this._blockchain.copy(),
+    }
+    return new EVM(opts)
   }
 }

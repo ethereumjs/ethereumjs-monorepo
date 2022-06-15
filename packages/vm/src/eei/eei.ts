@@ -12,6 +12,7 @@ type Block = {
 
 type Blockchain = {
   getBlock(blockId: number): Promise<Block>
+  copy(): Blockchain
 }
 
 /**
@@ -108,5 +109,9 @@ export default class EEI implements EEIInterface {
    */
   async accountExists(address: Address): Promise<boolean> {
     return this.state.accountExists(address)
+  }
+
+  public copy() {
+    return new EEI(this.state._stateManager.copy(), this._common.copy(), this._blockchain.copy())
   }
 }

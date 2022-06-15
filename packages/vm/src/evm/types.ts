@@ -216,10 +216,12 @@ export interface EEIInterface {
   storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
   isAccountEmpty(address: Address): Promise<boolean>
   accountExists(address: Address): Promise<boolean>
+  copy(): EEIInterface
 }
 
 export interface EVMInterface {
   runCall(opts: RunCallOpts): Promise<EVMResult>
   runCode?(opts: RunCodeOpts): Promise<ExecResult>
   precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
+  copy(): EVMInterface
 }
