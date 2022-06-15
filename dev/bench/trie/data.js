@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655237688794,
+  "lastUpdate": 1655320579156,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "76567250+g11tech@users.noreply.github.com",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "da4bf645e9066d7b88c991bb6a5a823ba19d4ce6",
-          "message": "client: refac services, syncronizers and fetchers for beacon sync (#1858)\n\n* refac client services, syncronizers and fetcher for beacon sync\r\n\r\n* derive height in the constructor itself\r\n\r\n* fix tests\r\n\r\n* fix tests\r\n\r\n* enqueueByNumberList changes\r\n\r\n* enqueueByNumberList test fixes\r\n\r\n* move processBlocks to full sync it will be a syncronizer based behavior\r\n\r\n* move processBlock to previous location to potentially reduce diff\r\n\r\n* fix event listeners\r\n\r\n* reorder for test coverage\r\n\r\n* typo fix",
-          "timestamp": "2022-04-21T09:41:18+02:00",
-          "tree_id": "8e67dc51f356dee084332914e96dfc1af0db36cd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da4bf645e9066d7b88c991bb6a5a823ba19d4ce6"
-        },
-        "date": 1650527166955,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 15822,
-            "range": "±12.09%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 14139,
-            "range": "±14.54%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 12506,
-            "range": "±32.76%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 14826,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 16591,
-            "range": "±1.14%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 778,
-            "range": "±8.43%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 92.75,
-            "range": "±87.59%",
-            "unit": "ops/sec",
-            "extra": "60 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 82.13,
-            "range": "±11.45%",
-            "unit": "ops/sec",
-            "extra": "59 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 17.36,
-            "range": "±5.44%",
-            "unit": "ops/sec",
-            "extra": "30 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2925,6 +2838,93 @@ window.BENCHMARK_DATA = {
             "range": "±98.24%",
             "unit": "ops/sec",
             "extra": "20 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d066bd387e372645edb04cc2897b27db59c36e65",
+          "message": "Evm refactor (rebased on master a4c379a, 2022-06-13) (#1955)\n\n* vm: rename vmstate/eei\r\n\r\nvm: move eei/vmstate into new EEI dir\r\n\r\n* evm: setup type skeleton\r\n\r\n* vm/evm: update types\r\n\r\n* vm/eei: extra types\r\n\r\n* vm: extract EEI from EVM\r\n\r\n* vm: move types to correct place\r\n\r\nvm: fixes\r\n\r\n* vm: preliminary VmState removal\r\n\r\n* vm: add env to interpreter + extract getAddress from EEI\r\n\r\n* vm: extract getSelfBalance from EEI\r\n\r\n* vm: extract CallData* from EEI\r\n\r\n* vm: remove getCaller, getCodeSize, getCode, isStatic from EEI\r\n\r\n* vm: remove Tx-related methods from EEI\r\n\r\n* vm: remove block-related methods from EEI\r\n\r\n* vm: remove getChainId from EEI\r\n\r\n* vm: extract all call/selfdestruct/log-related logic from EEI\r\n\r\n* vm: extract environment from EEI\r\n\r\n* vm: remove evm/gasleft from EEI\r\n\r\n* vm: remove EIFactory. EVM now has singleton EEI\r\n\r\nvm: add comment\r\n\r\n* vm: add custom EEI/EVM options\r\n\r\n* vm: evm/eei/vm: rename certain properties, remove vmstate dependency\r\n\r\n* comment fix\r\n\r\n* vm/evm: ensure exp dynamic gas calculated in gas.ts not functions.ts\r\n\r\n* vm/evm: remove unnecessary item in Env\r\n\r\n* vm/interpreter: all state access via eei.state\r\n\r\n* vm/evm: remove gasRefund property and put this in runState\r\n\r\nvm: fix gas refunds on CREATE opcdoes\r\n\r\n* vm/evm: move `auth` from `_Env` to `RunState`\r\n\r\n* vm/evm: move return buffer into runstate\r\n\r\n* vm/evm: fix gas refunds\r\n\r\nvm/evm: fix gasRefund\r\n\r\n* vm/evm: move gasLeft as property of Interpreter into RunState\r\n\r\n* vm/evm: add AsyncEventEmitter type\r\nvm/evm: fixup TransientStorage/EEI creation\r\n\r\n* evm/interpreter: better type safety\r\n\r\n* client: fix build\r\n\r\n* evm: fix build\r\n\r\n* eei/evm: define EEI interface\r\n\r\n* evm/vm: use EEI Interface\r\n\r\n* evm/vm: add EVM interface and use this\r\n\r\n* vm: fix build\r\n\r\n* evm/eei: move transientStorage into EVM\r\n\r\n* evm: type cleanup\r\n\r\n* vm: ensure tests run (but fail)\r\n\r\n* VM -> API tests: fixed build\r\n\r\n* vm/tx: gasRefund always available\r\n\r\n* vm/tests: fix tests\r\n\r\n* vm: rename gas properties\r\n\r\n* client: fix build\r\n\r\n* vm: review and remove some TODOs\r\n\r\n* client: fix test builds\r\n\r\n* client: fix tests\r\n\r\n* vm/tests: remove transientstorage test\r\n\r\n* evm/eei: add copy methods\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2022-06-15T21:11:28+02:00",
+          "tree_id": "877a063f1342f80668021ec04b62def987fca15e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d066bd387e372645edb04cc2897b27db59c36e65"
+        },
+        "date": 1655320578019,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 30987,
+            "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 29045,
+            "range": "±6.95%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 30867,
+            "range": "±1.18%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 30442,
+            "range": "±1.29%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 51460,
+            "range": "±1.08%",
+            "unit": "ops/sec",
+            "extra": "94 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 981,
+            "range": "±5.41%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 146,
+            "range": "±44.46%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 92.62,
+            "range": "±15.86%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 13.79,
+            "range": "±57.03%",
+            "unit": "ops/sec",
+            "extra": "35 samples"
           }
         ]
       }
