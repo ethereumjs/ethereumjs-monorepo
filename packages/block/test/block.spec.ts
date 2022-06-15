@@ -171,7 +171,7 @@ tape('[Block]: block functions', function (t) {
     })
     await blockchain.putBlock(genesisBlock)
     try {
-      await block.validate(blockchain)
+      await block.validate()
       st.pass('should pass')
     } catch (error: any) {
       st.fail('should not throw')
@@ -204,7 +204,7 @@ tape('[Block]: block functions', function (t) {
 
     await blockchain.putBlock(block)
     try {
-      await block.validate(blockchain)
+      await block.validate()
       st.pass('does not throw')
     } catch (error: any) {
       st.fail('error thrown')

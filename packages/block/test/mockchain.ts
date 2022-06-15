@@ -1,8 +1,7 @@
-import { Block, Blockchain } from '../src'
-
+import { Block } from '../src'
 // Helper class to setup a mock Blockchain
 
-export class Mockchain implements Blockchain {
+export class Mockchain {
   private HashMap: { [key: string]: Block } = {}
   public consensus = {
     cliqueActiveSigners() {

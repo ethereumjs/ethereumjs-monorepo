@@ -24,7 +24,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
 interface HeaderCache {
@@ -791,22 +791,6 @@ export class BlockHeader {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     return jsonDict
-  }
-
-  private async _getHeaderByHash(
-    blockchain: Blockchain,
-    hash: Buffer
-  ): Promise<BlockHeader | undefined> {
-    try {
-      const header = (await blockchain.getBlock(hash)).header
-      return header
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return undefined
-      } else {
-        throw error
-      }
-    }
   }
 
   /**
