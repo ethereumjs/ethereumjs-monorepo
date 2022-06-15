@@ -115,14 +115,24 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && !this.skeleton.isLinked()) {
-      try {
-        await this.sync()
-      } catch (error: any) {
-        this.config.events.emit(Event.SYNC_ERROR, error)
+    const isLinked = this.skeleton.isLinked()
+    if (!isLinked) {
+      while (this.running) {
+        try {
+          await this.sync()
+        } catch (error: any) {
+          this.config.events.emit(Event.SYNC_ERROR, error)
+        }
+        await new Promise((resolve) => setTimeout(resolve, this.interval))
       }
-      await new Promise((resolve) => setTimeout(resolve, this.interval))
+    } else {
+      // It could be that the canonical chain fill got stopped midway, ideally CL
+      // would keep extending the skeleton that might trigger fillCanonicalChain
+      // but if we are already linked and CL is down, we don't need to wait
+      // for CL and just fill up the chain in meantime
+      void this.skeleton.fillCanonicalChain()
     }
+
     this.running = false
     clearTimeout(timeout)
   }
