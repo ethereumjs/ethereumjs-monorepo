@@ -143,6 +143,7 @@ export class Block {
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
+      this.validateUncles()
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed'
@@ -262,22 +263,6 @@ export class Block {
   }
 
   /**
-   * Performs the following consistency checks on the block:
-   *
-   * - Value checks on the header fields
-   * - Signature and gasLimit validation for included txs
-   * - Validation of the tx trie
-   * - Consistency checks and header validation of included uncles
-   *
-   * Throws if invalid.
-   *
-   * @param onlyHeader - if should only validate the header (skips validating txTrie and unclesHash) (default: false)
-   */
-  async validate(onlyHeader: boolean = false): Promise<void> {
-    await this.validateUncles()
-    await this.validateData(onlyHeader)
-  }
-  /**
    * Validates the block data, throwing if invalid.
    * This can be checked on the Block itself without needing access to any parent block
    * It checks:
@@ -327,7 +312,7 @@ export class Block {
    * Header has at most 2 uncles.
    * Header does not count an uncle twice.
    */
-  async validateUncles(): Promise<void> {
+  validateUncles() {
     if (this.isGenesis()) {
       return
     }

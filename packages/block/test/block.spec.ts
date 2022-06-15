@@ -164,14 +164,8 @@ tape('[Block]: block functions', function (t) {
   t.test('should test block validation on pow chain', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-    const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon.genesisRLP), {
-      common,
-    })
-    await blockchain.putBlock(genesisBlock)
     try {
-      await block.validate()
+      Block.fromRLPSerializedBlock(blockRlp, { common })
       st.pass('should pass')
     } catch (error: any) {
       st.fail('should not throw')
@@ -180,31 +174,9 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test block validation on poa chain', async function (st) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = new Mockchain()
-    const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
 
-    const genesis = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
-    await blockchain.putBlock(genesis)
-
-    const parentBlock = Block.fromBlockData(
-      {
-        header: {
-          number: block.header.number - BigInt(1),
-          timestamp: block.header.timestamp - BigInt(1000),
-          gasLimit: block.header.gasLimit,
-          extraData: Buffer.alloc(97),
-        },
-      },
-      { common, freeze: false }
-    )
-    parentBlock.hash = () => {
-      return block.header.parentHash
-    }
-    await blockchain.putBlock(parentBlock)
-
-    await blockchain.putBlock(block)
     try {
-      await block.validate()
+      blockFromRpc(testDataFromRpcGoerli, [], { common })
       st.pass('does not throw')
     } catch (error: any) {
       st.fail('error thrown')
