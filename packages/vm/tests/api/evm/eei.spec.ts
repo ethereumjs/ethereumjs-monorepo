@@ -55,28 +55,4 @@ tape('EEI', (t) => {
     st.ok(await eei.isAccountEmpty(ZeroAddress)) // account is empty
     st.end()
   })
-
-  /* TODO move me to EVM
-  t.test('should work with transient storage', async (st) => {
-    const eei = new EEI(
-      undefined!,
-      new VmState({ stateManager: new StateManager() }),
-      undefined!,
-      undefined!,
-      undefined!,
-      new TransientStorage()
-    ) // create a dummy EEI (no VM, no EVM, etc.)
-    // Set the caller to the zero address
-    ;(eei as any)._env = { address: ZeroAddress }
-
-    // Put transient storage
-    const key = Buffer.alloc(32, 0x11)
-    const value = Buffer.alloc(32, 0x22)
-    ;(eei as any).transientStorageStore(key, value)
-
-    // Get transient storage
-    const got = (eei as any).transientStorageLoad(key)
-    t.deepEqual(value, got)
-    st.end()
-  }) */
 })
