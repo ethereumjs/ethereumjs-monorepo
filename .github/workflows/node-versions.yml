@@ -1,6 +1,6 @@
 # This special file aims to run node tests for each relevant node version.
 # A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
-# For more details, please check ./scripts/node-versions.js
+# For more details, please check https://github.com/evertonfraga/testable-node-versions
 name: Node versions
 on:
   schedule:
@@ -46,6 +46,8 @@ jobs:
 
       - run: npm i
 
+      # Added a check to ensure we only run on NodeJS 14 or later to all jobs until the `node-testable-versions` script stops picking up 12.
+
       - name: Test Block
         run: npm run test
         working-directory: packages/block
@@ -62,16 +64,16 @@ jobs:
       # https://github.com/ethereumjs/ethereumjs-monorepo/pull/1305
       # 2021-06-18
       #
-      # Client browser tests disabled due to `async_hooks` dependency build error: 2022-06-15
+      # Switch client to unit tests only due to `async_hooks` dependency build error in browser tests: 2022-06-15
       - name: Test Client
         run: npm run test:unit
         working-directory: packages/client
-        if: ${{ matrix.node >= 15 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
-        if: ${{ matrix.node >= 15 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Common
         run: npm run test
