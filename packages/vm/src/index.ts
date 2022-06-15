@@ -6,10 +6,12 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import EVM from './evm/evm'
-const AsyncEventEmitter = require('async-eventemitter')
+import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VmState } from './vmState'
 import { getActivePrecompiles } from './evm/precompiles'
+import EEI from './eei/eei'
+import { EEIInterface, EVMInterface } from './evm/types'
+import { VMEvents } from './types'
 
 /**
  * Options for instantiating a {@link VM}.
@@ -22,7 +24,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `MuirGlacier` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `London` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * ### Supported EIPs
@@ -71,8 +73,9 @@ export interface VMOpts {
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
    *
-   * If this parameter is false, the first call to each of them has to pay an extra 25000 gas
-   * for creating the account.
+   * If this parameter is false, each call to each of them has to pay an extra 25000 gas
+   * for creating the account. If the account is still empty after this call, it will be deleted,
+   * such that this extra cost has to be paid again.
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
@@ -106,6 +109,16 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BigIntLike
+
+  /**
+   * Use a custom EEI for the EVM. If this is not present, use the default EEI.
+   */
+  eei?: EEIInterface
+
+  /**
+   * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
+   */
+  evm?: EVMInterface
 }
 
 /**
@@ -114,12 +127,12 @@ export interface VMOpts {
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export default class VM extends AsyncEventEmitter {
+export default class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The StateManager used by the VM
    */
   readonly stateManager: StateManager
-  readonly vmState: VmState
+
   /**
    * The blockchain the VM operates on
    */
@@ -130,7 +143,8 @@ export default class VM extends AsyncEventEmitter {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVM
+  readonly evm: EVMInterface
+  readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -226,15 +240,26 @@ export default class VM extends AsyncEventEmitter {
         common: this._common,
       })
     }
-    this.vmState = new VmState({ common: this._common, stateManager: this.stateManager })
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
-    this.evm = new EVM({
-      common: this._common,
-      vmState: this.vmState,
-      blockchain: this.blockchain,
-    })
+    // TODO tests
+    if (opts.eei) {
+      this.eei = opts.eei
+    } else {
+      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+    }
+
+    // TODO tests
+    if (opts.evm) {
+      this.evm = opts.evm
+    } else {
+      this.evm = new EVM({
+        common: this._common,
+        blockchain: this.blockchain,
+        eei: this.eei,
+      })
+    }
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
       throw new Error(
@@ -252,7 +277,7 @@ export default class VM extends AsyncEventEmitter {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
   }
 
   async init(): Promise<void> {
@@ -261,24 +286,24 @@ export default class VM extends AsyncEventEmitter {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.vmState.generateCanonicalGenesis(this.blockchain.genesisState())
+        await this.eei.state.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.vmState.checkpoint()
+      await this.eei.state.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.vmState.getAccount(address)
+        const account = await this.eei.state.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
           const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
-          await this.vmState.putAccount(address, newAccount)
+          await this.eei.state.putAccount(address, newAccount)
         }
       }
-      await this.vmState.commit()
+      await this.eei.state.commit()
     }
     this._isInitialized = true
   }
@@ -332,10 +357,13 @@ export default class VM extends AsyncEventEmitter {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
+    // TODO this needs custom EEI/EVM integration
     return VM.create({
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain.copy(),
       common: this._common.copy(),
+      evm: this.evm.copy(),
+      eei: this.eei.copy(),
     })
   }
 

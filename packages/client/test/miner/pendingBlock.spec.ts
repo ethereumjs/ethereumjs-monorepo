@@ -4,7 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { Address, Account } from '@ethereumjs/util'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/service/txpool'
@@ -42,7 +42,7 @@ const setup = () => {
       headers: { height: BigInt(0) },
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
-    execution: { vm: { stateManager, vmState: { getAccount: () => stateManager.getAccount() } } },
+    execution: { vm: { stateManager, eei: {state: { getAccount: () => stateManager.getAccount() } } }},
   }
   const txPool = new TxPool({ config, service })
   return { txPool }

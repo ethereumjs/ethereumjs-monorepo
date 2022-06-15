@@ -165,22 +165,12 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x0a: EXP
   [
     0x0a,
-    function (runState, common) {
+    function (runState) {
       const [base, exponent] = runState.stack.popN(2)
       if (exponent === BigInt(0)) {
         runState.stack.push(BigInt(1))
         return
       }
-      let byteLength = exponent.toString(2).length / 8
-      if (byteLength > Math.trunc(byteLength)) {
-        byteLength = Math.trunc(byteLength) + 1
-      }
-      if (byteLength < 1 || byteLength > 32) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
-      const gasPrice = common.param('gasPrices', 'expByte')
-      const amount = BigInt(byteLength) * gasPrice
-      runState.eei.useGas(amount, 'EXP opcode')
 
       if (base === BigInt(0)) {
         runState.stack.push(base)
@@ -390,7 +380,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = bufferToBigInt(runState.eei.getAddress().buf)
+      const address = bufferToBigInt(runState.interpreter.getAddress().buf)
       runState.stack.push(address)
     },
   ],
@@ -400,7 +390,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
-      const balance = await runState.eei.getExternalBalance(address)
+      const balance = await runState.interpreter.getExternalBalance(address)
       runState.stack.push(balance)
     },
   ],
@@ -408,21 +398,21 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x32,
     function (runState) {
-      runState.stack.push(runState.eei.getTxOrigin())
+      runState.stack.push(runState.interpreter.getTxOrigin())
     },
   ],
   // 0x33: CALLER
   [
     0x33,
     function (runState) {
-      runState.stack.push(runState.eei.getCaller())
+      runState.stack.push(runState.interpreter.getCaller())
     },
   ],
   // 0x34: CALLVALUE
   [
     0x34,
     function (runState) {
-      runState.stack.push(runState.eei.getCallValue())
+      runState.stack.push(runState.interpreter.getCallValue())
     },
   ],
   // 0x35: CALLDATALOAD
@@ -430,13 +420,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x35,
     function (runState) {
       const pos = runState.stack.pop()
-      if (pos > runState.eei.getCallDataSize()) {
+      if (pos > runState.interpreter.getCallDataSize()) {
         runState.stack.push(BigInt(0))
         return
       }
 
       const i = Number(pos)
-      let loaded = runState.eei.getCallData().slice(i, i + 32)
+      let loaded = runState.interpreter.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
       let r = bufferToBigInt(loaded)
       if (loaded.length < 32) {
@@ -449,7 +439,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x36,
     function (runState) {
-      const r = runState.eei.getCallDataSize()
+      const r = runState.interpreter.getCallDataSize()
       runState.stack.push(r)
     },
   ],
@@ -460,7 +450,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, dataOffset, dataLength] = runState.stack.popN(3)
 
       if (dataLength !== BigInt(0)) {
-        const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
+        const data = getDataSlice(runState.interpreter.getCallData(), dataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const dataLengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, dataLengthNum)
@@ -472,7 +462,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x38,
     function (runState) {
-      runState.stack.push(runState.eei.getCodeSize())
+      runState.stack.push(runState.interpreter.getCodeSize())
     },
   ],
   // 0x39: CODECOPY
@@ -482,7 +472,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, codeOffset, dataLength] = runState.stack.popN(3)
 
       if (dataLength !== BigInt(0)) {
-        const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
+        const data = getDataSlice(runState.interpreter.getCode(), codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
@@ -541,7 +531,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3d,
     function (runState) {
-      runState.stack.push(runState.eei.getReturnDataSize())
+      runState.stack.push(runState.interpreter.getReturnDataSize())
     },
   ],
   // 0x3e: RETURNDATACOPY
@@ -551,7 +541,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
       if (dataLength !== BigInt(0)) {
-        const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
+        const data = getDataSlice(
+          runState.interpreter.getReturnData(),
+          returnDataOffset,
+          dataLength
+        )
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
@@ -563,7 +557,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3a,
     function (runState) {
-      runState.stack.push(runState.eei.getTxGasPrice())
+      runState.stack.push(runState.interpreter.getTxGasPrice())
     },
   ],
   // '0x40' range - block operations
@@ -573,7 +567,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const number = runState.stack.pop()
 
-      const diff = runState.eei.getBlockNumber() - number
+      const diff = runState.interpreter.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
       if (diff > BigInt(256) || diff <= BigInt(0)) {
         runState.stack.push(BigInt(0))
@@ -588,21 +582,21 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x41,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockCoinbase())
+      runState.stack.push(runState.interpreter.getBlockCoinbase())
     },
   ],
   // 0x42: TIMESTAMP
   [
     0x42,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockTimestamp())
+      runState.stack.push(runState.interpreter.getBlockTimestamp())
     },
   ],
   // 0x43: NUMBER
   [
     0x43,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockNumber())
+      runState.stack.push(runState.interpreter.getBlockNumber())
     },
   ],
   // 0x44: DIFFICULTY (EIP-4399: supplanted as PREVRANDAO)
@@ -610,9 +604,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x44,
     function (runState, common) {
       if (common.isActivatedEIP(4399)) {
-        runState.stack.push(runState.eei.getBlockPrevRandao())
+        runState.stack.push(runState.interpreter.getBlockPrevRandao())
       } else {
-        runState.stack.push(runState.eei.getBlockDifficulty())
+        runState.stack.push(runState.interpreter.getBlockDifficulty())
       }
     },
   ],
@@ -620,28 +614,28 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x45,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockGasLimit())
+      runState.stack.push(runState.interpreter.getBlockGasLimit())
     },
   ],
   // 0x46: CHAINID
   [
     0x46,
     function (runState) {
-      runState.stack.push(runState.eei.getChainId())
+      runState.stack.push(runState.interpreter.getChainId())
     },
   ],
   // 0x47: SELFBALANCE
   [
     0x47,
     function (runState) {
-      runState.stack.push(runState.eei.getSelfBalance())
+      runState.stack.push(runState.interpreter.getSelfBalance())
     },
   ],
   // 0x48: BASEFEE
   [
     0x48,
     function (runState) {
-      runState.stack.push(runState.eei.getBlockBaseFee())
+      runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
   // 0x50 range - 'storage' and execution
@@ -690,7 +684,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
-      const value = await runState.eei.storageLoad(keyBuf)
+      const value = await runState.interpreter.storageLoad(keyBuf)
       const valueBigInt = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBigInt)
     },
@@ -710,7 +704,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBuffer(val)
       }
 
-      await runState.eei.storageStore(keyBuf, value)
+      await runState.interpreter.storageStore(keyBuf, value)
     },
   ],
   // 0x56: JUMP
@@ -718,7 +712,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x56,
     function (runState) {
       const dest = runState.stack.pop()
-      if (dest > runState.eei.getCodeSize()) {
+      if (dest > runState.interpreter.getCodeSize()) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
@@ -737,7 +731,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [dest, cond] = runState.stack.popN(2)
       if (cond !== BigInt(0)) {
-        if (dest > runState.eei.getCodeSize()) {
+        if (dest > runState.interpreter.getCodeSize()) {
           trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
 
@@ -769,7 +763,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x5a,
     function (runState) {
-      runState.stack.push(runState.eei.getGasLeft())
+      runState.stack.push(runState.interpreter.getGasLeft())
     },
   ],
   // 0x5b: JUMPDEST
@@ -799,7 +793,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const dest = runState.stack.pop()
 
-      if (dest > runState.eei.getCodeSize()) {
+      if (dest > runState.interpreter.getCodeSize()) {
         trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
       }
 
@@ -823,16 +817,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x60: PUSH
   [
     0x60,
-    function (runState) {
+    function (runState, common) {
       const numToPush = runState.opCode - 0x5f
       if (
-        runState.eei._common.isActivatedEIP(3540) &&
+        common.isActivatedEIP(3540) &&
         runState.programCounter + numToPush > runState.code.length
       ) {
         trap(ERROR.OUT_OF_RANGE)
       }
       const loaded = bufferToBigInt(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.interpreter
+          .getCode()
+          .slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
@@ -872,7 +868,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         mem = runState.memory.read(Number(memOffset), Number(memLength))
       }
 
-      runState.eei.log(mem, topicsCount, topicsBuf)
+      runState.interpreter.log(mem, topicsCount, topicsBuf)
     },
   ],
   // 0xb3: TLOAD
@@ -881,7 +877,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
-      const value = runState.eei.transientStorageLoad(keyBuf)
+      const value = runState.interpreter.transientStorageLoad(keyBuf)
       const valueBN = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBN)
     },
@@ -890,7 +886,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xb4,
     function (runState) {
-      if (runState.eei.isStatic()) {
+      if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
       const [key, val] = runState.stack.popN(2)
@@ -904,7 +900,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBuffer(val)
       }
 
-      runState.eei.transientStorageStore(keyBuf, value)
+      runState.interpreter.transientStorageStore(keyBuf, value)
     },
   ],
   // '0xf0' range - closures
@@ -922,7 +918,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(offset), Number(length))
       }
 
-      const ret = await runState.eei.create(gasLimit, value, data)
+      const ret = await runState.interpreter.create(gasLimit, value, data)
       runState.stack.push(ret)
     },
   ],
@@ -930,7 +926,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf5,
     async function (runState) {
-      if (runState.eei.isStatic()) {
+      if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
@@ -944,7 +940,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(offset), Number(length))
       }
 
-      const ret = await runState.eei.create2(
+      const ret = await runState.interpreter.create2(
         gasLimit,
         value,
         data,
@@ -969,7 +965,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      const ret = await runState.eei.call(gasLimit, toAddress, value, data)
+      const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -991,7 +987,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
-      const ret = await runState.eei.callCode(gasLimit, toAddress, value, data)
+      const ret = await runState.interpreter.callCode(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1001,7 +997,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf4,
     async function (runState) {
-      const value = runState.eei.getCallValue()
+      const value = runState.interpreter.getCallValue()
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
@@ -1014,7 +1010,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      const ret = await runState.eei.callDelegate(gasLimit, toAddress, value, data)
+      const ret = await runState.interpreter.callDelegate(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1045,8 +1041,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.AUTH_INVALID_S)
       }
 
-      const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
-      const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
+      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.buf, 32)
+      const chainId = setLengthLeft(bigIntToBuffer(runState.interpreter.getChainId()), 32)
       const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
       const msgHash = Buffer.from(keccak256(message))
 
@@ -1056,23 +1052,24 @@ export const handlers: Map<number, OpHandler> = new Map([
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BigInt(0))
-        runState.eei._env.auth = undefined
+        runState.auth = undefined
         return
       }
 
       const addressBuffer = publicToAddress(recover)
       const address = new Address(addressBuffer)
+      runState.auth = address
 
       const expectedAddress = new Address(setLengthLeft(bigIntToBuffer(authority), 20))
 
       if (!expectedAddress.equals(address)) {
         // expected address does not equal the recovered address, clear auth variable
         runState.stack.push(BigInt(0))
-        runState.eei._env.auth = undefined
+        runState.auth = undefined
         return
       }
 
-      runState.eei._env.auth = address
+      runState.auth = address
       runState.stack.push(BigInt(1))
     },
   ],
@@ -1101,7 +1098,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(argsOffset), Number(argsLength))
       }
 
-      const ret = await runState.eei.authcall(gasLimit, toAddress, value, data)
+      const ret = await runState.interpreter.authcall(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, retOffset, retLength)
       runState.stack.push(ret)
@@ -1124,7 +1121,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
-      const ret = await runState.eei.callStatic(gasLimit, toAddress, value, data)
+      const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1139,7 +1136,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }
-      runState.eei.finish(returnData)
+      runState.interpreter.finish(returnData)
     },
   ],
   // 0xfd: REVERT
@@ -1151,7 +1148,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }
-      runState.eei.revert(returnData)
+      runState.interpreter.revert(returnData)
     },
   ],
   // '0x70', range - other
@@ -1161,7 +1158,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const selfdestructToAddressBigInt = runState.stack.pop()
       const selfdestructToAddress = new Address(addressToBuffer(selfdestructToAddressBigInt))
-      return runState.eei.selfDestruct(selfdestructToAddress)
+      return runState.interpreter.selfDestruct(selfdestructToAddress)
     },
   ],
 ])

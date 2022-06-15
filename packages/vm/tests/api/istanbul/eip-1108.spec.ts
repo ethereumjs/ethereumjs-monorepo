@@ -17,7 +17,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.gasUsed, BigInt(150), 'should use istanbul gas costs')
+    st.deepEqual(result.executionGasUsed, BigInt(150), 'should use istanbul gas costs')
     st.end()
   })
 
@@ -34,7 +34,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.gasUsed, BigInt(6000), 'should use istanbul gas costs')
+    st.deepEqual(result.executionGasUsed, BigInt(6000), 'should use istanbul gas costs')
     st.end()
   })
 
@@ -55,7 +55,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
     })
 
     st.deepEqual(
-      result.gasUsed,
+      result.executionGasUsed,
       BigInt(113000),
       'should use petersburg gas costs (k ^= 2 pairings)'
     )

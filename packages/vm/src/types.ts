@@ -1,4 +1,8 @@
+import { Block } from '@ethereumjs/block'
+import { TypedTransaction } from '@ethereumjs/tx'
 import { Log } from './evm/types'
+import { AfterBlockEvent } from './runBlock'
+import { AfterTxEvent } from './runTx'
 
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
@@ -9,7 +13,7 @@ export interface BaseTxReceipt {
   /**
    * Cumulative gas used in the block including this tx
    */
-  gasUsed: bigint
+  cumulativeBlockGasUsed: bigint
   /**
    * Bloom bitvector
    */
@@ -40,4 +44,11 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
    * Status of transaction, `1` if successful, `0` if an exception occured
    */
   status: 0 | 1
+}
+
+export type VMEvents = {
+  beforeBlock: (data: Block, resolve?: (result: any) => void) => void
+  afterBlock: (data: AfterBlockEvent, resolve?: (result: any) => void) => void
+  beforeTx: (data: TypedTransaction, resolve?: (result: any) => void) => void
+  afterTx: (data: AfterTxEvent, resolve?: (result: any) => void) => void
 }

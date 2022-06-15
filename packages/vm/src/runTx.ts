@@ -90,14 +90,15 @@ export interface RunTxResult extends EVMResult {
   receipt: TxReceipt
 
   /**
-   * The amount of gas used in this transaction
+   * The amount of gas used in this transaction, which is paid for
+   * This contains the gas units t
    */
-  gasUsed: bigint
+  totalGasSpent: bigint
 
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
-  gasRefund?: bigint
+  gasRefund: bigint
 
   /**
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
@@ -129,7 +130,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error(msg)
   }
 
-  const state = this.vmState
+  const state = this.eei.state
 
   if (opts.reportAccessList && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -232,7 +233,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.vmState
+  const state = this.eei.state
 
   const { tx, block } = opts
 
@@ -418,10 +419,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (this.DEBUG) {
-    const { gasUsed, exceptionError, returnValue } = results.execResult
+    const { executionGasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx execResult: [ gasUsed=${gasUsed} exceptionError=${
+      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
         exceptionError ? `'${exceptionError.error}'` : 'none'
       } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
@@ -437,31 +438,32 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Calculate the total gas used
-  results.gasUsed = results.execResult.gasUsed + txBaseFee
+  results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
   if (this.DEBUG) {
-    debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
+    debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
   // Process any gas refund
-  let gasRefund = results.gasRefund ?? BigInt(0)
+  let gasRefund = results.execResult.gasRefund ?? BigInt(0)
+  results.gasRefund = gasRefund
   const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
   if (gasRefund !== BigInt(0)) {
-    const maxRefund = results.gasUsed / maxRefundQuotient
+    const maxRefund = results.totalGasSpent / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
-    results.gasUsed -= gasRefund
+    results.totalGasSpent -= gasRefund
     if (this.DEBUG) {
-      debug(`Subtract tx gasRefund (${gasRefund}) from gasUsed (-> ${results.gasUsed})`)
+      debug(`Subtract tx gasRefund (${gasRefund}) from totalGasSpent (-> ${results.totalGasSpent})`)
     }
   } else {
     if (this.DEBUG) {
       debug(`No tx gasRefund`)
     }
   }
-  results.amountSpent = results.gasUsed * gasPrice
+  results.amountSpent = results.totalGasSpent * gasPrice
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
-  const actualTxCost = results.gasUsed * gasPrice
+  const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
   await state.putAccount(caller, fromAccount)
@@ -482,7 +484,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {
-    minerAccount.balance += results.gasUsed * inclusionFeePerGas!
+    minerAccount.balance += results.totalGasSpent * inclusionFeePerGas!
   } else {
     minerAccount.balance += results.amountSpent
   }
@@ -508,14 +510,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
-  this.evm._refund = BigInt(0)
+
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
-  if (this._common.isActivatedEIP(1153)) this.evm._transientStorage.clear()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
-  const cumulativeGasUsed = gasUsed + results.gasUsed
+  const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
   /**
@@ -573,7 +574,7 @@ export async function generateTxReceipt(
   cumulativeGasUsed: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: cumulativeGasUsed,
+    cumulativeBlockGasUsed: cumulativeGasUsed,
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }
@@ -583,7 +584,7 @@ export async function generateTxReceipt(
     debug(
       `Generate tx receipt transactionType=${
         tx.type
-      } gasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
+      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`
     )

@@ -116,14 +116,14 @@ export default function (opts: PrecompileInput): ExecResult {
 
   if (bLen === BigInt(0)) {
     return {
-      gasUsed,
+      executionGasUsed: gasUsed,
       returnValue: setLengthLeft(bigIntToBuffer(BigInt(0)), Number(mLen)),
     }
   }
 
   if (mLen === BigInt(0)) {
     return {
-      gasUsed,
+      executionGasUsed: gasUsed,
       returnValue: Buffer.alloc(0),
     }
   }
@@ -151,7 +151,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: setLengthLeft(bigIntToBuffer(R), Number(mLen)),
   }
 }

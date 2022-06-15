@@ -16,7 +16,7 @@ tape('Precompiles: ECMUL', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.gasUsed, BigInt(40000), 'should use petersburg gas costs')
+    st.deepEqual(result.executionGasUsed, BigInt(40000), 'should use petersburg gas costs')
     st.end()
   })
 })

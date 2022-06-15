@@ -17,6 +17,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { ERROR } from '../../../src/exceptions'
 import { InterpreterStep } from '../../../src/evm/interpreter'
+import EVM from '../../../src/evm/evm'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -390,7 +391,7 @@ tape('EIP-3074 AUTH', (t) => {
       result.execResult.returnValue.slice(31).equals(Buffer.from('80', 'hex')),
       'reported msize is correct'
     )
-    const gas = result.execResult.gasUsed
+    const gas = result.execResult.executionGasUsed
 
     const code2 = Buffer.concat([
       getAuthCode(message, signature, authAddress, Buffer.from('90', 'hex')),
@@ -413,7 +414,7 @@ tape('EIP-3074 AUTH', (t) => {
       result2.execResult.returnValue.slice(31).equals(Buffer.from('a0', 'hex')),
       'reported msize is correct'
     )
-    st.ok(result2.execResult.gasUsed > gas, 'charged more gas for memory expansion')
+    st.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
     st.end()
   })
 })
@@ -470,8 +471,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-
-    vm.evm.on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft
       }
@@ -514,8 +514,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-
-    vm.evm.on('step', async (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft // This thus overrides the first time AUTHCALL is used and thus the gas for the second call is stored
       }
@@ -556,8 +555,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
       let gas: bigint
       let gasAfterCall: bigint
-
-      vm.evm.on('step', async (e: InterpreterStep) => {
+      ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
         if (gas && gasAfterCall === undefined) {
           gasAfterCall = e.gasLeft
         }
@@ -602,8 +600,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const vm = await setupVM(code)
 
       let gas: bigint
-
-      vm.evm.on('step', (e: InterpreterStep) => {
+      ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
         if (e.opcode.name === 'AUTHCALL') {
           gas = e.gasLeft
         }

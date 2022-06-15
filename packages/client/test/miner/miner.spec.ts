@@ -3,7 +3,7 @@ import td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { VmState } from '@ethereumjs/vm/dist/vmState'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { Address } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
@@ -34,9 +34,9 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.vmState.checkpoint()
-  await vm.vmState.modifyAccountFields(address, { balance })
-  await vm.vmState.commit()
+  await vm.eei.state.checkpoint()
+  await vm.eei.state.modifyAccountFields(address, { balance })
+  await vm.eei.state.commit()
 }
 
 tape('[Miner]', async (t) => {

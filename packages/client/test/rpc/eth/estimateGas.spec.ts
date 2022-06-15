@@ -26,7 +26,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.vmState.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.eei.state.generateCanonicalGenesis(blockchain.genesisState())
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -83,7 +83,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   estimateTx.getSenderAddress = () => {
     return address
   }
-  const { gasUsed } = await (
+  const { totalGasSpent } = await (
     await vm.copy()
   ).runTx({
     tx: estimateTx,
@@ -96,7 +96,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas estimate'
-    t.equal(res.body.result, '0x' + gasUsed.toString(16), msg)
+    t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

@@ -3,6 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { ERROR } from '../../../src/exceptions'
+import EVM from '../../../src/evm/evm'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -15,22 +16,21 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 opcode', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
-
-    vm.evm.on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
       if (stack) {
         st.fail('should only do PUSH0 once')
       }
       stack = e.stack
     })
 
-    const result = await vm.evm.runCode({
+    const result = await vm.evm.runCode!({
       code: Buffer.from('5F', 'hex'),
       gasLimit: BigInt(10),
     })
 
     st.ok(stack!.length == 1)
     st.equal(stack![0], BigInt(0))
-    st.equal(result.gasUsed, common.param('gasPrices', 'push0'))
+    st.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
     st.end()
   })
 
@@ -38,13 +38,13 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[] = []
 
-    vm.evm.on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
       stack = e.stack
     })
 
     const depth = Number(common.param('vm', 'stackLimit'))
 
-    const result = await vm.evm.runCode({
+    const result = await vm.evm.runCode!({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
@@ -55,7 +55,7 @@ tape('EIP 3541 tests', (t) => {
         st.fail('stack element is not 0')
       }
     })
-    st.equal(result.gasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
+    st.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
     st.end()
   })
 
@@ -64,7 +64,7 @@ tape('EIP 3541 tests', (t) => {
 
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
-    const result = await vm.evm.runCode({
+    const result = await vm.evm.runCode!({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
@@ -76,7 +76,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('push0 is not available if EIP3855 is not activated', async (st) => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
-    const result = await vm.evm.runCode({
+    const result = await vm.evm.runCode!({
       code: Buffer.from('5F', 'hex'),
       gasLimit: BigInt(10000),
     })

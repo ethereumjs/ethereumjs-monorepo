@@ -10,7 +10,7 @@ const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')
 
-  const mcl = opts._EVM._mcl
+  const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
 
@@ -105,7 +105,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: returnValue,
   }
 }

@@ -33,7 +33,7 @@ tape('EIP-2537 BLS tests', (t) => {
         data: Buffer.alloc(0),
       })
 
-      if (result.execResult.gasUsed !== BigInt(0)) {
+      if (result.execResult.executionGasUsed !== BigInt(0)) {
         st.fail('BLS precompiles should not use any gas if EIP not activated')
       }
 
@@ -64,7 +64,7 @@ tape('EIP-2537 BLS tests', (t) => {
         data: Buffer.alloc(0),
       })
 
-      if (result.execResult.gasUsed !== BigInt(0xffffffffff)) {
+      if (result.execResult.executionGasUsed !== BigInt(0xffffffffff)) {
         st.fail('BLS precompiles should use all gas on empty inputs')
       }
 
@@ -104,7 +104,7 @@ tape('EIP-2537 BLS tests', (t) => {
       data: Buffer.from(testVector, 'hex'),
       gasLimit: BigInt(5000000),
       _common: common,
-      _EVM: vm.evm,
+      _EVM: <any>vm.evm,
     })
 
     st.deepEqual(

@@ -151,14 +151,14 @@ tape('[EthProtocol]', (t) => {
     const receipts = [
       {
         status: 1 as 0 | 1,
-        gasUsed: BigInt(100),
+        cumulativeBlockGasUsed: BigInt(100),
         bitvector: Buffer.alloc(256),
         logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
-        gasUsed: BigInt(1000),
+        cumulativeBlockGasUsed: BigInt(1000),
         bitvector: Buffer.alloc(256, 1),
         logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 0,

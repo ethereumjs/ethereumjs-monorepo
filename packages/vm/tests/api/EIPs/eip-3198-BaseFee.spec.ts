@@ -5,6 +5,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { InterpreterStep } from '../../../src/evm/interpreter'
+import EVM from '../../../src/evm/evm'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI
@@ -79,7 +80,7 @@ tape('EIP3198 tests', (t) => {
     // Track stack
 
     let stack: any = []
-    vm.evm.on('step', (istep: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }
@@ -90,7 +91,7 @@ tape('EIP3198 tests', (t) => {
       block,
     })
     const txBaseFee = block.transactions[0].getBaseFee()
-    const gasUsed = results.gasUsed - txBaseFee
+    const gasUsed = results.totalGasSpent - txBaseFee
     st.equal(gasUsed, BigInt(2), 'gas used correct')
     st.equal(stack[0], fee, 'right item pushed on stack')
     st.end()

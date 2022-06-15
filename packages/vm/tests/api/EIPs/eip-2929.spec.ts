@@ -3,6 +3,7 @@ import { Account, Address } from '@ethereumjs/util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
+import EVM from '../../../src/evm/evm'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
@@ -19,7 +20,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     let currentGas = initialGas
     const vm = await VM.create({ common })
 
-    vm.evm.on('step', function (step: any) {
+    ;(<EVM>vm.evm).on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -99,7 +100,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    st.equal(result.gasUsed, expectedGasUsed)
+    st.equal(result.totalGasSpent, expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,

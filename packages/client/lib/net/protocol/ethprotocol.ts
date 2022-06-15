@@ -258,7 +258,7 @@ export class EthProtocol extends Protocol {
           const decoded = arrToBufArr(RLP.decode(bufArrToArr(r[0] >= 0xc0 ? r : r.slice(1)))) as any
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
           const receipt = {
-            gasUsed: bufferToBigInt(cumulativeGasUsed),
+            cumulativeBlockGasUsed: bufferToBigInt(cumulativeGasUsed),
             bitvector: logsBloom,
             logs,
           } as TxReceipt

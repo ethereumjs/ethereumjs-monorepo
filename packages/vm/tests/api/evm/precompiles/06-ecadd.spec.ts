@@ -17,7 +17,7 @@ tape('Precompiles: ECADD', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.gasUsed, BigInt(500), 'should use petersburg gas costs')
+    st.deepEqual(result.executionGasUsed, BigInt(500), 'should use petersburg gas costs')
     st.end()
   })
 })
