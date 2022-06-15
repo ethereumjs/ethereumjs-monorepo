@@ -4,9 +4,6 @@ import RLP from 'rlp'
 import Common, { Chain, CliqueConfig, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
-import { Mockchain } from './mockchain'
-import { PoaMockchain } from './poaMockchain'
-const testDataPreLondon = require('./testdata/testdata_pre-london.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')
 
@@ -150,10 +147,8 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should validate extraData', async function (st) {
     // PoW
-    let blockchain = new Mockchain()
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = Block.fromBlockData({}, { common })
-    await blockchain.putBlock(genesis)
 
     const number = 1
     let parentHash = genesis.hash()
@@ -196,10 +191,8 @@ tape('[Block]: Header functions', function (t) {
     }
 
     // PoA
-    blockchain = new Mockchain()
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     genesis = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
-    await blockchain.putBlock(genesis)
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit

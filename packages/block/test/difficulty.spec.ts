@@ -12,7 +12,6 @@ function runDifficultyTests(
 ) {
   const dif = block.canonicalDifficulty(parentBlock)
   st.equal(dif, BigInt(test.currentDifficulty), `test canonicalDifficulty: ${msg}`)
-  st.ok(block.validateDifficulty(parentBlock), `test validateDifficulty: ${msg}`)
 }
 
 type TestData = { [key: string]: any }
