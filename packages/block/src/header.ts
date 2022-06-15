@@ -749,7 +749,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
-    if (extraSeal.length === 0) {
+    if (extraSeal.length === 0 || extraSeal.equals(Buffer.alloc(32).fill(0))) {
       return Address.zero()
     }
     const r = extraSeal.slice(0, 32)
