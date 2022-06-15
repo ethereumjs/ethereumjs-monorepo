@@ -1,4 +1,4 @@
-import * as base32 from 'hi-base32'
+import { base32 } from '@scure/base'
 import { sscanf } from 'scanf'
 import { Multiaddr } from 'multiaddr'
 import base64url from 'base64url'
@@ -109,7 +109,7 @@ export class ENR {
     if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
     if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
-    const decodedPublicKey = base32.decode.asBytes(publicKey)
+    const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
     // The signature is a 65-byte secp256k1 over the keccak256 hash
     // of the record content, excluding the `sig=` part, encoded as URL-safe base64 string
