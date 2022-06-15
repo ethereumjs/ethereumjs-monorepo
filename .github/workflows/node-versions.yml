@@ -57,10 +57,9 @@ jobs:
       # https://github.com/ethereumjs/ethereumjs-monorepo/pull/1305
       # 2021-06-18
       #
-      # TODO: give this another test run in times and reactivate (note that this
-      # might also be an issue which gets fixed downstream at some point in time)
+      # Client browser tests disabled due to `async_hooks` dependency build error: 2022-06-15
       - name: Test Client
-        run: npm run test
+        run: npm run test:unit
         working-directory: packages/client
         if: ${{ matrix.node >= 15 }}
 
