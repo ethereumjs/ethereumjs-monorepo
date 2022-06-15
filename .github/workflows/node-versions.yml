@@ -51,12 +51,12 @@ jobs:
       - name: Test Block
         run: npm run test
         working-directory: packages/block
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Blockchain
         run: npm run test
         working-directory: packages/blockchain
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       # Client and Devp2p temporarily disabled for Node < 15 due to browser build
       # error along node-versions CI run "TextDecoder is not defined" triggered in
@@ -78,39 +78,39 @@ jobs:
       - name: Test Common
         run: npm run test
         working-directory: packages/common
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Ethash
         run: npm run test
         working-directory: packages/ethash
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Trie
         run: npm run test
         working-directory: packages/trie
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Util
         run: npm run test
         working-directory: packages/util
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test StateManager
         run: npm run test
         working-directory: packages/statemanager
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test RLP
         run: npm run test
         working-directory: packages/rlp
-        if: ${{ matrix.node-version >= 14 }}
+        if: ${{ matrix.node >= 14 }}
