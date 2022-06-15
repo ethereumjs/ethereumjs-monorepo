@@ -1,12 +1,13 @@
 import { createCipheriv } from 'crypto'
-import createKeccakHash from 'keccak'
+import { Keccak, keccak_256 } from '@noble/hashes/sha3'
 import { xor } from '../util'
+import { Hash } from '@noble/hashes/utils'
 
 export class MAC {
-  _hash: any
+  _hash: Hash<Keccak>
   _secret: Buffer
   constructor(secret: Buffer) {
-    this._hash = createKeccakHash('keccak256')
+    this._hash = keccak_256.create()
     this._secret = secret
   }
 
@@ -29,6 +30,6 @@ export class MAC {
   }
 
   digest() {
-    return this._hash._clone().digest().slice(0, 16)
+    return Buffer.from(this._hash.clone().digest().slice(0, 16))
   }
 }
