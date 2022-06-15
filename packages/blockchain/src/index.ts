@@ -665,7 +665,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param header - header to be validated
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
-  private async validateHeader(header: BlockHeader, height?: bigint) {
+  public async validateHeader(header: BlockHeader, height?: bigint) {
     if (header.isGenesis()) {
       return
     }
