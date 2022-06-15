@@ -5,6 +5,9 @@ name: Node versions
 on:
   schedule:
     - cron: 0 0 * * *
+  push:
+    branches:
+      - 'node-nightly-client-browser-disable'
 
 jobs:
   get-node-versions:
