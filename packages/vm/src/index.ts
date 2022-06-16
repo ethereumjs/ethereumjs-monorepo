@@ -357,13 +357,21 @@ export default class VM extends AsyncEventEmitter<VMEvents> {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
-    // TODO this needs custom EEI/EVM integration
+    const stateCopy = this.stateManager.copy()
+    const blockchainCopy = this.blockchain.copy()
+    const commonCopy = this._common.copy()
+
+    // Instantiate a new EEI and EVM using the copies of state, blockchain, and common
+    // rather than deep copying the original ones since the copy of the `StateManager`
+    // inside the EVM and EEI will be different than the `VM` level copy otherwise
+    const eeiCopy = new EEI(stateCopy, commonCopy, blockchainCopy)
+    const evmCopy = new EVM({ eei: eeiCopy, blockchain: blockchainCopy, common: commonCopy })
     return VM.create({
-      stateManager: this.stateManager.copy(),
-      blockchain: this.blockchain.copy(),
-      common: this._common.copy(),
-      evm: this.evm.copy(),
-      eei: this.eei.copy(),
+      stateManager: stateCopy,
+      blockchain: blockchainCopy,
+      common: commonCopy,
+      evm: evmCopy,
+      eei: eeiCopy,
     })
   }
 
