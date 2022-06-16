@@ -70,8 +70,8 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
     if (receipts) {
       let cumGasUsed = BigInt(0)
       for (let index = 0; index < receipts.length; index++) {
-        let gasUsedExpected = receipts[index].gasUsed
-        let cumGasUsedActual = receipts[index].gasUsed
+        let gasUsedExpected = receipts[index].cumulativeBlockGasUsed
+        let cumGasUsedActual = receipts[index].cumulativeBlockGasUsed
         let gasUsed = cumGasUsedActual - cumGasUsed
         if (gasUsed !== gasUsedExpected) {
           console.log(`[DEBUG]
