@@ -1,6 +1,5 @@
 import tape from 'tape'
-import { CheckpointTrie } from '../src'
-import { LevelDB } from '../src/db'
+import { CheckpointTrie, LevelDB } from '../src'
 
 tape('official tests', async function (t) {
   const jsonTests = require('./fixtures/trietest.json').tests

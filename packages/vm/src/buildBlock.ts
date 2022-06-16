@@ -1,5 +1,5 @@
 import { Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
-import { BaseTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import RLP from 'rlp'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'

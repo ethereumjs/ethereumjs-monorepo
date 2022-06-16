@@ -1,6 +1,5 @@
 import tape from 'tape'
-import { SecureTrie } from '../src'
-import { LevelDB } from '../src/db'
+import { LevelDB, SecureTrie } from '../src'
 
 tape('SecureTrie', function (t) {
   const trie = new SecureTrie({ db: new LevelDB() })

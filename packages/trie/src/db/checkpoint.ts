@@ -1,4 +1,4 @@
-import { DB, BatchDBOp } from './db'
+import { DB, BatchDBOp } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 
 export type Checkpoint = {

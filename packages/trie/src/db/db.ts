@@ -1,53 +1,9 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { AbstractLevel } from 'abstract-level'
 import { MemoryLevel } from 'memory-level'
+import { BatchDBOp, DB } from '../types'
 
 export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
-
-export type BatchDBOp = PutBatch | DelBatch
-export interface PutBatch {
-  type: 'put'
-  key: Buffer
-  value: Buffer
-}
-export interface DelBatch {
-  type: 'del'
-  key: Buffer
-}
-
-export interface DB {
-  /**
-   * Retrieves a raw value from leveldb.
-   * @param key
-   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
-   */
-  get(key: Buffer): Promise<Buffer | null>
-
-  /**
-   * Writes a value directly to leveldb.
-   * @param key The key as a `Buffer`
-   * @param value The value to be stored
-   */
-  put(key: Buffer, val: Buffer): Promise<void>
-
-  /**
-   * Removes a raw value in the underlying leveldb.
-   * @param keys
-   */
-  del(key: Buffer): Promise<void>
-
-  /**
-   * Performs a batch operation on db.
-   * @param opStack A stack of levelup operations
-   */
-  batch(opStack: BatchDBOp[]): Promise<void>
-
-  /**
-   * Returns a copy of the DB instance, with a reference
-   * to the **same** underlying leveldb instance.
-   */
-  copy(): DB
-}
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,

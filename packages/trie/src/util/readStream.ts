@@ -1,12 +1,12 @@
-import { nibblesToBuffer } from './util/nibbles'
-import { Trie as BaseTrie } from './baseTrie'
+import { nibblesToBuffer } from '../util/nibbles'
+import { Trie } from '../trie'
 const Readable = require('readable-stream').Readable
 
 export class TrieReadStream extends Readable {
-  private trie: BaseTrie
+  private trie: Trie
   private _started: boolean
 
-  constructor(trie: BaseTrie) {
+  constructor(trie: Trie) {
     super({ objectMode: true })
 
     this.trie = trie
