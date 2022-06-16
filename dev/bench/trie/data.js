@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655320579156,
+  "lastUpdate": 1655376282662,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "76567250+g11tech@users.noreply.github.com",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c429125d034e4fdf9aacd9cd4ebb2049dd55d666",
-          "message": "pass the maxFetcherJobs arg to the config (#1861)",
-          "timestamp": "2022-04-21T06:00:45-07:00",
-          "tree_id": "f1bc3284e29c0f065babb8563127d3f9a93204a5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c429125d034e4fdf9aacd9cd4ebb2049dd55d666"
-        },
-        "date": 1650546330791,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 15399,
-            "range": "±12.54%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 14170,
-            "range": "±15.75%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 13899,
-            "range": "±14.58%",
-            "unit": "ops/sec",
-            "extra": "58 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 15174,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 17472,
-            "range": "±1.37%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 846,
-            "range": "±6.71%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 89.13,
-            "range": "±92.94%",
-            "unit": "ops/sec",
-            "extra": "56 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 85.99,
-            "range": "±7.73%",
-            "unit": "ops/sec",
-            "extra": "58 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 15.71,
-            "range": "±29.77%",
-            "unit": "ops/sec",
-            "extra": "31 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2925,6 +2838,93 @@ window.BENCHMARK_DATA = {
             "range": "±57.03%",
             "unit": "ops/sec",
             "extra": "35 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c4d7682bcf46690c193bbc7be21ead6334569959",
+          "message": "Disable client browser tests in Node nightly CI jobs (#1963)\n\n* Switch node nightly to run client unit tests\r\n\r\n* Set polyfill for async_hooks to stop webpack complaining\r\n\r\n* Add note about unsupported browser builds\r\n\r\n* have nightly run on branch pushes\r\n\r\n* Set supported node versions to 14, 16, 18\r\n\r\n* Have all node nightly tests run on 14 and above\r\n\r\n* Change client/devp2p to run on Node 14+\r\n\r\n* Fix typos\r\n\r\n* Remove push on branch from nightlys",
+          "timestamp": "2022-06-16T12:39:20+02:00",
+          "tree_id": "b2f7b598cba1181a8a8bcbf67e16b191a5f535bb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c4d7682bcf46690c193bbc7be21ead6334569959"
+        },
+        "date": 1655376282036,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 27736,
+            "range": "±3.44%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 25627,
+            "range": "±8.61%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 26848,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 26546,
+            "range": "±2.16%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 46343,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 886,
+            "range": "±6.22%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 109,
+            "range": "±70.31%",
+            "unit": "ops/sec",
+            "extra": "38 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 93.8,
+            "range": "±5.38%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 10.12,
+            "range": "±76.40%",
+            "unit": "ops/sec",
+            "extra": "29 samples"
           }
         ]
       }
