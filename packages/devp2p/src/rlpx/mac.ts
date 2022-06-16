@@ -1,13 +1,14 @@
 import { createCipheriv } from 'crypto'
-import { Keccak, keccak_256 } from '@noble/hashes/sha3'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { xor } from '../util'
-import { Hash } from '@noble/hashes/utils'
+
+export type Hash = ReturnType<typeof keccak256.create>
 
 export class MAC {
-  _hash: Hash<Keccak>
+  _hash: Hash
   _secret: Buffer
   constructor(secret: Buffer) {
-    this._hash = keccak_256.create()
+    this._hash = keccak256.create()
     this._secret = secret
   }
 
