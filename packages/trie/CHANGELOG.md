@@ -6,6 +6,78 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+# 5.0.0 - [ UNRELEASED ]
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following in 2-3 weeks if things go well)! 🎉
+
+The EthereumJS Team
+
+### New Package Name
+
+**Attention!** This library release aligns (and therefore: changes!) the library name with the other EthereumJS libraries and switches to the new scoped package name format, see PR [#1953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1953). In this case the library is renamed as follows:
+
+- `merkle-patricia-tree` -> `@ethereumjs/trie`
+
+Please update your library references accordingly and install with:
+
+```shell
+npm i @ethereumjs/trie
+```
+
+### Database Changes
+
+#### Generic DB Interface
+
+In the last round of breaking release preparation @faustbrian came around the corner and came up with some really great DB-related additions to the Trie library, thanks so much for these super valuable contributions! ❤️ ❤️ ❤️
+
+Trie usage has now been decoupled from the tight integration with `LevelDB` and it is now possible to replace the datastore with an own implementation respectively a DB wrapper to an alternative key-value-store solution.
+
+For this there is now a generic `DB` interface defining five methods `get`, `put`, `del`, `batch` and `copy` which a specific `DB` wrapper needs to implement. For `LevelDB` a wrapper with the same name is included and can be directly used.
+
+The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) have been reworked to now accept any `DB` interface-compatible wrapper implementations as a datastore `db` option input. This allows to easily switch on the underlying backend.
+
+The new `DB` interface can be used like this for LevelDB:
+
+```typescript
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_NAME')) })
+```
+
+If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used.
+
+#### Level DB Upgrade / Browser Compatibility
+
+Along with the DB interface extraction the internal Level DB code has been reworked to now be based and work with the latest Level [v8.0.0](https://github.com/Level/level/releases/tag/v8.0.0) major Level DB release. This allows to use ES6-style `import` syntax to import the `Level` instance and allows for better typing when working with Level DB.
+
+Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`.
+
+### API Changes
+
+Options for the Trie constructor are now also taken in as an options dict like in the other EthereumJS libaries. This makes it easier to add additional options in the future, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874).
+
+Check your Trie instantiations and see if you use constructor options. In this case you need to update to the new format:
+
+- `constructor(db?: LevelUp | null, root?: Buffer, deleteFromDB: boolean = false)` -> `constructor(opts: TrieOpts = {})`
+
+The following deprecated or semi-private methods have been removed, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874) and PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874).
+
+- `setRoot()` (use `Trie.root` instead)
+- Semi-private `_walkTrie()` and `_lookupNode()` methods (should not but might have been used directly)
+
+### New File Layout
+
+The trie source files have been reorganized to provide a more consistent and clean file and folder layout, see PR [#1972](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1972). This might or might not affect you, depending if you use direct file references for importing (if you do you might want to generally switch to use root-level exports from the main `index.ts` file).
+
+All types and Trie options are now bundled in a dedicated `types.ts` file and there are dedicated folders for the different Trie implementations (`trie/`), DB interfaces and classes (`db/`) and proof-related functionality (`proof/`). Additionally some utility functionality has been moved to the `util/` folder.
+
 # 4.2.4 - 2022-03-15
 
 - New `Trie.verifyRangeProof()` function to check whether the given leaf nodes and edge proof can prove the given trie leaves range is matched with the specific root (useful for snapsync, thanks to @samlior for this generous code contribution ❤️), PR [#1731](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1731)
