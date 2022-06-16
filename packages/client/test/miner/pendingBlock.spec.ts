@@ -42,7 +42,9 @@ const setup = () => {
       headers: { height: BigInt(0) },
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
-    execution: { vm: { stateManager, eei: {state: { getAccount: () => stateManager.getAccount() } } }},
+    execution: {
+      vm: { stateManager, eei: { state: { getAccount: () => stateManager.getAccount() } } },
+    },
   }
   const txPool = new TxPool({ config, service })
   return { txPool }
