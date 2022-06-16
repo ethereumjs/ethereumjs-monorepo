@@ -1,6 +1,6 @@
 # This special file aims to run node tests for each relevant node version.
 # A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
-# For more details, please check ./scripts/node-versions.js
+# For more details, please check https://github.com/evertonfraga/testable-node-versions
 name: Node versions
 on:
   schedule:
@@ -43,13 +43,17 @@ jobs:
 
       - run: npm i
 
+      # Added a check to ensure we only run on NodeJS 14 or later to all jobs until the `node-testable-versions` script stops picking up 12.
+
       - name: Test Block
         run: npm run test
         working-directory: packages/block
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Blockchain
         run: npm run test
         working-directory: packages/blockchain
+        if: ${{ matrix.node >= 14 }}
 
       # Client and Devp2p temporarily disabled for Node < 15 due to browser build
       # error along node-versions CI run "TextDecoder is not defined" triggered in
@@ -57,46 +61,53 @@ jobs:
       # https://github.com/ethereumjs/ethereumjs-monorepo/pull/1305
       # 2021-06-18
       #
-      # TODO: give this another test run in times and reactivate (note that this
-      # might also be an issue which gets fixed downstream at some point in time)
+      # Switch client to unit tests only due to `async_hooks` dependency build error in browser tests: 2022-06-15
       - name: Test Client
-        run: npm run test
+        run: npm run test:unit
         working-directory: packages/client
-        if: ${{ matrix.node >= 15 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
-        if: ${{ matrix.node >= 15 }}
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Common
         run: npm run test
         working-directory: packages/common
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Ethash
         run: npm run test
         working-directory: packages/ethash
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Trie
         run: npm run test
         working-directory: packages/trie
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Util
         run: npm run test
         working-directory: packages/util
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test StateManager
         run: npm run test
         working-directory: packages/statemanager
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test RLP
         run: npm run test
         working-directory: packages/rlp
+        if: ${{ matrix.node >= 14 }}

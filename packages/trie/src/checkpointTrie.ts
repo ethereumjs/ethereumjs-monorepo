@@ -1,6 +1,6 @@
 import { Trie as BaseTrie, TrieOpts } from './baseTrie'
 import { CheckpointDB } from './checkpointDb'
-import { DB, MemoryDB } from './db'
+import { DB, LevelDB } from './db'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}
@@ -11,7 +11,7 @@ export class CheckpointTrie extends BaseTrie {
 
   constructor(opts?: TrieOpts) {
     super(opts)
-    this.dbStorage = opts?.db ?? new MemoryDB()
+    this.dbStorage = opts?.db ?? new LevelDB()
     this.db = new CheckpointDB(this.dbStorage)
   }
 

@@ -8,7 +8,7 @@ import { FullEthereumService } from '../service'
 import { VMExecution } from '../execution'
 import type { FullSynchronizer } from '../sync'
 
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 export interface MinerOptions {
   /* Config */
@@ -54,8 +54,7 @@ export class Miner {
       ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
-      const cacheDB = level()
-      this.ethash = new Ethash(cacheDB)
+      this.ethash = new Ethash(new MemoryLevel())
     }
   }
 
@@ -212,7 +211,7 @@ export class Miner {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vmCopy.vmState.setStateRoot(parentBlock.header.stateRoot)
+    await vmCopy.eei.state.setStateRoot(parentBlock.header.stateRoot)
 
     let difficulty
     let cliqueSigner

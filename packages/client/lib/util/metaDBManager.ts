@@ -1,10 +1,9 @@
 import { intToBuffer } from '@ethereumjs/util'
 import { Chain } from '../blockchain'
 import { Config } from '../config'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
+import { AbstractLevel } from 'abstract-level'
 
-const encodingOpts = { keyEncoding: 'binary', valueEncoding: 'binary' }
+const encodingOpts = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
 
 /**
  * Number prepended to the db key to avoid collisions
@@ -29,7 +28,7 @@ export interface MetaDBManagerOptions {
   config: Config
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB: LevelUp
+  metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 }
 
 /**
@@ -38,7 +37,7 @@ export interface MetaDBManagerOptions {
 export class MetaDBManager {
   protected chain: Chain
   protected config: Config
-  private metaDB: LevelUp
+  private metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   constructor(options: MetaDBManagerOptions) {
     this.chain = options.chain
@@ -58,7 +57,7 @@ export class MetaDBManager {
     try {
       return await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         return null
       }
       throw Error

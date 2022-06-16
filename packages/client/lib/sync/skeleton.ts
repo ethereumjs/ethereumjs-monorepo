@@ -399,14 +399,15 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${this.chain.blocks.height} subchainHead=${head}`
     )
+    let fillLogIndex = 0
     while (this.filling && canonicalHead < head) {
       // Get next block
       const number = canonicalHead + BigInt(1)
       const block = await this.getBlock(number)
       if (!block) break
       // Insert into chain
-      const num = await this.chain.putBlocks([block], true)
-      if (num !== 1) {
+      const numBlocksInserted = await this.chain.putBlocks([block], true)
+      if (numBlocksInserted !== 1) {
         this.config.logger.error(
           `Failed to put block num=${number} from skeleton chain to canonical`
         )
@@ -414,11 +415,18 @@ export class Skeleton extends MetaDBManager {
       }
       // Delete skeleton block to clean up as we go
       await this.deleteBlock(block)
-      canonicalHead += BigInt(1)
+      canonicalHead += BigInt(numBlocksInserted)
+      fillLogIndex += numBlocksInserted
+      if (fillLogIndex > 50) {
+        this.config.logger.info(
+          `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${head}`
+        )
+        fillLogIndex = 0
+      }
     }
     this.filling = false
     this.config.logger.debug(
-      `Successfully put blocks start=${start} end=${canonicalHead} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
+      `Successfully put blocks start=${start} end=${canonicalHead} skeletonHead=${head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
 

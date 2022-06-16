@@ -30,10 +30,10 @@ export enum DBTarget {
  * @hidden
  */
 export interface DBOpData {
-  type?: String
+  type?: string
   key: Buffer | string
-  keyEncoding: String
-  valueEncoding?: String
+  keyEncoding: string
+  valueEncoding?: string
   value?: Buffer | object
 }
 
@@ -56,8 +56,8 @@ export class DBOp {
 
     this.baseDBOp = {
       key: '',
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
     }
 
     switch (operationTarget) {

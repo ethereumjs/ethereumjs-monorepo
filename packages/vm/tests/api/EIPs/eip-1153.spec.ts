@@ -3,6 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Account, Address, bufferToInt, privateToAddress } from '@ethereumjs/util'
 import { Transaction } from '@ethereumjs/tx'
+import EVM from '../../../src/evm/evm'
 
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
@@ -24,7 +25,7 @@ tape('EIP 1153: transient storage', (t) => {
     let currentGas = initialGas
     const vm = await VM.create({ common })
 
-    vm.evm.on('step', function (step: any) {
+    ;(<EVM>vm.evm).on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 

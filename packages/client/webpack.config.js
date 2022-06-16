@@ -45,6 +45,7 @@ module.exports = {
   },
   resolve: {
     fallback: {
+      async_hooks: false, // used by: raw-body via body-parser
       buffer: require.resolve('buffer'),
       constants: require.resolve('constants-browserify'),
       crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts

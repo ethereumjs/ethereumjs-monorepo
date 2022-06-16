@@ -1,10 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { AbstractLevel } from 'abstract-level'
 import { Config } from '../config'
 import { Event } from '../types'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -18,7 +17,7 @@ export interface ChainOptions {
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
    */
-  chainDB?: LevelUp
+  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Specify a blockchain which implements the Chain interface
@@ -72,7 +71,7 @@ export interface ChainHeaders {
  */
 export class Chain {
   public config: Config
-  public chainDB: LevelUp
+  public chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
   public blockchain: Blockchain
   public opened: boolean
 

@@ -67,6 +67,10 @@ tape('EIP 3651 tests', (t) => {
     const expectedDiff =
       common.param('gasPrices', 'coldaccountaccess')! -
       common.param('gasPrices', 'warmstorageread')!
-    st.equal(result2.gasUsed - result.gasUsed, expectedDiff, 'gas difference is correct')
+    st.equal(
+      result2.totalGasSpent - result.totalGasSpent,
+      expectedDiff,
+      'gas difference is correct'
+    )
   })
 })

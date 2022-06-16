@@ -36,10 +36,10 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
-      await vm.vmState.putAccount(caller, acc)
+      await vm.eei.state.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      st.true(res.gasUsed > BigInt(0), `${msg} (${txType.name})`)
+      st.true(res.totalGasSpent > BigInt(0), `${msg} (${txType.name})`)
     }
   }
 
@@ -63,13 +63,13 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()
-    await vm.vmState.putAccount(caller, acc)
+    await vm.eei.state.putAccount(caller, acc)
 
     const blockGasUsed = BigInt(1000)
     const res = await vm.runTx({ tx, blockGasUsed })
     t.equal(
-      res.receipt.gasUsed,
-      blockGasUsed + res.gasUsed,
+      res.receipt.cumulativeBlockGasUsed,
+      blockGasUsed + res.totalGasSpent,
       'receipt.gasUsed should equal block gas used + tx gas used'
     )
     t.end()
@@ -83,11 +83,11 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()
-    await vm.vmState.putAccount(caller, acc)
+    await vm.eei.state.putAccount(caller, acc)
 
     const res = await vm.runTx({ tx })
     t.true(
-      res.gasUsed > BigInt(0),
+      res.totalGasSpent > BigInt(0),
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
 
@@ -107,8 +107,8 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         const address = Address.fromPrivateKey(privateKey)
         const initialBalance = BigInt(10) ** BigInt(18)
 
-        const account = await vm.vmState.getAccount(address)
-        await vm.vmState.putAccount(
+        const account = await vm.eei.state.getAccount(address)
+        await vm.eei.state.putAccount(
           address,
           Account.fromAccountData({ ...account, balance: initialBalance })
         )
@@ -146,7 +146,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
           skipBlockGasLimitValidation: true,
         })
 
-        const coinbaseAccount = await vm.vmState.getAccount(new Address(coinbase))
+        const coinbaseAccount = await vm.eei.state.getAccount(new Address(coinbase))
 
         // calculate expected coinbase balance
         const baseFee = block.header.baseFeePerGas!
@@ -157,7 +157,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
               : tx.maxFeePerGas - baseFee
             : tx.gasPrice - baseFee
         const expectedCoinbaseBalance = common.isActivatedEIP(1559)
-          ? result.gasUsed * inclusionFeePerGas
+          ? result.totalGasSpent * inclusionFeePerGas
           : result.amountSpent
 
         t.equals(
@@ -190,7 +190,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()
-    await vm.vmState.putAccount(caller, acc)
+    await vm.eei.state.putAccount(caller, acc)
 
     try {
       await vm.runTx({ tx })
@@ -213,11 +213,11 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()
-    await vm.vmState.putAccount(caller, acc)
+    await vm.eei.state.putAccount(caller, acc)
 
     const res = await vm.runTx({ tx, reportAccessList: true })
     t.true(
-      res.gasUsed > BigInt(0),
+      res.totalGasSpent > BigInt(0),
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
     t.deepEqual(res.accessList, [])
@@ -256,7 +256,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
     const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
-    await vm.vmState.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
+    await vm.eei.state.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
     try {
       await vm.runTx({ tx })
       t.fail('should throw error')
@@ -264,7 +264,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       t.ok(e.message.toLowerCase().includes('max cost'), `should fail if max cost exceeds balance`)
     }
     // set sufficient balance
-    await vm.vmState.putAccount(address, createAccount(BigInt(0), maxCost))
+    await vm.eei.state.putAccount(address, createAccount(BigInt(0), maxCost))
     const res = await vm.runTx({ tx })
     t.ok(res, 'should pass if balance is sufficient')
 
@@ -275,12 +275,12 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const vm = await VM.create({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
-    const account = await vm.vmState.getAccount(address)
+    const account = await vm.eei.state.getAccount(address)
     account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
-    await vm.vmState.putAccount(address, account)
+    await vm.eei.state.putAccount(address, account)
     await vm.runTx({ tx })
     account.balance = BigInt(9000000)
-    await vm.vmState.putAccount(address, account)
+    await vm.eei.state.putAccount(address, account)
     const tx2 = getTransaction(common, 2, true, '0x64', false) // Send 100 wei; now balance < maxFeePerGas*gasLimit + callvalue
     try {
       await vm.runTx({ tx: tx2 })
@@ -295,10 +295,10 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const vm = await VM.create({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
-    const account = await vm.vmState.getAccount(address)
+    const account = await vm.eei.state.getAccount(address)
     account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
     account.nonce = BigInt(1)
-    await vm.vmState.putAccount(address, account)
+    await vm.eei.state.putAccount(address, account)
     try {
       await vm.runTx({ tx })
       t.fail('cannot reach this')
@@ -346,8 +346,8 @@ tape('runTx() -> runtime behavior', async (t) => {
       */
       const code = Buffer.from('6001600055FE', 'hex')
       const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-      await vm.vmState.putContractCode(address, code)
-      await vm.vmState.putContractStorage(
+      await vm.eei.state.putContractCode(address, code)
+      await vm.eei.state.putContractStorage(
         address,
         Buffer.from('00'.repeat(32), 'hex'),
         Buffer.from('00'.repeat(31) + '01', 'hex')
@@ -365,12 +365,12 @@ tape('runTx() -> runtime behavior', async (t) => {
       }
       const tx = TransactionFactory.fromTxData(txParams, { common }).sign(privateKey)
 
-      await vm.vmState.putAccount(tx.getSenderAddress(), createAccount())
+      await vm.eei.state.putAccount(tx.getSenderAddress(), createAccount())
 
       await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
       t.equal(
-        (<any>vm.vmState)._originalStorageCache.size,
+        (<any>vm.eei.state)._originalStorageCache.size,
         0,
         `should clear storage cache after every ${txType.name}`
       )
@@ -387,10 +387,10 @@ tape('runTx() -> runtime errors', async (t) => {
 
       const caller = tx.getSenderAddress()
       const from = createAccount()
-      await vm.vmState.putAccount(caller, from)
+      await vm.eei.state.putAccount(caller, from)
 
       const to = createAccount(BigInt(0), MAX_INTEGER)
-      await vm.vmState.putAccount(tx.to!, to)
+      await vm.eei.state.putAccount(tx.to!, to)
 
       const res = await vm.runTx({ tx })
 
@@ -400,7 +400,7 @@ tape('runTx() -> runtime errors', async (t) => {
         `result should have 'value overflow' error set (${txType.name})`
       )
       t.equal(
-        (<any>vm.vmState)._checkpointCount,
+        (<any>vm.eei.state)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`
       )
@@ -415,13 +415,13 @@ tape('runTx() -> runtime errors', async (t) => {
 
       const caller = tx.getSenderAddress()
       const from = createAccount()
-      await vm.vmState.putAccount(caller, from)
+      await vm.eei.state.putAccount(caller, from)
 
       const contractAddress = new Address(
         Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
       )
       const to = createAccount(BigInt(0), MAX_INTEGER)
-      await vm.vmState.putAccount(contractAddress, to)
+      await vm.eei.state.putAccount(contractAddress, to)
 
       const res = await vm.runTx({ tx })
 
@@ -431,7 +431,7 @@ tape('runTx() -> runtime errors', async (t) => {
         `result should have 'value overflow' error set (${txType.name})`
       )
       t.equal(
-        (<any>vm.vmState)._checkpointCount,
+        (<any>vm.eei.state)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`
       )
@@ -449,11 +449,11 @@ tape('runTx() -> API return values', async (t) => {
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
-      await vm.vmState.putAccount(caller, acc)
+      await vm.eei.state.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
       t.equal(
-        res.execResult.gasUsed,
+        res.execResult.executionGasUsed,
         BigInt(0),
         `execution result -> gasUsed -> 0 (${txType.name})`
       )
@@ -479,12 +479,12 @@ tape('runTx() -> API return values', async (t) => {
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
-      await vm.vmState.putAccount(caller, acc)
+      await vm.eei.state.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
 
       t.equal(
-        res.gasUsed,
+        res.totalGasSpent,
         tx.getBaseFee(),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
@@ -497,13 +497,13 @@ tape('runTx() -> API return values', async (t) => {
         const gasPrice = inclusionFeePerGas + baseFee
         t.equal(
           res.amountSpent,
-          res.gasUsed * gasPrice,
+          res.totalGasSpent * gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       } else {
         t.equal(
           res.amountSpent,
-          res.gasUsed * (<Transaction>tx).gasPrice,
+          res.totalGasSpent * (<Transaction>tx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       }
@@ -514,8 +514,8 @@ tape('runTx() -> API return values', async (t) => {
         `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
       )
       t.equal(
-        res.receipt.gasUsed,
-        res.gasUsed,
+        res.receipt.cumulativeBlockGasUsed,
+        res.totalGasSpent,
         `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`
       )
       t.deepEqual(
@@ -560,15 +560,15 @@ tape('runTx() -> consensus bugs', async (t) => {
     const vm = await VM.create({ common })
 
     const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
-    const acc = await vm.vmState.getAccount(addr)
+    const acc = await vm.eei.state.getAccount(addr)
     acc.balance = beforeBalance
     acc.nonce = BigInt(2)
-    await vm.vmState.putAccount(addr, acc)
+    await vm.eei.state.putAccount(addr, acc)
 
     const tx = Transaction.fromTxData(txData, { common })
     await vm.runTx({ tx })
 
-    const newBalance = (await vm.vmState.getAccount(addr)).balance
+    const newBalance = (await vm.eei.state.getAccount(addr)).balance
     t.equals(newBalance, afterBalance)
     t.end()
   })
@@ -598,16 +598,20 @@ tape('runTx() -> consensus bugs', async (t) => {
     const vm = await VM.create({ common })
 
     const addr = Address.fromPrivateKey(pkey)
-    const acc = await vm.vmState.getAccount(addr)
+    const acc = await vm.eei.state.getAccount(addr)
     acc.balance = BigInt(10000000000000)
-    await vm.vmState.putAccount(addr, acc)
+    await vm.eei.state.putAccount(addr, acc)
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
 
     const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
 
-    t.equal(result.gasUsed, BigInt(66382), 'should use the right amount of gas and not consume all')
+    t.equal(
+      result.totalGasSpent,
+      BigInt(66382),
+      'should use the right amount of gas and not consume all'
+    )
     t.end()
   })
 })

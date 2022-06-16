@@ -34,8 +34,6 @@ export interface LesProtocolMethods {
   ) => Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }>
 }
 
-let id = BigInt(0)
-
 /**
  * Implements les/1 and les/2 protocols
  * @memberof module:net/protocol
@@ -44,7 +42,9 @@ export class LesProtocol extends Protocol {
   private chain: Chain
   private flow: FlowControl | undefined
   private isServer: boolean
+  private nextReqId = BigInt(0)
 
+  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'Announce',
@@ -69,7 +69,7 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? ++id),
+        bigIntToBuffer(reqId ?? ++this.nextReqId),
         [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({

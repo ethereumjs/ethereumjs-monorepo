@@ -9,7 +9,7 @@ import Bloom from './bloom'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
 import DAOConfig from './config/dao_fork_accounts_config.json'
-import { VmState } from './vmState'
+import { VmStateAccess } from './evm/types'
 
 const debug = createDebugLogger('vm:block')
 
@@ -95,7 +95,7 @@ export interface AfterBlockEvent extends RunBlockResult {
  * @ignore
  */
 export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.vmState
+  const state = this.eei.state
   const { root } = opts
   let { block } = opts
   const generateFields = !!opts.generate
@@ -347,9 +347,9 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed += txRes.gasUsed
+    gasUsed += txRes.totalGasSpent
     if (this.DEBUG) {
-      debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+      debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
     // Combine blooms via bitwise OR
@@ -378,7 +378,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.vmState
+  const state = this.eei.state
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
@@ -419,7 +419,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: VmState,
+  state: VmStateAccess,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -440,7 +440,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
           ((receipt as PostByzantiumTxReceipt).status === 0
             ? Buffer.from([])
             : Buffer.from('01', 'hex')),
-        bigIntToBuffer(receipt.gasUsed),
+        bigIntToBuffer(receipt.cumulativeBlockGasUsed),
         receipt.bitvector,
         receipt.logs,
       ])
@@ -459,7 +459,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: VmState) {
+async function _applyDAOHardfork(state: VmStateAccess) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
     await state.putAccount(DAORefundContractAddress, new Account())

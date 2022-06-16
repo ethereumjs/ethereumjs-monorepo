@@ -1,7 +1,7 @@
 import { Server, ServerOptions } from '../../../lib/net/server'
 import { Event } from '../../../lib/types'
 import MockPeer from './mockpeer'
-import { RemoteStream, createServer, destroyServer } from './network'
+import { RemoteStream, createServer, destroyServer, servers } from './network'
 
 interface MockServerOptions extends ServerOptions {
   location?: string
@@ -42,8 +42,12 @@ export default class MockServer extends Server {
   }
 
   async stop(): Promise<boolean> {
+    // This wait is essential to clear out the pending setTimeout in the
+    // createStream in ./network.ts
     await this.wait(20)
-    destroyServer(this.location)
+    while (servers[this.location]) {
+      await destroyServer(this.location)
+    }
     await super.stop()
     return this.started
   }

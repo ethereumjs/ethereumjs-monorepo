@@ -1,8 +1,8 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
-const level = require('level-mem')
+import { AbstractLevel } from 'abstract-level'
+import { MemoryLevel } from 'memory-level'
 
-export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
+export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
 
 export type BatchDBOp = PutBatch | DelBatch
 export interface PutBatch {
@@ -54,15 +54,17 @@ export interface DB {
  * which validates inputs and sets encoding type.
  */
 export class LevelDB implements DB {
-  _leveldb: LevelUp
+  _leveldb: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
    * defaults to an [in-memory store](https://github.com/Level/memdown).
    * @param leveldb - An abstract-leveldown compliant store
    */
-  constructor(leveldb?: LevelUp | null) {
-    this._leveldb = leveldb ?? level()
+  constructor(
+    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer> | null
+  ) {
+    this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
 
   /**
@@ -79,7 +81,7 @@ export class LevelDB implements DB {
         throw error
       }
     }
-    return value
+    return value as Buffer
   }
 
   /**
@@ -108,60 +110,5 @@ export class LevelDB implements DB {
    */
   copy(): DB {
     return new LevelDB(this._leveldb)
-  }
-}
-
-export class MemoryDB implements DB {
-  _database: Map<string, Buffer>
-
-  constructor(database?: Map<string, Buffer> | null) {
-    this._database = database ?? new Map()
-  }
-
-  /**
-   * @inheritdoc
-   */
-  async get(key: Buffer): Promise<Buffer | null> {
-    const value = this._database.get(key.toString('binary'))
-
-    if (value === undefined) {
-      return null
-    }
-
-    return value
-  }
-
-  /**
-   * @inheritdoc
-   */
-  async put(key: Buffer, val: Buffer): Promise<void> {
-    this._database.set(key.toString('binary'), val)
-  }
-
-  /**
-   * @inheritdoc
-   */
-  async del(key: Buffer): Promise<void> {
-    this._database.delete(key.toString('binary'))
-  }
-
-  /**
-   * @inheritdoc
-   */
-  async batch(opStack: BatchDBOp[]): Promise<void> {
-    for (const op of opStack) {
-      if (op.type === 'del') {
-        await this.del(op.key)
-      } else if (op.type === 'put') {
-        await this.put(op.key, op.value)
-      }
-    }
-  }
-
-  /**
-   * @inheritdoc
-   */
-  copy(): DB {
-    return new MemoryDB(this._database)
   }
 }

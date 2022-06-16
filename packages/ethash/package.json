@@ -32,24 +32,24 @@
   },
   "dependencies": {
     "@ethereumjs/block": "^3.6.2",
-    "@types/levelup": "^4.3.0",
+    "@ethereumjs/util": "^8.0.0",
+    "abstract-level": "^1.0.3",
     "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
-    "@ethereumjs/util": "^8.0.0",
-    "miller-rabin": "^4.0.0",
     "ethereum-cryptography": "^1.0.3",
+    "miller-rabin": "^4.0.0",
     "rlp": "^3.0.0"
   },
   "devDependencies": {
     "@ethereumjs/common": "^2.6.4",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
-    "level-mem": "^5.0.1",
-    "typedoc": "^0.22.4",
+    "memory-level": "^1.0.0",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
+    "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
   },
   "repository": {

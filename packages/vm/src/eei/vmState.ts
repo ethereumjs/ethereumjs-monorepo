@@ -3,25 +3,13 @@ import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, toBuffer } from '@ethereumjs/util'
 const Set = require('core-js-pure/es/set')
 
-import { StateManager, StateAccess, AccountFields } from '@ethereumjs/statemanager'
+import { StateManager, AccountFields } from '@ethereumjs/statemanager'
 
-import { ripemdPrecompileAddress } from './evm/precompiles'
+import { ripemdPrecompileAddress } from '../evm/precompiles'
 import { debug as createDebugLogger, Debugger } from 'debug'
+import { VmStateAccess } from '../evm/types'
 
 type AddressHex = string
-
-interface VmStateAccess extends StateAccess {
-  touchAccount(address: Address): void
-  addWarmedAddress(address: Buffer): void
-  isWarmedAddress(address: Buffer): boolean
-  addWarmedStorage(address: Buffer, slot: Buffer): void
-  isWarmedStorage(address: Buffer, slot: Buffer): boolean
-  clearWarmedAccounts(): void
-  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
-  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  clearOriginalStorageCache(): void
-  cleanupTouchedAccounts(): Promise<void>
-}
 
 export class VmState implements VmStateAccess {
   _common: Common

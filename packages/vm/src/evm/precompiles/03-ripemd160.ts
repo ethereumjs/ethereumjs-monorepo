@@ -16,7 +16,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: setLengthLeft(toBuffer(ripemd160(data)), 32),
   }
 }

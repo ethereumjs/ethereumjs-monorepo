@@ -4,6 +4,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { Transaction } from '@ethereumjs/tx'
+import EVM from '../../../src/evm/evm'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')
@@ -115,8 +116,7 @@ tape('EIP-3529 tests', (t) => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-
-    vm.evm.on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -136,9 +136,9 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      vm.vmState.addWarmedStorage(address.toBuffer(), key)
+      vm.eei.state.addWarmedStorage(address.toBuffer(), key)
 
-      await vm.evm.runCode({
+      await vm.evm.runCode!({
         code,
         address,
         gasLimit,
@@ -150,8 +150,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.vmState.clearOriginalStorageCache()
-      vm.evm._refund = 0n
+      vm.eei.state.clearOriginalStorageCache()
     }
 
     st.end()
@@ -184,8 +183,7 @@ tape('EIP-3529 tests', (t) => {
 
     let startGas: bigint
     let finalGas: bigint
-
-    vm.evm.on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }
@@ -223,7 +221,7 @@ tape('EIP-3529 tests', (t) => {
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
     st.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    st.ok(result.gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
+    st.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()
   })
 })

@@ -19,7 +19,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: returnData,
   }
 }

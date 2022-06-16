@@ -20,7 +20,7 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type EthereumClient from '../../lib/client'
 import type { FullEthereumService } from '../../lib/service'
 const request = require('supertest')
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -99,7 +99,7 @@ export function createClient(clientOpts: any = {}) {
 
   let execution
   if (clientOpts.includeVM) {
-    const metaDB = clientOpts.enableMetaDB ? level() : undefined
+    const metaDB: any = clientOpts.enableMetaDB ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
 

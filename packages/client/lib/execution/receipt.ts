@@ -312,7 +312,7 @@ export class ReceiptsManager extends MetaDBManager {
                 value.map((r) => [
                   (r as PreByzantiumTxReceipt).stateRoot ??
                     intToBuffer((r as PostByzantiumTxReceipt).status),
-                  bigIntToBuffer(r.gasUsed),
+                  bigIntToBuffer(r.cumulativeBlockGasUsed),
                   this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
                 ])
               )
@@ -327,14 +327,14 @@ export class ReceiptsManager extends MetaDBManager {
               // Pre-Byzantium Receipt
               return {
                 stateRoot: r[0],
-                gasUsed: bufferToBigInt(gasUsed),
+                cumulativeBlockGasUsed: bufferToBigInt(gasUsed),
                 logs,
               } as PreByzantiumTxReceipt
             } else {
               // Post-Byzantium Receipt
               return {
                 status: bufferToInt(r[0]),
-                gasUsed: bufferToBigInt(gasUsed),
+                cumulativeBlockGasUsed: bufferToBigInt(gasUsed),
                 logs,
               } as PostByzantiumTxReceipt
             }

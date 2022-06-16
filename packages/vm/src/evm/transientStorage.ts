@@ -1,4 +1,5 @@
 import { Address } from '@ethereumjs/util'
+import { TransientStorageInterface } from './types'
 
 type TransientStorageCurrent = Map<string, Map<string, Buffer>>
 
@@ -10,7 +11,7 @@ interface TransientStorageModification {
 
 type TransientStorageJournal = TransientStorageModification[]
 
-export default class TransientStorage {
+export default class TransientStorage implements TransientStorageInterface {
   /**
    * The current values of the transient storage, keyed by contract address and then slot
    */

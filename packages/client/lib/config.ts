@@ -7,9 +7,7 @@ import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
-const level = require('level')
+import { Level } from 'level'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -373,9 +371,8 @@ export class Config {
   /**
    * Returns the config level db.
    */
-  static getConfigDB(networkDir: string): LevelUp {
-    const db = level(`${networkDir}/config` as any)
-    return db
+  static getConfigDB(networkDir: string) {
+    return new Level<string | Buffer, Buffer>(`${networkDir}/config` as any)
   }
 
   /**
@@ -384,13 +381,13 @@ export class Config {
   static async getClientKey(datadir: string, common: Common) {
     const networkDir = `${datadir}/${common.chainName()}`
     const db = this.getConfigDB(networkDir)
-    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'binary' }
+    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'buffer' }
     const dbKey = 'config:client_key'
     let key
     try {
       key = await db.get(dbKey, encodingOpts)
     } catch (error: any) {
-      if (error.type === 'NotFoundError') {
+      if (error.code === 'LEVEL_NOT_FOUND') {
         // generate and save a new key
         key = genPrivateKey()
         await db.put(dbKey, key, encodingOpts)

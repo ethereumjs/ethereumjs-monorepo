@@ -3,7 +3,8 @@ import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
+import { Level } from 'level'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -106,37 +107,37 @@ export const isConsecutive = (blocks: Block[]) => {
   })
 }
 
-export const createTestDB = async () => {
+export const createTestDB = async (): Promise<[Level<any, any>, Block]> => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
-  const db = level()
+  const db = new MemoryLevel<any, any>()
   await db.batch([
     {
       type: 'put',
       key: Buffer.from('6800000000000000006e', 'hex'),
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: genesis.hash(),
     },
     {
       type: 'put',
       key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: Buffer.from('00', 'hex'),
     },
     {
       type: 'put',
       key: 'LastHeader',
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: genesis.hash(),
     },
     {
       type: 'put',
       key: 'LastBlock',
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: genesis.hash(),
     },
     {
@@ -145,8 +146,8 @@ export const createTestDB = async () => {
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
         'hex'
       ),
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: genesis.header.serialize(),
     },
     {
@@ -155,8 +156,8 @@ export const createTestDB = async () => {
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
         'hex'
       ),
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: Buffer.from(RLP.encode(Uint8Array.from(toBuffer(17179869184)))),
     },
     {
@@ -165,8 +166,8 @@ export const createTestDB = async () => {
         '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
         'hex'
       ),
-      keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      keyEncoding: 'buffer',
+      valueEncoding: 'buffer',
       value: Buffer.from(RLP.encode(bufArrToArr(genesis.raw()).slice(1))),
     },
     {
@@ -176,5 +177,5 @@ export const createTestDB = async () => {
       value: { head0: { type: 'Buffer', data: [171, 205] } },
     },
   ])
-  return [db, genesis]
+  return [db as any, genesis]
 }

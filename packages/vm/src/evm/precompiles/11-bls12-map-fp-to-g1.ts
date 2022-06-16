@@ -6,7 +6,7 @@ const { BLS12_381_ToFpPoint, BLS12_381_FromG1Point } = require('./util/bls12_381
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')
 
-  const mcl = opts._EVM._mcl
+  const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
 
@@ -42,7 +42,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const returnValue = BLS12_381_FromG1Point(result)
 
   return {
-    gasUsed,
+    executionGasUsed: gasUsed,
     returnValue: returnValue,
   }
 }

@@ -75,7 +75,7 @@ export class VMExecution extends Execution {
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
     if (number === BigInt(0)) {
-      await this.vm.vmState.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+      await this.vm.eei.state.generateCanonicalGenesis(this.vm.blockchain.genesisState())
     }
   }
 
@@ -330,7 +330,7 @@ export class VMExecution extends Execution {
           if (allTxs || txHashes.includes(txHash)) {
             const res = await vm.runTx({ block, tx })
             this.config.logger.info(
-              `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
+              `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`
             )
             count += 1
           }

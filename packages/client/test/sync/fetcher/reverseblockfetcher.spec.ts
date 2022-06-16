@@ -6,7 +6,7 @@ import { Chain } from '../../../lib/blockchain/chain'
 import { Skeleton } from '../../../lib/sync'
 import { wait } from '../../integration/util'
 import { Event } from '../../../lib/types'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 tape('[ReverseBlockFetcher]', async (t) => {
   class PeerPool {
@@ -22,23 +22,52 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
       chain,
       skeleton,
-      first: BigInt(10),
-      count: BigInt(10),
+      first: BigInt(27),
+      count: BigInt(13),
       timeout: 5,
     })
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     void fetcher.fetch()
-    t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
+    t.equals((fetcher as any).in.size(), 3, 'added 2 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
+    t.equals(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
+    t.equals(fetcher.count, BigInt(0), 'pending tasks count should be reduced')
+    fetcher.destroy()
+    await wait(100)
+    t.notOk((fetcher as any).running, 'stopped')
+    t.end()
+  })
+
+  t.test('should generate max tasks', async (t) => {
+    const config = new Config({ maxPerRequest: 5, maxFetcherJobs: 10, transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    const fetcher = new ReverseBlockFetcher({
+      config,
+      pool,
+      chain,
+      skeleton,
+      first: BigInt(56),
+      count: BigInt(53),
+      timeout: 5,
+    })
+    fetcher.next = () => false
+    t.notOk((fetcher as any).running, 'not started')
+    void fetcher.fetch()
+    t.equals((fetcher as any).in.size(), 10, 'added max 10 tasks')
+    await wait(100)
+    t.ok((fetcher as any).running, 'started')
+    t.equals(fetcher.first, BigInt(6), 'pending tasks first tracking should be by maximum')
+    t.equals(fetcher.count, BigInt(3), 'pending tasks count should be reduced by maximum')
     fetcher.destroy()
     await wait(100)
     t.notOk((fetcher as any).running, 'stopped')
@@ -49,8 +78,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -69,8 +97,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -100,8 +127,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -119,8 +145,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const fetcher = new ReverseBlockFetcher({
       config,
       pool,
@@ -156,8 +181,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton.putBlocks = td.func<any>()
     const fetcher = new ReverseBlockFetcher({
       config,
@@ -188,8 +212,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const metaDB = level()
-    const skeleton = new Skeleton({ chain, config, metaDB })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
 
     const fetcher = new ReverseBlockFetcher({
       config,

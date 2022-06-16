@@ -5,7 +5,7 @@ import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
-const level = require('level-mem')
+import { MemoryLevel } from 'memory-level'
 
 interface SetupOptions {
   location?: string
@@ -23,7 +23,7 @@ export async function setup(
   const minPeers = options.minPeers ?? 1
 
   const lightserv = syncmode === 'full'
-  const common = options.common
+  const common = options.common?.copy()
   const config = new Config({ syncmode, lightserv, minPeers, common, safeReorgDistance: 0 })
 
   const server = new MockServer({ config, location })
@@ -58,7 +58,7 @@ export async function setup(
   } else {
     service = new FullEthereumService({
       ...serviceOpts,
-      metaDB: level(),
+      metaDB: new MemoryLevel() as any,
       lightserv: true,
     })
   }
