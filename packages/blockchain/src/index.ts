@@ -722,27 +722,14 @@ export default class Blockchain implements BlockchainInterface {
       throw new Error(msg)
     }
 
+    // check blockchain dependent EIP1559 values
     if (this._common.isActivatedEIP(1559)) {
-      if (!header.baseFeePerGas) {
-        const msg = header._errorMsg('EIP1559 block has no base fee field')
-        throw new Error(msg)
-      }
-      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      const isInitialEIP1559Block = londonHfBlock && header.number === londonHfBlock
-      if (isInitialEIP1559Block) {
-        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (header.baseFeePerGas! !== initialBaseFee) {
-          const msg = header._errorMsg('Initial EIP1559 block does not have initial base fee')
-          throw new Error(msg)
-        }
-      } else {
-        // check if the base fee is correct
-        const expectedBaseFee = parentHeader.calcNextBaseFee()
+      // check if the base fee is correct
+      const expectedBaseFee = parentHeader.calcNextBaseFee()
 
-        if (header.baseFeePerGas! !== expectedBaseFee) {
-          const msg = header._errorMsg('Invalid block: base fee not correct')
-          throw new Error(msg)
-        }
+      if (header.baseFeePerGas! !== expectedBaseFee) {
+        const msg = header._errorMsg('Invalid block: base fee not correct')
+        throw new Error(msg)
       }
     }
   }

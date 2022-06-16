@@ -259,7 +259,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
 
-    this._genericFormatvalidation()
+    this._genericFormatValidation()
     this._consensusFormatValidation()
     this._validateDAOExtraData()
 
@@ -294,7 +294,7 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _genericFormatvalidation() {
+  _genericFormatValidation() {
     const {
       parentHash,
       uncleHash,
@@ -344,6 +344,23 @@ export class BlockHeader {
       } else {
         const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
         throw new Error(msg)
+      }
+    }
+
+    // Validation for EIP-1559 blocks
+    if (this._common.isActivatedEIP(1559)) {
+      if (!this.baseFeePerGas) {
+        const msg = this._errorMsg('EIP1559 block has no base fee field')
+        throw new Error(msg)
+      }
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+        if (this.baseFeePerGas! !== initialBaseFee) {
+          const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
+          throw new Error(msg)
+        }
       }
     }
 
