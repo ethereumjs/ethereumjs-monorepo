@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BatchDBOp, CheckpointTrie, LevelDB } from '../src'
+import { BatchDBOp, CheckpointTrie, LevelDB } from '../../src'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test

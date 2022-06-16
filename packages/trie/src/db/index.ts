@@ -1,2 +1,2 @@
 export * from './checkpoint'
-export * from './db'
+export * from './level'

@@ -1,5 +1,13 @@
+import { BranchNode, ExtensionNode, LeafNode } from './trie'
 import { WalkController } from './util/walkController'
-import { TrieNode, Nibbles } from './trie/node'
+
+export type TrieNode = BranchNode | ExtensionNode | LeafNode
+
+export type Nibbles = number[]
+
+// Branch and extension nodes might store
+// hash to next node, or embed it if its len < 32
+export type EmbeddedNode = Buffer | Buffer[]
 
 export type Proof = Buffer[]
 
@@ -71,4 +79,11 @@ export interface DB {
    * to the **same** underlying leveldb instance.
    */
   copy(): DB
+}
+
+export type Checkpoint = {
+  // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
+  // then when setting a value on the Map, it actually creates two indices.
+  keyValueMap: Map<string, Buffer | null>
+  root: Buffer
 }

@@ -1,4 +1,4 @@
-import { Nibbles } from '../trie/node'
+import { Nibbles } from '../types'
 
 /**
  * Prepends hex prefix to an array of nibbles.

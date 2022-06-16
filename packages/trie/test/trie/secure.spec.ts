@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { LevelDB, SecureTrie } from '../src'
+import { LevelDB, SecureTrie } from '../../src'
 
 tape('SecureTrie', function (t) {
   const trie = new SecureTrie({ db: new LevelDB() })
@@ -34,7 +34,7 @@ tape('SecureTrie', function (t) {
 
   tape('secure tests', function (it) {
     let trie = new SecureTrie({ db: new LevelDB() })
-    const jsonTests = require('./fixtures/trietest_secureTrie.json').tests
+    const jsonTests = require('../fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
       for (const row of jsonTests.emptyValues.in) {

@@ -1,22 +1,12 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import { DB, BatchDBOp, PutBatch } from '../types'
+import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
 import { LevelDB } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
 import { WalkController } from '../util/walkController'
-import {
-  TrieNode,
-  decodeNode,
-  decodeRawNode,
-  isRawNode,
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
-  EmbeddedNode,
-  Nibbles,
-} from './node'
+import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
 import { verifyRangeProof } from '../proof/range'
 import { FoundNodeFunction, Proof, TrieOpts } from '../types'
 

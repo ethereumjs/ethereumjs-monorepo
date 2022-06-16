@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BatchDBOp, LevelDB } from '../src'
+import { BatchDBOp, LevelDB } from '../../src'
 
 tape('DB tests', (t) => {
   const db = new LevelDB()
