@@ -1,7 +1,6 @@
-import { base32 } from '@scure/base'
+import { base32, base64url } from '@scure/base'
 import { sscanf } from 'scanf'
 import { Multiaddr } from 'multiaddr'
-import base64url from 'base64url'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { PeerInfo } from '../dpt'
@@ -52,7 +51,7 @@ export class ENR {
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
+    const base64BufferEnr = Buffer.from(base64url.decode(enr.slice(this.RECORD_PREFIX.length)))
     const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr))) as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
@@ -116,7 +115,10 @@ export class ENR {
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(' sig')[0]
     const signedComponentBuffer = Buffer.from(signedComponent)
-    const signatureBuffer = base64url.toBuffer(rootVals.signature).slice(0, 64)
+    const signatureBuffer = Buffer.from(
+      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64)
+    )
+
     const keyBuffer = Buffer.from(decodedPublicKey)
 
     const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)

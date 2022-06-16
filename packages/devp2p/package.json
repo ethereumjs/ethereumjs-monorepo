@@ -46,7 +46,6 @@
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
     "@types/lru-cache": "^5.1.0",
-    "base64url": "^3.0.1",
     "bl": "^1.1.2",
     "debug": "^4.3.3",
     "@ethereumjs/util": "^8.0.0",
