@@ -371,7 +371,7 @@ tape('[Block]: Header functions', function (t) {
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
       const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp)
-      st.equal(block.validateGasLimit(parentBlock), true)
+      st.doesNotThrow(() => block.validateGasLimit(parentBlock))
     })
 
     st.end()

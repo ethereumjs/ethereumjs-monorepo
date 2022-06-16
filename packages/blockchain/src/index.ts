@@ -555,7 +555,6 @@ export default class Blockchain implements BlockchainInterface {
             })
           : item
       const isGenesis = block.isGenesis()
-      const isHeader = item instanceof BlockHeader
 
       // we cannot overwrite the Genesis block after initializing the Blockchain
       if (isGenesis) {
@@ -575,9 +574,7 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        await this.validateHeader(item instanceof Block ? item.header : item)
-        await this._validateUncleHeaders(block)
-        await block.validateData(isHeader)
+        await this.validateBlock(block)
       }
 
       if (this._validateConsensus) {
@@ -716,12 +713,6 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    // check if the block used too much gas
-    if (header.gasUsed > header.gasLimit) {
-      const msg = header._errorMsg('Invalid block: too much gas used')
-      throw new Error(msg)
-    }
-
     // check blockchain dependent EIP1559 values
     if (this._common.isActivatedEIP(1559)) {
       // check if the base fee is correct
@@ -735,14 +726,24 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Validates a block, by validating the header against the current chain, any uncle headers, and then
+   * whether the block is internally consistent
+   * @param block block to be validated
+   */
+  public async validateBlock(block: Block) {
+    await this.validateHeader(block.header)
+    await this._validateUncleHeaders(block)
+    await block.validateData(false)
+  }
+
+  /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
    * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
    * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
    * Uncle Header is not already included as uncle in another block.
-   * @param blockchain - pointer to the blockchain
+   * @param block - block for which uncles are being validated
    */
-  // TODO: Move validateUncleHeaders to blockchain
   private async _validateUncleHeaders(block: Block) {
     const uncleHeaders = block.uncleHeaders
     if (uncleHeaders.length == 0) {

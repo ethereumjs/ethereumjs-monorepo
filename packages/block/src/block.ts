@@ -341,12 +341,12 @@ export class Block {
   }
 
   /**
-   * Validates if the block gasLimit remains in the
-   * boundaries set by the protocol.
+   * Validates if the block gasLimit remains in the boundaries set by the protocol.
+   * Throws if invalid
    *
    * @param parentBlock - the parent of this `Block`
    */
-  validateGasLimit(parentBlock: Block): boolean {
+  validateGasLimit(parentBlock: Block) {
     return this.header.validateGasLimit(parentBlock.header)
   }
 

@@ -347,9 +347,15 @@ export class BlockHeader {
       }
     }
 
+    // check if the block used too much gas
+    if (this.gasUsed > this.gasLimit) {
+      const msg = this._errorMsg('Invalid block: too much gas used')
+      throw new Error(msg)
+    }
+
     // Validation for EIP-1559 blocks
     if (this._common.isActivatedEIP(1559)) {
-      if (!this.baseFeePerGas) {
+      if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
@@ -473,12 +479,12 @@ export class BlockHeader {
   }
 
   /**
-   * Validates if the block gasLimit remains in the
-   * boundaries set by the protocol.
+   * Validates if the block gasLimit remains in the boundaries set by the protocol.
+   * Throws if out of bounds.
    *
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
-  validateGasLimit(parentBlockHeader: BlockHeader): boolean {
+  validateGasLimit(parentBlockHeader: BlockHeader) {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
@@ -495,12 +501,22 @@ export class BlockHeader {
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
-    const result =
-      gasLimit < maxGasLimit &&
-      gasLimit > minGasLimit &&
-      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
+    if (gasLimit >= maxGasLimit) {
+      const msg = this._errorMsg('gas limit increased too much')
+      throw new Error(msg)
+    }
 
-    return result
+    if (gasLimit <= minGasLimit) {
+      const msg = this._errorMsg('gas limit decreased too much')
+      throw new Error(msg)
+    }
+
+    if (gasLimit < this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
+      const msg = this._errorMsg(
+        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
+      )
+      throw new Error(msg)
+    }
   }
 
   /**
@@ -766,7 +782,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
-    if (extraSeal.length === 0 || extraSeal.equals(Buffer.alloc(32).fill(0))) {
+    if (extraSeal.length === 0 || extraSeal.equals(Buffer.alloc(65).fill(0))) {
       return Address.zero()
     }
     const r = extraSeal.slice(0, 32)
