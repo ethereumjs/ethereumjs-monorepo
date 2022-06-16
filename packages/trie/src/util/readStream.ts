@@ -1,6 +1,6 @@
 import { nibblesToBuffer } from '../util/nibbles'
 import { Trie } from '../trie'
-const Readable = require('readable-stream').Readable
+import { Readable } from 'readable-stream'
 
 export class TrieReadStream extends Readable {
   private trie: Trie

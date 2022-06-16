@@ -49,6 +49,7 @@
   "devDependencies": {
     "@types/benchmark": "^1.0.33",
     "@types/node": "^16.11.7",
+    "@types/readable-stream": "^2.3.13",
     "@types/tape": "^4.13.2",
     "0x": "^4.9.1",
     "benchmark": "^2.1.4",
