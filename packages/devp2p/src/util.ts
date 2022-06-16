@@ -1,6 +1,7 @@
 import { arrToBufArr } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { getPublicKey, utils } from 'ethereum-cryptography/secp256k1'
+import { utils } from 'ethereum-cryptography/secp256k1'
+import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { ETH } from './protocol/eth'
 import { LES } from './protocol/les'
@@ -20,7 +21,7 @@ export function genPrivateKey(): Buffer {
 
 export function pk2id(pk: Buffer): Buffer {
   if (pk.length === 33) {
-    pk = Buffer.from(getPublicKey(pk, false))
+    pk = Buffer.from(publicKeyConvert(pk, false))
   }
   return pk.slice(1)
 }
