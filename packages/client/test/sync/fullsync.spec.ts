@@ -4,6 +4,7 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
 import { Block } from '@ethereumjs/block'
+import Blockchain, { Consensus } from '@ethereumjs/blockchain'
 
 tape('[FullSynchronizer]', async (t) => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -202,8 +203,6 @@ tape('[FullSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
 
-    Block.prototype.validateDifficulty = td.func<any>()
-    td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
     const chainTip = Block.fromBlockData({
       header: {},
     })
