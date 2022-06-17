@@ -10,6 +10,7 @@ import {
 } from '@ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction, setBalance } from './utils'
+import Blockchain from '@ethereumjs/blockchain'
 
 const TRANSACTION_TYPES = [
   {
@@ -39,11 +40,13 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       await vm.eei.state.putAccount(caller, acc)
       let block
       if (vm._common.consensusType() === 'poa') {
-        block = Block.fromBlockData({
-          header: { extraData: vm.blockchain.genesisBlock.header.extraData },
-        })
+        // Setup block with correct extraData for POA
+        block = Block.fromBlockData(
+          { header: { extraData: Buffer.alloc(97) } },
+          { common: vm._common }
+        )
       }
-      console.log(block?.header.extraData.length)
+
       const res = await vm.runTx({ tx, block })
       st.true(res.totalGasSpent > BigInt(0), `${msg} (${txType.name})`)
     }
@@ -55,7 +58,10 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors', st)
 
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
-    vm = await VM.create({ common })
+    vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
     await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors', st)
 
     st.end()
