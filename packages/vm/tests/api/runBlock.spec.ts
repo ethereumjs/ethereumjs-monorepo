@@ -220,14 +220,13 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
 
     const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
-    block.validate = async () => {
-      throw new Error('test')
-    }
 
     await vm
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes('test')))
+      .catch((e) => {
+        t.ok(e.code.includes('LEVEL_NOT_FOUND'), 'block failed validation due to no parent header')
+      })
   })
 
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
@@ -343,7 +342,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     // create block with the signer and txs
     const block = Block.fromBlockData(
-      { transactions: [tx, tx] },
+      { header: { extraData: Buffer.alloc(97) }, transactions: [tx, tx] },
       { common, cliqueSigner: signer.privateKey }
     )
 

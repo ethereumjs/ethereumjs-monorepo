@@ -147,7 +147,7 @@ tape('BlockBuilder', async (t) => {
 
     st.ok(block.header.mixHash.equals(sealOpts.mixHash))
     st.ok(block.header.nonce.equals(sealOpts.nonce))
-    st.ok(block.validateDifficulty(genesisBlock))
+    st.doesNotThrow(async () => await vm.blockchain.consensus.validateDifficulty(block.header))
     st.end()
   })
 
@@ -180,7 +180,7 @@ tape('BlockBuilder', async (t) => {
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
-      headerData: { difficulty: 2 },
+      headerData: { difficulty: 2, extraData: Buffer.alloc(97) },
       blockOpts: { cliqueSigner, freeze: false },
     })
 

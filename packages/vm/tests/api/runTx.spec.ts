@@ -37,8 +37,14 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       const caller = tx.getSenderAddress()
       const acc = createAccount()
       await vm.eei.state.putAccount(caller, acc)
-
-      const res = await vm.runTx({ tx })
+      let block
+      if (vm._common.consensusType() === 'poa') {
+        block = Block.fromBlockData({
+          header: { extraData: vm.blockchain.genesisBlock.header.extraData },
+        })
+      }
+      console.log(block?.header.extraData.length)
+      const res = await vm.runTx({ tx, block })
       st.true(res.totalGasSpent > BigInt(0), `${msg} (${txType.name})`)
     }
   }

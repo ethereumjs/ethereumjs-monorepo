@@ -1372,7 +1372,15 @@ export default class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
     }
-
+    if (common.consensusType() === 'poa') {
+      if (common.genesis().extraData) {
+        // Ensure exta data is populated from genesis data if provided
+        header.extraData = common.genesis().extraData
+      } else {
+        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
+        header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
+      }
+    }
     return Block.fromBlockData({ header }, { common })
   }
 
