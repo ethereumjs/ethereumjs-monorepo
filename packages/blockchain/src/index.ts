@@ -1373,11 +1373,11 @@ export default class Blockchain implements BlockchainInterface {
       stateRoot,
     }
     if (common.consensusType() === 'poa') {
-      if (common.genesis().extraData) {
+      if (common.genesis().extraData && common.chainName() !== 'kovan') {
         // Ensure exta data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
-        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
+        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes (or if chain is Kovan)
         header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
       }
     }
