@@ -667,7 +667,6 @@ export default class Blockchain implements BlockchainInterface {
       return
     }
     const parentHeader = (await this.getBlock(header.parentHash)).header
-
     if (!parentHeader) {
       const msg = header._errorMsg('could not find parent header')
       throw new Error(msg)
@@ -713,7 +712,14 @@ export default class Blockchain implements BlockchainInterface {
     // check blockchain dependent EIP1559 values
     if (this._common.isActivatedEIP(1559)) {
       // check if the base fee is correct
-      const expectedBaseFee = parentHeader.calcNextBaseFee()
+      let expectedBaseFee
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        expectedBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+      } else {
+        expectedBaseFee = parentHeader.calcNextBaseFee()
+      }
 
       if (header.baseFeePerGas! !== expectedBaseFee) {
         const msg = header._errorMsg('Invalid block: base fee not correct')

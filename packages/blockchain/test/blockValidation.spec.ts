@@ -1,5 +1,9 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { bufArrToArr } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import RLP from 'rlp'
 import tape from 'tape'
 
 import Blockchain from '../src'
@@ -181,36 +185,112 @@ tape('[Blockchain]: Block validation tests', (t) => {
 
     st.pass('uncle blocks validated succesfully')
   })
-  /*  TODO Figure out how to recreate this with a custom chain -- if needed
+
+  t.test('EIP1559 base fee tests', async (st) => {
+    const common = new Common({
+      eips: [1559],
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+    })
+
+    const blockchain = await Blockchain.create({ common, validateConsensus: false })
+    const genesis = blockchain.genesisBlock
+
+    // Small hack to hack in the activation block number
+    // (Otherwise there would be need for a custom chain only for testing purposes)
+    common.hardforkBlock = function (hardfork: string | undefined) {
+      if (hardfork === 'london') {
+        return BigInt(1)
+      } else if (hardfork === 'dao') {
+        // Avoid DAO HF side-effects
+        return BigInt(99)
+      }
+      return BigInt(0)
+    }
+
+    const header = BlockHeader.fromHeaderData(
+      {
+        number: BigInt(1),
+        parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+        timestamp: BigInt(1),
+        baseFeePerGas: BigInt(1000000000),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+        freeze: false,
+      }
+    )
+
+    const block = Block.fromBlockData({ header }, { common })
+    await blockchain.putBlock(block)
+    try {
+      const header = BlockHeader.fromHeaderData(
+        {
+          number: BigInt(2),
+          parentHash: block.hash(),
+          gasLimit: block.header.gasLimit,
+          timestamp: BigInt(10),
+          baseFeePerGas: BigInt(1000),
+        },
+        {
+          calcDifficultyFromHeader: block.header,
+          common,
+        }
+      )
+      const block2 = Block.fromBlockData({ header }, { common })
+      await blockchain.putBlock(block2)
+    } catch (e: any) {
+      const expectedError = 'Invalid block: base fee not correct'
+      st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
+    }
+  })
+
   t.test(
     'should select the right hardfork for uncles at a hardfork transition',
-    async function (st) {*/
-  /**
-   * This test creates a chain around mainnet fork blocks:
-   *      berlin         london
-   *                |     |-> u <---|
-   * @ -> @ -> @ ---|---> @ -> @ -> @
-   * |-> u <---|               | -> @
-   *    ^----------------------------
-   * @ = block
-   * u = uncle block
-   *
-   * There are 3 pre-fork blocks, with 1 pre-fork uncle
-   * There are 3 blocks after the fork, with 1 uncle after the fork
-   *
-   * The following situations are tested:
-   * Pre-fork block can have legacy uncles
-   * London block has london uncles
-   * London block has legacy uncles
-   * London block has legacy uncles, where hardforkByBlockNumber set to false (this should throw)
-   *    In this situation, the london block creates a london uncle, but this london uncle should be
-   *    a berlin block, and therefore has no base fee. But, since common is still london, base fee
-   *    is expected
-   * It is tested that common does not change
-   */
-  /*   const common = new Common({ chain: Chain.Mainnet })
+    async function (st) {
+      /**
+       * This test creates a chain around mainnet fork blocks:
+       *      berlin         london
+       *                |     |-> u <---|
+       * @ -> @ -> @ ---|---> @ -> @ -> @
+       * |-> u <---|               | -> @
+       *    ^----------------------------
+       * @ = block
+       * u = uncle block
+       *
+       * There are 3 pre-fork blocks, with 1 pre-fork uncle
+       * There are 3 blocks after the fork, with 1 uncle after the fork
+       *
+       * The following situations are tested:
+       * Pre-fork block can have legacy uncles
+       * London block has london uncles
+       * London block has legacy uncles
+       * London block has legacy uncles, where hardforkByBlockNumber set to false (this should not throw)
+       *    In this situation, the london block creates a london uncle, but this london uncle should be
+       *    a berlin block, and therefore has no base fee. Since common will report london as active hardfork,
+       *    evaluation of uncle header will initialize base fee to 7 per default header constructor rules for
+       *    london blocks
+       * It is tested that common does not change
+       */
 
-      const blockchain = await Blockchain.create({ common, validateConsensus: false })
+      const common = new Common({ chain: Chain.Mainnet })
+      common.hardforkBlock = function (hardfork: string | undefined) {
+        if (hardfork === 'london') {
+          return BigInt(4)
+        } else if (hardfork === 'dao') {
+          // Avoid DAO HF side-effects
+          return BigInt(99)
+        }
+        return BigInt(0)
+      }
+
+      const blockchain = await Blockchain.create({
+        common,
+        validateConsensus: false,
+        validateBlocks: false,
+      })
 
       common.setHardfork(Hardfork.Berlin)
 
@@ -218,13 +298,13 @@ tape('[Blockchain]: Block validation tests', (t) => {
       const rootBlock = Block.fromBlockData(
         {
           header: {
+            parentHash: blockchain.genesisBlock.hash(),
             number: mainnetForkBlock! - BigInt(3),
             gasLimit: BigInt(5000),
           },
         },
         { common }
       )
-
       await blockchain.putBlock(rootBlock)
 
       const unclePreFork = createBlock(rootBlock, 'unclePreFork', [], common)
@@ -237,22 +317,13 @@ tape('[Blockchain]: Block validation tests', (t) => {
         common
       )
       await blockchain.putBlock(preForkBlock)
+      st.pass('able to put pre-london block in chain with pre-london uncles')
       common.setHardfork(Hardfork.London)
       const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
       await blockchain.putBlock(forkBlock)
-      const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)
-      const canonicalBlock2 = createBlock(forkBlock, 'canonicalBlock2', [], common)
-      const forkBlock2 = createBlock(canonicalBlock2, 'forkBlock2', [uncleFork.header], common)
-      await blockchain.putBlock(canonicalBlock2)
-      await blockchain.putBlock(forkBlock)
-      //  await preForkBlock.validate(blockchain)
-
-      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-      // await forkBlock2.validate(blockchain)
-
       st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
-      const forkBlock2HeaderData = forkBlock2.header.toJSON()
+      const forkBlockHeaderData = forkBlock.header.toJSON()
       const uncleHeaderData = unclePreFork.header.toJSON()
 
       uncleHeaderData.extraData = '0xffff'
@@ -260,12 +331,12 @@ tape('[Blockchain]: Block validation tests', (t) => {
         common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
       })
 
-      forkBlock2HeaderData.uncleHash =
+      forkBlockHeaderData.uncleHash =
         '0x' + bytesToHex(keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {
-          header: forkBlock2HeaderData,
+          header: forkBlockHeaderData,
           uncleHeaders: [uncleHeaderData],
         },
         {
@@ -273,33 +344,27 @@ tape('[Blockchain]: Block validation tests', (t) => {
         }
       )
 
-      //    await forkBlock_ValidCommon.validate(blockchain)
-
-      st.pass('successfully validated a pre-london uncle on a london block')
+      st.ok(
+        forkBlock_ValidCommon.uncleHeaders[0].hash().equals(uncleHeader.hash()),
+        'successfully validated a pre-london uncle on a london block'
+      )
       st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
-      const forkBlock_InvalidCommon = Block.fromBlockData(
-        {
-          header: forkBlock2HeaderData,
-          uncleHeaders: [uncleHeaderData],
-        },
-        {
-          common,
-          hardforkByBlockNumber: false,
-        }
+      st.doesNotThrow(
+        () =>
+          Block.fromBlockData(
+            {
+              header: forkBlockHeaderData,
+              uncleHeaders: [uncleHeaderData],
+            },
+            {
+              common,
+              hardforkByBlockNumber: false,
+            }
+          ),
+        'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee'
       )
-
-      try {
-        //    await forkBlock_InvalidCommon.validate(blockchain)
-        st.fail('cannot reach this')
-      } catch (e: any) {
-        st.ok(
-          e.message.includes('with EIP1559 being activated'),
-          'explicitly set hardforkByBlockNumber to false, pre-london block interpreted as london block and succesfully failed'
-        )
-      }
-
       st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
     }
-  )*/
+  )
 })

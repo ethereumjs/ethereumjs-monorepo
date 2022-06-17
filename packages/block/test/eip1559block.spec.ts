@@ -97,42 +97,6 @@ tape('EIP1559 tests', function (t) {
       )
     }
 
-    /* TODO: Move to blockchain/test/blockValidation.spec.ts'
-    const header = BlockHeader.fromHeaderData(
-      {
-        number: BigInt(1),
-        parentHash: genesis.hash(),
-        gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
-        timestamp: BigInt(1),
-        baseFeePerGas: BigInt(1000000000),
-      },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-        freeze: false,
-      }
-    )
-
-
-    const block = Block.fromBlockData({ header }, { common })
-    try {
-      const header = BlockHeader.fromHeaderData(
-        {
-          number: BigInt(2),
-          parentHash: block.hash(),
-          gasLimit: block.header.gasLimit,
-          timestamp: BigInt(10),
-          baseFeePerGas: BigInt(1000),
-        },
-        {
-          calcDifficultyFromHeader: block.header,
-          common,
-        }
-      )
-    } catch (e: any) {
-      const expectedError = 'Invalid block: base fee not correct'
-      st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
-    }*/
     st.end()
   })
 
