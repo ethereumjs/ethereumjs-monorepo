@@ -699,10 +699,7 @@ export default class Blockchain implements BlockchainInterface {
       await this.consensus.validateDifficulty(header)
     }
 
-    if (!header.validateGasLimit(parentHeader)) {
-      const msg = header._errorMsg('invalid gas limit')
-      throw new Error(msg)
-    }
+    header.validateGasLimit(parentHeader)
 
     if (height) {
       const dif = height - parentHeader.number
