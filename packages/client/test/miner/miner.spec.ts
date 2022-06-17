@@ -75,6 +75,7 @@ tape('[Miner]', async (t) => {
         cliqueCheckRecentlySigned: () => false,
         validateDifficulty: () => undefined,
       },
+      validateHeader: () => {},
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
       _init: async () => undefined,
@@ -390,6 +391,7 @@ tape('[Miner]', async (t) => {
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+    vm.blockchain.validateHeader = td.func<any>() // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
