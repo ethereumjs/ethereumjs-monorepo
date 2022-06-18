@@ -14,7 +14,7 @@ import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
-import testnet from './testdata/testnet.json'
+import * as testnet from './testdata/testnet.json'
 import VM from '../../src/index'
 import { setBalance } from './utils'
 
