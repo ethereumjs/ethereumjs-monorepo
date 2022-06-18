@@ -1,5 +1,5 @@
-import pipe from 'it-pipe'
-import pushable from 'it-pushable'
+import * as pipe from 'it-pipe'
+import * as pushable from 'it-pushable'
 import { arrToBufArr, bufferToInt, bufArrToArr, intToBuffer } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
@@ -34,10 +34,10 @@ export class Libp2pSender extends Sender {
 
   init() {
     // outgoing stream
-    pipe(this.pushable, this.stream)
+    pipe.pipe(this.pushable, this.stream)
 
     // incoming stream
-    void pipe(this.stream, async (source: any) => {
+    void pipe.pipe(this.stream, async (source: any) => {
       for await (const bl of source) {
         // convert BufferList to Buffer
         const data: Buffer = bl.slice()

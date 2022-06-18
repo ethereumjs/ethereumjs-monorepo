@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import { createLogger, format, transports as wTransports, Logger as WinstonLogger } from 'winston'
 const DailyRotateFile = require('winston-daily-rotate-file')
 
