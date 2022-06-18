@@ -1,8 +1,8 @@
 import { Socket } from 'net'
 import { EventEmitter } from 'events'
 import BufferList = require('bl')
-import ms from 'ms'
-import snappy from 'snappyjs'
+import ms = require('ms')
+import * as snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import Common from '@ethereumjs/common'

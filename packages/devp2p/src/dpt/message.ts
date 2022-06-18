@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
-import ip from 'ip'
-import secp256k1 from 'secp256k1'
+import * as ip from 'ip'
+import * as secp256k1 from 'secp256k1'
 import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'

@@ -1,6 +1,6 @@
-import test from 'tape'
+import * as test from 'tape'
 import * as util from './util'
-import testdata from '../testdata.json'
+import * as testdata from '../testdata.json'
 
 test('DPT: new working node', (t) => {
   const dpts = util.initTwoPeerDPTSetup()

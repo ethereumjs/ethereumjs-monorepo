@@ -1,4 +1,4 @@
-import snappy from 'snappyjs'
+import * as snappy from 'snappyjs'
 import {
   arrToBufArr,
   bigIntToBuffer,

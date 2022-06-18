@@ -1,4 +1,4 @@
-import test from 'tape'
+import * as test from 'tape'
 import * as secp256k1 from 'secp256k1'
 import * as message from '../src/dpt/message'
 

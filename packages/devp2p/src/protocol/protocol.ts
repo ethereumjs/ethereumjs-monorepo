@@ -1,4 +1,4 @@
-import ms from 'ms'
+import ms = require('ms')
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
 import { devp2pDebug } from '../util'

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import * as dgram from 'dgram'
-import ms from 'ms'
+import ms = require('ms')
 import { debug as createDebugLogger, Debugger } from 'debug'
 import LRUCache = require('lru-cache')
 import { encode, decode } from './message'

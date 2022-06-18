@@ -1,4 +1,4 @@
-import LRUCache from 'lru-cache'
+import * as LRUCache from 'lru-cache'
 import { debug as createDebugLogger } from 'debug'
 import { KBucket } from './kbucket'
 import { formatLogId } from '../util'
