@@ -1,8 +1,8 @@
-import { randomBytes } from 'crypto'
-import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
-import createKeccakHash from 'keccak'
 import { arrToBufArr } from '@ethereumjs/util'
 import RLP from 'rlp'
+import { utils } from 'ethereum-cryptography/secp256k1'
+import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
+import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { ETH } from './protocol/eth'
 import { LES } from './protocol/les'
 import { debug as createDebugLogger } from 'debug'
@@ -11,12 +11,12 @@ export const devp2pDebug = createDebugLogger('devp2p')
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
-  return createKeccakHash('keccak256').update(buffer).digest()
+  return Buffer.from(_keccak256(buffer))
 }
 
 export function genPrivateKey(): Buffer {
-  const privateKey = randomBytes(32)
-  return privateKeyVerify(privateKey) ? privateKey : genPrivateKey()
+  const privateKey = utils.randomPrivateKey()
+  return utils.isValidPrivateKey(privateKey) ? Buffer.from(privateKey) : genPrivateKey()
 }
 
 export function pk2id(pk: Buffer): Buffer {

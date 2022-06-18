@@ -1,12 +1,14 @@
 import { createCipheriv } from 'crypto'
-import createKeccakHash from 'keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { xor } from '../util'
 
+export type Hash = ReturnType<typeof keccak256.create>
+
 export class MAC {
-  _hash: any
+  _hash: Hash
   _secret: Buffer
   constructor(secret: Buffer) {
-    this._hash = createKeccakHash('keccak256')
+    this._hash = keccak256.create()
     this._secret = secret
   }
 
@@ -29,6 +31,6 @@ export class MAC {
   }
 
   digest() {
-    return this._hash._clone().digest().slice(0, 16)
+    return Buffer.from(this._hash.clone().digest().slice(0, 16))
   }
 }
