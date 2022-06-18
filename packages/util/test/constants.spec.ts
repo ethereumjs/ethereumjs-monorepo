@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import {
   MAX_INTEGER,
   TWO_POW256,
