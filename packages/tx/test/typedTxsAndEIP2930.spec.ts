@@ -8,7 +8,7 @@ import {
   privateToAddress,
   bufferToBigInt,
 } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 import {
   AccessList,
   AccessListEIP2930Transaction,
