@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { CheckpointDB } from '../src/checkpointDb'
 import { BatchDBOp, LevelDB } from '../src/db'
 
