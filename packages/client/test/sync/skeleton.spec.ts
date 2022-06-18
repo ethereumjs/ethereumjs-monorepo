@@ -457,7 +457,6 @@ tape('[Skeleton]', async (t) => {
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
-      BlockHeader.prototype._genericFormatValidation = td.func<any>()
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
       td.replace('@ethereumjs/block', { BlockHeader })
 
