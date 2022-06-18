@@ -8,7 +8,7 @@ import VM from './index'
 import Bloom from './bloom'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
-import DAOConfig from './config/dao_fork_accounts_config.json'
+import * as DAOConfig from './config/dao_fork_accounts_config.json'
 import { VmStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
