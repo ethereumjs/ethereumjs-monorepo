@@ -1,8 +1,8 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
-import testnet from './data/testnet.json'
-import testnet2 from './data/testnet2.json'
-import testnet3 from './data/testnet3.json'
+import * as testnet from './data/testnet.json'
+import * as testnet2 from './data/testnet2.json'
+import * as testnet3 from './data/testnet3.json'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
