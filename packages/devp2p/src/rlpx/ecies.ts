@@ -1,8 +1,8 @@
 import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
 import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { unstrictDecode } from '../util'
 import { MAC } from './mac'
 
@@ -17,6 +17,7 @@ import {
   buffer2int,
   zfill,
 } from '../util'
+import { ecdsaSign, ecdsaRecover, ecdh } from 'ethereum-cryptography/secp256k1-compat'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
@@ -26,10 +27,9 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
     const pubKey = new Uint8Array(33)
     pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
     pubKey.set(x, 1)
-    return pubKey
+    return pubKey.slice(1)
   }
-  // @ts-ignore
-  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(33)).slice(1))
+  return Buffer.from(ecdh(publicKey, privateKey, { hashfn: hashfn }, Buffer.alloc(32)))
 }
 
 // a straigth rip from python interop w/go ecies implementation
@@ -80,7 +80,7 @@ export class ECIES {
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = Buffer.from(publicKeyCreate(this._ephemeralPrivateKey, false))
+    this._ephemeralPublicKey = Buffer.from(getPublicKey(this._ephemeralPrivateKey, false))
   }
 
   _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
@@ -106,7 +106,7 @@ export class ECIES {
       .update(Buffer.concat([dataIV, sharedMacData]))
       .digest()
 
-    const publicKey = publicKeyCreate(privateKey, false)
+    const publicKey = getPublicKey(privateKey, false)
     return Buffer.concat([publicKey, dataIV, tag])
   }
 

@@ -1,12 +1,11 @@
-import * as base32 from 'hi-base32'
+import { base32, base64url } from '@scure/base'
 import { sscanf } from 'scanf'
-import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
-import base64url from 'base64url'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { PeerInfo } from '../dpt'
 import { toNewUint8Array, keccak256 } from '../util'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 
 const Convert = require('multiaddr/src/convert')
 
@@ -52,7 +51,7 @@ export class ENR {
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
+    const base64BufferEnr = Buffer.from(base64url.decode(enr.slice(this.RECORD_PREFIX.length)))
     const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr))) as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
@@ -109,14 +108,17 @@ export class ENR {
     if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
     if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
 
-    const decodedPublicKey = base32.decode.asBytes(publicKey)
+    const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
     // The signature is a 65-byte secp256k1 over the keccak256 hash
     // of the record content, excluding the `sig=` part, encoded as URL-safe base64 string
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(' sig')[0]
     const signedComponentBuffer = Buffer.from(signedComponent)
-    const signatureBuffer = base64url.toBuffer(rootVals.signature).slice(0, 64)
+    const signatureBuffer = Buffer.from(
+      [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64)
+    )
+
     const keyBuffer = Buffer.from(decodedPublicKey)
 
     const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
