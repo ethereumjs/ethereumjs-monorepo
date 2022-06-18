@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { BatchDBOp, CheckpointTrie, LevelDB } from '../../src'
 
 tape('testing checkpoints', function (tester) {
