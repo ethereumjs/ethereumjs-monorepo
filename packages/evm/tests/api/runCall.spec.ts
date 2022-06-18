@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Account, Address, MAX_UINT64, padToEven } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'

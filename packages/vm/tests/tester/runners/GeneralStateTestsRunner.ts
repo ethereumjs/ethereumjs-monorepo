@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'

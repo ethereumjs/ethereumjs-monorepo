@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { getEEI } from '../utils'
 import EVM from '../../src'
 

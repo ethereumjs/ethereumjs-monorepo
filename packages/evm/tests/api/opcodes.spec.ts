@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { getEEI } from '../utils'
 import EVM from '../../src'

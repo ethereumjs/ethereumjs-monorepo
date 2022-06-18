@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
