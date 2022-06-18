@@ -1,10 +1,10 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { exec } from 'child_process'
 import { promisify } from 'util'
-import vm from 'vm'
+import * as vm from 'vm'
 import RLP from '../src'
 import { bytesToUtf8 } from './utils'
-import official from './fixture/rlptest.json'
+import * as official from './fixture/rlptest.json'
 
 tape('Distribution', (t) => {
   t.test('should be able to execute functionality from distribution build', (st) => {
