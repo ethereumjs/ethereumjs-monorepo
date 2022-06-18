@@ -17,12 +17,12 @@ import {
   CommonOpts,
   CustomCommonOpts,
 } from './types'
-import mainnet from './chains/mainnet.json'
-import ropsten from './chains/ropsten.json'
-import rinkeby from './chains/rinkeby.json'
-import kovan from './chains/kovan.json'
-import goerli from './chains/goerli.json'
-import sepolia from './chains/sepolia.json'
+import * as mainnet from './chains/mainnet.json'
+import * as ropsten from './chains/ropsten.json'
+import * as rinkeby from './chains/rinkeby.json'
+import * as kovan from './chains/kovan.json'
+import * as goerli from './chains/goerli.json'
+import * as sepolia from './chains/sepolia.json'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
