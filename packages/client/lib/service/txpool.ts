@@ -1,4 +1,4 @@
-import Heap from 'qheap'
+import * as PriorityQueue from 'js-priority-queue'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -656,24 +656,24 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap<TypedTransaction>({
-      comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
+    const byPrice = new PriorityQueue({
+      comparator: (a: TypedTransaction, b: TypedTransaction) =>
+        Number(this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee)),
     })
     for (const [address, txs] of byNonce) {
-      byPrice.insert(txs[0])
+      byPrice.queue(txs[0])
       byNonce.set(address, txs.slice(1))
     }
     // Merge by replacing the best with the next from the same account
     while (byPrice.length > 0) {
       // Retrieve the next best transaction by price
-      const best = byPrice.remove()
+      const best = byPrice.dequeue()
       if (!best) break
       // Push in its place the next transaction from the same account
       const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!
       if (accTxs.length > 0) {
-        byPrice.insert(accTxs[0])
+        byPrice.queue(accTxs[0])
         byNonce.set(address, accTxs.slice(1))
       }
       // Accumulate the best priced transaction

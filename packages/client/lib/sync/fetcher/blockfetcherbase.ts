@@ -115,7 +115,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     // Some jobs could have refetch tasks enqueued, so it is better to find
     // the first and last by examining each job.
     while (this.in.length > 0) {
-      const job = this.in.remove()
+      const job = this.in.dequeue()
       if (!job) break
       if (job.task.first < first) {
         first = job.task.first

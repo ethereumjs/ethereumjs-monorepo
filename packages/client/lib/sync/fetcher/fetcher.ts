@@ -1,7 +1,6 @@
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
-import Heap from 'qheap'
-
+import * as PriorityQueue from 'js-priority-queue'
 import { PeerPool } from '../../net/peerpool'
 import { Peer } from '../../net/peer'
 import { Config } from '../../config'
@@ -50,8 +49,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected interval: number
   protected banTime: number
   protected maxQueue: number
-  protected in: Heap<Job<JobTask, JobResult, StorageItem>>
-  protected out: Heap<Job<JobTask, JobResult, StorageItem>>
+  protected in: PriorityQueue<Job<JobTask, JobResult, StorageItem>>
+  protected out: PriorityQueue<Job<JobTask, JobResult, StorageItem>>
   protected total: number
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
@@ -80,17 +79,17 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 4
 
-    this.in = new Heap({
-      comparBefore: (
+    this.in = new PriorityQueue({
+      comparator: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
-      ) => a.index < b.index,
+      ) => a.index - b.index,
     })
-    this.out = new Heap({
-      comparBefore: (
+    this.out = new PriorityQueue({
+      comparator: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
-      ) => a.index < b.index,
+      ) => a.index - b.index,
     })
     this.total = 0
     this.processed = 0
@@ -149,7 +148,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       // needs to be decreased
       if (dequeued) this.processed--
 
-      this.in.insert({
+      this.in.queue({
         ...job,
         time: Date.now(),
         state: 'idle',
@@ -163,11 +162,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   dequeue() {
     for (let f = this.out.peek(); f && f.index <= this.processed; ) {
       this.processed++
-      const job = this.out.remove()
-      if (!this.push(job)) {
+      if (this.out.length > 0) {
+        const job = this.out.dequeue()
+        if (!this.push(job)) {
+          return
+        }
+        f = this.out.peek()
+      } else {
         return
       }
-      f = this.out.peek()
     }
   }
 
@@ -188,7 +191,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       peer: null,
     }
     this.debug(`enqueueTask ${this.jobStr(job)}`)
-    this.in.insert(job)
+    this.in.queue(job)
     if (!this.running && autoRestart) {
       void this.fetch()
     }
@@ -235,7 +238,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       job.result = this.process(job, result)
       jobStr = this.jobStr(job, true)
       if (job.result) {
-        this.out.insert(job)
+        this.out.queue(job)
         this.dequeue()
       } else {
         this.debug(
@@ -328,7 +331,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     const peer = this.peer()
     if (peer) {
       peer.idle = false
-      this.in.remove()
+      this.in.dequeue()
       job.peer = peer
       job.state = 'active'
       const timeout = setTimeout(() => {
@@ -353,7 +356,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   clear() {
     this.total -= this.in.length
     while (this.in.length > 0) {
-      this.in.remove()
+      this.in.dequeue()
     }
     this.debug(
       `Cleared out fetcher total=${this.total} processed=${this.processed} finished=${this.finished}`
