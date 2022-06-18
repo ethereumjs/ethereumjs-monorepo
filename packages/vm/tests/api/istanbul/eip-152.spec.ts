@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { default as blake2f, F } from '../../../src/evm/precompiles/09-blake2f'

@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import VM from '../../../src'
 import { AddOpcode } from '../../../src/evm/types'
 import { InterpreterStep, RunState } from '../../../src/evm/interpreter'

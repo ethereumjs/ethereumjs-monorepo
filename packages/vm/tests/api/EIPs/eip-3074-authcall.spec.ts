@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,

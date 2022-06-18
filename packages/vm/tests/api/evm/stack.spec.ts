@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Account, Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import VM from '../../../src'
 import Stack from '../../../src/evm/stack'

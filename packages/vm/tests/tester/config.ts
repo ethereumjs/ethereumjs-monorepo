@@ -1,4 +1,4 @@
-import path from 'path'
+import * as path from 'path'
 import Common, { Chain } from '@ethereumjs/common'
 
 /**

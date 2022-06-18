@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
