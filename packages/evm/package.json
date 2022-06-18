@@ -1,12 +1,12 @@
 {
-  "name": "@ethereumjs/vm",
-  "version": "5.9.1",
+  "name": "@ethereumjs/evm",
+  "version": "6.0.0",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
+  "author": "EthereumJS",
   "keywords": [
     "ethereum",
-    "VM"
+    "EVM"
   ],
   "files": [
     "dist",
@@ -20,8 +20,6 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
-    "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
-    "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "profiling": "0x ./benchmarks/run.js profiling",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "clean": "../../config/cli/clean-package.sh",
@@ -50,7 +48,6 @@
     "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.4",
-    "@ethereumjs/evm": "^6.0.0",
     "@ethereumjs/tx": "^3.5.2",
     "@ethereumjs/statemanager": "^1.0.0",
     "@ethereumjs/trie": "^5.0.0",

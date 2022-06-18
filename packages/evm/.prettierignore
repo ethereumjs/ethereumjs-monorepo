@@ -1,0 +1,8 @@
+*.json
+.nyc_output
+.vscode
+coverage
+dist
+dist.browser
+docs
+node_modules
