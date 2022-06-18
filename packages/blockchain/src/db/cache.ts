@@ -1,4 +1,4 @@
-import LRUCache from 'lru-cache'
+import * as LRUCache from 'lru-cache'
 
 /**
  * Simple LRU Cache that allows for keys of type Buffer
