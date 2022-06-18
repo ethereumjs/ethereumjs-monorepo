@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { multiaddr } from 'multiaddr'
 import { getLogger } from '../../../lib/logging'
 import { Config } from '../../../lib/config'

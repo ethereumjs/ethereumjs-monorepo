@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
 import { wait } from '../../integration/util'
@@ -30,7 +30,7 @@ tape('[BlockFetcher]', async (t) => {
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     void fetcher.fetch()
-    t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
+    t.equals((fetcher as any).in.length, 2, 'added 2 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
     fetcher.destroy()
@@ -52,7 +52,7 @@ tape('[BlockFetcher]', async (t) => {
       timeout: 5,
     })
     void fetcher.fetch()
-    t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
+    t.equals((fetcher as any).in.length, 2, 'added 2 tasks')
     await wait(100)
 
     let blockNumberList = [BigInt(11), BigInt(12)]
@@ -60,13 +60,13 @@ tape('[BlockFetcher]', async (t) => {
     let max = BigInt(12)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
 
-    t.equals((fetcher as any).in.size(), 3, '1 new task for two subsequent block numbers')
+    t.equals((fetcher as any).in.length, 3, '1 new task for two subsequent block numbers')
 
     blockNumberList = [BigInt(13), BigInt(15)]
     min = BigInt(13)
     max = BigInt(15)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
-    t.equals((fetcher as any).in.size(), 3, 'no new task added only the height changed')
+    t.equals((fetcher as any).in.length, 3, 'no new task added only the height changed')
     t.equals(
       fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
       true,
@@ -80,7 +80,7 @@ tape('[BlockFetcher]', async (t) => {
     max = BigInt(51)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
     t.equals(
-      (fetcher as any).in.size(),
+      (fetcher as any).in.length,
       11,
       '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)'
     )
@@ -123,7 +123,7 @@ tape('[BlockFetcher]', async (t) => {
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
     let results = fetcher.process(job as any, blocks)
-    t.equal((fetcher as any).in.size(), 1, 'Fetcher should still have same job')
+    t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
     t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     t.equal(results, undefined, 'Process should not return full results yet')
 

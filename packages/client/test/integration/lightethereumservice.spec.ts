@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { setup, destroy } from './util'
 
 tape('[Integration:LightEthereumService]', async (t) => {

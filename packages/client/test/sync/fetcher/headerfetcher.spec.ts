@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain'
 import { Event } from '../../../lib/types'
@@ -49,7 +49,7 @@ tape('[HeaderFetcher]', async (t) => {
     const job = (fetcher as any).in.peek()
 
     let results = fetcher.process(job as any, { headers, bv: BigInt(1) } as any)
-    t.equal((fetcher as any).in.size(), 1, 'Fetcher should still have same job')
+    t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
     t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     t.equal(results, undefined, 'Process should not return full results yet')
 

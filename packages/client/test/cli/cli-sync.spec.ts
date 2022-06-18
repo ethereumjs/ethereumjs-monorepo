@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import tape from 'tape'
+import * as tape from 'tape'
 
 // get args for --network and --syncmode
 const cliArgs = process.argv.filter(

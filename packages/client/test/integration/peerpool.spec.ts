@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'

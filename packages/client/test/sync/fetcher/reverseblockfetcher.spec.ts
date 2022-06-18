@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { Block } from '@ethereumjs/block'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
@@ -35,7 +35,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     void fetcher.fetch()
-    t.equals((fetcher as any).in.size(), 3, 'added 2 tasks')
+    t.equals((fetcher as any).in.length, 3, 'added 2 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
     t.equals(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
@@ -63,7 +63,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     void fetcher.fetch()
-    t.equals((fetcher as any).in.size(), 10, 'added max 10 tasks')
+    t.equals((fetcher as any).in.length, 10, 'added max 10 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
     t.equals(fetcher.first, BigInt(6), 'pending tasks first tracking should be by maximum')
@@ -112,7 +112,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
     let results = fetcher.process(job as any, blocks)
-    t.equal((fetcher as any).in.size(), 1, 'Fetcher should still have same job')
+    t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
     t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     t.equal(results, undefined, 'Process should not return full results yet')
 

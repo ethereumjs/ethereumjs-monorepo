@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { checkError } from '../util'

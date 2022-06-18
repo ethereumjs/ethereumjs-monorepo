@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Config } from '../../lib/config'
@@ -6,7 +6,7 @@ import { Chain } from '../../lib/blockchain'
 import { parseCustomParams } from '../../lib/util'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { wait } from '../integration/util'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { MemoryLevel } from 'memory-level'
 
 type Subchain = {

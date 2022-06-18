@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { RPCManager } from '../../lib/rpc'
 import {
   createRPCServer,

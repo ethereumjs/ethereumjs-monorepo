@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import tape from 'tape'
+import * as tape from 'tape'
 
 const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, st: tape.Test) => {
   if (hasEnded) return

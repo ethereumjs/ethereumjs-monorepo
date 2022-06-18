@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
