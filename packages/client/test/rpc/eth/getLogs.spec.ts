@@ -1,10 +1,10 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, setupChain, runBlockWithTxs, dummy } from '../helpers'
 import { checkError } from '../util'
-import pow from './../../testdata/geth-genesis/pow.json'
+import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getLogs'
 

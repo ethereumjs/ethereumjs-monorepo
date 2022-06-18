@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 

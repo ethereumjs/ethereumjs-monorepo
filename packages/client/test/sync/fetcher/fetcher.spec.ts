@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
@@ -26,7 +26,7 @@ tape('[Fetcher]', (t) => {
     fetcher.wait = td.func<FetcherTest['wait']>()
     td.when(fetcher.wait()).thenResolve(undefined)
     ;(fetcher as any).success(job, undefined)
-    t.equals((fetcher as any).in.size(), 1, 'enqueued job')
+    t.equals((fetcher as any).in.length, 1, 'enqueued job')
     setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
   })
 
@@ -39,7 +39,7 @@ tape('[Fetcher]', (t) => {
     fetcher.next = td.func<FetcherTest['next']>()
     config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
-    t.equals((fetcher as any).in.size(), 1, 'enqueued job')
+    t.equals((fetcher as any).in.length, 1, 'enqueued job')
   })
 
   t.test('should handle expiration', (t) => {
@@ -59,14 +59,14 @@ tape('[Fetcher]', (t) => {
       new Error('err0')
     )
     td.when((fetcher as any).pool.contains({ idle: false })).thenReturn(true)
-    ;(fetcher as any).in.insert(job)
+    ;(fetcher as any).in.queue(job)
     ;(fetcher as any)._readableState = []
     ;(fetcher as any).running = true
     ;(fetcher as any).total = 10
     fetcher.next()
     setTimeout(() => {
       t.deepEquals(job, { index: 0, peer: { idle: false }, state: 'expired' }, 'expired job')
-      t.equals((fetcher as any).in.size(), 1, 'enqueued job')
+      t.equals((fetcher as any).in.length, 1, 'enqueued job')
     }, 20)
   })
 
@@ -80,20 +80,20 @@ tape('[Fetcher]', (t) => {
     const job1 = { index: 0 }
     const job2 = { index: 1 }
     const job3 = { index: 2 }
-    ;(fetcher as any).in.insert(job1)
-    ;(fetcher as any).in.insert(job2)
-    ;(fetcher as any).in.insert(job3)
-    t.equals((fetcher as any).in.size(), 3, 'queue filled')
+    ;(fetcher as any).in.queue(job1)
+    ;(fetcher as any).in.queue(job2)
+    ;(fetcher as any).in.queue(job3)
+    t.equals((fetcher as any).in.length, 3, 'queue filled')
     fetcher.clear()
-    t.equals((fetcher as any).in.size(), 0, 'queue cleared')
+    t.equals((fetcher as any).in.length, 0, 'queue cleared')
     const job4 = { index: 3 }
     const job5 = { index: 4 }
 
-    ;(fetcher as any).in.insert(job1)
-    ;(fetcher as any).in.insert(job2)
-    ;(fetcher as any).in.insert(job3)
-    ;(fetcher as any).in.insert(job4)
-    ;(fetcher as any).in.insert(job5)
+    ;(fetcher as any).in.queue(job1)
+    ;(fetcher as any).in.queue(job2)
+    ;(fetcher as any).in.queue(job3)
+    ;(fetcher as any).in.queue(job4)
+    ;(fetcher as any).in.queue(job5)
 
     t.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
   })

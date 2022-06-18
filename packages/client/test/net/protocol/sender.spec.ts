@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 const { Sender } = require('../../../lib/net/protocol')
 
 tape('[Sender]', (t) => {

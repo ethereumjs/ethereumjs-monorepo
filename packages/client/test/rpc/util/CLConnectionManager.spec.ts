@@ -1,10 +1,10 @@
 import Common from '@ethereumjs/common'
-import tape from 'tape'
+import * as tape from 'tape'
 import { Config } from '../../../lib'
 import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
 import { parseCustomParams } from '../../../lib/util'
 import { Event } from '../../../lib/types'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 
 const payload = {
   payload: {

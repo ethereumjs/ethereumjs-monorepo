@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { getLogger } from '../lib/logging'
 
 tape('[Logging]', (t) => {

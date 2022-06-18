@@ -1,11 +1,11 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import Common from '@ethereumjs/common'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { Chain } from '../../lib/blockchain'
 import { parseCustomParams } from '../../lib/util'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
 import { Log } from '@ethereumjs/evm/dist/evm/types'
 
 tape('[FullEthereumService]', async (t) => {
