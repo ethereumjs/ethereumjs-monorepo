@@ -7,7 +7,7 @@ import Common, {
   Hardfork,
 } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 import Blockchain from '../src'
 import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
 
