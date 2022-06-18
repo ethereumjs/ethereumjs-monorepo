@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import ip from 'ip'
+import * as ip from 'ip'
 import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'

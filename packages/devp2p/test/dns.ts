@@ -1,6 +1,6 @@
-import tape from 'tape'
-import td from 'testdouble'
-import testdata from './testdata.json'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+import * as testdata from './testdata.json'
 import { DNS } from '../src/dns'
 
 tape('DNS', async (t) => {

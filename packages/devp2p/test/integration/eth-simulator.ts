@@ -1,4 +1,4 @@
-import test from 'tape'
+import * as test from 'tape'
 import * as devp2p from '../../src'
 import * as util from './util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'

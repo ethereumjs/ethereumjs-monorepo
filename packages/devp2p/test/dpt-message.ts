@@ -1,5 +1,5 @@
 import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat'
-import test from 'tape'
+import * as test from 'tape'
 import * as message from '../src/dpt/message'
 
 const privateKey = Buffer.from(

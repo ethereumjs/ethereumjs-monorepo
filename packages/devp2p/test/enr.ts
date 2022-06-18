@@ -1,6 +1,6 @@
-import test from 'tape'
+import * as test from 'tape'
 import { ENR } from '../src/dns'
-import testdata from './testdata.json'
+import * as testdata from './testdata.json'
 
 const dns = testdata.dns
 
