@@ -1,6 +1,6 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import RLP, { utils } from '../src'
-import invalid from './fixture/invalid.json'
+import * as invalid from './fixture/invalid.json'
 
 const { hexToBytes } = utils
 
