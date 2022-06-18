@@ -5,6 +5,9 @@ import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { parseCustomParams } from '../../lib/util'
 import { wait, setup, destroy } from './util'
 
+import td from 'testdouble'
+import { BlockHeader } from '@ethereumjs/block'
+
 tape('[Integration:BeaconSync]', async (t) => {
   const params = await parseCustomParams(genesisJSON, 'post-merge')
   const common = new Common({
@@ -14,6 +17,9 @@ tape('[Integration:BeaconSync]', async (t) => {
   common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
 
   t.test('should sync blocks', async (t) => {
+    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    td.replace('@ethereumjs/block', { BlockHeader })
+
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
     ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
