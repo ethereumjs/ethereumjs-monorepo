@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
