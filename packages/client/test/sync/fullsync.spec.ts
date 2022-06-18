@@ -4,7 +4,6 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
 import { Block } from '@ethereumjs/block'
-import Blockchain, { Consensus } from '@ethereumjs/blockchain'
 
 tape('[FullSynchronizer]', async (t) => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }

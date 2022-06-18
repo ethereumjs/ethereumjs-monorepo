@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BlockHeader } from '@ethereumjs/block'
 import td from 'testdouble'
 
 const method = 'eth_chainId'
