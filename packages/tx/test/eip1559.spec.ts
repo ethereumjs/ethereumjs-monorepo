@@ -1,7 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TWO_POW256 } from '@ethereumjs/util'
 import RLP from 'rlp'
-import tape from 'tape'
+import * as tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
 const testdata = require('./json/eip1559.json') // Source: Besu
