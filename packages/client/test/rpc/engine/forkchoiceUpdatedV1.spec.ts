@@ -140,6 +140,7 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
         number: blocks[0].blockNumber,
         parentHash: blocks[0].parentHash,
         difficulty: 1,
+        extraData: Buffer.alloc(97),
       },
     },
     { common }
