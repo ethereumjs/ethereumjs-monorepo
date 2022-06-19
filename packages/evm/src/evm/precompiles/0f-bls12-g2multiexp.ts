@@ -1,6 +1,6 @@
 import { PrecompileInput } from './types'
-import { VmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, VmError } from '../../exceptions'
+import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
+import { ERROR, EvmError } from '../../exceptions'
 import { gasDiscountPairs } from './util/bls12_381'
 const {
   BLS12_381_ToG2Point,

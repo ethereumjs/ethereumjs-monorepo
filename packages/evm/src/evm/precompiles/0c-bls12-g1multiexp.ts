@@ -15,7 +15,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   if (inputData.length == 0) {
-    return VmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
 
   const numPairs = Math.floor(inputData.length / 160)
