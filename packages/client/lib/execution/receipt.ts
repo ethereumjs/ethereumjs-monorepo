@@ -1,5 +1,5 @@
 import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm/dist/types'
-import { Log } from '@ethereumjs/vm/dist/evm/types'
+import { Log } from '@ethereumjs/evm'
 import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
 import {
