@@ -7,12 +7,14 @@ import { Transaction } from '@ethereumjs/tx'
 import VM from '..'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
 import { getAccountNonce, insertAccount } from './helpers/account-utils'
+import { Block } from '@ethereumjs/block'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) }},{ common })
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -96,7 +98,7 @@ async function deployContract(
 
   const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
 
-  const deploymentResult = await vm.runTx({ tx })
+  const deploymentResult = await vm.runTx({ tx, block })
 
   if (deploymentResult.execResult.exceptionError) {
     throw deploymentResult.execResult.exceptionError
@@ -124,7 +126,7 @@ async function setGreeting(
 
   const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
 
-  const setGreetingResult = await vm.runTx({ tx })
+  const setGreetingResult = await vm.runTx({ tx, block })
 
   if (setGreetingResult.execResult.exceptionError) {
     throw setGreetingResult.execResult.exceptionError
@@ -139,6 +141,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
     data: Buffer.from(sigHash.slice(2), 'hex'),
+    block
   })
 
   if (greetResult.execResult.exceptionError) {
