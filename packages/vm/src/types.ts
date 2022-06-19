@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { Log } from './evm/types'
+import { Log } from '@ethereumjs/evm'
 import { AfterBlockEvent } from './runBlock'
 import { AfterTxEvent } from './runTx'
 
