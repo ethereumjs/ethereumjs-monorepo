@@ -336,8 +336,8 @@ export class Block {
    *
    * @param parentBlock - the parent of this `Block`
    */
-  canonicalDifficulty(parentBlock: Block): bigint {
-    return this.header.canonicalDifficulty(parentBlock.header)
+  ethashCanonicalDifficulty(parentBlock: Block): bigint {
+    return this.header.ethashCanonicalDifficulty(parentBlock.header)
   }
 
   /**

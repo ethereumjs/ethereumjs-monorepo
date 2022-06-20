@@ -84,7 +84,7 @@ export const generateConsecutiveBlock = (
       parentHash: parentBlock.hash(),
       gasLimit: BigInt(8000000),
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
-      difficulty: tmpHeader.canonicalDifficulty(parentBlock.header),
+      difficulty: tmpHeader.ethashCanonicalDifficulty(parentBlock.header),
     },
     {
       common,

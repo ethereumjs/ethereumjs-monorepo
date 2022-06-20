@@ -270,7 +270,7 @@ export class BlockHeader {
       options.calcDifficultyFromHeader &&
       this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
-      this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
+      this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
@@ -295,17 +295,7 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _genericFormatValidation() {
-    const {
-      parentHash,
-      uncleHash,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      difficulty,
-      extraData,
-      mixHash,
-      nonce,
-    } = this
+    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
 
     if (parentHash.length !== 32) {
       const msg = this._errorMsg(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -369,154 +359,6 @@ export class BlockHeader {
         }
       }
     }
-
-    // Validation for PoS blocks (EIP-3675)
-    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-      let error = false
-      let errorMsg = ''
-
-      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
-        errorMsg += `, uncleHash: ${uncleHash.toString(
-          'hex'
-        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
-        error = true
-      }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
-      }
-      if (error) {
-        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
-        throw new Error(msg)
-      }
-    }
-  }
-
-  /**
-   * Returns the canonical difficulty for this block.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
-   */
-  canonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
-    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
-      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
-      throw new Error(msg)
-    }
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      const msg = this._errorMsg(
-        'difficulty calculation currently only supports the ethash algorithm'
-      )
-      throw new Error(msg)
-    }
-    const hardfork = this._common.hardfork()
-    const blockTs = this.timestamp
-    const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    const offset =
-      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
-    let num = this.number
-
-    // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
-    let dif!: bigint
-
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
-      // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
-      let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
-      const cutoff = BigInt(-99)
-      // MAX(cutoff, a)
-      if (cutoff > a) {
-        a = cutoff
-      }
-      dif = parentDif + offset * a
-    }
-
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
-      // Get delay as parameter from common
-      num = num - this._common.param('pow', 'difficultyBombDelay')
-      if (num < BigInt(0)) {
-        num = BigInt(0)
-      }
-    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
-      // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
-      const cutoff = BigInt(-99)
-      // MAX(cutoff, a)
-      if (cutoff > a) {
-        a = cutoff
-      }
-      dif = parentDif + offset * a
-    } else {
-      // pre-homestead
-      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
-        dif = offset + parentDif
-      } else {
-        dif = parentDif - offset
-      }
-    }
-
-    const exp = num / BigInt(100000) - BigInt(2)
-    if (exp >= 0) {
-      // eslint-disable-next-line
-      dif = dif + BigInt(2) ** exp
-    }
-
-    if (dif < minimumDifficulty) {
-      dif = minimumDifficulty
-    }
-
-    return dif
-  }
-
-  /**
-   * Validates if the block gasLimit remains in the boundaries set by the protocol.
-   * Throws if out of bounds.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
-   */
-  validateGasLimit(parentBlockHeader: BlockHeader) {
-    let parentGasLimit = parentBlockHeader.gasLimit
-    // EIP-1559: assume double the parent gas limit on fork block
-    // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (londonHardforkBlock && this.number === londonHardforkBlock) {
-      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
-      parentGasLimit = parentGasLimit * elasticity
-    }
-    const gasLimit = this.gasLimit
-    const hardfork = this._common.hardfork()
-
-    const a =
-      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
-    const maxGasLimit = parentGasLimit + a
-    const minGasLimit = parentGasLimit - a
-
-    if (gasLimit >= maxGasLimit) {
-      const msg = this._errorMsg('gas limit increased too much')
-      throw new Error(msg)
-    }
-
-    if (gasLimit <= minGasLimit) {
-      const msg = this._errorMsg('gas limit decreased too much')
-      throw new Error(msg)
-    }
-
-    if (gasLimit < this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
-      const msg = this._errorMsg(
-        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
-      )
-      throw new Error(msg)
-    }
   }
 
   /**
@@ -524,6 +366,7 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
+    const { nonce, uncleHash, difficulty, extraData } = this
     const hardfork = this._common.hardfork()
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
@@ -567,6 +410,78 @@ export class BlockHeader {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
         throw new Error(msg)
       }
+
+      // Validation for PoS blocks (EIP-3675)
+      if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+        let error = false
+        let errorMsg = ''
+
+        if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+          errorMsg += `, uncleHash: ${uncleHash.toString(
+            'hex'
+          )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+          error = true
+        }
+        if (difficulty !== BigInt(0)) {
+          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+          error = true
+        }
+        if (extraData.length > 32) {
+          errorMsg += `, extraData: ${extraData.toString(
+            'hex'
+          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+          error = true
+        }
+        if (!nonce.equals(zeros(8))) {
+          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+          error = true
+        }
+        if (error) {
+          const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
+          throw new Error(msg)
+        }
+      }
+    }
+  }
+
+  /**
+   * Validates if the block gasLimit remains in the boundaries set by the protocol.
+   * Throws if out of bounds.
+   *
+   * @param parentBlockHeader - the header from the parent `Block` of this header
+   */
+  validateGasLimit(parentBlockHeader: BlockHeader) {
+    let parentGasLimit = parentBlockHeader.gasLimit
+    // EIP-1559: assume double the parent gas limit on fork block
+    // to adopt to the new gas target centered logic
+    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
+    if (londonHardforkBlock && this.number === londonHardforkBlock) {
+      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
+      parentGasLimit = parentGasLimit * elasticity
+    }
+    const gasLimit = this.gasLimit
+    const hardfork = this._common.hardfork()
+
+    const a =
+      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+    const maxGasLimit = parentGasLimit + a
+    const minGasLimit = parentGasLimit - a
+
+    if (gasLimit >= maxGasLimit) {
+      const msg = this._errorMsg('gas limit increased too much')
+      throw new Error(msg)
+    }
+
+    if (gasLimit <= minGasLimit) {
+      const msg = this._errorMsg('gas limit decreased too much')
+      throw new Error(msg)
+    }
+
+    if (gasLimit < this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
+      const msg = this._errorMsg(
+        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
+      )
+      throw new Error(msg)
     }
   }
 
@@ -664,13 +579,89 @@ export class BlockHeader {
     return this.number === BigInt(0)
   }
 
-  public _requireClique(name: string) {
+  private _requireClique(name: string) {
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       const msg = this._errorMsg(
         `BlockHeader.${name}() call only supported for clique PoA networks`
       )
       throw new Error(msg)
     }
+  }
+
+  /**
+   * Returns the canonical difficulty for this block.
+   *
+   * @param parentBlockHeader - the header from the parent `Block` of this header
+   */
+  ethashCanonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
+    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
+      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
+      throw new Error(msg)
+    }
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
+      const msg = this._errorMsg(
+        'difficulty calculation currently only supports the ethash algorithm'
+      )
+      throw new Error(msg)
+    }
+    const hardfork = this._common.hardfork()
+    const blockTs = this.timestamp
+    const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
+    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
+    const offset =
+      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+    let num = this.number
+
+    // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
+    let dif!: bigint
+
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+      // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
+      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
+      const cutoff = BigInt(-99)
+      // MAX(cutoff, a)
+      if (cutoff > a) {
+        a = cutoff
+      }
+      dif = parentDif + offset * a
+    }
+
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+      // Get delay as parameter from common
+      num = num - this._common.param('pow', 'difficultyBombDelay')
+      if (num < BigInt(0)) {
+        num = BigInt(0)
+      }
+    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
+      // 1 - (block_timestamp - parent_timestamp) // 10
+      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
+      const cutoff = BigInt(-99)
+      // MAX(cutoff, a)
+      if (cutoff > a) {
+        a = cutoff
+      }
+      dif = parentDif + offset * a
+    } else {
+      // pre-homestead
+      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
+        dif = offset + parentDif
+      } else {
+        dif = parentDif - offset
+      }
+    }
+
+    const exp = num / BigInt(100000) - BigInt(2)
+    if (exp >= 0) {
+      // eslint-disable-next-line
+        dif = dif + BigInt(2) ** exp
+    }
+
+    if (dif < minimumDifficulty) {
+      dif = minimumDifficulty
+    }
+
+    return dif
   }
 
   /**
@@ -878,7 +869,7 @@ export class BlockHeader {
    * @param msg Base error message
    * @hidden
    */
-  public _errorMsg(msg: string) {
+  private _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
   }
 }

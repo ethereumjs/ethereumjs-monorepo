@@ -20,9 +20,10 @@ export interface Consensus {
    * Validate block
    * @param block block to be validated
    */
-  validate(block: Block): Promise<void>
+  validateBlockData(block: Block): Promise<void>
 
   validateDifficulty(header: BlockHeader): Promise<void>
+
   /**
    * Update consensus on new block
    * @param block new block

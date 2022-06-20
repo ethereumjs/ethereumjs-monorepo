@@ -140,7 +140,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
       await blockchain.putBlock(block2)
       st.fail('cannot reach this')
     } catch (e: any) {
-      if (e.message.includes('invalid difficulty (block header number=1'))
+      if (e.message.includes('invalid difficulty block header number=1 '))
         st.pass('block throws when uncle header is invalid')
       else st.fail(`threw with wrong error ${e.message}`)
     }

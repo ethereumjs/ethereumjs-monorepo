@@ -8,21 +8,6 @@ import { CliqueConfig } from '@ethereumjs/common'
 
 const debug = createDebugLogger('blockchain:clique')
 
-// Clique Signer State
-type CliqueSignerState = [blockNumber: bigint, signers: Address[]]
-type CliqueLatestSignerStates = CliqueSignerState[]
-
-// Clique Vote
-type CliqueVote = [
-  blockNumber: bigint,
-  vote: [signer: Address, beneficiary: Address, cliqueNonce: Buffer]
-]
-type CliqueLatestVotes = CliqueVote[]
-
-// Clique Block Signer
-type CliqueBlockSigner = [blockNumber: bigint, signer: Address]
-type CliqueLatestBlockSigners = CliqueBlockSigner[]
-
 // Magic nonce number to vote on adding a new signer
 export const CLIQUE_NONCE_AUTH = Buffer.from('ffffffffffffffff', 'hex')
 // Magic nonce number to vote on removing a signer.
@@ -41,6 +26,21 @@ const DB_OPTS = {
   keyEncoding: 'buffer',
   valueEncoding: 'buffer',
 }
+
+// Clique Signer State
+type CliqueSignerState = [blockNumber: bigint, signers: Address[]]
+type CliqueLatestSignerStates = CliqueSignerState[]
+
+// Clique Vote
+type CliqueVote = [
+  blockNumber: bigint,
+  vote: [signer: Address, beneficiary: Address, cliqueNonce: Buffer]
+]
+type CliqueLatestVotes = CliqueVote[]
+
+// Clique Block Signer
+type CliqueBlockSigner = [blockNumber: bigint, signer: Address]
+type CliqueLatestBlockSigners = CliqueBlockSigner[]
 
 /**
  * This class encapsulates Clique-related consensus functionality when used with the Blockchain class.
@@ -109,7 +109,7 @@ export class CliqueConsensus implements Consensus {
     await this.cliqueSaveGenesisSigners(genesisBlock)
   }
 
-  async validate(block: Block): Promise<void> {
+  async validateBlockData(block: Block): Promise<void> {
     const { header } = block
     const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
     if (!valid) {
@@ -137,24 +137,20 @@ export class CliqueConsensus implements Consensus {
   }
 
   async validateDifficulty(header: BlockHeader): Promise<void> {
-    header._requireClique('validateCliqueDifficulty')
     if (header.difficulty !== CLIQUE_DIFF_INTURN && header.difficulty !== CLIQUE_DIFF_NOTURN) {
-      const msg = header._errorMsg(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
-      )
-      throw new Error(msg)
+      const msg = `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
     if ('cliqueActiveSigners' in this === false) {
-      const msg = header._errorMsg(
+      const msg =
         'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
-      )
-      throw new Error(msg)
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
     const signers = this.cliqueActiveSigners()
     if (signers.length === 0) {
       // abort if signers are unavailable
-      const msg = header._errorMsg('no signers available')
-      throw new Error(msg)
+      const msg = 'no signers available'
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
     const signerIndex = signers.findIndex((address: Address) =>
       address.equals(header.cliqueSigner())
@@ -166,8 +162,7 @@ export class CliqueConsensus implements Consensus {
     ) {
       return
     }
-    const msg = header._errorMsg('invalid clique difficulty')
-    throw new Error(msg)
+    throw new Error(`'invalid clique difficulty ${header.errorStr()}`)
   }
 
   async newBlock(block: Block, commonAncestor: BlockHeader | undefined): Promise<void> {

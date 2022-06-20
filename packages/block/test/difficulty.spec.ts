@@ -10,8 +10,8 @@ function runDifficultyTests(
   block: Block,
   msg: string
 ) {
-  const dif = block.canonicalDifficulty(parentBlock)
-  st.equal(dif, BigInt(test.currentDifficulty), `test canonicalDifficulty: ${msg}`)
+  const dif = block.ethashCanonicalDifficulty(parentBlock)
+  st.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
 }
 
 type TestData = { [key: string]: any }

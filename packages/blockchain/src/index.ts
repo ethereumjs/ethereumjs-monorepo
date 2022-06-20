@@ -578,7 +578,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        await this.consensus.validate(block)
+        await this.consensus.validateBlockData(block)
       }
 
       // set total difficulty in the current context scope
@@ -668,33 +668,26 @@ export default class Blockchain implements BlockchainInterface {
     }
     const parentHeader = (await this.getBlock(header.parentHash)).header
     if (!parentHeader) {
-      const msg = header._errorMsg('could not find parent header')
-      throw new Error(msg)
+      throw new Error(`could not find parent header ${header.errorStr()}`)
     }
 
     const { number } = header
     if (number !== parentHeader.number + BigInt(1)) {
-      const msg = header._errorMsg('invalid number')
-      throw new Error(msg)
+      throw new Error(`invalid number ${header.errorStr()}`)
     }
 
     if (header.timestamp <= parentHeader.timestamp) {
-      const msg = header._errorMsg('invalid timestamp')
-      throw new Error(msg)
+      throw new Error(`invalid timestamp ${header.errorStr()}`)
     }
+
+    if (header._common.consensusType() === 'pow') await this.consensus.validateDifficulty(header)
 
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = (this._common.consensusConfig() as CliqueConfig).period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp + BigInt(period) > header.timestamp) {
-        const msg = header._errorMsg('invalid timestamp diff (lower than period)')
-        throw new Error(msg)
+        throw new Error(`invalid timestamp diff (lower than period) ${header.errorStr()}`)
       }
-      // Validate clique difficulty
-      await this.consensus.validateDifficulty(header)
-    }
-
-    if (header._common.consensusType() === 'pow') {
       await this.consensus.validateDifficulty(header)
     }
 
@@ -704,8 +697,9 @@ export default class Blockchain implements BlockchainInterface {
       const dif = height - parentHeader.number
 
       if (!(dif < BigInt(8) && dif > BigInt(1))) {
-        const msg = header._errorMsg('uncle block has a parent that is too old or too young')
-        throw new Error(msg)
+        throw new Error(
+          `uncle block has a parent that is too old or too young ${header.errorStr()}`
+        )
       }
     }
 
@@ -722,8 +716,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (header.baseFeePerGas! !== expectedBaseFee) {
-        const msg = header._errorMsg('Invalid block: base fee not correct')
-        throw new Error(msg)
+        throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
       }
     }
   }

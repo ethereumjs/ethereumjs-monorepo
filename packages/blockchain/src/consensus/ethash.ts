@@ -15,7 +15,7 @@ export class EthashConsensus implements Consensus {
     this._ethash = new Ethash(this.blockchain.db as unknown as EthashCacheDB)
   }
 
-  async validate(block: Block): Promise<void> {
+  async validateBlockData(block: Block): Promise<void> {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
       throw new Error('invalid POW')
@@ -28,9 +28,8 @@ export class EthashConsensus implements Consensus {
    */
   async validateDifficulty(header: BlockHeader) {
     const parentHeader = (await this.blockchain.getBlock(header.parentHash)).header
-    if (header.canonicalDifficulty(parentHeader) !== header.difficulty) {
-      const msg = header._errorMsg('invalid difficulty')
-      throw new Error(msg)
+    if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
+      throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
   }
 

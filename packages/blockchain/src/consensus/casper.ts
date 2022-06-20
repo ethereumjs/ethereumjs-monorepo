@@ -13,12 +13,15 @@ export class CasperConsensus implements Consensus {
   }
 
   public async genesisInit(): Promise<void> {}
+
   public async setup(): Promise<void> {}
-  public async validate(): Promise<void> {}
+
+  public async validateBlockData(): Promise<void> {}
+
   public async validateDifficulty(header: BlockHeader): Promise<void> {
     if (header.difficulty !== BigInt(0)) {
-      const msg = header._errorMsg('invalid difficulty.  PoS blocks must have difficulty 0')
-      throw new Error(msg)
+      const msg = 'invalid difficulty.  PoS blocks must have difficulty 0'
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
   }
   public async newBlock(): Promise<void> {}
