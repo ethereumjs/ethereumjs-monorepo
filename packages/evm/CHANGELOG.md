@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 6.0.0 - 2022-06-18
 
+The EVM bytecode execution is now extracted from the VM package and now is used as a standalone package. The EVM provides interfaces for the EVM and the EEI. It is now possible to import a new EVM and EEI into the VM, as long as these implement the provided interfaces. The EEI is intended as "bridge" between the EVM, the VM, and the StateManager.
+
+### Changes
+
+- Almost all environment related variables are extracted from EEI and are now in EVM. The environment provides information to the EVM about the code, the remaining gas left, etc. The only environment-related variables left in EEI are the warmed addresses and storage slots, and also keeps track of which accounts are touched (to cleanup later if these are "empty" after running a transaction).
+- The EEI is created once, not each time when a transaction is ran in the VM.
+- VM access to `StateManager` is now all done using the EEI.
+- Internally, in the EVM, the `Env` environment variable is used to track any variables which do not change during a call frame, for instance the `code`, the `caller`, etc. The `RunState` is used to track anything which can change during the execution, such as the remaining gas, the selfdestruct lists, the stack, the program counter, etc.
+- The EVM is now fully typed. Before, the `AsyncEventEmitter` did not have an interface, therefore TypeScript internally casts it as `any`. It also provides types for the available events.
+- EVM provides the interface for `EEI` and `EVM`, which can be used to create a new EVM/EEI and use this in the VM.
+- TransientStorage is now part of EVM and not of EEI.
+- Renamed `gasUsed` to `executionGasUsed` as part of `ExecResult`.
+
 ## 5.9.1 - 2022-06-02
 
 ### Additions / Features
