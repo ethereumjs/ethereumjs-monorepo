@@ -2,8 +2,8 @@ import tape from 'tape'
 import { Address, bufferToBigInt } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
-import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
+import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },

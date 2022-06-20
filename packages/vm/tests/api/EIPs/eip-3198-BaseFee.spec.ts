@@ -4,8 +4,8 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { InterpreterStep } from '../../../src/evm/interpreter'
-import EVM from '../../../src/evm/evm'
+import { InterpreterStep } from '@ethereumjs/evm/dist/evm/interpreter'
+import EVM from '@ethereumjs/evm'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI

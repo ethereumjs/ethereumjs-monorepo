@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
-import { getActivePrecompiles } from '../../../src/evm/precompiles'
+import { getActivePrecompiles } from '@ethereumjs/evm'
 
 tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECADD', async (st) => {

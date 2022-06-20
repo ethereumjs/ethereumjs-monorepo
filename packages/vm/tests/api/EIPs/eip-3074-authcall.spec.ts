@@ -15,9 +15,9 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { ERROR } from '../../../src/exceptions'
-import { InterpreterStep } from '../../../src/evm/interpreter'
-import EVM from '../../../src/evm/evm'
+import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { InterpreterStep } from '@ethereumjs/evm/dist/evm/interpreter'
+import EVM from '@ethereumjs/evm'
 
 const common = new Common({
   chain: Chain.Mainnet,
