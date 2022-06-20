@@ -369,7 +369,7 @@ tape('[Skeleton]', async (t) => {
       const config = new Config({ common, transports: [] })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      //  ;(chain.blockchain as any)._validateConsensus = false
+
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await chain.open()
       await skeleton.open()
@@ -459,7 +459,6 @@ tape('[Skeleton]', async (t) => {
       })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      //  ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
