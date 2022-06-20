@@ -6,6 +6,8 @@ import td from 'testdouble'
 
 const method = 'eth_chainId'
 
+const originalValidate = BlockHeader.prototype._consensusFormatValidation
+
 tape(`${method}: calls`, async (t) => {
   const { server } = baseSetup()
 
@@ -56,4 +58,10 @@ tape(`${method}: returns 42 for Kovan`, async (t) => {
     t.equal(res.body.result, `0x${chainId}`, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`reset TD`, (t) => {
+  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  td.reset()
+  t.end()
 })

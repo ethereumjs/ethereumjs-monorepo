@@ -62,9 +62,6 @@ export class BlockHeader {
 
   /**
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
-   *
-   * Note: this is Merge-related functionality and considered `experimental`,
-   * use with care.
    */
   get prevRandao() {
     if (!this._common.isActivatedEIP(4399)) {
@@ -324,7 +321,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(42)) {
+      if (this._common.networkId() === BigInt(Chain.Kovan)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`

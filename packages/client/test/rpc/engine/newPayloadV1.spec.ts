@@ -15,6 +15,8 @@ const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
 
+const originalValidate = BlockHeader.prototype._consensusFormatValidation
+
 export const batchBlocks = async (t: Test, server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
     const req = params(method, [blocks[i]])
@@ -293,4 +295,10 @@ tape(`${method}: parent hash equals to block hash`, async (t) => {
   }
 
   await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`reset TD`, (t) => {
+  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  td.reset()
+  t.end()
 })

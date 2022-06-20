@@ -8,6 +8,8 @@ import { wait, setup, destroy } from './util'
 import td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
 
+const originalValidate = BlockHeader.prototype._consensusFormatValidation
+
 tape('[Integration:BeaconSync]', async (t) => {
   const params = await parseCustomParams(genesisJSON, 'post-merge')
   const common = new Common({
@@ -91,4 +93,10 @@ tape('[Integration:BeaconSync]', async (t) => {
     })
     await localService.synchronizer.start()
   })
+})
+
+tape('reset TD', (t) => {
+  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  td.reset()
+  t.end()
 })

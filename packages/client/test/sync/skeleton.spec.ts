@@ -302,7 +302,6 @@ tape('[Skeleton]', async (t) => {
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
     ;(chain.blockchain as any)._validateBlocks = false
-    ;(chain.blockchain as any)._validateConsensus = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
@@ -370,7 +369,7 @@ tape('[Skeleton]', async (t) => {
       const config = new Config({ common, transports: [] })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      ;(chain.blockchain as any)._validateConsensus = false
+      //  ;(chain.blockchain as any)._validateConsensus = false
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await chain.open()
       await skeleton.open()
@@ -460,7 +459,7 @@ tape('[Skeleton]', async (t) => {
       })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      ;(chain.blockchain as any)._validateConsensus = false
+      //  ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -567,6 +566,7 @@ tape('[Skeleton]', async (t) => {
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
 
+      const originalValidate = BlockHeader.prototype._consensusFormatValidation
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
       td.replace('@ethereumjs/block', { BlockHeader })
       await chain.open()
@@ -619,7 +619,9 @@ tape('[Skeleton]', async (t) => {
         chain.headers.latest?.hash().equals(block3.hash()),
         'canonical height should now be at head with correct chain'
       )
+
+      BlockHeader.prototype._consensusFormatValidation = originalValidate
+      td.reset()
     }
   )
-  td.reset()
 })
