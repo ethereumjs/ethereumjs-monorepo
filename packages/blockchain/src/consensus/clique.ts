@@ -141,11 +141,7 @@ export class CliqueConsensus implements Consensus {
       const msg = `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
       throw new Error(`${msg} ${header.errorStr()}`)
     }
-    if ('cliqueActiveSigners' in this === false) {
-      const msg =
-        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
-      throw new Error(`${msg} ${header.errorStr()}`)
-    }
+
     const signers = this.cliqueActiveSigners()
     if (signers.length === 0) {
       // abort if signers are unavailable
@@ -386,7 +382,6 @@ export class CliqueConsensus implements Consensus {
 
   /**
    * Returns a list with the current block signers
-   * (only clique PoA, throws otherwise)
    */
   cliqueActiveSigners(): Address[] {
     const signers = this._cliqueLatestSignerStates
