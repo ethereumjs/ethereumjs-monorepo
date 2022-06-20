@@ -680,7 +680,7 @@ export default class Blockchain implements BlockchainInterface {
       throw new Error(`invalid timestamp ${header.errorStr()}`)
     }
 
-    if (header._common.consensusType() === 'pow') await this.consensus.validateDifficulty(header)
+    if (!(header._common.consensusType() === 'pos')) await this.consensus.validateDifficulty(header)
 
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = (this._common.consensusConfig() as CliqueConfig).period
@@ -688,7 +688,6 @@ export default class Blockchain implements BlockchainInterface {
       if (parentHeader.timestamp + BigInt(period) > header.timestamp) {
         throw new Error(`invalid timestamp diff (lower than period) ${header.errorStr()}`)
       }
-      await this.consensus.validateDifficulty(header)
     }
 
     header.validateGasLimit(parentHeader)

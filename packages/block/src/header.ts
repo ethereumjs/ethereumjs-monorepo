@@ -368,6 +368,7 @@ export class BlockHeader {
   _consensusFormatValidation() {
     const { nonce, uncleHash, difficulty, extraData } = this
     const hardfork = this._common.hardfork()
+
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
@@ -410,36 +411,35 @@ export class BlockHeader {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
         throw new Error(msg)
       }
+    }
+    // Validation for PoS blocks (EIP-3675)
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+      let error = false
+      let errorMsg = ''
 
-      // Validation for PoS blocks (EIP-3675)
-      if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-        let error = false
-        let errorMsg = ''
-
-        if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
-          errorMsg += `, uncleHash: ${uncleHash.toString(
-            'hex'
-          )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
-          error = true
-        }
-        if (difficulty !== BigInt(0)) {
-          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-          error = true
-        }
-        if (extraData.length > 32) {
-          errorMsg += `, extraData: ${extraData.toString(
-            'hex'
-          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-          error = true
-        }
-        if (!nonce.equals(zeros(8))) {
-          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-          error = true
-        }
-        if (error) {
-          const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
-          throw new Error(msg)
-        }
+      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${uncleHash.toString(
+          'hex'
+        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+        error = true
+      }
+      if (difficulty !== BigInt(0)) {
+        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+        error = true
+      }
+      if (extraData.length > 32) {
+        errorMsg += `, extraData: ${extraData.toString(
+          'hex'
+        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+        error = true
+      }
+      if (!nonce.equals(zeros(8))) {
+        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+        error = true
+      }
+      if (error) {
+        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
+        throw new Error(msg)
       }
     }
   }

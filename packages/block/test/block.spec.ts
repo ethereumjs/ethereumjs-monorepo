@@ -338,7 +338,7 @@ tape('[Block]: block functions', function (t) {
         'header difficulty should be set if difficulty header is given'
       )
       st.ok(
-        blockWithDifficultyCalculation.header.canonicalDifficulty(genesis.header) ===
+        blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header) ===
           blockWithDifficultyCalculation.header.difficulty,
         'header difficulty is canonical difficulty if difficulty header is given'
       )
