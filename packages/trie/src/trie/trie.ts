@@ -1,24 +1,14 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import { DB, BatchDBOp, PutBatch, LevelDB } from './db'
-import { TrieReadStream as ReadStream } from './readStream'
-import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import { WalkController } from './util/walkController'
-import {
-  TrieNode,
-  decodeNode,
-  decodeRawNode,
-  isRawNode,
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
-  EmbeddedNode,
-  Nibbles,
-} from './trieNode'
-import { verifyRangeProof } from './verifyRangeProof'
-
-export type Proof = Buffer[]
+import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
+import { LevelDB } from '../db'
+import { TrieReadStream as ReadStream } from '../util/readStream'
+import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
+import { WalkController } from '../util/walkController'
+import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
+import { verifyRangeProof } from '../proof/range'
+import { FoundNodeFunction, Proof, TrieOpts } from '../types'
 
 interface Path {
   node: TrieNode | null
@@ -26,31 +16,8 @@ interface Path {
   stack: TrieNode[]
 }
 
-export type FoundNodeFunction = (
-  nodeRef: Buffer,
-  node: TrieNode | null,
-  key: Nibbles,
-  walkController: WalkController
-) => void
-
-export interface TrieOpts {
-  /**
-   * A database instance.
-   */
-  db?: DB
-  /**
-   * A `Buffer` for the root of a previously stored trie
-   */
-  root?: Buffer
-  /**
-   * Delete nodes from DB on delete operations (disallows switching to an older state root)
-   * Default: `false`
-   */
-  deleteFromDB?: boolean
-}
-
 /**
- * The basic trie interface, use with `import { BaseTrie as Trie } from '@ethereumjs/trie'`.
+ * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
  * In Ethereum applications stick with the {@link SecureTrie} overlay.
  * The API for the base and the secure interface are about the same.
  */
@@ -116,7 +83,7 @@ export class Trie {
   }
 
   /**
-   * BaseTrie has no checkpointing so return false
+   * Trie has no checkpointing so return false
    */
   get isCheckpoint() {
     return false

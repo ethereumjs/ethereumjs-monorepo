@@ -34,7 +34,7 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register test/*.ts"
+    "test:node": "tape -r ts-node/register test/**/*.ts"
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.0",
@@ -49,6 +49,7 @@
   "devDependencies": {
     "@types/benchmark": "^1.0.33",
     "@types/node": "^16.11.7",
+    "@types/readable-stream": "^2.3.13",
     "@types/tape": "^4.13.2",
     "0x": "^4.9.1",
     "benchmark": "^2.1.4",

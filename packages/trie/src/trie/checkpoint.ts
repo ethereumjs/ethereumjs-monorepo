@@ -1,11 +1,11 @@
-import { Trie as BaseTrie, TrieOpts } from './baseTrie'
-import { CheckpointDB } from './checkpointDb'
-import { DB, LevelDB } from './db'
+import { Trie } from './trie'
+import { CheckpointDB, LevelDB } from '../db'
+import { DB, TrieOpts } from '../types'
 
 /**
- * Adds checkpointing to the {@link BaseTrie}
+ * Adds checkpointing to the {@link Trie}
  */
-export class CheckpointTrie extends BaseTrie {
+export class CheckpointTrie extends Trie {
   db: CheckpointDB
   dbStorage: DB
 

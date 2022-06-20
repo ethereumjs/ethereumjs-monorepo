@@ -1,4 +1,4 @@
-import { Nibbles } from '../trieNode'
+import { Nibbles } from '../types'
 
 /**
  * Converts a buffer to a nibble array.

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { PrioritizedTaskExecutor } from '../src/prioritizedTaskExecutor'
+import { PrioritizedTaskExecutor } from '../../src'
 
 const taskExecutor = new PrioritizedTaskExecutor(2)
 

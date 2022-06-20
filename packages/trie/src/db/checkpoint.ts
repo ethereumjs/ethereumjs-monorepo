@@ -1,12 +1,4 @@
-import { DB, BatchDBOp } from './db'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-
-export type Checkpoint = {
-  // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
-  // then when setting a value on the Map, it actually creates two indices.
-  keyValueMap: Map<string, Buffer | null>
-  root: Buffer
-}
+import { DB, BatchDBOp, Checkpoint } from '../types'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,

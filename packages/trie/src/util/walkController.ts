@@ -1,7 +1,7 @@
-import { BaseTrie } from '..'
-import { FoundNodeFunction } from '../baseTrie'
-import { PrioritizedTaskExecutor } from '../prioritizedTaskExecutor'
-import { BranchNode, ExtensionNode, LeafNode, Nibbles, TrieNode } from '../trieNode'
+import { Trie } from '../trie'
+import { FoundNodeFunction, Nibbles, TrieNode } from '../types'
+import { PrioritizedTaskExecutor } from './tasks'
+import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -9,7 +9,7 @@ import { BranchNode, ExtensionNode, LeafNode, Nibbles, TrieNode } from '../trieN
 export class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
-  readonly trie: BaseTrie
+  readonly trie: Trie
   private resolve: Function
   private reject: Function
 
@@ -19,7 +19,7 @@ export class WalkController {
    * @param trie - The `Trie` to walk on.
    * @param poolSize - The size of the task queue.
    */
-  private constructor(onNode: FoundNodeFunction, trie: BaseTrie, poolSize: number) {
+  private constructor(onNode: FoundNodeFunction, trie: Trie, poolSize: number) {
     this.onNode = onNode
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
     this.trie = trie
@@ -36,7 +36,7 @@ export class WalkController {
    */
   static async newWalk(
     onNode: FoundNodeFunction,
-    trie: BaseTrie,
+    trie: Trie,
     root: Buffer,
     poolSize?: number
   ): Promise<void> {

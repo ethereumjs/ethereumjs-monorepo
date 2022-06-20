@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { CheckpointTrie } from './checkpointTrie'
-import { Proof } from './baseTrie'
+import { CheckpointTrie } from './checkpoint'
+import { Proof } from '../types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed

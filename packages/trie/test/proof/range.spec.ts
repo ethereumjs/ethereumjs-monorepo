@@ -1,8 +1,7 @@
 import crypto from 'crypto'
 import tape from 'tape'
 import { setLengthLeft, toBuffer } from '@ethereumjs/util'
-import { BaseTrie } from '../src'
-import { DB, LevelDB } from '../src/db'
+import { DB, LevelDB, Trie } from '../../src'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 
@@ -15,7 +14,7 @@ const TRIE_SIZE = 512
  */
 async function randomTrie(db: DB, addKey: boolean = true) {
   const entries: [Buffer, Buffer][] = []
-  const trie = new BaseTrie({ db })
+  const trie = new Trie({ db })
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
@@ -67,7 +66,7 @@ function increaseKey(key: Buffer) {
 }
 
 async function verify(
-  trie: BaseTrie,
+  trie: Trie,
   entries: [Buffer, Buffer][],
   start: number,
   end: number,
@@ -79,13 +78,13 @@ async function verify(
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return await BaseTrie.verifyRangeProof(
+  return await Trie.verifyRangeProof(
     trie.root,
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
     vals ?? targetRange.map(([, val]) => val),
-    [...(await BaseTrie.createProof(trie, startKey)), ...(await BaseTrie.createProof(trie, endKey))]
+    [...(await Trie.createProof(trie, startKey)), ...(await Trie.createProof(trie, endKey))]
   )
 }
 
@@ -184,7 +183,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     t.equal(await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey), true)
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new BaseTrie({ db: new LevelDB() })
+    const tinyTrie = new Trie({ db: new LevelDB() })
     const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -196,7 +195,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     const { trie, entries } = await randomTrie(new LevelDB())
 
     t.equal(
-      await BaseTrie.verifyRangeProof(
+      await Trie.verifyRangeProof(
         trie.root,
         null,
         null,
@@ -245,7 +244,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a bad range proof and verify it', async (t) => {
-    const runTest = async (cb: (trie: BaseTrie, entries: [Buffer, Buffer][]) => Promise<void>) => {
+    const runTest = async (cb: (trie: Trie, entries: [Buffer, Buffer][]) => Promise<void>) => {
       const { trie, entries } = await randomTrie(new LevelDB(), false)
 
       let result = false
@@ -303,7 +302,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a gapped range proof and verify it', async (t) => {
-    const trie = new BaseTrie({ db: new LevelDB() })
+    const trie = new Trie({ db: new LevelDB() })
     const entries: [Buffer, Buffer][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBuffer(i), 32)
@@ -457,7 +456,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     let bloatedProof: Buffer[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await BaseTrie.createProof(trie, entries[i][0]))
+      bloatedProof = bloatedProof.concat(await Trie.createProof(trie, entries[i][0]))
     }
 
     t.equal(await verify(trie, entries, 0, entries.length - 1), false)

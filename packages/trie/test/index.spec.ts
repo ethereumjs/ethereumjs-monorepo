@@ -1,12 +1,11 @@
 import tape from 'tape'
 import { bufArrToArr, KECCAK256_NULL } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { BaseTrie, CheckpointTrie } from '../src'
+import { CheckpointTrie, LevelDB, Trie } from '../src'
 
 // explicitly import buffer,
 // needed for karma-typescript bundling
 import { Buffer } from 'buffer'
-import { LevelDB } from '../src/db'
 
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
@@ -230,7 +229,7 @@ tape('testing deletion cases', function (tester) {
 })
 
 tape('shall handle the case of node not found correctly', async (t) => {
-  const trie = new BaseTrie({ db: new LevelDB() })
+  const trie = new Trie({ db: new LevelDB() })
   await trie.put(Buffer.from('a'), Buffer.from('value1'))
   await trie.put(Buffer.from('aa'), Buffer.from('value2'))
   await trie.put(Buffer.from('aaa'), Buffer.from('value3'))
@@ -313,12 +312,12 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 
   const trieSetups = [
     {
-      trie: new BaseTrie({ db: new LevelDB(), deleteFromDB: false }),
+      trie: new Trie({ db: new LevelDB(), deleteFromDB: false }),
       expected: v1,
       msg: 'should return v1 when setting back the state root when deleteFromDB=false',
     },
     {
-      trie: new BaseTrie({ db: new LevelDB(), deleteFromDB: true }),
+      trie: new Trie({ db: new LevelDB(), deleteFromDB: true }),
       expected: null,
       msg: 'should return null when setting back the state root when deleteFromDB=true',
     },
