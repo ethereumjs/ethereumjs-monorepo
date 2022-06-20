@@ -1,12 +1,15 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../../src'
+
 import { getActivePrecompiles } from '../../../../src/evm/precompiles'
+import { getEEI } from '../../../utils'
+import EVM from '../../../../src'
 
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const vm = await VM.create({ common: common })
+    const eei = await getEEI()
+    const evm = await EVM.create({ common, eei })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!
 
@@ -17,7 +20,7 @@ tape('Precompiles: ECPAIRING', (t) => {
       ),
       gasLimit: BigInt(0xffffff),
       _common: common,
-      _EVM: vm.evm,
+      _EVM: evm,
     })
 
     st.deepEqual(

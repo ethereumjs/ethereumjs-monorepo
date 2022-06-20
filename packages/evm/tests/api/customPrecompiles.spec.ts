@@ -1,5 +1,4 @@
 import tape from 'tape'
-import VM from '../../src'
 import { Address } from '@ethereumjs/util'
 import { PrecompileInput } from '../../src/evm/precompiles'
 import EVM, { ExecResult } from '../../src/evm/evm'
@@ -79,8 +78,8 @@ tape('EVM -> custom precompiles', (t) => {
   })
 
   t.test('should not persist changes to precompiles', async (st) => {
-    let VMSha = await VM.create()
-    const shaResult = await VMSha.evm.runCall({
+    let EVMSha = await EVM.create({ eei: await getEEI() })
+    const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
@@ -104,8 +103,8 @@ tape('EVM -> custom precompiles', (t) => {
     // sanity: check we have overridden
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
     st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    VMSha = await VM.create()
-    const shaResult2 = await VMSha.evm.runCall({
+    EVMSha = await EVM.create({ eei: await getEEI() })
+    const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),

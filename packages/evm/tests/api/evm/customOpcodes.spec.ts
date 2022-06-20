@@ -1,9 +1,8 @@
 import tape from 'tape'
-import VM from '../../../src'
 import { AddOpcode } from '../../../src/evm/types'
 import { InterpreterStep, RunState } from '../../../src/evm/interpreter'
 import EVM from '../../../src/evm/evm'
-import { getEEI } from '../utils'
+import { getEEI } from '../../utils'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
@@ -71,7 +70,8 @@ tape('VM: custom opcodes', (t) => {
     })
     st.ok(res.executionGasUsed === gas, 'succesfully deleted opcode')
 
-    const vmDefault = await VM.create()
+    const eei = await getEEI()
+    const evmDefault = await EVM.create({ eei })
 
     // PUSH 04
     // PUSH 01
@@ -81,7 +81,7 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 01 // RETURNDATA length
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
-    const result = await vmDefault.evm.runCode!({
+    const result = await evmDefault.runCode!({
       code: Buffer.from('60046001016000526001601FF3', 'hex'),
       gasLimit: BigInt(gas),
     })

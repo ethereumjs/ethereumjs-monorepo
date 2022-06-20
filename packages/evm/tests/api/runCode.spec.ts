@@ -1,6 +1,6 @@
 import tape from 'tape'
-import VM from '../../src'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { getEEI } from '../utils'
+import EVM from '../../src'
 
 const STOP = '00'
 const JUMP = '56'
@@ -19,7 +19,8 @@ const testCases = [
 ]
 
 tape('VM.runCode: initial program counter', async (t) => {
-  const vm = await VM.create()
+  const eei = await getEEI()
+  const evm = await EVM.create({ eei })
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
@@ -30,7 +31,7 @@ tape('VM.runCode: initial program counter', async (t) => {
 
     let err
     try {
-      const result = await vm.evm.runCode!(runCodeArgs)
+      const result = await evm.runCode!(runCodeArgs)
       if (testData.resultPC !== undefined) {
         t.equal(
           result.runState?.programCounter,
@@ -54,7 +55,8 @@ tape('VM.runCode: initial program counter', async (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const vm = await VM.create()
+    const eei = await getEEI()
+    const evm = await EVM.create({ eei })
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -64,7 +66,7 @@ tape('VM.runCode: interpreter', (t) => {
 
     let result: any
     try {
-      result = await vm.evm.runCode!(runCodeArgs)
+      result = await evm.runCode!(runCodeArgs)
     } catch (e: any) {
       st.fail('should not throw error')
     }
@@ -74,11 +76,11 @@ tape('VM.runCode: interpreter', (t) => {
   })
 
   t.test('should throw on non-EvmError', async (st) => {
-    const stateManager = new DefaultStateManager()
-    stateManager.putContractStorage = (..._args) => {
+    const eei = await getEEI()
+    eei.state.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const vm = await VM.create({ stateManager })
+    const evm = await EVM.create({ eei })
 
     const SSTORE = '55'
     const runCodeArgs = {
@@ -87,7 +89,7 @@ tape('VM.runCode: interpreter', (t) => {
     }
 
     try {
-      await vm.evm.runCode!(runCodeArgs)
+      await evm.runCode!(runCodeArgs)
       st.fail('should throw error')
     } catch (e: any) {
       st.ok(e.toString().includes('Test'), 'error thrown')
@@ -98,7 +100,8 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const vm = await VM.create()
+    const eei = await getEEI()
+    const evm = await EVM.create({ eei })
 
     const runCodeArgs = {
       value: BigInt(-10),
@@ -106,7 +109,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
     }
 
     try {
-      await vm.evm.runCode!(runCodeArgs)
+      await evm.runCode!(runCodeArgs)
       st.fail('should not accept a negative call value')
     } catch (err: any) {
       st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')

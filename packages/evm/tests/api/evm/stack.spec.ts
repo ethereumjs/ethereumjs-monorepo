@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Account, Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
-import VM from '../../../src'
 import Stack from '../../../src/evm/stack'
-import { createAccount } from '../utils'
+import { createAccount, getEEI } from '../../utils'
+import EVM from '../../../src'
 
 tape('Stack', (t) => {
   t.test('should be empty initially', (st) => {
@@ -126,7 +126,8 @@ tape('Stack', (t) => {
   t.test('stack items should not change if they are DUPed', async (st) => {
     const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const vm = await VM.create()
+    const eei = await getEEI()
+    const evm = await EVM.create({ eei })
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
@@ -148,9 +149,9 @@ tape('Stack', (t) => {
           PUSH1 0x00
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
-    await vm.stateManager.putAccount(addr, account)
-    await vm.stateManager.putContractCode(addr, Buffer.from(code, 'hex'))
-    await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
+    await eei.state.putAccount(addr, account)
+    await eei.state.putContractCode(addr, Buffer.from(code, 'hex'))
+    await eei.state.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller: caller,
       gasLimit: BigInt(0xffffffffff),
@@ -158,7 +159,7 @@ tape('Stack', (t) => {
       value: BigInt(1),
     }
     try {
-      const res = await vm.evm.runCall(runCallArgs)
+      const res = await evm.runCall(runCallArgs)
       const executionReturnValue = res.execResult.returnValue
       st.assert(executionReturnValue.equals(expectedReturnValue))
       st.end()

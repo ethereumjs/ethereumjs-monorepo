@@ -1,8 +1,9 @@
 import tape from 'tape'
 import { Address } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../../src'
+import EVM from '../../../../src'
 import { getActivePrecompiles } from '../../../../src/evm/precompiles'
+import { getEEI } from '../../../utils'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
@@ -20,8 +21,9 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    let vm = await VM.create({ common: commonByzantium })
-    let result = await vm.evm.runCall({
+    const eeiByzantium = await getEEI()
+    let evm = await EVM.create({ common: commonByzantium, eei: eeiByzantium })
+    let result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
@@ -39,8 +41,9 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    vm = await VM.create({ common: commonPetersburg })
-    result = await vm.evm.runCall({
+    const eeiPetersburg = await getEEI()
+    evm = await EVM.create({ common: commonPetersburg, eei: eeiPetersburg })
+    result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
@@ -59,9 +62,10 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING not available in homestead')
     }
 
-    vm = await VM.create({ common: commonHomestead })
+    const eeiHomestead = await getEEI()
+    evm = await EVM.create({ common: commonHomestead, eei: eeiHomestead })
 
-    result = await vm.evm.runCall({
+    result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
