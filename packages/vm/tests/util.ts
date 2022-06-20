@@ -21,7 +21,7 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { VmState } from '../src/eei/vmState'
+import { VmState } from '@ethereumjs/evm/dist/eei/vmState'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
