@@ -438,7 +438,13 @@ tape('[Skeleton]', async (t) => {
     async (st) => {
       const genesis = {
         ...genesisJSON,
-        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        config: {
+          ...genesisJSON.config,
+          terminalTotalDifficulty: 200,
+          clique: undefined,
+          ethash: {},
+        },
+        extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
       const params = await parseCustomParams(genesis, 'post-merge')
@@ -446,6 +452,7 @@ tape('[Skeleton]', async (t) => {
         chain: params.name,
         customChains: [params],
       })
+
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
       const config = new Config({
         transports: [],
@@ -456,9 +463,6 @@ tape('[Skeleton]', async (t) => {
       ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
-
-      BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-      td.replace('@ethereumjs/block', { BlockHeader })
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
@@ -562,6 +566,9 @@ tape('[Skeleton]', async (t) => {
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
+
+      BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+      td.replace('@ethereumjs/block', { BlockHeader })
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 

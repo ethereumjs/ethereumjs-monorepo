@@ -774,8 +774,7 @@ export default class Blockchain implements BlockchainInterface {
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
       if (!parentBlock) {
-        const msg = block._errorMsg('could not find parent block')
-        throw new Error(msg)
+        throw new Error(`could not find parent block ${block.errorStr()}`)
       }
       canonicalBlockMap.push(parentBlock)
 
@@ -800,20 +799,17 @@ export default class Blockchain implements BlockchainInterface {
       const parentHash = uh.parentHash.toString('hex')
 
       if (!canonicalChainHashes[parentHash]) {
-        const msg = block._errorMsg(
-          'The parent hash of the uncle header is not part of the canonical chain'
+        throw new Error(
+          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`
         )
-        throw new Error(msg)
       }
 
       if (includedUncles[uncleHash]) {
-        const msg = block._errorMsg('The uncle is already included in the canonical chain')
-        throw new Error(msg)
+        throw new Error(`The uncle is already included in the canonical chain ${block.errorStr()}`)
       }
 
       if (canonicalChainHashes[uncleHash]) {
-        const msg = block._errorMsg('The uncle is a canonical block')
-        throw new Error(msg)
+        throw new Error(`The uncle is a canonical block ${block.errorStr()}`)
       }
     })
   }
