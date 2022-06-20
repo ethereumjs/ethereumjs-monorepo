@@ -460,7 +460,7 @@ tape('[Skeleton]', async (t) => {
       })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      ;(chain.blockchain as any)._validateConsensus = false
+
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
