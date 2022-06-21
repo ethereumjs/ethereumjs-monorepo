@@ -221,7 +221,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
           CALL            [gas, 0x00..04, 0, 0, 0, 0, 0]
           STOP
       */
-  
+
     await vmNotActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
     await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
@@ -233,16 +233,16 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
       to: contractAddress, // call to the contract address,
       value: BigInt(1),
     }
-  
+
     const resultNotActivated = await vmNotActivated.evm.runCall(runCallArgs)
     const resultActivated = await vmActivated.evm.runCall(runCallArgs)
-  
+
     const diff =
       resultNotActivated.execResult.executionGasUsed - resultActivated.execResult.executionGasUsed
     const expected = common.param('gasPrices', 'callNewAccount')
-  
+
     t.equal(diff, expected, 'precompiles are activated')
-  
+
     t.end()
   })
 })
