@@ -1,7 +1,4 @@
 import { promisify } from 'util'
-
-import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
@@ -14,6 +11,7 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   short,
+  zeros,
 } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions'
@@ -24,6 +22,7 @@ import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
 import {
+  Block,
   CustomOpcode,
   EVMEvents,
   EVMInterface,
@@ -83,12 +82,6 @@ export interface EVMOpts {
    */
   common?: Common
 
-  /**
-   * A {@link Blockchain} object for storing/retrieving blocks
-   *
-   * Temporary
-   */
-  blockchain?: Blockchain
   /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
    * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
@@ -228,6 +221,21 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   }
 }
 
+function defaultBlock(): Block {
+  return {
+    header: {
+      number: BigInt(0),
+      cliqueSigner: () => Address.zero(),
+      coinbase: Address.zero(),
+      timestamp: BigInt(0),
+      difficulty: BigInt(0),
+      prevRandao: zeros(32),
+      gasLimit: BigInt(0),
+      baseFeePerGas: undefined,
+    },
+  }
+}
+
 /**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
@@ -241,8 +249,6 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   readonly _common: Common
 
   protected readonly eei: EEIInterface
-
-  protected _blockchain: Blockchain
 
   public readonly _transientStorage: TransientStorage
 
@@ -343,8 +349,6 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         throw new Error(`EIP-${eip} is not supported by the EVM`)
       }
     }
-
-    this._blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this._customOpcodes = opts.customOpcodes
@@ -694,7 +698,6 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
     const env = {
-      blockchain: this._blockchain, // Only used in BLOCKHASH
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
       callData: message.data ?? Buffer.from([0]),
@@ -704,7 +707,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
       origin: this._tx!.origin ?? message.caller ?? Address.zero(),
-      block: this._block ?? new Block(),
+      block: this._block ?? defaultBlock(),
       contract: await this.eei.state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
@@ -758,7 +761,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   async runCall(opts: RunCallOpts): Promise<EVMResult> {
     let message = opts.message
     if (!message) {
-      this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+      this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BigInt(0),
         origin: opts.origin ?? opts.caller ?? Address.zero(),
@@ -872,7 +875,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
    * shouldn't be used directly from the evm class
    */
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
-    this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+    this._block = opts.block ?? defaultBlock()
 
     this._tx = {
       gasPrice: opts.gasPrice ?? BigInt(0),
@@ -992,7 +995,6 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       ...this._optsCached,
       common: this._common.copy(),
       eei: this.eei.copy(),
-      blockchain: this._blockchain.copy(),
     }
     return new EVM(opts)
   }

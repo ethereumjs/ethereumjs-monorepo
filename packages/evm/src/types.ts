@@ -1,4 +1,3 @@
-import { Block } from '@ethereumjs/block'
 import { StateAccess } from '@ethereumjs/statemanager'
 import { AccessList } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
@@ -7,6 +6,19 @@ import { InterpreterStep } from './interpreter'
 import Message from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+
+export type Block = {
+  header: {
+    number: bigint
+    cliqueSigner(): Address
+    coinbase: Address
+    timestamp: bigint
+    difficulty: bigint
+    prevRandao: Buffer
+    gasLimit: bigint
+    baseFeePerGas?: bigint
+  }
+}
 
 /**
  * Log that the contract emits.
@@ -32,7 +44,7 @@ export type CustomOpcode = AddOpcode | DeleteOpcode
  */
 export interface RunCallOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
+   * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   /**
@@ -110,7 +122,7 @@ export interface RunCallOpts {
  */
 export interface RunCodeOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
+   * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   /**

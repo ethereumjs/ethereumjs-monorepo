@@ -1,4 +1,4 @@
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain from '../../blockchain/src'
 import Common, { Chain } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account } from '@ethereumjs/util'

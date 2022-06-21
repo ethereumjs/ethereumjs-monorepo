@@ -15,10 +15,9 @@ import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
 import EOF from './eof'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM, { EVMResult } from './evm'
-import { Block } from '@ethereumjs/block'
 import Message from './message'
 import { Log } from './types'
-import { EEIInterface, VmStateAccess } from './types'
+import { EEIInterface, VmStateAccess, Block } from './types'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
