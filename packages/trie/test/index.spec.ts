@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { bufArrToArr, KECCAK256_NULL } from '@ethereumjs/util'
 import RLP from 'rlp'
 import { CheckpointTrie, LevelDB, Trie } from '../src'

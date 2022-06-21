@@ -1,5 +1,5 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { EventEmitter } from 'events'
 import { Config } from '../../lib/config'
 import { RlpxServer } from '../../lib/net/server'

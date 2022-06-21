@@ -1,15 +1,16 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Address } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createAccount, getSingleFile, isRunningInKarma } from '../utils'
+import { createAccount, isRunningInKarma } from '../utils'
 import { VmState } from '../../src/eei/vmState'
 
 const StateManager = DefaultStateManager
 
 tape('vmState', (t) => {
-  t.test(
+  // TODO (@Jochem): reactivate along EEI/VMState moving to VM
+  /*t.test(
     'should generate the genesis state root correctly for mainnet from ethereum/tests data',
     async (st) => {
       if (isRunningInKarma()) {
@@ -29,7 +30,7 @@ tape('vmState', (t) => {
       )
       st.end()
     }
-  )
+  )*/
 
   t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
     if (isRunningInKarma()) {

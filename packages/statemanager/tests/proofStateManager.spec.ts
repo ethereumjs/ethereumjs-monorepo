@@ -1,11 +1,11 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Address, toBuffer, zeros } from '@ethereumjs/util'
 import { SecureTrie } from '@ethereumjs/trie'
 import { DefaultStateManager } from '../src'
-import ropsten_validAccount from './testdata/ropsten_validAccount.json'
-import ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
-import ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
+import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
+import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
+import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
 
 tape('ProofStateManager', (t) => {
   t.test('should get and verify EIP 1178 proofs', async (st) => {

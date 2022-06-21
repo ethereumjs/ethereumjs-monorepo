@@ -1,4 +1,4 @@
-import Benchmark from 'benchmark'
+import * as Benchmark from 'benchmark'
 import { runTrie } from './random'
 import { iterTest } from './checkpointing'
 import { LevelDB } from '../dist'

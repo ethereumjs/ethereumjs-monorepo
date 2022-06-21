@@ -1,7 +1,9 @@
-import { Test } from 'tape'
+import * as test from 'tape'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import Common, { Chain } from '@ethereumjs/common'
-import testdata from '../testdata.json'
+import * as testdata from '../testdata.json'
+
+type Test = test.Test
 
 export const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))

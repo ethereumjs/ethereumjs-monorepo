@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { toBuffer, bufferToHex, Address, Account } from '@ethereumjs/util'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'

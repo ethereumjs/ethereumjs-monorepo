@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import RLP from 'rlp'
 import {
   Account,

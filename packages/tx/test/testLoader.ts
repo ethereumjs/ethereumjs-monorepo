@@ -1,5 +1,5 @@
-import path from 'path'
-import dir from 'node-dir'
+import * as path from 'path'
+import * as dir from 'node-dir'
 
 const falsePredicate = () => false
 

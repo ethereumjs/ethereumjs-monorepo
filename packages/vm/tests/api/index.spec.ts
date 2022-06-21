@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -6,9 +6,9 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import VM from '../../src'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
-import testnet from './testdata/testnet.json'
-import testnet2 from './testdata/testnet2.json'
-import testnetMerge from './testdata/testnetMerge.json'
+import * as testnet from './testdata/testnet.json'
+import * as testnet2 from './testdata/testnet2.json'
+import * as testnetMerge from './testdata/testnetMerge.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling

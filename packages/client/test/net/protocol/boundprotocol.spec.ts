@@ -1,6 +1,7 @@
+/// <reference path="./testdouble.d.ts" />
 import { EventEmitter } from 'events'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import { Sender } from '../../../lib/net/protocol/sender'
 import { BoundProtocol } from '../../../lib/net/protocol'
 import { Config } from '../../../lib/config'

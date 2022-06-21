@@ -1,10 +1,10 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import blocks = require('../../testdata/blocks/beacon.json')
 import { batchBlocks } from './newPayloadV1.spec'
 import { bufferToHex, zeros } from '@ethereumjs/util'
 

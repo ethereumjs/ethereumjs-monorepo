@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { middleware, validators } from '../../lib/rpc/validation'
 import { INVALID_PARAMS } from '../../lib/rpc/error-code'
 import { startRPC, baseRequest } from './helpers'

@@ -1,4 +1,4 @@
-import PeerId from 'peer-id'
+import * as PeerId from 'peer-id'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { keys } from 'libp2p-crypto'
 import { Multiaddr, multiaddr } from 'multiaddr'

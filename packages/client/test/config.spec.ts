@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Config, DataDirectory } from '../lib/config'
 import Common, { Chain } from '@ethereumjs/common'
 

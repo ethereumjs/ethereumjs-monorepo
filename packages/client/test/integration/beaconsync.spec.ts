@@ -1,7 +1,7 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common from '@ethereumjs/common'
 import { Event } from '../../lib/types'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { parseCustomParams } from '../../lib/util'
 import { wait, setup, destroy } from './util'
 
@@ -16,11 +16,12 @@ tape('[Integration:BeaconSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
+    const next = await remoteService.chain.getCanonicalHeadHeader()
     ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
       {
         head: BigInt(21),
         tail: BigInt(21),
-        next: (await remoteService.chain.getCanonicalHeadHeader()).hash(),
+        next: next.hash(),
       },
     ]
     await localService.synchronizer.stop()

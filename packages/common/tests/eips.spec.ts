@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '../src/'
 
 tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {

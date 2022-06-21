@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { BatchDBOp, LevelDB } from '../../src'
 
 tape('DB tests', (t) => {

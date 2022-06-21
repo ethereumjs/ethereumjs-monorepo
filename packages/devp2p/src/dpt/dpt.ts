@@ -1,4 +1,4 @@
-import ms from 'ms'
+import ms = require('ms')
 import { EventEmitter } from 'events'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { randomBytes } from 'crypto'

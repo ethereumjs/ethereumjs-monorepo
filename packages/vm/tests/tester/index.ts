@@ -1,7 +1,7 @@
-import { exit } from 'process'
-import path from 'path'
-import tape from 'tape'
-import minimist from 'minimist'
+import * as process from 'process'
+import * as path from 'path'
+import * as tape from 'tape'
+import * as minimist from 'minimist'
 import Common from '@ethereumjs/common'
 import {
   getCommon,
@@ -55,7 +55,7 @@ async function runTests() {
     runner = blockchainTestsRunner
   } else {
     console.log(`Test type not supported or provided`)
-    exit(1)
+    process.exit(1)
   }
 
   const FORK_CONFIG: string = argv.fork || DEFAULT_FORK_CONFIG
