@@ -650,8 +650,7 @@ export class BlockHeader {
 
     const exp = num / BigInt(100000) - BigInt(2)
     if (exp >= 0) {
-      // eslint-disable-next-line
-        dif = dif + BigInt(2) ** exp
+      dif = dif + BigInt(2) ** exp
     }
 
     if (dif < minimumDifficulty) {
