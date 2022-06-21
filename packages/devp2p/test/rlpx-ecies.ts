@@ -4,7 +4,7 @@ import * as test from 'tape'
 import * as util from '../src/util'
 import { ECIES } from '../src/rlpx/ecies'
 
-import testdata from './testdata.json'
+import * as testdata from './testdata.json'
 
 type Test = test.Test
 
