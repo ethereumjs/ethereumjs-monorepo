@@ -1,11 +1,56 @@
-import { StateAccess } from '@ethereumjs/statemanager'
-import { AccessList } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import EVM, { EVMResult, ExecResult, NewContractEvent } from './evm'
 import { InterpreterStep } from './interpreter'
 import Message from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+
+export declare type AccessListItem = {
+  address: PrefixedHexString
+  storageKeys: PrefixedHexString[]
+}
+type AccessListBufferItem = [Buffer, Buffer[]]
+export declare type AccessListBuffer = AccessListBufferItem[]
+export declare type AccessList = AccessListItem[]
+
+declare type StorageProof = {
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
+export declare type Proof = {
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}
+
+export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+
+export interface StateAccess {
+  accountExists(address: Address): Promise<boolean>
+  getAccount(address: Address): Promise<Account>
+  putAccount(address: Address, account: Account): Promise<void>
+  accountIsEmpty(address: Address): Promise<boolean>
+  deleteAccount(address: Address): Promise<void>
+  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
+  putContractCode(address: Address, value: Buffer): Promise<void>
+  getContractCode(address: Address): Promise<Buffer>
+  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  clearContractStorage(address: Address): Promise<void>
+  checkpoint(): Promise<void>
+  commit(): Promise<void>
+  revert(): Promise<void>
+  getStateRoot(): Promise<Buffer>
+  setStateRoot(stateRoot: Buffer): Promise<void>
+  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  verifyProof?(proof: Proof): Promise<boolean>
+  hasStateRoot(root: Buffer): Promise<boolean>
+}
 
 export type Block = {
   header: {
