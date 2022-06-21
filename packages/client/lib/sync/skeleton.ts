@@ -203,7 +203,11 @@ export class Skeleton extends MetaDBManager {
     const { number } = head.header
 
     const [lastchain] = this.status.progress.subchains
-    if (lastchain?.tail >= number) {
+    if (!lastchain) {
+      this.config.logger.warn(`Skeleton reorged and cleaned, no current subchain newHead=${number}`)
+      return true
+    }
+    if (lastchain.tail >= number) {
       // If the chain is down to a single beacon header, and it is re-announced
       // once more, ignore it instead of tearing down sync for a noop.
       if (lastchain.head === lastchain.tail) {
@@ -220,7 +224,8 @@ export class Skeleton extends MetaDBManager {
       }
       return true
     }
-    if (lastchain.head && lastchain.head + BigInt(1) < number) {
+
+    if (lastchain.head + BigInt(1) < number) {
       if (force) {
         this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
       }
@@ -394,15 +399,13 @@ export class Skeleton extends MetaDBManager {
   }
 
   async backStep(): Promise<bigint | null> {
-    if (this.status.progress.subchains.length === 0) {
-      process.exit()
-    }
+    if (this.config.skeletonFillCanonicalBackStep <= 0) return null
     const { head, tail } = this.bounds()
 
     let tailBlock
     let newTail: bigint | null = tail
     do {
-      newTail = newTail + BigInt(100)
+      newTail = newTail + BigInt(this.config.skeletonFillCanonicalBackStep)
       tailBlock = await this.getBlock(newTail, true)
     } while (!tailBlock && newTail <= head)
 

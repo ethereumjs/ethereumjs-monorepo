@@ -550,7 +550,11 @@ tape('[Skeleton]', async (t) => {
     async (st) => {
       const genesis = {
         ...genesisJSON,
-        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        config: {
+          ...genesisJSON.config,
+          terminalTotalDifficulty: 200,
+          skeletonFillCanonicalBackStep: 0,
+        },
         difficulty: '0x1',
       }
       const params = await parseCustomParams(genesis, 'post-merge')
