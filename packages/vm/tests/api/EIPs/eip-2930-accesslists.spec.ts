@@ -3,7 +3,7 @@ import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import EVM from '../../../src/evm/evm'
+import EVM from '@ethereumjs/evm'
 
 const common = new Common({
   eips: [2718, 2929, 2930],

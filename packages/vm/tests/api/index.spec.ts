@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { KECCAK256_RLP } from '@ethereumjs/util'
+import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -194,5 +194,55 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     st.equal(copiedVM._common.hardfork(), 'byzantium')
 
     st.end()
+  })
+
+  tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
+    // setup the accounts for this test
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const contractAddress = new Address(
+      Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    ) // contract address
+    // setup the vm
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const vmNotActivated = await VM.create({ common })
+    const vmActivated = await VM.create({ common, activatePrecompiles: true })
+    const code = '6000808080347300000000000000000000000000000000000000045AF100'
+    /*
+        idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
+              when calling from the activated VM. Explicitly check that the difference in gas cost is equal to the common callNewAccount gas.
+        code:             remarks: (top of the stack is at the zero index)       
+          PUSH1 0x00
+          DUP1
+          DUP1
+          DUP1
+          CALLVALUE
+          PUSH20 0000000000000000000000000000000000000004
+          GAS
+          CALL            [gas, 0x00..04, 0, 0, 0, 0, 0]
+          STOP
+      */
+
+    await vmNotActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+    await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
+    await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+    await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
+    // setup the call arguments
+    const runCallArgs = {
+      caller: caller, // call address
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      to: contractAddress, // call to the contract address,
+      value: BigInt(1),
+    }
+
+    const resultNotActivated = await vmNotActivated.evm.runCall(runCallArgs)
+    const resultActivated = await vmActivated.evm.runCall(runCallArgs)
+
+    const diff =
+      resultNotActivated.execResult.executionGasUsed - resultActivated.execResult.executionGasUsed
+    const expected = common.param('gasPrices', 'callNewAccount')
+
+    t.equal(diff, expected, 'precompiles are activated')
+
+    t.end()
   })
 })

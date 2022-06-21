@@ -2,7 +2,7 @@ import tape from 'tape'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
-import type { InterpreterStep } from '../../../src/evm/interpreter'
+import { InterpreterStep } from '@ethereumjs/evm/dist/evm/interpreter'
 
 function parseTestCases(
   forkConfigTestSuite: string,

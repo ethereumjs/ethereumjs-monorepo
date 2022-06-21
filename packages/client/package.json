@@ -54,6 +54,7 @@
     "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/devp2p": "^4.2.2",
+    "@ethereumjs/evm": "^6.0.0",
     "@ethereumjs/ethash": "^1.1.0",
     "@ethereumjs/statemanager": "^1.0.0",
     "@ethereumjs/trie": "^5.0.0",

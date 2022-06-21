@@ -50,6 +50,7 @@
     "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/evm": "^6.0.0",
     "@ethereumjs/tx": "^3.5.2",
     "@ethereumjs/statemanager": "^1.0.0",
     "@ethereumjs/trie": "^5.0.0",
