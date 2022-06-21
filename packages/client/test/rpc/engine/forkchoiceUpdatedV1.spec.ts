@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
@@ -7,8 +7,11 @@ import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import blocks = require('../../testdata/blocks/beacon.json')
 import { batchBlocks } from './newPayloadV1.spec'
 import { bufferToHex, zeros } from '@ethereumjs/util'
+import * as td from 'testdouble'
 
 const method = 'engine_forkchoiceUpdatedV1'
+
+const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 const validForkChoiceState = {
   headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
@@ -109,6 +112,7 @@ tape(`${method}: invalid terminal block with only genesis block`, async (t) => {
     },
   }
 
+  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
     engine: true,
   })
@@ -127,6 +131,8 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
     config: {
       ...genesisJSON.config,
       terminalTotalDifficulty: 17179869185,
+      clique: undefined,
+      ethash: {},
     },
   }
 
@@ -140,6 +146,7 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
         number: blocks[0].blockNumber,
         parentHash: blocks[0].parentHash,
         difficulty: 1,
+        extraData: Buffer.alloc(97),
       },
     },
     { common }
@@ -265,4 +272,10 @@ tape(`${method}: latest block after reorg`, async (t) => {
     t.equal(res.body.result.payloadStatus.latestValidHash, blocks[1].blockHash)
   }
   await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape('reset TD', (t) => {
+  td.reset()
+  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  t.end()
 })

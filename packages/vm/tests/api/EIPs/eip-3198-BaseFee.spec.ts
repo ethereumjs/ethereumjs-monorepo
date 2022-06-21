@@ -59,8 +59,8 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: numbe
 
 tape('EIP3198 tests', (t) => {
   t.test('test EIP3198 gas fee and correct value', async (st) => {
-    // Test taken from the EIP.
-    const fee = BigInt(7)
+    // Initial base fee for EIP1559
+    const fee = BigInt(1000000000)
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI * BigInt(5),

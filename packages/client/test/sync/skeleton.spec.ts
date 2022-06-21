@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
@@ -8,7 +8,7 @@ import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { MemoryLevel } from 'memory-level'
-
+import * as td from 'testdouble'
 type Subchain = {
   head: bigint
   tail: bigint
@@ -302,7 +302,6 @@ tape('[Skeleton]', async (t) => {
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
     ;(chain.blockchain as any)._validateBlocks = false
-    ;(chain.blockchain as any)._validateConsensus = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
@@ -370,12 +369,13 @@ tape('[Skeleton]', async (t) => {
       const config = new Config({ common, transports: [] })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      ;(chain.blockchain as any)._validateConsensus = false
+
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await chain.open()
       await skeleton.open()
 
       const genesis = await chain.getBlock(BigInt(0))
+
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
         { common, hardforkByBlockNumber: true }
@@ -437,7 +437,13 @@ tape('[Skeleton]', async (t) => {
     async (st) => {
       const genesis = {
         ...genesisJSON,
-        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        config: {
+          ...genesisJSON.config,
+          terminalTotalDifficulty: 200,
+          clique: undefined,
+          ethash: {},
+        },
+        extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
       const params = await parseCustomParams(genesis, 'post-merge')
@@ -445,6 +451,7 @@ tape('[Skeleton]', async (t) => {
         chain: params.name,
         customChains: [params],
       })
+
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
       const config = new Config({
         transports: [],
@@ -452,7 +459,6 @@ tape('[Skeleton]', async (t) => {
       })
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
-      ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -550,7 +556,6 @@ tape('[Skeleton]', async (t) => {
         customChains: [params],
       })
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
-
       const config = new Config({
         transports: [],
         common,
@@ -559,6 +564,10 @@ tape('[Skeleton]', async (t) => {
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
+
+      const originalValidate = BlockHeader.prototype._consensusFormatValidation
+      BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+      td.replace('@ethereumjs/block', { BlockHeader })
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -609,6 +618,9 @@ tape('[Skeleton]', async (t) => {
         chain.headers.latest?.hash().equals(block3.hash()),
         'canonical height should now be at head with correct chain'
       )
+
+      BlockHeader.prototype._consensusFormatValidation = originalValidate
+      td.reset()
     }
   )
 })

@@ -1,7 +1,6 @@
 import { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
-import { Block } from './block'
 import { BlockHeader } from './header'
 
 /**
@@ -142,8 +141,4 @@ export interface JsonHeader {
   mixHash?: string
   nonce?: string
   baseFeePerGas?: string
-}
-
-export interface Blockchain {
-  getBlock(hash: Buffer): Promise<Block>
 }

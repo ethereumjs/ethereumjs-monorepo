@@ -223,18 +223,25 @@ tape('Clique: Initialization', (t) => {
   t.test('should throw on invalid difficulty', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A)
-    ;(blockchain as any)._validateBlocks = false
-
-    const number = BigInt(1)
+    const parentHeader = await blockchain.getCanonicalHeadHeader()
+    const number = BigInt(2)
     const extraData = Buffer.alloc(97)
     let difficulty = BigInt(5)
     let block = Block.fromBlockData(
-      { header: { number, extraData, difficulty } },
+      {
+        header: {
+          number,
+          extraData,
+          difficulty,
+          parentHash: parentHeader.hash(),
+          timestamp: parentHeader.timestamp + BigInt(10000),
+        },
+      },
       { common: COMMON }
     )
 
     try {
-      await block.validate(blockchain)
+      await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error: any) {
       if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
@@ -247,12 +254,20 @@ tape('Clique: Initialization', (t) => {
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
     block = Block.fromBlockData(
-      { header: { number, extraData, difficulty } },
+      {
+        header: {
+          number,
+          extraData,
+          difficulty,
+          parentHash: parentHeader.hash(),
+          timestamp: parentHeader.timestamp + BigInt(10000),
+        },
+      },
       { common: COMMON, cliqueSigner }
     )
 
     try {
-      await block.validate(blockchain)
+      await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error: any) {
       if (error.message.includes('invalid clique difficulty')) {

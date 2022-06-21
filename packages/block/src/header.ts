@@ -24,13 +24,8 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import RLP from 'rlp'
-import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import {
-  CLIQUE_EXTRA_VANITY,
-  CLIQUE_EXTRA_SEAL,
-  CLIQUE_DIFF_INTURN,
-  CLIQUE_DIFF_NOTURN,
-} from './clique'
+import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -67,9 +62,6 @@ export class BlockHeader {
 
   /**
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
-   *
-   * Note: this is Merge-related functionality and considered `experimental`,
-   * use with care.
    */
   get prevRandao() {
     if (!this._common.isActivatedEIP(4399)) {
@@ -264,7 +256,8 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
 
-    this._validateHeaderFields()
+    this._genericFormatValidation()
+    this._consensusFormatValidation()
     this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -274,7 +267,7 @@ export class BlockHeader {
       options.calcDifficultyFromHeader &&
       this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
-      this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
+      this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
@@ -298,18 +291,8 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _validateHeaderFields() {
-    const {
-      parentHash,
-      uncleHash,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      difficulty,
-      extraData,
-      mixHash,
-      nonce,
-    } = this
+  _genericFormatValidation() {
+    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
 
     if (parentHash.length !== 32) {
       const msg = this._errorMsg(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -338,7 +321,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(42)) {
+      if (this._common.networkId() === BigInt(Chain.Kovan)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
@@ -351,210 +334,38 @@ export class BlockHeader {
       }
     }
 
-    // Validation for PoS blocks (EIP-3675)
-    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-      let error = false
-      let errorMsg = ''
+    // check if the block used too much gas
+    if (this.gasUsed > this.gasLimit) {
+      const msg = this._errorMsg('Invalid block: too much gas used')
+      throw new Error(msg)
+    }
 
-      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
-        errorMsg += `, uncleHash: ${uncleHash.toString(
-          'hex'
-        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
-        error = true
-      }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
-      }
-      if (error) {
-        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
+    // Validation for EIP-1559 blocks
+    if (this._common.isActivatedEIP(1559)) {
+      if (typeof this.baseFeePerGas !== 'bigint') {
+        const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+        if (this.baseFeePerGas! !== initialBaseFee) {
+          const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
+          throw new Error(msg)
+        }
+      }
     }
   }
 
   /**
-   * Returns the canonical difficulty for this block.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
+   * Checks static parameters related to consensus algorithm
+   * @throws if any check fails
    */
-  canonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
-    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
-      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
-      throw new Error(msg)
-    }
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      const msg = this._errorMsg(
-        'difficulty calculation currently only supports the ethash algorithm'
-      )
-      throw new Error(msg)
-    }
-    const hardfork = this._common.hardfork()
-    const blockTs = this.timestamp
-    const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    const offset =
-      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
-    let num = this.number
-
-    // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
-    let dif!: bigint
-
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
-      // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
-      let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
-      const cutoff = BigInt(-99)
-      // MAX(cutoff, a)
-      if (cutoff > a) {
-        a = cutoff
-      }
-      dif = parentDif + offset * a
-    }
-
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
-      // Get delay as parameter from common
-      num = num - this._common.param('pow', 'difficultyBombDelay')
-      if (num < BigInt(0)) {
-        num = BigInt(0)
-      }
-    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
-      // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
-      const cutoff = BigInt(-99)
-      // MAX(cutoff, a)
-      if (cutoff > a) {
-        a = cutoff
-      }
-      dif = parentDif + offset * a
-    } else {
-      // pre-homestead
-      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
-        dif = offset + parentDif
-      } else {
-        dif = parentDif - offset
-      }
-    }
-
-    const exp = num / BigInt(100000) - BigInt(2)
-    if (exp >= 0) {
-      // eslint-disable-next-line
-      dif = dif + BigInt(2) ** exp
-    }
-
-    if (dif < minimumDifficulty) {
-      dif = minimumDifficulty
-    }
-
-    return dif
-  }
-
-  /**
-   * Checks that the block's `difficulty` matches the canonical difficulty.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
-   */
-  validateDifficulty(parentBlockHeader: BlockHeader): boolean {
-    return this.canonicalDifficulty(parentBlockHeader) === this.difficulty
-  }
-
-  /**
-   * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
-   * Returns false if invalid.
-   */
-  validateCliqueDifficulty(blockchain: Blockchain): boolean {
-    this._requireClique('validateCliqueDifficulty')
-    if (this.difficulty !== CLIQUE_DIFF_INTURN && this.difficulty !== CLIQUE_DIFF_NOTURN) {
-      const msg = this._errorMsg(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
-      )
-      throw new Error(msg)
-    }
-    if ('cliqueActiveSigners' in (blockchain as any).consensus === false) {
-      const msg = this._errorMsg(
-        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
-      )
-      throw new Error(msg)
-    }
-    const signers = (blockchain as any).consensus.cliqueActiveSigners()
-    if (signers.length === 0) {
-      // abort if signers are unavailable
-      return true
-    }
-    const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
-    const inTurn = this.number % BigInt(signers.length) === BigInt(signerIndex)
-    if (
-      (inTurn && this.difficulty === CLIQUE_DIFF_INTURN) ||
-      (!inTurn && this.difficulty === CLIQUE_DIFF_NOTURN)
-    ) {
-      return true
-    }
-    return false
-  }
-
-  /**
-   * Validates if the block gasLimit remains in the
-   * boundaries set by the protocol.
-   *
-   * @param parentBlockHeader - the header from the parent `Block` of this header
-   */
-  validateGasLimit(parentBlockHeader: BlockHeader): boolean {
-    let parentGasLimit = parentBlockHeader.gasLimit
-    // EIP-1559: assume double the parent gas limit on fork block
-    // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (londonHardforkBlock && this.number === londonHardforkBlock) {
-      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
-      parentGasLimit = parentGasLimit * elasticity
-    }
-    const gasLimit = this.gasLimit
+  _consensusFormatValidation() {
+    const { nonce, uncleHash, difficulty, extraData } = this
     const hardfork = this._common.hardfork()
 
-    const a =
-      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
-    const maxGasLimit = parentGasLimit + a
-    const minGasLimit = parentGasLimit - a
-
-    const result =
-      gasLimit < maxGasLimit &&
-      gasLimit > minGasLimit &&
-      gasLimit >= this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
-
-    return result
-  }
-
-  /**
-   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
-   * It verifies the current block against the `parentHash`:
-   * - The `parentHash` is part of the blockchain (it is a valid header)
-   * - Current block number is parent block number + 1
-   * - Current block has a strictly higher timestamp
-   * - Additional PoW checks ->
-   *   - Current block has valid difficulty and gas limit
-   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
-   * - Additional PoA clique checks ->
-   *   - Various extraData checks
-   *   - Checks on coinbase and mixHash
-   *   - Current block has a timestamp diff greater or equal to PERIOD
-   *   - Current block has difficulty correctly marked as INTURN or NOTURN
-   * @param blockchain - validate against an @ethereumjs/blockchain
-   * @param height - If this is an uncle header, this is the height of the block that is including it
-   */
-  async validate(blockchain: Blockchain, height?: bigint): Promise<void> {
-    if (this.isGenesis()) {
-      return
-    }
-    const hardfork = this._common.hardfork()
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
@@ -597,87 +408,77 @@ export class BlockHeader {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
         throw new Error(msg)
       }
-      if (!this.validateCliqueDifficulty(blockchain)) {
-        const msg = this._errorMsg(`invalid clique difficulty`)
+    }
+    // Validation for PoS blocks (EIP-3675)
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+      let error = false
+      let errorMsg = ''
+
+      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${uncleHash.toString(
+          'hex'
+        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+        error = true
+      }
+      if (difficulty !== BigInt(0)) {
+        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+        error = true
+      }
+      if (extraData.length > 32) {
+        errorMsg += `, extraData: ${extraData.toString(
+          'hex'
+        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+        error = true
+      }
+      if (!nonce.equals(zeros(8))) {
+        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+        error = true
+      }
+      if (error) {
+        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
         throw new Error(msg)
       }
     }
+  }
 
-    const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
+  /**
+   * Validates if the block gasLimit remains in the boundaries set by the protocol.
+   * Throws if out of bounds.
+   *
+   * @param parentBlockHeader - the header from the parent `Block` of this header
+   */
+  validateGasLimit(parentBlockHeader: BlockHeader) {
+    let parentGasLimit = parentBlockHeader.gasLimit
+    // EIP-1559: assume double the parent gas limit on fork block
+    // to adopt to the new gas target centered logic
+    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
+    if (londonHardforkBlock && this.number === londonHardforkBlock) {
+      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
+      parentGasLimit = parentGasLimit * elasticity
+    }
+    const gasLimit = this.gasLimit
+    const hardfork = this._common.hardfork()
 
-    if (!parentHeader) {
-      const msg = this._errorMsg('could not find parent header')
+    const a =
+      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+    const maxGasLimit = parentGasLimit + a
+    const minGasLimit = parentGasLimit - a
+
+    if (gasLimit >= maxGasLimit) {
+      const msg = this._errorMsg('gas limit increased too much')
       throw new Error(msg)
     }
 
-    const { number } = this
-    if (number !== parentHeader.number + BigInt(1)) {
-      const msg = this._errorMsg('invalid number')
+    if (gasLimit <= minGasLimit) {
+      const msg = this._errorMsg('gas limit decreased too much')
       throw new Error(msg)
     }
 
-    if (this.timestamp <= parentHeader.timestamp) {
-      const msg = this._errorMsg('invalid timestamp')
+    if (gasLimit < this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
+      const msg = this._errorMsg(
+        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
+      )
       throw new Error(msg)
-    }
-
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      const period = (this._common.consensusConfig() as CliqueConfig).period
-      // Timestamp diff between blocks is lower than PERIOD (clique)
-      if (parentHeader.timestamp + BigInt(period) > this.timestamp) {
-        const msg = this._errorMsg('invalid timestamp diff (lower than period)')
-        throw new Error(msg)
-      }
-    }
-
-    if (this._common.consensusType() === 'pow') {
-      if (!this.validateDifficulty(parentHeader)) {
-        const msg = this._errorMsg('invalid difficulty')
-        throw new Error(msg)
-      }
-    }
-
-    if (!this.validateGasLimit(parentHeader)) {
-      const msg = this._errorMsg('invalid gas limit')
-      throw new Error(msg)
-    }
-
-    if (height) {
-      const dif = height - parentHeader.number
-      if (!(dif < BigInt(8) && dif > BigInt(1))) {
-        const msg = this._errorMsg('uncle block has a parent that is too old or too young')
-        throw new Error(msg)
-      }
-    }
-
-    // check if the block used too much gas
-    if (this.gasUsed > this.gasLimit) {
-      const msg = this._errorMsg('Invalid block: too much gas used')
-      throw new Error(msg)
-    }
-
-    if (this._common.isActivatedEIP(1559)) {
-      if (!this.baseFeePerGas) {
-        const msg = this._errorMsg('EIP1559 block has no base fee field')
-        throw new Error(msg)
-      }
-      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
-      if (isInitialEIP1559Block) {
-        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (this.baseFeePerGas! !== initialBaseFee) {
-          const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
-          throw new Error(msg)
-        }
-      } else {
-        // check if the base fee is correct
-        const expectedBaseFee = parentHeader.calcNextBaseFee()
-
-        if (this.baseFeePerGas! !== expectedBaseFee) {
-          const msg = this._errorMsg('Invalid block: base fee not correct')
-          throw new Error(msg)
-        }
-      }
     }
   }
 
@@ -782,6 +583,81 @@ export class BlockHeader {
       )
       throw new Error(msg)
     }
+  }
+
+  /**
+   * Returns the canonical difficulty for this block.
+   *
+   * @param parentBlockHeader - the header from the parent `Block` of this header
+   */
+  ethashCanonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
+    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
+      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
+      throw new Error(msg)
+    }
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
+      const msg = this._errorMsg(
+        'difficulty calculation currently only supports the ethash algorithm'
+      )
+      throw new Error(msg)
+    }
+    const hardfork = this._common.hardfork()
+    const blockTs = this.timestamp
+    const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
+    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
+    const offset =
+      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+    let num = this.number
+
+    // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
+    let dif!: bigint
+
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+      // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
+      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
+      const cutoff = BigInt(-99)
+      // MAX(cutoff, a)
+      if (cutoff > a) {
+        a = cutoff
+      }
+      dif = parentDif + offset * a
+    }
+
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+      // Get delay as parameter from common
+      num = num - this._common.param('pow', 'difficultyBombDelay')
+      if (num < BigInt(0)) {
+        num = BigInt(0)
+      }
+    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
+      // 1 - (block_timestamp - parent_timestamp) // 10
+      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
+      const cutoff = BigInt(-99)
+      // MAX(cutoff, a)
+      if (cutoff > a) {
+        a = cutoff
+      }
+      dif = parentDif + offset * a
+    } else {
+      // pre-homestead
+      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
+        dif = offset + parentDif
+      } else {
+        dif = parentDif - offset
+      }
+    }
+
+    const exp = num / BigInt(100000) - BigInt(2)
+    if (exp >= 0) {
+      dif = dif + BigInt(2) ** exp
+    }
+
+    if (dif < minimumDifficulty) {
+      dif = minimumDifficulty
+    }
+
+    return dif
   }
 
   /**
@@ -893,7 +769,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
-    if (extraSeal.length === 0) {
+    if (extraSeal.length === 0 || extraSeal.equals(Buffer.alloc(65).fill(0))) {
       return Address.zero()
     }
     const r = extraSeal.slice(0, 32)
@@ -935,22 +811,6 @@ export class BlockHeader {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     return jsonDict
-  }
-
-  private async _getHeaderByHash(
-    blockchain: Blockchain,
-    hash: Buffer
-  ): Promise<BlockHeader | undefined> {
-    try {
-      const header = (await blockchain.getBlock(hash)).header
-      return header
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return undefined
-      } else {
-        throw error
-      }
-    }
   }
 
   /**
@@ -1000,12 +860,12 @@ export class BlockHeader {
   }
 
   /**
-   * Internal helper function to create an annotated error message
+   * Helper function to create an annotated error message
    *
    * @param msg Base error message
    * @hidden
    */
-  protected _errorMsg(msg: string) {
+  private _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
   }
 }

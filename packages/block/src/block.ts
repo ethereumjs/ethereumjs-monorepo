@@ -12,7 +12,7 @@ import {
   Capability,
 } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
+import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
 
 /**
  * An object that represents the block.
@@ -143,6 +143,7 @@ export class Block {
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
+      this.validateUncles()
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed'
@@ -262,24 +263,6 @@ export class Block {
   }
 
   /**
-   * Performs the following consistency checks on the block:
-   *
-   * - Value checks on the header fields
-   * - Signature and gasLimit validation for included txs
-   * - Validation of the tx trie
-   * - Consistency checks and header validation of included uncles
-   *
-   * Throws if invalid.
-   *
-   * @param blockchain - validate against an @ethereumjs/blockchain
-   * @param onlyHeader - if should only validate the header (skips validating txTrie and unclesHash) (default: false)
-   */
-  async validate(blockchain: Blockchain, onlyHeader: boolean = false): Promise<void> {
-    await this.header.validate(blockchain)
-    await this.validateUncles(blockchain)
-    await this.validateData(onlyHeader)
-  }
-  /**
    * Validates the block data, throwing if invalid.
    * This can be checked on the Block itself without needing access to any parent block
    * It checks:
@@ -321,22 +304,15 @@ export class Block {
   }
 
   /**
-   * Consistency checks and header validation for uncles included,
-   * in the block, if any.
+   * Consistency checks for uncles included in the block, if any.
    *
    * Throws if invalid.
    *
-   * The rules of uncles are the following:
-   * Uncle Header is a valid header.
-   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
-   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
-   * Uncle Header is not already included as uncle in another block.
+   * The rules for uncles checked are the following:
    * Header has at most 2 uncles.
    * Header does not count an uncle twice.
-   *
-   * @param blockchain - additionally validate against an @ethereumjs/blockchain instance
    */
-  async validateUncles(blockchain: Blockchain): Promise<void> {
+  validateUncles() {
     if (this.isGenesis()) {
       return
     }
@@ -353,8 +329,6 @@ export class Block {
       const msg = this._errorMsg('duplicate uncles')
       throw new Error(msg)
     }
-
-    await this._validateUncleHeaders(this.uncleHeaders, blockchain)
   }
 
   /**
@@ -362,26 +336,17 @@ export class Block {
    *
    * @param parentBlock - the parent of this `Block`
    */
-  canonicalDifficulty(parentBlock: Block): bigint {
-    return this.header.canonicalDifficulty(parentBlock.header)
+  ethashCanonicalDifficulty(parentBlock: Block): bigint {
+    return this.header.ethashCanonicalDifficulty(parentBlock.header)
   }
 
   /**
-   * Checks that the block's `difficulty` matches the canonical difficulty.
+   * Validates if the block gasLimit remains in the boundaries set by the protocol.
+   * Throws if invalid
    *
    * @param parentBlock - the parent of this `Block`
    */
-  validateDifficulty(parentBlock: Block): boolean {
-    return this.header.validateDifficulty(parentBlock.header)
-  }
-
-  /**
-   * Validates if the block gasLimit remains in the
-   * boundaries set by the protocol.
-   *
-   * @param parentBlock - the parent of this `Block`
-   */
-  validateGasLimit(parentBlock: Block): boolean {
+  validateGasLimit(parentBlock: Block) {
     return this.header.validateGasLimit(parentBlock.header)
   }
 
@@ -393,106 +358,6 @@ export class Block {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
-    }
-  }
-
-  /**
-   * The following rules are checked in this method:
-   * Uncle Header is a valid header.
-   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
-   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
-   * Uncle Header is not already included as uncle in another block.
-   * @param uncleHeaders - list of uncleHeaders
-   * @param blockchain - pointer to the blockchain
-   */
-  private async _validateUncleHeaders(uncleHeaders: BlockHeader[], blockchain: Blockchain) {
-    if (uncleHeaders.length == 0) {
-      return
-    }
-
-    // Each Uncle Header is a valid header
-    await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
-
-    // Check how many blocks we should get in order to validate the uncle.
-    // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
-    const canonicalBlockMap: Block[] = []
-    let lowestUncleNumber = this.header.number
-
-    uncleHeaders.map((header) => {
-      if (header.number < lowestUncleNumber) {
-        lowestUncleNumber = header.number
-      }
-    })
-
-    // Helper variable: set hash to `true` if hash is part of the canonical chain
-    const canonicalChainHashes: { [key: string]: boolean } = {}
-
-    // Helper variable: set hash to `true` if uncle hash is included in any canonical block
-    const includedUncles: { [key: string]: boolean } = {}
-
-    // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
-    const getBlocks = Number(this.header.number - lowestUncleNumber + BigInt(1))
-
-    // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
-    // Here we get the necessary blocks from the chain.
-    let parentHash = this.header.parentHash
-    for (let i = 0; i < getBlocks; i++) {
-      const parentBlock = await this._getBlockByHash(blockchain, parentHash)
-      if (!parentBlock) {
-        const msg = this._errorMsg('could not find parent block')
-        throw new Error(msg)
-      }
-      canonicalBlockMap.push(parentBlock)
-
-      // mark block hash as part of the canonical chain
-      canonicalChainHashes[parentBlock.hash().toString('hex')] = true
-
-      // for each of the uncles, mark the uncle as included
-      parentBlock.uncleHeaders.map((uh) => {
-        includedUncles[uh.hash().toString('hex')] = true
-      })
-
-      parentHash = parentBlock.header.parentHash
-    }
-
-    // Here we check:
-    // Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
-    // Uncle Header is not already included as uncle in another block.
-    // Uncle Header has a parentHash which points to the canonical chain.
-
-    uncleHeaders.map((uh) => {
-      const uncleHash = uh.hash().toString('hex')
-      const parentHash = uh.parentHash.toString('hex')
-
-      if (!canonicalChainHashes[parentHash]) {
-        const msg = this._errorMsg(
-          'The parent hash of the uncle header is not part of the canonical chain'
-        )
-        throw new Error(msg)
-      }
-
-      if (includedUncles[uncleHash]) {
-        const msg = this._errorMsg('The uncle is already included in the canonical chain')
-        throw new Error(msg)
-      }
-
-      if (canonicalChainHashes[uncleHash]) {
-        const msg = this._errorMsg('The uncle is a canonical block')
-        throw new Error(msg)
-      }
-    })
-  }
-
-  private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
-    try {
-      const block = await blockchain.getBlock(hash)
-      return block
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return undefined
-      } else {
-        throw error
-      }
     }
   }
 
@@ -524,7 +389,7 @@ export class Block {
    * @param msg Base error message
    * @hidden
    */
-  protected _errorMsg(msg: string) {
+  private _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
   }
 }

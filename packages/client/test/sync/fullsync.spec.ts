@@ -202,8 +202,6 @@ tape('[FullSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
 
-    Block.prototype.validateDifficulty = td.func<any>()
-    td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
     const chainTip = Block.fromBlockData({
       header: {},
     })

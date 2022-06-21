@@ -1,6 +1,12 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import Common, {
+  Chain,
+  CliqueConfig,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+} from '@ethereumjs/common'
 import { BigIntLike } from '@ethereumjs/util'
 
 import { DBManager } from './db/manager'
@@ -549,7 +555,6 @@ export default class Blockchain implements BlockchainInterface {
             })
           : item
       const isGenesis = block.isGenesis()
-      const isHeader = item instanceof BlockHeader
 
       // we cannot overwrite the Genesis block after initializing the Blockchain
       if (isGenesis) {
@@ -569,11 +574,11 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        await block.validate(this, isHeader)
+        await this.validateBlock(block)
       }
 
       if (this._validateConsensus) {
-        await this.consensus.validate(block)
+        await this.consensus.validateConsensus(block)
       }
 
       // set total difficulty in the current context scope
@@ -638,6 +643,174 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(ops)
 
       await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+    })
+  }
+
+  /**
+   * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * It verifies the current block against the `parentHash`:
+   * - The `parentHash` is part of the blockchain (it is a valid header)
+   * - Current block number is parent block number + 1
+   * - Current block has a strictly higher timestamp
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Checks on coinbase and mixHash
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param header - header to be validated
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  public async validateHeader(header: BlockHeader, height?: bigint) {
+    if (header.isGenesis()) {
+      return
+    }
+    const parentHeader = (await this.getBlock(header.parentHash)).header
+    if (!parentHeader) {
+      throw new Error(`could not find parent header ${header.errorStr()}`)
+    }
+
+    const { number } = header
+    if (number !== parentHeader.number + BigInt(1)) {
+      throw new Error(`invalid number ${header.errorStr()}`)
+    }
+
+    if (header.timestamp <= parentHeader.timestamp) {
+      throw new Error(`invalid timestamp ${header.errorStr()}`)
+    }
+
+    if (!(header._common.consensusType() === 'pos')) await this.consensus.validateDifficulty(header)
+
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+      const period = (this._common.consensusConfig() as CliqueConfig).period
+      // Timestamp diff between blocks is lower than PERIOD (clique)
+      if (parentHeader.timestamp + BigInt(period) > header.timestamp) {
+        throw new Error(`invalid timestamp diff (lower than period) ${header.errorStr()}`)
+      }
+    }
+
+    header.validateGasLimit(parentHeader)
+
+    if (height) {
+      const dif = height - parentHeader.number
+
+      if (!(dif < BigInt(8) && dif > BigInt(1))) {
+        throw new Error(
+          `uncle block has a parent that is too old or too young ${header.errorStr()}`
+        )
+      }
+    }
+
+    // check blockchain dependent EIP1559 values
+    if (this._common.isActivatedEIP(1559)) {
+      // check if the base fee is correct
+      let expectedBaseFee
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const isInitialEIP1559Block = number === londonHfBlock
+      if (isInitialEIP1559Block) {
+        expectedBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+      } else {
+        expectedBaseFee = parentHeader.calcNextBaseFee()
+      }
+
+      if (header.baseFeePerGas! !== expectedBaseFee) {
+        throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
+      }
+    }
+  }
+
+  /**
+   * Validates a block, by validating the header against the current chain, any uncle headers, and then
+   * whether the block is internally consistent
+   * @param block block to be validated
+   */
+  public async validateBlock(block: Block) {
+    await this.validateHeader(block.header)
+    await this._validateUncleHeaders(block)
+    await block.validateData(false)
+  }
+
+  /**
+   * The following rules are checked in this method:
+   * Uncle Header is a valid header.
+   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
+   * Uncle Header is not already included as uncle in another block.
+   * @param block - block for which uncles are being validated
+   */
+  private async _validateUncleHeaders(block: Block) {
+    const uncleHeaders = block.uncleHeaders
+    if (uncleHeaders.length == 0) {
+      return
+    }
+
+    // Each Uncle Header is a valid header
+    await Promise.all(uncleHeaders.map((uh) => this.validateHeader(uh, block.header.number)))
+
+    // Check how many blocks we should get in order to validate the uncle.
+    // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
+    const canonicalBlockMap: Block[] = []
+    let lowestUncleNumber = block.header.number
+
+    uncleHeaders.map((header) => {
+      if (header.number < lowestUncleNumber) {
+        lowestUncleNumber = header.number
+      }
+    })
+
+    // Helper variable: set hash to `true` if hash is part of the canonical chain
+    const canonicalChainHashes: { [key: string]: boolean } = {}
+
+    // Helper variable: set hash to `true` if uncle hash is included in any canonical block
+    const includedUncles: { [key: string]: boolean } = {}
+
+    // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
+    const getBlocks = Number(block.header.number - lowestUncleNumber + BigInt(1))
+
+    // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
+    // Here we get the necessary blocks from the chain.
+    let parentHash = block.header.parentHash
+    for (let i = 0; i < getBlocks; i++) {
+      const parentBlock = await this.getBlock(parentHash)
+      if (!parentBlock) {
+        throw new Error(`could not find parent block ${block.errorStr()}`)
+      }
+      canonicalBlockMap.push(parentBlock)
+
+      // mark block hash as part of the canonical chain
+      canonicalChainHashes[parentBlock.hash().toString('hex')] = true
+
+      // for each of the uncles, mark the uncle as included
+      parentBlock.uncleHeaders.map((uh) => {
+        includedUncles[uh.hash().toString('hex')] = true
+      })
+
+      parentHash = parentBlock.header.parentHash
+    }
+
+    // Here we check:
+    // Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+    // Uncle Header is not already included as uncle in another block.
+    // Uncle Header has a parentHash which points to the canonical chain.
+
+    uncleHeaders.map((uh) => {
+      const uncleHash = uh.hash().toString('hex')
+      const parentHash = uh.parentHash.toString('hex')
+
+      if (!canonicalChainHashes[parentHash]) {
+        throw new Error(
+          `The parent hash of the uncle header is not part of the canonical chain ${block.errorStr()}`
+        )
+      }
+
+      if (includedUncles[uncleHash]) {
+        throw new Error(`The uncle is already included in the canonical chain ${block.errorStr()}`)
+      }
+
+      if (canonicalChainHashes[uncleHash]) {
+        throw new Error(`The uncle is a canonical block ${block.errorStr()}`)
+      }
     })
   }
 
@@ -1187,7 +1360,15 @@ export default class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
     }
-
+    if (common.consensusType() === 'poa') {
+      if (common.genesis().extraData && common.chainName() !== 'kovan') {
+        // Ensure exta data is populated from genesis data if provided
+        header.extraData = common.genesis().extraData
+      } else {
+        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes (or if chain is Kovan)
+        header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
+      }
+    }
     return Block.fromBlockData({ header }, { common })
   }
 

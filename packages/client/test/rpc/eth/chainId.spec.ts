@@ -1,8 +1,12 @@
 import * as tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
+import { BlockHeader } from '@ethereumjs/block'
+import * as td from 'testdouble'
 
 const method = 'eth_chainId'
+
+const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 tape(`${method}: calls`, async (t) => {
   const { server } = baseSetup()
@@ -41,6 +45,7 @@ tape(`${method}: returns 3 for Ropsten`, async (t) => {
 })
 
 tape(`${method}: returns 42 for Kovan`, async (t) => {
+  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
   )
@@ -53,4 +58,10 @@ tape(`${method}: returns 42 for Kovan`, async (t) => {
     t.equal(res.body.result, `0x${chainId}`, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`reset TD`, (t) => {
+  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  td.reset()
+  t.end()
 })

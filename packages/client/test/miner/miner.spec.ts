@@ -40,8 +40,8 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 tape('[Miner]', async (t) => {
-  const originalValidate = BlockHeader.prototype.validate
-  BlockHeader.prototype.validate = td.func<any>()
+  const originalValidate = BlockHeader.prototype._consensusFormatValidation
+  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
@@ -73,7 +73,9 @@ tape('[Miner]', async (t) => {
         cliqueActiveSigners: () => [A.address],
         cliqueSignerInTurn: async () => true,
         cliqueCheckRecentlySigned: () => false,
+        validateDifficulty: () => undefined,
       },
+      validateHeader: () => {},
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
       _init: async () => undefined,
@@ -389,6 +391,7 @@ tape('[Miner]', async (t) => {
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+    vm.blockchain.validateHeader = td.func<any>() // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
@@ -471,7 +474,7 @@ tape('[Miner]', async (t) => {
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
-    BlockHeader.prototype.validate = originalValidate
+    BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
     t.end()
   })
