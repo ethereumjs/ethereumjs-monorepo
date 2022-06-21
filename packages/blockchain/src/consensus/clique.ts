@@ -109,7 +109,7 @@ export class CliqueConsensus implements Consensus {
     await this.cliqueSaveGenesisSigners(genesisBlock)
   }
 
-  async validateBlockData(block: Block): Promise<void> {
+  async validateConsensus(block: Block): Promise<void> {
     const { header } = block
     const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
     if (!valid) {

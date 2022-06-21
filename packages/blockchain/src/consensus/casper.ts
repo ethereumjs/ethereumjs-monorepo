@@ -16,7 +16,7 @@ export class CasperConsensus implements Consensus {
 
   public async setup(): Promise<void> {}
 
-  public async validateBlockData(): Promise<void> {}
+  public async validateConsensus(): Promise<void> {}
 
   public async validateDifficulty(header: BlockHeader): Promise<void> {
     if (header.difficulty !== BigInt(0)) {

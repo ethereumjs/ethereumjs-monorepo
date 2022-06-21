@@ -578,7 +578,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        await this.consensus.validateBlockData(block)
+        await this.consensus.validateConsensus(block)
       }
 
       // set total difficulty in the current context scope

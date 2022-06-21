@@ -15,7 +15,7 @@ export class EthashConsensus implements Consensus {
     this._ethash = new Ethash(this.blockchain.db as unknown as EthashCacheDB)
   }
 
-  async validateBlockData(block: Block): Promise<void> {
+  async validateConsensus(block: Block): Promise<void> {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
       throw new Error('invalid POW')
