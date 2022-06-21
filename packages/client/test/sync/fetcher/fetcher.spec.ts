@@ -59,7 +59,7 @@ tape('[Fetcher]', (t) => {
       new Error('err0')
     )
     td.when((fetcher as any).pool.contains({ idle: false })).thenReturn(true)
-    ;(fetcher as any).in.queue(job)
+    ;(fetcher as any).in.insert(job)
     ;(fetcher as any)._readableState = []
     ;(fetcher as any).running = true
     ;(fetcher as any).total = 10
@@ -80,20 +80,20 @@ tape('[Fetcher]', (t) => {
     const job1 = { index: 0 }
     const job2 = { index: 1 }
     const job3 = { index: 2 }
-    ;(fetcher as any).in.queue(job1)
-    ;(fetcher as any).in.queue(job2)
-    ;(fetcher as any).in.queue(job3)
+    ;(fetcher as any).in.insert(job1)
+    ;(fetcher as any).in.insert(job2)
+    ;(fetcher as any).in.insert(job3)
     t.equals((fetcher as any).in.length, 3, 'queue filled')
     fetcher.clear()
     t.equals((fetcher as any).in.length, 0, 'queue cleared')
     const job4 = { index: 3 }
     const job5 = { index: 4 }
 
-    ;(fetcher as any).in.queue(job1)
-    ;(fetcher as any).in.queue(job2)
-    ;(fetcher as any).in.queue(job3)
-    ;(fetcher as any).in.queue(job4)
-    ;(fetcher as any).in.queue(job5)
+    ;(fetcher as any).in.insert(job1)
+    ;(fetcher as any).in.insert(job2)
+    ;(fetcher as any).in.insert(job3)
+    ;(fetcher as any).in.insert(job4)
+    ;(fetcher as any).in.insert(job5)
 
     t.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
   })

@@ -4,7 +4,7 @@ import { bufArrToArr } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import RLP from 'rlp'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import Blockchain from '../src'
 import { createBlock } from './util'

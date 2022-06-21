@@ -1,4 +1,3 @@
-import Heap from 'qheap'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -13,6 +12,7 @@ import type VM from '@ethereumjs/vm'
 import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
+import Heap = require('qheap')
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

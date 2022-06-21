@@ -10,7 +10,7 @@ import blocks = require('../../testdata/blocks/beacon.json')
 import { HttpServer } from 'jayson'
 import { bufferToHex, zeros } from '@ethereumjs/util'
 import { BlockHeader } from '@ethereumjs/block'
-import td from 'testdouble'
+import * as td from 'testdouble'
 
 const method = 'engine_newPayloadV1'
 

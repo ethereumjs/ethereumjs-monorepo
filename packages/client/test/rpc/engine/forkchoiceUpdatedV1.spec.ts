@@ -7,7 +7,7 @@ import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import blocks = require('../../testdata/blocks/beacon.json')
 import { batchBlocks } from './newPayloadV1.spec'
 import { bufferToHex, zeros } from '@ethereumjs/util'
-import td from 'testdouble'
+import * as td from 'testdouble'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

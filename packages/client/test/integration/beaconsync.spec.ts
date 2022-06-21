@@ -5,7 +5,7 @@ import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { parseCustomParams } from '../../lib/util'
 import { wait, setup, destroy } from './util'
 
-import td from 'testdouble'
+import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
 
 const originalValidate = BlockHeader.prototype._consensusFormatValidation

@@ -8,7 +8,7 @@ import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { MemoryLevel } from 'memory-level'
-import td from 'testdouble'
+import * as td from 'testdouble'
 type Subchain = {
   head: bigint
   tail: bigint
