@@ -5,9 +5,9 @@ const Set = require('core-js-pure/es/set')
 
 import { StateManager, AccountFields } from '@ethereumjs/statemanager'
 
-import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/evm/precompiles'
+import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { VmStateAccess } from '@ethereumjs/evm/dist/evm/types'
+import { VmStateAccess } from '@ethereumjs/evm/dist/types'
 
 type AddressHex = string
 

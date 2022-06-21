@@ -3,7 +3,8 @@ import Common, { Chain } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account } from '@ethereumjs/util'
 import path from 'path'
-import { EEI } from '../src'
+import EEI from "../../vm/src/eei/eei"
+
 
 export async function getEEI() {
   return new EEI(

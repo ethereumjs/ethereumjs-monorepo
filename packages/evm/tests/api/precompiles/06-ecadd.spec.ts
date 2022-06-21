@@ -1,14 +1,14 @@
 import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../../src'
-import { getActivePrecompiles } from '../../../../src/evm/precompiles'
-import { getEEI } from '../../../utils'
+import EVM from '../../../src'
+import { getActivePrecompiles } from '../../../src/precompiles'
+import { getEEI } from '../../utils'
 
 tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const eei = await getEEI()
-    const evm = await VM.create({ common, eei })
+    const evm = await EVM.create({ common, eei })
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!
 
