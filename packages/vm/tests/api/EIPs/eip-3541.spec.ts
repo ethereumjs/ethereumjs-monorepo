@@ -3,7 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { InterpreterStep } from '@ethereumjs/evm/dist/evm/interpreter'
+import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import EVM from '@ethereumjs/evm'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')

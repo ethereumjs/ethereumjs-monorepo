@@ -3,7 +3,7 @@ import { Address } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createAccount, isRunningInKarma } from '../utils'
+import { createAccount, isRunningInKarma } from './utils'
 import { VmState } from '../../src/eei/vmState'
 
 const StateManager = DefaultStateManager

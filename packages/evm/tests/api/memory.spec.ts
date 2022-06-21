@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Memory from '../../src/memory'
 
 tape('Memory', (t) => {
