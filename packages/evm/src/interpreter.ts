@@ -8,7 +8,7 @@ import {
   MAX_UINT64,
 } from '@ethereumjs/util'
 
-import { ERROR, EvmError } from '../exceptions'
+import { ERROR, EvmError } from './exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'

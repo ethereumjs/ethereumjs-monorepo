@@ -26,7 +26,7 @@ import {
   fromTwos,
   toTwos,
 } from './util'
-import { ERROR } from '../../exceptions'
+import { ERROR } from '../exceptions'
 import { RunState } from './../interpreter'
 import { exponentation } from '.'
 

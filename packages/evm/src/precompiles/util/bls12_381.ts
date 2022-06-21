@@ -1,5 +1,5 @@
 import { padToEven, bufferToBigInt } from '@ethereumjs/util'
-import { EvmError, ERROR } from '../../../exceptions'
+import { EvmError, ERROR } from '../../exceptions'
 
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(

@@ -1,5 +1,5 @@
 import { MAX_INTEGER_BIGINT } from '@ethereumjs/util'
-import { ERROR, EvmError } from '../exceptions'
+import { ERROR, EvmError } from './exceptions'
 
 /**
  * Implementation of the stack used in evm.

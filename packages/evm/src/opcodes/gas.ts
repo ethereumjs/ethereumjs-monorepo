@@ -8,7 +8,7 @@ import {
   updateSstoreGas,
 } from '.'
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
-import { ERROR } from '../../exceptions'
+import { ERROR } from '../exceptions'
 import { RunState } from '../interpreter'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { updateSstoreGasEIP1283 } from './EIP1283'

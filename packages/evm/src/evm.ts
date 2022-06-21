@@ -16,7 +16,7 @@ import {
   short,
 } from '@ethereumjs/util'
 
-import { ERROR, EvmError } from '../exceptions'
+import { ERROR, EvmError } from './exceptions'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import Message, { MessageWithTo } from './message'
 import EOF from './eof'

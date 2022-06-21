@@ -1,11 +1,10 @@
 import { PrecompileInput } from './types'
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../../exceptions'
-import { gasDiscountPairs } from './util/bls12_381'
+import { ERROR, EvmError } from '../exceptions'
 const {
-  BLS12_381_ToG2Point,
+  BLS12_381_ToG1Point,
   BLS12_381_ToFrPoint,
-  BLS12_381_FromG2Point,
+  BLS12_381_FromG1Point,
 } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
@@ -19,10 +18,14 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
 
-  const numPairs = Math.floor(inputData.length / 288)
+  const numPairs = Math.floor(inputData.length / 160)
 
-  const gasUsedPerPair = opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
-  const gasDiscountArray = gasDiscountPairs
+  const gasUsedPerPair = opts._common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537) ?? BigInt(0)
+  const gasDiscountArray = opts._common.paramByEIP(
+    'gasPrices',
+    'Bls12381MultiExpGasDiscount',
+    2537
+  ) as any
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
 
@@ -42,7 +45,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length % 288 != 0) {
+  if (inputData.length % 160 != 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -52,16 +55,14 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
-    [128, 144],
-    [192, 208],
   ]
 
-  const G2Array = []
+  const G1Array = []
   const FrArray = []
 
-  for (let k = 0; k < inputData.length / 288; k++) {
+  for (let k = 0; k < inputData.length / 160; k++) {
     // zero bytes check
-    const pairStart = 288 * k
+    const pairStart = 160 * k
     for (const index in zeroByteCheck) {
       const slicedBuffer = opts.data.slice(
         zeroByteCheck[index][0] + pairStart,
@@ -71,21 +72,21 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
         return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
       }
     }
-    let G2
+    let G1
     try {
-      G2 = BLS12_381_ToG2Point(opts.data.slice(pairStart, pairStart + 256), mcl)
+      G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
     } catch (e: any) {
       return EvmErrorResult(e, opts.gasLimit)
     }
-    const Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 256, pairStart + 288), mcl)
+    const Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 128, pairStart + 160), mcl)
 
-    G2Array.push(G2)
+    G1Array.push(G1)
     FrArray.push(Fr)
   }
 
-  const result = mcl.mulVec(G2Array, FrArray)
+  const result = mcl.mulVec(G1Array, FrArray)
 
-  const returnValue = BLS12_381_FromG2Point(result)
+  const returnValue = BLS12_381_FromG1Point(result)
 
   return {
     executionGasUsed: gasUsed,

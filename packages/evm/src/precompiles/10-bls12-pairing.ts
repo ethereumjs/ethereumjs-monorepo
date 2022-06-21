@@ -1,6 +1,6 @@
 import { PrecompileInput } from './types'
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../../exceptions'
+import { ERROR, EvmError } from '../exceptions'
 
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 

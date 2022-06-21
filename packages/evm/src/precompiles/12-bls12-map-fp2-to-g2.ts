@@ -1,7 +1,7 @@
 import { PrecompileInput } from './types'
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../../exceptions'
-const { BLS12_381_ToG2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
+import { ERROR, EvmError } from '../exceptions'
+const { BLS12_381_ToFp2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')
@@ -11,13 +11,13 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537) ?? BigInt(0)
+  const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381MapG2Gas', 2537) ?? BigInt(0)
 
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length != 512) {
+  if (inputData.length != 128) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -26,12 +26,6 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
-    [128, 144],
-    [192, 208],
-    [256, 272],
-    [320, 336],
-    [384, 400],
-    [448, 464],
   ]
 
   for (const index in zeroByteCheck) {
@@ -41,20 +35,16 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     }
   }
 
-  // TODO: verify that point is on G2
+  // convert input to mcl Fp2 point
 
-  // convert input to mcl G2 points, add them, and convert the output to a Buffer.
-  let mclPoint1
-  let mclPoint2
-
+  let Fp2Point
   try {
-    mclPoint1 = BLS12_381_ToG2Point(opts.data.slice(0, 256), mcl)
-    mclPoint2 = BLS12_381_ToG2Point(opts.data.slice(256, 512), mcl)
+    Fp2Point = BLS12_381_ToFp2Point(opts.data.slice(0, 64), opts.data.slice(64, 128), mcl)
   } catch (e: any) {
     return EvmErrorResult(e, opts.gasLimit)
   }
-
-  const result = mcl.add(mclPoint1, mclPoint2)
+  // map it to G2
+  const result = Fp2Point.mapToG2()
 
   const returnValue = BLS12_381_FromG2Point(result)
 
