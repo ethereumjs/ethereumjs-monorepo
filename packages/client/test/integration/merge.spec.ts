@@ -13,6 +13,7 @@ import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import { setup, destroy } from './util'
+import { BlockHeader } from '@ethereumjs/block'
 
 tape('[Integration:Merge]', async (t) => {
   const commonPoA = Common.custom(
@@ -101,6 +102,7 @@ tape('[Integration:Merge]', async (t) => {
     ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
       accounts[0][0],
     ] // stub
+    BlockHeader.prototype._consensusFormatValidation = () => {} //stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
     remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
