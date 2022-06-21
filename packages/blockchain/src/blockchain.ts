@@ -144,7 +144,7 @@ export interface BlockchainOptions {
 /**
  * This class stores and interacts with blocks.
  */
-export default class Blockchain implements BlockchainInterface {
+export class Blockchain implements BlockchainInterface {
   consensus: Consensus
   db: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
   dbManager: DBManager
@@ -578,7 +578,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        await this.consensus.validateBlockData(block)
+        await this.consensus.validateConsensus(block)
       }
 
       // set total difficulty in the current context scope
