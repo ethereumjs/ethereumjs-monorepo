@@ -9,7 +9,8 @@ import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { VMEvents } from './types'
 
-import EVM, { getActivePrecompiles, EEI, EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import EVM, { getActivePrecompiles, EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import EEI from './eei/eei'
 
 /**
  * Options for instantiating a {@link VM}.

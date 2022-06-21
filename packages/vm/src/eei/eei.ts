@@ -1,10 +1,9 @@
-import { Address, bufferToBigInt } from '@ethereumjs/util'
+import { Address, bigIntToBuffer, bufferToBigInt, setLengthLeft } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
-import { addressToBuffer } from '../evm/opcodes'
 import { StateManager } from '@ethereumjs/statemanager'
-import { EEIInterface } from '../evm/types'
+import { EEIInterface } from '@ethereumjs/evm'
 
 type Block = {
   hash(): Buffer
@@ -14,6 +13,16 @@ type Blockchain = {
   getBlock(blockId: number): Promise<Block>
   copy(): Blockchain
 }
+
+const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
+/**
+ * Converts bigint address (they're stored like this on the stack) to buffer address
+ */
+ function addressToBuffer(address: bigint | Buffer) {
+  if (Buffer.isBuffer(address)) return address
+  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
+}
+
 
 /**
  * External interface made available to EVM bytecode. Modeled after
