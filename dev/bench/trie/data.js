@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655808644366,
+  "lastUpdate": 1655815812007,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ryan@ryanio.com",
-            "name": "Ryan Ghods",
-            "username": "ryanio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5851e721061b95a358d5bb07f5574a1b37fb3b2c",
-          "message": "bump devp2p to v4.2.2, add changelog entries (#1872)",
-          "timestamp": "2022-05-02T14:50:53+02:00",
-          "tree_id": "e46a352d7ec33aaf3a3d14d8f56fc78d04d1ca3a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5851e721061b95a358d5bb07f5574a1b37fb3b2c"
-        },
-        "date": 1651496144696,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 14900,
-            "range": "±18.74%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 12842,
-            "range": "±23.84%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 15662,
-            "range": "±10.10%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 15179,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 17486,
-            "range": "±0.98%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 846,
-            "range": "±6.70%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 89.11,
-            "range": "±93.42%",
-            "unit": "ops/sec",
-            "extra": "56 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 90.55,
-            "range": "±6.17%",
-            "unit": "ops/sec",
-            "extra": "60 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 18.41,
-            "range": "±5.40%",
-            "unit": "ops/sec",
-            "extra": "31 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2925,6 +2838,93 @@ window.BENCHMARK_DATA = {
             "range": "±28.74%",
             "unit": "ops/sec",
             "extra": "29 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c5fb3169c004beca1de1340ebebb8838062dfb03",
+          "message": " Monorepo: Remove esModuleInterop and allowSyntheticDefaultImports Options (cherry-picked) (#1975)\n\n* Monorepo: set esModuleInterop TS compiler option to false\r\n\r\n* client: change `import X` to `import * as X`\r\n\r\n* client: replace qheap with js-priority-queue\r\n\r\n* blockchain: change to import *\r\n\r\n* blockchain/tests: change to import *\r\n\r\n* block/test: change to import *\r\n\r\n* common: change to import *\r\n\r\n* common/tests: change to import *\r\n\r\n* devp2p: change imports to import * or require()\r\n\r\n* ethash/tests: change import tape to import * as\r\n\r\n* rlp/tests: change imports to import *\r\n\r\n* statemanager/test: change imports to import * as\r\n\r\n* trie/tests: change imports to import *\r\n\r\n* ts/tests: change imports to import *\r\n\r\n* util/tests: change imports to import *\r\n\r\n* vm: change json import to import *\r\n\r\n* vm/tests: change imports to import *\r\n\r\n* client/test: change imports to import *\r\n\r\n* vm/tests: fix API test imports\r\n\r\n* trie/benchmarks: fix benchmark test import\r\n\r\n* client: fix qheap import problem\r\n\r\n* Devp2p, EVM: fixed tests\r\n\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>",
+          "timestamp": "2022-06-21T14:40:00+02:00",
+          "tree_id": "05b40da563ff574d001fa8146b2cbbd9ec520835",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c5fb3169c004beca1de1340ebebb8838062dfb03"
+        },
+        "date": 1655815811448,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 33141,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 31374,
+            "range": "±5.79%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 32821,
+            "range": "±0.98%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 32471,
+            "range": "±1.15%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 54234,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 784,
+            "range": "±45.08%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 203,
+            "range": "±8.36%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 72.44,
+            "range": "±50.31%",
+            "unit": "ops/sec",
+            "extra": "63 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 20.81,
+            "range": "±4.65%",
+            "unit": "ops/sec",
+            "extra": "39 samples"
           }
         ]
       }
