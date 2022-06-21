@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { homedir } from 'os'
-import path from 'path'
-import readline from 'readline'
+import * as path from 'path'
+import * as readline from 'readline'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'

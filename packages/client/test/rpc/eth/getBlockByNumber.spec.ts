@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import tape from 'tape'
+import * as tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest, dummy } from '../helpers'
 import { checkError } from '../util'

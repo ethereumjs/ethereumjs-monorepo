@@ -1,7 +1,7 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import Common, { Hardfork } from '../src'
-import testnetMerge from './data/merge/testnetMerge.json'
-import testnetPOS from './data/merge/testnetPOS.json'
+import * as testnetMerge from './data/merge/testnetMerge.json'
+import * as testnetPOS from './data/merge/testnetPOS.json'
 
 tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test('hardforkTD()', function (st: tape.Test) {

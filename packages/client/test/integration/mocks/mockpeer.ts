@@ -1,6 +1,6 @@
-import EventEmitter from 'events'
-import pipe from 'it-pipe'
-import pushable from 'it-pushable'
+import * as EventEmitter from 'events'
+import * as pipe from 'it-pipe'
+import * as pushable from 'it-pushable'
 import { Peer, PeerOptions } from '../../../lib/net/peer'
 import MockServer from './mockserver'
 import MockSender from './mocksender'
@@ -53,8 +53,8 @@ export default class MockPeer extends Peer {
   async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
     const pushableFn: Pushable = pushable()
-    pipe(pushableFn, stream)
-    void pipe(stream, async (source: any) => {
+    pipe.pipe(pushableFn, stream)
+    void pipe.pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
           receiver.emit('data', data)

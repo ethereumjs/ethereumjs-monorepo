@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { encode, TAlgorithm } from 'jwt-simple'
 import { startRPC, closeRPC } from './helpers'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'

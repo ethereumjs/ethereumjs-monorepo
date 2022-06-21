@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { bigIntToHex } from '@ethereumjs/util'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 

@@ -30,7 +30,7 @@ import type {
   PreByzantiumTxReceipt,
   TxReceipt,
 } from '@ethereumjs/vm/dist/types'
-import type { Log } from '@ethereumjs/vm/dist/evm/types'
+import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'

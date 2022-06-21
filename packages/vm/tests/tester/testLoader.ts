@@ -1,6 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import dir from 'node-dir'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as dir from 'node-dir'
 import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false

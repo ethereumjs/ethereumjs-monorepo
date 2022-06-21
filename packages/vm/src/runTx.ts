@@ -13,7 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
-import { EVMResult } from './evm/evm'
+import { EVMResult } from '@ethereumjs/evm'
 import type {
   TxReceipt,
   BaseTxReceipt,

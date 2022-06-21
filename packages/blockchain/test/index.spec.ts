@@ -1,10 +1,10 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import tape from 'tape'
+import * as tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import blocksData from './testdata/blocks_mainnet.json'
+import * as blocksData from './testdata/blocks_mainnet.json'
 
 import { MemoryLevel } from 'memory-level'
 

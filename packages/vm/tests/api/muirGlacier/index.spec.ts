@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'

@@ -5,13 +5,11 @@ import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
-import EVM from './evm/evm'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { getActivePrecompiles } from './evm/precompiles'
-import EEI from './eei/eei'
-import { EEIInterface, EVMInterface } from './evm/types'
 import { VMEvents } from './types'
+
+import EVM, { getActivePrecompiles, EEI, EEIInterface, EVMInterface } from '@ethereumjs/evm'
 
 /**
  * Options for instantiating a {@link VM}.

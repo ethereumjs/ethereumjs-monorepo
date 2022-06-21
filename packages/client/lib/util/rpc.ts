@@ -2,12 +2,13 @@ import { createServer } from 'http'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { json as jsonParser } from 'body-parser'
 import { decode, TAlgorithm } from 'jwt-simple'
-import Connect, { IncomingMessage } from 'connect'
+import * as Connect from 'connect'
 import cors from 'cors'
 import { inspect } from 'util'
 import { RPCManager } from '../rpc'
 import { Logger } from '../logging'
 
+type IncomingMessage = Connect.IncomingMessage
 const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {

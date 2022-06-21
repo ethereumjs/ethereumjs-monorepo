@@ -1,14 +1,14 @@
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { Address, Account } from '@ethereumjs/util'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
+import { VmState } from '@ethereumjs/evm/dist/eei/vmState'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),

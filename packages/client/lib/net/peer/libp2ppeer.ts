@@ -1,5 +1,5 @@
 import { Multiaddr, multiaddr } from 'multiaddr'
-import PeerId from 'peer-id'
+import * as PeerId from 'peer-id'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Libp2pSender } from '../protocol/libp2psender'
 import { Peer, PeerOptions } from './peer'

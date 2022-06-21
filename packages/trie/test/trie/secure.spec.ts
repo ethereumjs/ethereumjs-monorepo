@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { LevelDB, SecureTrie } from '../../src'
 
 tape('SecureTrie', function (t) {

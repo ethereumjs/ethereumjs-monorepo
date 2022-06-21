@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'

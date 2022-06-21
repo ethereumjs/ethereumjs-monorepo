@@ -1,6 +1,7 @@
 /// <reference path="./testdouble-timers.d.ts" />
-import tape from 'tape'
-import td from 'testdouble'
+/// <reference path="./testdouble.d.ts" />
+import * as tape from 'tape'
+import * as td from 'testdouble'
 import timers from 'testdouble-timers'
 import { FlowControl } from '../../../lib/net/protocol'
 
@@ -15,7 +16,7 @@ tape('[FlowControl]', (t) => {
     mrr: 10,
   }
   const peer = { id: '1', les: { status: settings } } as any
-  const clock = (td as any).timers()
+  const clock = td.timers()
 
   t.test('should handle incoming flow control', (t) => {
     const expected = [700, 700, 410, 120, -170]

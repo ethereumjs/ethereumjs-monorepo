@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import tape from 'tape'
+import * as tape from 'tape'
 import { Client } from 'jayson/promise'
 
 const cliArgs = ['--rpc', '--ws', '--dev', '--transports=rlpx']

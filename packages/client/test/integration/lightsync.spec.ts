@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 import { Event } from '../../lib/types'
 import { wait, setup, destroy } from './util'
 import { SyncMode } from '../../lib/config'

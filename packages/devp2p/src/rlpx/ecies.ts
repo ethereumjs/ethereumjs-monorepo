@@ -1,4 +1,4 @@
-import crypto, { Decipher } from 'crypto'
+import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { bufArrToArr } from '@ethereumjs/util'
 import RLP from 'rlp'
@@ -18,6 +18,7 @@ import {
   zfill,
 } from '../util'
 import { ecdsaSign, ecdsaRecover, ecdh } from 'ethereum-cryptography/secp256k1-compat'
+type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
