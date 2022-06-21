@@ -18,11 +18,10 @@ const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 /**
  * Converts bigint address (they're stored like this on the stack) to buffer address
  */
- function addressToBuffer(address: bigint | Buffer) {
+function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
   return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
 }
-
 
 /**
  * External interface made available to EVM bytecode. Modeled after
