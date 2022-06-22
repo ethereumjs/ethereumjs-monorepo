@@ -8,7 +8,7 @@
  * using node-static or `python -mSimpleHTTPServer`).
  */
 const BN = require('bn.js')
-const VM = require('../dist.browser').default
+const VM = require('../dist').default
 
 const run = async () => {
   // Create a new VM instance

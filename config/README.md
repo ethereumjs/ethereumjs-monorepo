@@ -99,8 +99,7 @@ Exposed CLI commands:
 
 ### Usage
 
-The three files below compose the functionality built into `ts-build.sh` and `ts-compile.sh`. Note that the browser build is optional, and in the case it's not present in the package, browser builds will be ignored.
-
+The three files below compose the functionality built into `ts-build.sh` and `ts-compile.sh`. Note that the build is browser compatible with `ES2020` target.
 Add `tsconfig.json`:
 
 ```json
@@ -122,18 +121,6 @@ Add `tsconfig.prod.json`:
 }
 ```
 
-Add `tsconfig.browser.json`:
-
-```json
-{
-  "extends": "../../config/tsconfig.browser.json",
-  "include": ["src/**/*.ts"],
-  "compilerOptions": {
-    "outDir": "./dist.browser"
-  }
-}
-```
-
 Note: the `outDir` property is mandatory to generate assets to a directory.
 
 Use CLI commands above in your `package.json`:
@@ -143,18 +130,6 @@ Use CLI commands above in your `package.json`:
     "tsc":   "../../config/cli/ts-compile.sh",
     "build": "../../config/cli/ts-build.sh"
   }
-```
-
-The default production target is ES2017. To support shipping the ES5 target for browsers, add to your `package.json`:
-
-```json
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
-  "files": [
-    "dist",
-    "dist.browser"
-  ]
 ```
 
 ## Documentation

@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.browser.json",
+  "extends": "../../config/tsconfig.json",
   "include": ["browser/index.ts"],
   "exclude": ["lib/index.js"],
   "compilerOptions": {

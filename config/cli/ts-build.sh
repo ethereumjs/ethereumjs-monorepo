@@ -72,13 +72,9 @@ build_browser() {
 
 # Begin build process.
 
-if [ "$1" = "node" ];
-then
-    build_node
-elif [ "$1" = "browser" ];
+if [ "$1" = "browser" ];
 then
     build_browser
 else
     build_node
-    build_browser
 fi

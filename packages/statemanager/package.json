@@ -10,16 +10,12 @@
   ],
   "files": [
     "dist",
-    "dist.browser",
     "src"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
   "scripts": {
-    "build": "npm run build:node && npm run build:browser",
-    "build:node": "../../config/cli/ts-build.sh node",
-    "build:browser": "../../config/cli/ts-build.sh browser",
+    "build": "../../config/cli/ts-build.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
