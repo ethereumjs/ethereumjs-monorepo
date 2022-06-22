@@ -283,6 +283,7 @@ export default class VM extends AsyncEventEmitter {
         Hardfork.Berlin,
         Hardfork.London,
         Hardfork.ArrowGlacier,
+        Hardfork.GrayGlacier,
         Hardfork.MergeForkIdTransition,
         Hardfork.Merge,
       ]
