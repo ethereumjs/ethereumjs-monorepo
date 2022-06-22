@@ -14,7 +14,6 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist/index.js",
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "profiling": "0x ./benchmarks/run.js profiling",

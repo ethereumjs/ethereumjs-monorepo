@@ -16,7 +16,6 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist/index.js",
   "scripts": {
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
