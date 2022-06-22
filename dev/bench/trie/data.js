@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655921239454,
+  "lastUpdate": 1655923106971,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c2f20d0a1745072422a0ffd3528640c4af9d6fcd",
-          "message": "Tx: Ensure TxOptions propagate from unsigned to signed (#1884)\n\n* tx: ensure TxOptions propagate from unsigned to signed\r\n\r\n* tx: ensure TxOptions propagate from unsigned to signed\r\n\r\n* tx: take common from tx.common when signing\r\n\r\n* tx: fix typo\r\n\r\n* tx: address review",
-          "timestamp": "2022-05-16T22:02:22+02:00",
-          "tree_id": "8c36512584f73a0792f4f34c2562d0c4bccfe8a4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c2f20d0a1745072422a0ffd3528640c4af9d6fcd"
-        },
-        "date": 1652731632654,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 15816,
-            "range": "±12.17%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 17285,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 10145,
-            "range": "±30.11%",
-            "unit": "ops/sec",
-            "extra": "49 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 15917,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 17960,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 835,
-            "range": "±6.99%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 168,
-            "range": "±11.73%",
-            "unit": "ops/sec",
-            "extra": "59 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 50.03,
-            "range": "±85.16%",
-            "unit": "ops/sec",
-            "extra": "57 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 15.98,
-            "range": "±26.22%",
-            "unit": "ops/sec",
-            "extra": "31 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2925,6 +2838,93 @@ window.BENCHMARK_DATA = {
             "range": "±23.57%",
             "unit": "ops/sec",
             "extra": "30 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "74d5937b115d419a7d3fd697bc9c321355204a33",
+          "message": "Remove explicit browser builds as monorepo builds already target es2020 (#1985)\n\n* Remove explicity browser builds as monorepo builds\r\n\r\n* remove browser key from package.json except client",
+          "timestamp": "2022-06-22T20:34:22+02:00",
+          "tree_id": "4b99bdcca5166da67c9a1e243ad4c53604b6a270",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/74d5937b115d419a7d3fd697bc9c321355204a33"
+        },
+        "date": 1655923105025,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 27558,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 24935,
+            "range": "±9.24%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 27680,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 26985,
+            "range": "±2.11%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 44884,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 793,
+            "range": "±6.82%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 131,
+            "range": "±29.06%",
+            "unit": "ops/sec",
+            "extra": "41 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 79.98,
+            "range": "±11.93%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 16.47,
+            "range": "±6.17%",
+            "unit": "ops/sec",
+            "extra": "29 samples"
           }
         ]
       }
