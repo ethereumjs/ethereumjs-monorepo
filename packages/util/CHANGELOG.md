@@ -38,11 +38,11 @@ This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompat
 
 To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
 
-See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) for the core `BigInt` transition PRs.
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
 
 ### BigInt Helpers and API Changes
 
-The Util library is a utility library for other EthereumJS and third-party libraries and some core helpers around the newly introduced `BigInt` usage have been added to this library to be available throughout the stack, see `BigInt` related PRs as well as PR [#1825](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1825).
+The Util library is a utility library for other EthereumJS and third-party libraries. Some core helpers around the newly introduced `BigInt` usage have been added to this library to be available throughout the stack, see `BigInt` related PRs as well as PR [#1825](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1825).
 
 There is a new `BigIntLike` type representing some `BigInt`-compatible type flavors (`bigint | PrefixedHexString | number | Buffer`) and replacing the old `BNLike` type. This is used for typing of various API methods.
 

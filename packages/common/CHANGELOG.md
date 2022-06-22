@@ -34,7 +34,7 @@ const vm = await VM.create({ common })
 
 With the `v3` release the default `Common` hardfork changes from `Istanbul` to `London`, see PR [#1749](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1749).
 
-**Breaking:** Please check your upper-level library instantiations (e.g. for Tx, VM,...) where you use an implicit default Common (so: do not explcitly pass in a Common instance).
+**Breaking:** Please check your upper-level library instantiations (e.g. for Tx, VM,...) where you use an implicit default Common (so: do not explicitly pass in a Common instance).
 
 ### BigInt Introduction / ES2020 Build Target
 
@@ -42,9 +42,9 @@ With this round of breaking releases the whole EthereumJS library stack removes 
 
 This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
 
-To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+Our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/) to allow for BigInt support. We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
 
-See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) for the core `BigInt` transition PRs.
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
 
 ### General and BigInt-Related API Changes
 
@@ -78,7 +78,6 @@ Renamings:
 
 **Breaking:** So actually: most of the methods affected, lots of numbers going in and out particularly in this library. 😋 Please check on the method names and update accordingly.
 
-
 #### Method Removals
 
 Following methods have been removed, see PRs [#1698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1698) and [#1709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1709).
@@ -87,7 +86,7 @@ Following methods have been removed, see PRs [#1698](https://github.com/ethereum
 - All temporary `BN`-appended method names, e.g. `nextHardforkBlockBN()` (search for "BN(" e.g.))
 - `supportedHardforks` constructor argument
 
-Also, there is no notion of `active` HFs in Common any more in the sense that HFs could be added to a chain file which would then not "activate" (e.g. the `DAO` HF for `Rinkeby`). The previous behavior/semantics had no practical benefit and chain files should now be updated to only include the HFs which would/will at some point activate on a chain.
+Also, there is no notion of `active` HFs in Common anymore in the sense that HFs could be added to a chain file which would then not "activate" (e.g. the `DAO` HF for `Rinkeby`). The previous behavior/semantics had no practical benefit and chain files should now be updated to only include the HFs which would/will at some point activate on a chain.
 
 Following methods have been removed accordingly:
 
