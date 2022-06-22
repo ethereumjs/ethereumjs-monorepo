@@ -30,6 +30,24 @@ Please update your library references accordingly and install with:
 npm i @ethereumjs/trie
 ```
 
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+While the Trie library currently has no specific BigInt usage we have generally updated our build target to [ES2020](https://262.ecma-international.org/11.0/) to allow for BigInt support now or for future functionality additions. We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+
 ### Database Changes
 
 #### Generic DB Interface
@@ -48,16 +66,16 @@ The new `DB` interface can be used like this for LevelDB:
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_NAME')) })
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
-If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used.
+If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations (e.g. proof trie creation for range proofs) will always use the internal `level` based data storage, so there will be some continued `level` DB usage also when you switch to an alternative data store for permanent trie storage).
 
 #### Level DB Upgrade / Browser Compatibility
 
 Along with the DB interface extraction the internal Level DB code has been reworked to now be based and work with the latest Level [v8.0.0](https://github.com/Level/level/releases/tag/v8.0.0) major Level DB release. This allows to use ES6-style `import` syntax to import the `Level` instance and allows for better typing when working with Level DB.
 
-Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`.
+Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`. For some context it is worth to mention that the `level` package itself is starting with the v8 release just a proxy for these other packages and has no functionality itself.
 
 ### API Changes
 
@@ -67,7 +85,7 @@ Check your Trie instantiations and see if you use constructor options. In this c
 
 - `constructor(db?: LevelUp | null, root?: Buffer, deleteFromDB: boolean = false)` -> `constructor(opts: TrieOpts = {})`
 
-The following deprecated or semi-private methods have been removed, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874) and PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874).
+The following deprecated or semi-private methods have been removed, see PR [#1874](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1874) and PR [#1834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1834).
 
 - `setRoot()` (use `Trie.root` instead)
 - Semi-private `_walkTrie()` and `_lookupNode()` methods (should not but might have been used directly)
