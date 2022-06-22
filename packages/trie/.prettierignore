@@ -1,7 +1,6 @@
 node_modules
 .vscode
 dist
-dist.browser
 .nyc_output
 *.json
 docs

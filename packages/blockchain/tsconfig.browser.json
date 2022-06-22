@@ -1,9 +1,0 @@
-{
-  "extends": "../../config/tsconfig.browser.json",
-  "include": ["src/**/*.ts", "src/**/*.json"],
-  "compilerOptions": {
-    "outDir": "./dist.browser",
-    "types": ["node"],
-    "typeRoots": ["node_modules/@types"]
-  }
-}
