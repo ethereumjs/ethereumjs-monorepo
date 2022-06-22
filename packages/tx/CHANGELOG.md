@@ -30,6 +30,9 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const tx = Transaction.fromTxData({
+  // Provide your tx data here or use default values
+}, { common })
 ```
 
 ### BigInt Introduction / ES2020 Build Target
@@ -52,7 +55,7 @@ Along the breaking releases we have therefore deactivated both of these options 
 
 ### BigInt-Related API Changes
 
-All the transaction parameters which have been previously taken in as `BNLike` (see `Util` library) - like `gasPrice` or `nonce` - are now taken in as `BigIntLike` and internally stored as a `BigInt`.
+All transaction data input which have been previously taken in as `BNLike` (see `Util` library) - like `gasPrice` or `nonce` - are now taken in as `BigIntLike` and internally stored as a `BigInt`.
 
 Have a look at your object instantiations on how you do things and if you need to update.
 
@@ -72,6 +75,10 @@ Additionally the following deprecated methods/getters have been removed from the
 - `get yParity()` (`alias for v`)
 - `tx.fromRlpSerializedTx()`
 - `TransactionFactory.getTransactionClass()`
+
+### Reduced Bundle Size (MB -> KB)
+
+The bundle size of the library has been dramatically reduced going down from MBs to KBs due to a reworked genesis code handling throughout the library stack in PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) allowing the `Common` library to now ship without the bundled (large) genesis state definitions (especially for mainnet).
 
 ### Other Changes
 
