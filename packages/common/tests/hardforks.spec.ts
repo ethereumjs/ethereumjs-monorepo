@@ -16,6 +16,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
       Hardfork.Shanghai,
       Hardfork.Merge,
     ]
@@ -41,8 +42,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.getHardforkByBlockNumber(12965000), Hardfork.London, msg)
     st.equal(c.getHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
-    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
-
+    st.equal(c.getHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.GrayGlacier, msg)
     msg = 'should set HF correctly'
 
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.Chainstart, msg)
@@ -52,7 +53,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.setHardforkByBlockNumber(12965000), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
-    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
+    st.equal(c.setHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
+    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.GrayGlacier, msg)
 
     c = new Common({ chain: Chain.Ropsten })
     st.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)

@@ -21,6 +21,7 @@ export enum Hardfork {
   Berlin = 'berlin',
   London = 'london',
   ArrowGlacier = 'arrowGlacier',
+  GrayGlacier = 'grayGlacier',
   Shanghai = 'shanghai',
   MergeForkIdTransition = 'mergeForkIdTransition',
   Merge = 'merge',
