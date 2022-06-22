@@ -255,7 +255,6 @@ export default class VM extends AsyncEventEmitter<VMEvents> {
     } else {
       this.evm = new EVM({
         common: this._common,
-        blockchain: this.blockchain,
         eei: this.eei,
       })
     }
@@ -364,7 +363,7 @@ export default class VM extends AsyncEventEmitter<VMEvents> {
     // rather than deep copying the original ones since the copy of the `StateManager`
     // inside the EVM and EEI will be different than the `VM` level copy otherwise
     const eeiCopy = new EEI(stateCopy, commonCopy, blockchainCopy)
-    const evmCopy = new EVM({ eei: eeiCopy, blockchain: blockchainCopy, common: commonCopy })
+    const evmCopy = new EVM({ eei: eeiCopy, common: commonCopy })
     return VM.create({
       stateManager: stateCopy,
       blockchain: blockchainCopy,
