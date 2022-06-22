@@ -389,7 +389,7 @@ export class Block {
    * @param msg Base error message
    * @hidden
    */
-  private _errorMsg(msg: string) {
+  protected _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
   }
 }
