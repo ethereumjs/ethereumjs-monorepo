@@ -12,7 +12,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../../src'
+import { VM } from '../../../src/vm'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'

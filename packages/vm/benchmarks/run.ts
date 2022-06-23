@@ -1,4 +1,4 @@
-import Benchmark = require('benchmark')
+import Benchmark from 'benchmark'
 import { BenchmarksType } from './util'
 import { mainnetBlocks } from './mainnetBlocks'
 
@@ -29,7 +29,7 @@ async function main() {
   }
 
   // Initialization
-  let suite = null
+  let suite
   // Choose between benchmarking or profiling (with 0x)
   if (args[2] === 'benchmarks') {
     console.log('Benchmarking started...')

@@ -1,67 +1,13 @@
 import { Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 import { Trie } from '@ethereumjs/trie'
 import RLP from 'rlp'
-import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
+import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
-import VM from '.'
-import Bloom from './bloom'
-import { RunTxResult } from './runTx'
+import { VM } from './vm'
+import { Bloom } from './bloom'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
-
-/**
- * Options for the block builder.
- */
-export interface BuilderOpts extends BlockOptions {
-  /**
-   * Whether to put the block into the vm's blockchain after building it.
-   * This is useful for completing a full cycle when building a block so
-   * the only next step is to build again, however it may not be desired
-   * if the block is being emulated or may be discarded as to not affect
-   * the underlying blockchain.
-   *
-   * Default: true
-   */
-  putBlockIntoBlockchain?: boolean
-}
-
-/**
- * Options for building a block.
- */
-export interface BuildBlockOpts {
-  /**
-   * The parent block
-   */
-  parentBlock: Block
-
-  /**
-   * The block header data to use.
-   * Defaults used for any values not provided.
-   */
-  headerData?: HeaderData
-
-  /**
-   * The block and builder options to use.
-   */
-  blockOpts?: BuilderOpts
-}
-
-/**
- * Options for sealing a block.
- */
-export interface SealBlockOpts {
-  /**
-   * For PoW, the nonce.
-   * Overrides the value passed in the constructor.
-   */
-  nonce?: Buffer
-
-  /**
-   * For PoW, the mixHash.
-   * Overrides the value passed in the constructor.
-   */
-  mixHash?: Buffer
-}
+import { BuildBlockOpts, BuilderOpts, SealBlockOpts, RunTxResult } from './types'
 
 export class BlockBuilder {
   /**

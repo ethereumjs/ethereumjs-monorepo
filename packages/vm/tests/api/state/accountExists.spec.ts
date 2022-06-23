@@ -1,7 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
-import VM from '../../../src'
+import { VM } from '../../../src/vm'
 
 tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', async (t) => {
   // This transaction https://etherscan.io/tx/0x26ea8719eeca5737f8ca872bca1ac53cea9bf6e11462dd83317c2e66a4e43d7b produced an error

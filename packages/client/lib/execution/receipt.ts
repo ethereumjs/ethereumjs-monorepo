@@ -1,6 +1,5 @@
-import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm/dist/types'
+import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt, Bloom } from '@ethereumjs/vm'
 import { Log } from '@ethereumjs/evm'
-import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
 import {
   arrToBufArr,

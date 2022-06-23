@@ -8,7 +8,7 @@ import {
   FeeMarketEIP1559Transaction,
   FeeMarketEIP1559TxData,
 } from '@ethereumjs/tx'
-import VM from '../../src'
+import { VM } from '../../src/vm'
 import { createAccount, getTransaction, setBalance } from './utils'
 import Blockchain from '@ethereumjs/blockchain'
 

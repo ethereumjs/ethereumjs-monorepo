@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import { toBuffer, bufferToHex, Address, Account } from '@ethereumjs/util'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import VM from '../../src/index'
+import { VM } from '../../src/vm'
 import EVM from '@ethereumjs/evm'
 
 tape('VM events', (t) => {

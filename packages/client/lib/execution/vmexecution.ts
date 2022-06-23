@@ -15,8 +15,7 @@ import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
 import { ReceiptsManager } from './receipt'
 import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts } from '@ethereumjs/vm/dist/runBlock'
-import type { TxReceipt } from '@ethereumjs/vm/dist/types'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM

@@ -3,7 +3,7 @@ import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
-import VM from '../../src'
+import { VM } from '../../src/vm'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import * as testnet from './testdata/testnet.json'
