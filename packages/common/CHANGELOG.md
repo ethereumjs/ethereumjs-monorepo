@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.6.5 - 2022-06-23
+
+### GrayGlacier HF Support
+
+This release adds support for the [GrayGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md) - see PR [#1984](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1984) - which delays the difficulty bomb to mid September 2022 on mainnet to allow for the Merge HF to take place before the difficulty bomb triggers.
+
+Please note that for backwards-compatibility reasons Common is still instantiated with `istanbul` by default.
+
+A GrayGlacier Common can be instantiated with:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.GrayGlacier })
+```
+
 ## 2.6.4 - 2022-04-14
 
 ### EIP-3651: Warm COINBASE

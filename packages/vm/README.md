@@ -118,6 +118,7 @@ Currently the following hardfork rules are supported:
 - `berlin` (`v5.2.0`+)
 - `london` (`v5.4.0`+)
 - `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
+- `grayGlacier` (only `mainnet`) (`5.9.3`+)
 
 Default: `istanbul` (taken from `Common.DEFAULT_HARDFORK`)
 
@@ -182,6 +183,7 @@ Currently supported EIPs:
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
 
 ## Tracing Events
 

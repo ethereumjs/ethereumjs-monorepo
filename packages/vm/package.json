@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "5.9.2",
+  "version": "5.9.3",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -47,9 +47,9 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.2",
+    "@ethereumjs/block": "^3.6.3",
     "@ethereumjs/blockchain": "^5.5.3",
-    "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.5.2",
     "merkle-patricia-tree": "^4.2.4",
     "async-eventemitter": "^0.2.4",

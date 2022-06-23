@@ -292,6 +292,7 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
+- `grayGlacier` (`Hardfork.GrayGlacier`) (since `v2.6.5`)
 - `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
 
 ### Future Hardforks
@@ -345,6 +346,7 @@ The following EIPs are currently supported:
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133): Delaying the difficulty bomb to Mid September 2022
 
 ## Bootstrap Nodes
 
