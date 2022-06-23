@@ -5,7 +5,7 @@ import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { VM } from './vm'
-import Bloom from './bloom'
+import { Bloom } from './bloom'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
 import { BuildBlockOpts, BuilderOpts, SealBlockOpts, RunTxResult } from './types'
 

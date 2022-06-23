@@ -5,7 +5,7 @@ import RLP from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { VM } from './vm'
-import Bloom from './bloom'
+import { Bloom } from './bloom'
 import type {
   TxReceipt,
   PreByzantiumTxReceipt,

@@ -11,7 +11,7 @@ import {
   Capability,
 } from '@ethereumjs/tx'
 import { VM } from './vm'
-import Bloom from './bloom'
+import { Bloom } from './bloom'
 import type {
   TxReceipt,
   BaseTxReceipt,

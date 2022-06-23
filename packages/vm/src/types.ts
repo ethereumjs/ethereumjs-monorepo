@@ -5,7 +5,7 @@ import { BigIntLike } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import { StateManager } from '@ethereumjs/statemanager'
 import Common from '@ethereumjs/common'
-import Bloom from './bloom'
+import { Bloom } from './bloom'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**

@@ -3,7 +3,7 @@ import { zeros } from '@ethereumjs/util'
 
 const BYTE_SIZE = 256
 
-export default class Bloom {
+export class Bloom {
   bitvector: Buffer
 
   /**
