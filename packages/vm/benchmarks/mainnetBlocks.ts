@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import Benchmark = require('benchmark')
+import Benchmark from 'benchmark'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
