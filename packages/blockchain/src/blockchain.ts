@@ -29,6 +29,7 @@ export class Blockchain implements BlockchainInterface {
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
+  private _consensus?: string /** consensus algorithm */
 
   /**
    * The following two heads and the heads stored within the `_heads` always point
@@ -114,11 +115,10 @@ export class Blockchain implements BlockchainInterface {
     this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
-
+    this._consensus = opts.consensus ?? this._common.consensusAlgorithm()
     this.db = opts.db ? opts.db : new MemoryLevel()
     this.dbManager = new DBManager(this.db, this._common)
-
-    switch (this._common.consensusAlgorithm()) {
+    switch (this._consensus) {
       case ConsensusAlgorithm.Casper:
         this.consensus = new CasperConsensus({ blockchain: this })
         break
