@@ -1,7 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import * as tape from 'tape'
-import Blockchain from '../src'
+import Blockchain, { CasperConsensus, Consensus, EthashConsensus } from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as blocksData from './testdata/blocks_mainnet.json'
@@ -35,6 +35,64 @@ tape('blockchain test', (t) => {
       'tangerineWhistle',
       'correct HF setting with hardforkByHeadBlockNumber option'
     )
+    st.end()
+  })
+
+  t.test('should initialize correctly with consensus option passed in', async (st) => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    let blockchain = await Blockchain.create({ common: common, consensus: 'casper' })
+    let iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) - casper'
+    )
+    blockchain = await Blockchain.create({ common: common, consensus: 'ethash' })
+    iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) - ethash'
+    )
+    blockchain = await Blockchain.create({ common: common, consensus: 'clique' })
+    iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) -  clique'
+    )
+    st.end()
+  })
+  t.test('should initialize correctly with consensusAlgorithm option passed in', async (st) => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    let blockchain = await Blockchain.create({
+      common: common,
+      consensusAlgorithm: (_blockchain: { blockchain: Blockchain }) =>
+        new CasperConsensus(_blockchain) as Consensus,
+    })
+    let iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) - casper'
+    )
+    blockchain = await Blockchain.create({
+      common: common,
+      consensusAlgorithm: (_blockchain: { blockchain: Blockchain }) =>
+        new EthashConsensus(_blockchain) as Consensus,
+    })
+    iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) - ethash'
+    )
+    blockchain = await Blockchain.create({
+      common: common,
+      consensusAlgorithm: (_blockchain: { blockchain: Blockchain }) =>
+        new CasperConsensus(_blockchain) as Consensus,
+    })
+    iteratorHead = await blockchain.getIteratorHead()
+    st.ok(
+      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+      'correct genesis hash (getIteratorHead()) - clique'
+    )
+
     st.end()
   })
 
