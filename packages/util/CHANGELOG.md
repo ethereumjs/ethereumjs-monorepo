@@ -14,7 +14,7 @@ We have gotten rid of a lot of technical debt and inconsistencies and removed un
 
 We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
 
-So, enjoy the releases (this is a first round of Beta releases, with final releases following in 2-3 weeks if things go well)! 🎉
+So, enjoy the releases (this is a first round of Beta releases, with final releases following  a couple of weeks after if things go well)! 🎉
 
 The EthereumJS Team
 
