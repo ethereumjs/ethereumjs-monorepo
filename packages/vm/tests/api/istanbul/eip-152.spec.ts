@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { default as blake2f, F } from '@ethereumjs/evm/dist/evm/precompiles/09-blake2f'
+import { default as blake2f, F } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go

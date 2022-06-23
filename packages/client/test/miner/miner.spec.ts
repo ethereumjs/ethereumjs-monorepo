@@ -7,7 +7,7 @@ import { Address } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/evm/dist/eei/vmState'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'

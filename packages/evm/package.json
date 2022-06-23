@@ -33,24 +33,17 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.2",
-    "@ethereumjs/blockchain": "^5.5.2",
     "@ethereumjs/common": "^2.6.4",
-    "@ethereumjs/tx": "^3.5.2",
-    "@ethereumjs/statemanager": "^1.0.0",
-    "@ethereumjs/trie": "^5.0.0",
     "async-eventemitter": "^0.2.4",
-    "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",
     "@ethereumjs/util": "^8.0.0",
     "ethereum-cryptography": "^1.0.3",
-    "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
-    "rlp": "^3.0.0",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
+    "@ethereumjs/statemanager": "^1.0.0",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",

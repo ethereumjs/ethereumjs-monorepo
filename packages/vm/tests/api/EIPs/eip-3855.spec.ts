@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { InterpreterStep } from '@ethereumjs/evm/dist/evm/interpreter'
+import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import EVM from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 
