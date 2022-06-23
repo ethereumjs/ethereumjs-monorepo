@@ -182,7 +182,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     c = new Common({ chain: Chain.Mainnet })
     msg = 'should return correct number of active HFs for mainnet'
-    st.equal(c.activeHardforks().length, 13, msg)
+    st.equal(c.activeHardforks().length, 14, msg)
 
     c = new Common({ chain: Chain.Rinkeby })
     msg = 'should return correct number of active HFs for rinkeby'
