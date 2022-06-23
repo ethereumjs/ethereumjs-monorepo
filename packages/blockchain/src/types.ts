@@ -1,6 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
+import { Consensus } from '.'
+import { Blockchain } from './blockchain'
 import { GenesisState } from './genesisStates'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -81,6 +83,14 @@ export interface BlockchainOptions {
    * Default: `true`.
    */
   validateConsensus?: boolean
+
+  /**
+   * Options to pass in string to define consensus
+   * Or to pass in custom consensusAlgorithm that correctly implements `Consensus`
+   */
+
+  consensus?: 'casper' | 'clique' | 'ethash'
+  consensusAlgorithm?: (blockchain: { blockchain: Blockchain }) => Consensus
 
   /**
    * This flag indicates if protocol-given consistency checks on
