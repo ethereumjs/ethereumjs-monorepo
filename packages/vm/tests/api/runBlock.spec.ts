@@ -461,7 +461,7 @@ tape('runBlock() -> tx types', async (t) => {
       res.gasUsed,
       res.receipts
         .map((r) => r.cumulativeBlockGasUsed)
-        .reduce((prevValue, currValue) => prevValue + currValue, BigInt(0)),
+        .reduce((prevValue: bigint, currValue: bigint) => prevValue + currValue, BigInt(0)),
       "gas used should equal transaction's total gasUsed"
     )
   }
