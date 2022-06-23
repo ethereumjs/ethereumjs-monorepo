@@ -10,12 +10,12 @@ import {
   FeeMarketEIP1559Transaction,
   Capability,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
+import { RunBlockOpts, AfterBlockEvent } from '../../src/types'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import * as testnet from './testdata/testnet.json'
-import VM from '../../src/index'
+import VM from '../../src/vm'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
