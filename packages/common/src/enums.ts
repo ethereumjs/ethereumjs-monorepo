@@ -22,9 +22,9 @@ export enum Hardfork {
   London = 'london',
   ArrowGlacier = 'arrowGlacier',
   GrayGlacier = 'grayGlacier',
-  Shanghai = 'shanghai',
   MergeForkIdTransition = 'mergeForkIdTransition',
   Merge = 'merge',
+  Shanghai = 'shanghai',
 }
 
 export enum ConsensusType {
