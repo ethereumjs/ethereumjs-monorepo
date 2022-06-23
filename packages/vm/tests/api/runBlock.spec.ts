@@ -15,7 +15,7 @@ import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/ty
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import * as testnet from './testdata/testnet.json'
-import VM from '../../src/vm'
+import { VM } from '../../src/vm'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')

@@ -19,7 +19,7 @@ import EEI from './eei/eei'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export default class VM extends AsyncEventEmitter<VMEvents> {
+export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The StateManager used by the VM
    */

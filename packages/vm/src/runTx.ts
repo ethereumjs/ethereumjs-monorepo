@@ -10,7 +10,7 @@ import {
   TypedTransaction,
   Capability,
 } from '@ethereumjs/tx'
-import VM from './vm'
+import { VM } from './vm'
 import Bloom from './bloom'
 import type {
   TxReceipt,
