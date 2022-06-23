@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## 3.6.3 - 2022-06-23
+
+### GrayGlacier HF Support
+
+This release adds support for the [GrayGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md) - see PR [#1984](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1984) - which delays the difficulty bomb to mid September 2022 on mainnet to allow for the Merge HF to take place before the difficulty bomb triggers.
+
+Please note that for backwards-compatibility reasons Common is still instantiated with `istanbul` by default.
+
+A GrayGlacier block can be instantiated with:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.GrayGlacier })
+const block = Block.fromBlockData({
+  // Provide your block data here or use default values
+}, { common })
+```
+
 ## 3.6.2 - 2022-03-15
 
 ### Merge Kiln v2 Testnet Support
