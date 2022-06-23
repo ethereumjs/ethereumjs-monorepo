@@ -49,9 +49,9 @@ See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1
 
 The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
 
-While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
 
 ### BigInt-Related API Changes
 
@@ -63,7 +63,7 @@ The following method signatures have been changed along the update and need some
 - `BlockHeader.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
 - `Block.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
 
-Also worth to note that both the `raw()` and `toJSON()` methods are actually *not* affected deliviering values as `Buffer` respectively `string` representations.
+Also worth to note that both the `raw()` and `toJSON()` methods are actually *not* affected, respectively delivering values as `Buffer` and `string`.
 
 ### API Method/Getter Removals
 
@@ -79,9 +79,9 @@ Additionally the following deprecated methods/getters have been removed from the
 
 While the `BlockHeader` library main constructor usage is discouraged in favor of the various static constructor methods (e.g. `BlockHeader.fromHeaderData()`), it will realistically still be directly used and this change is therefore mentioned here in the release notes.
 
-To align with other libraries and simplify usage the constructor has been reworked in PR [#1787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1787) to take in a `headerData` dict as a first argument instead of a chain of single parameters (`constructor(parentHash, uncleHash, coinbase,...)`).
+To align with other libraries and simplify usage the constructor has been reworked in PR [#1787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1787) to take in a `headerData` object as a first argument instead of a chain of single parameters (`constructor(parentHash, uncleHash, coinbase,...)`).
 
-In doubt check if you have direct constructor usage in your code and update accordingly!
+In doubt check if you use the constructor directly in your code and update accordingly!
 
 ### Reduced Bundle Size (MB -> KB)
 
@@ -91,7 +91,7 @@ The bundle size of the library has been dramatically reduced going down from MBs
 
 PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) reworks the genesis code throughout the EthereumJS library stack, see also the bundle size note above.
 
-In the `Block` library the `initWithGenesisHeader` option and the `Block.genesis()` static constructor have been removed, respectively parts of the functionality moved to the `Blockchain` class where genesis block creation is mostly needed (within the realm of the EthereumJS libraries).
+In the `Block` library the `initWithGenesisHeader` option and the `Block.genesis()` static constructor have been removed, with parts of the functionality moved to the `Blockchain` class where genesis block creation is mostly needed (within the realm of the EthereumJS libraries).
 
 It is still possible to create genesis blocks with the library but it is now needed to explicitly pass in the respective genesis parameters.
 
@@ -99,7 +99,7 @@ Get in touch if you strongly rely on this part of functionality, it might be pos
 
 ### Removed Blockchain-based Validation Methods
 
-In the former code base of the `Block` libraries various validation methods (and therefore the whole library) depended on passing in a `Blockchain` instance, since context from the broader `Blockchain` (in many cases the parent block) was needed for validation. This was an unlucky situation since it lead to a somewhat circular dependency situation (a `Block` should not depend on a `Blockchain`).
+In the former code base of the `Block` libraries various validation methods (and therefore the whole library) depended on passing in a `Blockchain` instance, since context from the broader `Blockchain` (in many cases the parent block) was needed for validation. This was an unlucky situation since it led to a somewhat circular dependency situation (a `Block` should not depend on a `Blockchain`).
 
 All these methods have now been removed from the `Block` library in a larger refactoring work in PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959) and moved over to the `Blockchain` library.
 
