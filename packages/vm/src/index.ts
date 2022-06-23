@@ -60,6 +60,7 @@ export interface VMOpts {
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
    *
@@ -282,6 +283,7 @@ export default class VM extends AsyncEventEmitter {
         Hardfork.Berlin,
         Hardfork.London,
         Hardfork.ArrowGlacier,
+        Hardfork.GrayGlacier,
         Hardfork.MergeForkIdTransition,
         Hardfork.Merge,
       ]
