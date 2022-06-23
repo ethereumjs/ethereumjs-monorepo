@@ -6,9 +6,8 @@ import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import VM from './vm'
 import Bloom from './bloom'
-import { RunTxResult } from './runTx'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
-import { BuildBlockOpts, BuilderOpts, SealBlockOpts } from './types'
+import { BuildBlockOpts, BuilderOpts, SealBlockOpts, RunTxResult } from './types'
 
 export class BlockBuilder {
   /**
