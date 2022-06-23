@@ -88,7 +88,7 @@
     {
       "name": "grayGlacier",
       "block": 15050000,
-      "forkHash": null
+      "forkHash": "0xf0afd0e3"
     },
     {
       "name": "mergeForkIdTransition",
