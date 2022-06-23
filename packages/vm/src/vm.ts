@@ -4,10 +4,10 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
-import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
+import { default as buildBlock, BlockBuilder } from './buildBlock'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VMEvents, VMOpts } from './types'
+import { VMEvents, VMOpts, BuildBlockOpts } from './types'
 
 import EVM, { getActivePrecompiles, EEIInterface, EVMInterface } from '@ethereumjs/evm'
 import EEI from './eei/eei'
@@ -18,7 +18,7 @@ import EEI from './eei/eei'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM extends AsyncEventEmitter<VMEvents> {
+export default class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The StateManager used by the VM
    */

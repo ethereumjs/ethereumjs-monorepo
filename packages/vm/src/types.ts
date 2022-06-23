@@ -1,13 +1,11 @@
-import { Block } from '@ethereumjs/block'
-import { TypedTransaction } from '@ethereumjs/tx'
-import { EEIInterface, EVMInterface, Log } from '@ethereumjs/evm'
-import { AfterBlockEvent } from './runBlock'
-import { AfterTxEvent } from './runTx'
+import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
+import { AccessList, TypedTransaction } from '@ethereumjs/tx'
+import { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import { BigIntLike } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
 import { StateManager } from '@ethereumjs/statemanager'
 import Common from '@ethereumjs/common'
-
+import Bloom from './bloom'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -163,4 +161,221 @@ export interface VMOpts {
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
+}
+
+/**
+ * Options for the block builder.
+ */
+export interface BuilderOpts extends BlockOptions {
+  /**
+   * Whether to put the block into the vm's blockchain after building it.
+   * This is useful for completing a full cycle when building a block so
+   * the only next step is to build again, however it may not be desired
+   * if the block is being emulated or may be discarded as to not affect
+   * the underlying blockchain.
+   *
+   * Default: true
+   */
+  putBlockIntoBlockchain?: boolean
+}
+
+/**
+ * Options for building a block.
+ */
+export interface BuildBlockOpts {
+  /**
+   * The parent block
+   */
+  parentBlock: Block
+
+  /**
+   * The block header data to use.
+   * Defaults used for any values not provided.
+   */
+  headerData?: HeaderData
+
+  /**
+   * The block and builder options to use.
+   */
+  blockOpts?: BuilderOpts
+}
+
+/**
+ * Options for sealing a block.
+ */
+export interface SealBlockOpts {
+  /**
+   * For PoW, the nonce.
+   * Overrides the value passed in the constructor.
+   */
+  nonce?: Buffer
+
+  /**
+   * For PoW, the mixHash.
+   * Overrides the value passed in the constructor.
+   */
+  mixHash?: Buffer
+}
+
+/**
+ * Options for running a block.
+ */
+export interface RunBlockOpts {
+  /**
+   * The @ethereumjs/block to process
+   */
+  block: Block
+  /**
+   * Root of the state trie
+   */
+  root?: Buffer
+  /**
+   * Whether to generate the stateRoot and other related fields.
+   * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
+   * If `false`, `runBlock` throws if any fields do not match.
+   * Defaults to `false`.
+   */
+  generate?: boolean
+  /**
+   * If true, will skip "Block validation":
+   * Block validation validates the header (with respect to the blockchain),
+   * the transactions, the transaction trie and the uncle hash.
+   */
+  skipBlockValidation?: boolean
+  /**
+   * If true, skips the nonce check
+   */
+  skipNonce?: boolean
+  /**
+   * If true, skips the balance check
+   */
+  skipBalance?: boolean
+  /**
+   * For merge transition support, pass the chain TD up to the block being run
+   */
+  hardforkByTD?: bigint
+}
+
+/**
+ * Result of {@link runBlock}
+ */
+export interface RunBlockResult {
+  /**
+   * Receipts generated for transactions in the block
+   */
+  receipts: TxReceipt[]
+  /**
+   * Results of executing the transactions in the block
+   */
+  results: RunTxResult[]
+  /**
+   * The stateRoot after executing the block
+   */
+  stateRoot: Buffer
+  /**
+   * The gas used after executing the block
+   */
+  gasUsed: bigint
+  /**
+   * The bloom filter of the LOGs (events) after executing the block
+   */
+  logsBloom: Buffer
+  /**
+   * The receipt root after executing the block
+   */
+  receiptRoot: Buffer
+}
+
+export interface AfterBlockEvent extends RunBlockResult {
+  // The block which just finished processing
+  block: Block
+}
+
+/**
+ * Options for the `runTx` method.
+ */
+export interface RunTxOpts {
+  /**
+   * The `@ethereumjs/block` the `tx` belongs to.
+   * If omitted, a default blank block will be used.
+   */
+  block?: Block
+  /**
+   * An `@ethereumjs/tx` to run
+   */
+  tx: TypedTransaction
+  /**
+   * If true, skips the nonce check
+   */
+  skipNonce?: boolean
+  /**
+   * Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
+   */
+  skipBalance?: boolean
+
+  /**
+   * If true, skips the validation of the tx's gas limit
+   * against the block's gas limit.
+   */
+  skipBlockGasLimitValidation?: boolean
+
+  /**
+   * If true, adds a generated EIP-2930 access list
+   * to the `RunTxResult` returned.
+   *
+   * Option works with all tx types. EIP-2929 needs to
+   * be activated (included in `berlin` HF).
+   *
+   * Note: if this option is used with a custom {@link StateManager} implementation
+   * {@link StateManager.generateAccessList} must be implemented.
+   */
+  reportAccessList?: boolean
+
+  /**
+   * To obtain an accurate tx receipt input the block gas used up until this tx.
+   */
+  blockGasUsed?: bigint
+}
+
+/**
+ * Execution result of a transaction
+ */
+export interface RunTxResult extends EVMResult {
+  /**
+   * Bloom filter resulted from transaction
+   */
+  bloom: Bloom
+
+  /**
+   * The amount of ether used by this transaction
+   */
+  amountSpent: bigint
+
+  /**
+   * The tx receipt
+   */
+  receipt: TxReceipt
+
+  /**
+   * The amount of gas used in this transaction, which is paid for
+   * This contains the gas units t
+   */
+  totalGasSpent: bigint
+
+  /**
+   * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
+   */
+  gasRefund: bigint
+
+  /**
+   * EIP-2930 access list generated for the tx (see `reportAccessList` option)
+   */
+  accessList?: AccessList
+}
+
+export interface AfterTxEvent extends RunTxResult {
+  /**
+   * The transaction which just got finished
+   */
+  transaction: TypedTransaction
 }
