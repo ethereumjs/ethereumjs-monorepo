@@ -406,7 +406,6 @@ export class VmState implements VmStateAccess {
 
   /**
    * Clear the warm accounts and storage. To be called after a transaction finished.
-   * @param boolean - If true, returns an EIP-2930 access list generated
    */
   clearWarmedAccounts(): void {
     this._accessedStorage = [new Map()]
