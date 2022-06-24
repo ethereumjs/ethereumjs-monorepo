@@ -39,6 +39,21 @@ function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   return v - (chainId * BigInt(2) + BigInt(35))
 }
 
+export function calculateSigRecoveryFromV(v: bigint) {
+  if (v === BigInt(0) || v === BigInt(1)) {
+    return v
+  } else {
+    const _v = Number(v)
+    if (Number.isInteger((0 - 35 - _v) / -2)) {
+      return BigInt(0)
+    } else if (Number.isInteger((1 - 35 - _v) / -2)) {
+      return BigInt(1)
+    } else {
+      throw new Error('Invalid v value')
+    }
+  }
+}
+
 function isValidSigRecovery(recovery: bigint): boolean {
   return recovery === BigInt(0) || recovery === BigInt(1)
 }
@@ -128,6 +143,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
     throw new Error('Invalid signature length')
   }
 
+  const recovery: bigint = calculateSigRecoveryFromV(v)
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v = v + BigInt(27)
@@ -137,6 +153,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
     v,
     r,
     s,
+    recovery,
   }
 }
 
