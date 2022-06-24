@@ -18,17 +18,16 @@ export interface ECDSASignature {
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature {
-  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
+  const [signature, _recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
 
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
-
   const v =
     chainId === undefined
-      ? BigInt(recovery + 27)
-      : BigInt(recovery + 35) + BigInt(chainId) * BigInt(2)
-
-  return { r, s, v }
+      ? BigInt(_recovery + 27)
+      : BigInt(_recovery + 35) + BigInt(chainId) * BigInt(2)
+  const recovery = BigInt(_recovery)
+  return { r, s, v, recovery }
 }
 
 function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
