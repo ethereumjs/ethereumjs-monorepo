@@ -35,6 +35,7 @@ import {
 } from './types'
 import { EEIInterface } from './types'
 import TransientStorage from './transientStorage'
+import { EEIDummy } from './eei/eeiDummy'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -123,7 +124,7 @@ export interface EVMOpts {
   /*
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
-  eei: EEIInterface
+  eei?: EEIInterface
 }
 
 /**
@@ -327,7 +328,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     this._optsCached = opts
 
-    this.eei = opts.eei
+    this.eei = opts.eei ?? new EEIDummy()
 
     this._transientStorage = new TransientStorage()
 
