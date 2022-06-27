@@ -10,10 +10,8 @@ export class StateDummy implements VmStateAccess {
     this.stateCache = new StateCache()
   }
 
-  touchAccount(address: Address): void {
-    if (!this.stateCache.accounts.has(address.toString())) {
-      this.stateCache.accounts.set(address.toString(), new Account())
-    }
+  touchAccount(_address: Address): void {
+    throw new Error('Method not implemented.')
   }
   addWarmedAddress(address: Buffer): void {
     this.stateCache.warmAddresses.add(new Address(address).toString())
@@ -33,7 +31,9 @@ export class StateDummy implements VmStateAccess {
   async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     return this.stateCache.getOriginalContractStorage(address, key)
   }
-  clearOriginalStorageCache(): void {}
+  clearOriginalStorageCache(): void {
+    throw new Error('Method not implemented.')
+  }
   cleanupTouchedAccounts(): Promise<void> {
     throw new Error('Method not implemented.')
   }
@@ -52,8 +52,8 @@ export class StateDummy implements VmStateAccess {
   async accountIsEmpty(address: Address): Promise<boolean> {
     return (await this.getAccount(address)).isEmpty()
   }
-  async deleteAccount(address: Address): Promise<void> {
-    this.stateCache.accounts.set(address.toString(), new Account())
+  async deleteAccount(_address: Address): Promise<void> {
+    throw new Error('Method not implemented.')
   }
   async modifyAccountFields(
     address: Address,
