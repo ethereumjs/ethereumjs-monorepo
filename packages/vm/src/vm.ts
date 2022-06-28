@@ -89,7 +89,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       // Supported EIPs
       const supportedEIPs = [
         1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-        3670, 3855, 3860, 4399,
+        3670, 3855, 3860, 4399, 5133,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
@@ -116,6 +116,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
       Hardfork.MergeForkIdTransition,
       Hardfork.Merge,
     ]
