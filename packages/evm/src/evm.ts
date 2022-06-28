@@ -126,95 +126,6 @@ export interface EVMOpts {
 }
 
 /**
- * Result of executing a message via the {@link EVM}.
- */
-export interface EVMResult {
-  /**
-   * Address of created account during transaction, if any
-   */
-  createdAddress?: Address
-  /**
-   * Contains the results from running the code, if any, as described in {@link runCode}
-   */
-  execResult: ExecResult
-}
-
-/**
- * Result of executing a call via the {@link EVM}.
- */
-export interface ExecResult {
-  runState?: RunState
-  /**
-   * Description of the exception, if any occurred
-   */
-  exceptionError?: EvmError
-  /**
-   * Amount of gas left
-   */
-  gas?: bigint
-  /**
-   * Amount of gas the code used to run
-   */
-  executionGasUsed: bigint
-  /**
-   * Return value from the contract
-   */
-  returnValue: Buffer
-  /**
-   * Array of logs that the contract emitted
-   */
-  logs?: Log[]
-  /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
-   */
-  selfdestruct?: { [k: string]: Buffer }
-  /**
-   * The gas refund counter
-   */
-  gasRefund?: bigint
-}
-
-export function OOGResult(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: Buffer.alloc(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
-  }
-}
-// CodeDeposit OOG Result
-export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
-  return {
-    returnValue: Buffer.alloc(0),
-    executionGasUsed: gasUsedCreateCode,
-    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
-  }
-}
-
-export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: Buffer.alloc(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
-  }
-}
-
-export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: Buffer.alloc(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-  }
-}
-
-export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
-  return {
-    returnValue: Buffer.alloc(0),
-    executionGasUsed: gasUsed,
-    exceptionError: error,
-  }
-}
-
-/**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
  * and storing them to state (or discarding changes in case of exceptions).
@@ -978,6 +889,95 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       eei: this.eei.copy(),
     }
     return new EVM(opts)
+  }
+}
+
+/**
+ * Result of executing a message via the {@link EVM}.
+ */
+export interface EVMResult {
+  /**
+   * Address of created account during transaction, if any
+   */
+  createdAddress?: Address
+  /**
+   * Contains the results from running the code, if any, as described in {@link runCode}
+   */
+  execResult: ExecResult
+}
+
+/**
+ * Result of executing a call via the {@link EVM}.
+ */
+export interface ExecResult {
+  runState?: RunState
+  /**
+   * Description of the exception, if any occurred
+   */
+  exceptionError?: EvmError
+  /**
+   * Amount of gas left
+   */
+  gas?: bigint
+  /**
+   * Amount of gas the code used to run
+   */
+  executionGasUsed: bigint
+  /**
+   * Return value from the contract
+   */
+  returnValue: Buffer
+  /**
+   * Array of logs that the contract emitted
+   */
+  logs?: Log[]
+  /**
+   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   */
+  selfdestruct?: { [k: string]: Buffer }
+  /**
+   * The gas refund counter
+   */
+  gasRefund?: bigint
+}
+
+export function OOGResult(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
+  }
+}
+// CodeDeposit OOG Result
+export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasUsedCreateCode,
+    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
+  }
+}
+
+export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
+  }
+}
+
+export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasUsed,
+    exceptionError: error,
   }
 }
 
