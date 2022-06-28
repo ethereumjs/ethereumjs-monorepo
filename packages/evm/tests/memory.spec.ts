@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Memory from '../../src/memory'
+import Memory from '../src/memory'
 
 tape('Memory', (t) => {
   const m = new Memory()

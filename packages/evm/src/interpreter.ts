@@ -17,7 +17,7 @@ import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM, { EVMResult } from './evm'
 import Message from './message'
 import { Log } from './types'
-import { EEIInterface, VmStateAccess, Block } from './types'
+import { EEIInterface, EVMStateAccess, Block } from './types'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -64,7 +64,7 @@ export interface RunState {
   code: Buffer
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  vmState: VmStateAccess
+  vmState: EVMStateAccess
   eei: EEIInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
@@ -83,7 +83,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  vmState: VmStateAccess
+  vmState: EVMStateAccess
   stack: bigint[]
   returnStack: bigint[]
   pc: number

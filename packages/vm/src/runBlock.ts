@@ -15,7 +15,7 @@ import type {
   AfterBlockEvent,
 } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
-import { VmStateAccess } from '@ethereumjs/evm'
+import { EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 
@@ -353,7 +353,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: VmStateAccess,
+  state: EVMStateAccess,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -393,7 +393,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: VmStateAccess) {
+async function _applyDAOHardfork(state: EVMStateAccess) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
     await state.putAccount(DAORefundContractAddress, new Account())
