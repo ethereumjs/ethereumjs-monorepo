@@ -231,20 +231,19 @@ export type EVMEvents = {
  */
 export type Log = [address: Buffer, topics: Buffer[], data: Buffer]
 
-export declare type AccessListItem = {
+declare type AccessListItem = {
   address: PrefixedHexString
   storageKeys: PrefixedHexString[]
 }
-type AccessListBufferItem = [Buffer, Buffer[]]
-export declare type AccessListBuffer = AccessListBufferItem[]
-export declare type AccessList = AccessListItem[]
+
+declare type AccessList = AccessListItem[]
 
 declare type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
   value: PrefixedHexString
 }
-export declare type Proof = {
+declare type Proof = {
   address: PrefixedHexString
   balance: PrefixedHexString
   codeHash: PrefixedHexString
@@ -254,9 +253,9 @@ export declare type Proof = {
   storageProof: StorageProof[]
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
 
-export interface StateAccess {
+interface StateAccess {
   accountExists(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account>
   putAccount(address: Address, account: Account): Promise<void>
