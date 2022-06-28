@@ -221,21 +221,6 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   }
 }
 
-function defaultBlock(): Block {
-  return {
-    header: {
-      number: BigInt(0),
-      cliqueSigner: () => Address.zero(),
-      coinbase: Address.zero(),
-      timestamp: BigInt(0),
-      difficulty: BigInt(0),
-      prevRandao: zeros(32),
-      gasLimit: BigInt(0),
-      baseFeePerGas: undefined,
-    },
-  }
-}
-
 /**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
@@ -997,5 +982,20 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       eei: this.eei.copy(),
     }
     return new EVM(opts)
+  }
+}
+
+function defaultBlock(): Block {
+  return {
+    header: {
+      number: BigInt(0),
+      cliqueSigner: () => Address.zero(),
+      coinbase: Address.zero(),
+      timestamp: BigInt(0),
+      difficulty: BigInt(0),
+      prevRandao: zeros(32),
+      gasLimit: BigInt(0),
+      baseFeePerGas: undefined,
+    },
   }
 }

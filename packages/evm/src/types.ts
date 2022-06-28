@@ -5,70 +5,57 @@ import Message from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 
-export declare type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-type AccessListBufferItem = [Buffer, Buffer[]]
-export declare type AccessListBuffer = AccessListBufferItem[]
-export declare type AccessList = AccessListItem[]
-
-declare type StorageProof = {
-  key: PrefixedHexString
-  proof: PrefixedHexString[]
-  value: PrefixedHexString
-}
-export declare type Proof = {
-  address: PrefixedHexString
-  balance: PrefixedHexString
-  codeHash: PrefixedHexString
-  nonce: PrefixedHexString
-  storageHash: PrefixedHexString
-  accountProof: PrefixedHexString[]
-  storageProof: StorageProof[]
-}
-
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
-
-export interface StateAccess {
-  accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account>
-  putAccount(address: Address, account: Account): Promise<void>
-  accountIsEmpty(address: Address): Promise<boolean>
-  deleteAccount(address: Address): Promise<void>
-  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Buffer): Promise<void>
-  getContractCode(address: Address): Promise<Buffer>
-  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
-  checkpoint(): Promise<void>
-  commit(): Promise<void>
-  revert(): Promise<void>
-  getStateRoot(): Promise<Buffer>
-  setStateRoot(stateRoot: Buffer): Promise<void>
-  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
-  verifyProof?(proof: Proof): Promise<boolean>
-  hasStateRoot(root: Buffer): Promise<boolean>
-}
-
-export type Block = {
-  header: {
-    number: bigint
-    cliqueSigner(): Address
-    coinbase: Address
-    timestamp: bigint
-    difficulty: bigint
-    prevRandao: Buffer
-    gasLimit: bigint
-    baseFeePerGas?: bigint
-  }
+/**
+ * API of the EVM
+ */
+export interface EVMInterface {
+  runCall(opts: RunCallOpts): Promise<EVMResult>
+  runCode?(opts: RunCodeOpts): Promise<ExecResult>
+  precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
+  copy(): EVMInterface
 }
 
 /**
- * Log that the contract emits.
+ * API for an EEI (Ethereum Environment Interface) implementation
+ *
+ * This can be used to connect the EVM to different (chain) environments.
+ * An implementation for an EEI to connect to an Ethereum execution chain
+ * environment (`mainnet`, `sepolia`,...) can be found in the
+ * `@ethereumjs/vm` package.
  */
-export type Log = [address: Buffer, topics: Buffer[], data: Buffer]
+export interface EEIInterface {
+  state: VmStateAccess
+  getExternalBalance(address: Address): Promise<bigint>
+  getExternalCodeSize(address: bigint): Promise<bigint>
+  getExternalCode(address: bigint): Promise<Buffer>
+  getBlockHash(num: bigint): Promise<bigint>
+  storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
+  storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
+  isAccountEmpty(address: Address): Promise<boolean>
+  accountExists(address: Address): Promise<boolean>
+  copy(): EEIInterface
+}
+
+/**
+ * API for EVM state access, this extends the base interface from
+ * the `@ethereumjs/statemanager` package and is part of the broader
+ * EEI (see EEI interface).
+ *
+ * An implementation of this can be found in the `@ethereumjs/vm` package.
+ */
+export interface VmStateAccess extends StateAccess {
+  touchAccount(address: Address): void
+  addWarmedAddress(address: Buffer): void
+  isWarmedAddress(address: Buffer): boolean
+  addWarmedStorage(address: Buffer, slot: Buffer): void
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  clearWarmedAccounts(): void
+  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
+  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  clearOriginalStorageCache(): void
+  cleanupTouchedAccounts(): Promise<void>
+  generateCanonicalGenesis(initState: any): Promise<void>
+}
 
 export type DeleteOpcode = {
   opcode: number
@@ -239,6 +226,71 @@ export type EVMEvents = {
   step: (data: InterpreterStep, resolve?: (result: any) => void) => void
 }
 
+/**
+ * Log that the contract emits.
+ */
+export type Log = [address: Buffer, topics: Buffer[], data: Buffer]
+
+export declare type AccessListItem = {
+  address: PrefixedHexString
+  storageKeys: PrefixedHexString[]
+}
+type AccessListBufferItem = [Buffer, Buffer[]]
+export declare type AccessListBuffer = AccessListBufferItem[]
+export declare type AccessList = AccessListItem[]
+
+declare type StorageProof = {
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
+export declare type Proof = {
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}
+
+export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+
+export interface StateAccess {
+  accountExists(address: Address): Promise<boolean>
+  getAccount(address: Address): Promise<Account>
+  putAccount(address: Address, account: Account): Promise<void>
+  accountIsEmpty(address: Address): Promise<boolean>
+  deleteAccount(address: Address): Promise<void>
+  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
+  putContractCode(address: Address, value: Buffer): Promise<void>
+  getContractCode(address: Address): Promise<Buffer>
+  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  clearContractStorage(address: Address): Promise<void>
+  checkpoint(): Promise<void>
+  commit(): Promise<void>
+  revert(): Promise<void>
+  getStateRoot(): Promise<Buffer>
+  setStateRoot(stateRoot: Buffer): Promise<void>
+  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  verifyProof?(proof: Proof): Promise<boolean>
+  hasStateRoot(root: Buffer): Promise<boolean>
+}
+
+export type Block = {
+  header: {
+    number: bigint
+    cliqueSigner(): Address
+    coinbase: Address
+    timestamp: bigint
+    difficulty: bigint
+    prevRandao: Buffer
+    gasLimit: bigint
+    baseFeePerGas?: bigint
+  }
+}
+
 export interface TransientStorageInterface {
   get(addr: Address, key: Buffer): Buffer
   put(addr: Address, key: Buffer, value: Buffer): void
@@ -247,38 +299,4 @@ export interface TransientStorageInterface {
   revert(): void
   toJSON(): { [address: string]: { [key: string]: string } }
   clear(): void
-}
-
-export interface VmStateAccess extends StateAccess {
-  touchAccount(address: Address): void
-  addWarmedAddress(address: Buffer): void
-  isWarmedAddress(address: Buffer): boolean
-  addWarmedStorage(address: Buffer, slot: Buffer): void
-  isWarmedStorage(address: Buffer, slot: Buffer): boolean
-  clearWarmedAccounts(): void
-  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
-  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  clearOriginalStorageCache(): void
-  cleanupTouchedAccounts(): Promise<void>
-  generateCanonicalGenesis(initState: any): Promise<void>
-}
-
-export interface EEIInterface {
-  state: VmStateAccess
-  getExternalBalance(address: Address): Promise<bigint>
-  getExternalCodeSize(address: bigint): Promise<bigint>
-  getExternalCode(address: bigint): Promise<Buffer>
-  getBlockHash(num: bigint): Promise<bigint>
-  storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
-  storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
-  isAccountEmpty(address: Address): Promise<boolean>
-  accountExists(address: Address): Promise<boolean>
-  copy(): EEIInterface
-}
-
-export interface EVMInterface {
-  runCall(opts: RunCallOpts): Promise<EVMResult>
-  runCode?(opts: RunCodeOpts): Promise<ExecResult>
-  precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
-  copy(): EVMInterface
 }
