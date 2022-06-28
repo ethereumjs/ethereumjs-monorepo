@@ -81,6 +81,11 @@ jobs:
         run: npm run test
         working-directory: packages/ethash
         if: ${{ matrix.node >= 14 }}
+      
+      - name: Test EVM
+        run: npm run test
+        working-directory: packages/evm
+        if: ${{ matrix.node >= 14 }}
 
       - name: Test Trie
         run: npm run test
