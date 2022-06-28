@@ -14,7 +14,7 @@ We have gotten rid of a lot of technical debt and inconsistencies and removed un
 
 We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
 
-So, enjoy the releases (this is a first round of Beta releases, with final releases following  a couple of weeks after if things go well)! 🎉
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
 
 The EthereumJS Team
 
@@ -73,7 +73,7 @@ See PRs [#1709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1709), [#
 - `paramByEIP(topic: string, name: string, eip: number): bigint | undefined`
 - `paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): bigint`
 - `hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BigIntLike): boolean`
--  `activeOnBlock(blockNumber: BigIntLike): boolean`
+- `activeOnBlock(blockNumber: BigIntLike): boolean`
 - `hardforkBlock(hardfork?: string | Hardfork): bigint | null`
 - `hardforkTD(hardfork?: string | Hardfork): bigint | null`
 - `isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean`

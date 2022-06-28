@@ -14,7 +14,7 @@ We have gotten rid of a lot of technical debt and inconsistencies and removed un
 
 We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
 
-So, enjoy the releases (this is a first round of Beta releases, with final releases following  a couple of weeks after if things go well)! 🎉
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
 
 The EthereumJS Team
 
@@ -70,7 +70,7 @@ PRs [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) and - a
 
 In return the `Blockchain` class has gotten now respective responsibilities. Genesis state and block functionality previously in the `@ethereumjs/common` class has been integrated here, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916).
 
-A genesis state can now be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`.  For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data still coming from `@ethereumjs/common` and the genesis state now being integrated into the `Blockchain` library directly.
+A genesis state can now be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data still coming from `@ethereumjs/common`, with genesis state now being integrated into the `Blockchain` library directly.
 
 The genesis block from the initialized `Blockchain` can be retrieved via the new `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the new `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
 
@@ -78,7 +78,7 @@ Note that this is a very large refactoring with mainly the lower-level libraries
 
 ### Added Validation Methods
 
-The Blockchain class has also gotten new validation methods previously located in the `Block` library (and there demanding for a `Blockchain` to be passed in as a method parameter), see PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959).
+The Blockchain class has also gotten new validation methods previously located in the `Block` library (where they required a `Blockchain` to be passed in as a method parameter), see PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959).
 
 The following methods have been taken out of the `Block` package and moved into `Blockchain`:
 
