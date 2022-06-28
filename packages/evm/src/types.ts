@@ -9,8 +9,8 @@ import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
  * API of the EVM
  */
 export interface EVMInterface {
-  runCall(opts: RunCallOpts): Promise<EVMResult>
-  runCode?(opts: RunCodeOpts): Promise<ExecResult>
+  runCall(opts: EVMRunCallOpts): Promise<EVMResult>
+  runCode?(opts: EVMRunCodeOpts): Promise<ExecResult>
   precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
 }
@@ -72,9 +72,9 @@ export type AddOpcode = {
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
 /**
- * Options for running a call (or create) operation
+ * Options for running a call (or create) operation with `EVM.runCall()`
  */
-export interface RunCallOpts {
+export interface EVMRunCallOpts {
   /**
    * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */
@@ -150,9 +150,9 @@ export interface RunCallOpts {
 }
 
 /**
- * Options for the runCode method.
+ * Options for the `EVM.runCode()` method.
  */
-export interface RunCodeOpts {
+export interface EVMRunCodeOpts {
   /**
    * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */

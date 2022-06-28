@@ -29,8 +29,8 @@ import {
   /*ExternalInterface,*/
   /*ExternalInterfaceFactory,*/
   Log,
-  RunCallOpts,
-  RunCodeOpts,
+  EVMRunCallOpts,
+  EVMRunCodeOpts,
   TxContext,
 } from './types'
 import { EEIInterface } from './types'
@@ -743,7 +743,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-  async runCall(opts: RunCallOpts): Promise<EVMResult> {
+  async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
     if (!message) {
       this._block = opts.block ?? defaultBlock()
@@ -859,7 +859,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
    * Bound to the global VM and therefore
    * shouldn't be used directly from the evm class
    */
-  async runCode(opts: RunCodeOpts): Promise<ExecResult> {
+  async runCode(opts: EVMRunCodeOpts): Promise<ExecResult> {
     this._block = opts.block ?? defaultBlock()
 
     this._tx = {
