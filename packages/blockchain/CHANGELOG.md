@@ -90,9 +90,11 @@ The following methods have been taken out of the `Block` package and moved into 
 
 The file structure of the package has been reworked and aligned with other libraries, see PR [#1986](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1986). There is now a dedicated `blockchain.ts` file for the main source code. The `index.ts` is now re-exporting the `Blockchain` class and `Consensus` implementations as well as the `BlockchainInterface` interface, the `BlockchainOptions` dictionary and types from a dedicated `types.ts` file.
 
-### Other Changes
+### Level DB Upgrade / Browser Compatibility
 
-- Updated Level DB version from v6 to v8 (easier browser usage), PR [#1949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1949)
+The internal Level DB code has been reworked to now be based and work with the latest Level [v8.0.0](https://github.com/Level/level/releases/tag/v8.0.0) major Level DB release, see PR [#1949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1949). This allows to use ES6-style `import` syntax to import the `Level` instance and allows for better typing when working with Level DB.
+
+Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`. For some context it is worth to mention that the `level` package itself is starting with the v8 release just a proxy for these other packages and has no functionality itself.
 
 ## 5.5.2 - 2022-03-15
 
