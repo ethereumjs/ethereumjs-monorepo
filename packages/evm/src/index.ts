@@ -1,8 +1,16 @@
 import { getActivePrecompiles } from './precompiles'
-import { EEIInterface, EVMInterface, VmStateAccess, Log } from './types'
+import { EEIInterface, EVMInterface, EVMStateAccess, Log } from './types'
 import EVM, { EVMResult } from './evm'
 import { EvmError } from './exceptions'
 
-export { getActivePrecompiles, EEIInterface, EVMInterface, EvmError, VmStateAccess, Log, EVMResult }
+export {
+  getActivePrecompiles,
+  EEIInterface,
+  EVMInterface,
+  EvmError,
+  EVMStateAccess,
+  Log,
+  EVMResult,
+}
 
 export default EVM

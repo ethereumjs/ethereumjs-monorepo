@@ -7,11 +7,11 @@ import { StateManager, AccountFields } from '@ethereumjs/statemanager'
 
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { VmStateAccess } from '@ethereumjs/evm/dist/types'
+import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
 
 type AddressHex = string
 
-export class VmState implements VmStateAccess {
+export class VmState implements EVMStateAccess {
   _common: Common
   _debug: Debugger
 
