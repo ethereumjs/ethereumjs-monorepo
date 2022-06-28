@@ -74,6 +74,7 @@ export interface EVMOpts {
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
    *
@@ -233,13 +234,37 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399,
+      3670, 3855, 3860, 4399, 5133,
     ]
 
     for (const eip of this._common.eips()) {
       if (!supportedEIPs.includes(eip)) {
         throw new Error(`EIP-${eip} is not supported by the EVM`)
       }
+    }
+
+    const supportedHardforks = [
+      Hardfork.Chainstart,
+      Hardfork.Homestead,
+      Hardfork.Dao,
+      Hardfork.TangerineWhistle,
+      Hardfork.SpuriousDragon,
+      Hardfork.Byzantium,
+      Hardfork.Constantinople,
+      Hardfork.Petersburg,
+      Hardfork.Istanbul,
+      Hardfork.MuirGlacier,
+      Hardfork.Berlin,
+      Hardfork.London,
+      Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
+      Hardfork.MergeForkIdTransition,
+      Hardfork.Merge,
+    ]
+    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+      throw new Error(
+        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
+      )
     }
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false

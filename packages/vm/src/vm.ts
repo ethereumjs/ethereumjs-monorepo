@@ -1,6 +1,6 @@
 import { Account, Address, toType, TypeOutput } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { default as runTx } from './runTx'
 import { default as runBlock } from './runBlock'
@@ -86,43 +86,10 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     this._opts = opts
 
     if (opts.common) {
-      // Supported EIPs
-      const supportedEIPs = [
-        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-        3670, 3855, 3860, 4399,
-      ]
-      for (const eip of opts.common.eips()) {
-        if (!supportedEIPs.includes(eip)) {
-          throw new Error(`EIP-${eip} is not supported by the VM`)
-        }
-      }
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
-      throw new Error(
-        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
-      )
     }
 
     if (opts.stateManager) {
