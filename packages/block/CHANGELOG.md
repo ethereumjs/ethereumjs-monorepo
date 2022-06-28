@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 4.0.0 - [ UNRELEASED ]
+## 4.0.0-beta.1 - [ UNRELEASED ]
 
 This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
 
@@ -79,7 +79,7 @@ Additionally the following deprecated methods/getters have been removed from the
 
 While the `BlockHeader` library main constructor usage is discouraged in favor of the various static constructor methods (e.g. `BlockHeader.fromHeaderData()`), it will realistically still be directly used and this change is therefore mentioned here in the release notes.
 
-To align with other libraries and simplify usage the constructor has been reworked in PR [#1787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1787) to take in a `headerData` object as a first argument instead of a chain of single parameters (`constructor(parentHash, uncleHash, coinbase,...)`).
+To align with other libraries and simplify usage, the constructor has been reworked in PR [#1787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1787) to take in a `headerData` object as a first argument instead of a chain of single parameters (`constructor(parentHash, uncleHash, coinbase,...)`).
 
 In doubt check if you use the constructor directly in your code and update accordingly!
 

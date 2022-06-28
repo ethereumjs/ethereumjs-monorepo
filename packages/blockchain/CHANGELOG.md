@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 6.0.0 - [ UNRELEASED ]
+## 6.0.0-beta.1 - [ UNRELEASED ]
 
 This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
 
@@ -68,7 +68,7 @@ There is now a new `Blockchain` option `consensus`. This makes it very easy to p
 
 PRs [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) and - as some follow-up work - [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) rework the genesis code throughout the EthereumJS library stack, with benefits on the bundle size of the lower level libraries (like `Block` or `Transaction`).
 
-In return the `Blockchain` class has gotten now respective responsibilities. Genesis state and block functionality previously in the `@ethereumjs/common` class has been integrated here, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916).
+In return the `Blockchain` class has gotten new responsibilities on handling genesis state. Genesis state and block functionality previously in the `@ethereumjs/common` class has been integrated here, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916).
 
 A genesis state can now be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data still coming from `@ethereumjs/common`, with genesis state now being integrated into the `Blockchain` library directly.
 
