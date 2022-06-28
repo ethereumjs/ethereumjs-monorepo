@@ -243,6 +243,30 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       }
     }
 
+    const supportedHardforks = [
+      Hardfork.Chainstart,
+      Hardfork.Homestead,
+      Hardfork.Dao,
+      Hardfork.TangerineWhistle,
+      Hardfork.SpuriousDragon,
+      Hardfork.Byzantium,
+      Hardfork.Constantinople,
+      Hardfork.Petersburg,
+      Hardfork.Istanbul,
+      Hardfork.MuirGlacier,
+      Hardfork.Berlin,
+      Hardfork.London,
+      Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
+      Hardfork.MergeForkIdTransition,
+      Hardfork.Merge,
+    ]
+    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+      throw new Error(
+        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
+      )
+    }
+
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles

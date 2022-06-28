@@ -1,6 +1,6 @@
 import { Account, Address, toType, TypeOutput } from '@ethereumjs/util'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
 import { default as runTx } from './runTx'
 import { default as runBlock } from './runBlock'
@@ -90,30 +90,6 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
-      throw new Error(
-        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
-      )
     }
 
     if (opts.stateManager) {
