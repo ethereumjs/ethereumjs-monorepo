@@ -118,18 +118,22 @@ export class Blockchain implements BlockchainInterface {
     this.db = opts.db ? opts.db : new MemoryLevel()
     this.dbManager = new DBManager(this.db, this._common)
 
-    switch (this._common.consensusAlgorithm()) {
-      case ConsensusAlgorithm.Casper:
-        this.consensus = new CasperConsensus({ blockchain: this })
-        break
-      case ConsensusAlgorithm.Clique:
-        this.consensus = new CliqueConsensus({ blockchain: this })
-        break
-      case ConsensusAlgorithm.Ethash:
-        this.consensus = new EthashConsensus({ blockchain: this })
-        break
-      default:
-        throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
+    if (opts.consensus) {
+      this.consensus = opts.consensus
+    } else {
+      switch (this._common.consensusAlgorithm()) {
+        case ConsensusAlgorithm.Casper:
+          this.consensus = new CasperConsensus({ blockchain: this })
+          break
+        case ConsensusAlgorithm.Clique:
+          this.consensus = new CliqueConsensus({ blockchain: this })
+          break
+        case ConsensusAlgorithm.Ethash:
+          this.consensus = new EthashConsensus({ blockchain: this })
+          break
+        default:
+          throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
+      }
     }
 
     if (this._validateConsensus) {
