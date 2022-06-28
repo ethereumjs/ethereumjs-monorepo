@@ -2,10 +2,10 @@ import * as tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Account, Address, MAX_UINT64, padToEven } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../../src'
-import { ERROR } from '../../src/exceptions'
-import EVM from '../../src'
-import { getEEI } from '../utils'
+import VM from '../src'
+import { ERROR } from '../src/exceptions'
+import EVM from '../src'
+import { getEEI } from './utils'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
