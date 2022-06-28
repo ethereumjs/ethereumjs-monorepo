@@ -174,12 +174,6 @@ export interface ExecResult {
   gasRefund?: bigint
 }
 
-export interface NewContractEvent {
-  address: Address
-  // The deployment code
-  code: Buffer
-}
-
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
@@ -520,7 +514,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     await this.eei.state.clearContractStorage(message.to)
 
-    const newContractEvent: NewContractEvent = {
+    const newContractEvent = {
       address: message.to,
       code: message.code,
     }

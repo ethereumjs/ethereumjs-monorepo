@@ -1,5 +1,5 @@
 import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-import EVM, { EVMResult, ExecResult, NewContractEvent } from './evm'
+import EVM, { EVMResult, ExecResult } from './evm'
 import { InterpreterStep } from './interpreter'
 import Message from './message'
 import { OpHandler } from './opcodes'
@@ -209,6 +209,12 @@ export interface EVMRunCodeOpts {
    * The initial program counter. Defaults to `0`
    */
   pc?: number
+}
+
+interface NewContractEvent {
+  address: Address
+  // The deployment code
+  code: Buffer
 }
 
 export type EVMEvents = {
