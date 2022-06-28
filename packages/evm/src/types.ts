@@ -211,14 +211,6 @@ export interface EVMRunCodeOpts {
   pc?: number
 }
 
-/**
- * Tx context for vm execution
- */
-export interface TxContext {
-  gasPrice: bigint
-  origin: Address
-}
-
 export type EVMEvents = {
   newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result: any) => void) => void

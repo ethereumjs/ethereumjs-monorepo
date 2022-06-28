@@ -31,7 +31,6 @@ import {
   Log,
   EVMRunCallOpts,
   EVMRunCodeOpts,
-  TxContext,
 } from './types'
 import { EEIInterface } from './types'
 import TransientStorage from './transientStorage'
@@ -228,7 +227,10 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
  * @ignore
  */
 export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
-  protected _tx?: TxContext
+  protected _tx?: {
+    gasPrice: bigint
+    origin: Address
+  }
   protected _block?: Block
 
   readonly _common: Common
