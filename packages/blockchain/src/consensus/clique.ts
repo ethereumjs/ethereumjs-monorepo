@@ -46,7 +46,7 @@ type CliqueLatestBlockSigners = CliqueBlockSigner[]
  * This class encapsulates Clique-related consensus functionality when used with the Blockchain class.
  */
 export class CliqueConsensus implements Consensus {
-  blockchain: Blockchain
+  blockchain: Blockchain | undefined
   algorithm: ConsensusAlgorithm
 
   /**
@@ -96,12 +96,18 @@ export class CliqueConsensus implements Consensus {
    */
   public _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
-  constructor({ blockchain }: ConsensusOptions) {
-    this.blockchain = blockchain
+  constructor() {
     this.algorithm = ConsensusAlgorithm.Clique
   }
 
-  async setup(): Promise<void> {
+  /**
+   *
+   * @param param dictionary containin a {@link Blockchain} object
+   *
+   * Note: this method must be called before consensus checks are used or type errors will occur
+   */
+  async setup({ blockchain }: ConsensusOptions): Promise<void> {
+    this.blockchain = blockchain
     this._cliqueLatestSignerStates = await this.getCliqueLatestSignerStates()
     this._cliqueLatestVotes = await this.getCliqueLatestVotes()
     this._cliqueLatestBlockSigners = await this.getCliqueLatestBlockSigners()
@@ -170,7 +176,7 @@ export class CliqueConsensus implements Consensus {
     if (commonAncestorNumber !== undefined) {
       await this._cliqueDeleteSnapshots(commonAncestorNumber + BigInt(1))
       for (let number = commonAncestorNumber + BigInt(1); number <= header.number; number++) {
-        const canonicalHeader = await this.blockchain.getCanonicalHeader(number)
+        const canonicalHeader = await this.blockchain!.getCanonicalHeader(number)
         await this._cliqueBuildSnapshots(canonicalHeader)
       }
     }
@@ -221,7 +227,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(state[0]),
       state[1].map((a) => a.toBuffer()),
     ])
-    await this.blockchain.db.put(
+    await this.blockchain!.db.put(
       CLIQUE_SIGNERS_KEY,
       Buffer.from(RLP.encode(bufArrToArr(formatted))),
       DB_OPTS
@@ -254,7 +260,7 @@ export class CliqueConsensus implements Consensus {
         const lastEpochBlockNumber =
           header.number -
           (header.number %
-            BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
+            BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
         const limit = this.cliqueSignerLimit()
         let activeSigners = this.cliqueActiveSigners()
         let consensus = false
@@ -365,7 +371,7 @@ export class CliqueConsensus implements Consensus {
       const lastEpochBlockNumber =
         lastBlockNumber -
         (lastBlockNumber %
-          BigInt((this.blockchain._common.consensusConfig() as CliqueConfig).epoch))
+          BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
       const blockLimit = lastEpochBlockNumber - BigInt(limit)
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
     }
@@ -375,7 +381,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(v[0]),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
-    await this.blockchain.db.put(
+    await this.blockchain!.db.put(
       CLIQUE_VOTES_KEY,
       Buffer.from(RLP.encode(bufArrToArr(formatted))),
       DB_OPTS
@@ -483,7 +489,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(b[0]),
       b[1].toBuffer(),
     ])
-    await this.blockchain.db.put(
+    await this.blockchain!.db.put(
       CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
       Buffer.from(RLP.encode(bufArrToArr(formatted))),
       DB_OPTS
@@ -496,7 +502,10 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
-      const signerStates = await this.blockchain.db.get<string, Buffer>(CLIQUE_SIGNERS_KEY, DB_OPTS)
+      const signerStates = await this.blockchain!.db.get<string, Buffer>(
+        CLIQUE_SIGNERS_KEY,
+        DB_OPTS
+      )
       const states = arrToBufArr(RLP.decode(Uint8Array.from(signerStates))) as [Buffer, Buffer[]]
       return states.map((state) => {
         const blockNum = bufferToBigInt(state[0] as Buffer)
@@ -517,7 +526,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
-      const signerVotes = await this.blockchain.db.get<string, Buffer>(CLIQUE_VOTES_KEY, DB_OPTS)
+      const signerVotes = await this.blockchain!.db.get<string, Buffer>(CLIQUE_VOTES_KEY, DB_OPTS)
       const votes = arrToBufArr(RLP.decode(Uint8Array.from(signerVotes))) as [
         Buffer,
         [Buffer, Buffer, Buffer]
@@ -543,7 +552,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     try {
-      const blockSigners = await this.blockchain.db.get<string, Buffer>(
+      const blockSigners = await this.blockchain!.db.get<string, Buffer>(
         CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
         DB_OPTS
       )
@@ -583,7 +592,7 @@ export class CliqueConsensus implements Consensus {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.blockchain.getCanonicalHeadHeader()
+    const { number } = await this.blockchain!.getCanonicalHeadHeader()
     //eslint-disable-next-line
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }

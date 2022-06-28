@@ -1,17 +1,14 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import Blockchain from '..'
-import { Consensus, ConsensusOptions } from './interface'
+import { Consensus } from './interface'
 
 /**
  * This class encapsulates Casper-related consensus functionality when used with the Blockchain class.
  */
 export class CasperConsensus implements Consensus {
-  blockchain: Blockchain
   algorithm: ConsensusAlgorithm
 
-  constructor({ blockchain }: ConsensusOptions) {
-    this.blockchain = blockchain
+  constructor() {
     this.algorithm = ConsensusAlgorithm.Casper
   }
 

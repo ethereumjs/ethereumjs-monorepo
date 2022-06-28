@@ -14,7 +14,7 @@ export interface Consensus {
   /**
    * Set up consensus mechanism
    */
-  setup(): Promise<void>
+  setup({ blockchain }: ConsensusOptions): Promise<void>
 
   /**
    * Validate block consensus parameters

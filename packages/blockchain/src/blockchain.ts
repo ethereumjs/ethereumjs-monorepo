@@ -123,13 +123,13 @@ export class Blockchain implements BlockchainInterface {
     } else {
       switch (this._common.consensusAlgorithm()) {
         case ConsensusAlgorithm.Casper:
-          this.consensus = new CasperConsensus({ blockchain: this })
+          this.consensus = new CasperConsensus()
           break
         case ConsensusAlgorithm.Clique:
-          this.consensus = new CliqueConsensus({ blockchain: this })
+          this.consensus = new CliqueConsensus()
           break
         case ConsensusAlgorithm.Ethash:
-          this.consensus = new EthashConsensus({ blockchain: this })
+          this.consensus = new EthashConsensus()
           break
         default:
           throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
@@ -188,6 +188,8 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _init(genesisBlock?: Block): Promise<void> {
+    await this.consensus.setup({ blockchain: this })
+
     if (this._isInitialized) return
     let dbGenesisBlock
     try {
@@ -233,8 +235,6 @@ export class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(dbOps)
       await this.consensus.genesisInit(genesisBlock)
     }
-
-    await this.consensus.setup()
 
     // At this point, we can safely set the genesis:
     // it is either the one we put in the DB, or it is equal to the one
@@ -1177,17 +1177,17 @@ export class Blockchain implements BlockchainInterface {
     switch (this._common.consensusAlgorithm()) {
       case ConsensusAlgorithm.Casper:
         if (!(this.consensus instanceof CasperConsensus)) {
-          this.consensus = new CasperConsensus({ blockchain: this })
+          this.consensus = new CasperConsensus()
         }
         break
       case ConsensusAlgorithm.Clique:
         if (!(this.consensus instanceof CliqueConsensus)) {
-          this.consensus = new CliqueConsensus({ blockchain: this })
+          this.consensus = new CliqueConsensus()
         }
         break
       case ConsensusAlgorithm.Ethash:
         if (!(this.consensus instanceof EthashConsensus)) {
-          this.consensus = new EthashConsensus({ blockchain: this })
+          this.consensus = new EthashConsensus()
         }
         break
       default:
