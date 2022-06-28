@@ -4,6 +4,10 @@ import Blockchain, { Consensus } from '../src'
 import Common from '@ethereumjs/common'
 
 class fakeConsensus implements Consensus {
+  algorithm: string
+  constructor() {
+    this.algorithm = 'fakeConsensus'
+  }
   genesisInit(_genesisBlock: Block): Promise<void> {
     return new Promise<void>((resolve) => resolve())
   }
@@ -23,10 +27,6 @@ class fakeConsensus implements Consensus {
   ): Promise<void> {
     return new Promise<void>((resolve) => resolve())
   }
-
-  consensusAlgorithm() {
-    return 'fakeConsensus'
-  }
 }
 
 tape('Optional consensus parameter in blockchain constructor', async (t) => {
@@ -35,7 +35,7 @@ tape('Optional consensus parameter in blockchain constructor', async (t) => {
   try {
     const blockchain = await Blockchain.create({ common, consensus })
     t.equals(
-      (blockchain.consensus as fakeConsensus).consensusAlgorithm(),
+      (blockchain.consensus as fakeConsensus).algorithm,
       'fakeConsensus',
       'consensus contains new fake property'
     )

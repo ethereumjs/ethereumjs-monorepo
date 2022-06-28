@@ -1,4 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import Ethash, { EthashCacheDB } from '@ethereumjs/ethash'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
@@ -8,10 +9,12 @@ import { Consensus, ConsensusOptions } from './interface'
  */
 export class EthashConsensus implements Consensus {
   blockchain: Blockchain
+  algorithm: ConsensusAlgorithm
   _ethash: Ethash
 
   constructor({ blockchain }: ConsensusOptions) {
     this.blockchain = blockchain
+    this.algorithm = ConsensusAlgorithm.Ethash
     this._ethash = new Ethash(this.blockchain.db as unknown as EthashCacheDB)
   }
 

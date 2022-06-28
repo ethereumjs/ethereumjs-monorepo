@@ -1,4 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
 
@@ -7,9 +8,11 @@ import { Consensus, ConsensusOptions } from './interface'
  */
 export class CasperConsensus implements Consensus {
   blockchain: Blockchain
+  algorithm: ConsensusAlgorithm
 
   constructor({ blockchain }: ConsensusOptions) {
     this.blockchain = blockchain
+    this.algorithm = ConsensusAlgorithm.Casper
   }
 
   public async genesisInit(): Promise<void> {}

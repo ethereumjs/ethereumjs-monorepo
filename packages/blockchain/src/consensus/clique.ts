@@ -4,7 +4,7 @@ import { Address, bigIntToBuffer, bufferToBigInt, arrToBufArr, bufArrToArr } fro
 import RLP from 'rlp'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
-import { CliqueConfig } from '@ethereumjs/common'
+import { CliqueConfig, ConsensusAlgorithm } from '@ethereumjs/common'
 
 const debug = createDebugLogger('blockchain:clique')
 
@@ -47,6 +47,7 @@ type CliqueLatestBlockSigners = CliqueBlockSigner[]
  */
 export class CliqueConsensus implements Consensus {
   blockchain: Blockchain
+  algorithm: ConsensusAlgorithm
 
   /**
    * Keep signer history data (signer states and votes)
@@ -97,6 +98,7 @@ export class CliqueConsensus implements Consensus {
 
   constructor({ blockchain }: ConsensusOptions) {
     this.blockchain = blockchain
+    this.algorithm = ConsensusAlgorithm.Clique
   }
 
   async setup(): Promise<void> {
