@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "3.0.0-beta.1",
-    "@ethereumjs/trie": "^5.0.0",
+    "@ethereumjs/trie": "5.0.0-beta.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.0.3",
     "@ethereumjs/util": "^8.0.0",
