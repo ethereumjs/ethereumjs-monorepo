@@ -32,7 +32,7 @@
     "@ethereumjs/common": "3.0.0-beta.1",
     "@ethereumjs/trie": "5.0.0-beta.1",
     "@ethereumjs/tx": "4.0.0-beta.1",
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/util": "8.0.0-beta.1",
     "ethereum-cryptography": "^1.0.3",
     "rlp": "4.0.0-beta.1"
   },

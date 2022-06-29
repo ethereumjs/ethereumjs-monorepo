@@ -33,7 +33,7 @@
     "test:node": "tape -r ts-node/register test/**/*.ts"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/util": "8.0.0-beta.1",
     "abstract-level": "^1.0.3",
     "ethereum-cryptography": "^1.0.3",
     "level": "^8.0.0",
