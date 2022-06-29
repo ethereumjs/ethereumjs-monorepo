@@ -30,15 +30,6 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   return { r, s, v, recovery }
 }
 
-function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-  if (v === BigInt(0) || v === BigInt(1)) return v
-
-  if (chainId === undefined) {
-    return v - BigInt(27)
-  }
-  return v - (chainId * BigInt(2) + BigInt(35))
-}
-
 export function calculateSigRecoveryFromV(v: bigint) {
   if (v === BigInt(0) || v === BigInt(1)) {
     return v
@@ -62,15 +53,9 @@ function isValidSigRecovery(recovery: bigint): boolean {
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Recovered public key
  */
-export const ecrecover = function (
-  msgHash: Buffer,
-  v: bigint,
-  r: Buffer,
-  s: Buffer,
-  chainId?: bigint
-): Buffer {
+export const ecrecover = function (msgHash: Buffer, v: bigint, r: Buffer, s: Buffer): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
-  const recovery = calculateSigRecovery(v, chainId)
+  const recovery = calculateSigRecoveryFromV(v)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
@@ -84,8 +69,8 @@ export const ecrecover = function (
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
-  const recovery = calculateSigRecovery(v, chainId)
+export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer): string {
+  const recovery = calculateSigRecoveryFromV(v)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
@@ -99,8 +84,8 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: big
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
-  const recovery = calculateSigRecovery(v, chainId)
+export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer): string {
+  const recovery = calculateSigRecoveryFromV(v)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
@@ -142,7 +127,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
     throw new Error('Invalid signature length')
   }
 
-  const recovery: bigint = calculateSigRecoveryFromV(v)
+  const recovery = calculateSigRecoveryFromV(v)
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v = v + BigInt(27)
@@ -165,14 +150,13 @@ export const isValidSignature = function (
   v: bigint,
   r: Buffer,
   s: Buffer,
-  homesteadOrLater: boolean = true,
-  chainId?: bigint
+  homesteadOrLater: boolean = true
 ): boolean {
   if (r.length !== 32 || s.length !== 32) {
     return false
   }
 
-  if (!isValidSigRecovery(calculateSigRecovery(v, chainId))) {
+  if (!isValidSigRecovery(calculateSigRecoveryFromV(v))) {
     return false
   }
 
