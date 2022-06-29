@@ -203,7 +203,7 @@ export class VmState implements EVMStateAccess {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  touchAccount(address: Address): void {
+  protected touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
   }
 
@@ -298,7 +298,7 @@ export class VmState implements EVMStateAccess {
    * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    */
-  async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  protected async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
