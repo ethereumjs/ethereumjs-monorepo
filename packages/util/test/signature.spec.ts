@@ -111,7 +111,7 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(41)
-    const pubkey = ecrecover(echash, v, r, s, chainId)
+    const pubkey = ecrecover(echash, v, r, s)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
@@ -120,7 +120,7 @@ tape('ecrecover', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
-    const pubkey = ecrecover(echash, v, r, s, chainId)
+    const pubkey = ecrecover(echash, v, r, s)
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
@@ -184,8 +184,7 @@ tape('ecrecover', function (t) {
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
 
     const v = BigInt('68361967398315796')
-    const chainID = BigInt('34180983699157880')
-    const sender = ecrecover(msgHash, v, r, s, chainID)
+    const sender = ecrecover(msgHash, v, r, s)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
     st.end()
   })
@@ -284,7 +283,7 @@ tape('isValidSignature', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(41)
-    st.ok(isValidSignature(v, r, s, false, chainId))
+    st.ok(isValidSignature(v, r, s, false))
     st.end()
   })
   t.test('should work otherwise (chainId=150)', function (st) {
@@ -292,7 +291,7 @@ tape('isValidSignature', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
-    st.ok(isValidSignature(v, r, s, false, chainId))
+    st.ok(isValidSignature(v, r, s, false))
     st.end()
   })
 })
@@ -386,7 +385,7 @@ tape('message sig', function (t) {
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
     const recovery = calculateSigRecoveryFromV(v)
-    st.equal(toRpcSig(v, r, s, chainId), sig)
+    st.equal(toRpcSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v,
       r,
@@ -401,9 +400,8 @@ tape('message sig', function (t) {
     function (st) {
       const sig =
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
-      const chainID = BigInt('34180983699157880')
       const v = BigInt('68361967398315796')
-      st.equal(toRpcSig(v, r, s, chainID), sig)
+      st.equal(toRpcSig(v, r, s), sig)
       st.end()
     }
   )
