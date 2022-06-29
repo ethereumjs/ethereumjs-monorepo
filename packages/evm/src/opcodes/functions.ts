@@ -3,7 +3,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Address,
-  KECCAK256_NULL,
   TWO_POW256,
   MAX_INTEGER_BIGINT,
   bufferToBigInt,
@@ -520,9 +519,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const codeHash = await (
-        await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt)))
-      ).codeHash
+      const codeHash = (await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt))))
+        .codeHash
       runState.stack.push(BigInt('0x' + codeHash.toString('hex')))
     },
   ],
