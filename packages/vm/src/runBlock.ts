@@ -27,7 +27,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  * @ignore
  */
 export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.eei.state
+  const state = this.eei
   const { root } = opts
   let { block } = opts
   const generateFields = !!opts.generate
@@ -312,7 +312,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.eei.state
+  const state = this.eei
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers

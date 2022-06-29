@@ -144,24 +144,24 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState) {
-        await this.eei.state.generateCanonicalGenesis(this.blockchain.genesisState())
+        await this.eei.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.eei.state.checkpoint()
+      await this.eei.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.eei.state.getAccount(address)
+        const account = await this.eei.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
           const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
-          await this.eei.state.putAccount(address, newAccount)
+          await this.eei.putAccount(address, newAccount)
         }
       }
-      await this.eei.state.commit()
+      await this.eei.commit()
     }
     this._isInitialized = true
   }

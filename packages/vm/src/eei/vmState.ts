@@ -12,13 +12,13 @@ import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
 type AddressHex = string
 
 export class VmState implements EVMStateAccess {
-  _common: Common
-  _debug: Debugger
+  protected _common: Common
+  protected _debug: Debugger
 
-  _checkpointCount: number
-  _stateManager: StateManager
-  _touched: Set<AddressHex>
-  _touchedStack: Set<AddressHex>[]
+  protected _checkpointCount: number
+  protected _stateManager: StateManager
+  protected _touched: Set<AddressHex>
+  protected _touchedStack: Set<AddressHex>[]
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -28,13 +28,13 @@ export class VmState implements EVMStateAccess {
   // Each call level tracks their access themselves.
   // In case of a commit, copy everything if the value does not exist, to the level above
   // In case of a revert, discard any warm slots.
-  _accessedStorage: Map<string, Set<string>>[]
+  protected _accessedStorage: Map<string, Set<string>>[]
 
   // Backup structure for address/storage tracker frames on reverts
   // to also include on access list generation
-  _accessedStorageReverted: Map<string, Set<string>>[]
+  protected _accessedStorageReverted: Map<string, Set<string>>[]
 
-  _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
+  protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
   protected readonly DEBUG: boolean = false
 
