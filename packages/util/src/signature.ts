@@ -43,10 +43,9 @@ export function calculateSigRecoveryFromV(v: bigint) {
   if (v === BigInt(0) || v === BigInt(1)) {
     return v
   } else {
-    const _v = Number(v)
-    if (Number.isInteger((0 - 35 - _v) / -2)) {
+    if ((0n - 35n - v) % 2n === 0n) {
       return BigInt(0)
-    } else if (Number.isInteger((1 - 35 - _v) / -2)) {
+    } else if ((1n - 35n - v) % 2n === 0n) {
       return BigInt(1)
     } else {
       throw new Error('Invalid v value')
