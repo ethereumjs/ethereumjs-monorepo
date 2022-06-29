@@ -485,8 +485,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const size = await runState.eei.getExternalCodeSize(
-        new Address(addressToBuffer(addressBigInt))
+      const size = BigInt(
+        (await runState.eei.getContractCode(new Address(addressToBuffer(addressBigInt)))).length
       )
       runState.stack.push(size)
     },
@@ -498,7 +498,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BigInt(0)) {
-        const code = await runState.eei.getExternalCode(new Address(addressToBuffer(addressBigInt)))
+        const code = await runState.eei.getContractCode(new Address(addressToBuffer(addressBigInt)))
 
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
@@ -520,13 +520,10 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const code = await runState.eei.getExternalCode(new Address(addressToBuffer(addressBigInt)))
-      if (code.length === 0) {
-        runState.stack.push(bufferToBigInt(KECCAK256_NULL))
-        return
-      }
-
-      runState.stack.push(BigInt('0x' + bytesToHex(keccak256(code))))
+      const codeHash = await (
+        await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt)))
+      ).codeHash
+      runState.stack.push(BigInt('0x' + codeHash.toString('hex')))
     },
   ],
   // 0x3d: RETURNDATASIZE

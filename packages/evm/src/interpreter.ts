@@ -459,7 +459,7 @@ export default class Interpreter {
       return this._env.contract.balance
     }
 
-    return this._eei.getExternalBalance(address)
+    return (await this._eei.getAccount(address)).balance
   }
 
   /**

@@ -24,9 +24,6 @@ export interface EVMInterface {
  * `@ethereumjs/vm` package.
  */
 export interface EEIInterface extends EVMStateAccess {
-  getExternalBalance(address: Address): Promise<bigint>
-  getExternalCodeSize(address: Address): Promise<bigint>
-  getExternalCode(address: Address): Promise<Buffer>
   getBlockHash(num: bigint): Promise<bigint>
   storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
   storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
