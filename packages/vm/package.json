@@ -46,7 +46,7 @@
     "@ethereumjs/block": "4.0.0-beta.1",
     "@ethereumjs/blockchain": "6.0.0-beta.1",
     "@ethereumjs/common": "3.0.0-beta.1",
-    "@ethereumjs/evm": "^6.0.0",
+    "@ethereumjs/evm": "1.0.0-beta.1",
     "@ethereumjs/tx": "^3.5.2",
     "@ethereumjs/statemanager": "^1.0.0",
     "@ethereumjs/trie": "^5.0.0",
