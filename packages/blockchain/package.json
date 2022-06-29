@@ -30,7 +30,7 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
     "@ethereumjs/block": "4.0.0-beta.1",
-    "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/common": "3.0.0-beta.1",
     "@ethereumjs/ethash": "^1.1.0",
     "@ethereumjs/trie": "^5.0.0",
     "@ethereumjs/util": "^8.0.0",

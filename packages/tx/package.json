@@ -30,7 +30,7 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- tx"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/common": "3.0.0-beta.1",
     "@ethereumjs/util": "^8.0.0",
     "ethereum-cryptography": "^1.0.3",
     "rlp": "^3.0.0"
