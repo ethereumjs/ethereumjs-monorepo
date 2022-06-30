@@ -73,7 +73,14 @@
       "forkHash": "0x7119b6b3"
     },
     {
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
       "name": "merge",
+      "td": 50000000000000000,
+      "block": null,
+      "forkHash": "0x7119b6b3"
+    },
+    {
+      "name": "mergeForkIdTransition",
       "block": null,
       "forkHash": null
     },
