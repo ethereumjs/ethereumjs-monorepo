@@ -6,6 +6,125 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0-beta.1 [ UNRELEASED ]
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+
+The EthereumJS Team
+
+### London Hardfork Default
+
+The `@ethereumjs/common` library is the base library for various upper-level EthereumJS libraries (like the VM or Transaction library), providing a common and shared view on the network and hardfork state.
+
+A typical usage looks like this:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const vm = await VM.create({ common })
+```
+
+With the `v3` release the default `Common` hardfork changes from `Istanbul` to `London`, see PR [#1749](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1749).
+
+**Breaking:** Please check your upper-level library instantiations (e.g. for Tx, VM,...) where you use an implicit default Common (so: do not explicitly pass in a Common instance).
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+Our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/) to allow for BigInt support. We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+
+### General and BigInt-Related API Changes
+
+Various methods have been renamed and various method signatures have been changed along with the `BigInt` transition.
+
+#### Method Renamings/Signature Changes
+
+See PRs [#1709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1709), [#1854](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1854) for the related code changeset.
+
+`number` -> `bigint` and `BNLike` to `BigIntLike` changes:
+
+- `static isSupportedChainId(chainId: bigint): boolean`
+- `setChain(chain: string | number | Chain | bigint | object): ChainConfig`
+- `getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string`
+- `setHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string`
+- `param(topic: string, name: string): bigint`
+- `paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint`
+- `paramByEIP(topic: string, name: string, eip: number): bigint | undefined`
+- `paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): bigint`
+- `hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BigIntLike): boolean`
+- `activeOnBlock(blockNumber: BigIntLike): boolean`
+- `hardforkBlock(hardfork?: string | Hardfork): bigint | null`
+- `hardforkTD(hardfork?: string | Hardfork): bigint | null`
+- `isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean`
+- `nextHardforkBlock(hardfork?: string | Hardfork): bigint | null`
+- `isNextHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean`
+- `chainId(): bigint`
+- `networkId(): bigint`
+
+Renamings:
+
+**Breaking:** So actually: most of the methods affected, lots of numbers going in and out particularly in this library. 😋 Please check on the method names and update accordingly.
+
+#### Method Removals
+
+Following methods have been removed, see PRs [#1698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1698) and [#1709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1709).
+
+- `Common.forCustomChain()` (use newer simplified `Common.custom()` method instead)
+- All temporary `BN`-appended method names, e.g. `nextHardforkBlockBN()` (search for "BN(" e.g.))
+- `supportedHardforks` constructor argument
+
+Also, there is no notion of `active` HFs in Common anymore in the sense that HFs could be added to a chain file which would then not "activate" (e.g. the `DAO` HF for `Rinkeby`). The previous behavior/semantics had no practical benefit and chain files should now be updated to only include the HFs which would/will at some point activate on a chain.
+
+Following methods have been removed accordingly:
+
+- `hardforkIsActiveOnChain()`
+- `activeHardforks()`
+- `activeHardfork()`
+
+**Breaking:** Check on method and constructor argument usages from above.
+
+#### Type Changes
+
+There are a few new types e.g. for configuration files (e.g. `CliqueConfig`) to get rid of some last `any` types in the package, see PR [#1906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1906). Eventually related problems should be seen early on in your TypeScript setup though and it should also be possile to easily attribute and fix.
+
+#### New File Structue
+
+The file structure of the package has been aligned with other libraries and there is now a dedicated `common.ts` file for the main source code with `index.ts` re-exporting functionality and types, see PR [#1915](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1915). Some misplaced types have been moved to `types.ts` and enums (like `Chain` or `Hardfork`) have been (internally) moved to an `enum.ts` file. You should generally use the root import from `index.ts`, if you are not doing and some imports broke this should be easily fixable though.
+
+### Genesis Handling Refactor
+
+We have completely refactored all our genesis (block) handling and moved the code and logic higher up the stack to the `Blockchain` library which is a more natural fit for this, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) This freed us up to remove the large genesis state files - especially the `mainnet` one - from `Common`.
+
+The most imminent benefit from this is a **dramatically reduced bundle size for the library, going down from a packed ~9 MB to something about 50 KB (!)**.
+
+**Breaking:** See if you use `Common` genesis state functionality, e.g. by accessing pre-defined state with the `genesisState()` function (now removed) or by adding custom state with the `customChain` constructor (genesis-extended data format removed) and see description for `Block` and `Blockchain` breaking releases for context and how to replace the functionality. There are now also no `stateRoot` and `hash` configuration paramters in the `JSON` chain files any more, inclusion was a blocker for a clean refactor and this also wasn't compatible with the Geth genesis file format (these values can be calculated on an upper-library level). So you should remove these from your (custom) chain config files as well.
+
+### Other Changes
+
+- New experimental EIP `EIP-3074`: Authcall, PR [#1789](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1789)
+
+
 ## 2.6.4 - 2022-04-14
 
 ### EIP-3651: Warm COINBASE

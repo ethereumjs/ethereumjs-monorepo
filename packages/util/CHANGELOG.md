@@ -6,6 +6,99 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.0.0-beta.1 - 2022-06-30
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+
+The EthereumJS Team
+
+### New Package Name
+
+**Attention!** This library release aligns (and therefore: changes!) the library name with the other EthereumJS libraries and switches to the new scoped package name format, see PR [#1952](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1952). In this case the library is renamed as follows:
+
+- `ethereumjs-util` -> `@ethereumjs/util`
+
+Please update your library references accordingly and install with:
+
+```shell
+npm i @ethereumjs/util
+```
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+
+### BigInt Helpers and API Changes
+
+The Util library is a utility library for other EthereumJS and third-party libraries. Some core helpers around the newly introduced `BigInt` usage have been added to this library to be available throughout the stack, see `BigInt` related PRs as well as PR [#1825](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1825).
+
+There is a new `BigIntLike` type representing some `BigInt`-compatible type flavors (`bigint | PrefixedHexString | number | Buffer`) and replacing the old `BNLike` type. This is used for typing of various API methods.
+
+In the `bytes` module the generic `toBuffer()` method now also allows for `bigint` input and new helpers `bufferToBigInt()`, `bigIntToBuffer()`, `bigIntToUnpaddedBuffer()` (useful for RLP) and `bigIntToHex()` are introduced.
+
+All `constants` module `BN` constants have been replaced with corresponding `BigInt` versions (same name, so you need to update!).
+
+The `nonce` and `balance` properties from the `Account` class are now taken in and represented as `BigInt` values.
+
+Last but not least the signatures of the following API methods have been changed to take in `BigInt` instead of `BN` values:
+
+- `address`: `Address.generate(from: Address, nonce: bigint): Address`
+- `bytes`: `fromSigned(num: Buffer): bigint`
+- `bytes`: `toUnsigned(num: bigint): Buffer`
+- `signature`: `ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature`
+- `signature`: `ecrecover(msgHash: Buffer, v: bigint, r: Buffer, s: Buffer, chainId?: bigint): Buffer`
+- `signature`: `toRpcSig(v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string)`
+- `signature`: `toCompactSig(v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string`
+- `signature`: `fromRpcSig(sig: string): ECDSASignature` (see `ECDSASignature` type)
+
+And finally the `BN` export has been removed from the library.
+
+### Hash Module Removal
+
+There is now a stable and audited base layer cryptography and hashing library with [ethereum-cryptography](https://github.com/ethereum/js-ethereum-cryptography), bundling the various Ethereum needs under a single package.
+
+The abstraction layer provided by the `hash` module in the `Util` package is therefore not needed any more and would just be some unnecessary chaining of hash function calls. Therefore the module has been removed from the library in favor of using the `ethereum-cryptography` library directly, see PR [#1859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1859).
+
+Please replace your hash function calls accordingly.
+
+### Signature Module Clean-Up
+
+The signature code in the `signature` module has been cleaned up and partly refactored.
+
+There is now a single `ECDSASignature` signature TypeScript interface which now takes in `v` as a `BigInt` value and not a `number` any more, the `ECDSASignatureBuffer` interface has been removed.
+
+The previously overloaded (multiple possible signature variations) `ecsign()` function has been simplified and now adheres to only one signature using `BigInt` as `chainId` input and the new `ECDSASignature` format as output:
+
+- `ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature`
+
+Various other methods have been moved over to `bigint` usage, see "BigInt Helpers and API Changes" for a summary.
+
+### Other Changes
+
+- Removal of the deprecated `object` module, PR [#1809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1809)
+- Removal of deprecated alias `bigIntToRlp`, PR [#1809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1809)
+- New `bytes` -> `short()` method for `Buffer` string output formatting, PR [#1817](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1817)
+
 ## 7.1.5 - 2022-06-02
 
 - More flexible `signature` module methods now allow for passing in `v` values of `0` and `1` in the context of typed txs (e.g. EIP-1559 txs): `ecrecover()`, `toRpcSig()`, `toCompactSig()`, `isValidSignature()`, PR [#1905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1905)

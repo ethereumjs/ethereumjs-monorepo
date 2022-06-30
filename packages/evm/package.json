@@ -1,12 +1,14 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "6.0.0",
-  "description": "An Ethereum VM implementation",
+  "version": "1.0.0-beta.1",
+  "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "license": "MPL-2.0",
   "author": "EthereumJS",
   "keywords": [
     "ethereum",
-    "EVM"
+    "EVM",
+    "JavaScript",
+    "TypeScript"
   ],
   "files": [
     "dist",
@@ -32,17 +34,17 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/common": "3.0.0-beta.1",
     "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/util": "8.0.0-beta.1",
     "ethereum-cryptography": "^1.0.3",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
-    "@ethereumjs/statemanager": "^1.0.0",
+    "@ethereumjs/statemanager": "1.0.0-beta.1",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
@@ -78,8 +80,8 @@
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+vm%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+evm%22"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "rlp",
-  "version": "3.0.0",
+  "version": "4.0.0-beta.1",
   "description": "Recursive Length Prefix Encoding Module",
   "license": "MPL-2.0",
   "keywords": [
