@@ -30,7 +30,7 @@ npm i @ethereumjs/evm
 
 The new EVM package extracts the bytecode execution logic and leaves the handling of the outer environment like setting up some pre-state, processing txs and blocks, generating receipts and paying miners (on a PoW chain) to the outer package.
 
-This makes up for a cleaner separation of concerns, generally the new packages comes a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before and will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing by adopting the outer VM package.
+This makes for a cleaner separation of concerns and generally brings the the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before.  This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
 
 ### EVM, EEI and State
 
@@ -38,7 +38,7 @@ The EVM now provides interfaces for the `EVM` itself and for the `EEI`, the envi
 
 Almost all environment related variables are extracted from EEI and are now in EVM. The environment provides information to the EVM about the code, the remaining gas left, etc. The only environment-related variables left in EEI are the warmed addresses and storage slots, and also keeps track of which accounts are touched (to cleanup later if these are "empty" after running a transaction).
 
-The EEI is created once, not each time when a transaction is ran in the VM, VM access to `StateManager` is now all done using the EEI.
+The EEI is created once, not each time when a transaction is ran in the VM. The VM's access to the `StateManager` is now all done through the EEI.
 
 Internally, in the EVM, the `Env` environment variable is used to track any variables which do not change during a call frame, for instance the `code`, the `caller`, etc. The `RunState` is used to track anything which can change during the execution, such as the remaining gas, the selfdestruct lists, the stack, the program counter, etc.
 
@@ -74,7 +74,7 @@ This comes with a substantial increase in overall EVM performance, we will provi
 
 ### EIP-3074 Authcall Support
 
-The EVM now comes with experimental support for [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) introducing two new opcodes `Auth` and `Authcall` to allow externally owned accounts to delegate control to a contract, see PRs [#1788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1788) and [#1867]([#1788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1788)).
+The EVM now comes with experimental support for [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) introducing two new opcodes `Auth` and `Authcall` to allow externally owned accounts to delegate control to a contract, see PRs [#1788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1788) and [#1867](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1867).
 
 ### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
 
@@ -87,7 +87,7 @@ Along with the breaking releases we have therefore deactivated both of these opt
 ### Other Changes
 
 - The EVM is now fully typed. Before, the `AsyncEventEmitter` did not have an interface, therefore TypeScript internally casts it as `any`. It also provides types for the available events
-- TransientStorage is now part of EVM and not of EEI
+- TransientStorage (EIP-1153) is now part of EVM and not of EEI
 - Renamed `gasUsed` to `executionGasUsed` as part of `ExecResult`
 
 ## 5.9.1 - 2022-06-02

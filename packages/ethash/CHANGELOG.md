@@ -40,7 +40,7 @@ Along with the breaking releases we have therefore deactivated both of these opt
 
 The internal Level DB code has been reworked to now be based and work with the latest Level [v8.0.0](https://github.com/Level/level/releases/tag/v8.0.0) major Level DB release, see PR [#1949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1949). This allows to use ES6-style `import` syntax to import the `Level` instance and allows for better typing when working with Level DB.
 
-Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`. For some context it is worth to mention that the `level` package itself is starting with the v8 release just a proxy for these other packages and has no functionality itself.
+Because of the upgrade, any `level` implementation compliant with the `abstract-level` interface can be use, including `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`. For some context it is worth to mention that the `level` package itself is starting with the v8 release just a proxy for these other packages and has no functionality itself.
 
 ## 1.1.0 - 2021-09-24
 

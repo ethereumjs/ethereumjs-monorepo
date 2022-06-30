@@ -40,7 +40,7 @@ Along with the breaking releases we have therefore deactivated both of these opt
 
 - Removed Node.js specific `assert` usage, PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924)
 - Deduplicated `keccak` and `secp256k1` library usage in favor of `ethereum-cryptography`, Noble crypto library uses, PR [#1947](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1947)
-- Replaced `hi-base32` dependency with `@scure/base` from @paulmillr (Noble crypto library author), PR [#1947](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1947)
+- Replaced `hi-base32` dependency with `@scure/base` from [@paulmillr](https://github.com/paulmillr) (Noble crypto library author), PR [#1947](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1947)
 
 ## 4.2.2 - 2022-04-29
 

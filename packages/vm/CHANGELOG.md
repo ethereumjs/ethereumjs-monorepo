@@ -26,7 +26,6 @@ The EVM package extracts the inner core, the Ethereum Virtual Machine (EVM) resp
 
 The StateManager extracts the high-level state access interface, see PR [#1817](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1817). Both can now directly be passed in to the `VM` package along instantiation or are otherwise instantiated as default versions with default values being set.
 
-
 The EVM related options now moved over to the EVM package directly, namely:
 
 - `allowUnlimitedContractSize`
@@ -38,7 +37,7 @@ Both the `runCall()` and `runCode()` API methods also moved over to the `evm` pa
 - `vm.evm.runCall()`
 - `vm.evm.runCode()`
 
-The VM provides an implementation for the `EEI` interface from the `EVM` package which can be used by the EVM to request environmental data for bytecode processing. It is now also possible to provide a custom EEI by a respective constructor option.
+The VM provides an implementation for the `EEI` interface from the `EVM` package which can be used by the EVM to request environmental data for bytecode processing. It is now also possible to provide a custom EEI by a corresponding constructor option.
 
 ### London Hardfork Default
 

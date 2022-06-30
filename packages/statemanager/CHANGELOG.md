@@ -28,7 +28,7 @@ npm i @ethereumjs/statemanager
 
 The `@ethereumjs/vm` package still has this package added as a dependency and it is automatically integrated. The `StateManager` provides a high-level interface to an underlying state storage solution. This is classically a `Trie` (in our case: an `@ethereumjs/trie`) instance, but can also be something else, e.g. a plain database, an underlying RPC connection or a Verkle Tree in the future.
 
-The extraction of this module allows to easier customize a `StateManager` and provide or use own implementations in the future. It now also gets possible to use the `StateManager` standalone for high-level state access in a non-VM context.
+The extraction of this module allows to easier customize a `StateManager` and provide or use your own implementations in the future. It is now also possible to use the `StateManager` standalone for high-level state access in a non-VM context.
 
 A `StateManager` must adhere to a predefined interface `StateManager` and implement a certain set of state access methods like `getAccount()`, `putContractCode()`,... Such an implementation is then guaranteed to work e.g. in the `@ethereumjs/vm` implementation.
 
@@ -55,9 +55,9 @@ Other Changes:
 
 - New partial parent interface `StateAccess` with just the access focused functionality
 
-So overall the `StateManager` interface got a lot leaner requesting fewer methods to be implemented which should make an implementation and/or adoption a lot easier.
+So overall the `StateManager` interface got a lot leaner requiring fewer methods to be implemented which should make an implementation and/or adoption a lot easier.
 
-The `StateManager` package ships with a Trie-based `StateManager` implementation extending from a `BaseStateManager` which might be a suitable starting point for own implementations. This will very much depend on the specific needs though.
+The `StateManager` package ships with a Trie-based `StateManager` implementation extending from a `BaseStateManager` which might be a suitable starting point for your own implementations. This will very much depend on the specific needs though.
 
 ### BigInt Introduction / ES2020 Build Target
 
