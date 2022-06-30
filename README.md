@@ -7,6 +7,8 @@
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+## Packages
+
 Below you can find a list of the packages included in this repository.
 
 | package                                          | npm                                                             | issues                                                                        | tests                                                                      | coverage                                                                    |
@@ -25,7 +27,18 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
 | [rlp][rlp-package]                               | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
 
-🚧 Please note that the `master` branch is updated on a daily basis, and to inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
+## Branches
+
+The following are our currently active branches:
+
+Branch | Release Series | Status | Description
+--- | --- | --- | ---
+[master](https://github.com/ethereumjs/ethereumjs-monorepo) | v6 | `Beta` | Main working branch, current v6 work merged in (2022-06-08)
+[v5-maintenance](https://github.com/ethereumjs/ethereumjs-monorepo/tree/v5-maintenance) | v5 | `Active` | Maintenance for v5 releases
+
+Please open PRs towards one of the active branches.
+
+To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
 ## Coverage report
 
