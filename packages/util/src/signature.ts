@@ -43,7 +43,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
 }
 
 export function calculateSigRecoveryFromV(v: bigint): bigint {
-  if (v > 28n && v < 37n) {
+  if (v > 28n && v < 35n) {
     return v
   }
   if (v < BigInt(27) && v > BigInt(1)) {
@@ -54,7 +54,7 @@ export function calculateSigRecoveryFromV(v: bigint): bigint {
   }
   if (v === BigInt(0) || v === BigInt(1)) {
     return v
-  } else if ((0n - 35n - v) % -2n === 0n) {
+  } else if ((0n - 35n - v) % 2n === 0n) {
     return BigInt(0)
   } else {
     return BigInt(1)
