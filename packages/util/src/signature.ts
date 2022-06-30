@@ -42,17 +42,22 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   return { r, s, v, recovery }
 }
 
-export function calculateSigRecoveryFromV(v: bigint) {
+export function calculateSigRecoveryFromV(v: bigint): bigint {
+  if (v > 28n && v < 37n) {
+    return v
+  }
+  if (v < BigInt(27) && v > BigInt(1)) {
+    return v
+  }
+  if (v === BigInt(27) || v === BigInt(28)) {
+    return v - BigInt(27)
+  }
   if (v === BigInt(0) || v === BigInt(1)) {
     return v
+  } else if ((0n - 35n - v) % -2n === 0n) {
+    return BigInt(0)
   } else {
-    if ((0n - 35n - v) % 2n === 0n) {
-      return BigInt(0)
-    } else if ((1n - 35n - v) % 2n === 0n) {
-      return BigInt(1)
-    } else {
-      throw new Error('Invalid v value')
-    }
+    return BigInt(1)
   }
 }
 
@@ -69,9 +74,8 @@ export const ecrecover = function (msgHash: Buffer, v: bigint, r: Buffer, s: Buf
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecoveryFromV(v)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw new Error(`Invalid signature v value ${v}`)
   }
-
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
 }
