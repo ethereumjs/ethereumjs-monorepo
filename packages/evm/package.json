@@ -19,7 +19,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "nyc npm run coverage:test",
     "coverage:test": "npm run test",
