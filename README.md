@@ -39,9 +39,11 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    vm{vm}
    client{client}
    ethash --> blockchain
+   ethash --> client
    devp2p --> client
    block --> blockchain
    block --> client
+   block --> ethash
    block --> vm
    blockchain --> client
    blockchain --> vm
@@ -49,18 +51,21 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    trie --> vm
    trie --> block
    trie --> blockchain
+   trie --> statemanager
    common --> block
    common --> blockchain
+   common --> evm
+   common --> statemanager
    common --> tx
    common --> vm
    common --> client
    common --> devp2p
+   evm --> vm
+   evm --> client
    tx --> block
    tx --> vm
    vm --> client
    statemanager --> vm
-   common --> statemanager
-   trie --> statemanager
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
