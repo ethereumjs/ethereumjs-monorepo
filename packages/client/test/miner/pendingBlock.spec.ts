@@ -43,7 +43,7 @@ const setup = () => {
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
     execution: {
-      vm: { stateManager, eei: { state: { getAccount: () => stateManager.getAccount() } } },
+      vm: { stateManager, eei: { getAccount: () => stateManager.getAccount() } },
     },
   }
   const txPool = new TxPool({ config, service })

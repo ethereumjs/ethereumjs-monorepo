@@ -330,7 +330,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
-    const account = await this.eei.state.getAccount(message.authcallOrigin ?? message.caller)
+    const account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
     let errorMessage
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -341,7 +341,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       }
     }
     // Load `to` account
-    const toAccount = await this.eei.state.getAccount(message.to)
+    const toAccount = await this.eei.getAccount(message.to)
     // Add tx value to the `to` account
     if (!message.delegatecall) {
       try {
@@ -405,7 +405,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   }
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
-    const account = await this.eei.state.getAccount(message.caller)
+    const account = await this.eei.getAccount(message.caller)
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
@@ -428,7 +428,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
-    let toAccount = await this.eei.state.getAccount(message.to)
+    let toAccount = await this.eei.getAccount(message.to)
 
     // Check for collision
     if (
@@ -448,7 +448,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       }
     }
 
-    await this.eei.state.clearContractStorage(message.to)
+    await this.eei.clearContractStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -457,7 +457,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     await this._emit('newContract', newContractEvent)
 
-    toAccount = await this.eei.state.getAccount(message.to)
+    toAccount = await this.eei.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
     if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BigInt(1)
@@ -583,7 +583,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     // Save code if a new contract was created
     if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
-      await this.eei.state.putContractCode(message.to, result.returnValue)
+      await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -595,8 +595,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         // It is thus an unecessary default item, which we have to save to dik
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
-        const account = await this.eei.state.getAccount(message.to)
-        await this.eei.state.putAccount(message.to, account)
+        const account = await this.eei.getAccount(message.to)
+        await this.eei.putAccount(message.to, account)
       }
     }
 
@@ -625,7 +625,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       gasPrice: this._tx!.gasPrice,
       origin: this._tx!.origin ?? message.caller ?? Address.zero(),
       block: this._block ?? defaultBlock(),
-      contract: await this.eei.state.getAccount(message.to ?? Address.zero()),
+      contract: await this.eei.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
     }
@@ -688,9 +688,9 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance) {
         // if skipBalance, add `value` to caller balance to ensure sufficient funds
-        const callerAccount = await this.eei.state.getAccount(caller)
+        const callerAccount = await this.eei.getAccount(caller)
         callerAccount.balance += value
-        await this.eei.state.putAccount(caller, callerAccount)
+        await this.eei.putAccount(caller, callerAccount)
       }
 
       message = new Message({
@@ -713,10 +713,10 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     if (!message.to && this._common.isActivatedEIP(2929)) {
       message.code = message.data
-      this.eei.state.addWarmedAddress((await this._generateAddress(message)).buf)
+      this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
-    await this.eei.state.checkpoint()
+    await this.eei.checkpoint()
     this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -761,7 +761,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     if (err) {
       if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
-        await this.eei.state.revert()
+        await this.eei.revert()
         this._transientStorage.revert()
         if (this.DEBUG) {
           debug(`message checkpoint reverted`)
@@ -769,14 +769,14 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
       } else {
         // we are in chainstart and the error was the code deposit error
         // we do like nothing happened.
-        await this.eei.state.commit()
+        await this.eei.commit()
         this._transientStorage.commit()
         if (this.DEBUG) {
           debug(`message checkpoint committed`)
         }
       }
     } else {
-      await this.eei.state.commit()
+      await this.eei.commit()
       this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
@@ -851,7 +851,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.eei.state.getContractCode(message.codeAddress)
+        message.code = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
       }
     }
@@ -862,7 +862,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     if (message.salt) {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
-      const acc = await this.eei.state.getAccount(message.caller)
+      const acc = await this.eei.getAccount(message.caller)
       const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
@@ -874,7 +874,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.eei.state.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.eei.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -888,7 +888,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.eei.state.putAccount(message.to, toAccount)
+    const result = this.eei.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
@@ -896,8 +896,8 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
   }
 
   protected async _touchAccount(address: Address): Promise<void> {
-    const account = await this.eei.state.getAccount(address)
-    return this.eei.state.putAccount(address, account)
+    const account = await this.eei.getAccount(address)
+    return this.eei.putAccount(address, account)
   }
 
   /**

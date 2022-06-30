@@ -1,4 +1,4 @@
-import { Address, bigIntToBuffer, bufferToBigInt, setLengthLeft } from '@ethereumjs/util'
+import { Address, bufferToBigInt } from '@ethereumjs/util'
 import Common from '@ethereumjs/common'
 
 import { VmState } from './vmState'
@@ -14,15 +14,6 @@ type Blockchain = {
   copy(): Blockchain
 }
 
-const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
-/**
- * Converts bigint address (they're stored like this on the stack) to buffer address
- */
-function addressToBuffer(address: bigint | Buffer) {
-  if (Buffer.isBuffer(address)) return address
-  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
-}
-
 /**
  * External interface made available to EVM bytecode. Modeled after
  * the ewasm EEI [spec](https://github.com/ewasm/design/blob/master/eth_interface.md).
@@ -31,15 +22,14 @@ function addressToBuffer(address: bigint | Buffer) {
  * The EEI instance also keeps artifacts produced by the bytecode such as logs
  * and to-be-selfdestructed addresses.
  */
-export default class EEI implements EEIInterface {
-  readonly state: VmState
+export default class EEI extends VmState implements EEIInterface {
   protected _common: Common
   protected _blockchain: Blockchain
 
   constructor(stateManager: StateManager, common: Common, blockchain: Blockchain) {
+    super({ common, stateManager })
     this._common = common
     this._blockchain = blockchain
-    this.state = new VmState({ common, stateManager })
   }
 
   /**
@@ -47,7 +37,7 @@ export default class EEI implements EEIInterface {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
-    const account = await this.state.getAccount(address)
+    const account = await this.getAccount(address)
     return account.balance
   }
 
@@ -55,9 +45,8 @@ export default class EEI implements EEIInterface {
    * Get size of an account’s code.
    * @param address - Address of account
    */
-  async getExternalCodeSize(address: bigint): Promise<bigint> {
-    const addr = new Address(addressToBuffer(address))
-    const code = await this.state.getContractCode(addr)
+  async getExternalCodeSize(address: Address): Promise<bigint> {
+    const code = await this.getContractCode(address)
     return BigInt(code.length)
   }
 
@@ -65,9 +54,8 @@ export default class EEI implements EEIInterface {
    * Returns code of an account.
    * @param address - Address of account
    */
-  async getExternalCode(address: bigint): Promise<Buffer> {
-    const addr = new Address(addressToBuffer(address))
-    return this.state.getContractCode(addr)
+  async getExternalCode(address: Address): Promise<Buffer> {
+    return this.getContractCode(address)
   }
 
   /**
@@ -86,7 +74,7 @@ export default class EEI implements EEIInterface {
    * @param value Storage value
    */
   async storageStore(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    await this.state.putContractStorage(address, key, value)
+    await this.putContractStorage(address, key, value)
   }
 
   /**
@@ -97,29 +85,13 @@ export default class EEI implements EEIInterface {
    */
   async storageLoad(address: Address, key: Buffer, original = false): Promise<Buffer> {
     if (original) {
-      return this.state.getOriginalContractStorage(address, key)
+      return this.getOriginalContractStorage(address, key)
     } else {
-      return this.state.getContractStorage(address, key)
+      return this.getContractStorage(address, key)
     }
   }
 
-  /**
-   * Returns true if account is empty or non-existent (according to EIP-161).
-   * @param address - Address of account
-   */
-  async isAccountEmpty(address: Address): Promise<boolean> {
-    return this.state.accountIsEmpty(address)
-  }
-
-  /**
-   * Returns true if account exists in the state trie (it can be empty). Returns false if the account is `null`.
-   * @param address - Address of account
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    return this.state.accountExists(address)
-  }
-
   public copy() {
-    return new EEI(this.state._stateManager.copy(), this._common.copy(), this._blockchain.copy())
+    return new EEI(this._stateManager.copy(), this._common.copy(), this._blockchain.copy())
   }
 }

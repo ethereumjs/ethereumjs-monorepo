@@ -77,7 +77,7 @@ tape('VM.runCode: interpreter', (t) => {
 
   t.test('should throw on non-EvmError', async (st) => {
     const eei = await getEEI()
-    eei.state.putContractStorage = (..._args) => {
+    eei.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
     const evm = await EVM.create({ eei })

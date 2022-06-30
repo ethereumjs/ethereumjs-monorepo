@@ -149,9 +149,9 @@ tape('Stack', (t) => {
           PUSH1 0x00
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
-    await eei.state.putAccount(addr, account)
-    await eei.state.putContractCode(addr, Buffer.from(code, 'hex'))
-    await eei.state.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
+    await eei.putAccount(addr, account)
+    await eei.putContractCode(addr, Buffer.from(code, 'hex'))
+    await eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller: caller,
       gasLimit: BigInt(0xffffffffff),
