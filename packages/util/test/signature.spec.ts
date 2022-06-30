@@ -355,7 +355,7 @@ tape('message sig', function (t) {
     const recovery = calculateSigRecoveryFromV(v)
     st.equal(toCompactSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: v,
+      v,
       r,
       s,
       recovery,
@@ -367,11 +367,11 @@ tape('message sig', function (t) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(BigInt(1), r, s), sig)
-    const v = BigInt(28)
+    const v = BigInt(1)
     const recovery = calculateSigRecoveryFromV(v)
     st.equal(toCompactSig(BigInt(1), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: v,
+      v: BigInt(28),
       r,
       s,
       recovery,
