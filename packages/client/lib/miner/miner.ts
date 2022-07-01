@@ -257,7 +257,7 @@ export class Miner {
       },
       blockOpts: {
         cliqueSigner,
-        hardforkByBlockNumber: true,
+        common: this.config.chainCommon,
         calcDifficultyFromHeader,
         putBlockIntoBlockchain: false,
       },
