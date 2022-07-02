@@ -95,3 +95,5 @@ export default class EEI extends VmState implements EEIInterface {
     return new EEI(this._stateManager.copy(), this._common.copy(), this._blockchain.copy())
   }
 }
+
+export * from './vmState'
