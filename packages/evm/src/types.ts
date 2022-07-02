@@ -23,16 +23,10 @@ export interface EVMInterface {
  * environment (`mainnet`, `sepolia`,...) can be found in the
  * `@ethereumjs/vm` package.
  */
-export interface EEIInterface {
-  state: EVMStateAccess
-  getExternalBalance(address: Address): Promise<bigint>
-  getExternalCodeSize(address: bigint): Promise<bigint>
-  getExternalCode(address: bigint): Promise<Buffer>
+export interface EEIInterface extends EVMStateAccess {
   getBlockHash(num: bigint): Promise<bigint>
   storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
   storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
-  isAccountEmpty(address: Address): Promise<boolean>
-  accountExists(address: Address): Promise<boolean>
   copy(): EEIInterface
 }
 
@@ -44,14 +38,12 @@ export interface EEIInterface {
  * An implementation of this can be found in the `@ethereumjs/vm` package.
  */
 export interface EVMStateAccess extends StateAccess {
-  touchAccount(address: Address): void
   addWarmedAddress(address: Buffer): void
   isWarmedAddress(address: Buffer): boolean
   addWarmedStorage(address: Buffer, slot: Buffer): void
   isWarmedStorage(address: Buffer, slot: Buffer): boolean
   clearWarmedAccounts(): void
   generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
-  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
   clearOriginalStorageCache(): void
   cleanupTouchedAccounts(): Promise<void>
   generateCanonicalGenesis(initState: any): Promise<void>

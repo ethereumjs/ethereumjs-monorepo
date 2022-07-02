@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "An Ethereum statemanager implementation",
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
@@ -29,13 +29,13 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.3",
-    "@ethereumjs/trie": "^5.0.0",
+    "@ethereumjs/common": "3.0.0-beta.1",
+    "@ethereumjs/trie": "5.0.0-beta.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.0.3",
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/util": "8.0.0-beta.1",
     "functional-red-black-tree": "^1.0.1",
-    "rlp": "^3.0.0"
+    "rlp": "4.0.0-beta.1"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",

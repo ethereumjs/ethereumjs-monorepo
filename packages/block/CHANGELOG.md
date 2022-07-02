@@ -6,6 +6,123 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-beta.1 - 2022-06-30
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+
+The EthereumJS Team
+
+### London Hardfork Default
+
+In this release the underlying `@ethereumjs/common` version is updated to `v3` which sets the default HF to `London` (before: `Istanbul`).
+
+This means that a Block object instantiated without providing an explicit `Common` is using `London` as the default hardfork as well and behavior of the library changes according to up-to-`London` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const block = Block.fromBlockData({
+  // Provide your block data here or use default values
+}, { common })
+```
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+
+### BigInt-Related API Changes
+
+The `Block` option `hardforkByTD` (merge-related) is now taking in `BigIntLike` data types instead of `BNLike`. Header data fields internally represented as a number - like `number` or `gasLimit` - now have `BigInt` as their internal data type and are also passed in as `BigIntLike` instead of `BNLike`. 
+
+The following method signatures have been changed along the update and need some attention:
+
+- `BlockHeader.calcNextBaseFee(): bigint`
+- `BlockHeader.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
+- `Block.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
+
+Also worth to note that both the `raw()` and `toJSON()` methods are actually *not* affected, respectively delivering values as `Buffer` and `string`.
+
+### API Method/Getter Removals
+
+Additionally the following deprecated methods/getters have been removed from the API, see PR [#1752](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1752):
+
+- `Header.bloom` (getter) (use `Header.logsBloom` instead)
+- **Important**: also check for `bloom` usage when passing in `Block` data (also use `logsBloom` instead), this might otherwise auto-fallback to the default value without noticing!
+- `toJSON()` method: `baseFee` property (use `baseFeePerGas` instead)
+- `toJSON()` method: `bloom` property (use `logsBloom` instead)
+
+
+### Reworked BlockHeader Constructor API
+
+While the `BlockHeader` library main constructor usage is discouraged in favor of the various static constructor methods (e.g. `BlockHeader.fromHeaderData()`), it will realistically still be directly used and this change is therefore mentioned here in the release notes.
+
+To align with other libraries and simplify usage, the constructor has been reworked in PR [#1787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1787) to take in a `headerData` object as a first argument instead of a chain of single parameters (`constructor(parentHash, uncleHash, coinbase,...)`).
+
+In doubt check if you use the constructor directly in your code and update accordingly!
+
+### Reduced Bundle Size (MB -> KB)
+
+The bundle size of the library has been dramatically reduced going down from MBs to KBs due to a reworked genesis code handling throughout the library stack in PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) allowing the `Common` library to now ship without the bundled (large) genesis state definitions (especially for mainnet).
+
+### Removed Genesis Functionality
+
+PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) reworks the genesis code throughout the EthereumJS library stack, see also the bundle size note above.
+
+In the `Block` library the `initWithGenesisHeader` option and the `Block.genesis()` static constructor have been removed, with parts of the functionality moved to the `Blockchain` class where genesis block creation is mostly needed (within the realm of the EthereumJS libraries).
+
+It is still possible to create genesis blocks with the library but it is now needed to explicitly pass in the respective genesis parameters.
+
+Get in touch if you strongly rely on this part of functionality, it might be possible to provide additional helpers here which fit in the current scheme of the refactored libraries structure (providing extra functionality for the `Block` library to directly take in Geth genesis JSON files e.g. or additional helpers for the `Blockchain` package).
+
+### Removed Blockchain-based Validation Methods
+
+In the former code base of the `Block` libraries various validation methods (and therefore the whole library) depended on passing in a `Blockchain` instance, since context from the broader `Blockchain` (in many cases the parent block) was needed for validation. This was an unlucky situation since it led to a somewhat circular dependency situation (a `Block` should not depend on a `Blockchain`).
+
+All these methods have now been removed from the `Block` library in a larger refactoring work in PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959) and moved over to the `Blockchain` library.
+
+The following methods moved over and also have been partly renamed (see `Blockchain` release notes):
+
+- `BlockHeader.validateDifficulty()`
+- `BlockHeader.validateCliqueDifficulty()`
+- `BlockHeader.validate()`
+- `Block.validate()`
+- `Block.validateUncles()` (method still there but functionality reduced to format validation tasks)
+- `Block.validateDifficulty()`
+- `CLIQUE_DIFF_INTURN`, `CLIQUE_DIFF_NOTURN` (both `Clique` consensus algorithm related)
+
+Additionally some methods have been renamed (same PR):
+
+- `Block(Header).canonicalDifficulty()` -> `Block(Header).ethashCanonicalDifficulty()`
+
+The internal format validation in `BlockHeader` has been reworked a bit as well, `_validateHeaderFields()` (normally private method) has been renamed and split up into `_genericFormatValidation()` as well as `_consensusFormatValidation()` with all consensus-specific validation tasks. This should simplify subclassing use cases if e.g. specific own consensus validation code is needed while the generic validation logic should be preserved.
+
+### Other Changes
+
+- `Block.validateGasLimit()` now throws instead of returning a `boolean` value (adapt accordingly), PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959)
+
 ## 3.6.2 - 2022-03-15
 
 ### Merge Kiln v2 Testnet Support

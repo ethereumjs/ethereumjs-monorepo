@@ -17,7 +17,7 @@ import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import EVM, { EVMResult } from './evm'
 import Message from './message'
 import { Log } from './types'
-import { EEIInterface, EVMStateAccess, Block } from './types'
+import { EEIInterface, Block } from './types'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -64,7 +64,6 @@ export interface RunState {
   code: Buffer
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  vmState: EVMStateAccess
   eei: EEIInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
@@ -83,7 +82,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  vmState: EVMStateAccess
+  eei: EEIInterface
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -136,7 +135,6 @@ export default class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
-      vmState: this._eei.state,
       eei: this._eei,
       env: env,
       shouldDoJumpAnalysis: true,
@@ -309,10 +307,10 @@ export default class Interpreter {
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      vmState: this._runState.vmState,
       memory: this._runState.memory._store,
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._env.codeAddress,
+      eei: this._runState.eei,
     }
 
     if (this._evm.DEBUG) {
@@ -461,7 +459,7 @@ export default class Interpreter {
       return this._env.contract.balance
     }
 
-    return this._eei.getExternalBalance(address)
+    return (await this._eei.getAccount(address)).balance
   }
 
   /**
@@ -469,7 +467,7 @@ export default class Interpreter {
    */
   async storageStore(key: Buffer, value: Buffer): Promise<void> {
     await this._eei.storageStore(this._env.address, key, value)
-    const account = await this._eei.state.getAccount(this._env.address)
+    const account = await this._eei.getAccount(this._env.address)
     this._env.contract = account
   }
 
@@ -835,7 +833,7 @@ export default class Interpreter {
     if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._eei.state.getAccount(this._env.address)
+      const account = await this._eei.getAccount(this._env.address)
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
     }
@@ -868,7 +866,7 @@ export default class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._eei.state.putAccount(this._env.address, this._env.contract)
+    await this._eei.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
@@ -910,7 +908,7 @@ export default class Interpreter {
     ) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._eei.state.getAccount(this._env.address)
+      const account = await this._eei.getAccount(this._env.address)
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
@@ -949,12 +947,12 @@ export default class Interpreter {
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
 
     // Add to beneficiary balance
-    const toAccount = await this._eei.state.getAccount(toAddress)
+    const toAccount = await this._eei.getAccount(toAddress)
     toAccount.balance += this._env.contract.balance
-    await this._eei.state.putAccount(toAddress, toAccount)
+    await this._eei.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
-    await this._eei.state.modifyAccountFields(this._env.address, {
+    await this._eei.modifyAccountFields(this._env.address, {
       balance: BigInt(0),
     })
 

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "1.1.0",
+  "version": "2.0.0-beta.1",
   "description": "An ethash implementation in JavaScript",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -27,17 +27,17 @@
     "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.2",
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/block": "4.0.0-beta.1",
+    "@ethereumjs/util": "8.0.0-beta.1",
     "abstract-level": "^1.0.3",
     "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
     "ethereum-cryptography": "^1.0.3",
     "miller-rabin": "^4.0.0",
-    "rlp": "^3.0.0"
+    "rlp": "4.0.0-beta.1"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^2.6.4",
+    "@ethereumjs/common": "3.0.0-beta.1",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "memory-level": "^1.0.0",

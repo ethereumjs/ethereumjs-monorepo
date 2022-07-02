@@ -639,7 +639,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await this.vm.eei.state.getAccount(new Address(Buffer.from(address, 'hex')))
+      const { nonce } = await this.vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable

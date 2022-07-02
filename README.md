@@ -7,9 +7,9 @@
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This was originally the EthereumJS VM repository. In Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
+## Packages
 
-🚧 Please note that the `master` branch is updated on a daily basis, and to inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
+Below you can find a list of the packages included in this repository.
 
 | package                                          | npm                                                             | issues                                                                        | tests                                                                      | coverage                                                                    |
 | ------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -19,12 +19,26 @@ This was originally the EthereumJS VM repository. In Q1 2020 we brought some of 
 | [@ethereumjs/common][common-package]             | [![NPM Package][common-npm-badge]][common-npm-link]             | [![Common Issues][common-issues-badge]][common-issues-link]                   | [![Actions Status][common-actions-badge]][common-actions-link]             | [![Code Coverage][common-coverage-badge]][common-coverage-link]             |
 | [@ethereumjs/devp2p][devp2p-package]             | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]             | [![Devp2p Issues][devp2p-issues-badge]][devp2p-issues-link]                   | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]             | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link]             |
 | [@ethereumjs/ethash][ethash-package]             | [![NPM Package][ethash-npm-badge]][ethash-npm-link]             | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]                   | [![Actions Status][ethash-actions-badge]][ethash-actions-link]             | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]             |
-| [@ethereumjs/trie][trie-package]             | [![NPM Package][trie-npm-badge]][trie-npm-link]                 | [![Trie Issues][trie-issues-badge]][trie-issues-link]                         | [![Actions Status][trie-actions-badge]][trie-actions-link]                 | [![Code Coverage][trie-coverage-badge]][trie-coverage-link]                 |
-| [rlp][rlp-package]                               | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
+| [@ethereumjs/evm][evm-package]                  | [![NPM Package][evm-npm-badge]][evm-npm-link]                 | [![EVM Issues][evm-issues-badge]][evm-issues-link]                         | [![Actions Status][evm-actions-badge]][evm-actions-link]                 | [![Code Coverage][evm-coverage-badge]][evm-coverage-link]                 |
 | [@ethereumjs/statemanager][statemanager-package] | [![NPM Package][statemanager-npm-badge]][statemanager-npm-link] | [![StateManager Issues][statemanager-issues-badge]][statemanager-issues-link] | [![Actions Status][statemanager-actions-badge]][statemanager-actions-link] | [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link] |
+| [@ethereumjs/trie][trie-package]             | [![NPM Package][trie-npm-badge]][trie-npm-link]                 | [![Trie Issues][trie-issues-badge]][trie-issues-link]                         | [![Actions Status][trie-actions-badge]][trie-actions-link]                 | [![Code Coverage][trie-coverage-badge]][trie-coverage-link]                 |
 | [@ethereumjs/tx][tx-package]                     | [![NPM Package][tx-npm-badge]][tx-npm-link]                     | [![Tx Issues][tx-issues-badge]][tx-issues-link]                               | [![Actions Status][tx-actions-badge]][tx-actions-link]                     | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                     |
 | [@ethereumjs/util][util-package]                  | [![NPM Package][util-npm-badge]][util-npm-link]                 | [![Util Issues][util-issues-badge]][util-issues-link]                         | [![Actions Status][util-actions-badge]][util-actions-link]                 | [![Code Coverage][util-coverage-badge]][util-coverage-link]                 |
 | [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
+| [rlp][rlp-package]                               | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
+
+## Branches
+
+The following are our currently active branches:
+
+Branch | Release Series | Status | Description
+--- | --- | --- | ---
+[master](https://github.com/ethereumjs/ethereumjs-monorepo) | v6 | `Beta` | Main working branch, current v6 work merged in (2022-06-08)
+[v5-maintenance](https://github.com/ethereumjs/ethereumjs-monorepo/tree/v5-maintenance) | v5 | `Active` | Maintenance for v5 releases
+
+Please open PRs towards one of the active branches.
+
+To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
 ## Coverage report
 
@@ -39,9 +53,11 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    vm{vm}
    client{client}
    ethash --> blockchain
+   ethash --> client
    devp2p --> client
    block --> blockchain
    block --> client
+   block --> ethash
    block --> vm
    blockchain --> client
    blockchain --> vm
@@ -49,18 +65,21 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    trie --> vm
    trie --> block
    trie --> blockchain
+   trie --> statemanager
    common --> block
    common --> blockchain
+   common --> evm
+   common --> statemanager
    common --> tx
    common --> vm
    common --> client
    common --> devp2p
+   evm --> vm
+   evm --> client
    tx --> block
    tx --> vm
    vm --> client
    statemanager --> vm
-   common --> statemanager
-   trie --> statemanager
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
@@ -139,6 +158,15 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [ethash-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Ethash%22
 [ethash-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=ethash
 [ethash-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash
+[evm-package]: ./packages/evm
+[evm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/evm.svg
+[evm-npm-link]: https://www.npmjs.org/package/@ethereumjs/evm
+[evm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20evm?label=issues
+[evm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+evm"
+[evm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/EVM/badge.svg
+[evm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22evm%22
+[evm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=evm
+[evm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm
 [tx-package]: ./packages/tx
 [tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg
 [tx-npm-link]: https://www.npmjs.com/package/@ethereumjs/tx

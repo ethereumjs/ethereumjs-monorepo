@@ -6,20 +6,89 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 6.0.0 - 2022-06-18
+## 1.0.0-beta.1 - 2022-06-30
 
-The EVM bytecode execution is now extracted from the VM package and now is used as a standalone package. The EVM provides interfaces for the EVM and the EEI. It is now possible to import a new EVM and EEI into the VM, as long as these implement the provided interfaces. The EEI is intended as "bridge" between the EVM, the VM, and the StateManager.
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
 
-### Changes
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
 
-- Almost all environment related variables are extracted from EEI and are now in EVM. The environment provides information to the EVM about the code, the remaining gas left, etc. The only environment-related variables left in EEI are the warmed addresses and storage slots, and also keeps track of which accounts are touched (to cleanup later if these are "empty" after running a transaction).
-- The EEI is created once, not each time when a transaction is ran in the VM.
-- VM access to `StateManager` is now all done using the EEI.
-- Internally, in the EVM, the `Env` environment variable is used to track any variables which do not change during a call frame, for instance the `code`, the `caller`, etc. The `RunState` is used to track anything which can change during the execution, such as the remaining gas, the selfdestruct lists, the stack, the program counter, etc.
-- The EVM is now fully typed. Before, the `AsyncEventEmitter` did not have an interface, therefore TypeScript internally casts it as `any`. It also provides types for the available events.
-- EVM provides the interface for `EEI` and `EVM`, which can be used to create a new EVM/EEI and use this in the VM.
-- TransientStorage is now part of EVM and not of EEI.
-- Renamed `gasUsed` to `executionGasUsed` as part of `ExecResult`.
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+
+The EthereumJS Team
+
+### New Package
+
+With this release there is now a dedicated `@ethereumjs/evm` package extracted from the `VM` (or: `@ethereumjs/vm` package), see PRs [#1892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1892), [#1955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1955) and [#1977](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1977) for the main implementation work and PR [#1974](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1974) for the package extraction work. The new package can be installed with:
+
+```shell
+npm i @ethereumjs/evm
+```
+
+(please note that atm this package is not yet completely standalone but still needs the outer VM package to have some useful context to run. Functionality to have the EVM completely standalone will be added later on in a non-breaking way,)
+
+The new EVM package extracts the bytecode execution logic and leaves the handling of the outer environment like setting up some pre-state, processing txs and blocks, generating receipts and paying miners (on a PoW chain) to the outer package.
+
+This makes for a cleaner separation of concerns and generally brings the the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before.  This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
+
+### EVM, EEI and State
+
+The EVM now provides interfaces for the `EVM` itself and for the `EEI`, the environmental interface which allows for the EVM to request external data like a blockhash for the respective `BLOCKHASH` opcode. The EEI is intended as "bridge" between the EVM, the VM, and the StateManager. It is now possible to import a new EVM and EEI into the VM, as long as these implement the provided interfaces. 
+
+Almost all environment related variables are extracted from EEI and are now in EVM. The environment provides information to the EVM about the code, the remaining gas left, etc. The only environment-related variables left in EEI are the warmed addresses and storage slots, and also keeps track of which accounts are touched (to cleanup later if these are "empty" after running a transaction).
+
+The EEI is created once, not each time when a transaction is ran in the VM. The VM's access to the `StateManager` is now all done through the EEI.
+
+Internally, in the EVM, the `Env` environment variable is used to track any variables which do not change during a call frame, for instance the `code`, the `caller`, etc. The `RunState` is used to track anything which can change during the execution, such as the remaining gas, the selfdestruct lists, the stack, the program counter, etc.
+
+### London Hardfork Default
+
+In this release the underlying `@ethereumjs/common` version is updated to `v3` which sets the default HF to `London` (before: `Istanbul`).
+
+This means that a Block object instantiated without providing an explicit `Common` is using `London` as the default hardfork as well and behavior of the library changes according to up-to-`London` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### EVM BigInt Support
+
+The whole EVM has been rewritten to use BigInt which has been a huge undertaking. Both all internal representation for values previously represented as BN.js instances (gas values, stack, opcode parameters,...) as well as all VM arithmetics have been rewritten to use native BigInts.
+
+This comes with a substantial increase in overall EVM performance, we will provide some numbers on this later on! 🙂
+
+### EIP-3074 Authcall Support
+
+The EVM now comes with experimental support for [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) introducing two new opcodes `Auth` and `Authcall` to allow externally owned accounts to delegate control to a contract, see PRs [#1788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1788) and [#1867](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1867).
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+
+### Other Changes
+
+- The EVM is now fully typed. Before, the `AsyncEventEmitter` did not have an interface, therefore TypeScript internally casts it as `any`. It also provides types for the available events
+- TransientStorage (EIP-1153) is now part of EVM and not of EEI
+- Renamed `gasUsed` to `executionGasUsed` as part of `ExecResult`
 
 ## 5.9.1 - 2022-06-02
 
