@@ -1,7 +1,6 @@
 import { randomBytes } from 'crypto'
 import type VM from '@ethereumjs/vm'
-import type { TxReceipt } from '@ethereumjs/vm'
-import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
+import type { BlockBuilder, TxReceipt } from '@ethereumjs/vm'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxPool } from '../service/txpool'

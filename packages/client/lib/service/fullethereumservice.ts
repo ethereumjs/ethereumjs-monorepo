@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Skeleton } from '../sync/skeleton'
-import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { encodeReceipt } from '@ethereumjs/vm'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
 import { BeaconSynchronizer, FullSynchronizer } from '../sync'

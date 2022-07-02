@@ -6,7 +6,7 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { encodeReceipt } from '@ethereumjs/vm'
 import {
   arrToBufArr,
   bigIntToBuffer,
