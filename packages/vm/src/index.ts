@@ -1,5 +1,4 @@
 export { VM as default } from './vm'
-export * from './types'
 export * from './eei/eei'
 export * from './buildBlock'
 export * from './runBlock'
