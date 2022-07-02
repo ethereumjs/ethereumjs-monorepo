@@ -118,6 +118,10 @@ export class CliqueConsensus implements Consensus {
   }
 
   async validateConsensus(block: Block): Promise<void> {
+    if (!this.blockchain) {
+      throw new Error('blockchain not provided')
+    }
+
     const { header } = block
     const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
     if (!valid) {
@@ -145,6 +149,10 @@ export class CliqueConsensus implements Consensus {
   }
 
   async validateDifficulty(header: BlockHeader): Promise<void> {
+    if (!this.blockchain) {
+      throw new Error('blockchain not provided')
+    }
+
     if (header.difficulty !== CLIQUE_DIFF_INTURN && header.difficulty !== CLIQUE_DIFF_NOTURN) {
       const msg = `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
       throw new Error(`${msg} ${header.errorStr()}`)
