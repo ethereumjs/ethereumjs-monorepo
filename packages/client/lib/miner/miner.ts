@@ -260,6 +260,7 @@ export class Miner {
         common: this.config.chainCommon,
         calcDifficultyFromHeader,
         putBlockIntoBlockchain: false,
+        hardforkByBlockNumber: true,
       },
     })
 
