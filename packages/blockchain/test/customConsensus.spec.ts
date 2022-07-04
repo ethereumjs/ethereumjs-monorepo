@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
-import Blockchain, { Consensus } from '../src'
-import Common, { Hardfork } from '@ethereumjs/common'
+import Blockchain, { Consensus, EthashConsensus } from '../src'
+import Common, { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 
 class fibonacciConsensus implements Consensus {
   algorithm: string
@@ -53,7 +53,7 @@ tape('Optional consensus parameter in blockchain constructor', async (t) => {
 })
 
 tape('Custom consensus validation rules', async (t) => {
-  t.plan(4)
+  t.plan(3)
   const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
   const consensus = new fibonacciConsensus()
   const blockchain = await Blockchain.create({ common, consensus })
@@ -120,9 +120,22 @@ tape('Custom consensus validation rules', async (t) => {
       'failed to put block with invalid extraData'
     )
   }
+})
+
+tape('consensus transition checks', async (t) => {
+  t.plan(2)
+  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
+  const consensus = new fibonacciConsensus()
+  const blockchain = await Blockchain.create({ common, consensus })
 
   t.doesNotThrow(
     () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
     'checkAndTransitionHardForkByNumber should not throw with custom consensus'
+  )
+  ;(blockchain as any).consensus = new EthashConsensus()
+  ;(blockchain._common as any).consensusAlgorithm = () => 'fibonacci'
+  t.throws(
+    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
+    'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
   )
 })
