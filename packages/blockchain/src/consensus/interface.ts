@@ -1,10 +1,12 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import Blockchain from '..'
 
 /**
  * Interface that a consensus class needs to implement.
  */
 export interface Consensus {
+  algorithm: ConsensusAlgorithm | string
   /**
    * Initialize genesis for consensus mechanism
    * @param genesisBlock genesis block
@@ -14,7 +16,7 @@ export interface Consensus {
   /**
    * Set up consensus mechanism
    */
-  setup(): Promise<void>
+  setup({ blockchain }: ConsensusOptions): Promise<void>
 
   /**
    * Validate block consensus parameters
