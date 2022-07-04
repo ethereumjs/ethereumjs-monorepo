@@ -53,7 +53,7 @@ tape('Optional consensus parameter in blockchain constructor', async (t) => {
 })
 
 tape('Custom consensus validation rules', async (t) => {
-  t.plan(3)
+  t.plan(4)
   const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
   const consensus = new fibonacciConsensus()
   const blockchain = await Blockchain.create({ common, consensus })
@@ -120,4 +120,9 @@ tape('Custom consensus validation rules', async (t) => {
       'failed to put block with invalid extraData'
     )
   }
+
+  t.doesNotThrow(
+    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
+    'checkAndTransitionHardForkByNumber should not throw with custom consensus'
+  )
 })

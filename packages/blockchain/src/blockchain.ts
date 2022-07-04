@@ -1174,6 +1174,9 @@ export class Blockchain implements BlockchainInterface {
   protected checkAndTransitionHardForkByNumber(number: bigint, td?: BigIntLike): void {
     this._common.setHardforkByBlockNumber(number, td)
 
+    // If custom consensus algorithm is used, skip merge hardfork consensus checks
+    if (!(this.consensus.algorithm in ConsensusAlgorithm)) return
+
     switch (this._common.consensusAlgorithm()) {
       case ConsensusAlgorithm.Casper:
         if (!(this.consensus instanceof CasperConsensus)) {
