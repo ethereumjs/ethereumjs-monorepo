@@ -1,158 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1656939158404,
+  "lastUpdate": 1656968397898,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "distinct": true,
-          "id": "4481cf2d3f69bc35be343e5ae6709434eb2add9d",
-          "message": "Monorepo: fixed eslint-plugin-typestrict dependency to v1.0.3 to avoid version conflicts due to eslint-plugin update to v5, rebuild package-lock.json",
-          "timestamp": "2022-06-08T12:33:27+02:00",
-          "tree_id": "16513b64e2581a33967777befc712bb1ac16c353",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4481cf2d3f69bc35be343e5ae6709434eb2add9d"
-        },
-        "date": 1654684793596,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "[MemoryDB] 1k-3-32-ran",
-            "value": 27141,
-            "range": "±4.09%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-5-32-ran",
-            "value": 24531,
-            "range": "±9.96%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-9-32-ran",
-            "value": 26399,
-            "range": "±1.98%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-ran",
-            "value": 26359,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-mir",
-            "value": 44633,
-            "range": "±1.90%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 100 iterations",
-            "value": 844,
-            "range": "±6.28%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 500 iterations",
-            "value": 104,
-            "range": "±68.61%",
-            "unit": "ops/sec",
-            "extra": "42 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 1000 iterations",
-            "value": 88.74,
-            "range": "±6.03%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 5000 iterations",
-            "value": 14.9,
-            "range": "±23.37%",
-            "unit": "ops/sec",
-            "extra": "30 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-3-32-ran",
-            "value": 12198,
-            "range": "±81.04%",
-            "unit": "ops/sec",
-            "extra": "39 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-5-32-ran",
-            "value": 24695,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-9-32-ran",
-            "value": 24328,
-            "range": "±2.94%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-ran",
-            "value": 24232,
-            "range": "±2.82%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-mir",
-            "value": 40170,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 100 iterations",
-            "value": 834,
-            "range": "±6.15%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 500 iterations",
-            "value": 53.63,
-            "range": "±114.82%",
-            "unit": "ops/sec",
-            "extra": "21 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 1000 iterations",
-            "value": 82.48,
-            "range": "±6.81%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 5000 iterations",
-            "value": 10.97,
-            "range": "±60.72%",
-            "unit": "ops/sec",
-            "extra": "24 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2925,6 +2775,93 @@ window.BENCHMARK_DATA = {
             "range": "±13.77%",
             "unit": "ops/sec",
             "extra": "39 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6618e5551d3676221620f146357d9ecc485eec83",
+          "message": "Blockchain: optional consensus (#2002)\n\n* blockchain: add optional consensus param\r\n\r\n* blockchain: add algorithm property to consensus\r\n\r\n* blockchain: rework consensus setup\r\n\r\n* fix examples\r\n\r\n* fix blockchain test runner\r\n\r\n* add more tests\r\n\r\n* add blockchain checks to clique\r\n\r\n* skip merge check on custom consensus\r\n\r\n* Fix consensus check and add more tests\r\n\r\n* lint fix",
+          "timestamp": "2022-07-04T22:55:35+02:00",
+          "tree_id": "5c9fa795f320946c0596a844563d17377c68526e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6618e5551d3676221620f146357d9ecc485eec83"
+        },
+        "date": 1656968397393,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 31858,
+            "range": "±3.04%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 25890,
+            "range": "±12.57%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 30136,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 31352,
+            "range": "±1.12%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 52152,
+            "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 883,
+            "range": "±6.85%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 106,
+            "range": "±65.01%",
+            "unit": "ops/sec",
+            "extra": "41 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 92.19,
+            "range": "±5.59%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 14.85,
+            "range": "±33.68%",
+            "unit": "ops/sec",
+            "extra": "24 samples"
           }
         ]
       }
