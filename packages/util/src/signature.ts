@@ -4,10 +4,23 @@ import { toBuffer, setLengthLeft, bufferToHex, bufferToInt, bufferToBigInt } fro
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
 
+/**
+ * Interface for ECDSA signature
+ *
+ * @interface ECDSASignature
+ *
+ */
 export interface ECDSASignature {
+  /**
+   * @param {bigint} v 32 Byte Integer
+   * @param {Buffer} r 32 Byte Integer
+   * @param {Buffer} s Recovery Identifier
+   * @param {bigint} recovery yParity
+   */
   v: bigint
   r: Buffer
   s: Buffer
+  recovery: bigint
 }
 
 /**
