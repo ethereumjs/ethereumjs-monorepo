@@ -2,9 +2,9 @@ import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import VM from '..'
+import { VM } from '..'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
 import { getAccountNonce, insertAccount } from './helpers/account-utils'
 import { Block } from '@ethereumjs/block'
@@ -14,7 +14,7 @@ const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
-const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) }},{ common })
+const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -145,7 +145,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
     data: Buffer.from(sigHash.slice(2), 'hex'),
-    block
+    block,
   })
 
   if (greetResult.execResult.exceptionError) {

@@ -290,5 +290,4 @@ export const utils = {
   utf8ToBytes,
 }
 
-const RLP = { encode, decode }
-export default RLP
+export const RLP = { encode, decode }

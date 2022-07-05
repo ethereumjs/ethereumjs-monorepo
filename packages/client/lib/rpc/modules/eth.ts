@@ -19,12 +19,12 @@ import {
   toType,
   TypeOutput,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import { EthereumService, FullEthereumService } from '../../service'
-import type VM from '@ethereumjs/vm'
+import type { VM } from '@ethereumjs/vm'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'

@@ -1,10 +1,10 @@
 import { Account, Address } from '@ethereumjs/util'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { VM } from '../../src/vm'
 import { VMOpts } from '../../src/types'
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 
 import { MemoryLevel } from 'memory-level'
 

@@ -73,7 +73,7 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
   return res
 }
 
-export default function (opts: PrecompileInput): ExecResult {
+export function precompile05(opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data

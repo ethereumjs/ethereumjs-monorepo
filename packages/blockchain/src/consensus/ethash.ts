@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import Ethash, { EthashCacheDB } from '@ethereumjs/ethash'
-import Blockchain from '..'
+import { Ethash, EthashCacheDB } from '@ethereumjs/ethash'
+import { Blockchain } from '..'
 import { Consensus, ConsensusOptions } from './interface'
 
 /**

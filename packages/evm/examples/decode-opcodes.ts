@@ -2,7 +2,7 @@
 //
 // 1. Takes binary EVM code and decodes it into opcodes
 
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getOpcodesForHF } from '../src/opcodes'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

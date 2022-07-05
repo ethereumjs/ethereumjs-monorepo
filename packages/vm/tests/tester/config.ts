@@ -1,5 +1,5 @@
 import * as path from 'path'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 
 /**
  * Default tests path (git submodule: ethereum-tests)

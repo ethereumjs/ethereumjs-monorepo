@@ -1,7 +1,7 @@
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
-export default function (opts: PrecompileInput): ExecResult {
+export function precompile04(opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data

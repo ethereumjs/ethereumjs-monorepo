@@ -7,7 +7,7 @@ const {
   BLS12_381_ToFrPoint,
 } = require('./util/bls12_381')
 
-export default async function (opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const mcl = (<any>opts._EVM)._mcl!

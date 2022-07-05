@@ -92,5 +92,4 @@ export const validOpcodes = (code: Buffer) => {
   return true
 }
 
-const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }
-export default EOF
+export const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }

@@ -1,7 +1,7 @@
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 import { arrToBufArr, bufferToInt, bufArrToArr, intToBuffer } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Sender } from './sender'
 

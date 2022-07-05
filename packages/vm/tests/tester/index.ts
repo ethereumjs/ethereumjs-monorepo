@@ -2,7 +2,7 @@ import * as process from 'process'
 import * as path from 'path'
 import * as tape from 'tape'
 import * as minimist from 'minimist'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import {
   getCommon,
   getExpectedTests,
@@ -13,8 +13,8 @@ import {
   DEFAULT_TESTS_PATH,
 } from './config'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
-import stateTestsRunner from './runners/GeneralStateTestsRunner'
-import blockchainTestsRunner from './runners/BlockchainTestsRunner'
+import { runStateTest } from './runners/GeneralStateTestsRunner'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner'
 
 /**
  * Test runner
@@ -49,10 +49,10 @@ async function runTests() {
   let runner: any
   if (argv.state) {
     name = 'GeneralStateTests'
-    runner = stateTestsRunner
+    runner = runStateTest
   } else if (argv.blockchain) {
     name = 'BlockchainTests'
-    runner = blockchainTestsRunner
+    runner = runBlockchainTest
   } else {
     console.log(`Test type not supported or provided`)
     process.exit(1)
@@ -166,7 +166,7 @@ async function runTests() {
           return t.fail(err)
         }
         t.comment(`file: ${fileName} test: ${test.testName}`)
-        await stateTestsRunner(runnerArgs, test, t)
+        await runStateTest(runnerArgs, test, t)
         t.end()
       })
     })

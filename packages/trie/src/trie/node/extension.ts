@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { nibblesToBuffer } from '../../util/nibbles'
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
 import { Nibbles } from '../../types'
