@@ -6,8 +6,14 @@
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| TypeScript implementation of the Ethereum VM. |
-| --------------------------------------------- |
+| Execution Context for the Ethereum EVM Implementation. |
+| ------------------------------------------------------ |
+
+This package provides an Ethereum `mainnet` compatible execution context for the 
+[@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
+EVM implementation.
+
+Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
 
 # INSTALL
 

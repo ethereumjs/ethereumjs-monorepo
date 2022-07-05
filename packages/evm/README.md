@@ -6,12 +6,18 @@
 [![Code Coverage][evm-coverage-badge]][evm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| TypeScript implementation of the Ethereum VM. |
-| --------------------------------------------- |
+| TypeScript implementation of the Ethereum EVM. |
+| ---------------------------------------------- |
+
+
 
 # INSTALL
 
 `npm install @ethereumjs/evm`
+
+This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6`  release.
+
+Note that this package atm cannot be run in a standalong mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
 # USAGE
 
