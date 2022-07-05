@@ -675,6 +675,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       v: signature.v,
       r: signature.s,
       s: signature.s,
+      recovery: signature.recovery,
     }
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
