@@ -23,25 +23,4 @@ tape('[SnapProtocol]', (t) => {
     t.notOk(await p.open(), 'repeat open')
     t.end()
   })
-
-  // t.test('verify that GetAccountRange handler encodes/decodes correctly', (t) => {
-  //   const config = new Config({ transports: [] })
-  //   const chain = new Chain({ config })
-  //   const p = new SnapProtocol({ config, chain })
-
-  //   const root = new Buffer(1)
-  //   const origin = new Buffer(1)
-  //   const limit = new Buffer(1024)
-  //   const bytes = BN(1024)
-  //   const res = p.decode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], [
-
-  //   ])
-  //   const res2 = p.encode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], [
-  //     block,
-  //     td,
-  //   ])
-  //   t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
-  //   t.ok(new BN(res2[1]).eq(td), 'correctly encoded td')
-  //   t.end()
-  // })
 })
