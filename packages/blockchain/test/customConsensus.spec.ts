@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
-import Blockchain, { Consensus, EthashConsensus } from '../src'
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Blockchain, Consensus, EthashConsensus } from '../src'
+import { Common, Hardfork } from '@ethereumjs/common'
 
 class fibonacciConsensus implements Consensus {
   algorithm: string

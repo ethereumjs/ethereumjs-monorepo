@@ -6,7 +6,7 @@ import {
   createWsRPCServerListener,
   MethodConfig,
 } from '../../lib/util/rpc'
-import Client from '../../lib/client'
+import { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 const request = require('supertest')
@@ -14,7 +14,7 @@ const request = require('supertest')
 tape('[Util/RPC]', (t) => {
   t.test('should return enabled RPC servers', (st) => {
     const config = new Config({ transports: [] })
-    const client = new Client({ config })
+    const client = new EthereumClient({ config })
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
@@ -49,7 +49,7 @@ tape('[Util/RPC]', (t) => {
 
 tape('[Util/RPC/Engine eth methods]', async (t) => {
   const config = new Config({ transports: [], saveReceipts: true })
-  const client = new Client({ config })
+  const client = new EthereumClient({ config })
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
     methodConfig: MethodConfig.EngineOnly,

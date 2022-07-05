@@ -1,13 +1,13 @@
 import * as tape from 'tape'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { Account, toBuffer } from '@ethereumjs/util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
-import MockChain from './mocks/mockchain'
+import { MockServer } from './mocks/mockserver'
+import { MockChain } from './mocks/mockchain'
 import { destroy } from './util'
 
 const config = new Config()

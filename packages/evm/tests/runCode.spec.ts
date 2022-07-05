@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { getEEI } from './utils'
-import EVM from '../src'
+import { EVM } from '../src'
 
 const STOP = '00'
 const JUMP = '56'

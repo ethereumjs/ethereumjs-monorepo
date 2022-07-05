@@ -1,6 +1,6 @@
 import * as tape from 'tape'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork } from '@ethereumjs/common'
 import * as testChain from './testdata/testnet.json'
 import { VM } from '../../src/vm'
 import { TransactionFactory } from '@ethereumjs/tx'

@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { bufferToInt } from '@ethereumjs/util'
 import { Block } from '../src'
 

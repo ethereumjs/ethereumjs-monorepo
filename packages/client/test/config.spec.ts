@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Config, DataDirectory } from '../lib/config'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 
 tape('[Config]', (t) => {
   t.test('Initialization with default parameters', (t) => {

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from '@ethereumjs/util'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
 import { baseSetup, params, baseRequest } from '../helpers'

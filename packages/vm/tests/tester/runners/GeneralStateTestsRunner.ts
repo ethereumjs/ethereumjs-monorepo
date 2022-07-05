@@ -61,9 +61,9 @@ function parseTestCases(
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
   if (options.dist) {
-    VM = require('../../../dist').default
+    ;({ VM } = require('../../../dist'))
   } else {
-    VM = require('../../../src').default
+    ;({ VM } = require('../../../src'))
   }
   const begin = Date.now()
   const common = options.common
@@ -134,7 +134,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   return parseFloat(timeSpent)
 }
 
-export default async function runStateTest(options: any, testData: any, t: tape.Test) {
+export async function runStateTest(options: any, testData: any, t: tape.Test) {
   try {
     const testCases = parseTestCases(
       options.forkConfigTestSuite,

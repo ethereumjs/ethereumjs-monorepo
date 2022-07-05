@@ -1,8 +1,8 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { default as blake2f, F } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
+import { precompile09, F } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go
@@ -90,7 +90,7 @@ tape('Istanbul: EIP-152', (t) => {
 
     for (const testCase of failingTestCases) {
       st.comment(testCase.name)
-      const res = blake2f({
+      const res = precompile09({
         data: Buffer.from(testCase.input, 'hex'),
         gasLimit: BigInt(20),
         _common: common,
@@ -101,7 +101,7 @@ tape('Istanbul: EIP-152', (t) => {
 
     for (const testCase of testCases) {
       st.comment(testCase.name)
-      const res = blake2f({
+      const res = precompile09({
         data: Buffer.from(testCase.input, 'hex'),
         gasLimit: BigInt(10000000),
         _common: common,
