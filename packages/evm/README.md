@@ -1,9 +1,9 @@
 # @ethereumjs/evm
 
-[![NPM Package][vm-npm-badge]][vm-npm-link]
-[![GitHub Issues][vm-issues-badge]][vm-issues-link]
-[![Actions Status][vm-actions-badge]][vm-actions-link]
-[![Code Coverage][vm-coverage-badge]][vm-coverage-link]
+[![NPM Package][evm-npm-badge]][evm-npm-link]
+[![GitHub Issues][evm-issues-badge]][evm-issues-link]
+[![Actions Status][evm-actions-badge]][evm-actions-link]
+[![Code Coverage][evm-coverage-badge]][evm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 | TypeScript implementation of the Ethereum VM. |
@@ -331,11 +331,11 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg
-[vm-npm-link]: https://www.npmjs.com/package/@ethereumjs/vm
-[vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20vm?label=issues
-[vm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
-[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/VM/badge.svg
-[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22VM%22
-[vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=vm
-[vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm
+[evm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/evm.svg
+[evm-npm-link]: https://www.npmjs.com/package/@ethereumjs/evm
+[evm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20evm?label=issues
+[evm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+evm"
+[evm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/EVM/badge.svg
+[evm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22EVM%22
+[evm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=evm
+[evm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm
