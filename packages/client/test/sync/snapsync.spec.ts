@@ -83,14 +83,14 @@ tape('[SnapSynchronizer]', async (t) => {
       pool,
       chain,
     })
-  
+
     sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: new BN(4),
       stateRoot: Buffer.from([]),
       hash: () => {
         return Buffer.from([])
-      }
+      },
     })
 
     const getBlockHeaders = td.func<any>()
@@ -101,13 +101,17 @@ tape('[SnapSynchronizer]', async (t) => {
 
     const getAccountRange = td.func<any>()
     td.when(getAccountRange(td.matchers.anything())).thenReturn({
-      accounts: [Account.fromAccountData({ stateRoot: '0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008' })]
+      accounts: [
+        Account.fromAccountData({
+          stateRoot: '0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008',
+        }),
+      ],
     })
     sync.best = td.func<typeof sync['best']>()
     td.when(sync.best()).thenResolve({
-        snap: { getAccountRange: getAccountRange } as any,
-        eth: { getBlockHeaders: getBlockHeaders } as any,
-      })
+      snap: { getAccountRange: getAccountRange } as any,
+      eth: { getBlockHeaders: getBlockHeaders } as any,
+    })
     ;(sync as any).forceSync = true
     ;(sync as any).chain = { headers: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
