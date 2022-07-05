@@ -296,13 +296,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     this._validateHighS()
 
     try {
-      return ecrecover(
-        msgHash,
-        v!,
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!),
-        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
-      )
+      return ecrecover(msgHash, v!, bigIntToUnpaddedBuffer(r!), bigIntToUnpaddedBuffer(s!))
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
       throw new Error(msg)
@@ -366,6 +360,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
         throw new Error(
           `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`
         )
+      }
+      if (
+        common?.hardfork() === 'chainstart' ||
+        common?.hardfork() === 'homestead' ||
+        common?.hardfork() === 'tangerineWhistle'
+      ) {
+        if (v > 28) {
+          throw new Error('Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection)')
+        }
       }
     }
 
