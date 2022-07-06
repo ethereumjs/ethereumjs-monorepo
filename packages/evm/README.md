@@ -158,14 +158,10 @@ Currently supported EIPs:
 
 ## Tracing Events
 
-Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
+Our `TypeScript` EVM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
 
 You can subscribe to the following events:
 
-- `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `AfterBlockEvent` right after running a block.
-- `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
 - `beforeMessage`: Emits a `Message` right after running it.
 - `afterMessage`: Emits an `EVMResult` right after running a message.
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
@@ -176,15 +172,15 @@ An example for the `step` event can be found in the initial usage example in thi
 ### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
-and prevent the VM to keep running until they finish.
+and prevent the EVM to keep running until they finish.
 
 In order to do that, your event handler has to accept two arguments.
 The first one will be the event object, and the second one a function.
-The VM won't continue until you call this function.
+The EVM won't continue until you call this function.
 
 If an exception is passed to that function, or thrown from within the
 handler or a function called by it, the exception will bubble into the
-VM and interrupt it, possibly corrupting its state. It's strongly
+EVM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
 ### Synchronous event handlers
@@ -196,7 +192,7 @@ Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
 If an exception is thrown from withing the handler or a function called
-by it, the exception will bubble into the VM and interrupt it, possibly
+by it, the exception will bubble into the EVM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 

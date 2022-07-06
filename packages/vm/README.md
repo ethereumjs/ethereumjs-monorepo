@@ -169,12 +169,8 @@ You can subscribe to the following events:
 - `afterBlock`: Emits `AfterBlockEvent` right after running a block.
 - `beforeTx`: Emits a `Transaction` right before running it.
 - `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
-- `beforeMessage`: Emits a `Message` right after running it.
-- `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
-- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
-An example for the `step` event can be found in the initial usage example in this `README`.
+Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
 ### Asynchronous event handlers
 
