@@ -22,34 +22,23 @@ Note that up till `v5` this package also was the bundled package for the EVM imp
 # USAGE
 
 ```typescript
+import { Address } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const vm = new VM({ common })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const vm = await VM.create({ common })
 
-const STOP = '00'
-const ADD = '01'
-const PUSH1 = '60'
-
-// Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
-const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
-
-vm.evm.on('step', function (data) {
-  // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
-  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+const tx = Transaction.fromTxData({
+  gasLimit: BigInt(21000),
+  value: BigInt(1),
+  to: Address.zero(),
+  v: BigInt(37),
+  r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
+  s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
 })
-
-vm.evm
-  .runCode({
-    code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: BigInt(0xffff),
-  })
-  .then((results) => {
-    console.log(`Returned: ${results.returnValue.toString('hex')}`)
-    console.log(`gasUsed : ${results.gasUsed.toString()}`)
-  })
-  .catch(console.error)
+await vm.runTx({ tx, skipBalance: true })
 ```
 
 ## Example
