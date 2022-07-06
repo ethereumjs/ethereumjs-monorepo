@@ -196,9 +196,9 @@ by it, the exception will bubble into the EVM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
-# Understanding the VM
+# Understanding the EVM
 
-If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
 
@@ -206,13 +206,9 @@ The following loggers are currently available:
 
 | Logger                            | Description                                                        |
 | --------------------------------- | ------------------------------------------------------------------ |
-| `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
-| `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
-| `vm:tx:gas`                       |  Transaction gas logger                                            |
 | `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
 | `vm:evm:gas`                      |  EVM gas logger                                                    |
 | `vm:eei:gas`                      |  EEI gas logger                                                    |
-| `vm:state`                        | StateManager logger                                                |
 | `vm:ops`                          |  Opcode traces                                                     |
 | `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
 
@@ -221,7 +217,7 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=vm:tx ts-node test.ts
+DEBUG=vm:evm ts-node test.ts
 ```
 
 Run all loggers currently available:
@@ -236,32 +232,22 @@ Run only the gas loggers:
 DEBUG=vm:*:gas ts-node test.ts
 ```
 
-Excluding the state logger:
+Excluding the ops logger:
 
 ```shell
-DEBUG=vm:*,vm:*:*,-vm:state ts-node test.ts
+DEBUG=vm:*,vm:*:*,-vm:ops ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
 
 ```shell
-DEBUG=vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+DEBUG=vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
 ```
 
 # Internal Structure
 
-The VM processes state changes at many levels.
+The EVM processes state changes at many levels.
 
-- **runBlockchain**
-  - for every block, runBlock
-- **runBlock**
-  - for every tx, runTx
-  - pay miner and uncles
-- **runTx**
-  - check sender balance
-  - check sender nonce
-  - runCall
-  - transfer gas charges
 - **runCall**
   - checkpoint state
   - transfer value
@@ -280,6 +266,8 @@ The VM processes state changes at many levels.
   - calculate fee
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+
+TODO: this section likely needs an update.
 
 # DEVELOPMENT
 

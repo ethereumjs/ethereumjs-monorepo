@@ -212,12 +212,9 @@ The following loggers are currently available:
 | `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
 | `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
 | `vm:tx:gas`                       |  Transaction gas logger                                            |
-| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
-| `vm:evm:gas`                      |  EVM gas logger                                                    |
-| `vm:eei:gas`                      |  EEI gas logger                                                    |
 | `vm:state`                        | StateManager logger                                                |
-| `vm:ops`                          |  Opcode traces                                                     |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
+
+Note that there are additional EVM-specific loggers in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
 Here are some examples for useful logger combinations.
 
