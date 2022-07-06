@@ -1,6 +1,6 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'implicit-dependencies', 'prettier'],
+  plugins: ['@typescript-eslint', 'implicit-dependencies', 'import', 'prettier'],
   env: {
     es2020: true,
     node: true,
@@ -45,6 +45,7 @@ module.exports = {
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],
     '@typescript-eslint/restrict-plus-operands': 'off',
+    'import/no-default-export' : ['error']
   },
   parserOptions: {
     sourceType: 'module',
