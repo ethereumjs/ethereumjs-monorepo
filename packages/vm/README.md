@@ -262,24 +262,8 @@ The VM processes state changes at many levels.
   - check sender nonce
   - runCall
   - transfer gas charges
-- **runCall**
-  - checkpoint state
-  - transfer value
-  - load code
-  - runCode
-  - materialize created contracts
-  - revert or commit checkpoint
-- **runCode**
-  - iterate over code
-  - run op codes
-  - track gas usage
-- **OpFns**
-  - run individual op code
-  - modify stack
-  - modify memory
-  - calculate fee
 
-The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+TODO: this section likely needs an update.
 
 # DEVELOPMENT
 

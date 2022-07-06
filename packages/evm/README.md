@@ -271,7 +271,7 @@ TODO: this section likely needs an update.
 
 # DEVELOPMENT
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
+See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) README.
 
 # EthereumJS
 
