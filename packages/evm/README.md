@@ -88,6 +88,14 @@ This will make it easier to customize the inner EVM, which can now be passed as 
 
 At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
 
+## Execution Environment and State
+
+For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
+
+To ensure a unified interface the `EVM` provides a TypeScript `EEI` interface providing which includes the necessary function signatures for access to environmental parameters as well as the VM state.
+
+The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) provides a concrete implementation of this interface which can be used to instantiate the `EVM` within a Ethereum `mainnet` compatible execution context.
+
 # BROWSER
 
 To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).

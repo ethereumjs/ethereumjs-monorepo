@@ -71,6 +71,12 @@ vm.evm.on('step', function (data) {
 
 Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
+## Execution Environment (EEI) and State
+
+This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
+
+With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanger). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
+
 # SETUP
 
 ## Chain Support
