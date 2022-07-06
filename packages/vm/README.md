@@ -106,27 +106,9 @@ const result = await vm.runBlock(block)
 
 ## Hardfork Support
 
-The EthereumJS VM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
+For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
 
-Currently the following hardfork rules are supported:
-
-- `chainstart` (a.k.a. Frontier)
-- `homestead`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg`
-- `istanbul`
-- `muirGlacier` (only `mainnet` and `ropsten`)
-- `berlin` (`v5.2.0`+)
-- `london` (`v5.4.0`+)
-- `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
-
-Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
-
-A specific hardfork VM ruleset can be activated by passing in the hardfork
-along the `Common` instance:
+An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
 ```typescript
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
@@ -138,8 +120,12 @@ const vm = new VM({ common })
 
 ## Custom genesis state support
 
-If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
-instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
+Genesis state code logic has been reworked substantially along the v6 breaking releases and a lot of the genesis state code moved from both the `@ethereumjs/common` and `@ethereumjs/block` libraries to the `@ethereumjs/blockchain` library, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) for an overview on the broad set of changes.
+
+
+For initializing a custom genesis state you can now use the `genesisState` constructor option in the `Blockchain` library in a similar way this had been done in the `Common` library before.
+
+If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Blockchain` instance with custom genesis state set with the `genesisState` constructor option and passing the flag `activateGenesisState` in `VMOpts`.
 
 ```typescript
 import Common from '@ethereumjs/common'
@@ -148,10 +134,12 @@ import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
 
 const common = new Common({
-  chain: 'myCustomChain1',
-  customChains: [[myCustomChain1, chain1GenesisState]],
+  // TODO: complete example
 })
-const vm = new VM({ common, activateGenesisState: true })
+const blockchain = await Blockchain.create({
+  // TODO: complete example
+})
+const vm = await VM.create({ common, activateGenesisState: true })
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -169,23 +157,7 @@ const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
 ```
 
-Currently supported EIPs:
-
-- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
-- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost (`berlin` EIP)
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed transactions (`berlin` EIP)
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes (`berlin` EIP)
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional Access Lists Typed Transactions (`berlin` EIP)
-- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode (`london` EIP)
-- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds (`london` EIP)
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
-- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte (`london` EIP)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
 
 ## Tracing Events
 

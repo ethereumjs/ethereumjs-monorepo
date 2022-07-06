@@ -88,13 +88,13 @@ This will make it easier to customize the inner EVM, which can now be passed as 
 
 At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
 
-## Execution Environment and State
+## Execution Environment (EEI) and State
 
 For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
 
 To ensure a unified interface the `EVM` provides a TypeScript `EEI` interface providing which includes the necessary function signatures for access to environmental parameters as well as the VM state.
 
-The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) provides a concrete implementation of this interface which can be used to instantiate the `EVM` within a Ethereum `mainnet` compatible execution context.
+The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) provides a concrete implementation of this interface which can be used to instantiate the `EVM` within an Ethereum `mainnet` compatible execution context.
 
 # BROWSER
 
@@ -102,34 +102,9 @@ To build the EVM for standalone use in the browser, see: [Running the EVM in a b
 
 # SETUP
 
-## Chain Support
-
-Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA` blocks and transactions. Clique support has been added along the work on PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) and follow-up PRs and (block) validation checks and the switch of the execution context now happens correctly.
-
-### Ethash/PoW Chains
-
-`@ethereumjs/blockchain` validates the PoW algorithm with `@ethereumjs/ethash` and validates blocks' difficulty to match their canonical difficulty.
-
-### Clique/PoA Chains
-
-The following is a simple example for a block run on `Goerli`:
-
-```typescript
-import VM from '@ethereumjs/vm'
-import Common, { Chain } from '@ethereumjs/common'
-
-const common = new Common({ chain: Chain.Goerli })
-const hardforkByBlockNumber = true
-const vm = new VM({ common, hardforkByBlockNumber })
-
-const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
-const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
-const result = await vm.runBlock(block)
-```
-
 ## Hardfork Support
 
-The EthereumJS VM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
+The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
 
 Currently the following hardfork rules are supported:
 
@@ -148,41 +123,12 @@ Currently the following hardfork rules are supported:
 
 Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
 
-A specific hardfork VM ruleset can be activated by passing in the hardfork
-along the `Common` instance:
-
-```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = new VM({ common })
-```
-
-## Custom genesis state support
-
-If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
-instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
-
-```typescript
-import Common from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
-import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-
-const common = new Common({
-  chain: 'myCustomChain1',
-  customChains: [[myCustomChain1, chain1GenesisState]],
-})
-const vm = new VM({ common, activateGenesisState: true })
-```
-
-Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
+A specific hardfork EVM ruleset can be activated by passing in the hardfork
+along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ## EIP Support
 
-It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
-with the respective EIPs, e.g.:
+It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the outer VM with the respective EIPs, e.g.:
 
 ```typescript
 import Common, { Chain } from '@ethereumjs/common'
