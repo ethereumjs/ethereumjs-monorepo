@@ -56,13 +56,20 @@ All of the examples have their own `README.md` explaining how to run them.
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## VmState
+## VM/EVM Relation
 
-The VmState is the wrapper class that manages the context around the underlying state while executing the VM like `EIP-2929`(Gas cost increases for state access opcodes). A Custom implementation of the `StateManager` can be plugged in the VmState
+Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previously included in this library has been extracted to an own package [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
 
-# BROWSER
+It is still possible to access all `EVM` functionality through the `evm` property of the initialized `vm` object, e.g.:
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
+```typescript
+vm.evm.runCode() // or
+vm.evm.on('step', function (data) {
+  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+})
+```
+
+Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
 # SETUP
 

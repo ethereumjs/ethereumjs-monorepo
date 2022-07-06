@@ -39,8 +39,7 @@ const evm = new EVM({
         common,
         blockchain,
         eei,
-      });
-
+      })
 
 const STOP = '00'
 const ADD = '01'
@@ -77,17 +76,21 @@ All of the examples have their own `README.md` explaining how to run them.
 
 # API
 
-## VM
+## EVM
 
-For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
+For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## VmState
+## VM/EVM Relation
 
-The VmState is the wrapper class that manages the context around the underlying state while executing the VM like `EIP-2929`(Gas cost increases for state access opcodes). A Custom implementation of the `StateManager` can be plugged in the VmState
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
+
+This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
+
+At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
 
 # BROWSER
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
+To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).
 
 # SETUP
 
