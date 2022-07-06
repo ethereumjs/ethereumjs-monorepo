@@ -8,11 +8,10 @@
 
 import { Account, Address, toBuffer, setLengthLeft } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
-import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
+import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import VM from '../'
 import { testData } from './helpers/blockchain-mock-data'
-import { Level } from 'level'
 
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })

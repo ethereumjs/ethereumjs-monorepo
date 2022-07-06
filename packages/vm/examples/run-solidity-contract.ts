@@ -20,6 +20,10 @@ const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) }},{ c
  * This function creates the input for the Solidity compiler.
  *
  * For more info about it, go to https://solidity.readthedocs.io/en/v0.5.10/using-the-compiler.html#compiler-input-and-output-json-description
+ * 
+ * Note: this example additionally needs the Solidity compiler `solc` package (out of EthereumJS
+ * scope) being installed. You can do this (in this case it might make sense to install globally)
+ * with `npm i -g solc`.
  */
 function getSolcInput() {
   return {
