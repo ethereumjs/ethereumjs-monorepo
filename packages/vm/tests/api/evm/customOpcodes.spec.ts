@@ -41,6 +41,36 @@ tape('VM: custom opcodes', (t) => {
     st.ok(res.runState!.stack._store[0].eqn(stackPush), 'succesfully ran opcode logic')
     st.ok(correctOpcodeName, 'succesfully set opcode name')
   })
+  t.test('VM.copy() should pass custom opcodes to the copy', async (st) => {
+    const vm = new VM({
+      customOpcodes: [testOpcode],
+    })
+    const vmCopy = vm.copy()
+    const gas = 123456
+    let correctOpcodeName = false
+    vm.on('step', (e: InterpreterStep) => {
+      if (e.pc === 0) {
+        correctOpcodeName = e.opcode.name === testOpcode.opcodeName
+      }
+    })
+    const res = await vm.runCode({
+      code: Buffer.from('21', 'hex'),
+      gasLimit: new BN(gas),
+    })
+    vmCopy.on('step', (e: InterpreterStep) => {
+      if (e.pc === 0) {
+        correctOpcodeName = e.opcode.name === testOpcode.opcodeName
+      }
+    })
+    const copyRes = await vm.runCode({
+      code: Buffer.from('21', 'hex'),
+      gasLimit: new BN(gas),
+    })
+    st.deepEqual(copyRes.gasUsed, res.gasUsed, 'copy matches original')
+    st.ok(copyRes.gasUsed.eqn(totalFee), 'copy succesfully charged correct gas')
+    st.ok(copyRes.runState!.stack._store[0].eqn(stackPush), 'copy succesfully ran opcode logic')
+    st.ok(correctOpcodeName, 'copy succesfully set opcode name')
+  })
 
   t.test('should delete opcodes from the VM', async (st) => {
     const vm = new VM({
