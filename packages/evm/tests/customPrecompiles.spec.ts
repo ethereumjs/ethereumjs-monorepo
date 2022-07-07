@@ -119,4 +119,21 @@ tape('EVM -> custom precompiles', (t) => {
       'restored sha precompile - gas correct'
     )
   })
+  t.test('shold copy custom precompiles', async (st) => {
+    const evm = await EVM.create({
+      customPrecompiles: [
+        {
+          address: shaAddress,
+          function: customPrecompile,
+        },
+      ],
+      eei: await getEEI(),
+    })
+    const evmCopy = evm.copy()
+    st.deepEqual(
+      (evm as any)._customPrecompiles,
+      (evmCopy as any)._customPrecompiles,
+      'evm.copy() successfully copied customPrecompiles option'
+    )
+  })
 })
