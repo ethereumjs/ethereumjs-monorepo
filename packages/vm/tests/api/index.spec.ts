@@ -168,4 +168,49 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
 
     st.end()
   })
+
+  t.test('should pass the correct VM options when copying VM', async (st) => {
+    let vm = await VM.create({
+      hardforkByBlockNumber: true,
+    })
+    let vmCopy = vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByBlockNumber,
+      true,
+      'correctly passed hardforkByBlockNumber option to copy'
+    )
+    st.deepEqual(
+      (vmCopy as any)._hardforkByBlockNumber,
+      (vm as any)._hardforkByBlockNumber,
+      'hardforkByBlockNumber options match'
+    )
+    vm = await VM.create({
+      hardforkByTD: 5001,
+    })
+    vmCopy = vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByTD,
+      5001,
+      'correctly passed hardforkByTD option to copy'
+    )
+    st.deepEqual(
+      (vmCopy as any)._hardforkByTD,
+      (vm as any)._hardforkByTD,
+      'hardforkByTD options match'
+    )
+    vm = await VM.create({
+      allowUnlimitedContractSize: true,
+    })
+    vmCopy = vm.copy()
+    st.deepEqual(
+      vm._allowUnlimitedContractSize,
+      true,
+      'correctly passed allowUnlimitedContractSize option to copy'
+    )
+    st.deepEqual(
+      vm._allowUnlimitedContractSize,
+      vmCopy._allowUnlimitedContractSize,
+      'allowUnlimitedContractSize options match'
+    )
+  })
 })

@@ -486,6 +486,11 @@ export default class VM extends AsyncEventEmitter {
    */
   copy(): VM {
     return new VM({
+      customOpcodes: this._customOpcodes,
+      customPrecompiles: this._customPrecompiles,
+      hardforkByBlockNumber: this._hardforkByBlockNumber === true ? true : undefined,
+      hardforkByTD: this._hardforkByTD ? this._hardforkByTD : undefined,
+      allowUnlimitedContractSize: this._allowUnlimitedContractSize,
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain.copy(),
       common: this._common.copy(),
