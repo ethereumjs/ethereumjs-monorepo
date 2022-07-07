@@ -14,6 +14,7 @@ import * as testnetMerge from './testdata/testnetMerge.json'
 // needed for karma-typescript bundling
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { VMOpts } from '../../src'
 
 /**
  * Tests for the main constructor API and
@@ -196,6 +197,42 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     st.end()
   })
 
+  t.test('should pass the correct VM options when copying the VM', async (st) => {
+    let opts: VMOpts = {
+      hardforkByBlockNumber: true,
+    }
+
+    let vm = await VM.create(opts)
+    let vmCopy = await vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByBlockNumber,
+      true,
+      'copy() correctly passes hardforkByBlockNumber option'
+    )
+    st.deepEqual(
+      (vm as any)._hardforkByBlockNumber,
+      (vmCopy as any)._hardforkByBlockNumber,
+      'hardforkByBlockNumber options match'
+    )
+
+    //
+
+    opts = {
+      hardforkByTD: BigInt(5001),
+    }
+    vm = await VM.create(opts)
+    vmCopy = await vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByTD,
+      BigInt(5001),
+      'copy() correctly passes hardforkByTD option'
+    )
+    st.deepEqual(
+      (vm as any)._hardforkByBlockNumber,
+      (vmCopy as any)._hardforkByBlockNumber,
+      'hardforkByTD options match'
+    )
+  })
   tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
     // setup the accounts for this test
     const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
