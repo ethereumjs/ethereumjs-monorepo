@@ -3,7 +3,7 @@ import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../../src/state'
-import VM from '../../src'
+import VM from '../../'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import testnet from './testdata/testnet.json'
@@ -167,5 +167,50 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     st.equal(copiedVM._common.hardfork(), 'byzantium')
 
     st.end()
+  })
+
+  t.test('should pass the correct VM options when copying VM', async (st) => {
+    let vm = await VM.create({
+      hardforkByBlockNumber: true,
+    })
+    let vmCopy = vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByBlockNumber,
+      true,
+      'correctly passed hardforkByBlockNumber option to copy'
+    )
+    st.deepEqual(
+      (vmCopy as any)._hardforkByBlockNumber,
+      (vm as any)._hardforkByBlockNumber,
+      'hardforkByBlockNumber options match'
+    )
+    vm = await VM.create({
+      hardforkByTD: 5001,
+    })
+    vmCopy = vm.copy()
+    st.deepEqual(
+      (vmCopy as any)._hardforkByTD,
+      5001,
+      'correctly passed hardforkByTD option to copy'
+    )
+    st.deepEqual(
+      (vmCopy as any)._hardforkByTD,
+      (vm as any)._hardforkByTD,
+      'hardforkByTD options match'
+    )
+    vm = await VM.create({
+      allowUnlimitedContractSize: true,
+    })
+    vmCopy = vm.copy()
+    st.deepEqual(
+      vm._allowUnlimitedContractSize,
+      true,
+      'correctly passed allowUnlimitedContractSize option to copy'
+    )
+    st.deepEqual(
+      vm._allowUnlimitedContractSize,
+      vmCopy._allowUnlimitedContractSize,
+      'allowUnlimitedContractSize options match'
+    )
   })
 })
