@@ -230,6 +230,8 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       common: commonCopy,
       evm: evmCopy,
       eei: eeiCopy,
+      hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
+      hardforkByTD: this._hardforkByTD ? this._hardforkByTD : undefined,
     })
   }
 
