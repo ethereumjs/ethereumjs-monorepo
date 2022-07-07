@@ -6,8 +6,14 @@
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| TypeScript implementation of the Ethereum VM. |
-| --------------------------------------------- |
+| Execution Context for the Ethereum EVM Implementation. |
+| ------------------------------------------------------ |
+
+This package provides an Ethereum `mainnet` compatible execution context for the 
+[@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
+EVM implementation.
+
+Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
 
 # INSTALL
 
@@ -16,34 +22,23 @@
 # USAGE
 
 ```typescript
+import { Address } from '@ethereumjs/util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const vm = new VM({ common })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const vm = await VM.create({ common })
 
-const STOP = '00'
-const ADD = '01'
-const PUSH1 = '60'
-
-// Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
-const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
-
-vm.evm.on('step', function (data) {
-  // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
-  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+const tx = Transaction.fromTxData({
+  gasLimit: BigInt(21000),
+  value: BigInt(1),
+  to: Address.zero(),
+  v: BigInt(37),
+  r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
+  s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
 })
-
-vm.evm
-  .runCode({
-    code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: BigInt(0xffff),
-  })
-  .then((results) => {
-    console.log(`Returned: ${results.returnValue.toString('hex')}`)
-    console.log(`gasUsed : ${results.gasUsed.toString()}`)
-  })
-  .catch(console.error)
+await vm.runTx({ tx, skipBalance: true })
 ```
 
 ## Example
@@ -51,9 +46,7 @@ vm.evm
 This projects contain the following examples:
 
 1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
 1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
-1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
 
 All of the examples have their own `README.md` explaining how to run them.
 
@@ -63,13 +56,26 @@ All of the examples have their own `README.md` explaining how to run them.
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## VmState
+## VM/EVM Relation
 
-The VmState is the wrapper class that manages the context around the underlying state while executing the VM like `EIP-2929`(Gas cost increases for state access opcodes). A Custom implementation of the `StateManager` can be plugged in the VmState
+Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previously included in this library has been extracted to an own package [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
 
-# BROWSER
+It is still possible to access all `EVM` functionality through the `evm` property of the initialized `vm` object, e.g.:
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
+```typescript
+vm.evm.runCode() // or
+vm.evm.on('step', function (data) {
+  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+})
+```
+
+Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
+
+## Execution Environment (EEI) and State
+
+This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
+
+With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanger). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
 # SETUP
 
@@ -100,27 +106,9 @@ const result = await vm.runBlock(block)
 
 ## Hardfork Support
 
-The EthereumJS VM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
+For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
 
-Currently the following hardfork rules are supported:
-
-- `chainstart` (a.k.a. Frontier)
-- `homestead`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg`
-- `istanbul`
-- `muirGlacier` (only `mainnet` and `ropsten`)
-- `berlin` (`v5.2.0`+)
-- `london` (`v5.4.0`+)
-- `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
-
-Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
-
-A specific hardfork VM ruleset can be activated by passing in the hardfork
-along the `Common` instance:
+An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
 ```typescript
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
@@ -132,8 +120,12 @@ const vm = new VM({ common })
 
 ## Custom genesis state support
 
-If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
-instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
+Genesis state code logic has been reworked substantially along the v6 breaking releases and a lot of the genesis state code moved from both the `@ethereumjs/common` and `@ethereumjs/block` libraries to the `@ethereumjs/blockchain` library, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) for an overview on the broad set of changes.
+
+
+For initializing a custom genesis state you can now use the `genesisState` constructor option in the `Blockchain` library in a similar way this had been done in the `Common` library before.
+
+If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Blockchain` instance with custom genesis state set with the `genesisState` constructor option and passing the flag `activateGenesisState` in `VMOpts`.
 
 ```typescript
 import Common from '@ethereumjs/common'
@@ -142,10 +134,12 @@ import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
 
 const common = new Common({
-  chain: 'myCustomChain1',
-  customChains: [[myCustomChain1, chain1GenesisState]],
+  // TODO: complete example
 })
-const vm = new VM({ common, activateGenesisState: true })
+const blockchain = await Blockchain.create({
+  // TODO: complete example
+})
+const vm = await VM.create({ common, activateGenesisState: true })
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -163,23 +157,7 @@ const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
 ```
 
-Currently supported EIPs:
-
-- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
-- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost (`berlin` EIP)
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed transactions (`berlin` EIP)
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes (`berlin` EIP)
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional Access Lists Typed Transactions (`berlin` EIP)
-- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode (`london` EIP)
-- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds (`london` EIP)
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
-- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte (`london` EIP)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
 
 ## Tracing Events
 
@@ -191,12 +169,8 @@ You can subscribe to the following events:
 - `afterBlock`: Emits `AfterBlockEvent` right after running a block.
 - `beforeTx`: Emits a `Transaction` right before running it.
 - `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
-- `beforeMessage`: Emits a `Message` right after running it.
-- `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
-- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
-An example for the `step` event can be found in the initial usage example in this `README`.
+Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
 ### Asynchronous event handlers
 
@@ -238,12 +212,9 @@ The following loggers are currently available:
 | `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
 | `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
 | `vm:tx:gas`                       |  Transaction gas logger                                            |
-| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
-| `vm:evm:gas`                      |  EVM gas logger                                                    |
-| `vm:eei:gas`                      |  EEI gas logger                                                    |
 | `vm:state`                        | StateManager logger                                                |
-| `vm:ops`                          |  Opcode traces                                                     |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
+
+Note that there are additional EVM-specific loggers in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
 Here are some examples for useful logger combinations.
 
@@ -291,24 +262,8 @@ The VM processes state changes at many levels.
   - check sender nonce
   - runCall
   - transfer gas charges
-- **runCall**
-  - checkpoint state
-  - transfer value
-  - load code
-  - runCode
-  - materialize created contracts
-  - revert or commit checkpoint
-- **runCode**
-  - iterate over code
-  - run op codes
-  - track gas usage
-- **OpFns**
-  - run individual op code
-  - modify stack
-  - modify memory
-  - calculate fee
 
-The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+TODO: this section likely needs an update.
 
 # DEVELOPMENT
 

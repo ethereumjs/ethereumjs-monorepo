@@ -1,34 +1,45 @@
 # @ethereumjs/evm
 
-[![NPM Package][vm-npm-badge]][vm-npm-link]
-[![GitHub Issues][vm-issues-badge]][vm-issues-link]
-[![Actions Status][vm-actions-badge]][vm-actions-link]
-[![Code Coverage][vm-coverage-badge]][vm-coverage-link]
+[![NPM Package][evm-npm-badge]][evm-npm-link]
+[![GitHub Issues][evm-issues-badge]][evm-issues-link]
+[![Actions Status][evm-actions-badge]][evm-actions-link]
+[![Code Coverage][evm-coverage-badge]][evm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| TypeScript implementation of the Ethereum VM. |
-| --------------------------------------------- |
+| TypeScript implementation of the Ethereum EVM. |
+| ---------------------------------------------- |
+
+
 
 # INSTALL
 
 `npm install @ethereumjs/evm`
 
+This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6`  release.
+
+Note that this package atm cannot be run in a standalong mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
+
 # USAGE
 
 ```typescript
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Blockchain from '@ethereumjs/blockchain' 
+import { EEI } from '@ethereumjs/vm'
 import EVM from '@ethereumjs/evm'
+import { DefaultStateManager } from '@ethereumjs/statemanager' 
 
+// Note: in a future release there will be an EEI default implementation
+// which will ease standalone initialization
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const blockchain = new Blockchain({ common })
+const blockchain = await Blockchain.create({ common })
 const stateManager = new DefaultStateManager({ common })
-const eei = EEI(stateManager, common, blockchain)
+const eei = new EEI(stateManager, common, blockchain)
+
 const evm = new EVM({
         common,
         blockchain,
         eei,
-      });
-
+      })
 
 const STOP = '00'
 const ADD = '01'
@@ -59,53 +70,41 @@ evm
 This projects contain the following examples:
 
 1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
+1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
 
 All of the examples have their own `README.md` explaining how to run them.
 
 # API
 
-## VM
+## EVM
 
-For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
+For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## VmState
+## VM/EVM Relation
 
-The VmState is the wrapper class that manages the context around the underlying state while executing the VM like `EIP-2929`(Gas cost increases for state access opcodes). A Custom implementation of the `StateManager` can be plugged in the VmState
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
+
+This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
+
+At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
+
+## Execution Environment (EEI) and State
+
+For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
+
+To ensure a unified interface the `EVM` provides a TypeScript `EEI` interface providing which includes the necessary function signatures for access to environmental parameters as well as the VM state.
+
+The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) provides a concrete implementation of this interface which can be used to instantiate the `EVM` within an Ethereum `mainnet` compatible execution context.
 
 # BROWSER
 
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/run-code-browser.js).
+To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).
 
 # SETUP
 
-## Chain Support
-
-Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA` blocks and transactions. Clique support has been added along the work on PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) and follow-up PRs and (block) validation checks and the switch of the execution context now happens correctly.
-
-### Ethash/PoW Chains
-
-`@ethereumjs/blockchain` validates the PoW algorithm with `@ethereumjs/ethash` and validates blocks' difficulty to match their canonical difficulty.
-
-### Clique/PoA Chains
-
-The following is a simple example for a block run on `Goerli`:
-
-```typescript
-import VM from '@ethereumjs/vm'
-import Common, { Chain } from '@ethereumjs/common'
-
-const common = new Common({ chain: Chain.Goerli })
-const hardforkByBlockNumber = true
-const vm = new VM({ common, hardforkByBlockNumber })
-
-const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
-const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
-const result = await vm.runBlock(block)
-```
-
 ## Hardfork Support
 
-The EthereumJS VM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
+The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
 
 Currently the following hardfork rules are supported:
 
@@ -124,41 +123,12 @@ Currently the following hardfork rules are supported:
 
 Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
 
-A specific hardfork VM ruleset can be activated by passing in the hardfork
-along the `Common` instance:
-
-```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = new VM({ common })
-```
-
-## Custom genesis state support
-
-If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
-instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
-
-```typescript
-import Common from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
-import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-
-const common = new Common({
-  chain: 'myCustomChain1',
-  customChains: [[myCustomChain1, chain1GenesisState]],
-})
-const vm = new VM({ common, activateGenesisState: true })
-```
-
-Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
+A specific hardfork EVM ruleset can be activated by passing in the hardfork
+along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ## EIP Support
 
-It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
-with the respective EIPs, e.g.:
+It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the outer VM with the respective EIPs, e.g.:
 
 ```typescript
 import Common, { Chain } from '@ethereumjs/common'
@@ -188,14 +158,10 @@ Currently supported EIPs:
 
 ## Tracing Events
 
-Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
+Our `TypeScript` EVM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
 
 You can subscribe to the following events:
 
-- `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `AfterBlockEvent` right after running a block.
-- `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
 - `beforeMessage`: Emits a `Message` right after running it.
 - `afterMessage`: Emits an `EVMResult` right after running a message.
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
@@ -206,15 +172,15 @@ An example for the `step` event can be found in the initial usage example in thi
 ### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
-and prevent the VM to keep running until they finish.
+and prevent the EVM to keep running until they finish.
 
 In order to do that, your event handler has to accept two arguments.
 The first one will be the event object, and the second one a function.
-The VM won't continue until you call this function.
+The EVM won't continue until you call this function.
 
 If an exception is passed to that function, or thrown from within the
 handler or a function called by it, the exception will bubble into the
-VM and interrupt it, possibly corrupting its state. It's strongly
+EVM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
 ### Synchronous event handlers
@@ -226,13 +192,13 @@ Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
 If an exception is thrown from withing the handler or a function called
-by it, the exception will bubble into the VM and interrupt it, possibly
+by it, the exception will bubble into the EVM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
-# Understanding the VM
+# Understanding the EVM
 
-If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
 
@@ -240,13 +206,9 @@ The following loggers are currently available:
 
 | Logger                            | Description                                                        |
 | --------------------------------- | ------------------------------------------------------------------ |
-| `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
-| `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
-| `vm:tx:gas`                       |  Transaction gas logger                                            |
 | `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
 | `vm:evm:gas`                      |  EVM gas logger                                                    |
 | `vm:eei:gas`                      |  EEI gas logger                                                    |
-| `vm:state`                        | StateManager logger                                                |
 | `vm:ops`                          |  Opcode traces                                                     |
 | `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
 
@@ -255,7 +217,7 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=vm:tx ts-node test.ts
+DEBUG=vm:evm ts-node test.ts
 ```
 
 Run all loggers currently available:
@@ -270,32 +232,22 @@ Run only the gas loggers:
 DEBUG=vm:*:gas ts-node test.ts
 ```
 
-Excluding the state logger:
+Excluding the ops logger:
 
 ```shell
-DEBUG=vm:*,vm:*:*,-vm:state ts-node test.ts
+DEBUG=vm:*,vm:*:*,-vm:ops ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
 
 ```shell
-DEBUG=vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+DEBUG=vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
 ```
 
 # Internal Structure
 
-The VM processes state changes at many levels.
+The EVM processes state changes at many levels.
 
-- **runBlockchain**
-  - for every block, runBlock
-- **runBlock**
-  - for every tx, runTx
-  - pay miner and uncles
-- **runTx**
-  - check sender balance
-  - check sender nonce
-  - runCall
-  - transfer gas charges
 - **runCall**
   - checkpoint state
   - transfer value
@@ -315,9 +267,11 @@ The VM processes state changes at many levels.
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
+TODO: this section likely needs an update.
+
 # DEVELOPMENT
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
+See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) README.
 
 # EthereumJS
 
@@ -331,11 +285,11 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg
-[vm-npm-link]: https://www.npmjs.com/package/@ethereumjs/vm
-[vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20vm?label=issues
-[vm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
-[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/VM/badge.svg
-[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22VM%22
-[vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=vm
-[vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm
+[evm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/evm.svg
+[evm-npm-link]: https://www.npmjs.com/package/@ethereumjs/evm
+[evm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20evm?label=issues
+[evm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+evm"
+[evm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/EVM/badge.svg
+[evm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22EVM%22
+[evm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=evm
+[evm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm
