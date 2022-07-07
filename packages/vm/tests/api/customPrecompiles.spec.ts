@@ -73,6 +73,36 @@ tape('VM -> custom precompiles', (t) => {
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
     st.ok(result.execResult.gasUsed.eq(expectedGas), 'gas used is correct')
   })
+  t.test('vm.copy() should add pass custom precompiles option to copy', async (st) => {
+    const VMOverride = new VM({
+      customPrecompiles: [
+        {
+          address: newPrecompile,
+          function: customPrecompile,
+        },
+      ],
+    })
+    const vmCopy = VMOverride.copy()
+    const result = await VMOverride.runCall({
+      to: newPrecompile,
+      gasLimit: new BN(30000),
+      data: Buffer.from(''),
+      caller: sender,
+    })
+    const copyResult = await vmCopy.runCall({
+      to: newPrecompile,
+      gasLimit: new BN(30000),
+      data: Buffer.from(''),
+      caller: sender,
+    })
+    st.equal(
+      result.execResult.returnValue,
+      copyResult.execResult.returnValue,
+      'copy matches original'
+    )
+    st.ok(copyResult.execResult.returnValue.equals(expectedReturn), 'return value is correct')
+    st.ok(copyResult.execResult.gasUsed.eq(expectedGas), 'gas used is correct')
+  })
 
   t.test('should not persist changes to precompiles', async (st) => {
     let VMSha = new VM()
