@@ -136,7 +136,7 @@ trie
 import level from 'level'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 

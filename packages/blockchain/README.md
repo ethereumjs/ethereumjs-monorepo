@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | A module to store and interact with blocks. |
-| --- |
+| ------------------------------------------- |
 
 Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-blockchain) for an introduction on the last preceding release.
 
@@ -24,8 +24,8 @@ The following is an example to iterate through an existing Geth DB (needs `level
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
 
 ```typescript
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common } from '@ethereumjs/common'
 
 const { Level } = require('level')
 
@@ -59,9 +59,9 @@ For debugging blockchain control flows the [debug](https://github.com/visionmedi
 
 The following initial logger is currently available:
 
-| Logger | Description |
-| - | - |
-| `blockchain:clique` | Clique operations like updating the vote and/or signer list  |
+| Logger              | Description                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| `blockchain:clique` | Clique operations like updating the vote and/or signer list |
 
 The following is an example for a logger run:
 
