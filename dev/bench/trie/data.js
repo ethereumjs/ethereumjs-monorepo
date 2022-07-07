@@ -1,158 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1656968397898,
+  "lastUpdate": 1657182919216,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8a65e1928bc555519d22d3a5d5f885a54eaf0eff",
-          "message": "develop clean-up items (#1944)",
-          "timestamp": "2022-06-08T13:05:28+02:00",
-          "tree_id": "fecf01d02014ebf834478d6865498ccede9f81bd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8a65e1928bc555519d22d3a5d5f885a54eaf0eff"
-        },
-        "date": 1654686753631,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "[MemoryDB] 1k-3-32-ran",
-            "value": 27734,
-            "range": "±4.15%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-5-32-ran",
-            "value": 25384,
-            "range": "±9.37%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-9-32-ran",
-            "value": 27557,
-            "range": "±1.84%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-ran",
-            "value": 27330,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-mir",
-            "value": 43321,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 100 iterations",
-            "value": 890,
-            "range": "±6.69%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 500 iterations",
-            "value": 116,
-            "range": "±64.98%",
-            "unit": "ops/sec",
-            "extra": "44 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 1000 iterations",
-            "value": 91.2,
-            "range": "±5.27%",
-            "unit": "ops/sec",
-            "extra": "58 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 5000 iterations",
-            "value": 10.6,
-            "range": "±69.93%",
-            "unit": "ops/sec",
-            "extra": "30 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-3-32-ran",
-            "value": 25883,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-5-32-ran",
-            "value": 26528,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-9-32-ran",
-            "value": 25945,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-ran",
-            "value": 25909,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-mir",
-            "value": 42016,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 100 iterations",
-            "value": 494,
-            "range": "±78.96%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 500 iterations",
-            "value": 150,
-            "range": "±16.04%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 1000 iterations",
-            "value": 69.37,
-            "range": "±40.10%",
-            "unit": "ops/sec",
-            "extra": "54 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 5000 iterations",
-            "value": 8.2,
-            "range": "±109.44%",
-            "unit": "ops/sec",
-            "extra": "12 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2862,6 +2712,93 @@ window.BENCHMARK_DATA = {
             "range": "±33.68%",
             "unit": "ops/sec",
             "extra": "24 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b1da6a5f5856ce079a86552ab5246105501972b",
+          "message": "VM/EVM: Update and align README Documentation (#2016)\n\n* EVM: adopt README links\r\n\r\n* VM/EVM -> README : added distinkt introductory texts for the libraries\r\n\r\n* EVM: update README code example\r\n\r\n* VM -> README: added more fitting (and working) VM example\r\n\r\n* VM/EVM: example updates/fixes and moving around\r\n\r\n* VM/EVM -> README: added new sections on EVM/VM relationship\r\n\r\n* VM/EVM -> README: added EEI and State sections to EVM and VM READMEs\r\n\r\n* EVM/VM -> README: unify, adopt and deduplicate Chain Type, Hardfork, Genesis State and EIP sections\r\n\r\n* EVM/VM -> README: adopt event sections\r\n\r\n* EVM/VM -> README: adopt debug logger and internal structure sections\r\n\r\n* EVM/VM -> README: deduplicate Development docs",
+          "timestamp": "2022-07-07T10:30:16+02:00",
+          "tree_id": "e754999bd1fc0224d787f85580ea6943870d6633",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5b1da6a5f5856ce079a86552ab5246105501972b"
+        },
+        "date": 1657182917276,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 27511,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 25403,
+            "range": "±9.97%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 27942,
+            "range": "±1.84%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 27034,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 45233,
+            "range": "±1.22%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 797,
+            "range": "±7.09%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 103,
+            "range": "±68.95%",
+            "unit": "ops/sec",
+            "extra": "42 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 78.35,
+            "range": "±12.60%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 16.24,
+            "range": "±5.17%",
+            "unit": "ops/sec",
+            "extra": "29 samples"
           }
         ]
       }
