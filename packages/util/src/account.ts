@@ -14,7 +14,7 @@ import {
   zeros,
 } from './bytes'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BigIntLike, BufferLike } from './types'
+import { BigIntLike, BufferLike, isTruthy } from './types'
 
 const _0n = BigInt(0)
 
@@ -35,10 +35,10 @@ export class Account {
     const { nonce, balance, stateRoot, codeHash } = accountData
 
     return new Account(
-      nonce ? bufferToBigInt(toBuffer(nonce)) : undefined,
-      balance ? bufferToBigInt(toBuffer(balance)) : undefined,
-      stateRoot ? toBuffer(stateRoot) : undefined,
-      codeHash ? toBuffer(codeHash) : undefined
+      isTruthy(nonce) ? bufferToBigInt(toBuffer(nonce)) : undefined,
+      isTruthy(balance) ? bufferToBigInt(toBuffer(balance)) : undefined,
+      isTruthy(stateRoot) ? toBuffer(stateRoot) : undefined,
+      isTruthy(codeHash) ? toBuffer(codeHash) : undefined
     )
   }
 
@@ -155,7 +155,7 @@ export const toChecksumAddress = function (
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
-  if (eip1191ChainId) {
+  if (isTruthy(eip1191ChainId)) {
     const chainId = bufferToBigInt(toBuffer(eip1191ChainId))
     prefix = chainId.toString() + '0x'
   }
