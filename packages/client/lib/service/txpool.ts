@@ -8,7 +8,7 @@ import {
 import { Address, bufferToHex } from '@ethereumjs/util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
-import type VM from '@ethereumjs/vm'
+import type { VM } from '@ethereumjs/vm'
 import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'

@@ -1,5 +1,5 @@
 import { arrToBufArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { bufferToNibbles } from '../../util/nibbles'
 import { isTerminator } from '../../util/hex'
 import { BranchNode } from './branch'

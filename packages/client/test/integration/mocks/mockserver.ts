@@ -1,13 +1,13 @@
 import { Server, ServerOptions } from '../../../lib/net/server'
 import { Event } from '../../../lib/types'
-import MockPeer from './mockpeer'
+import { MockPeer } from './mockpeer'
 import { RemoteStream, createServer, destroyServer, servers } from './network'
 
 interface MockServerOptions extends ServerOptions {
   location?: string
 }
 
-export default class MockServer extends Server {
+export class MockServer extends Server {
   public location: string
   public server: Server | null
   public peers: { [key: string]: MockPeer }

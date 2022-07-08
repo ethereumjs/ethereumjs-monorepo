@@ -8,7 +8,7 @@ const {
   BLS12_381_FromG2Point,
 } = require('./util/bls12_381')
 
-export default async function (opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const mcl = (<any>opts._EVM)._mcl!

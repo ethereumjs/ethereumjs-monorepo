@@ -7,7 +7,7 @@ import {
   bufferToBigInt,
   setLengthLeft,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import {
   params,
   fnv,
@@ -151,7 +151,7 @@ export type EthashCacheDB = AbstractLevel<
   }
 >
 
-export default class Ethash {
+export class Ethash {
   dbOpts: Object
   cacheDB?: EthashCacheDB
   cache: Buffer[]

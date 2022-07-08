@@ -9,24 +9,22 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
-
-
 # INSTALL
 
 `npm install @ethereumjs/evm`
 
-This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6`  release.
+This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
 
 Note that this package atm cannot be run in a standalong mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
 # USAGE
 
 ```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import Blockchain from '@ethereumjs/blockchain' 
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { EEI } from '@ethereumjs/vm'
-import EVM from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager' 
+import { EVM } from '@ethereumjs/evm'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 // Note: in a future release there will be an EEI default implementation
 // which will ease standalone initialization
@@ -36,10 +34,10 @@ const stateManager = new DefaultStateManager({ common })
 const eei = new EEI(stateManager, common, blockchain)
 
 const evm = new EVM({
-        common,
-        blockchain,
-        eei,
-      })
+  common,
+  blockchain,
+  eei,
+})
 
 const STOP = '00'
 const ADD = '01'
@@ -131,8 +129,8 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the outer VM with the respective EIPs, e.g.:
 
 ```typescript
-import Common, { Chain } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Chain, Common } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
@@ -204,13 +202,13 @@ If you want to understand your EVM runs we have added a hierarchically structure
 
 The following loggers are currently available:
 
-| Logger                            | Description                                                        |
-| --------------------------------- | ------------------------------------------------------------------ |
-| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
-| `vm:evm:gas`                      |  EVM gas logger                                                    |
-| `vm:eei:gas`                      |  EEI gas logger                                                    |
-| `vm:ops`                          |  Opcode traces                                                     |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
+| Logger                            | Description                                         |
+| --------------------------------- | --------------------------------------------------- |
+| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution |
+| `vm:evm:gas`                      |  EVM gas logger                                     |
+| `vm:eei:gas`                      |  EEI gas logger                                     |
+| `vm:ops`                          |  Opcode traces                                      |
+| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
 Here are some examples for useful logger combinations.
 

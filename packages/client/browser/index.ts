@@ -1,4 +1,4 @@
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -23,7 +23,7 @@ export * from '../lib/net/server/libp2pserver'
 
 // EthereumClient
 export * from '../lib/client'
-import EthereumClient from '../lib/client'
+import { EthereumClient } from '../lib/client'
 
 // Service
 export * from '../lib/service/service'

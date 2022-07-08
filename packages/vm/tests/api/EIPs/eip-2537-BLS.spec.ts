@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Address, bufferToHex } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { isRunningInKarma } from '../../util'
 import { getActivePrecompiles } from '@ethereumjs/evm'

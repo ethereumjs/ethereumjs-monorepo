@@ -9,7 +9,7 @@
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
-This package provides an Ethereum `mainnet` compatible execution context for the 
+This package provides an Ethereum `mainnet` compatible execution context for the
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
 EVM implementation.
 
@@ -23,9 +23,9 @@ Note that up till `v5` this package also was the bundled package for the EVM imp
 
 ```typescript
 import { Address } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import VM from '@ethereumjs/vm'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = await VM.create({ common })
@@ -92,8 +92,8 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 The following is a simple example for a block run on `Goerli`:
 
 ```typescript
-import VM from '@ethereumjs/vm'
-import Common, { Chain } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
+import { Chain, Common } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Goerli })
 const hardforkByBlockNumber = true
@@ -111,8 +111,8 @@ For hardfork support see the [Hardfork Support](../evm#hardfork-support) section
 An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
 ```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
@@ -122,14 +122,13 @@ const vm = new VM({ common })
 
 Genesis state code logic has been reworked substantially along the v6 breaking releases and a lot of the genesis state code moved from both the `@ethereumjs/common` and `@ethereumjs/block` libraries to the `@ethereumjs/blockchain` library, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) for an overview on the broad set of changes.
 
-
 For initializing a custom genesis state you can now use the `genesisState` constructor option in the `Blockchain` library in a similar way this had been done in the `Common` library before.
 
 If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Blockchain` instance with custom genesis state set with the `genesisState` constructor option and passing the flag `activateGenesisState` in `VMOpts`.
 
 ```typescript
-import Common from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Common } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
 
@@ -150,8 +149,8 @@ It is possible to individually activate EIP support in the VM by instantiate the
 with the respective EIPs, e.g.:
 
 ```typescript
-import Common, { Chain } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Chain, Common } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
@@ -207,12 +206,12 @@ If you want to understand your VM runs we have added a hierarchically structured
 
 The following loggers are currently available:
 
-| Logger                            | Description                                                        |
-| --------------------------------- | ------------------------------------------------------------------ |
-| `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
-| `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
-| `vm:tx:gas`                       |  Transaction gas logger                                            |
-| `vm:state`                        | StateManager logger                                                |
+| Logger      | Description                                                        |
+| ----------- | ------------------------------------------------------------------ |
+| `vm:block`  | Block operations (run txs, generating receipts, block rewards,...) |
+| `vm:tx`     |  Transaction operations (account updates, checkpointing,...)       |
+| `vm:tx:gas` |  Transaction gas logger                                            |
+| `vm:state`  | StateManager logger                                                |
 
 Note that there are additional EVM-specific loggers in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 

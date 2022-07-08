@@ -5,7 +5,7 @@ import {
   DBSetHashToNumber,
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { VM } from '@ethereumjs/vm'
 import { bufferToHex } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'

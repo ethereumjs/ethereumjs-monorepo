@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'

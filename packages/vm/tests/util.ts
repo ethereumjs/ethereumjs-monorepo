@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -20,7 +20,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { VmState } from '../src/eei/vmState'
 
 export function dumpState(state: any, cb: Function) {

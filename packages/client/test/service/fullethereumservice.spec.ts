@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { Chain } from '../../lib/blockchain'

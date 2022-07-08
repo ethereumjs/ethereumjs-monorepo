@@ -6,7 +6,7 @@ interface MockChainOptions extends ChainOptions {
   height?: number
 }
 
-export default class MockChain extends Chain {
+export class MockChain extends Chain {
   public height: number
 
   constructor(options: MockChainOptions) {

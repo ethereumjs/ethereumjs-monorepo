@@ -1,5 +1,6 @@
-import Common, {
+import {
   Chain,
+  Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
@@ -23,7 +24,7 @@ import {
   TypeOutput,
   zeros,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 

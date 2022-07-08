@@ -14,7 +14,7 @@ export interface CacheOpts {
 /**
  * @ignore
  */
-export default class Cache {
+export class Cache {
   _cache: any
   _checkpoints: any[]
 

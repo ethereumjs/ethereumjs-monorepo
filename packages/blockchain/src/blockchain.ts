@@ -1,8 +1,9 @@
 import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import Common, {
+import {
   Chain,
   CliqueConfig,
+  Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,

@@ -6,7 +6,7 @@ import {
   bufferToBigInt,
   bufferToHex,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
 import { EthProtocol, Protocol, SendMethod } from './protocol'

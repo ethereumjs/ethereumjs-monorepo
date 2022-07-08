@@ -21,13 +21,11 @@ Note: this `README` reflects the state of the library from `v2.0.0` onwards. See
 
 import (CommonJS, TypeScript with `esModuleInterop` enabled):
 
-`import Common from '@ethereumjs/common`\
-`import Common, { Chain, Hardfork } from '@ethereumjs/common`
+`import { Chain, Common, Hardfork } from '@ethereumjs/common`
 
 require (ES Modules, Node.js):
 
-`const Common = require('@ethereumjs/common').default`\
-`const { default: Common, Chain, Hardfork } = require('@ethereumjs/common')`
+`const { Common, Chain, Hardfork } = require('@ethereumjs/common')`
 
 ## Parameters
 
@@ -65,7 +63,7 @@ c = new Common({ chain: 'mainnet', eips: [2537] })
 For an improved developer experience, there are `Chain` and `Hardfork` enums available:
 
 ```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
 // Chain provided by Chain enum
 const c = new Common({ chain: Chain.Mainnet })
@@ -105,7 +103,7 @@ const c = new Common({ chain: 'ropsten' })
 Or optionally with the `Chain` enum:
 
 ```typescript
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 
 const c = new Common({ chain: Chain.Ropsten })
 ```
@@ -212,7 +210,7 @@ const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 Or optionally with the `Hardfork` enum:
 
 ```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
 const c = new Common({
   chain: Chain.Ropsten,

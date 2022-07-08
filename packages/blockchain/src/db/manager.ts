@@ -1,9 +1,9 @@
 import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
-import Cache from './cache'
+import { Cache } from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 class NotFoundError extends Error {

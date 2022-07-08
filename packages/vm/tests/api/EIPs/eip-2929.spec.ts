@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import { Account, Address } from '@ethereumjs/util'
 import { VM } from '../../../src/vm'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import EVM from '@ethereumjs/evm'
+import { EVM } from '@ethereumjs/evm'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {

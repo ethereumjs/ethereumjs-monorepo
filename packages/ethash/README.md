@@ -20,7 +20,7 @@ Note: this `README` reflects the state of the library from `v1.0.0` onwards. See
 ## PoW Validation
 
 ```typescript
-import Ethash from '@ethereumjs/ethash'
+import { Ethash } from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 
@@ -44,8 +44,8 @@ See the following example on how to use the new `Miner` class:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Ethash from '@ethereumjs/ethash'
-import Common from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
+import { Common } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { MemoryLevel } from 'memory-level'
 

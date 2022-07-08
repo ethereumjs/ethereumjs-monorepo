@@ -18,7 +18,7 @@ install with `-g` if you want to use the CLI.
 
 ```typescript
 import assert from 'assert'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
@@ -39,7 +39,7 @@ If you would like to continue using Buffers like in rlp v2, you can use:
 ```typescript
 import assert from 'assert'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 
 const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = RLP.encode(bufArrToArr(bufferList))

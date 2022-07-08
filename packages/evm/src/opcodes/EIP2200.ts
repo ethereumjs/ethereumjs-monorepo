@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { RunState } from './../interpreter'
 import { ERROR } from '../exceptions'
 import { adjustSstoreGasEIP2929 } from './EIP2929'

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { parseCustomParams } from '../../lib/util'

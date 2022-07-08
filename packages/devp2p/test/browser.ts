@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import dns from '../src/browser/dns'
+import { dns } from '../src/browser/dns'
 
 tape('dns browser polyfill stub', async (t) => {
   const expectedError = 'EIP-1459 DNS Discovery is not supported for browser environments'

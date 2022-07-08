@@ -1,5 +1,5 @@
 import { arrToBufArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'

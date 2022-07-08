@@ -1,6 +1,6 @@
 import { Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 import { Trie } from '@ethereumjs/trie'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
@@ -212,6 +212,6 @@ export class BlockBuilder {
   }
 }
 
-export default async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
+export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
   return new BlockBuilder(this, opts)
 }

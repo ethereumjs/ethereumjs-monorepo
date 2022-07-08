@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {

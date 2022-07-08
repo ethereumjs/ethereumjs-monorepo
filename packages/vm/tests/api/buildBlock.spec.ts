@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import { Account, Address } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { VM } from '../../src/vm'
 import { setBalance } from './utils'
 

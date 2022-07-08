@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Event } from '../../lib/types'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 import { parseCustomParams } from '../../lib/util'

@@ -10,7 +10,7 @@
  * NOTE: THIS EXAMPLE IS CURRENTLY OUTDATED AND DOESN'T WORK WITH EVM v1.
  */
 const BN = require('bn.js')
-const VM = require('../dist').default
+const { VM } = require('../dist')
 
 const run = async () => {
   // Create a new VM instance

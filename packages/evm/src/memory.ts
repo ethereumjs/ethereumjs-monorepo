@@ -11,7 +11,7 @@ const ceil = (value: number, ceiling: number): number => {
  * Memory implements a simple memory model
  * for the ethereum virtual machine.
  */
-export default class Memory {
+export class Memory {
   _store: Buffer
 
   constructor() {

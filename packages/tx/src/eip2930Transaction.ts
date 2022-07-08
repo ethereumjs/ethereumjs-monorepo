@@ -10,8 +10,8 @@ import {
   toBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common from '@ethereumjs/common'
+import { RLP } from 'rlp'
+import { Common } from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -33,7 +33,7 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
+export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList

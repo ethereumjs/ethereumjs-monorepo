@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
-import Common, {
+import {
+  Common,
   Chain,
   CliqueConfig,
   ConsensusAlgorithm,
@@ -8,7 +9,7 @@ import Common, {
 } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
-import Blockchain from '../src'
+import { Blockchain } from '../src'
 import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
 
 tape('Clique: Initialization', (t) => {

@@ -1,5 +1,5 @@
-import Common, { Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from '@ethereumjs/util'
 import { Multiaddr } from 'multiaddr'

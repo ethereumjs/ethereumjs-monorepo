@@ -8,9 +8,9 @@
 
 import { Account, Address, toBuffer, setLengthLeft } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { ConsensusType } from '@ethereumjs/common'
-import VM from '../'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, ConsensusType } from '@ethereumjs/common'
+import { VM } from '../'
 import { testData } from './helpers/blockchain-mock-data'
 
 async function main() {
@@ -26,7 +26,7 @@ async function main() {
     validateBlocks,
     genesisBlock,
   })
-  
+
   const vm = await VM.create({ blockchain, common })
 
   await setupPreConditions(vm, testData)

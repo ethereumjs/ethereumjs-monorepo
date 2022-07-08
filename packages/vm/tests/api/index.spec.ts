@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 import { VM } from '../../src/vm'

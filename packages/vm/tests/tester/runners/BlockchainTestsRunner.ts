@@ -1,10 +1,10 @@
 import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
-import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
-import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
+import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
+import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 import { Level } from 'level'
@@ -18,7 +18,7 @@ function formatBlockHeader(data: any) {
   return formatted
 }
 
-export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
+export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network != options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
@@ -68,9 +68,9 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   let VM
   if (options.dist) {
-    VM = require('../../../dist').default
+    ;({ VM } = require('../../../dist'))
   } else {
-    VM = require('../../../src').default
+    ;({ VM } = require('../../../src'))
   }
 
   const begin = Date.now()

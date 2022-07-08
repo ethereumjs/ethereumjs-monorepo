@@ -6,8 +6,8 @@ import * as readline from 'readline'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import {
   parseMultiaddrs,
@@ -15,7 +15,7 @@ import {
   parseCustomParams,
   setCommonForkHashes,
 } from '../lib/util'
-import EthereumClient from '../lib/client'
+import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'

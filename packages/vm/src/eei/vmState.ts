@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, toBuffer } from '@ethereumjs/util'
 const Set = require('core-js-pure/es/set')

@@ -1,4 +1,4 @@
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { setLengthRight, setLengthLeft, bigIntToBuffer } from '@ethereumjs/util'
