@@ -74,11 +74,17 @@ All of the examples have their own `README.md` explaining how to run them.
 
 # API
 
-## EVM
+## Docs
 
 For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## VM/EVM Relation
+## BigInt Support
+
+Starting with v1 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
+
+# VM/EVM Relation
 
 This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
 
@@ -86,7 +92,7 @@ This will make it easier to customize the inner EVM, which can now be passed as 
 
 At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
 
-## Execution Environment (EEI) and State
+# Execution Environment (EEI) and State
 
 For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
 

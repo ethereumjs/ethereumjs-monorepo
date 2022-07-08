@@ -27,6 +27,12 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 Documentation on the `StateManager` can be found [here](./docs). If you want to provide your own `StateManager` you can implement the dedicated interface to ensure that your implementation conforms with the current API.
 
+## BigInt Support
+
+Starting with v1 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
+
 # DEVELOPMENT
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
