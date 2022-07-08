@@ -1,6 +1,13 @@
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Account, isHexPrefixed, toBuffer, unpadBuffer, PrefixedHexString } from '@ethereumjs/util'
+import {
+  Account,
+  isHexPrefixed,
+  toBuffer,
+  unpadBuffer,
+  PrefixedHexString,
+  isTruthy,
+} from '@ethereumjs/util'
 import { RLP } from 'rlp'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
@@ -26,14 +33,14 @@ export async function genesisStateRoot(genesisState: GenesisState) {
     if (typeof value === 'string') {
       account.balance = BigInt(value)
     } else {
-      const [balance, code, storage] = value as AccountState
-      if (balance) {
+      const [balance, code, storage] = value as Partial<AccountState>
+      if (isTruthy(balance)) {
         account.balance = BigInt(balance)
       }
-      if (code) {
+      if (isTruthy(code)) {
         account.codeHash = Buffer.from(keccak256(toBuffer(code)))
       }
-      if (storage) {
+      if (isTruthy(storage)) {
         const storageTrie = new Trie()
         for (const [k, val] of storage) {
           const storageKey = isHexPrefixed(k) ? toBuffer(k) : Buffer.from(k, 'hex')
