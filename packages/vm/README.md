@@ -62,7 +62,9 @@ Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# VM/EVM Relation
+# Architecture
+
+## VM/EVM Relation
 
 Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previously included in this library has been extracted to an own package [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
 
@@ -77,7 +79,7 @@ vm.evm.on('step', function (data) {
 
 Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
-# Execution Environment (EEI) and State
+## Execution Environment (EEI) and State
 
 This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
 

@@ -13,19 +13,36 @@
 
 `npm install @ethereumjs/statemanager`
 
+Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `v5`.
+
 # USAGE
 
-```typescript
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-```
+## Introduction
+
+The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
+
+The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager`.
 
 ## Example
 
+```typescript
+import { Account, Address } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+
+const stateManager = new DefaultStateManager()
+const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+const account = new Account(BigInt(0), BigInt(1000))
+await stateManager.checkpoint()
+await stateManager.putAccount(address, account)
+await stateManager.commit()
+await stateManager.flush()
+```
+
 # API
 
-## StateManager
+## Docs
 
-Documentation on the `StateManager` can be found [here](./docs). If you want to provide your own `StateManager` you can implement the dedicated interface to ensure that your implementation conforms with the current API.
+Generated TypeDoc API [Documentation](./docs/README.md)
 
 ## BigInt Support
 
