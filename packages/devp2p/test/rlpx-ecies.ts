@@ -10,7 +10,12 @@ type Test = test.Test
 
 declare module 'tape' {
   export interface Test {
-    context: any
+    context: {
+      a: ECIES
+      b: ECIES
+      h0?: { auth: Buffer; ack: Buffer }
+      h1?: { auth: Buffer; ack: Buffer }
+    }
   }
 }
 
@@ -59,7 +64,7 @@ test(
   randomBefore((t: Test) => {
     const message = Buffer.from('The Magic Words are Squeamish Ossifrage')
     const encrypted = t.context.a._encryptMessage(message)
-    const decrypted = t.context.b._decryptMessage(encrypted)
+    const decrypted = t.context.b._decryptMessage(encrypted as Buffer)
     t.same(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
     t.end()
   })
@@ -71,20 +76,21 @@ test(
     t.doesNotThrow(() => {
       const auth = t.context.a.createAuthNonEIP8()
       t.context.b._gotEIP8Auth = false
-      t.context.b.parseAuthPlain(auth)
+      t.context.b.parseAuthPlain(auth as Buffer)
     }, 'should not throw on auth creation/parsing')
 
     t.doesNotThrow(() => {
       t.context.b._gotEIP8Ack = false
       const ack = t.context.b.createAckOld()
-      t.context.a.parseAckPlain(ack)
+      t.context.a.parseAckPlain(ack as Buffer)
     }, 'should not throw on ack creation/parsing')
 
     const body = randomBytes(600)
-    const header = t.context.b.parseHeader(t.context.a.createHeader(body.length))
+
+    const header = t.context.b.parseHeader(t.context.a.createHeader(body.length) as Buffer)
     t.same(header, body.length, 'createHeader -> parseHeader should lead to same')
 
-    const parsedBody = t.context.b.parseBody(t.context.a.createBody(body))
+    const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Buffer)
     t.same(parsedBody, body, 'createBody -> parseBody should lead to same')
 
     t.end()
@@ -97,13 +103,13 @@ test(
     t.doesNotThrow(() => {
       const auth = t.context.a.createAuthEIP8()
       t.context.b._gotEIP8Auth = true
-      t.context.b.parseAuthEIP8(auth)
+      t.context.b.parseAuthEIP8(auth as Buffer)
     }, 'should not throw on auth creation/parsing')
 
     t.doesNotThrow(() => {
       const ack = t.context.b.createAckEIP8()
       t.context.a._gotEIP8Ack = true
-      t.context.a.parseAckEIP8(ack)
+      t.context.a.parseAckEIP8(ack as Buffer)
     }, 'should not throw on ack creation/parsing')
 
     t.end()
@@ -115,13 +121,13 @@ test(
   testdataBefore((t: Test) => {
     t.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = false
-      t.context.b.parseAuthPlain(t.context.h0.auth)
-      t.context.a._initMsg = t.context.h0.auth
+      t.context.b.parseAuthPlain(t.context.h0?.auth as Buffer)
+      t.context.a._initMsg = t.context.h0?.auth
     }, 'should not throw on auth parsing')
 
     t.doesNotThrow(() => {
       t.context.a._gotEIP8Ack = false
-      t.context.a.parseAckPlain(t.context.h0.ack)
+      t.context.a.parseAckPlain(t.context.h0?.ack as Buffer)
     }, 'should not throw on ack parsing')
 
     t.end()
@@ -133,12 +139,12 @@ test(
   testdataBefore((t: Test) => {
     t.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = true
-      t.context.b.parseAuthEIP8(t.context.h1.auth)
-      t.context.a._initMsg = t.context.h1.auth
+      t.context.b.parseAuthEIP8(t.context.h1?.auth as Buffer)
+      t.context.a._initMsg = t.context.h1?.auth
     }, 'should not throw on auth parsing')
     t.doesNotThrow(() => {
       t.context.a._gotEIP8Ack = true
-      t.context.a.parseAckEIP8(t.context.h1.ack)
+      t.context.a.parseAckEIP8(t.context.h1?.ack as Buffer)
     }, 'should not throw on ack parsing')
 
     t.end()

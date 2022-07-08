@@ -1,7 +1,8 @@
 import * as test from 'tape'
-import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
+import { Capabilities, DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import { Chain, Common } from '@ethereumjs/common'
 import * as testdata from '../testdata.json'
+import { isTruthy } from '@ethereumjs/util'
 
 type Test = test.Test
 
@@ -66,11 +67,11 @@ export function destroyDPTs(dpts: DPT[]) {
 export function getTestRLPXs(
   numRLPXs: number,
   maxPeers: number = 10,
-  capabilities?: any,
+  capabilities?: Capabilities[],
   common?: Object | Common
 ) {
   const rlpxs = []
-  if (!capabilities) {
+  if (typeof capabilities === 'undefined') {
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
@@ -123,13 +124,13 @@ export function twoPeerMsgExchange(
     protocol.sendStatus(opts.status0) // (1 ->)
 
     protocol.once('status', () => {
-      if (opts.onOnceStatus0) opts.onOnceStatus0(rlpxs, protocol)
+      if (isTruthy(opts.onOnceStatus0)) opts.onOnceStatus0(rlpxs, protocol)
     }) // (-> 2)
     protocol.on('message', async (code: any, payload: any) => {
-      if (opts.onOnMsg0) opts.onOnMsg0(rlpxs, protocol, code, payload)
+      if (isTruthy(opts.onOnMsg0)) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: Error) => {
-      if (opts.onPeerError0) {
+      if (isTruthy(opts.onPeerError0)) {
         opts.onPeerError0(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 0 error: ${err}`)
@@ -148,10 +149,10 @@ export function twoPeerMsgExchange(
           protocol.sendStatus(opts.status1) // (2 ->)
           break
       }
-      if (opts.onOnMsg1) opts.onOnMsg1(rlpxs, protocol, code, payload)
+      if (isTruthy(opts.onOnMsg1)) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: any) => {
-      if (opts.onPeerError1) {
+      if (isTruthy(opts.onPeerError1)) {
         opts.onPeerError1(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 1 error: ${err}`)
