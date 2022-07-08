@@ -212,11 +212,11 @@ The following loggers are currently available:
 
 | Logger                            | Description                                         |
 | --------------------------------- | --------------------------------------------------- |
-| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution |
-| `vm:evm:gas`                      |  EVM gas logger                                     |
-| `vm:eei:gas`                      |  EEI gas logger                                     |
-| `vm:ops`                          |  Opcode traces                                      |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
+| `evm`                             |  EVM control flow, CALL or CREATE message execution |
+| `evm:gas`                         |  EVM gas logger                                     |
+| `evm:eei:gas`                     |  EEI gas logger                                     |
+| `evm:ops`                         |  Opcode traces                                      |
+| `evm:ops:[Lower-case opcode name]`| Traces on a specific opcode                         |
 
 Here are some examples for useful logger combinations.
 
