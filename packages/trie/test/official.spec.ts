@@ -1,3 +1,4 @@
+import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 import { CheckpointTrie, LevelDB } from '../src'
 
@@ -11,9 +12,9 @@ tape('official tests', async function (t) {
     const expect = jsonTests[testName].root
     for (const input of inputs) {
       for (let i = 0; i < 2; i++) {
-        if (input[i] && input[i].slice(0, 2) === '0x') {
+        if (isTruthy(input[i]) && input[i].slice(0, 2) === '0x') {
           input[i] = Buffer.from(input[i].slice(2), 'hex')
-        } else if (input[i] && typeof input[i] === 'string') {
+        } else if (isTruthy(input[i]) && typeof input[i] === 'string') {
           input[i] = Buffer.from(input[i])
         }
         await trie.put(Buffer.from(input[0]), input[1])
@@ -40,7 +41,7 @@ tape('official tests any order', async function (t) {
         key = Buffer.from(key.slice(2), 'hex')
       }
 
-      if (val && val.slice(0, 2) === '0x') {
+      if (isTruthy(val) && val.slice(0, 2) === '0x') {
         val = Buffer.from(val.slice(2), 'hex')
       }
 

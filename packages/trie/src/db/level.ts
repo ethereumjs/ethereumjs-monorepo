@@ -1,4 +1,5 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
+import { isTruthy } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { MemoryLevel } from 'memory-level'
 import { BatchDBOp, DB } from '../types'
@@ -31,7 +32,7 @@ export class LevelDB implements DB {
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
-      if (error.notFound) {
+      if (isTruthy(error.notFound)) {
         // not found, returning null
       } else {
         throw error

@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { KECCAK256_RLP } from '@ethereumjs/util'
+import { isFalsy, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
 import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
 import { LevelDB } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
@@ -52,7 +52,7 @@ export class Trie {
    * Sets the current root of the `trie`
    */
   set root(value: Buffer) {
-    if (!value) {
+    if (isFalsy(value)) {
       value = this.EMPTY_TRIE_ROOT
     }
     if (value.length !== 32) throw new Error('Invalid root length. Roots are 32 bytes')
@@ -113,7 +113,7 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
-    if (!value || value.toString() === '') {
+    if (isFalsy(value) || value.toString() === '') {
       return await this.del(key)
     }
 
@@ -375,9 +375,9 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      if (!parentNode || parentNode instanceof BranchNode) {
+      if (isFalsy(parentNode) || parentNode instanceof BranchNode) {
         // branch->?
-        if (parentNode) {
+        if (isTruthy(parentNode)) {
           stack.push(parentNode)
         }
 
@@ -425,7 +425,7 @@ export class Trie {
     }
 
     let lastNode = stack.pop() as TrieNode
-    if (!lastNode) throw new Error('missing last node')
+    if (isFalsy(lastNode)) throw new Error('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
@@ -583,7 +583,7 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        if (!op.value) {
+        if (isFalsy(op.value)) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
@@ -609,7 +609,7 @@ export class Trie {
 
     if (!trie) {
       trie = new Trie()
-      if (opStack[0]) {
+      if (isTruthy(opStack[0])) {
         trie.root = opStack[0].key
       }
     }
