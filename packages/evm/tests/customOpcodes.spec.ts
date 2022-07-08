@@ -1,6 +1,6 @@
 import { AddOpcode } from '../src/types'
 import { InterpreterStep, RunState } from '../src/interpreter'
-import EVM from '../src/evm'
+import { EVM } from '../src/evm'
 import { getEEI } from './utils'
 import * as tape from 'tape'
 
@@ -101,5 +101,31 @@ tape('VM: custom opcodes', (t) => {
     })
     st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
     st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
+  })
+
+  t.test('should pass the correct VM options when copying the VM', async (st) => {
+    const fee = 333
+    const stackPush = BigInt(1)
+
+    const testOpcode: AddOpcode = {
+      opcode: 0x21,
+      opcodeName: 'TEST',
+      baseFee: fee,
+      logicFunction: function (runState: RunState) {
+        runState.stack.push(BigInt(stackPush))
+      },
+    }
+
+    const evm = await EVM.create({
+      customOpcodes: [testOpcode],
+      eei: await getEEI(),
+    })
+    const evmCopy = evm.copy()
+
+    st.deepEqual(
+      (evmCopy as any)._customOpcodes,
+      (evmCopy as any)._customOpcodes,
+      'evm.copy() successfully copied customOpcodes option'
+    )
   })
 })

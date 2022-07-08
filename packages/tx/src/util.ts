@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 

@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { VM } from './vm'
@@ -26,7 +26,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
 /**
  * @ignore
  */
-export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.eei
   const { root } = opts
   let { block } = opts

@@ -10,8 +10,8 @@ import {
   toBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common from '@ethereumjs/common'
+import { RLP } from 'rlp'
+import { Common } from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -32,7 +32,7 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
+export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Address, setLengthLeft, toBuffer } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { createAccount } from '../utils'
 

@@ -8,7 +8,7 @@ import { numberToHex } from './helpers'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
+export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
   const {
     parentHash,
     sha3Uncles,

@@ -10,7 +10,7 @@ import {
   unpadBuffer,
   zeros,
 } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../src'
 import { createAccount } from './util'
 

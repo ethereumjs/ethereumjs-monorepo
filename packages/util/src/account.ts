@@ -1,7 +1,7 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import {

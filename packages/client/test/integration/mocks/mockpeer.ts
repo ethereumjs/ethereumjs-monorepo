@@ -2,8 +2,8 @@ import * as EventEmitter from 'events'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 import { Peer, PeerOptions } from '../../../lib/net/peer'
-import MockServer from './mockserver'
-import MockSender from './mocksender'
+import { MockServer } from './mockserver'
+import { MockSender } from './mocksender'
 import { RemoteStream, createStream } from './network'
 import { Event } from '../../../lib/types'
 
@@ -16,7 +16,7 @@ interface MockPeerOptions extends PeerOptions {
   location: string
 }
 
-export default class MockPeer extends Peer {
+export class MockPeer extends Peer {
   public location: string
   public connected: boolean
 

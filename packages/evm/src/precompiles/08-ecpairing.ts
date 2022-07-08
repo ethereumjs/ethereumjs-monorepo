@@ -2,7 +2,7 @@ import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const bn128 = require('rustbn.js')
 
-export default function (opts: PrecompileInput): ExecResult {
+export function precompile08(opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const inputData = opts.data

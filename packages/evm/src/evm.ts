@@ -1,5 +1,5 @@
 import { promisify } from 'util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import {
@@ -15,9 +15,9 @@ import {
 } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions'
-import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
-import Message, { MessageWithTo } from './message'
-import EOF from './eof'
+import { Interpreter, InterpreterOpts, RunState } from './interpreter'
+import { Message, MessageWithTo } from './message'
+import { EOF } from './eof'
 import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
@@ -33,7 +33,7 @@ import {
   EVMRunCodeOpts,
 } from './types'
 import { EEIInterface } from './types'
-import TransientStorage from './transientStorage'
+import { TransientStorage } from './transientStorage'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -132,7 +132,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
+export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address

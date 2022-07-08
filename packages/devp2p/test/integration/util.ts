@@ -1,6 +1,6 @@
 import * as test from 'tape'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import * as testdata from '../testdata.json'
 
 type Test = test.Test

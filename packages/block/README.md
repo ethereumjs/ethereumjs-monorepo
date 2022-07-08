@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | Implements schema and functions related to Ethereum's block. |
-| --- |
+| ------------------------------------------------------------ |
 
 Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceding release.
 
@@ -63,16 +63,19 @@ To instantiate an EIP-1559 block, the hardfork parameter on the `Common` instanc
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const block = Block.fromBlockData({
-  header: {
-    baseFeePerGas: BigInt(10),
-    gasLimit: BigInt(100),
-    gasUsed: BigInt(60)
-  }
-}, { common })
+const block = Block.fromBlockData(
+  {
+    header: {
+      baseFeePerGas: BigInt(10),
+      gasLimit: BigInt(100),
+      gasUsed: BigInt(60),
+    },
+  },
+  { common }
+)
 
 // Base fee will increase for next block since the
 // gas used is greater than half the gas limit
@@ -81,17 +84,19 @@ block.header.calcNextBaseFee().toNumber() // 11
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
 
-const blockWithMatchingBaseFee = Block.fromBlockData({
-  header: {
-    baseFeePerGas: parentHeader.calcNextBaseFee(),
-    gasLimit: BigInt(100),
-    gasUsed: BigInt(60)
-  }
-}, { common })
-
+const blockWithMatchingBaseFee = Block.fromBlockData(
+  {
+    header: {
+      baseFeePerGas: parentHeader.calcNextBaseFee(),
+      gasLimit: BigInt(100),
+      gasUsed: BigInt(60),
+    },
+  },
+  { common }
+)
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
 ## Consensus Types
 
@@ -103,8 +108,8 @@ An Ethash/PoW block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet })
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
@@ -120,8 +125,8 @@ A clique block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Goerli })
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Goerli })
 console.log(common.consensusType()) // 'poa'
 console.log(common.consensusAlgorithm()) // 'clique'
 const block = Block.fromBlockData({}, { common })
@@ -157,11 +162,14 @@ You can instantiate a Merge/PoS block like this:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
-const block = Block.fromBlockData({
-  // Provide your block data here or use default values
-}, { common })
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
 ```
 
 Note that all `Merge` respectively `Casper/PoS` related functionality is still considered `experimental`.

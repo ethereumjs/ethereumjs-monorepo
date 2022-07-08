@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import {

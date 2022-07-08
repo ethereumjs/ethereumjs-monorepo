@@ -1,5 +1,5 @@
 import { Config } from '../config'
-import EthereumClient from '../client'
+import { EthereumClient } from '../client'
 import * as modules from './modules'
 import { INTERNAL_ERROR } from './error-code'
 

@@ -33,7 +33,7 @@ interface MessageOpts {
   gasRefund?: bigint
 }
 
-export default class Message {
+export class Message {
   to?: Address
   value: bigint
   caller: Address

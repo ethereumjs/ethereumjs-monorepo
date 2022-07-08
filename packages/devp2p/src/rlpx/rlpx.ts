@@ -6,7 +6,7 @@ import { EventEmitter } from 'events'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import * as LRUCache from 'lru-cache'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
 import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'

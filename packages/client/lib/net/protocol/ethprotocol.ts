@@ -15,7 +15,7 @@ import {
   bufferToInt,
   intToBuffer,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../execution/receipt'

@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 import { Config } from '../../../lib'
 import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'

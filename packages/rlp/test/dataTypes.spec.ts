@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import RLP, { utils } from '../src'
+import { RLP, utils } from '../src'
 import { bytesToUtf8 } from './utils'
 
 const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils

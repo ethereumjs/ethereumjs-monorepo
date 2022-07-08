@@ -1,6 +1,7 @@
 import * as tape from 'tape'
-import Blockchain, { CliqueConsensus } from '@ethereumjs/blockchain'
-import Common, {
+import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
+import {
+  Common,
   Chain as ChainCommon,
   ConsensusType,
   ConsensusAlgorithm,
@@ -11,7 +12,7 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
+import { MockServer } from './mocks/mockserver'
 import { setup, destroy } from './util'
 import { BlockHeader } from '@ethereumjs/block'
 

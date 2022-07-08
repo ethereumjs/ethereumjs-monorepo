@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
 import { Consensus } from '.'
 import { GenesisState } from './genesisStates'

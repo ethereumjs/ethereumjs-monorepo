@@ -1,2 +1,2 @@
 export * from './config'
-export { default as EthereumClient } from './client'
+export { EthereumClient } from './client'

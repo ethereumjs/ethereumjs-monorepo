@@ -1,7 +1,7 @@
 import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc'
-import EthereumClient from '../lib/client'
+import { EthereumClient } from '../lib/client'
 import {
   MethodConfig,
   createRPCServer,

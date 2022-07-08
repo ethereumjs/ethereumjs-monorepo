@@ -1,4 +1,4 @@
-import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
+import { Ethash, Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'

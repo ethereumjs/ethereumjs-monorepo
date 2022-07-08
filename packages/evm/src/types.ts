@@ -1,7 +1,7 @@
 import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-import EVM, { EVMResult, ExecResult } from './evm'
+import { EVM, EVMResult, ExecResult } from './evm'
 import { InterpreterStep } from './interpreter'
-import Message from './message'
+import { Message } from './message'
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 

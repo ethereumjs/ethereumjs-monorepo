@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import { RunState } from './../interpreter'
 

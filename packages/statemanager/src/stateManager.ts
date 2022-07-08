@@ -13,10 +13,10 @@ import {
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
-import Common from '@ethereumjs/common'
-import RLP from 'rlp'
+import { Common } from '@ethereumjs/common'
+import { RLP } from 'rlp'
 import { StateManager, StorageDump } from './interface'
-import Cache, { getCb, putCb } from './cache'
+import { Cache, getCb, putCb } from './cache'
 import { BaseStateManager } from './'
 
 type StorageProof = {
@@ -69,7 +69,7 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export default class DefaultStateManager extends BaseStateManager implements StateManager {
+export class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 

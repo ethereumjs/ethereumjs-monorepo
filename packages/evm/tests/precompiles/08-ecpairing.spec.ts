@@ -1,9 +1,9 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
 import { getActivePrecompiles } from '../../src/precompiles'
 import { getEEI } from '../utils'
-import EVM from '../../src'
+import { EVM } from '../../src'
 
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {

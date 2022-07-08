@@ -1,5 +1,5 @@
 import { Address, bufferToBigInt } from '@ethereumjs/util'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 
 import { VmState } from './vmState'
 import { StateManager } from '@ethereumjs/statemanager'
@@ -22,7 +22,7 @@ type Blockchain = {
  * The EEI instance also keeps artifacts produced by the bytecode such as logs
  * and to-be-selfdestructed addresses.
  */
-export default class EEI extends VmState implements EEIInterface {
+export class EEI extends VmState implements EEIInterface {
   protected _common: Common
   protected _blockchain: Blockchain
 

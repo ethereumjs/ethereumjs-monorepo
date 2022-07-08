@@ -1,4 +1,4 @@
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { CustomOpcode } from '../types'
 import { getFullname } from './util'
 import { AsyncDynamicGasHandler, dynamicGasHandlers, SyncDynamicGasHandler } from './gas'

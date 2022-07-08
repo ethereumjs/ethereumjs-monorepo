@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Account, Address, MAX_INTEGER } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Transaction,
   TransactionFactory,
@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/tx'
 import { VM } from '../../src/vm'
 import { createAccount, getTransaction, setBalance } from './utils'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 
 const TRANSACTION_TYPES = [
   {

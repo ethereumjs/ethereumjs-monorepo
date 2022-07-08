@@ -1,5 +1,5 @@
 // Mockchain: only used to provide blockhashes for the BLOCKHASH opcode for the VM. Has no other uses.
-export default class Mockchain {
+export class Mockchain {
   _hashes: any
 
   constructor() {

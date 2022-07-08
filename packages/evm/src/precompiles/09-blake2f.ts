@@ -153,7 +153,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   }
 }
 
-export default function (opts: PrecompileInput): ExecResult {
+export function precompile09(opts: PrecompileInput): ExecResult {
   if (!opts.data) throw new Error('opts.data missing but required')
 
   const data = opts.data

@@ -1,24 +1,24 @@
 import { Address } from '@ethereumjs/util'
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { PrecompileInput, PrecompileFunc } from './types'
-import { default as p1 } from './01-ecrecover'
-import { default as p2 } from './02-sha256'
-import { default as p3 } from './03-ripemd160'
-import { default as p4 } from './04-identity'
-import { default as p5 } from './05-modexp'
-import { default as p6 } from './06-ecadd'
-import { default as p7 } from './07-ecmul'
-import { default as p8 } from './08-ecpairing'
-import { default as p9 } from './09-blake2f'
-import { default as pa } from './0a-bls12-g1add'
-import { default as pb } from './0b-bls12-g1mul'
-import { default as pc } from './0c-bls12-g1multiexp'
-import { default as pd } from './0d-bls12-g2add'
-import { default as pe } from './0e-bls12-g2mul'
-import { default as pf } from './0f-bls12-g2multiexp'
-import { default as p10 } from './10-bls12-pairing'
-import { default as p11 } from './11-bls12-map-fp-to-g1'
-import { default as p12 } from './12-bls12-map-fp2-to-g2'
+import { precompile01 } from './01-ecrecover'
+import { precompile02 } from './02-sha256'
+import { precompile03 } from './03-ripemd160'
+import { precompile04 } from './04-identity'
+import { precompile05 } from './05-modexp'
+import { precompile06 } from './06-ecadd'
+import { precompile07 } from './07-ecmul'
+import { precompile08 } from './08-ecpairing'
+import { precompile09 } from './09-blake2f'
+import { precompile0a } from './0a-bls12-g1add'
+import { precompile0b } from './0b-bls12-g1mul'
+import { precompile0c } from './0c-bls12-g1multiexp'
+import { precompile0d } from './0d-bls12-g2add'
+import { precompile0e } from './0e-bls12-g2mul'
+import { precompile0f } from './0f-bls12-g2multiexp'
+import { precompile10 } from './10-bls12-pairing'
+import { precompile11 } from './11-bls12-map-fp-to-g1'
+import { precompile12 } from './12-bls12-map-fp2-to-g2'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -49,24 +49,24 @@ interface PrecompileAvailabilityCheckTypeEIP {
 
 const ripemdPrecompileAddress = '0000000000000000000000000000000000000003'
 const precompiles: Precompiles = {
-  '0000000000000000000000000000000000000001': p1,
-  '0000000000000000000000000000000000000002': p2,
-  [ripemdPrecompileAddress]: p3,
-  '0000000000000000000000000000000000000004': p4,
-  '0000000000000000000000000000000000000005': p5,
-  '0000000000000000000000000000000000000006': p6,
-  '0000000000000000000000000000000000000007': p7,
-  '0000000000000000000000000000000000000008': p8,
-  '0000000000000000000000000000000000000009': p9,
-  '000000000000000000000000000000000000000a': pa,
-  '000000000000000000000000000000000000000b': pb,
-  '000000000000000000000000000000000000000c': pc,
-  '000000000000000000000000000000000000000d': pd,
-  '000000000000000000000000000000000000000e': pe,
-  '000000000000000000000000000000000000000f': pf,
-  '0000000000000000000000000000000000000010': p10,
-  '0000000000000000000000000000000000000011': p11,
-  '0000000000000000000000000000000000000012': p12,
+  '0000000000000000000000000000000000000001': precompile01,
+  '0000000000000000000000000000000000000002': precompile02,
+  [ripemdPrecompileAddress]: precompile03,
+  '0000000000000000000000000000000000000004': precompile04,
+  '0000000000000000000000000000000000000005': precompile05,
+  '0000000000000000000000000000000000000006': precompile06,
+  '0000000000000000000000000000000000000007': precompile07,
+  '0000000000000000000000000000000000000008': precompile08,
+  '0000000000000000000000000000000000000009': precompile09,
+  '000000000000000000000000000000000000000a': precompile0a,
+  '000000000000000000000000000000000000000b': precompile0b,
+  '000000000000000000000000000000000000000c': precompile0c,
+  '000000000000000000000000000000000000000d': precompile0d,
+  '000000000000000000000000000000000000000e': precompile0e,
+  '000000000000000000000000000000000000000f': precompile0f,
+  '0000000000000000000000000000000000000010': precompile10,
+  '0000000000000000000000000000000000000011': precompile11,
+  '0000000000000000000000000000000000000012': precompile12,
 }
 
 const precompileAvailability: PrecompileAvailability = {

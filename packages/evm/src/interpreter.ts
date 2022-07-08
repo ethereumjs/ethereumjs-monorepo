@@ -9,13 +9,13 @@ import {
 } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions'
-import Memory from './memory'
-import Stack from './stack'
+import { Memory } from './memory'
+import { Stack } from './stack'
 import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
-import EOF from './eof'
-import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
-import EVM, { EVMResult } from './evm'
-import Message from './message'
+import { EOF } from './eof'
+import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { EVM, EVMResult } from './evm'
+import { Message } from './message'
 import { Log } from './types'
 import { EEIInterface, Block } from './types'
 
@@ -103,7 +103,7 @@ export interface InterpreterStep {
 /**
  * Parses and executes EVM bytecode.
  */
-export default class Interpreter {
+export class Interpreter {
   protected _vm: any
   protected _runState: RunState
   protected _eei: EEIInterface

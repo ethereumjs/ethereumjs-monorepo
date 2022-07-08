@@ -11,13 +11,13 @@ import {
   toBuffer,
   zeros,
 } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import EVM from '@ethereumjs/evm'
+import { EVM } from '@ethereumjs/evm'
 
 const common = new Common({
   chain: Chain.Mainnet,

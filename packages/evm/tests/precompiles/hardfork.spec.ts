@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Address } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import EVM from '../../src'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
 import { getEEI } from '../utils'
 

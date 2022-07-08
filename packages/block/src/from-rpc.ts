@@ -3,7 +3,7 @@ import { toBuffer, setLengthLeft } from '@ethereumjs/util'
 import { Block, BlockOptions } from './index'
 import { numberToHex } from './helpers'
 
-import blockHeaderFromRpc from './header-from-rpc'
+import { blockHeaderFromRpc } from './header-from-rpc'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
@@ -34,7 +34,7 @@ function normalizeTxParams(_txParams: any) {
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
+export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
