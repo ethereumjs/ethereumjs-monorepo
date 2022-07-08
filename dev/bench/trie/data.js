@@ -1,158 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657270149136,
+  "lastUpdate": 1657272067918,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ab9a9d6f68a0e8c75aab1e9a8e363a1816160477",
-          "message": "move mpt package to @ethereumjs namespace (#1953)",
-          "timestamp": "2022-06-10T22:32:47+02:00",
-          "tree_id": "5cba0582722f16cf002d0d2be5826806b8a3a01c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ab9a9d6f68a0e8c75aab1e9a8e363a1816160477"
-        },
-        "date": 1654893521558,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "[MemoryDB] 1k-3-32-ran",
-            "value": 31401,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-5-32-ran",
-            "value": 29262,
-            "range": "±6.42%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-9-32-ran",
-            "value": 31271,
-            "range": "±1.12%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-ran",
-            "value": 31079,
-            "range": "±1.28%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-mir",
-            "value": 53233,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "93 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 100 iterations",
-            "value": 816,
-            "range": "±43.09%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 500 iterations",
-            "value": 205,
-            "range": "±8.38%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 1000 iterations",
-            "value": 98.73,
-            "range": "±16.20%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 5000 iterations",
-            "value": 20.3,
-            "range": "±8.18%",
-            "unit": "ops/sec",
-            "extra": "39 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-3-32-ran",
-            "value": 27932,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-5-32-ran",
-            "value": 28522,
-            "range": "±1.71%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-9-32-ran",
-            "value": 19720,
-            "range": "±60.44%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-ran",
-            "value": 24611,
-            "range": "±23.88%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-mir",
-            "value": 47675,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 100 iterations",
-            "value": 995,
-            "range": "±4.65%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 500 iterations",
-            "value": 89.86,
-            "range": "±106.45%",
-            "unit": "ops/sec",
-            "extra": "35 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 1000 iterations",
-            "value": 77.25,
-            "range": "±36.40%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 5000 iterations",
-            "value": 18.32,
-            "range": "±5.45%",
-            "unit": "ops/sec",
-            "extra": "34 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2736,6 +2586,93 @@ window.BENCHMARK_DATA = {
             "range": "±24.43%",
             "unit": "ops/sec",
             "extra": "30 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "12a81f6ca9205d5d4fc7668b67027ce4f950f20d",
+          "message": "master-vm-copy-bug (#2027)\n\n* vm: include hardfork options in VM.copy()\r\n\r\n* vm: edit vm.copy() to only copy evm and derive rest\r\n\r\n* vm: add new tests for copying hardfork options\r\n\r\n* evm: add tests for copying of customOpcodes and customPrecompiles",
+          "timestamp": "2022-07-08T11:16:40+02:00",
+          "tree_id": "f61c2155bb2e149dd0e949d48ee1017bff609589",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/12a81f6ca9205d5d4fc7668b67027ce4f950f20d"
+        },
+        "date": 1657272067413,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 32906,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 30157,
+            "range": "±8.81%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 32928,
+            "range": "±1.15%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 31444,
+            "range": "±1.21%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 52636,
+            "range": "±2.39%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 954,
+            "range": "±6.81%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 181,
+            "range": "±9.16%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 87.18,
+            "range": "±19.95%",
+            "unit": "ops/sec",
+            "extra": "58 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 10.01,
+            "range": "±92.11%",
+            "unit": "ops/sec",
+            "extra": "22 samples"
           }
         ]
       }
