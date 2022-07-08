@@ -19,7 +19,7 @@ export function accessAddressEIP2929(
   chargeGas = true,
   isSelfdestructOrAuthcall = false
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
   const eei = runState.eei
   const addressStr = address.buf
@@ -54,7 +54,7 @@ export function accessStorageEIP2929(
   isSstore: boolean,
   common: Common
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
   const eei = runState.eei
   const address = runState.interpreter.getAddress().buf
@@ -87,7 +87,7 @@ export function adjustSstoreGasEIP2929(
   costName: string,
   common: Common
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return defaultCost
+  if (common.isActivatedEIP(2929) === false) return defaultCost
 
   const eei = runState.eei
   const address = runState.interpreter.getAddress().buf

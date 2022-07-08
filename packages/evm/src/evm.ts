@@ -8,6 +8,8 @@ import {
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
+  isFalsy,
+  isTruthy,
   KECCAK256_NULL,
   MAX_INTEGER,
   short,
@@ -43,7 +45,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 let mcl: any
 let mclInitPromise: any
 
-if (!isBrowser()) {
+if (isBrowser() === false) {
   mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
@@ -280,7 +282,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
+      if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         this._mcl = mcl
@@ -288,7 +290,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
@@ -303,7 +305,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
+      if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         const mcl = this._mcl
@@ -360,7 +362,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         debug(`Exit early on no code`)
       }
     }
-    if (errorMessage) {
+    if (isTruthy(errorMessage)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -472,13 +474,13 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (isFalsy(message.code) || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
-    if (errorMessage) {
+    if (isTruthy(errorMessage)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -533,7 +535,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
         const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (!eof1CodeAnalysisResults?.code) {
+        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
           result = {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
@@ -582,7 +584,11 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     // Save code if a new contract was created
-    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+    if (
+      !result.exceptionError &&
+      isTruthy(result.returnValue) &&
+      result.returnValue.toString() !== ''
+    ) {
       await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
@@ -686,7 +692,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
       const caller = opts.caller ?? Address.zero()
       const value = opts.value ?? BigInt(0)
-      if (opts.skipBalance) {
+      if (opts.skipBalance === true) {
         // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
         callerAccount.balance += value
@@ -711,7 +717,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this._common.isActivatedEIP(2929)) {
+    if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
       this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
     }
