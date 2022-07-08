@@ -35,8 +35,8 @@ import {
 import { EEIInterface } from './types'
 import { TransientStorage } from './transientStorage'
 
-const debug = createDebugLogger('vm:evm')
-const debugGas = createDebugLogger('vm:evm:gas')
+const debug = createDebugLogger('evm')
+const debugGas = createDebugLogger('evm:gas')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')

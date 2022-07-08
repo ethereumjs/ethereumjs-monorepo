@@ -19,7 +19,7 @@ import { Message } from './message'
 import { Log } from './types'
 import { EEIInterface, Block } from './types'
 
-const debugGas = createDebugLogger('vm:eei:gas')
+const debugGas = createDebugLogger('evm:eei:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -332,7 +332,7 @@ export class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
+        this.opDebuggers[name] = createDebugLogger(`evm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }
