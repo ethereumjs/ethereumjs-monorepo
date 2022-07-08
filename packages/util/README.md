@@ -42,8 +42,8 @@ Read the [API docs](docs/).
 - [constants](src/constants.ts)
   - Exposed constants
     - e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null
-- [hash](src/hash.ts)
-  - Hash functions
+- hash
+  - This module has been removed with `v8`, please use [ethereum-cryptography](https://github.com/ethereum/js-ethereum-cryptography) directly instead
 - [signature](src/signature.ts)
   - Signing, signature validation, conversion, recovery
 - [types](src/types.ts)
