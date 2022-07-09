@@ -12,6 +12,8 @@ import {
   KECCAK256_RLP,
   setLengthLeft,
   short,
+  isFalsy,
+  isTruthy,
 } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { RLP } from 'rlp'
@@ -176,7 +178,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from storage cache
     const addressHex = address.buf.toString('hex')
     let storageTrie = this._storageTries[addressHex]
-    if (!storageTrie) {
+    if (isFalsy(storageTrie)) {
       // lookup from state
       storageTrie = await this._lookupStorageTrie(address)
     }
@@ -251,7 +253,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (value && value.length) {
+      if (isTruthy(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
@@ -496,7 +498,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && !(account as any).virtual && !this._cache.keyIsDeleted(address)) {
+    if (account && isFalsy((account as any).virtual) && !this._cache.keyIsDeleted(address)) {
       return true
     }
     if (await this._trie.get(address.buf)) {
