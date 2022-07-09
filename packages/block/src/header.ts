@@ -258,7 +258,6 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
 
     this._genericFormatValidation()
-    this._consensusFormatValidation()
     this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -282,6 +281,9 @@ export class BlockHeader {
 
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
+
+    // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
+    this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {
