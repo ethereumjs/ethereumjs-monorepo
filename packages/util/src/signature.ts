@@ -38,6 +38,13 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   const recovery = BigInt(rec)
   return { r, s, v, recovery }
 }
+/**
+ * Based on the solving recovery formula  
+ * v - (chainId * BigInt(2) + BigInt(35))
+ * To an integer or non-integer
+ * Resulting in recovery (yParity) value of 0 or 1.
+ * Which determines which point on the EC is used
+ */
 
 export function calculateSigRecovery(v: bigint): bigint {
   if (v > BigInt(28) && v < BigInt(35)) {
