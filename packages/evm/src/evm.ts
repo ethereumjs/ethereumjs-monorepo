@@ -49,7 +49,7 @@ if (!isBrowser()) {
 }
 
 /**
- * Options for instantiating a {@link VM}.
+ * Options for instantiating a {@link EVM}.
  */
 export interface EVMOpts {
   /**

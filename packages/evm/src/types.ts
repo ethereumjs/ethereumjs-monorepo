@@ -11,7 +11,7 @@ import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode?(opts: EVMRunCodeOpts): Promise<ExecResult>
-  precompiles: Map<string, any> // Note: the `any` type is used because VM only needs to have the addresses of the precompiles (not their functions)
+  precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
 }
 
