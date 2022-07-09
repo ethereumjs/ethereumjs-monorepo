@@ -34,7 +34,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
   const v =
-    chainId === undefined ? BigInt(rec + 27) : BigInt(rec + 35) + BigInt(chainId) * BigInt(2)
+    chainId === undefined ? BigInt(rec + 27) : BigInt(rec + 35) + chainId * BigInt(2)
   const recovery = BigInt(rec)
   return { r, s, v, recovery }
 }
@@ -47,18 +47,20 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
  */
 
 export function calculateSigRecovery(v: bigint): bigint {
-  if (v > BigInt(28) && v < BigInt(35)) {
-    return v
-  }
   if (v < BigInt(27) && v > BigInt(1)) {
-    return v
+    // Returns an invalid signature value instead of throwing error
+    return BigInt(-1)
+  }
+  if (v > BigInt(28) && v < BigInt(35)) {
+    // Returns an invalid signature value instead of throwing error
+    return BigInt(-1)
   }
   if (v === BigInt(27) || v === BigInt(28)) {
     return v - BigInt(27)
   }
   if (v === BigInt(0) || v === BigInt(1)) {
     return v
-  } else if ((0n - 35n - v) % 2n === 0n) {
+  } else if ((BigInt(0) - BigInt(35) - v) % BigInt(2) === BigInt(0)) {
     return BigInt(0)
   } else {
     return BigInt(1)
