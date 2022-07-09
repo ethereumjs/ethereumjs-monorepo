@@ -9,9 +9,9 @@ export interface ECDSASignature {
    * A 32 Byte Integer used for recovery.
    */
   v: bigint
-  /** 
+  /**
    * A 32 Byte Integer.  One half of the (r, s) signature pair
-  */
+   */
   r: Buffer
   /**
    * Recovery Identifier.  One half of the (r, s) signature pair
@@ -33,13 +33,12 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   const [signature, rec] = signSync(msgHash, privateKey, { recovered: true, der: false })
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
-  const v =
-    chainId === undefined ? BigInt(rec + 27) : BigInt(rec + 35) + chainId * BigInt(2)
+  const v = chainId === undefined ? BigInt(rec + 27) : BigInt(rec + 35) + chainId * BigInt(2)
   const recovery = BigInt(rec)
   return { r, s, v, recovery }
 }
 /**
- * Based on the solving recovery formula  
+ * Based on the solving recovery formula
  * v - (chainId * BigInt(2) + BigInt(35))
  * To an integer or non-integer
  * Resulting in recovery (yParity) value of 0 or 1.
