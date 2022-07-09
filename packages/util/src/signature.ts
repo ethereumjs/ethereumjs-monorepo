@@ -4,22 +4,22 @@ import { toBuffer, setLengthLeft, bufferToHex, bufferToInt, bufferToBigInt } fro
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
 
-/**
- * Interface for ECDSA signature
- *
- * @interface ECDSASignature
- *
- */
 export interface ECDSASignature {
   /**
-   * @param {bigint} v 32 Byte Integer
-   * @param {Buffer} r 32 Byte Integer
-   * @param {Buffer} s Recovery Identifier
-   * @param {bigint} recovery yParity
+   * A 32 Byte Integer used for recovery.
    */
   v: bigint
+  /** 
+   * A 32 Byte Integer.  One half of the (r, s) signature pair
+  */
   r: Buffer
+  /**
+   * Recovery Identifier.  One half of the (r, s) signature pair
+   */
   s: Buffer
+  /**
+   * yParity: either 0 or 1, depending on which point on the elliptic curve should be used.
+   */
   recovery: bigint
 }
 
