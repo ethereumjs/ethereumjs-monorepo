@@ -445,7 +445,8 @@ async function setupDevnet(prefundAddress: Address) {
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
   }
-  const extraData = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+  const extraData =
+    args.dev === 'pow' ? '0x' + '0'.repeat(32) : '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
   const chainData = {
     ...defaultChainData,
     extraData,
