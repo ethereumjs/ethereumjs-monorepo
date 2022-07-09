@@ -1,158 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657272067918,
+  "lastUpdate": 1657392842146,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b9378efaacbcbbb48ead4b480dd1cf35966f2461",
-          "message": "Util: Signature Code Cleanup (new) (#1945)\n\n* Util -> ecsign: remove function signature overloading, limit chainId, v to bigint, adopt tests and library usages\r\n\r\n* Util -> signature: fix misleading fromRpcSig() comment\r\n\r\n* Util -> signature: limit v and chainId input parameters to bigint\r\n\r\n* Util -> signature: fixed test cases\r\n\r\n* VM: EIP-3075 Auth Call test fixes\r\n\r\n* Util -> signature: simplify ecsign logic\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2022-06-13T11:53:44+02:00",
-          "tree_id": "19ecabe3c210626a371c73848d4c0dfc96292f1c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b9378efaacbcbbb48ead4b480dd1cf35966f2461"
-        },
-        "date": 1655114365265,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "[MemoryDB] 1k-3-32-ran",
-            "value": 29929,
-            "range": "±2.60%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-5-32-ran",
-            "value": 28441,
-            "range": "±7.48%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-9-32-ran",
-            "value": 30621,
-            "range": "±1.30%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-ran",
-            "value": 30015,
-            "range": "±1.33%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "[MemoryDB] 1k-1k-32-mir",
-            "value": 50629,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 100 iterations",
-            "value": 976,
-            "range": "±5.46%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 500 iterations",
-            "value": 176,
-            "range": "±10.50%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 1000 iterations",
-            "value": 90.7,
-            "range": "±16.34%",
-            "unit": "ops/sec",
-            "extra": "60 samples"
-          },
-          {
-            "name": "[MemoryDB] Checkpointing: 5000 iterations",
-            "value": 11.6,
-            "range": "±74.05%",
-            "unit": "ops/sec",
-            "extra": "25 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-3-32-ran",
-            "value": 28342,
-            "range": "±1.90%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-5-32-ran",
-            "value": 27951,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-9-32-ran",
-            "value": 27883,
-            "range": "±1.82%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-ran",
-            "value": 27397,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "[LevelDB] 1k-1k-32-mir",
-            "value": 46002,
-            "range": "±2.64%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 100 iterations",
-            "value": 382,
-            "range": "±97.91%",
-            "unit": "ops/sec",
-            "extra": "32 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 500 iterations",
-            "value": 190,
-            "range": "±5.16%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 1000 iterations",
-            "value": 46.05,
-            "range": "±81.24%",
-            "unit": "ops/sec",
-            "extra": "49 samples"
-          },
-          {
-            "name": "[LevelDB] Checkpointing: 5000 iterations",
-            "value": 14.19,
-            "range": "±44.31%",
-            "unit": "ops/sec",
-            "extra": "35 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2673,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±92.11%",
             "unit": "ops/sec",
             "extra": "22 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01f38c8db0b962fe039c0c74ee76261e4f4014c4",
+          "message": "Fix consensus validation bugs (#2031)\n\n* client: fix extradata in devnet settings\r\n* block: move consensus format validation to corret place",
+          "timestamp": "2022-07-09T14:49:39-04:00",
+          "tree_id": "95220d0e75e4ec28c0919936183e8e4a4c3460db",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/01f38c8db0b962fe039c0c74ee76261e4f4014c4"
+        },
+        "date": 1657392840863,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 33045,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 30711,
+            "range": "±6.60%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 32230,
+            "range": "±1.04%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 31853,
+            "range": "±1.18%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 53765,
+            "range": "±1.13%",
+            "unit": "ops/sec",
+            "extra": "94 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 749,
+            "range": "±42.60%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 193,
+            "range": "±5.99%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 90.83,
+            "range": "±17.02%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 13.27,
+            "range": "±58.61%",
+            "unit": "ops/sec",
+            "extra": "34 samples"
           }
         ]
       }
