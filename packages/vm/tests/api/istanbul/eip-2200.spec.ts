@@ -63,13 +63,13 @@ tape('Istanbul: EIP-2200', async (t) => {
 
       const runCallArgs = {
         caller,
-        gasLimit: testCase.gas ? testCase.gas : BigInt(0xffffffffff),
+        gasLimit: testCase.gas ?? BigInt(0xffffffffff),
         to: addr,
       }
 
       try {
         const res = await vm.evm.runCall(runCallArgs)
-        if (testCase.err) {
+        if (typeof testCase.err !== 'undefined') {
           st.equal(res.execResult.exceptionError?.error, testCase.err)
         } else {
           st.equal(res.execResult.exceptionError, undefined)

@@ -24,7 +24,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
-      if (test.steps.length) {
+      if (test.steps.length > 0) {
         st.equal(
           step.opcode.name,
           test.steps[i].expectedOpcode,

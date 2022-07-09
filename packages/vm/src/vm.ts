@@ -1,4 +1,4 @@
-import { Account, Address, toType, TypeOutput } from '@ethereumjs/util'
+import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
@@ -129,7 +129,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
@@ -143,12 +143,12 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     await (this.blockchain as any)._init()
 
     if (!this._opts.stateManager) {
-      if (this._opts.activateGenesisState) {
+      if (this._opts.activateGenesisState === true) {
         await this.eei.generateCanonicalGenesis(this.blockchain.genesisState())
       }
     }
 
-    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
+    if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
       await this.eei.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
@@ -224,7 +224,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       evm: evmCopy,
       eei: eeiCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTD: this._hardforkByTD ? this._hardforkByTD : undefined,
+      hardforkByTD: isTruthy(this._hardforkByTD) ? this._hardforkByTD : undefined,
     })
   }
 

@@ -15,6 +15,7 @@ import {
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 /**
  * Test runner
@@ -47,10 +48,10 @@ const argv = minimist(process.argv.slice(2))
 async function runTests() {
   let name: string
   let runner: any
-  if (argv.state) {
+  if (isTruthy(argv.state)) {
     name = 'GeneralStateTests'
     runner = runStateTest
-  } else if (argv.blockchain) {
+  } else if (isTruthy(argv.blockchain)) {
     name = 'BlockchainTests'
     runner = runBlockchainTest
   } else {
@@ -58,7 +59,7 @@ async function runTests() {
     process.exit(1)
   }
 
-  const FORK_CONFIG: string = argv.fork || DEFAULT_FORK_CONFIG
+  const FORK_CONFIG: string = isTruthy(argv.fork) ? argv.fork : DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
@@ -68,7 +69,7 @@ async function runTests() {
    * Configuration for getting the tests from the ethereum/tests repository
    */
   const testGetterArgs: any = {}
-  testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
+  testGetterArgs.skipTests = getSkipTests(argv.skip, isTruthy(argv.runSkipped) ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
   testGetterArgs.file = argv.file
@@ -96,7 +97,7 @@ async function runTests() {
   /**
    * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
    */
-  if (testGetterArgs.forkConfig.includes('+')) {
+  if ((testGetterArgs.forkConfig as string).includes('+')) {
     let str = testGetterArgs.forkConfig
     const indicies = []
     for (let i = 0; i < str.length; i++) {
@@ -111,12 +112,11 @@ async function runTests() {
     testGetterArgs.forkConfig = str
   }
 
-  let expectedTests: number | undefined
-  if (argv['verify-test-amount-alltests']) {
-    expectedTests = getExpectedTests(FORK_CONFIG_VM, name)
-  } else if (argv['expected-test-amount']) {
-    expectedTests = argv['expected-test-amount']
-  }
+  const expectedTests: number | undefined = isTruthy(argv['verify-test-amount-alltests'])
+    ? getExpectedTests(FORK_CONFIG_VM, name)
+    : isTruthy(argv['expected-test-amount'])
+    ? argv['expected-test-amount']
+    : undefined
 
   /**
    * Initialization output to console
@@ -129,9 +129,9 @@ async function runTests() {
     return Object.assign(
       {},
       ...Object.entries(args)
-        .filter(([_k, v]) => v && (v as any).length !== 0)
+        .filter(([_k, v]) => isTruthy(v) && (v as any).length !== 0)
         .map(([k, v]) => ({
-          [k]: typeof v !== 'string' && (v as any).length ? (v as any).length : v,
+          [k]: typeof v !== 'string' && isTruthy((v as any).length) ? (v as any).length : v,
         }))
     )
   }
@@ -158,11 +158,11 @@ async function runTests() {
   console.log(`+${'-'.repeat(width)}+`)
   console.log()
 
-  if (argv.customStateTest) {
+  if (isTruthy(argv.customStateTest)) {
     const fileName = argv.customStateTest
     tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | undefined, test: any) => {
-        if (err) {
+        if (isTruthy(err)) {
           return t.fail(err)
         }
         t.comment(`file: ${fileName} test: ${test.testName}`)
@@ -176,8 +176,8 @@ async function runTests() {
       const failingTests: any = {}
 
       ;(t as any).on('result', (o: any) => {
-        if (o.ok != undefined && !o.ok) {
-          if (failingTests[testIdentifier]) {
+        if (typeof o.ok !== 'undefined' && o.ok !== null && isFalsy(o.ok)) {
+          if (isTruthy(failingTests[testIdentifier])) {
             failingTests[testIdentifier].push(o.name)
           } else {
             failingTests[testIdentifier] = [o.name]
@@ -190,7 +190,7 @@ async function runTests() {
       const dirs = getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
-          if (argv.customTestsPath) {
+          if (isTruthy(argv.customTestsPath)) {
             testGetterArgs.directory = argv.customTestsPath
           } else {
             const testDir = testGetterArgs.dir ?? ''
@@ -202,7 +202,7 @@ async function runTests() {
             async (fileName: string, subDir: string, testName: string, test: any) => {
               const runSkipped = testGetterArgs.runSkipped
               const inRunSkipped = runSkipped.includes(fileName)
-              if (runSkipped.length === 0 || inRunSkipped) {
+              if (runSkipped.length === 0 || inRunSkipped === true) {
                 testIdentifier = `file: ${subDir} test: ${testName}`
                 t.comment(testIdentifier)
                 await runner(runnerArgs, test, t)

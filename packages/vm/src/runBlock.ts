@@ -1,6 +1,14 @@
 import { debug as createDebugLogger } from 'debug'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBuffer,
+  bufArrToArr,
+  intToBuffer,
+  isTruthy,
+  short,
+} from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -30,7 +38,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   const state = this.eei
   const { root } = opts
   let { block } = opts
-  const generateFields = !!opts.generate
+  const generateFields = opts.generate === true
 
   /**
    * The `beforeBlock` event.
@@ -41,7 +49,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    */
   await this._emit('beforeBlock', block)
 
-  if (this._hardforkByBlockNumber || this._hardforkByTD || opts.hardforkByTD) {
+  if (this._hardforkByBlockNumber || isTruthy(this._hardforkByTD) || isTruthy(opts.hardforkByTD)) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
       opts.hardforkByTD ?? this._hardforkByTD
@@ -67,7 +75,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
+    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
     block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
@@ -125,7 +133,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
-    if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+    if (result.receiptRoot?.equals(block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
           `Invalid receiptTrie received=${result.receiptRoot.toString(
@@ -207,7 +215,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
  */
 async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
-  if (!opts.skipBlockValidation) {
+  if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
       const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
       throw new Error(msg)
@@ -254,7 +262,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
@@ -395,7 +403,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
  */
 async function _applyDAOHardfork(state: EVMStateAccess) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
-  if (!state.accountExists(DAORefundContractAddress)) {
+  if ((await state.accountExists(DAORefundContractAddress)) === false) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
   const DAORefundAccount = await state.getAccount(DAORefundContractAddress)

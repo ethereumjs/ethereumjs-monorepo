@@ -80,7 +80,7 @@ const testCases = [
 tape('Istanbul: EIP-152', (t) => {
   t.test('Blake2f', async (st) => {
     // eslint-disable-next-line no-undef
-    if ((<any>globalThis).navigator?.userAgent.includes('Firefox')) {
+    if ((globalThis.navigator?.userAgent as string).includes('Firefox')) {
       // TODO: investigate why this test hangs in karma with firefox
       return st.end()
     }

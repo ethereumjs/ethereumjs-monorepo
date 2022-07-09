@@ -1,4 +1,4 @@
-import { Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 import { Trie } from '@ethereumjs/trie'
 import { RLP } from 'rlp'
 import { Block, HeaderData } from '@ethereumjs/block'
@@ -39,7 +39,10 @@ export class BlockBuilder {
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
 
-    if (this.vm._common.isActivatedEIP(1559) && this.headerData.baseFeePerGas === undefined) {
+    if (
+      this.vm._common.isActivatedEIP(1559) === true &&
+      typeof this.headerData.baseFeePerGas === 'undefined'
+    ) {
       this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
     }
   }
@@ -98,7 +101,7 @@ export class BlockBuilder {
   private async rewardMiner() {
     const minerReward = this.vm._common.param('pow', 'minerReward')
     const reward = calculateMinerReward(minerReward, 0)
-    const coinbase = this.headerData.coinbase
+    const coinbase = isTruthy(this.headerData.coinbase)
       ? new Address(toBuffer(this.headerData.coinbase))
       : Address.zero()
     await rewardAccount(this.vm.eei, coinbase, reward)
@@ -198,7 +201,7 @@ export class BlockBuilder {
     const blockData = { header: headerData, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, blockOpts)
 
-    if (this.blockOpts.putBlockIntoBlockchain) {
+    if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)
     }
 
