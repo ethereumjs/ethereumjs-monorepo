@@ -187,7 +187,7 @@ tape('[Block]: Header functions', function (t) {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       st.fail(testCase)
     } catch (error: any) {
-      st.ok(error.message.includes('invalid amount of extra data'), testCase)
+      st.ok((error.message as string).includes('invalid amount of extra data'), testCase)
     }
 
     // PoA
@@ -218,7 +218,7 @@ tape('[Block]: Header functions', function (t) {
       t.fail(testCase)
     } catch (error: any) {
       t.ok(
-        error.message.includes(
+        (error.message as string).includes(
           'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
         ),
         testCase
@@ -239,7 +239,7 @@ tape('[Block]: Header functions', function (t) {
       st.fail(testCase)
     } catch (error: any) {
       st.ok(
-        error.message.includes(
+        (error.message as string).includes(
           'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
         ),
         testCase
@@ -272,7 +272,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error: any) {
-      st.ok(error.message.includes('invalid timestamp diff (lower than period)'), testCase)
+      st.ok((error.message as string).includes('invalid timestamp diff (lower than period)'), testCase)
     }
 
     testCase = 'should not throw on timestamp diff equal to period'
@@ -293,7 +293,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail('should throw')
     } catch (error: any) {
-      if (error.message.includes('coinbase must be filled with zeros on epoch transition blocks')) {
+      if ((error.message as string).includes('coinbase must be filled with zeros on epoch transition blocks')) {
         st.pass('error thrown')
       } else {
         st.fail('should throw with appropriate error')
@@ -309,7 +309,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail('should throw')
     } catch (error: any) {
-      if (error.message.includes('mixHash must be filled with zeros')) {
+      if ((error.message as string).includes('mixHash must be filled with zeros')) {
         st.pass('error thrown')
       } else {
         st.fail('should throw with appropriate error')
@@ -324,7 +324,7 @@ tape('[Block]: Header functions', function (t) {
       header.validateCliqueDifficulty(blockchain)
       st.fail(testCase)
     } catch (error: any) {
-      if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
+      if ((error.message as string).includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
         st.pass('error thrown on invalid clique difficulty')
       } else {
         st.fail('should throw with appropriate error')

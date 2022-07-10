@@ -1,12 +1,13 @@
 import { BlockHeader } from './header'
 import { BlockOptions } from './types'
 import { numberToHex } from './helpers'
+import { isTruthy } from '@ethereumjs/util'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
  *
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
- * @param chainOptions - An object describing the blockchain
+ * @param options - An object describing the blockchain
  */
 export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
   const {
@@ -36,7 +37,7 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
       coinbase: miner,
       stateRoot,
       transactionsTrie: transactionsRoot,
-      receiptTrie: receiptRoot || receiptsRoot,
+      receiptTrie: isTruthy(receiptRoot) ? receiptRoot : receiptsRoot,
       logsBloom,
       difficulty: numberToHex(difficulty),
       number,
