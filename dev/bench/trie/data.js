@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657531161232,
+  "lastUpdate": 1657546665279,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "457863cdffb89992259dd9488ff4d0419d56252e",
-          "message": "Fix client integration tests (#1956)\n\n* Re-enable integration tests\r\n\r\n* Remove hardcoded difficulty in mockchain blocks\r\n\r\n* Check for subchain before examining bounds\r\n\r\n* Copy common to avoid max listener warnings\r\n\r\n* make destroyServer async\r\n\r\n* Proper fix for setting difficulty in mockchain\r\n\r\n* reqId fix\r\n\r\n* remove the redundant while loop\r\n\r\n* wait for setTineout to clear out\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2022-06-14T02:51:40+05:30",
-          "tree_id": "f3a03ed9cef74bd6f54c680d0225f9dd7a135b44",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/457863cdffb89992259dd9488ff4d0419d56252e"
-        },
-        "date": 1655155643141,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 24349,
-            "range": "±4.63%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 23785,
-            "range": "±7.25%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 23406,
-            "range": "±8.47%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 24866,
-            "range": "±2.31%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 41560,
-            "range": "±2.25%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 762,
-            "range": "±7.25%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 104,
-            "range": "±67.98%",
-            "unit": "ops/sec",
-            "extra": "48 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 68.7,
-            "range": "±15.13%",
-            "unit": "ops/sec",
-            "extra": "55 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 12.92,
-            "range": "±30.26%",
-            "unit": "ops/sec",
-            "extra": "26 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±21.16%",
             "unit": "ops/sec",
             "extra": "31 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "964c5f51fbd339d925a8c39293f5d90ca4a7b696",
+          "message": "Rename evm loggers (#2029)\n\n* Rename evm loggers\r\n\r\n* update readme\r\n\r\n* Correct typedoc links and comments\r\n\r\n* Various comment/readme updates\r\n\r\n* address feedback\r\n\r\n* fix import in readme",
+          "timestamp": "2022-07-11T15:33:10+02:00",
+          "tree_id": "53a80f9c02d973fbf402118b5704d923e1d8a028",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/964c5f51fbd339d925a8c39293f5d90ca4a7b696"
+        },
+        "date": 1657546664695,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 33346,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 30445,
+            "range": "±9.22%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 33303,
+            "range": "±0.68%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 32038,
+            "range": "±1.06%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 53321,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 729,
+            "range": "±50.25%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 189,
+            "range": "±10.45%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 90.03,
+            "range": "±18.98%",
+            "unit": "ops/sec",
+            "extra": "59 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 12.56,
+            "range": "±68.75%",
+            "unit": "ops/sec",
+            "extra": "35 samples"
           }
         ]
       }
