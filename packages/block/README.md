@@ -48,8 +48,8 @@ API Usage Example:
 
 ```typescript
 try {
-  await block.validate(blockchain)
-  // Block validation has passed
+  await block.validateData()
+  // Block data validation has passed
 } catch (err) {
   // handle errors appropriately
 }
@@ -57,9 +57,7 @@ try {
 
 ## EIP-1559 Blocks
 
-This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`.
-
-To instantiate an EIP-1559 block, the hardfork parameter on the `Common` instance needs to be set to `london` (this is now the default hardfork):
+This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
 
 ```typescript
 import { Block } from '@ethereumjs/block'
@@ -100,7 +98,11 @@ EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and c
 
 ## Consensus Types
 
-The block library supports the creation as well as format and consensus validation of PoW `ethash` and PoA `clique` blocks.
+The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).
+
+Consensus format validation logic is encapsulated in the semi-private `BlockHeader._consensusFormatValidation()` method called from the constructor. If you want to add your own validation logic you can overwrite this method with your own rules.
+
+Note: Starting with `v4` consensus validation itself (e.g. Ethash verification) has moved to the `Blockchain` package.
 
 ### Ethash/PoW
 
@@ -114,8 +116,6 @@ console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
 ```
-
-To validate that the difficulty of the block matches the canonical difficulty use `block.validate(blockchain)`.
 
 To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
@@ -132,8 +132,6 @@ console.log(common.consensusAlgorithm()) // 'clique'
 const block = Block.fromBlockData({}, { common })
 ```
 
-For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
-
 For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
 
 ```typescript
@@ -143,7 +141,6 @@ const block = Block.fromHeaderData(headerData, { cliqueSigner })
 
 Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
 
-- `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
 - `BlockHeader.cliqueSigHash()`
 - `BlockHeader.cliqueIsEpochTransition(): boolean`
 - `BlockHeader.cliqueExtraVanity(): Buffer`
@@ -154,7 +151,7 @@ Additionally there are the following utility methods for Clique/PoA related func
 
 See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
 
-### Casper/PoS (since v3.5.0) (experimental)
+### Casper/PoS (since v3.5.0)
 
 Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
@@ -172,11 +169,17 @@ const block = Block.fromBlockData(
 )
 ```
 
-Note that all `Merge` respectively `Casper/PoS` related functionality is still considered `experimental`.
-
 # API
 
-[Documentation](./docs/README.md)
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # TESTING
 

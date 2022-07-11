@@ -19,6 +19,14 @@ Note: this `README` reflects the state of the library from `v5.0.0` onwards. See
 
 ## Introduction
 
+The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context the chain is operating in (e.g. the hardfork rules the current head block adheres to).
+
+New blocks can be added to the blockchain. Validation ensures that the block format adheres to the given chain rules (with the `Blockchain.validateBlock()` function) and consensus rules (`Blockchain.consensus.validateConsensus()`).
+
+The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
+
+## Example
+
 The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
 
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
@@ -45,13 +53,43 @@ blockchain.iterator('i', (block) => {
 
 **WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
 
+## Consensus
+
+Starting with v6 there is a dedicated consensus class for each type of supported consensus, `Ethash`, `Clique` and `Casper` (PoS, this one is rather the do-nothing part of `Casper` and letting the respective consensus/beacon client do the hard work! 🙂). Each consensus class adheres to a common interface `Consensus` implementing the following five methods in a consensus-specific way:
+
+- `genesisInit(genesisBlock: Block): Promise<void>`
+- `setup(): Promise<void>`
+- `validateConsensus(block: Block): Promise<void>`
+- `validateDifficulty(header: BlockHeader): Promise<void>`
+- `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
+
+For applying a modfied version of an existing consensus mechanism or applying a different mechanism an own consensus class can be written and passed in to the library with the `consensus` option along instantiation.
+
+## Custom Genesis State
+
+Starting with v6 responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
+
+A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
+
+TODO: add code example here!
+
+The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
+
 ## EIP-1559 Support
 
 This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
 
 # API
 
-[Documentation](./docs/README.md)
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # DEVELOPER
 

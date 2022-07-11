@@ -25,11 +25,10 @@ By default, trie nodes are not deleted from the underlying DB to not corrupt old
 ## Initialization and Basic Usage
 
 ```typescript
-import level from 'level'
-import { BaseTrie as Trie } from '@ethereumjs/trie'
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
 
-const db = level('./testdb')
-const trie = new Trie({ db })
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
@@ -39,6 +38,25 @@ async function test() {
 
 test()
 ```
+
+## DB Support
+
+Starting with v5 Trie usage has been decoupled from the previously tight integration with `LevelDB`.
+
+In addition to an existing wrapper `LevelDB` which can be directly used, there is now a generic `DB` interface defining five methods `get`, `put`, `del`, `batch` and `copy` which a specific `DB` wrapper needs to implement.
+
+The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) are accepting any `DB` interface-compatible wrapper implementations as a datastore `db` option input. This allows to easily switch on the underlying backend.
+
+The new `DB` interface can be used like this for LevelDB:
+
+```typescript
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+```
+
+If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations such as proof trie creation for range proofs will always use the internal `level` based data storage, so there will be some continued `level` DB usage even when you switch to an alternative data store for permanent trie storage).
 
 ## Proofs
 
@@ -111,16 +129,15 @@ The `Trie.verifyRangeProof()` function can be used to check whether the given le
 ## Read stream on Geth DB
 
 ```typescript
-import level from 'level'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { Level } from 'level'
+import { SecureTrie as Trie, LevelDB } from '@ethereumjs/trie'
 
-const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
 // Convert the state root to a Buffer (strip the 0x prefix)
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
-const trie = new Trie({ db, root: stateRootBuffer })
+const trie = new Trie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB'), root: stateRootBuffer) })
 
 trie
   .createReadStream()
@@ -133,15 +150,14 @@ trie
 ## Read Account State including Storage from Geth DB
 
 ```typescript
-import level from 'level'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { Level } from 'level'
+import { SecureTrie as Trie, LevelDB } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
-const db = level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')
-const trie = new Trie({ db, root: stateRoot })
+const trie = new Trie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER', root: stateRoot })
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
@@ -173,11 +189,19 @@ async function test() {
 test()
 ```
 
-Additional examples with detailed explanations are available [here](https://github.com/gabrocheleau/merkle-patricia-trees-examples).
+Additional examples with detailed explanations are available [here](https://github.com/gabrocheleau/merkle-patricia-trees-examples) (might be incompatible with v5+).
 
 # API
 
-[Documentation](./docs/README.md)
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v5 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # TESTING
 
