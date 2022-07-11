@@ -141,7 +141,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = new EVM({ common })
+const vm = new VM({ common })
 ```
 
 Currently supported EIPs:
@@ -247,7 +247,7 @@ DEBUG=evm:*,evm:*:*,-evm:ops ts-node test.ts
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=evm,evm:ops:sstore,vem:*:gas ts-node test.ts
+DEBUG=evm,evm:ops:sstore,evm:*:gas ts-node test.ts
 ```
 
 # Internal Structure
