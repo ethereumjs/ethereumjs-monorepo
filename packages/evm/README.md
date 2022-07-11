@@ -15,7 +15,7 @@
 
 This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
 
-Note that this package atm cannot be run in a standalong mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
+Note that this package atm cannot be run in a standalone mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
 # USAGE
 
@@ -206,48 +206,48 @@ event handlers.
 
 If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
-![EthereumJS VM Debug Logger](./debug.png?raw=true)
+![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
 The following loggers are currently available:
 
 | Logger                            | Description                                         |
 | --------------------------------- | --------------------------------------------------- |
-| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution |
-| `vm:evm:gas`                      |  EVM gas logger                                     |
-| `vm:eei:gas`                      |  EEI gas logger                                     |
-| `vm:ops`                          |  Opcode traces                                      |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
+| `evm`                             |  EVM control flow, CALL or CREATE message execution |
+| `evm:gas`                         |  EVM gas logger                                     |
+| `evm:eei:gas`                     |  EEI gas logger                                     |
+| `evm:ops`                         |  Opcode traces                                      |
+| `evm:ops:[Lower-case opcode name]`|  Traces on a specific opcode                        |
 
 Here are some examples for useful logger combinations.
 
 Run one specific logger:
 
 ```shell
-DEBUG=vm:evm ts-node test.ts
+DEBUG=evm ts-node test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=vm:*,vm:*:* ts-node test.ts
+DEBUG=evm:*,evm:*:* ts-node test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=vm:*:gas ts-node test.ts
+DEBUG=evm:*:gas ts-node test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=vm:*,vm:*:*,-vm:ops ts-node test.ts
+DEBUG=evm:*,evm:*:*,-evm:ops ts-node test.ts
 ```
 
-Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
+Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+DEBUG=evm,evm:ops:sstore,evm:*:gas ts-node test.ts
 ```
 
 # Internal Structure

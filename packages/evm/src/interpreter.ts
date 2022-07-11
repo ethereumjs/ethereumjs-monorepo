@@ -19,7 +19,7 @@ import { Message } from './message'
 import { Log } from './types'
 import { EEIInterface, Block } from './types'
 
-const debugGas = createDebugLogger('vm:eei:gas')
+const debugGas = createDebugLogger('evm:eei:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -283,7 +283,7 @@ export class Interpreter {
   }
 
   /**
-   * Get info for an opcode from VM's list of opcodes.
+   * Get info for an opcode from EVM's list of opcodes.
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
@@ -332,7 +332,7 @@ export class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
+        this.opDebuggers[name] = createDebugLogger(`evm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }
@@ -356,7 +356,7 @@ export class Interpreter {
      * @property {Account} account the Account which owns the code running
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
-     * @property {Buffer} memory the memory of the VM as a `buffer`
+     * @property {Buffer} memory the memory of the EVM as a `buffer`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */

@@ -16,7 +16,7 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
 /*
     This test:
         Setups a contract at address 0x00..ff 
-        Instantiates the VM at the Constantinople fork
+        Instantiates the EVM at the Constantinople fork
         Calls the address with various arguments (callvalue is used as argument). VMs `runCall` is used.
         The CREATE2 address which the contract creates is checked against the expected CREATE2 value.
 */
