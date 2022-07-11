@@ -9,6 +9,7 @@ import {
 import { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { isTruthy } from '@ethereumjs/util'
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {
@@ -40,7 +41,7 @@ tape('[Util/RPC]', (t) => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(httpServer && wsServer, 'should return http and ws servers')
+        st.ok(isTruthy(httpServer) && isTruthy(wsServer), 'should return http and ws servers')
       }
     }
     st.end()
@@ -80,7 +81,7 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
         .set('Content-Type', 'application/json')
         .send(req)
         .expect((res: any) => {
-          if (res.body.error && res.body.error.code === METHOD_NOT_FOUND) {
+          if (res.body.error?.code === METHOD_NOT_FOUND) {
             throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
           }
         })

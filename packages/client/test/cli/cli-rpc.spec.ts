@@ -21,7 +21,7 @@ tape('[CLI] rpc', (t) => {
     const hasEnded = false
 
     child.stdout.on('data', async (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({ port: 8545 })
@@ -42,13 +42,13 @@ tape('[CLI] rpc', (t) => {
     })
 
     child.stderr.on('data', (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
       st.fail(`stderr: ${message}`)
       end(child, hasEnded, st)
     })
 
     child.on('close', (code) => {
-      if (code && code > 0) {
+      if (typeof code === 'number' && code > 0) {
         st.fail(`child process exited with code ${code}`)
         end(child, hasEnded, st)
       }
@@ -62,7 +62,7 @@ tape('[CLI] rpc', (t) => {
     const hasEnded = false
 
     child.stdout.on('data', async (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
       if (message.includes('address=http://')) {
         st.fail('http endpoint should not be enabled')
       }
@@ -76,13 +76,13 @@ tape('[CLI] rpc', (t) => {
     })
 
     child.stderr.on('data', (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
       st.fail(`stderr: ${message}`)
       end(child, hasEnded, st)
     })
 
     child.on('close', (code) => {
-      if (code && code > 0) {
+      if (typeof code === 'number' && code > 0) {
         st.fail(`child process exited with code ${code}`)
         end(child, hasEnded, st)
       }

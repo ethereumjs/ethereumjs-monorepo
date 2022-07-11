@@ -1,5 +1,5 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
+import { isFalsy, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
 import { Peer } from '../../net/peer'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
@@ -40,14 +40,14 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       max: count,
       reverse: this.reverse,
     })
-    if (!headersResult || headersResult[1].length === 0) {
+    if (isFalsy(headersResult) || headersResult[1].length === 0) {
       // Catch occasional null or empty responses
       this.debug(`Peer ${peerInfo} returned no headers for blocks=${blocksRange}`)
       return []
     }
     const headers = headersResult[1]
     const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
-    if (!bodiesResult || bodiesResult[1].length === 0) {
+    if (isFalsy(bodiesResult) || bodiesResult[1].length === 0) {
       // Catch occasional null or empty responses
       this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
       return []

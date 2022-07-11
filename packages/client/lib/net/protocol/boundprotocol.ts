@@ -3,6 +3,7 @@ import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 import { Config } from '../../config'
 import { Event } from '../../types'
+import { isTruthy } from '@ethereumjs/util'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -98,7 +99,7 @@ export class BoundProtocol {
       error = new Error(`Could not decode message ${message.name}: ${e}`)
     }
     const resolver = this.resolvers.get(incoming.code)
-    if (resolver) {
+    if (isTruthy(resolver)) {
       clearTimeout(resolver.timeout)
       this.resolvers.delete(incoming.code)
       if (error) {
@@ -159,7 +160,7 @@ export class BoundProtocol {
       resolve: null,
       reject: null,
     }
-    if (this.resolvers.get(message.response!)) {
+    if (isTruthy(this.resolvers.get(message.response!))) {
       throw new Error(`Only one active request allowed per message type (${name})`)
     }
     this.resolvers.set(message.response!, resolver)

@@ -9,6 +9,7 @@ import {
   ForkchoiceStateV1,
   PayloadStatusV1,
 } from '../modules/engine'
+import { isTruthy } from '@ethereumjs/util'
 
 export enum ConnectionStatus {
   Connected = 'connected',
@@ -79,11 +80,11 @@ export class CLConnectionManager {
       maximumFractionDigits: 1,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition) === true) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition) === true) {
           this.start()
         }
       })
@@ -149,7 +150,7 @@ export class CLConnectionManager {
     if (update.headBlock) {
       msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
     }
-    if (update.error) {
+    if (isTruthy(update.error)) {
       msg += ` error=${update.error}`
     }
     return msg

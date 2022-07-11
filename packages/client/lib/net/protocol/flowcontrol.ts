@@ -1,4 +1,5 @@
 import { Peer } from '../peer/peer'
+import { isTruthy } from '@ethereumjs/util'
 
 interface Mrc {
   [key: string]: {
@@ -66,7 +67,7 @@ export class FlowControl {
     const mrr = peer.les!.status.mrr
     const bl = peer.les!.status.bl
     const params = this.in.get(peer.id) ?? ({ ble: bl } as FlowParams)
-    if (params.last) {
+    if (isTruthy(params.last)) {
       // recharge BLE at rate of MRR when less than BL
       params.ble = Math.min(params.ble! + mrr * (now - params.last), bl)
     }
@@ -88,7 +89,7 @@ export class FlowControl {
   handleRequest(peer: Peer, messageName: string, count: number): number {
     const now = Date.now()
     const params = this.out.get(peer.id) ?? {}
-    if (params.bv && params.last) {
+    if (isTruthy(params.bv) && isTruthy(params.last)) {
       params.bv = Math.min(params.bv + this.mrr * (now - params.last), this.bl)
     } else {
       params.bv = this.bl
