@@ -138,7 +138,7 @@ It is possible to individually activate EIP support in the EVM by instantiate th
 
 ```typescript
 import { Chain, Common } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
