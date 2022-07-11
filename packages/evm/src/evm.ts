@@ -91,10 +91,10 @@ export interface EVMOpts {
   allowUnlimitedContractSize?: boolean
 
   /**
-   * Override or add custom opcodes to the VM instruction set
+   * Override or add custom opcodes to the EVM instruction set
    * These custom opcodes are EIP-agnostic and are always statically added
-   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
-   * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
+   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the EVM.
+   * If this opcode is then used in the EVM, the `INVALID` opcode would instead be used.
    * To add an opcode, add an entry of the following format:
    * {
    *    // The opcode number which will invoke the custom opcode logic
@@ -319,7 +319,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
   /**
    * Returns a list with the currently activated opcodes
-   * available for VM execution
+   * available for EVM execution
    */
   getActiveOpcodes(): OpcodeList {
     const data = getOpcodesForHF(this._common, this._customOpcodes)
