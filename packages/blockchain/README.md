@@ -19,11 +19,11 @@ Note: this `README` reflects the state of the library from `v5.0.0` onwards. See
 
 ## Introduction
 
-The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context within the chain is operating (e.g. the hardfork rules the current head block adheres to).
+The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context the chain is operating in (e.g. the hardfork rules the current head block adheres to).
 
-New blocks can be added to the blockchain and it is validated along if both the block format adheres to the given chain rules (with the `Blockchain.validateBlock()` function) as well as consensus rules apply (`Blockchain.consensus.validateConsensus()`).
+New blocks can be added to the blockchain. Validation ensures that the block format adheres to the given chain rules (with the `Blockchain.validateBlock()` function) and consensus rules (`Blockchain.consensus.validateConsensus()`).
 
-The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canoncial path to the head than given by the current canonical head block.
+The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
 
 ## Example
 

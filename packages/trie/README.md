@@ -56,7 +56,7 @@ import { Level } from 'level'
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
-If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations (e.g. proof trie creation for range proofs) will always use the internal `level` based data storage, so there will be some continued `level` DB usage also when you switch to an alternative data store for permanent trie storage).
+If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations such as proof trie creation for range proofs will always use the internal `level` based data storage, so there will be some continued `level` DB usage even when you switch to an alternative data store for permanent trie storage).
 
 ## Proofs
 

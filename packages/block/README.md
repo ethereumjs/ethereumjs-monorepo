@@ -57,7 +57,7 @@ try {
 
 ## EIP-1559 Blocks
 
-This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a London HF (`Hardfork.London`) or later.
+This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
 
 ```typescript
 import { Block } from '@ethereumjs/block'
