@@ -74,7 +74,14 @@
       "forkHash": "0xfe3366e7"
     },
     {
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
       "name": "merge",
+      "td": 17000000000000000,
+      "block": null,
+      "forkHash": "0xfe3366e7"
+    },
+    {
+      "name": "mergeForkIdTransition",
       "block": null,
       "forkHash": null
     },
@@ -98,6 +105,20 @@
       "id": "ec66ddcf1a974950bd4c782789a7e04f8aa7110a72569b6e65fcd51e937e74eed303b1ea734e4d19cfaec9fbff9b6ee65bf31dcb50ba79acce9dd63a6aca61c7",
       "location": "",
       "comment": "besu"
+    },
+    {
+      "ip": "165.22.196.173",
+      "port": 30303,
+      "id": "ce970ad2e9daa9e14593de84a8b49da3d54ccfdf83cbc4fe519cb8b36b5918ed4eab087dedd4a62479b8d50756b492d5f762367c8d20329a7854ec01547568a6",
+      "location": "",
+      "comment": "EF"
+    },
+    {
+      "ip": "65.108.95.67",
+      "port": 30303,
+      "id": "075503b13ed736244896efcde2a992ec0b451357d46cb7a8132c0384721742597fc8f0d91bbb40bb52e7d6e66728d36a1fda09176294e4a30cfac55dcce26bc6",
+      "location": "",
+      "comment": "lodestar"
     }
   ],
   "dnsNetworks": []
