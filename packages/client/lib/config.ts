@@ -402,7 +402,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['ropsten', 'rinkeby', 'goerli']
+    const dnsNets = ['ropsten', 'rinkeby', 'goerli', 'sepolia']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 
