@@ -321,7 +321,7 @@ type OpcodeContext = {
  * Get suitable opcodes for the required hardfork.
  *
  * @param common {Common} Ethereumjs Common metadata object.
- * @param customOpcodes List with custom opcodes (see VM `customOpcodes` option description).
+ * @param customOpcodes List with custom opcodes (see EVM `customOpcodes` option description).
  * @returns {OpcodeList} Opcodes dictionary object.
  */
 export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {

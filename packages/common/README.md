@@ -19,67 +19,64 @@ Note: this `README` reflects the state of the library from `v2.0.0` onwards. See
 
 ## import / require
 
-import (CommonJS, TypeScript with `esModuleInterop` enabled):
+import (ESM, TypeScript):
 
 `import { Chain, Common, Hardfork } from '@ethereumjs/common`
 
-require (ES Modules, Node.js):
+require (CommonJS, Node.js):
 
 `const { Common, Chain, Hardfork } = require('@ethereumjs/common')`
 
 ## Parameters
 
-All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'mainnet') or the `chain` together with a specific `hardfork` provided:
+All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Chain.Mainnet') or the `chain` together with a specific `hardfork` provided:
 
 ```typescript
-// With strings:
-const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 // With enums:
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
+// (also possible with directly passing in strings:)
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 ```
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `london`
+Current `DEFAULT_HARDFORK`: `Hardfork.London`
 
 Here are some simple usage examples:
 
 ```typescript
 // Instantiate with the chain (and the default hardfork)
-let c = new Common({ chain: 'ropsten' })
+let c = new Common({ chain: Chain.Ropsten })
 c.param('gasPrices', 'ecAddGas') // 500
 
 // Chain and hardfork provided
-c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
 c.param('pow', 'minerReward') // 3000000000000000000
 
 // Get bootstrap nodes for chain/network
 c.bootstrapNodes() // Array with current nodes
 
 // Instantiate with an EIP activated
-c = new Common({ chain: 'mainnet', eips: [2537] })
-```
-
-For an improved developer experience, there are `Chain` and `Hardfork` enums available:
-
-```typescript
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-
-// Chain provided by Chain enum
-const c = new Common({ chain: Chain.Mainnet })
-
-// Chain provided by Chain enum, hardfork provided by Hardfork enum
-const c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+c = new Common({ chain: Chain.Mainnet, eips: [2537] })
 ```
 
 # API
+
+## Docs
 
 See the API documentation for a full list of functions for accessing specific chain and
 depending hardfork parameters. There are also additional helper functions like
 `paramByBlock (topic, name, blockNumber)` or `hardforkIsActiveOnBlock (hardfork, blockNumber)`
 to ease `blockNumber` based access to parameters.
 
-- [API Docs](./docs/README.md)
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # EVENTS
 
@@ -97,14 +94,6 @@ on which you can react within your code:
 The `chain` can be set in the constructor like this:
 
 ```typescript
-const c = new Common({ chain: 'ropsten' })
-```
-
-Or optionally with the `Chain` enum:
-
-```typescript
-import { Chain, Common } from '@ethereumjs/common'
-
 const c = new Common({ chain: Chain.Ropsten })
 ```
 
@@ -197,25 +186,16 @@ const common1 = new Common({
 })
 ```
 
-Custom genesis states should be passed to the `@ethereumjs/blockchain` directly.
+Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
 ## Hardforks
 
 The `hardfork` can be set in constructor like this:
 
 ```typescript
-const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
-```
-
-Or optionally with the `Hardfork` enum:
-
-```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-const c = new Common({
-  chain: Chain.Ropsten,
-  hardfork: Hardfork.Byzantium,
-})
+const c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
 ```
 
 ### Active Hardforks
@@ -235,11 +215,11 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (`DEFAULT_HARDFORK`) (since `v2.4.0`)
-- `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
+- `merge` (`Hardfork.Merge`) (since `v2.5.0`)
 
 ### Future Hardforks
 
-The next upcoming HF `shanghai` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Shanghai` is currently not yet supported by this library.
 
 ### Parameter Access
 
