@@ -3,7 +3,14 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
+import {
+  bufferToBigInt,
+  isFalsy,
+  isHexPrefixed,
+  isTruthy,
+  stripHexPrefix,
+  toBuffer,
+} from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { setupPreConditions, verifyPostConditions } from '../../util'
@@ -37,7 +44,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
-  if (testData.sealEngine && testData.sealEngine === 'Ethash') {
+  if (testData.sealEngine === 'Ethash') {
     if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       t.skip('SealEngine setting is not matching chain consensus type, skip test.')
     }
@@ -49,7 +56,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const blockData = { header }
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
-  if (testData.genesisRLP) {
+  if (isTruthy(testData.genesisRLP)) {
     const rlp = toBuffer(testData.genesisRLP)
     t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
@@ -67,7 +74,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
 
   let VM
-  if (options.dist) {
+  if (options.dist === true) {
     ;({ VM } = require('../../../dist'))
   } else {
     ;({ VM } = require('../../../src'))
@@ -101,9 +108,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
-    const expectException = raw[paramFork]
-      ? raw[paramFork]
-      : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
+    const expectException =
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      raw[paramFork] || raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
 
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
@@ -122,7 +129,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
-      if (raw.transactionSequence) {
+      if (typeof raw.transactionSequence !== 'undefined') {
         const parentBlock = await vm.blockchain.getIteratorHead()
         const blockBuilder = await vm.buildBlock({
           parentBlock,
@@ -177,13 +184,11 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // imported if it is not equal to the expected postState. it is useful
         // for debugging to skip this, so that verifyPostConditions will compare
         // testData.postState to the actual postState, rather than to the preState.
-        if (!options.debug) {
+        if (isFalsy(options.debug)) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
           vm.stateManager._trie.root = headBlock.header.stateRoot
-        }
-
-        if (options.debug) {
+        } else {
           await verifyPostConditions(state, testData.postState, t)
         }
 
@@ -192,7 +197,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
       await cacheDB.close()
 
-      if (expectException) {
+      if (isTruthy(expectException)) {
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }

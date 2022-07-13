@@ -2,6 +2,7 @@ import * as tape from 'tape'
 import { encode, TAlgorithm } from 'jwt-simple'
 import { startRPC, closeRPC } from './helpers'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { isFalsy } from '@ethereumjs/util'
 const request = require('supertest')
 
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
@@ -128,7 +129,7 @@ tape('call JSON RPC with nonexistent method', (t) => {
     .set('Content-Type', 'application/json')
     .send(req)
     .expect((res: any) => {
-      if (!res.body.error) {
+      if (isFalsy(res.body.error)) {
         throw new Error('should return an error object')
       }
       if (res.body.error.code !== METHOD_NOT_FOUND) {
@@ -168,7 +169,7 @@ tape('call JSON-RPC auth protected server with unprotected method without token'
 tape('call JSON-RPC auth protected server with protected method without token', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
-    unlessFn: (req: any) => !req.body.method.includes('protected_'),
+    unlessFn: (req: any) => !(req.body.method as string).includes('protected_'),
   })
 
   const req = {
@@ -192,7 +193,7 @@ tape('call JSON-RPC auth protected server with protected method without token', 
 tape('call JSON-RPC auth protected server with protected method with token', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
-    unlessFn: (req: any) => !req.body.method.includes('protected_'),
+    unlessFn: (req: any) => !(req.body.method as string).includes('protected_'),
   })
 
   const req = {

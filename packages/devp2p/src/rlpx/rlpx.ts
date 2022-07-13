@@ -12,6 +12,7 @@ const { version: pVersion } = require('../../package.json')
 import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
 import { DPT, PeerInfo } from '../dpt'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -73,7 +74,7 @@ export class RLPx extends EventEmitter {
     this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
-        if (!peer.tcpPort) {
+        if (isFalsy(peer.tcpPort)) {
           this._dpt!.banPeer(peer, ms('5m'))
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
@@ -101,8 +102,9 @@ export class RLPx extends EventEmitter {
     this._server.once('close', () => this.emit('close'))
     this._server.on('error', (err) => this.emit('error', err))
     this._server.on('connection', (socket) => this._onConnect(socket, null))
-    this._debug = this._server.address()
-      ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(this._server.address() as string)
+    const serverAddress = this._server.address()
+    this._debug = isTruthy(serverAddress)
+      ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(serverAddress as string)
       : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
@@ -132,7 +134,7 @@ export class RLPx extends EventEmitter {
   }
 
   async connect(peer: PeerInfo) {
-    if (!peer.tcpPort || !peer.address) return
+    if (isFalsy(peer.tcpPort) || isFalsy(peer.address)) return
     this._isAliveCheck()
 
     if (!Buffer.isBuffer(peer.id)) throw new TypeError('Expected peer.id as Buffer')
@@ -187,7 +189,7 @@ export class RLPx extends EventEmitter {
   _connectToPeer(peer: PeerInfo) {
     this.connect(peer).catch((err) => {
       if (this._dpt === null) return
-      if (err.code === 'ECONNRESET' || err.toString().includes('Connection timeout')) {
+      if (err.code === 'ECONNRESET' || (err.toString() as string).includes('Connection timeout')) {
         this._dpt.banPeer(peer, ms('5m'))
       }
     })
@@ -242,14 +244,14 @@ export class RLPx extends EventEmitter {
     })
 
     peer.once('close', (reason, disconnectWe) => {
-      if (disconnectWe) {
+      if (isTruthy(disconnectWe)) {
         this._debug(
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`,
           `disconnect`
         )
       }
 
-      if (!disconnectWe && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
+      if (isFalsy(disconnectWe) && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
         // hack
         if (this._getOpenQueueSlots() > 0) {
           this._peersQueue.push({

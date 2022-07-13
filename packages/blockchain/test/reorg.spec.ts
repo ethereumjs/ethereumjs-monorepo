@@ -36,7 +36,7 @@ tape('reorg tests', (t) => {
       while (TD_High < TD_Low) {
         blocks_lowTD.push(generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0))
         blocks_highTD.push(
-          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesis, 1)
+          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] ?? genesis, 1)
         )
 
         TD_Low += blocks_lowTD[blocks_lowTD.length - 1].header.difficulty

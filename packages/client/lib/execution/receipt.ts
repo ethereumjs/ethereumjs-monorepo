@@ -111,12 +111,12 @@ export class ReceiptsManager extends MetaDBManager {
    */
   async getReceipts(
     blockHash: Buffer,
-    calcBloom?: Boolean,
+    calcBloom?: boolean,
     includeTxType?: true
   ): Promise<TxReceiptWithType[]>
   async getReceipts(
     blockHash: Buffer,
-    calcBloom?: Boolean,
+    calcBloom?: boolean,
     includeTxType?: false
   ): Promise<TxReceipt[]>
   async getReceipts(

@@ -22,7 +22,7 @@ tape('[CLI] sync', (t) => {
     }
 
     child.stdout.on('data', (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
 
       // log message for easier debugging
       // eslint-disable-next-line no-console
@@ -39,7 +39,7 @@ tape('[CLI] sync', (t) => {
     })
 
     child.stderr.on('data', (data) => {
-      const message = data.toString()
+      const message: string = data.toString()
       if (message.includes('Possible EventEmitter memory leak detected')) {
         // This is okay.
         return
@@ -49,7 +49,7 @@ tape('[CLI] sync', (t) => {
     })
 
     child.on('close', (code) => {
-      if (code && code > 0) {
+      if (typeof code === 'number' && code > 0) {
         st.fail(`child process exited with code ${code}`)
         end()
       }

@@ -6,6 +6,7 @@ import {
   bufferToBigInt,
   ECDSASignature,
   ecsign,
+  isTruthy,
   privateToAddress,
   setLengthLeft,
   toBuffer,
@@ -169,24 +170,30 @@ function MSTORE(position: Buffer, value: Buffer) {
  */
 function getAuthCallCode(data: AuthcallData) {
   const ZEROS32 = zeros(32)
-  const gasLimitBuffer = setLengthLeft(data.gasLimit ? bigIntToBuffer(data.gasLimit) : ZEROS32, 32)
+  const gasLimitBuffer = setLengthLeft(
+    isTruthy(data.gasLimit) ? bigIntToBuffer(data.gasLimit) : ZEROS32,
+    32
+  )
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(data.value ? bigIntToBuffer(data.value) : ZEROS32, 32)
-  const valueExtBuffer = setLengthLeft(data.valueExt ? bigIntToBuffer(data.valueExt) : ZEROS32, 32)
+  const valueBuffer = setLengthLeft(isTruthy(data.value) ? bigIntToBuffer(data.value) : ZEROS32, 32)
+  const valueExtBuffer = setLengthLeft(
+    isTruthy(data.valueExt) ? bigIntToBuffer(data.valueExt) : ZEROS32,
+    32
+  )
   const argsOffsetBuffer = setLengthLeft(
-    data.argsOffset ? bigIntToBuffer(data.argsOffset) : ZEROS32,
+    isTruthy(data.argsOffset) ? bigIntToBuffer(data.argsOffset) : ZEROS32,
     32
   )
   const argsLengthBuffer = setLengthLeft(
-    data.argsLength ? bigIntToBuffer(data.argsLength) : ZEROS32,
+    isTruthy(data.argsLength) ? bigIntToBuffer(data.argsLength) : ZEROS32,
     32
   )
   const retOffsetBuffer = setLengthLeft(
-    data.retOffset ? bigIntToBuffer(data.retOffset) : ZEROS32,
+    isTruthy(data.retOffset) ? bigIntToBuffer(data.retOffset) : ZEROS32,
     32
   )
   const retLengthBuffer = setLengthLeft(
-    data.retLength ? bigIntToBuffer(data.retLength) : ZEROS32,
+    isTruthy(data.retLength) ? bigIntToBuffer(data.retLength) : ZEROS32,
     32
   )
   const PUSH32 = Buffer.from('7f', 'hex')

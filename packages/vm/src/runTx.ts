@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, KECCAK256_NULL, toBuffer, short } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, toBuffer, short, isFalsy } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
@@ -30,7 +30,7 @@ const debugGas = createDebugLogger('vm:tx:gas')
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // tx is required
-  if (!opts.tx) {
+  if (isFalsy(opts.tx)) {
     throw new Error('invalid input, tx is required')
   }
 
@@ -44,7 +44,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const state = this.eei
 
-  if (opts.reportAccessList && !('generateAccessList' in state)) {
+  if (opts.reportAccessList === true && !('generateAccessList' in state)) {
     const msg = _errorMsg(
       'reportAccessList needs a StateManager implementing the generateAccessList() method',
       this,
@@ -55,7 +55,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Ensure we start with a clear warmed accounts Map
-  if (this._common.isActivatedEIP(2929)) {
+  if (this._common.isActivatedEIP(2929) === true) {
     state.clearWarmedAccounts()
   }
 
@@ -66,9 +66,12 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Typed transaction specific setup tasks
-  if (opts.tx.supports(Capability.EIP2718TypedTransaction) && this._common.isActivatedEIP(2718)) {
+  if (
+    opts.tx.supports(Capability.EIP2718TypedTransaction) &&
+    this._common.isActivatedEIP(2718) === true
+  ) {
     // Is it an Access List transaction?
-    if (!this._common.isActivatedEIP(2930)) {
+    if (this._common.isActivatedEIP(2930) === false) {
       await state.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
@@ -78,7 +81,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    if (opts.reportAccessList && !('generateAccessList' in state)) {
+    if (opts.reportAccessList === true && !('generateAccessList' in state)) {
       await state.revert()
       const msg = _errorMsg(
         'StateManager needs to implement generateAccessList() when running with reportAccessList option',
@@ -88,7 +91,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    if (opts.tx.supports(Capability.EIP1559FeeMarket) && !this._common.isActivatedEIP(1559)) {
+    if (
+      opts.tx.supports(Capability.EIP1559FeeMarket) &&
+      this._common.isActivatedEIP(1559) === false
+    ) {
       await state.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 1559 is not activated.',
@@ -116,7 +122,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (this.DEBUG) {
       debug(`tx checkpoint committed`)
     }
-    if (this._common.isActivatedEIP(2929) && opts.reportAccessList) {
+    if (this._common.isActivatedEIP(2929) === true && opts.reportAccessList === true) {
       const { tx } = opts
       // Do not include sender address in access list
       const removed = [tx.getSenderAddress()]
@@ -138,7 +144,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     throw e
   } finally {
-    if (this._common.isActivatedEIP(2929)) {
+    if (this._common.isActivatedEIP(2929) === true) {
       state.clearWarmedAccounts()
     }
   }
@@ -171,7 +177,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  if (this._common.isActivatedEIP(2929)) {
+  if (this._common.isActivatedEIP(2929) === true) {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
@@ -182,7 +188,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       state.addWarmedAddress(tx.to.buf)
     }
-    if (this._common.isActivatedEIP(3651)) {
+    if (this._common.isActivatedEIP(3651) === true) {
       state.addWarmedAddress(block.header.coinbase.buf)
     }
   }
@@ -199,7 +205,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
-  if (this._common.isActivatedEIP(1559)) {
+  if (this._common.isActivatedEIP(1559) === true) {
     // EIP-1559 spec:
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
@@ -221,13 +227,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const { nonce, balance } = fromAccount
 
   // EIP-3607: Reject transactions from senders with deployed code
-  if (this._common.isActivatedEIP(3607) && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
+  if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
   }
 
   const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
-  if (opts.skipBalance) {
+  if (opts.skipBalance === true) {
     // if skipBalance, add tx cost to sender balance to ensure sufficient funds
     fromAccount.balance += cost
     await this.stateManager.putAccount(caller, fromAccount)
@@ -258,7 +264,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
-  if (!opts.skipNonce) {
+  if (opts.skipNonce !== true) {
     if (nonce !== tx.nonce) {
       const msg = _errorMsg(
         `the tx doesn't have the correct nonce. account has nonce of: ${nonce} tx has nonce of: ${tx.nonce}`,
@@ -285,7 +291,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<Transaction>tx).gasPrice
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<Transaction>tx).gasPrice - baseFee
     }
@@ -295,7 +301,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   fromAccount.nonce += BigInt(1)
   const txCost = tx.gasLimit * gasPrice
   fromAccount.balance -= txCost
-  if (opts.skipBalance && fromAccount.balance < BigInt(0)) {
+  if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
   await state.putAccount(caller, fromAccount)
@@ -395,7 +401,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
-  if (this._common.isActivatedEIP(1559)) {
+  if (this._common.isActivatedEIP(1559) === true) {
     minerAccount.balance += results.totalGasSpent * inclusionFeePerGas!
   } else {
     minerAccount.balance += results.amountSpent
@@ -504,7 +510,7 @@ export async function generateTxReceipt(
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     // Legacy transaction
-    if (this._common.gteHardfork(Hardfork.Byzantium)) {
+    if (this._common.gteHardfork(Hardfork.Byzantium) === true) {
       // Post-Byzantium
       receipt = {
         status: txResult.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error

@@ -7,6 +7,7 @@ import { Config } from '../../config'
 import { Event } from '../../types'
 import { Job } from './types'
 import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
+import { isTruthy } from '@ethereumjs/util'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -146,7 +147,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.running) {
       // If the job was already dequeued, for example coming from writer pipe, processed
       // needs to be decreased
-      if (dequeued) this.processed--
+      if (dequeued === true) this.processed--
 
       this.in.insert({
         ...job,
@@ -261,7 +262,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     dequeued?: boolean
   ) {
     const jobItems = job instanceof Array ? job : [job]
-    if (irrecoverable) {
+    if (irrecoverable === true) {
       this.pool.ban(jobItems[0].peer!, this.banTime)
     } else {
       void this.wait().then(() => {
@@ -368,7 +369,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.running) {
       this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
-    if (irrecoverable) {
+    if (irrecoverable === true) {
       this.running = false
       this.errored = error
       this.clear()
@@ -395,7 +396,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
         if (
-          error.message.includes('could not find parent header') &&
+          (error.message as string).includes('could not find parent header') &&
           this.isBlockFetcherJobTask(jobItems[0].task)
         ) {
           // Non-fatal error: ban peer and re-enqueue job.
@@ -460,7 +461,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.nextTasks()
 
     while (this.running) {
-      if (!this.next()) {
+      if (this.next() === false) {
         if (this.finished === this.total && this.destroyWhenDone) {
           this.push(null)
         }
@@ -532,6 +533,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return task && 'first' in task && 'count' in task
+    return isTruthy(task) && 'first' in task && 'count' in task
   }
 }

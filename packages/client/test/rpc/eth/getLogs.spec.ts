@@ -116,7 +116,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = 'should return the correct logs (filter by single address)'
     if (
       res.body.result.length === 10 &&
-      res.body.result.every((r: any) => r.address === contractAddr1.toString())
+      res.body.result.every((r: any) => r.address === contractAddr1.toString()) === true
     ) {
       t.pass(msg)
     } else {
@@ -132,7 +132,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = 'should return the correct logs (filter by multiple addresses)'
     if (
       res.body.result.length === 20 &&
-      res.body.result.every((r: any) => addresses.includes(r.address))
+      res.body.result.every((r: any) => addresses.includes(r.address)) === true
     ) {
       t.pass(msg)
     } else {

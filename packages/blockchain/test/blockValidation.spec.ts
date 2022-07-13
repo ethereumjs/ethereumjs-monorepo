@@ -86,7 +86,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
       await blockchain.putBlock(blockWithUnclesTooOld)
       st.fail('cannot reach this')
     } catch (e: any) {
-      if (e.message.includes('uncle block has a parent that is too old'))
+      if ((e.message as string).includes('uncle block has a parent that is too old'))
         st.pass('block throws uncle is too old')
       else st.fail(`threw with wrong error ${e.message}`)
     }
@@ -107,7 +107,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
       await blockchain.putBlock(block1)
       st.fail('cannot reach this')
     } catch (e: any) {
-      if (e.message.includes('uncle block has a parent that is too old or too young'))
+      if ((e.message as string).includes('uncle block has a parent that is too old or too young'))
         st.pass('block throws uncle is too young')
       else st.fail(`threw with wrong error ${e.message}`)
     }
@@ -140,7 +140,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
       await blockchain.putBlock(block2)
       st.fail('cannot reach this')
     } catch (e: any) {
-      if (e.message.includes('invalid difficulty block header number=1 '))
+      if ((e.message as string).includes('invalid difficulty block header number=1 '))
         st.pass('block throws when uncle header is invalid')
       else st.fail(`threw with wrong error ${e.message}`)
     }
@@ -162,7 +162,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
 
       st.fail('cannot reach this')
     } catch (e: any) {
-      if (e.message.includes('The uncle is a canonical block'))
+      if ((e.message as string).includes('The uncle is a canonical block'))
         st.pass('block throws if an uncle is a canonical block')
       else st.fail(`threw with wrong error ${e.message}`)
     }
@@ -243,7 +243,10 @@ tape('[Blockchain]: Block validation tests', (t) => {
       await blockchain.putBlock(block2)
     } catch (e: any) {
       const expectedError = 'Invalid block: base fee not correct'
-      st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
+      st.ok(
+        (e.message as string).includes(expectedError),
+        'should throw when base fee is not correct'
+      )
     }
   })
 

@@ -1,9 +1,10 @@
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
+import { isFalsy } from '@ethereumjs/util'
 const bn128 = require('rustbn.js')
 
 export function precompile08(opts: PrecompileInput): ExecResult {
-  if (!opts.data) throw new Error('opts.data missing but required')
+  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
 
   const inputData = opts.data
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case

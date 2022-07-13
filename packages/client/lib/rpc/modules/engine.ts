@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
+import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Hardfork } from '@ethereumjs/common'
@@ -270,7 +270,7 @@ export class Engine {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
-    if (!this.service.execution) {
+    if (isFalsy(this.service.execution)) {
       throw Error('execution required for engine module')
     }
     this.execution = this.service.execution
@@ -372,8 +372,8 @@ export class Engine {
 
     const blockExists = await validBlock(toBuffer(blockHash), this.chain)
     if (blockExists) {
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(blockExists.header.stateRoot)
-      if (isBlockExecuted) {
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
+      if (isTruthy(isBlockExecuted)) {
         const response = {
           status: Status.VALID,
           latestValidHash: blockHash,
@@ -386,9 +386,9 @@ export class Engine {
 
     try {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(parent.header.stateRoot)
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
-      if (!isBlockExecuted) {
+      if (isFalsy(isBlockExecuted)) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
@@ -407,9 +407,10 @@ export class Engine {
       if (!this.service.beaconSync && !this.config.disableBeaconSync) {
         await this.service.switchToBeaconSync()
       }
-      const status = (await this.service.beaconSync?.extendChain(block))
-        ? Status.SYNCING
-        : Status.ACCEPTED
+      const status =
+        (await this.service.beaconSync?.extendChain(block)) === true
+          ? Status.SYNCING
+          : Status.ACCEPTED
       if (status === Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
         this.remoteBlocks.set(block.hash().toString('hex'), block)
@@ -488,7 +489,7 @@ export class Engine {
       headBlock =
         (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
         (this.remoteBlocks.get(headBlockHash.slice(2)) as Block)
-      if (!headBlock) {
+      if (isFalsy(headBlock)) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
         const payloadStatus = {
           status: Status.SYNCING,
@@ -540,8 +541,8 @@ export class Engine {
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
           const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
-          const isBlockExecuted = await this.vm.stateManager.hasStateRoot!(parent.header.stateRoot)
-          if (!isBlockExecuted) {
+          const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+          if (isFalsy(isBlockExecuted)) {
             throw new Error(`Parent block not yet executed number=${parent.header.number}`)
           }
           parentBlocks = await recursivelyFindParents(
@@ -570,7 +571,8 @@ export class Engine {
 
       const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
-        (!this.config.syncTargetHeight || this.config.syncTargetHeight < headBlock.header.number) &&
+        (isFalsy(this.config.syncTargetHeight) ||
+          this.config.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {
         this.config.synchronized = true

@@ -27,7 +27,7 @@ tape('invalid RLPs', (t) => {
         RLP.decode(input)
         st.ok(false)
       } catch (e: any) {
-        if (msg) {
+        if (typeof msg !== 'undefined') {
           st.deepEqual(e.message, msg)
         } else {
           // FIXME: check for exception name

@@ -43,7 +43,7 @@ export abstract class BaseStateManager {
     this._common = common
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('statemanager:statemanager')

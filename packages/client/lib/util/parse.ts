@@ -5,7 +5,9 @@ import {
   addHexPrefix,
   bigIntToHex,
   intToHex,
+  isFalsy,
   isHexPrefixed,
+  isTruthy,
   stripHexPrefix,
 } from '@ethereumjs/util'
 import type { MultiaddrLike } from '../types'
@@ -17,7 +19,7 @@ import type { Common } from '@ethereumjs/common'
  * @param input comma separated string
  */
 export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
-  if (!input) {
+  if (isFalsy(input)) {
     return []
   }
   if (!Array.isArray(input) && typeof input === 'object') {
@@ -43,7 +45,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       // parse as object
       if (typeof s === 'object') {
         const { ip, port } = s as any
-        if (ip && port) {
+        if (isTruthy(ip) && isTruthy(port)) {
           return multiaddr(`/ip4/${ip}/tcp/${port}`)
         }
       }
@@ -143,7 +145,7 @@ async function parseGethParams(json: any) {
       baseFeePerGas,
     },
     bootstrapNodes: [],
-    consensus: config.clique
+    consensus: isTruthy(config.clique)
       ? {
           type: 'poa',
           algorithm: 'clique',
@@ -200,7 +202,7 @@ export async function parseCustomParams(json: any, name?: string) {
     if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
       throw new Error('Invalid format, expected geth genesis fields missing')
     }
-    if (name) {
+    if (isTruthy(name)) {
       json.name = name
     }
     return parseGethParams(json)
@@ -219,8 +221,8 @@ export async function parseGenesisState(json: any) {
     let { balance, code, storage } = json.alloc[address]
     address = addHexPrefix(address)
     balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
-    code = code ? addHexPrefix(code) : undefined
-    storage = storage ? Object.entries(storage) : undefined
+    code = isTruthy(code) ? addHexPrefix(code) : undefined
+    storage = isTruthy(storage) ? Object.entries(storage) : undefined
     state[address] = [balance, code, storage] as any
   }
   return state
@@ -244,7 +246,11 @@ export function parseKey(input: string | Buffer) {
  */
 export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
   for (const hf of (common as any)._chainParams.hardforks) {
-    if (!hf.forkHash && hf.block !== undefined && (hf.block !== null || hf.td !== undefined)) {
+    if (
+      isFalsy(hf.forkHash) &&
+      typeof hf.block !== 'undefined' &&
+      (hf.block !== null || typeof hf.td !== 'undefined')
+    ) {
       hf.forkHash = common.forkHash(hf.name, genesisHash)
     }
   }

@@ -1,4 +1,5 @@
 import { INVALID_PARAMS } from './error-code'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 /**
  * middleware for parameters validation
@@ -19,10 +20,10 @@ export function middleware(method: any, requiredParamsCount: number, validators:
       }
 
       for (let i = 0; i < validators.length; i++) {
-        if (validators[i]) {
+        if (isTruthy(validators[i])) {
           for (let j = 0; j < validators[i].length; j++) {
             const error = validators[i][j](params, i)
-            if (error) {
+            if (isTruthy(error)) {
               return reject(error)
             }
           }
@@ -196,7 +197,7 @@ export const validators = {
         const tx = params[index]
 
         for (const field of requiredFields) {
-          if (!tx[field]) {
+          if (isFalsy(tx[field])) {
             return {
               code: INVALID_PARAMS,
               message: `invalid argument ${index}: required field ${field}`,
@@ -205,21 +206,21 @@ export const validators = {
         }
 
         const validate = (field: any, validator: Function) => {
-          if (!field) return
+          if (isFalsy(field)) return
           const v = validator([field], 0)
-          if (v) return v
+          if (isTruthy(v)) return v
         }
 
         // validate addresses
         for (const field of [tx.to, tx.from]) {
           const v = validate(field, this.address)
-          if (v) return v
+          if (isTruthy(v)) return v
         }
 
-        // valdiate hex
+        // validate hex
         for (const field of [tx.gas, tx.gasPrice, tx.value, tx.data]) {
           const v = validate(field, this.hex)
-          if (v) return v
+          if (isTruthy(v)) return v
         }
       }
     }
@@ -245,7 +246,7 @@ export const validators = {
         for (const [key, validator] of Object.entries(form)) {
           const value = params[index][key]
           const result = validator([value], 0)
-          if (result) {
+          if (isTruthy(result)) {
             // add key to message for context
             const originalMessage = result.message.split(':')
             const message = `invalid argument ${index} for key '${key}':${originalMessage[1]}`
@@ -275,7 +276,7 @@ export const validators = {
         }
         for (const value of params[index]) {
           const result = validator([value], 0)
-          if (result) return result
+          if (isTruthy(result)) return result
         }
       }
     }
@@ -312,7 +313,7 @@ export const validators = {
   get optional() {
     return (validator: any) => {
       return (params: any, index: number) => {
-        if (!params[index]) {
+        if (isFalsy(params[index])) {
           return
         }
         return validator(params, index)
@@ -330,7 +331,7 @@ export const validators = {
   get either() {
     return (...validators: any) => {
       return (params: any, index: number) => {
-        if (!params[index]) {
+        if (isFalsy(params[index])) {
           return
         }
         const results = validators.map((v: any) => v(params, index))

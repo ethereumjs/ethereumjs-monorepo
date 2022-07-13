@@ -3,7 +3,7 @@ import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, isTruthy } from '@ethereumjs/util'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
@@ -35,11 +35,11 @@ export function startRPC(
 ) {
   const { port, wsServer } = opts
   const server = new RPCServer(methods)
-  const httpServer = wsServer
+  const httpServer = isTruthy(wsServer)
     ? createWsRPCServerListener({ server, withEngineMiddleware })
     : createRPCServerListener({ server, withEngineMiddleware })
   if (!httpServer) throw Error('Could not create server')
-  if (port) httpServer.listen(port)
+  if (isTruthy(port)) httpServer.listen(port)
   return httpServer
 }
 
@@ -71,7 +71,7 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
-  if (chain._headers) {
+  if (isTruthy(chain._headers)) {
     chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
   }
 
@@ -98,8 +98,8 @@ export function createClient(clientOpts: any = {}) {
   }
 
   let execution
-  if (clientOpts.includeVM) {
-    const metaDB: any = clientOpts.enableMetaDB ? new MemoryLevel() : undefined
+  if (isTruthy(clientOpts.includeVM)) {
+    const metaDB: any = isTruthy(clientOpts.enableMetaDB) ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
 
@@ -137,7 +137,7 @@ export function createClient(clientOpts: any = {}) {
     },
   }
 
-  if (clientOpts.includeVM) {
+  if (isTruthy(clientOpts.includeVM)) {
     client.services[0].txPool = new TxPool({ config, service: client.services[0] })
   }
 

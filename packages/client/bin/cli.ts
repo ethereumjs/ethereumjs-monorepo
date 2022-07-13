@@ -8,7 +8,7 @@ import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, isFalsy, isTruthy, toBuffer } from '@ethereumjs/util'
 import {
   parseMultiaddrs,
   parseGenesisState,
@@ -19,7 +19,7 @@ import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
-import type { FullEthereumService } from '../lib/service'
+import { FullEthereumService } from '../lib/service'
 import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import { Level } from 'level'
 import { AbstractLevel } from 'abstract-level'
@@ -328,7 +328,7 @@ async function executeBlocks(client: EthereumClient) {
     process.exit()
   }
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  if (!execution) throw new Error('executeBlocks requires execution')
+  if (isFalsy(execution)) throw new Error('executeBlocks requires execution')
   await execution.executeBlocks(first, last, txHashes)
 }
 
@@ -337,7 +337,7 @@ async function executeBlocks(client: EthereumClient) {
  * Note: this is destructive and removes blocks from the blockchain. Please back up your datadir.
  */
 async function startBlock(client: EthereumClient) {
-  if (!args.startBlock) return
+  if (isFalsy(typeof args.startBlock)) return
   const startBlock = BigInt(args.startBlock)
   const { blockchain } = client.chain
   const height = (await blockchain.getCanonicalHeadHeader()).number
@@ -369,7 +369,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const dbs = initDBs(config)
 
   let blockchain
-  if (customGenesisState) {
+  if (isTruthy(customGenesisState)) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
       db: dbs.chainDB,
@@ -388,13 +388,13 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     ...dbs,
   })
 
-  if (args.startBlock) {
+  if (isTruthy(args.startBlock)) {
     await startBlock(client)
   }
 
   await client.open()
 
-  if (args.executeBlocks) {
+  if (isTruthy(args.executeBlocks)) {
     // Special block execution debug mode (does not change any state)
     await executeBlocks(client)
   } else {
@@ -547,7 +547,7 @@ function generateAccount(): Account {
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helprpc) {
+  if (isTruthy(args.helprpc)) {
     // Output RPC help and exit
     return helprpc()
   }
@@ -557,14 +557,14 @@ async function run() {
 
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
-  if (args.unlock) {
+  if (isTruthy(args.unlock)) {
     accounts.push(...(await inputAccounts()))
   }
 
   let customGenesisState: GenesisState | undefined
   let common = new Common({ chain, hardfork: Hardfork.Chainstart })
 
-  if (args.dev) {
+  if (isTruthy(args.dev)) {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
@@ -578,15 +578,17 @@ async function run() {
 
   // Configure common based on args given
   if (
-    (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
-    (args.network !== 'mainnet' || args.networkId)
+    (isTruthy(args.customChainParams) ||
+      isTruthy(args.customGenesisState) ||
+      isTruthy(args.gethGenesis)) &&
+    (args.network !== 'mainnet' || isTruthy(args.networkId))
   ) {
     console.error('cannot specify both custom chain parameters and preset network ID')
     process.exit()
   }
   // Use custom chain parameters file if specified
-  if (args.customChain) {
-    if (!args.customGenesisState) {
+  if (isTruthy(args.customChain)) {
+    if (isFalsy(args.customGenesisState)) {
       console.error('cannot have custom chain parameters without genesis state')
       process.exit()
     }
@@ -601,7 +603,7 @@ async function run() {
       console.error(`invalid chain parameters: ${err.message}`)
       process.exit()
     }
-  } else if (args.gethGenesis) {
+  } else if (isTruthy(args.gethGenesis)) {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
@@ -613,7 +615,7 @@ async function run() {
     customGenesisState = await parseGenesisState(genesisFile)
   }
 
-  if (args.mine && accounts.length === 0) {
+  if (isTruthy(args.mine) && accounts.length === 0) {
     console.error(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate'
     )
@@ -625,8 +627,8 @@ async function run() {
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
   logger = getLogger(args)
-  const bootnodes = args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined
-  const multiaddrs = args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined
+  const bootnodes = isTruthy(args.bootnodes) ? parseMultiaddrs(args.bootnodes) : undefined
+  const multiaddrs = isTruthy(args.multiaddrs) ? parseMultiaddrs(args.multiaddrs) : undefined
   const config = new Config({
     accounts,
     bootnodes,
@@ -644,7 +646,7 @@ async function run() {
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
     maxFetcherJobs: args.maxFetcherJobs,
-    mine: args.mine || args.dev,
+    mine: isTruthy(args.mine) ? args.mine : args.dev,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,
     multiaddrs,
@@ -658,7 +660,8 @@ async function run() {
   config.events.setMaxListeners(50)
 
   const client = await startClient(config, customGenesisState)
-  const servers = args.rpc || args.rpcEngine ? startRPCServers(client, args) : []
+  const servers =
+    isTruthy(args.rpc) || isTruthy(args.rpcEngine) ? startRPCServers(client, args) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')

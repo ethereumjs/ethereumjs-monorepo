@@ -7,7 +7,7 @@ import {
   ConsensusAlgorithm,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, isFalsy, isTruthy } from '@ethereumjs/util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
@@ -141,7 +141,7 @@ tape('[Integration:Merge]', async (t) => {
     remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
       const { height, td } = remoteService.chain.headers
       if (td > targetTTD) {
-        if (!terminalHeight) {
+        if (isFalsy(terminalHeight)) {
           terminalHeight = height
         }
         t.equal(
@@ -155,7 +155,7 @@ tape('[Integration:Merge]', async (t) => {
         await destroy(remoteServer, remoteService)
         t.end()
       }
-      if (terminalHeight && terminalHeight < height) {
+      if (isTruthy(terminalHeight) && terminalHeight < height) {
         t.fail('chain should not exceed merge terminal block')
       }
     })

@@ -1,10 +1,10 @@
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
-import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { isFalsy, setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
 export function precompile03(opts: PrecompileInput): ExecResult {
-  if (!opts.data) throw new Error('opts.data missing but required')
+  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
 
   const data = opts.data
 

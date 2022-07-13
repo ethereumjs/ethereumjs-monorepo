@@ -1,5 +1,5 @@
 import { TransactionFactory, TypedTransaction, TxData } from '@ethereumjs/tx'
-import { toBuffer, setLengthLeft } from '@ethereumjs/util'
+import { toBuffer, setLengthLeft, isTruthy } from '@ethereumjs/util'
 import { Block, BlockOptions } from './index'
 import { numberToHex } from './helpers'
 
@@ -16,7 +16,7 @@ function normalizeTxParams(_txParams: any) {
   txParams.value = numberToHex(txParams.value)
 
   // strict byte length checking
-  txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
+  txParams.to = isTruthy(txParams.to) ? setLengthLeft(toBuffer(txParams.to), 20) : null
 
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
@@ -32,13 +32,13 @@ function normalizeTxParams(_txParams: any) {
  *
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
- * @param chainOptions - An object describing the blockchain
+ * @param options - An object describing the blockchain
  */
 export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  if (blockParams.transactions) {
+  if (isTruthy(blockParams.transactions)) {
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)

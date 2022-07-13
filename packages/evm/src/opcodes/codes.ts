@@ -3,6 +3,7 @@ import { CustomOpcode } from '../types'
 import { getFullname } from './util'
 import { AsyncDynamicGasHandler, dynamicGasHandlers, SyncDynamicGasHandler } from './gas'
 import { handlers, OpHandler } from './functions'
+import { isTruthy } from '@ethereumjs/util'
 
 export class Opcode {
   readonly code: number
@@ -373,7 +374,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
         },
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
-      if (code.gasFunction) {
+      if (isTruthy(code.gasFunction)) {
         dynamicGasHandlersCopy.set(code.opcode, code.gasFunction)
       }
       // logicFunction is never undefined

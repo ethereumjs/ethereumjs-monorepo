@@ -7,6 +7,7 @@ import { Chain } from '../blockchain'
 import { Event } from '../types'
 import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 import { short } from '../util'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -100,7 +101,7 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       return false
     }
     this.running = true
@@ -113,7 +114,7 @@ export abstract class Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Merge) === false) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -134,7 +135,7 @@ export abstract class Synchronizer {
    * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
-    if (!this.config.syncTargetHeight) {
+    if (isFalsy(this.config.syncTargetHeight)) {
       return
     }
     if (this.chain.headers.height >= this.config.syncTargetHeight) {
@@ -172,7 +173,7 @@ export abstract class Synchronizer {
       const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
-        const heightStr = height ? ` height=${height}` : ''
+        const heightStr = isTruthy(height) ? ` height=${height}` : ''
         this.config.logger.debug(
           `Finishing up sync with the current fetcher${heightStr}
           }`
@@ -231,7 +232,7 @@ export abstract class Synchronizer {
    * Reset synced status after a certain time with no chain updates
    */
   _syncedStatusCheck() {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       return
     }
 

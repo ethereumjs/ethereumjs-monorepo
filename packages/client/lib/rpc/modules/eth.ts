@@ -32,6 +32,8 @@ import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
 import type { ReceiptsManager } from '../../execution/receipt'
+import { isTruthy } from '@ethereumjs/util'
+import { isFalsy } from '@ethereumjs/util'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -239,10 +241,10 @@ const jsonRpcReceipt = async (
     receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
   ),
   logsBloom: bufferToHex(receipt.bitvector),
-  root: (receipt as PreByzantiumTxReceipt).stateRoot
+  root: Buffer.isBuffer((receipt as PreByzantiumTxReceipt).stateRoot)
     ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
     : undefined,
-  status: (receipt as PostByzantiumTxReceipt).status
+  status: Buffer.isBuffer((receipt as PostByzantiumTxReceipt).status)
     ? intToHex((receipt as PostByzantiumTxReceipt).status)
     : undefined,
 })
@@ -433,7 +435,7 @@ export class Eth {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -444,12 +446,12 @@ export class Eth {
 
     try {
       const runCallOpts = {
-        caller: from ? Address.fromString(from) : undefined,
-        to: to ? Address.fromString(to) : undefined,
+        caller: isTruthy(from) ? Address.fromString(from) : undefined,
+        to: isTruthy(to) ? Address.fromString(to) : undefined,
         gasLimit: toType(gasLimit, TypeOutput.BigInt),
         gasPrice: toType(gasPrice, TypeOutput.BigInt),
         value: toType(value, TypeOutput.BigInt),
-        data: data ? toBuffer(data) : undefined,
+        data: isTruthy(data) ? toBuffer(data) : undefined,
       }
       const { execResult } = await vm.evm.runCall(runCallOpts)
       return bufferToHex(execResult.returnValue)
@@ -491,14 +493,14 @@ export class Eth {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
     const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    if (!transaction.gas) {
+    if (isFalsy(transaction.gas)) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
       const latest = await this._chain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
@@ -508,7 +510,7 @@ export class Eth {
     const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
 
     // set from address
-    const from = transaction.from ? Address.fromString(transaction.from) : Address.zero()
+    const from = isTruthy(transaction.from) ? Address.fromString(transaction.from) : Address.zero()
     tx.getSenderAddress = () => {
       return from
     }
@@ -540,7 +542,7 @@ export class Eth {
     const address = Address.fromString(addressHex)
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -609,7 +611,7 @@ export class Eth {
     const [addressHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -632,7 +634,7 @@ export class Eth {
     const [addressHex, positionHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -643,7 +645,7 @@ export class Eth {
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
-    return storage
+    return isTruthy(storage)
       ? bufferToHex(
           setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
         )
@@ -684,7 +686,7 @@ export class Eth {
     const [addressHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -797,7 +799,7 @@ export class Eth {
       }
     }
     let from: Block, to: Block
-    if (blockHash) {
+    if (isTruthy(blockHash)) {
       try {
         from = to = await this._chain.getBlock(toBuffer(blockHash))
       } catch (error: any) {
@@ -856,7 +858,7 @@ export class Eth {
         }
       })
       let addrs
-      if (address) {
+      if (isTruthy(address)) {
         if (Array.isArray(address)) {
           addrs = address.map((a) => toBuffer(a))
         } else {
@@ -888,7 +890,7 @@ export class Eth {
 
     const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (!syncTargetHeight && !this.client.config.mine) {
+    if (isFalsy(syncTargetHeight) && !this.client.config.mine) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
@@ -896,7 +898,7 @@ export class Eth {
     }
     // Set the tx common to an appropriate HF to create a tx
     // with matching HF rules
-    if (syncTargetHeight) {
+    if (isTruthy(syncTargetHeight)) {
       common.setHardforkByBlockNumber(syncTargetHeight)
     }
 
@@ -957,7 +959,7 @@ export class Eth {
     const [addressHex, slotsHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (!this._vm) {
+    if (isFalsy(this._vm)) {
       throw new Error('missing vm')
     }
 
@@ -996,7 +998,7 @@ export class Eth {
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
     let highestBlock
-    if (syncTargetHeight) {
+    if (isTruthy(syncTargetHeight)) {
       highestBlock = bigIntToHex(syncTargetHeight)
     } else {
       const bestPeer = await synchronizer.best()

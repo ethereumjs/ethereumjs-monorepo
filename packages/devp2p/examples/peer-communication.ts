@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { arrToBufArr } from '@ethereumjs/util'
+import { arrToBufArr, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
@@ -68,7 +68,9 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack || err}`)))
+rlpx.on('error', (err) =>
+  console.error(chalk.red(`RLPx error: ${isTruthy(err.stack) ? err.stack : err}`))
+)
 
 rlpx.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
@@ -286,7 +288,7 @@ rlpx.on('peer:added', (peer) => {
 })
 
 rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
-  const who = disconnectWe ? 'we disconnect' : 'peer disconnect'
+  const who = isTruthy(disconnectWe) ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
     chalk.yellow(
@@ -308,7 +310,9 @@ rlpx.on('peer:error', (peer, err) => {
     return
   }
 
-  console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${err.stack || err}`))
+  console.error(
+    chalk.red(`Peer error (${getPeerAddr(peer)}): ${isTruthy(err.stack) ? err.stack : err}`)
+  )
 })
 
 // uncomment, if you want accept incoming connections
@@ -317,7 +321,7 @@ rlpx.on('peer:error', (peer, err) => {
 
 for (const bootnode of BOOTNODES) {
   dpt.bootstrap(bootnode).catch((err) => {
-    console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack || err}`))
+    console.error(chalk.bold.red(`DPT bootstrap error: ${isTruthy(err.stack) ? err.stack : err}`))
   })
 }
 
@@ -332,7 +336,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
       udpPort: peer.tcpPort
     })
   })
-  .catch((err) => console.log(`error on connection to local node: ${err.stack || err}`))
+  .catch((err) => console.log(`error on connection to local node: ${isTruthy(err.stack) ? err.stack : err}`))
 */
 
 const txCache = new LRUCache({ max: 1000 })

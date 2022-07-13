@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
+import { Address, isFalsy } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
@@ -35,7 +35,7 @@ tape('Precompiles: hardfork availability', (t) => {
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     ECPAIRING = getActivePrecompiles(commonPetersburg).get(ECPAIR_AddressStr)!
-    if (!ECPAIRING) {
+    if (isFalsy(ECPAIRING)) {
       st.fail('ECPAIRING is not available in petersburg while it should be available')
     } else {
       st.pass('ECPAIRING available in petersburg')
