@@ -221,6 +221,13 @@ export interface RunBlockOpts {
    */
   skipBlockValidation?: boolean
   /**
+   * if true, will skip "Header validation"
+   * If the block has been picked from the blockchain to be executed,
+   * header has already been validated, and can be skipped especially when
+   * consensus of the chain has moved ahead.
+   */
+  skipHeaderValidation?: boolean
+  /**
    * If true, skips the nonce check
    */
   skipNonce?: boolean

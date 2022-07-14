@@ -224,7 +224,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
         debug(`Validate block`)
       }
       // TODO: decide what block validation method is appropriate here
-      await this.blockchain.validateHeader(block.header)
+      if (opts.skipHeaderValidation !== true) {
+        await this.blockchain.validateHeader(block.header)
+      }
       await block.validateData()
     }
   }
