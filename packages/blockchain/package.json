@@ -36,7 +36,7 @@
     "@ethereumjs/util": "8.0.0-beta.1",
     "abstract-level": "^1.0.3",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.0.3",
+    "ethereum-cryptography": "^1.1.2",
     "level": "^8.0.0",
     "lru-cache": "^5.1.1",
     "memory-level": "^1.0.0",
