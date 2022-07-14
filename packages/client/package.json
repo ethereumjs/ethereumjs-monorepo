@@ -27,7 +27,7 @@
   "scripts": {
     "preinstall": "npm run binWorkaround",
     "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
-    "build": "npm run build:common && npm run build:browser",
+    "build": "npm run build:common",
     "build:common": "../../config/cli/ts-build.sh",
     "build:browser": "../../config/cli/ts-build.sh browser && npm run bundle && rm -rf dist.browser",
     "prepublishOnly": "../../config/cli/prepublish.sh",
@@ -41,7 +41,7 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
-    "test": "npm run test:unit && npm run test:integration && npm run test:browser",
+    "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm run tape -- 'test/!(integration|cli)/**/*.spec.ts' 'test/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
