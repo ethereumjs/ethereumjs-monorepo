@@ -255,6 +255,7 @@ const args = yargs(hideBin(process.argv))
     describe:
       'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
     boolean: true,
+    default: true,
   })
   .option('disableBeaconSync', {
     describe:
