@@ -72,62 +72,62 @@ tape('[SnapSynchronizer]', async (t) => {
     t.end()
   })
 
-  t.test('should sync', async (t) => {
-    t.plan(3)
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
-    const pool = new PeerPool() as any
-    const chain = new Chain({ config })
-    const sync = new SnapSynchronizer({
-      config,
-      interval: 1,
-      pool,
-      chain,
-    })
+  // t.test('should sync', async (t) => {
+  //   t.plan(3)
+  //   const config = new Config({ transports: [], safeReorgDistance: 0 })
+  //   const pool = new PeerPool() as any
+  //   const chain = new Chain({ config })
+  //   const sync = new SnapSynchronizer({
+  //     config,
+  //     interval: 1,
+  //     pool,
+  //     chain,
+  //   })
 
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.latest(td.matchers.anything())).thenResolve({
-      number: new BN(4),
-      stateRoot: Buffer.from([]),
-      hash: () => {
-        return Buffer.from([])
-      },
-    })
+  //   sync.latest = td.func<typeof sync['latest']>()
+  //   td.when(sync.latest(td.matchers.anything())).thenResolve({
+  //     number: new BN(4),
+  //     stateRoot: Buffer.from([]),
+  //     hash: () => {
+  //       return Buffer.from([])
+  //     },
+  //   })
 
-    const getBlockHeaders = td.func<any>()
-    td.when(getBlockHeaders(td.matchers.anything())).thenReturn([
-      new BN(1),
-      [BlockHeader.fromHeaderData({ number: 5 })],
-    ])
+  //   const getBlockHeaders = td.func<any>()
+  //   td.when(getBlockHeaders(td.matchers.anything())).thenReturn([
+  //     new BN(1),
+  //     [BlockHeader.fromHeaderData({ number: 5 })],
+  //   ])
 
-    const getAccountRange = td.func<any>()
-    td.when(getAccountRange(td.matchers.anything())).thenReturn({
-      accounts: [
-        Account.fromAccountData({
-          stateRoot: '0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008',
-        }),
-      ],
-    })
-    sync.best = td.func<typeof sync['best']>()
-    td.when(sync.best()).thenResolve({
-      snap: { getAccountRange: getAccountRange } as any,
-      eth: { getBlockHeaders: getBlockHeaders } as any,
-    })
-    ;(sync as any).forceSync = true
-    ;(sync as any).chain = { headers: { height: new BN(3) } }
-    t.notOk(await sync.sync(), 'local height > remote height')
-    ;(sync as any).chain = { headers: { height: new BN(5) } }
-    setTimeout(() => {
-      config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(5))
-    }, 100)
-    t.ok(await sync.sync(), 'local height < remote height')
+  //   const getAccountRange = td.func<any>()
+  //   td.when(getAccountRange(td.matchers.anything())).thenReturn({
+  //     accounts: [
+  //       Account.fromAccountData({
+  //         stateRoot: '0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008',
+  //       }),
+  //     ],
+  //   })
+  //   sync.best = td.func<typeof sync['best']>()
+  //   td.when(sync.best()).thenResolve({
+  //     snap: { getAccountRange: getAccountRange } as any,
+  //     eth: { getBlockHeaders: getBlockHeaders } as any,
+  //   })
+  //   ;(sync as any).forceSync = true
+  //   ;(sync as any).chain = { headers: { height: new BN(3) } }
+  //   t.notOk(await sync.sync(), 'local height > remote height')
+  //   ;(sync as any).chain = { headers: { height: new BN(5) } }
+  //   setTimeout(() => {
+  //     config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(5))
+  //   }, 100)
+  //   t.ok(await sync.sync(), 'local height < remote height')
 
-    td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
-    try {
-      await sync.sync()
-    } catch (err: any) {
-      t.equals(err.message, 'err0', 'got error')
-      await sync.stop()
-      await sync.close()
-    }
-  })
+  //   td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
+  //   try {
+  //     await sync.sync()
+  //   } catch (err: any) {
+  //     t.equals(err.message, 'err0', 'got error')
+  //     await sync.stop()
+  //     await sync.close()
+  //   }
+  // })
 })
