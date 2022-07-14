@@ -2,6 +2,7 @@ import tape from 'tape'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
+import { BN } from 'ethereumjs-util'
 
 tape('[SnapProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -21,6 +22,56 @@ tape('[SnapProtocol]', (t) => {
     await p.open()
     t.ok(p.opened, 'opened is true')
     t.notOk(await p.open(), 'repeat open')
+    t.end()
+  })
+
+  t.test('verify that GetAccountRange handler encodes/decodes correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const p = new SnapProtocol({ config, chain })
+    const root = {
+      number: new BN(4),
+      stateRoot: Buffer.from([]),
+      hash: () => {
+        return Buffer.from([])
+      }
+    }
+    const reqId = new BN(1)
+    const origin = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
+    const limit = Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex')
+    const bytes = new BN(5000000)
+
+    const res = p.decode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], [
+      reqId,
+      root,
+      origin,
+      limit,
+      bytes
+    ])
+    const res2 = p.encode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], {
+      reqId: reqId,
+      root: root,
+      origin: origin,
+      limit: limit,
+      bytes: bytes
+    })
+
+    t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
+    t.ok(JSON.stringify(res.root) === JSON.stringify(root), 'correctly decoded root')
+    t.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
+    t.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
+    t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
+    t.ok(res)
+
+    console.log(JSON.stringify(res2[0]))
+    console.log(JSON.stringify(reqId))
+
+    t.ok(new BN(res2[0]).eqn(1), 'correctly decoded reqId')
+    t.ok(JSON.stringify(res2[1]) === JSON.stringify(root), 'correctly decoded root')
+    t.ok(JSON.stringify(res2[2]) === JSON.stringify(origin), 'correctly decoded origin')
+    t.ok(JSON.stringify(res2[3]) === JSON.stringify(limit), 'correctly decoded limit')
+    t.ok(JSON.stringify(res2[4]) === JSON.stringify(bytes), 'correctly decoded bytes')
+    t.ok(res2)
     t.end()
   })
 })
