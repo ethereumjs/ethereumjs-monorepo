@@ -108,7 +108,6 @@ tape('[Miner]', async (t) => {
     return signedTx
   }
 
-  common.setHardforkByBlockNumber(0)
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
@@ -379,9 +378,7 @@ tape('[Miner]', async (t) => {
         { name: 'london', block: 3 },
       ],
     }
-    const common = Common.custom(customChainParams, {
-      baseChain: CommonChain.Rinkeby,
-    })
+    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })

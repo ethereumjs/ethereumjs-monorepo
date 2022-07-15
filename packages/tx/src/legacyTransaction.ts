@@ -296,7 +296,13 @@ export class Transaction extends BaseTransaction<Transaction> {
     this._validateHighS()
 
     try {
-      return ecrecover(msgHash, v!, bigIntToUnpaddedBuffer(r!), bigIntToUnpaddedBuffer(s!))
+      return ecrecover(
+        msgHash,
+        v!,
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!),
+        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
+      )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
       throw new Error(msg)
