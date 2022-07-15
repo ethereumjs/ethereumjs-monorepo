@@ -83,6 +83,11 @@ This will by default try reaching out `ethereumjs` over the endpoint `8551`. (Yo
 
 You may provide `--weakSubjectivityServerUrl` (with a synced `sepolia` beacon node endpoint as arg value) and  `--weakSubjectivitySyncLatest` to start directly off the head on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs. 
 
-#### Validator
+#### (Optional) Validator
+To run the validator, you will need to add the following arg to the above beacon run command to expose api endpoints: `--api.rest.enabled`. The validator will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator)
 
-1. Run cmd: `./lodestar validator --rootDir=/path/to/sepolia/data/dir --keystoresDir=kiln/keystores --secretsDir=kiln/secrets`
+1. Run cmd: `./lodestar validator --rootDir=/path/to/sepolia/data/dir`
+
+This will pickup the keystores and secrets from the specified `rootDir`, you may override it via `--keystoresDir=/path/to/sepolia/keystores --secretsDir=/path/to/sepolia/secrets`.
+
+Or you may instead choose to provide a `mnemonic` and its range indices to derive validators via `--fromMnemonic "lens risk clerk foot verb planet drill roof boost aim salt omit celery tube list permit motor obvious flash demise churn hold wave hollow" --mnemonicIndexes 0..5` (Modify the mnemonic and range indices as per your validator configuration).
