@@ -1,5 +1,5 @@
 #!/bin/sh
-REMOTE=$(git rev-parse --symbolic-full-name --abbrev-ref @{u})
+REMOTE=$({git rev-parse --symbolic-full-name --abbrev-ref @{u}} 2>/dev/null)
 
 if [ -z "$REMOTE" ]; then
     FILESCHANGED=". --ext .js,.jsx,.ts,.tsx"
