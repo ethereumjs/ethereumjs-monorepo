@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.0 - 2022-07-15
+
+### Sepolia Merge Support
+
+This is the first client release which supports the Merge transition in conjunction with a consensus layer client (we recommend [Lodestar](https://github.com/ChainSafe/lodestar)), but are excited to see other combinations being tested too) on one of the official public Ethereum testnets, with [Sepolia](https://sepolia.dev/) being a good candidate here since the network is relatively new and has not yet grown so extensively.
+
+Client instructions have been updated accordingly [here](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/merge) and you can use these instructions to start-up both clients, see them syncing first both the separate networks and then joining forces at Sepolia Merge block [1450409](https://sepolia.etherscan.io/block/1450409)! 🐼 ❤️
+
+### EthereumJS Beta Releases Integration
+
+This is the first client release which works with the next generation EthereumJS libraries being published as [Beta releases](https://github.com/ethereumjs/ethereumjs-monorepo/releases) right now. The client is a first test bed for these releases which include heavy structural changes (e.g. the VM separated into three different packages VM, EVM and StateManager). In return the client benefits directly from some of the integrations being done, e.g. the complete switch to native JavaScript BigInts which leads to a substantially better VM execution performance.
+
+### DB Format Changes
+
+Note that DB format has changed along with this release and it is therefore necessary to delete the old chain and state data directories. If this is causing you substantial hazzle please ask in our monorepo or Discord server on a migration script. While this will cause us some extra work it might actually be possible to provide one if there is some demand.
+
+## Default Receipt Saving
+
+With the transition to PoS chains running the client in a CL/EL setup the activation of receipt saving often gets necessary, since some CL clients (e.g. Lodestar) rely on the `eth_getLogs` RPC call to be activated to be able to properly work with the EthereumJS client.
+
+Since the EthereumJS client is still mainly used in not-that-much-grown testnets and environments (so the additional disk space requirements are not that grave) we have therefore decided to turn the respective option `--saveReceipts` on by default, see PR [#2040](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2040).
+
+You can use `--saveReceipts=false` if you would rather want to deactive again.
+
+### Other Changes
+
+- Miscellaneous fixes for beacon sync in reverseblockfetcher, skeleton, merge forkhash, PR [#1951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1951)
+- The underlying blockchain (chain) and Trie (state) databases have been upgraded from Level 6 to Level 8, PR [#1949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1949)
+- Activated Sepolia DNS discovery, PR [#2034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2034)
+
 ## 0.5.0 - 2022-06-02
 
 ### Merge: Kiln v2.1 Support
