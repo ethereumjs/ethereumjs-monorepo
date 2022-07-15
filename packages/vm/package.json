@@ -48,7 +48,7 @@
     "@ethereumjs/common": "3.0.0-beta.2",
     "@ethereumjs/evm": "1.0.0-beta.2",
     "@ethereumjs/tx": "4.0.0-beta.1",
-    "@ethereumjs/statemanager": "1.0.0-beta.1",
+    "@ethereumjs/statemanager": "1.0.0-beta.2",
     "@ethereumjs/trie": "5.0.0-beta.1",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",

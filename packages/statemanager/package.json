@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "An Ethereum statemanager implementation",
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
