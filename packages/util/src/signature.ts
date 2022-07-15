@@ -33,7 +33,12 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
   const [signature, rec] = signSync(msgHash, privateKey, { recovered: true, der: false })
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
-  const v = chainId === undefined ? BigInt(rec + 27) : BigInt(rec + 35) + chainId * BigInt(2)
+  let v
+  if (chainId !== undefined) {
+    v = BigInt(rec) + chainId * BigInt(2) + BigInt(35)
+  } else {
+    v = BigInt(rec + 27)
+  }
   const recovery = BigInt(rec)
   return { r, s, v, recovery }
 }
@@ -45,24 +50,28 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
  * Which determines which point on the EC is used
  */
 
-export function calculateSigRecovery(v: bigint): bigint {
-  if (v < BigInt(27) && v > BigInt(1)) {
-    // Returns an invalid signature value instead of throwing error
-    return BigInt(-1)
-  }
-  if (v > BigInt(28) && v < BigInt(35)) {
-    // Returns an invalid signature value instead of throwing error
-    return BigInt(-1)
-  }
-  if (v === BigInt(27) || v === BigInt(28)) {
-    return v - BigInt(27)
-  }
-  if (v === BigInt(0) || v === BigInt(1)) {
-    return v
-  } else if ((BigInt(0) - BigInt(35) - v) % BigInt(2) === BigInt(0)) {
-    return BigInt(0)
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (chainId !== undefined) {
+    return v - (chainId * BigInt(2) + BigInt(35))
   } else {
-    return BigInt(1)
+    if (v < BigInt(27) && v > BigInt(1)) {
+      // Returns an invalid signature value instead of throwing error
+      return BigInt(-1)
+    }
+    if (v > BigInt(28) && v < BigInt(35)) {
+      // Returns an invalid signature value instead of throwing error
+      return BigInt(-1)
+    }
+    if (v === BigInt(27) || v === BigInt(28)) {
+      return v - BigInt(27)
+    }
+    if (v === BigInt(0) || v === BigInt(1)) {
+      return v
+    } else if ((BigInt(0) - BigInt(35) - v) % BigInt(2) === BigInt(0)) {
+      return BigInt(0)
+    } else {
+      return BigInt(1)
+    }
   }
 }
 
@@ -75,9 +84,15 @@ function isValidSigRecovery(recovery: bigint): boolean {
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Recovered public key
  */
-export const ecrecover = function (msgHash: Buffer, v: bigint, r: Buffer, s: Buffer): Buffer {
+export const ecrecover = function (
+  msgHash: Buffer,
+  v: bigint,
+  r: Buffer,
+  s: Buffer,
+  chainId?: bigint
+): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
-  const recovery = calculateSigRecovery(v)
+  const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error(`Invalid signature v value ${v}`)
   }
@@ -90,8 +105,8 @@ export const ecrecover = function (msgHash: Buffer, v: bigint, r: Buffer, s: Buf
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer): string {
-  const recovery = calculateSigRecovery(v)
+export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
+  const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
@@ -105,8 +120,8 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer): string {
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer): string {
-  const recovery = calculateSigRecovery(v)
+export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
+  const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
@@ -149,7 +164,6 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
   }
 
   const recovery = calculateSigRecovery(v)
-
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v = v + BigInt(27)
@@ -172,13 +186,14 @@ export const isValidSignature = function (
   v: bigint,
   r: Buffer,
   s: Buffer,
-  homesteadOrLater: boolean = true
+  homesteadOrLater: boolean = true,
+  chainId?: bigint
 ): boolean {
   if (r.length !== 32 || s.length !== 32) {
     return false
   }
 
-  if (!isValidSigRecovery(calculateSigRecovery(v))) {
+  if (!isValidSigRecovery(calculateSigRecovery(v, chainId))) {
     return false
   }
 

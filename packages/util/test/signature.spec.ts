@@ -299,11 +299,11 @@ tape('isValidSignature', function (t) {
 tape('message sig', function (t) {
   const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
   const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+  const v = BigInt(27)
 
   t.test('should return hex strings that the RPC can use', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    const v = BigInt(27)
     st.equal(toRpcSig(v, r, s), sig)
     const recovery = calculateSigRecovery(v)
     st.deepEqual(fromRpcSig(sig), {
@@ -384,8 +384,8 @@ tape('message sig', function (t) {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
-    const recovery = calculateSigRecovery(v)
-    st.equal(toRpcSig(v, r, s), sig)
+    const recovery = calculateSigRecovery(v, chainId)
+    st.equal(toRpcSig(v, r, s, chainId), sig)
     st.deepEqual(fromRpcSig(sig), {
       v,
       r,
