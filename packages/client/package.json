@@ -54,7 +54,7 @@
     "@ethereumjs/blockchain": "6.0.0-beta.2",
     "@ethereumjs/common": "3.0.0-beta.2",
     "@ethereumjs/devp2p": "5.0.0-beta.2",
-    "@ethereumjs/evm": "1.0.0-beta.1",
+    "@ethereumjs/evm": "1.0.0-beta.2",
     "@ethereumjs/ethash": "2.0.0-beta.2",
     "@ethereumjs/statemanager": "1.0.0-beta.1",
     "@ethereumjs/trie": "5.0.0-beta.1",

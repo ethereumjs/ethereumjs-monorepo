@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "license": "MPL-2.0",
   "author": "EthereumJS",
