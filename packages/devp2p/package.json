@@ -37,7 +37,7 @@
     "test": "npm run tape -- ./test/index.ts"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.1",
+    "@ethereumjs/common": "3.0.0-beta.2",
     "@scure/base": "1.1.1",
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",

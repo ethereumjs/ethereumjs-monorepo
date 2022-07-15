@@ -52,7 +52,7 @@
     "@chainsafe/libp2p-noise": "^4.1.1",
     "@ethereumjs/block": "4.0.0-beta.2",
     "@ethereumjs/blockchain": "6.0.0-beta.2",
-    "@ethereumjs/common": "3.0.0-beta.1",
+    "@ethereumjs/common": "3.0.0-beta.2",
     "@ethereumjs/devp2p": "5.0.0-beta.1",
     "@ethereumjs/evm": "1.0.0-beta.1",
     "@ethereumjs/ethash": "2.0.0-beta.1",
