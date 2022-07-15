@@ -1,5 +1,7 @@
 #!/bin/sh
 
+FILESCHANGED=$(git diff --diff-filter=d --name-only --relative $(git rev-parse --symbolic-full-name --abbrev-ref @{u}) | grep -E '\.(js|jsx|ts|tsx)')
+
 BLUE="\033[0;34m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
@@ -22,7 +24,12 @@ dim "\t --ext .js,.jsx,.ts,.tsx \\ "
 
 blue "[Lint]${NOCOLOR} checking..."
 
-eslint --format codeframe --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx
+if [ -n "$FILESCHANGED"]; then
+    blue "[Lint]${GREEN} DONE."
+    exit
+fi
+
+eslint --format codeframe --config ./.eslintrc.js $FILESCHANGED
 
 RETURN_CODE=$?
 
