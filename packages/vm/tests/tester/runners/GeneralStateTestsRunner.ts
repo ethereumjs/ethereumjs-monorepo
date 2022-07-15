@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { toBuffer } from '@ethereumjs/util'
+import { isTruthy, toBuffer } from '@ethereumjs/util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
 import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 
@@ -13,7 +13,7 @@ function parseTestCases(
 ) {
   let testCases = []
 
-  if (testData['post'][forkConfigTestSuite]) {
+  if (isTruthy(testData['post'][forkConfigTestSuite])) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       const testIndexes = testCase['indexes']
       const tx = { ...testData.transaction }
@@ -33,7 +33,7 @@ function parseTestCases(
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
 
-      if (tx.accessLists) {
+      if (isTruthy(tx.accessLists)) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
         if (tx.chainId == undefined) {
           tx.chainId = 1
@@ -60,7 +60,7 @@ function parseTestCases(
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
-  if (options.dist) {
+  if (isTruthy(options.dist)) {
     ;({ VM } = require('../../../dist'))
   } else {
     ;({ VM } = require('../../../src'))
@@ -86,7 +86,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
-      if (options.jsontrace) {
+      if (isTruthy(options.jsontrace)) {
         vm.evm.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
@@ -148,7 +148,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       return
     }
     for (const testCase of testCases) {
-      if (options.reps) {
+      if (isTruthy(options.reps)) {
         let totalTimeSpent = 0
         for (let x = 0; x < options.reps; x++) {
           totalTimeSpent += await runTestCase(options, testCase, t)

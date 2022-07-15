@@ -1,6 +1,7 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CheckpointTrie } from './checkpoint'
 import { Proof } from '../types'
+import { isFalsy } from '@ethereumjs/util'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -29,7 +30,7 @@ export class SecureTrie extends CheckpointTrie {
    * @param value
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    if (!val || val.toString() === '') {
+    if (isFalsy(val) || val.toString() === '') {
       await this.del(key)
     } else {
       const hash = Buffer.from(keccak256(key))

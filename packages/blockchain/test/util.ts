@@ -1,4 +1,4 @@
-import { bufArrToArr, toBuffer } from '@ethereumjs/util'
+import { bufArrToArr, isTruthy, toBuffer } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -207,7 +207,9 @@ function createBlock(
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
-    londonHfBlock && number > londonHfBlock ? parentBlock.header.calcNextBaseFee() : undefined
+    isTruthy(londonHfBlock) && number > londonHfBlock
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
 
   return Block.fromBlockData(
     {

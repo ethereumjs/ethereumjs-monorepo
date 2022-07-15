@@ -5,6 +5,8 @@ import {
   bigIntToHex,
   bufferToBigInt,
   intToHex,
+  isFalsy,
+  isTruthy,
   MAX_UINT64,
 } from '@ethereumjs/util'
 
@@ -398,7 +400,11 @@ export class Interpreter {
   useGas(amount: bigint, context?: string): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._runState.gasLeft})`)
+      debugGas(
+        `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
+          this._runState.gasLeft
+        })`
+      )
     }
     if (this._runState.gasLeft < BigInt(0)) {
       this._runState.gasLeft = BigInt(0)
@@ -414,7 +420,9 @@ export class Interpreter {
   refundGas(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
       debugGas(
-        `${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._runState.gasRefund})`
+        `${typeof context === 'string' ? context + ': ' : ''}refund ${amount} gas (-> ${
+          this._runState.gasRefund
+        })`
       )
     }
     this._runState.gasRefund += amount
@@ -428,7 +436,9 @@ export class Interpreter {
   subRefund(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
       debugGas(
-        `${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._runState.gasRefund})`
+        `${typeof context === 'string' ? context + ': ' : ''}sub gas refund ${amount} (-> ${
+          this._runState.gasRefund
+        })`
       )
     }
     this._runState.gasRefund -= amount
@@ -823,7 +833,7 @@ export class Interpreter {
 
     // Set return value
     if (
-      results.execResult.returnValue &&
+      isTruthy(results.execResult.returnValue) &&
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
@@ -940,7 +950,7 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
+    if (isFalsy(this._result.selfdestruct[this._env.address.buf.toString('hex')])) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 

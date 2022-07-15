@@ -7,6 +7,7 @@ import { encode, decode } from './message'
 import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
 import { DPT, PeerInfo } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import { isTruthy } from '@ethereumjs/util'
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -159,7 +160,7 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    if (this._socket && peer.udpPort)
+    if (this._socket && isTruthy(peer.udpPort))
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
@@ -199,12 +200,12 @@ export class Server extends EventEmitter {
       case 'pong': {
         let rkey = info.data.hash.toString('hex')
         const rkeyParity = this._parityRequestMap.get(rkey)
-        if (rkeyParity) {
+        if (isTruthy(rkeyParity)) {
           rkey = rkeyParity
           this._parityRequestMap.delete(rkeyParity)
         }
         const request = this._requests.get(rkey)
-        if (request) {
+        if (isTruthy(request)) {
           this._requests.delete(rkey)
           request.deferred.resolve({
             id: peerId,

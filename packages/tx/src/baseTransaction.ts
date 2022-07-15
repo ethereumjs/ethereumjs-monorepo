@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { isTruthy } from '@ethereumjs/util'
 import {
   Address,
   BigIntLike,
@@ -359,7 +360,7 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected _getCommon(common?: Common, chainId?: BigIntLike) {
     // Chain ID provided
-    if (chainId) {
+    if (isTruthy(chainId)) {
       const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {

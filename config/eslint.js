@@ -45,7 +45,8 @@ module.exports = {
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],
     '@typescript-eslint/restrict-plus-operands': 'off',
-    'import/no-default-export' : ['error']
+    'import/no-default-export' : ['error'],
+    '@typescript-eslint/strict-boolean-expressions': ['error']
   },
   parserOptions: {
     sourceType: 'module',

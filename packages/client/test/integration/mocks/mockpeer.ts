@@ -63,7 +63,7 @@ export class MockPeer extends Peer {
     })
     await Promise.all(
       this.protocols.map(async (p) => {
-        if (!stream.protocols.includes(`${p.name}/${p.versions[0]}`)) return
+        if (!(stream.protocols as string[]).includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
         await this.bindProtocol(p, new MockSender(p.name, pushableFn, receiver))
       })

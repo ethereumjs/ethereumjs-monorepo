@@ -39,9 +39,8 @@ export class PendingBlock {
   async start(vm: VM, parentBlock: Block, headerData: Partial<HeaderData> = {}) {
     const number = parentBlock.header.number + BigInt(1)
     const { gasLimit } = parentBlock.header
-    const baseFeePerGas = vm._common.isActivatedEIP(1559)
-      ? parentBlock.header.calcNextBaseFee()
-      : undefined
+    const baseFeePerGas =
+      vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -126,7 +125,8 @@ export class PendingBlock {
       await this.txPool.txsByPriceAndNonce((builder as any).headerData.baseFeePerGas)
     ).filter(
       (tx) =>
-        !(builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash()))
+        (builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash())) ===
+        false
     )
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0

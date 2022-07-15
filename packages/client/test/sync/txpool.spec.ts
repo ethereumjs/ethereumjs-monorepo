@@ -2,7 +2,8 @@ import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { Account, privateToAddress } from '@ethereumjs/util'
+import { Account, isFalsy, isTruthy, privateToAddress } from '@ethereumjs/util'
+import { StateManager } from '@ethereumjs/statemanager'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 import { Config } from '../../lib/config'
@@ -27,12 +28,17 @@ const setup = () => {
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const config = new Config({ transports: [] })
 
-const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, pool?: any) => {
-  if (!pool) {
+const handleTxs = async (
+  txs: any[],
+  failMessage: string,
+  stateManager?: StateManager,
+  pool?: TxPool
+) => {
+  if (isFalsy(pool)) {
     pool = setup().pool
   }
   try {
-    if (stateManager) {
+    if (isTruthy(stateManager)) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
     }
 
@@ -64,7 +70,7 @@ const handleTxs = async (txs: any[], failMessage: string, stateManager?: any, po
     pool.stop()
     pool.close()
     // Return false if the error message contains the fail message
-    return !e.message.includes(failMessage)
+    return !(e.message as string).includes(failMessage)
   }
 }
 
@@ -409,7 +415,7 @@ tape('[TxPool]', async (t) => {
     t.notOk(
       await handleTxs(txs, 'tx nonce too low', {
         getAccount: () => new Account(BigInt(1), BigInt('50000000000000000000')),
-      }),
+      } as any),
       'successfully rejected tx with invalid nonce'
     )
   })
@@ -429,7 +435,7 @@ tape('[TxPool]', async (t) => {
     t.notOk(
       await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000000')),
-      }),
+      } as any),
       'successfully rejected tx with too much data'
     )
   })
@@ -449,7 +455,7 @@ tape('[TxPool]', async (t) => {
     t.notOk(
       await handleTxs(txs, 'insufficient balance', {
         getAccount: () => new Account(BigInt(0), BigInt('0')),
-      }),
+      } as any),
       'successfully rejected account with too low balance'
     )
   })

@@ -17,7 +17,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
     ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
-      if (stack) {
+      if (typeof stack !== 'undefined') {
         st.fail('should only do PUSH0 once')
       }
       stack = e.stack

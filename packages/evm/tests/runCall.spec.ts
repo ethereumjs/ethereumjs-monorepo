@@ -13,6 +13,19 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
   return new Address(Buffer.from(keccak256(hashBuffer)).slice(12))
 }
 
+tape('Create where FROM account nonce is 0', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+  const res = await evm.runCall({ to: undefined })
+  t.equals(
+    res.createdAddress?.toString(),
+    '0xbd770416a3345f91e4b34576cb804a576fa48eb1',
+    'created valid address when FROM account nonce is 0'
+  )
+  t.end()
+})
+
 /*
     This test:
         Setups a contract at address 0x00..ff 
@@ -457,14 +470,13 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   }
 
   const result = await evm.runCall(runCallArgs)
-
-  const expectedAddress = Buffer.from('8eae784e072e961f76948a785b62c9a950fb17ae', 'hex')
+  const expectedAddress = '0x8eae784e072e961f76948a785b62c9a950fb17ae'
   const expectedCode = Buffer.from(
     '0000000000000000000000008eae784e072e961f76948a785b62c9a950fb17ae62c9a950fb17ae00000000000000000000000000000000000000000000000000',
     'hex'
   )
 
-  t.ok(result.createdAddress?.buf.equals(expectedAddress), 'created address correct')
+  t.equals(result.createdAddress?.toString(), expectedAddress, 'created address correct')
   const deployedCode = await eei.getContractCode(result.createdAddress!)
   t.ok(deployedCode.equals(expectedCode), 'deployed code correct')
 

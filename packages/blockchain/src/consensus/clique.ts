@@ -139,7 +139,7 @@ export class CliqueConsensus implements Consensus {
       const checkpointSigners = header.cliqueEpochTransitionSigners()
       const activeSigners = this.cliqueActiveSigners()
       for (const [i, cSigner] of checkpointSigners.entries()) {
-        if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
+        if (activeSigners[i]?.equals(cSigner) !== true) {
           throw new Error(
             `checkpoint signer not found in active signers list at index ${i}: ${cSigner}`
           )

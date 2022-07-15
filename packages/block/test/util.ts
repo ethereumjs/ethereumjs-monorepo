@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bufArrToArr } from '@ethereumjs/util'
+import { bufArrToArr, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { Block, BlockHeader } from '../src'
 
@@ -30,7 +30,9 @@ function createBlock(
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
-    londonHfBlock && number > londonHfBlock ? parentBlock.header.calcNextBaseFee() : undefined
+    isTruthy(londonHfBlock) && number > londonHfBlock
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
 
   return Block.fromBlockData(
     {

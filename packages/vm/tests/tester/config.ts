@@ -1,5 +1,6 @@
 import * as path from 'path'
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -242,7 +243,7 @@ const testLegacy: any = {
 export function getTestDirs(network: string, testType: string) {
   const testDirs = [testType]
   for (const key in testLegacy) {
-    if (key.toLowerCase() == network.toLowerCase() && testLegacy[key]) {
+    if (key.toLowerCase() === network.toLowerCase() && isTruthy(testLegacy[key])) {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
       testDirs.push('LegacyTests/Constantinople/' + testType)
@@ -262,17 +263,16 @@ export function getTestDirs(network: string, testType: string) {
  * @returns {Common} the Common which should be used
  */
 export function getCommon(targetNetwork: string) {
-  let network = targetNetwork
+  let network = targetNetwork.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
     network = network.slice(0, index)
   }
-  const networkLowercase = network.toLowerCase()
-  if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
+  if (normalHardforks.map((str) => str.toLowerCase()).includes(network)) {
     // normal hard fork, return the common with this hard fork
     // find the right upper/lowercased version
     const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-      currentValue.toLowerCase() == networkLowercase ? currentValue : previousValue
+      currentValue.toLowerCase() === network ? currentValue : previousValue
     )
     const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
     const hardforks = mainnetCommon.hardforks()
@@ -280,7 +280,7 @@ export function getCommon(targetNetwork: string) {
     for (const hf of hardforks) {
       // check if we enable this hf
       // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-      if (mainnetCommon.gteHardfork(hf.name) && hf.name != 'dao') {
+      if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
         // this hardfork should be activated at block 0
         testHardforks.push({
           name: hf.name,
@@ -311,10 +311,10 @@ export function getCommon(targetNetwork: string) {
     return common
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
-    const transitionForks =
-      transitionNetworks[network] ||
-      transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
-    if (!transitionForks) {
+    const transitionForks = isTruthy(transitionNetworks[network])
+      ? transitionNetworks[network]
+      : transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
+    if (isFalsy(transitionForks)) {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
@@ -324,13 +324,13 @@ export function getCommon(targetNetwork: string) {
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
-      if (mainnetCommon.gteHardfork(hf.name)) {
+      if (mainnetCommon.gteHardfork(hf.name) === true) {
         // this hardfork should be activated at block 0
         const forkBlockNumber = transitionForks[hf.name]
         testHardforks.push({
           name: hf.name,
           // forkHash: hf.forkHash,
-          block: forkBlockNumber === null ? null : forkBlockNumber || 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+          block: forkBlockNumber === null || isTruthy(forkBlockNumber) ? forkBlockNumber : 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
         })
       } else {
         // disable the hardfork
@@ -398,11 +398,11 @@ const expectedTestsFull: any = {
  * Returns the amount of expected tests for a given fork, assuming all tests are ran
  */
 export function getExpectedTests(fork: string, name: string) {
-  if (expectedTestsFull[name] == undefined) {
+  if (expectedTestsFull[name] === undefined) {
     return
   }
   for (const key in expectedTestsFull[name]) {
-    if (fork.toLowerCase() == key.toLowerCase()) {
+    if (fork.toLowerCase() === key.toLowerCase()) {
       return expectedTestsFull[name][key]
     }
   }

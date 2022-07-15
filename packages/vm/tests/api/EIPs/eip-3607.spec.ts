@@ -18,7 +18,7 @@ tape('EIP-3607 tests', (t) => {
       await vm.runTx({ tx })
       st.fail('runTx should have thrown')
     } catch (error: any) {
-      if (error.message.includes('EIP-3607')) {
+      if ((error.message as string).includes('EIP-3607')) {
         st.pass('threw correct error')
       } else {
         st.fail('did not throw correct error')

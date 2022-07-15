@@ -150,7 +150,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
 
-    if (!this.common.isActivatedEIP(1559)) {
+    if (this.common.isActivatedEIP(1559) === false) {
       throw new Error('EIP-1559 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])

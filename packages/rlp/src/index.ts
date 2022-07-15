@@ -74,7 +74,7 @@ function encodeLength(len: number, offset: number): Uint8Array {
 export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Array
 export function decode(input: Input, stream?: true): Decoded
 export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
-  if (!input || (input as any).length === 0) {
+  if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
     return Uint8Array.from([])
   }
 

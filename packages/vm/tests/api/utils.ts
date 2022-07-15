@@ -104,7 +104,7 @@ export function getTransaction(
  * Checks if in a karma test runner.
  * @returns boolean whether running in karma
  */
-export function isRunningInKarma(): Boolean {
+export function isRunningInKarma(): boolean {
   // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

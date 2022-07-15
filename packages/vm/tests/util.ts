@@ -15,7 +15,9 @@ import {
   bigIntToBuffer,
   bufferToBigInt,
   bufferToHex,
+  isFalsy,
   isHexPrefixed,
+  isTruthy,
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
@@ -107,19 +109,22 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {Transaction} Transaction to be passed to VM.runTx function
+ * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction} Transaction to be passed to VM.runTx function
  */
-export function makeTx(txData: any, opts?: TxOptions) {
+export function makeTx(
+  txData: any,
+  opts?: TxOptions
+): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction {
   let tx
-  if (txData.maxFeePerGas) {
+  if (isTruthy(txData.maxFeePerGas)) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
-  } else if (txData.accessLists) {
+  } else if (isTruthy(txData.accessLists)) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
     tx = Transaction.fromTxData(txData, opts)
   }
 
-  if (txData.secretKey) {
+  if (isTruthy(txData.secretKey)) {
     const privKey = toBuffer(txData.secretKey)
     return tx.sign(privKey)
   }
@@ -150,7 +155,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       const address = keyMap[key]
       delete keyMap[key]
 
-      if (testData) {
+      if (isTruthy(testData)) {
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
@@ -216,7 +221,7 @@ export function verifyAccountPostConditions(
 
       if (key === '0x') {
         key = '0x00'
-        acctData.storage['0x00'] = acctData.storage['0x00']
+        acctData.storage['0x00'] = isTruthy(acctData.storage['0x00'])
           ? acctData.storage['0x00']
           : acctData.storage['0x']
         delete acctData.storage['0x']
@@ -252,9 +257,9 @@ export function verifyAccountPostConditions(
  */
 export function verifyGas(results: any, testData: any, t: tape.Test) {
   const coinbaseAddr = testData.env.currentCoinbase
-  const preBal = testData.pre[coinbaseAddr] ? testData.pre[coinbaseAddr].balance : 0
+  const preBal = isTruthy(testData.pre[coinbaseAddr]) ? testData.pre[coinbaseAddr].balance : 0
 
-  if (!testData.post[coinbaseAddr]) {
+  if (isFalsy(testData.post[coinbaseAddr])) {
     return
   }
 
@@ -274,7 +279,7 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
  * @param testData from tests repo
  */
 export function verifyLogs(logs: any, testData: any, t: tape.Test) {
-  if (testData.logs) {
+  if (isTruthy(testData.logs)) {
     testData.logs.forEach(function (log: any, i: number) {
       const rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
@@ -313,8 +318,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
 /**
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param env object from tests repo
- * @param transactions transactions for the block (optional)
- * @param uncleHeaders uncle headers for the block (optional)
+ * @param opts block options (optional)
  * @returns the block
  */
 export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
@@ -353,7 +357,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
 
     const stateRoot = (await state.getAccount(address)).stateRoot
 
-    if (testData.exec && testData.exec.address === addressStr) {
+    if (testData.exec?.address === addressStr) {
       testData.root = stateRoot
     }
 
@@ -388,7 +392,7 @@ export function getRequiredForkConfigAlias(forkConfig: string): string {
  * Checks if in a karma test runner.
  * @returns boolean whether running in karma
  */
-export function isRunningInKarma(): Boolean {
+export function isRunningInKarma(): boolean {
   // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

@@ -1,4 +1,4 @@
-import { Account, Address } from '@ethereumjs/util'
+import { Account, Address, isFalsy, isTruthy } from '@ethereumjs/util'
 const Tree = require('functional-red-black-tree')
 
 export type getCb = (address: Address) => Promise<Account | undefined>
@@ -57,7 +57,7 @@ export class Cache {
     const keyStr = key.buf.toString('hex')
 
     const it = this._cache.find(keyStr)
-    if (it.node) {
+    if (isTruthy(it.node)) {
       const rlp = it.value.val
       const account = Account.fromRlpSerializedAccount(rlp)
       ;(account as any).virtual = it.value.virtual
@@ -72,7 +72,7 @@ export class Cache {
   keyIsDeleted(key: Address): boolean {
     const keyStr = key.buf.toString('hex')
     const it = this._cache.find(keyStr)
-    if (it.node) {
+    if (isTruthy(it.node)) {
       return it.value.deleted
     }
     return false
@@ -108,14 +108,14 @@ export class Cache {
     const it = this._cache.begin
     let next = true
     while (next) {
-      if (it.value && it.value.modified && !it.value.deleted) {
+      if (isTruthy(it.value) && isTruthy(it.value.modified) && isFalsy(it.value.deleted)) {
         it.value.modified = false
         const accountRlp = it.value.val
         const keyBuf = Buffer.from(it.key, 'hex')
         await this._putCb(keyBuf, accountRlp)
         next = it.hasNext
         it.next()
-      } else if (it.value && it.value.modified && it.value.deleted) {
+      } else if (isTruthy(it.value) && isTruthy(it.value.modified) && isTruthy(it.value.deleted)) {
         it.value.modified = false
         it.value.deleted = true
         it.value.virtual = true
@@ -187,7 +187,7 @@ export class Cache {
     const keyHex = key.buf.toString('hex')
     const it = this._cache.find(keyHex)
     const val = value.serialize()
-    if (it.node) {
+    if (isTruthy(it.node)) {
       this._cache = it.update({ val, modified, deleted, virtual })
     } else {
       this._cache = this._cache.insert(keyHex, { val, modified, deleted, virtual })

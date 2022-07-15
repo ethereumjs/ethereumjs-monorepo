@@ -1,3 +1,4 @@
+import { isTruthy } from '@ethereumjs/util'
 import {
   HEADS_KEY,
   HEAD_HEADER_KEY,
@@ -128,7 +129,7 @@ export class DBOp {
   }
 
   public updateCache(cacheMap: CacheMap) {
-    if (this.cacheString && cacheMap[this.cacheString]) {
+    if (isTruthy(this.cacheString) && isTruthy(cacheMap[this.cacheString])) {
       if (this.baseDBOp.type == 'put') {
         Buffer.isBuffer(this.baseDBOp.value) &&
           cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)

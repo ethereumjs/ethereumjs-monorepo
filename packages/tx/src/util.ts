@@ -18,7 +18,7 @@ export class AccessLists {
   public static getAccessListData(accessList: AccessListBuffer | AccessList) {
     let AccessListJSON
     let bufferAccessList
-    if (accessList && isAccessList(accessList)) {
+    if (isAccessList(accessList)) {
       AccessListJSON = accessList
       const newAccessList: AccessListBuffer = []
 

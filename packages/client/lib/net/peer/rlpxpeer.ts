@@ -10,6 +10,7 @@ import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
 import { RlpxServer } from '../server'
 import { Event } from '../../types'
+import { isTruthy } from '@ethereumjs/util'
 const devp2pCapabilities: any = {
   eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,
@@ -83,7 +84,7 @@ export class RlpxPeer extends Peer {
       const keys = versions.map((v: number) => name + String(v))
       keys.forEach((key: any) => {
         const capability = devp2pCapabilities[key]
-        if (capability) {
+        if (isTruthy(capability)) {
           capabilities.push(capability)
         }
       })

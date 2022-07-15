@@ -1,6 +1,6 @@
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { bufArrToArr } from '@ethereumjs/util'
+import { bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { unstrictDecode } from '../util'
@@ -30,7 +30,7 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
     pubKey.set(x, 1)
     return pubKey.slice(1)
   }
-  return Buffer.from(ecdh(publicKey, privateKey, { hashfn: hashfn }, Buffer.alloc(32)))
+  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(32)))
 }
 
 // a straigth rip from python interop w/go ecies implementation
@@ -77,7 +77,7 @@ export class ECIES {
   constructor(privateKey: Buffer, id: Buffer, remoteId: Buffer) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
-    this._remotePublicKey = remoteId ? id2pk(remoteId) : null
+    this._remotePublicKey = isTruthy(remoteId) ? id2pk(remoteId) : null
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
@@ -166,7 +166,7 @@ export class ECIES {
     this._ingressMac.update(Buffer.concat([xor(macSecret, this._nonce), remoteData]))
     this._egressMac = new MAC(macSecret)
 
-    if (!this._initMsg) return
+    if (isFalsy(this._initMsg)) return
     this._egressMac.update(Buffer.concat([xor(macSecret, this._remoteNonce), this._initMsg]))
   }
 
@@ -245,14 +245,16 @@ export class ECIES {
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
 
-    if (!this._remoteNonce) return
+    if (isFalsy(this._remoteNonce)) {
+      return
+    }
     this._remoteEphemeralPublicKey = Buffer.from(
       ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false)
     )
 
-    if (!this._remoteEphemeralPublicKey) return
+    if (isFalsy(this._remoteEphemeralPublicKey)) return
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    if (heid !== null && this._remoteEphemeralPublicKey) {
+    if (heid !== null && isTruthy(this._remoteEphemeralPublicKey)) {
       assertEq(
         keccak256(pk2id(this._remoteEphemeralPublicKey)),
         heid,

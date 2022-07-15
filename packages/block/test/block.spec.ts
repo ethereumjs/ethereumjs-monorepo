@@ -193,7 +193,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid transaction trie'))
+      st.ok((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -225,7 +225,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid uncle hash'))
+      st.ok((error.message as string).includes('invalid uncle hash'))
     }
   })
 

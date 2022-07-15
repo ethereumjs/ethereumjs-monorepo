@@ -20,7 +20,7 @@ export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 export async function getTests(
   onFile: Function,
   fileFilter: RegExp | string[] = /.json$/,
-  skipPredicate: Function = falsePredicate,
+  skipPredicate: (...args: any[]) => boolean = falsePredicate,
   directory: string,
   excludeDir: RegExp | string[] = []
 ): Promise<string[]> {
@@ -52,7 +52,7 @@ export async function getTests(
       const testsByName = JSON.parse(content)
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
-        if (!skipPredicate(testName, testsByName[testName])) {
+        if (skipPredicate(testName, testsByName[testName]) === false) {
           await onFile(parsedFileName, subDir, testName, testsByName[testName])
         }
       }

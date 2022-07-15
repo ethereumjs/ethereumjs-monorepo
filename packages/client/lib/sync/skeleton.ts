@@ -165,7 +165,7 @@ export class Skeleton extends MetaDBManager {
         const lastchain = this.status.progress.subchains[0]
         if (lastchain.head === headchain.tail - BigInt(1)) {
           const lasthead = await this.getBlock(lastchain.head)
-          if (lasthead?.hash().equals(head.header.parentHash)) {
+          if (lasthead?.hash().equals(head.header.parentHash) === true) {
             this.config.logger.debug(
               `Extended skeleton subchain with new head=${headchain.tail} tail=${lastchain.tail}`
             )
@@ -208,7 +208,7 @@ export class Skeleton extends MetaDBManager {
       // once more, ignore it instead of tearing down sync for a noop.
       if (lastchain.head === lastchain.tail) {
         const block = await this.getBlock(number)
-        if (block?.hash().equals(head.hash())) {
+        if (block?.hash().equals(head.hash()) === true) {
           return false
         }
       }
@@ -326,7 +326,7 @@ export class Skeleton extends MetaDBManager {
         if (
           (await this.getBlock(this.status.progress.subchains[1].head))
             ?.hash()
-            .equals(this.status.progress.subchains[0].next)
+            .equals(this.status.progress.subchains[0].next) === true
         ) {
           this.config.logger.debug(
             `Previous subchain merged head=${head} tail=${tail} next=${short(next)}`

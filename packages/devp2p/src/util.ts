@@ -1,4 +1,4 @@
-import { arrToBufArr } from '@ethereumjs/util'
+import { arrToBufArr, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
@@ -75,7 +75,7 @@ export function assertEq(
     if (expected.equals(actual)) return
     fullMsg = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
     const debugMsg = `[ERROR] ${fullMsg}`
-    if (messageName) {
+    if (isTruthy(messageName)) {
       debug(messageName, debugMsg)
     } else {
       debug(debugMsg)
@@ -85,7 +85,7 @@ export function assertEq(
 
   if (expected === actual) return
   fullMsg = `${msg}: ${expected} / ${actual}`
-  if (messageName) {
+  if (isTruthy(messageName)) {
     debug(messageName, fullMsg)
   } else {
     debug(fullMsg)

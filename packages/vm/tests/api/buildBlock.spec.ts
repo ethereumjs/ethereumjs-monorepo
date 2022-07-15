@@ -66,7 +66,11 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.addTransaction(tx)
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('tx has a higher gas limit than the remaining gas in the block')) {
+      if (
+        (error.message as string).includes(
+          'tx has a higher gas limit than the remaining gas in the block'
+        )
+      ) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -231,7 +235,7 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.revert()
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('Block has already been built')) {
+      if ((error.message as string).includes('Block has already been built')) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -255,7 +259,7 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.revert()
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('State has already been reverted')) {
+      if ((error.message as string).includes('State has already been reverted')) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -330,7 +334,7 @@ tape('BlockBuilder', async (t) => {
         st.fail('should throw error')
       } catch (error: any) {
         st.ok(
-          error.message.includes("is less than the block's baseFeePerGas"),
+          (error.message as string).includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error'
         )
       }
