@@ -67,7 +67,7 @@ export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
     }
     if (v === BigInt(0) || v === BigInt(1)) {
       return v
-    } else if ((BigInt(0) - BigInt(35) - v) % BigInt(2) === BigInt(0)) {
+    } else if ((v - (BigInt(0) - BigInt(35))) % BigInt(2) === BigInt(0)) {
       return BigInt(0)
     } else {
       return BigInt(1)
@@ -94,7 +94,7 @@ export const ecrecover = function (
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error(`Invalid signature v value ${v}`)
+    throw new Error(`Invalid signature v value`)
   }
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
