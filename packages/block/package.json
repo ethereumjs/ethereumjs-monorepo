@@ -34,7 +34,7 @@
     "@ethereumjs/tx": "4.0.0-beta.1",
     "@ethereumjs/util": "8.0.0-beta.1",
     "ethereum-cryptography": "^1.1.2",
-    "rlp": "4.0.0-beta.1"
+    "rlp": "4.0.0-beta.2"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",
