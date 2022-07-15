@@ -275,6 +275,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
+      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
     // Initialize the opcode data

@@ -32,7 +32,7 @@
   "dependencies": {
     "@ethereumjs/common": "3.0.0-beta.1",
     "@ethereumjs/util": "8.0.0-beta.1",
-    "ethereum-cryptography": "^1.0.3",
+    "ethereum-cryptography": "^1.1.2",
     "rlp": "4.0.0-beta.1"
   },
   "devDependencies": {

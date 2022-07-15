@@ -183,10 +183,14 @@ export class VMExecution extends Execution {
               // (signer states might have moved on when sync is ahead)
               skipBlockValidation = true
             }
+
+            // we are skipping header validation because the block has been picked from the
+            // blockchain and header should have already been validated while putBlock
             const result = await this.vm.runBlock({
               block,
               root: parentState,
               skipBlockValidation,
+              skipHeaderValidation: true,
             })
             void this.receiptsManager?.saveReceipts(block, result.receipts)
             txCounter += block.transactions.length
@@ -318,7 +322,9 @@ export class VMExecution extends Execution {
       vm._common.setHardforkByBlockNumber(blockNumber, td)
 
       if (txHashes.length === 0) {
-        const res = await vm.runBlock({ block })
+        // we are skipping header validation because the block has been picked from the
+        // blockchain and header should have already been validated while putBlock
+        const res = await vm.runBlock({ block, skipHeaderValidation: true })
         this.config.logger.info(
           `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
             block.transactions.length
