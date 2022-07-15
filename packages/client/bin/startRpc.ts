@@ -1,6 +1,6 @@
 import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
-import { RPCManager } from '../lib/rpc'
+import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import { EthereumClient } from '../lib/client'
 import {
   MethodConfig,
@@ -82,6 +82,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const jwtSecret =
     rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
   let withEngineMethods = false
+
+  if ((rpc || rpcEngine) && !config.saveReceipts) {
+    logger?.warn(
+      `Starting client without --saveReceipts might lead to interop issues with a CL especially if the CL intends to propose blocks, omitting methods=${saveReceiptsMethods}`
+    )
+  }
 
   if (rpc || ws) {
     let rpcHttpServer
