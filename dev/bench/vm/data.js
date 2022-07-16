@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657985220476,
+  "lastUpdate": 1657986529934,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c5fb3169c004beca1de1340ebebb8838062dfb03",
-          "message": " Monorepo: Remove esModuleInterop and allowSyntheticDefaultImports Options (cherry-picked) (#1975)\n\n* Monorepo: set esModuleInterop TS compiler option to false\r\n\r\n* client: change `import X` to `import * as X`\r\n\r\n* client: replace qheap with js-priority-queue\r\n\r\n* blockchain: change to import *\r\n\r\n* blockchain/tests: change to import *\r\n\r\n* block/test: change to import *\r\n\r\n* common: change to import *\r\n\r\n* common/tests: change to import *\r\n\r\n* devp2p: change imports to import * or require()\r\n\r\n* ethash/tests: change import tape to import * as\r\n\r\n* rlp/tests: change imports to import *\r\n\r\n* statemanager/test: change imports to import * as\r\n\r\n* trie/tests: change imports to import *\r\n\r\n* ts/tests: change imports to import *\r\n\r\n* util/tests: change imports to import *\r\n\r\n* vm: change json import to import *\r\n\r\n* vm/tests: change imports to import *\r\n\r\n* client/test: change imports to import *\r\n\r\n* vm/tests: fix API test imports\r\n\r\n* trie/benchmarks: fix benchmark test import\r\n\r\n* client: fix qheap import problem\r\n\r\n* Devp2p, EVM: fixed tests\r\n\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>",
-          "timestamp": "2022-06-21T14:40:00+02:00",
-          "tree_id": "05b40da563ff574d001fa8146b2cbbd9ec520835",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c5fb3169c004beca1de1340ebebb8838062dfb03"
-        },
-        "date": 1655815902258,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28652,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 26867,
-            "range": "±4.56%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27231,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24462,
-            "range": "±8.87%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 26537,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.04%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "76b349c4005bf39694d9aec6e5755124255b3e6b",
+          "message": "DevP2P: add snap protocol (#1883)\n\n* devp2p: add snap protocol\r\n\r\n* a small add for client\r\n\r\n* devp2p: Snap devp2p tests (#1893)\r\n\r\n* Add tests for SNAP protocol\r\n\r\n* Fix linting issues\r\n\r\n* Remove unneeded switch block\r\n\r\n* don't offer snap yet, try only consuming from other peers\r\n\r\n* prevent disconnect on snap on status timeout as no status handshake on snap\r\n\r\n* rebase fixes\r\n\r\n* fixes\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: Amir G <indigophi@protonmail.com>",
+          "timestamp": "2022-07-16T17:45:28+02:00",
+          "tree_id": "0fae0eaa0d4d44d64174b8ed9e7a25833944e772",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/76b349c4005bf39694d9aec6e5755124255b3e6b"
+        },
+        "date": 1657986529027,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23571,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22938,
+            "range": "±3.61%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 23182,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21045,
+            "range": "±8.66%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23424,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
