@@ -2,7 +2,7 @@ import { RLP, utils } from 'rlp'
 import { Peer } from '../rlpx/peer'
 import { formatLogData } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
-import snappy from 'snappyjs'
+import * as snappy from 'snappyjs'
 import { isTruthy } from '@ethereumjs/util'
 
 export class SNAP extends Protocol {
