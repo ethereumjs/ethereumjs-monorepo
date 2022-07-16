@@ -320,14 +320,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (await Trie.createProof(this._trie, address.buf)).map(
-      (p) => bufferToHex(p)
+    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.buf)).map((p) =>
+      bufferToHex(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
-      const proof = (await Trie.createProof(storageTrie, storageKey)).map((p) => bufferToHex(p))
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
       let value = bufferToHex(await this.getContractStorage(address, storageKey))
       if (value === '0x') {
         value = '0x0'
@@ -365,7 +365,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(rootHash, key, accountProof)
+    const value = await new Trie().verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -411,7 +411,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await new Trie().verifyProof(storageRoot, storageKey, storageProof)
       const reportedValue = setLengthLeft(
         Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
         32

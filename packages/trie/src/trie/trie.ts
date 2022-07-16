@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { isFalsy, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
 import { LevelDB } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
@@ -25,21 +25,27 @@ export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
+  protected hash: (msg: Uint8Array) => Buffer
 
   /** The backend DB */
   db: DB
   private _root: Buffer
   private _deleteFromDB: boolean
+  private _hashLen: number
 
   /**
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
   constructor(opts?: TrieOpts) {
-    this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
-
+    this.hash = (msg) => {
+      const _hash = opts?.hash ?? keccak256
+      return Buffer.from(_hash(msg))
+    }
     this.db = opts?.db ?? new LevelDB()
+    this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
+    this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
 
@@ -55,7 +61,8 @@ export class Trie {
     if (isFalsy(value)) {
       value = this.EMPTY_TRIE_ROOT
     }
-    if (value.length !== 32) throw new Error('Invalid root length. Roots are 32 bytes')
+    if (value.length !== this._hashLen)
+      throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
     this._root = value
   }
 
@@ -118,7 +125,7 @@ export class Trie {
     }
 
     await this.lock.wait()
-    if (this.root.equals(KECCAK256_RLP)) {
+    if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
       await this._createInitialNode(key, value)
     } else {
@@ -232,8 +239,10 @@ export class Trie {
    */
   async _createInitialNode(key: Buffer, value: Buffer): Promise<void> {
     const newNode = new LeafNode(bufferToNibbles(key), value)
-    this.root = newNode.hash()
-    await this.db.put(this.root, newNode.serialize())
+
+    const encoded = newNode.serialize()
+    this.root = this.hash(encoded)
+    await this.db.put(this.root, encoded)
   }
 
   /**
@@ -538,12 +547,10 @@ export class Trie {
     opStack: BatchDBOp[],
     remove: boolean = false
   ): Buffer | (EmbeddedNode | null)[] {
-    const rlpNode = node.serialize()
+    const encoded = node.serialize()
 
-    if (rlpNode.length >= 32 || topLevel) {
-      // Do not use TrieNode.hash() here otherwise serialize()
-      // is applied twice (performance)
-      const hashRoot = Buffer.from(keccak256(rlpNode))
+    if (encoded.length >= 32 || topLevel) {
+      const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
         if (this._deleteFromDB) {
@@ -556,7 +563,7 @@ export class Trie {
         opStack.push({
           type: 'put',
           key: hashRoot,
-          value: rlpNode,
+          value: encoded,
         })
       }
 
@@ -594,47 +601,41 @@ export class Trie {
   }
 
   /**
-   * Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
+   * Saves the nodes from a proof into the trie.
    * @param proof
-   * @param trie
    */
-  static async fromProof(proof: Proof, trie?: Trie): Promise<Trie> {
+  async fromProof(proof: Proof): Promise<void> {
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
-        key: Buffer.from(keccak256(nodeValue)),
+        key: Buffer.from(this.hash(nodeValue)),
         value: nodeValue,
       } as PutBatch
     })
 
-    if (!trie) {
-      trie = new Trie()
-      if (isTruthy(opStack[0])) {
-        trie.root = opStack[0].key
-      }
+    if (this.root === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+      this.root = opStack[0].key
     }
 
-    await trie.db.batch(opStack)
-    return trie
+    await this.db.batch(opStack)
+    return
   }
 
   /**
    * prove has been renamed to {@link Trie.createProof}.
    * @deprecated
-   * @param trie
    * @param key
    */
-  static async prove(trie: Trie, key: Buffer): Promise<Proof> {
-    return this.createProof(trie, key)
+  async prove(key: Buffer): Promise<Proof> {
+    return this.createProof(key)
   }
 
   /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
-   * @param trie
    * @param key
    */
-  static async createProof(trie: Trie, key: Buffer): Promise<Proof> {
-    const { stack } = await trie.findPath(key)
+  async createProof(key: Buffer): Promise<Proof> {
+    const { stack } = await this.findPath(key)
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
@@ -649,10 +650,10 @@ export class Trie {
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
-  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    let proofTrie = new Trie({ root: rootHash })
+  async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
+    const proofTrie = new Trie({ root: rootHash, hash: this.hash })
     try {
-      proofTrie = await Trie.fromProof(proof, proofTrie)
+      await proofTrie.fromProof(proof)
     } catch (e: any) {
       throw new Error('Invalid proof nodes given')
     }
@@ -671,7 +672,7 @@ export class Trie {
   /**
    * {@link verifyRangeProof}
    */
-  static verifyRangeProof(
+  verifyRangeProof(
     rootHash: Buffer,
     firstKey: Buffer | null,
     lastKey: Buffer | null,
@@ -685,7 +686,8 @@ export class Trie {
       lastKey && bufferToNibbles(lastKey),
       keys.map(bufferToNibbles),
       values,
-      proof
+      proof,
+      this.hash
     )
   }
 
@@ -701,7 +703,12 @@ export class Trie {
    * Creates a new trie backed by the same db.
    */
   copy(): Trie {
-    return new Trie({ db: this.db.copy(), root: this.root, deleteFromDB: this._deleteFromDB })
+    return new Trie({
+      db: this.db.copy(),
+      root: this.root,
+      deleteFromDB: this._deleteFromDB,
+      hash: this.hash,
+    })
   }
 
   /**

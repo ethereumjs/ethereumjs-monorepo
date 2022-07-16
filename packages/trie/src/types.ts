@@ -18,6 +18,8 @@ export type FoundNodeFunction = (
   walkController: WalkController
 ) => void
 
+export type HashFunc = (msg: Uint8Array) => Uint8Array
+
 export interface TrieOpts {
   /**
    * A database instance.
@@ -32,6 +34,11 @@ export interface TrieOpts {
    * Default: `false`
    */
   deleteFromDB?: boolean
+
+  /**
+   * Hash function used for hashing trie node and securing key.
+   */
+  hash?: HashFunc
 }
 
 export type BatchDBOp = PutBatch | DelBatch
