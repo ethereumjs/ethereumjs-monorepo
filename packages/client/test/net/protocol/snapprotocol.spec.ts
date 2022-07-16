@@ -32,13 +32,16 @@ tape('[SnapProtocol]', (t) => {
     const root = {
       number: new BN(4),
       stateRoot: Buffer.from([]),
-      hash: () => {
-        return Buffer.from([])
-      }
     }
     const reqId = new BN(1)
-    const origin = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-    const limit = Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex')
+    const origin = Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000000',
+      'hex'
+    )
+    const limit = Buffer.from(
+      '0000000000000000000000000f00000000000000000000000000000000000010',
+      'hex'
+    )
     const bytes = new BN(5000000)
 
     const res = p.decode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], [
@@ -46,14 +49,14 @@ tape('[SnapProtocol]', (t) => {
       root,
       origin,
       limit,
-      bytes
+      bytes,
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], {
       reqId: reqId,
       root: root,
       origin: origin,
       limit: limit,
-      bytes: bytes
+      bytes: bytes,
     })
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -81,15 +84,21 @@ tape('[SnapProtocol]', (t) => {
       stateRoot: Buffer.from([]),
       hash: () => {
         return Buffer.from([])
-      }
+      },
     }
     const reqId = new BN(1)
-    const origin = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-    const limit = Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex')
+    const origin = Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000000',
+      'hex'
+    )
+    const limit = Buffer.from(
+      '0000000000000000000000000f00000000000000000000000000000000000010',
+      'hex'
+    )
     const bytes = new BN(5000000)
     const accounts = [
       new Account(new BN(0), new BN('40000000000100000')),
-      new Account(new BN(2), new BN('40000000000200000'))
+      new Account(new BN(2), new BN('40000000000200000')),
     ]
 
     const res = p.decode(p.messages.filter((message) => message.name === 'GetStorageRanges')[0], [
@@ -98,7 +107,7 @@ tape('[SnapProtocol]', (t) => {
       accounts,
       origin,
       limit,
-      bytes
+      bytes,
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetStorageRanges')[0], {
       reqId: reqId,
@@ -106,7 +115,7 @@ tape('[SnapProtocol]', (t) => {
       accounts: accounts,
       origin: origin,
       limit: limit,
-      bytes: bytes
+      bytes: bytes,
     })
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -131,15 +140,11 @@ tape('[SnapProtocol]', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
-    const root = {
-      number: new BN(4),
-      stateRoot: Buffer.from([]),
-      hash: () => {
-        return Buffer.from([])
-      }
-    }
     const reqId = new BN(1)
-    const hashes = Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex')
+    const hashes = Buffer.from(
+      '0000000000000000000000000f00000000000000000000000000000000000010',
+      'hex'
+    )
     const bytes = new BN(5000000)
 
     const res = p.decode(p.messages.filter((message) => message.name === 'GetByteCodes')[0], [
