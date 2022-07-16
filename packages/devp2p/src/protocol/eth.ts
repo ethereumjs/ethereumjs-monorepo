@@ -144,7 +144,7 @@ export class ETH extends Protocol {
 
   _handleStatus(): void {
     if (this._status === null || this._peerStatus === null) return
-    clearTimeout(this._statusTimeoutId)
+    clearTimeout(this._statusTimeoutId!)
 
     assertEq(
       this._status[0],
