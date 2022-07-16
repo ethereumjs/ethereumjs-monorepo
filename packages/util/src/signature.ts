@@ -6,9 +6,22 @@ import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
 
 export interface ECDSASignature {
+  /**
+   * A 32 Byte Integer used for recovery.
+   */
   v: bigint
+  /**
+   * A 32 Byte Integer.  One half of the (r, s) signature pair
+   */
   r: Buffer
+  /**
+   * Recovery Identifier.  One half of the (r, s) signature pair
+   */
   s: Buffer
+  /**
+   * yParity: either 0 or 1, depending on which point on the elliptic curve should be used.
+   */
+  recovery: bigint
 }
 
 /**
@@ -18,26 +31,58 @@ export interface ECDSASignature {
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature {
-  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
-
+  const [signature, rec] = signSync(msgHash, privateKey, { recovered: true, der: false })
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
-
-  const v =
-    chainId === undefined
-      ? BigInt(recovery + 27)
-      : BigInt(recovery + 35) + BigInt(chainId) * BigInt(2)
-
-  return { r, s, v }
-}
-
-function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-  if (v === BigInt(0) || v === BigInt(1)) return v
-
-  if (chainId === undefined) {
-    return v - BigInt(27)
+  const recovery = BigInt(rec)
+  let v
+  if (chainId !== undefined) {
+    v = recovery + BigInt(35) + chainId * BigInt(2)
+  } else {
+    v = BigInt(rec + 27)
   }
-  return v - (chainId * BigInt(2) + BigInt(35))
+  return { r, s, v, recovery }
+}
+/**
+ * Based on the solving recovery formula
+ * v - (chainId * BigInt(2) + BigInt(35))
+ * To an integer or non-integer
+ * Resulting in recovery (yParity) value of 0 or 1.
+ * Which determines which point on the EC is used
+ */
+
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (chainId !== undefined) {
+    if (v === BigInt(0) || v === BigInt(1)) {
+      return v
+    } else if (v === BigInt(27) || v === BigInt(28)) {
+      return v - BigInt(27)
+    } else {
+      return v - (chainId * BigInt(2) + BigInt(35))
+    }
+  } else if (chainId === undefined) {
+    if (v === BigInt(0) || v === BigInt(1)) {
+      return v
+    } else if (v < BigInt(27)) {
+      // Returns an invalid signature value instead of throwing error
+      throw new Error('invlaid v value < 27')
+    } else if (v > BigInt(28) && v < BigInt(35)) {
+      // Returns an invalid signature value instead of throwing error
+      throw new Error('invlaid v value >28 & <35 ')
+    } else if (v > BigInt(36)) {
+      throw new Error('invlaid v value > 36')
+    }
+
+    if (v === BigInt(27) || v === BigInt(28)) {
+      return v - BigInt(27)
+    } else if ((((v - BigInt(35) - BigInt(0)) / BigInt(2)) * BigInt(2)) % BigInt(2) === BigInt(0)) {
+      return BigInt(0)
+    } else {
+      return BigInt(1)
+    }
+  } else {
+    throw new Error('unknown signature error')
+  }
 }
 
 function isValidSigRecovery(recovery: bigint): boolean {
@@ -59,9 +104,8 @@ export const ecrecover = function (
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw new Error(`Invalid signature v value`)
   }
-
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
 }
@@ -109,35 +153,42 @@ export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?:
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRpcSig = function (sig: string): ECDSASignature {
+export const fromRpcSig = function (sig: string, chainId?: bigint): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
 
   let r: Buffer
   let s: Buffer
   let v: bigint
+  let recovery: bigint
   if (buf.length >= 65) {
     r = buf.slice(0, 32)
     s = buf.slice(32, 64)
     v = bufferToBigInt(buf.slice(64))
+    if (v < 27) {
+      v = v + BigInt(27)
+    }
+    recovery = calculateSigRecovery(v, chainId)
   } else if (buf.length === 64) {
     // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
     r = buf.slice(0, 32)
     s = buf.slice(32, 64)
     v = BigInt(bufferToInt(buf.slice(32, 33)) >> 7)
+    if (v < 27) {
+      v = v + BigInt(27)
+    }
+    recovery = calculateSigRecovery(v, chainId)
     s[0] &= 0x7f
   } else {
     throw new Error('Invalid signature length')
   }
 
   // support both versions of `eth_sign` responses
-  if (v < 27) {
-    v = v + BigInt(27)
-  }
 
   return {
     v,
     r,
     s,
+    recovery,
   }
 }
 
@@ -157,7 +208,12 @@ export const isValidSignature = function (
     return false
   }
 
-  if (!isValidSigRecovery(calculateSigRecovery(v, chainId))) {
+  try {
+    const recovery = calculateSigRecovery(v, chainId)
+    if (!isValidSigRecovery(recovery)) {
+      return false
+    }
+  } catch {
     return false
   }
 
