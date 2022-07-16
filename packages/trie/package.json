@@ -30,7 +30,7 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register test/**/*.ts"
+    "test:node": "tape -r ts-node/register 'test/**/*.ts'"
   },
   "dependencies": {
     "@ethereumjs/util": "8.0.0-beta.1",
