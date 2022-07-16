@@ -1,8 +1,9 @@
-import { rlp } from 'ethereumjs-util'
+import { RLP, utils } from 'rlp'
 import { Peer } from '../rlpx/peer'
 import { formatLogData } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 import snappy from 'snappyjs'
+import { isTruthy } from '@ethereumjs/util'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
@@ -12,7 +13,7 @@ export class SNAP extends Protocol {
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
 
   _handleMessage(code: SNAP.MESSAGE_CODES, data: any) {
-    const payload = rlp.decode(data) as unknown
+    const payload = RLP.decode(data) as unknown
     const messageName = this.getMsgPrefix(code)
 
     // Note, this needs optimization, see issue #1882
@@ -44,7 +45,7 @@ export class SNAP extends Protocol {
    */
   sendMessage(code: SNAP.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(rlp.encode(payload).toString('hex'), this._verbose)
+    const logData = formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)
@@ -63,10 +64,11 @@ export class SNAP extends Protocol {
         throw new Error(`Unknown code ${code}`)
     }
 
-    payload = rlp.encode(payload)
+    payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+    const protocolVersion = this._peer._hello?.protocolVersion
+    if (isTruthy(protocolVersion) && protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 

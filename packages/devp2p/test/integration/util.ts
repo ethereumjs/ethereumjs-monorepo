@@ -241,7 +241,7 @@ export function twoPeerMsgExchange3(
       opts.receiveMessage(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: any) => {
-      if (opts.onPeerError1) {
+      if (isTruthy(opts.onPeerError1)) {
         opts.onPeerError1(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 1 error: ${err}`)
