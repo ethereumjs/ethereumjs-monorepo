@@ -185,7 +185,8 @@ tape('ecrecover', function (t) {
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
 
     const v = BigInt('68361967398315796')
-    const sender = ecrecover(msgHash, v, r, s)
+    const chainID = BigInt('34180983699157880')
+    const sender = ecrecover(msgHash, v, r, s, chainID)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
     st.end()
   })
@@ -284,7 +285,7 @@ tape('isValidSignature', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(41)
-    st.ok(isValidSignature(v, r, s, false))
+    st.ok(isValidSignature(v, r, s, false, chainId))
     st.end()
   })
   t.test('should work otherwise (chainId=150)', function (st) {
@@ -292,7 +293,7 @@ tape('isValidSignature', function (t) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
-    st.ok(isValidSignature(v, r, s, false))
+    st.ok(isValidSignature(v, r, s, false, chainId))
     st.end()
   })
 })
@@ -300,20 +301,18 @@ tape('isValidSignature', function (t) {
 tape('message sig', function (t) {
   const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
   const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-  const v = BigInt(27)
 
   t.test('should return hex strings that the RPC can use', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    st.equal(toRpcSig(v, r, s), sig)
-    const recovery = calculateSigRecovery(v)
+    st.equal(toRpcSig(BigInt(27), r, s), sig)
+    const recovery = calculateSigRecovery(BigInt(27))
     st.deepEqual(fromRpcSig(sig), {
-      v: v,
+      v: BigInt(27),
       r,
       s,
       recovery,
     })
-
     st.end()
   })
 
@@ -324,7 +323,7 @@ tape('message sig', function (t) {
     const recovery = calculateSigRecovery(v)
     st.equal(toCompactSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: BigInt(27),
+      v,
       r,
       s,
       recovery,
@@ -335,17 +334,14 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation (EIP-2098) (v=0)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    const v = BigInt(27)
-    const recovery = calculateSigRecovery(v)
     st.equal(toCompactSig(BigInt(0), r, s), sig)
-    st.equal(toCompactSig(v, r, s), sig)
+    const recovery = calculateSigRecovery(BigInt(0), chainId)
     st.deepEqual(fromRpcSig(sig), {
-      v: v,
+      v: BigInt(27),
       r,
       s,
       recovery,
     })
-
     st.end()
   })
 
@@ -387,7 +383,7 @@ tape('message sig', function (t) {
     const v = chainId * BigInt(2) + BigInt(35)
     const recovery = calculateSigRecovery(v, chainId)
     st.equal(toRpcSig(v, r, s, chainId), sig)
-    st.deepEqual(fromRpcSig(sig), {
+    st.deepEqual(fromRpcSig(sig, chainId), {
       v,
       r,
       s,
@@ -401,8 +397,9 @@ tape('message sig', function (t) {
     function (st) {
       const sig =
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
+      const chainID = BigInt('34180983699157880')
       const v = BigInt('68361967398315796')
-      st.equal(toRpcSig(v, r, s), sig)
+      st.equal(toRpcSig(v, r, s, chainID), sig)
       st.end()
     }
   )
