@@ -26,8 +26,8 @@ tape('SecureTrie', function (t) {
       const trie = new SecureTrie({ db: new LevelDB() })
       await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
-      const proof = await SecureTrie.createProof(trie, Buffer.from('key1aa'))
-      const val = await SecureTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+      const proof = await trie.createProof(Buffer.from('key1aa'))
+      const val = await trie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
       st.equal(val!.toString('utf8'), '01234')
       st.end()
     })

@@ -1,4 +1,3 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { EmbeddedNode } from '../../types'
@@ -37,10 +36,6 @@ export class BranchNode {
 
   serialize(): Buffer {
     return Buffer.from(RLP.encode(bufArrToArr(this.raw() as Buffer[])))
-  }
-
-  hash(): Buffer {
-    return Buffer.from(keccak256(this.serialize()))
   }
 
   getBranch(i: number) {

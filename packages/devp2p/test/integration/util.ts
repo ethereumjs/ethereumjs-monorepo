@@ -213,3 +213,39 @@ export function twoPeerMsgExchange2(
     })
   })
 }
+
+/**
+ * @param {Test} t
+ * @param {Array} capabilities Capabilities
+ * @param {Object} opts
+ * @param {Function} opts.onSendMessage (rlpxs, protocol) Optional handler function
+ * @param {Function} opts.onPeerError0 (err, rlpxs) Optional handler function
+ * @param {Function} opts.onPeerError1 (err, rlpxs) Optional handler function
+ * @param {Function} opts.onReceiveMessage (rlpxs, protocol, code, payload) Optional handler function
+ */
+export function twoPeerMsgExchange3(
+  t: Test,
+  opts: any,
+  capabilities?: any,
+  common?: Object | Common
+) {
+  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common)
+  rlpxs[0].on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    opts.sendMessage(rlpxs, protocol)
+  })
+
+  rlpxs[1].on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    protocol.on('message', async (code: any, payload: any) => {
+      opts.receiveMessage(rlpxs, protocol, code, payload)
+    })
+    peer.on('error', (err: any) => {
+      if (isTruthy(opts.onPeerError1)) {
+        opts.onPeerError1(err, rlpxs)
+      } else {
+        t.fail(`Unexpected peer 1 error: ${err}`)
+      }
+    })
+  })
+}

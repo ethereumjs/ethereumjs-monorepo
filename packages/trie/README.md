@@ -73,8 +73,8 @@ const trie = new Trie()
 
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const proof = await Trie.createProof(trie, Buffer.from('test'))
-  const value = await Trie.verifyProof(trie.root, Buffer.from('test'), proof)
+  const proof = await trie.createProof(Buffer.from('test'))
+  const value = await trie.verifyProof(trie.root, Buffer.from('test'), proof)
   console.log(value.toString()) // 'one'
 }
 
@@ -91,8 +91,8 @@ const trie = new Trie()
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
   await trie.put(Buffer.from('test2'), Buffer.from('two'))
-  const proof = await Trie.createProof(trie, Buffer.from('test3'))
-  const value = await Trie.verifyProof(trie.root, Buffer.from('test3'), proof)
+  const proof = await trie.createProof(Buffer.from('test3'))
+  const value = await trie.verifyProof(trie.root, Buffer.from('test3'), proof)
   console.log(value.toString()) // null
 }
 
@@ -109,10 +109,10 @@ const trie = new Trie()
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
   await trie.put(Buffer.from('test2'), Buffer.from('two'))
-  const proof = await Trie.createProof(trie, Buffer.from('test2'))
+  const proof = await trie.createProof(Buffer.from('test2'))
   proof[1].reverse()
   try {
-    const value = await Trie.verifyProof(trie.root, Buffer.from('test2'), proof)
+    const value = await trie.verifyProof(trie.root, Buffer.from('test2'), proof)
     console.log(value.toString()) // results in error
   } catch (err) {
     console.log(err) // Missing node in DB

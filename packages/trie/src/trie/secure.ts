@@ -1,4 +1,3 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CheckpointTrie } from './checkpoint'
 import { Proof } from '../types'
 import { isFalsy } from '@ethereumjs/util'
@@ -18,7 +17,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    const hash = Buffer.from(keccak256(key))
+    const hash = Buffer.from(this.hash(key))
     const value = await super.get(hash)
     return value
   }
@@ -33,7 +32,7 @@ export class SecureTrie extends CheckpointTrie {
     if (isFalsy(val) || val.toString() === '') {
       await this.del(key)
     } else {
-      const hash = Buffer.from(keccak256(key))
+      const hash = Buffer.from(this.hash(key))
       await super.put(hash, val)
     }
   }
@@ -43,28 +42,26 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   async del(key: Buffer): Promise<void> {
-    const hash = Buffer.from(keccak256(key))
+    const hash = Buffer.from(this.hash(key))
     await super.del(hash)
   }
 
   /**
    * prove has been renamed to {@link SecureTrie.createProof}.
    * @deprecated
-   * @param trie
    * @param key
    */
-  static async prove(trie: SecureTrie, key: Buffer): Promise<Proof> {
-    return this.createProof(trie, key)
+  async prove(key: Buffer): Promise<Proof> {
+    return this.createProof(key)
   }
 
   /**
    * Creates a proof that can be verified using {@link SecureTrie.verifyProof}.
-   * @param trie
    * @param key
    */
-  static createProof(trie: SecureTrie, key: Buffer): Promise<Proof> {
-    const hash = Buffer.from(keccak256(key))
-    return super.createProof(trie, hash)
+  async createProof(key: Buffer): Promise<Proof> {
+    const hash = this.hash(key)
+    return super.createProof(hash)
   }
 
   /**
@@ -75,15 +72,15 @@ export class SecureTrie extends CheckpointTrie {
    * @throws If proof is found to be invalid.
    * @returns The value from the key.
    */
-  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const hash = Buffer.from(keccak256(key))
+  async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
+    const hash = this.hash(key)
     return super.verifyProof(rootHash, hash, proof)
   }
 
   /**
    * Verifies a range proof.
    */
-  static verifyRangeProof(
+  verifyRangeProof(
     rootHash: Buffer,
     firstKey: Buffer | null,
     lastKey: Buffer | null,
@@ -93,9 +90,9 @@ export class SecureTrie extends CheckpointTrie {
   ): Promise<boolean> {
     return super.verifyRangeProof(
       rootHash,
-      firstKey && Buffer.from(keccak256(firstKey)),
-      lastKey && Buffer.from(keccak256(lastKey)),
-      keys.map((k) => Buffer.from(keccak256(k))),
+      firstKey && this.hash(firstKey),
+      lastKey && this.hash(lastKey),
+      keys.map((k) => this.hash(k)),
       values,
       proof
     )
