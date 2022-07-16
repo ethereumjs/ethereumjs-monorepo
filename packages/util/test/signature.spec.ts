@@ -11,6 +11,7 @@ import {
   privateToPublic,
   toCompactSig,
   toRpcSig,
+  calculateSigRecovery,
 } from '../src'
 
 const echash = Buffer.from(
@@ -108,6 +109,7 @@ tape('ecrecover', function (t) {
     st.end()
   })
   t.test('should recover a public key (chainId = 3)', function (st) {
+    const chainId = BigInt(3)
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = BigInt(41)
@@ -305,10 +307,12 @@ tape('message sig', function (t) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
     st.equal(toRpcSig(BigInt(27), r, s), sig)
+    const recovery = calculateSigRecovery(BigInt(27))
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(27),
       r,
       s,
+      recovery,
     })
     st.end()
   })
@@ -316,11 +320,14 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation (EIP-2098)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(BigInt(27), r, s), sig)
+    const v = BigInt(27)
+    const recovery = calculateSigRecovery(v)
+    st.equal(toCompactSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: BigInt(27),
+      v,
       r,
       s,
+      recovery,
     })
     st.end()
   })
@@ -329,10 +336,12 @@ tape('message sig', function (t) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(BigInt(0), r, s), sig)
+    const recovery = calculateSigRecovery(BigInt(0), chainId)
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(27),
       r,
       s,
+      recovery,
     })
     st.end()
   })
@@ -340,11 +349,14 @@ tape('message sig', function (t) {
   t.test('should support compact signature representation 2 (EIP-2098)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    st.equal(toCompactSig(BigInt(28), r, s), sig)
+    const v = BigInt(28)
+    const recovery = calculateSigRecovery(v)
+    st.equal(toCompactSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
-      v: BigInt(28),
+      v,
       r,
       s,
+      recovery,
     })
     st.end()
   })
@@ -353,10 +365,14 @@ tape('message sig', function (t) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     st.equal(toCompactSig(BigInt(1), r, s), sig)
+    const v = BigInt(1)
+    const recovery = calculateSigRecovery(v)
+    st.equal(toCompactSig(BigInt(1), r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: BigInt(28),
       r,
       s,
+      recovery,
     })
     st.end()
   })
@@ -366,11 +382,13 @@ tape('message sig', function (t) {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
+    const recovery = calculateSigRecovery(v, chainId)
     st.equal(toRpcSig(v, r, s, chainId), sig)
-    st.deepEqual(fromRpcSig(sig), {
+    st.deepEqual(fromRpcSig(sig, chainId), {
       v,
       r,
       s,
+      recovery,
     })
     st.end()
   })
