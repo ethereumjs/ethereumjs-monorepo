@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657986551833,
+  "lastUpdate": 1657988031716,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "74d5937b115d419a7d3fd697bc9c321355204a33",
-          "message": "Remove explicit browser builds as monorepo builds already target es2020 (#1985)\n\n* Remove explicity browser builds as monorepo builds\r\n\r\n* remove browser key from package.json except client",
-          "timestamp": "2022-06-22T20:34:22+02:00",
-          "tree_id": "4b99bdcca5166da67c9a1e243ad4c53604b6a270",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/74d5937b115d419a7d3fd697bc9c321355204a33"
-        },
-        "date": 1655923105025,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 27558,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 24935,
-            "range": "±9.24%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 27680,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 26985,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 44884,
-            "range": "±2.00%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 793,
-            "range": "±6.82%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 131,
-            "range": "±29.06%",
-            "unit": "ops/sec",
-            "extra": "41 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 79.98,
-            "range": "±11.93%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 16.47,
-            "range": "±6.17%",
-            "unit": "ops/sec",
-            "extra": "29 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±58.67%",
             "unit": "ops/sec",
             "extra": "35 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "12fa5375e80ae49ba32331b5e420dfcb3f755af2",
+          "message": "Disable hardhat tests CI job (#2048)",
+          "timestamp": "2022-07-16T18:09:56+02:00",
+          "tree_id": "92a3b5c7573112a98c62d4e77acade7485712084",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/12fa5375e80ae49ba32331b5e420dfcb3f755af2"
+        },
+        "date": 1657988031133,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 20570,
+            "range": "±8.47%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21337,
+            "range": "±6.78%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 21314,
+            "range": "±7.57%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 22303,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 23835,
+            "range": "±14.22%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 971,
+            "range": "±5.98%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 143,
+            "range": "±49.25%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 90.05,
+            "range": "±7.25%",
+            "unit": "ops/sec",
+            "extra": "57 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 18.26,
+            "range": "±5.64%",
+            "unit": "ops/sec",
+            "extra": "34 samples"
           }
         ]
       }
