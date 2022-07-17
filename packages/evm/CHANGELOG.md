@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.0.0-beta.2 - 2022-07-15
+
+Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)) for the main change set description.
+
+### Removed Default Exports
+
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+
+Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
+
+Now every import is a named import and we think the long term benefits will very much outweigh the one-time hassle of some import adoptions.
+
+#### Common Library Import Updates
+
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+
+So Common import and usage is changing from:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+to:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+### Removed Default Imports in this Library
+
+The main `EVM` class import has been updated, so import changes from:
+
+```typescript
+import EVM from '@ethereumjs/evm'
+```
+
+to:
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+```
+
+Other updates:
+
+- EVM `ExecResult`
+- Various internal components like `Stack`, `Memory`, `Message`, `TransientStorage`
+- Internal precompile exports
+
+## Other Changes
+
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 
+- Aligned EVM debug logger names, e.g. `vm:ops` -> `evm:ops`, PR [#2029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2029)
+- Fixed EVM precompile loading on hardfork change, PR [#2040](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2040)
+
 ## 1.0.0-beta.1 - 2022-06-30
 
 This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️

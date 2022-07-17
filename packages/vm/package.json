@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "6.0.0-beta.1",
+  "version": "6.0.0-beta.2",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -43,21 +43,21 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/block": "4.0.0-beta.1",
-    "@ethereumjs/blockchain": "6.0.0-beta.1",
-    "@ethereumjs/common": "3.0.0-beta.1",
-    "@ethereumjs/evm": "1.0.0-beta.1",
-    "@ethereumjs/tx": "4.0.0-beta.1",
-    "@ethereumjs/statemanager": "1.0.0-beta.1",
-    "@ethereumjs/trie": "5.0.0-beta.1",
+    "@ethereumjs/block": "4.0.0-beta.2",
+    "@ethereumjs/blockchain": "6.0.0-beta.2",
+    "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/evm": "1.0.0-beta.2",
+    "@ethereumjs/tx": "4.0.0-beta.2",
+    "@ethereumjs/statemanager": "1.0.0-beta.2",
+    "@ethereumjs/trie": "5.0.0-beta.2",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",
-    "@ethereumjs/util": "8.0.0-beta.1",
+    "@ethereumjs/util": "8.0.0-beta.2",
     "ethereum-cryptography": "^1.1.2",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
-    "rlp": "4.0.0-beta.1",
+    "rlp": "4.0.0-beta.2",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
