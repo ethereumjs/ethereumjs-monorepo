@@ -16,7 +16,7 @@ The change with the biggest effect on UX since the last Beta 1 releases is for s
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
-Now every import is a named import and we think the long term benefits will very much outweight the one-time hazzle of some import adoptions.
+Now every import is a named import and we think the long term benefits will very much outweigh the one-time hassle of some import adoptions.
 
 #### Common Library Import Updates
 
