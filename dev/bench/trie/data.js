@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657988031716,
+  "lastUpdate": 1658073653426,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "859087d6077f93be87187edb8e8139ccbd098600",
-          "message": "Evm refactor updates (#1977)\n\n* evm/vm: move EEI back into VM\r\n\r\n* vm: fix build\r\n\r\n* evm: move evm folder up\r\n\r\n* evm: lint\r\n\r\n* vm: lint\r\n\r\n* vm/evm: move files around\r\n\r\n* evm/vm: fix tests\r\n\r\n* evm: cleanup dependencies\r\n\r\n* evm: remove more dependencies\r\n\r\n* vm: fix build\r\n\r\n* vm: fix CI/tests (?)\r\n\r\n* client: fix tests (?)\r\n\r\n* client; test fixes",
-          "timestamp": "2022-06-23T11:12:19+02:00",
-          "tree_id": "759002ab4f8cd2d4f01444f85a67e0ecdf542c47",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/859087d6077f93be87187edb8e8139ccbd098600"
-        },
-        "date": 1655975775413,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 33057,
-            "range": "±2.56%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 30447,
-            "range": "±7.25%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32385,
-            "range": "±0.84%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 31979,
-            "range": "±0.96%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 53985,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 746,
-            "range": "±42.73%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 190,
-            "range": "±8.29%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 88.96,
-            "range": "±16.48%",
-            "unit": "ops/sec",
-            "extra": "59 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 18.02,
-            "range": "±12.76%",
-            "unit": "ops/sec",
-            "extra": "25 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±5.64%",
             "unit": "ops/sec",
             "extra": "34 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2dd63b91109188e5b4f5b251f47aae756f7e1841",
+          "message": "Sepolia (Beta 2) Releases (#2045)\n\n* Block -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Blockchain -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Common -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Devp2p -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Ethash -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* EVM -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* RLP -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* StateManager -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Trie -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Tx -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Util -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* VM -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Client -> Release: bumped version to v0.6.0, added CHANGELOG entry, updated README\r\n\r\n* Client: Minor Merge README updates\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Devp2p, Trie: added missing CHANGELOG entries\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-07-17T17:51:03+02:00",
+          "tree_id": "ae3f4807277a75c74ca00369ce7bd05a1911255d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2dd63b91109188e5b4f5b251f47aae756f7e1841"
+        },
+        "date": 1658073652204,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 22381,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 20754,
+            "range": "±7.27%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 21958,
+            "range": "±2.01%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 21715,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 29833,
+            "range": "±1.20%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 846,
+            "range": "±7.21%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 125,
+            "range": "±49.31%",
+            "unit": "ops/sec",
+            "extra": "50 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 90.54,
+            "range": "±5.74%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 10.14,
+            "range": "±67.40%",
+            "unit": "ops/sec",
+            "extra": "23 samples"
           }
         ]
       }
