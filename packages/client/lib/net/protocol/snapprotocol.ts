@@ -1,4 +1,4 @@
-import { BN, AccountData as AccountDataBody } from 'ethereumjs-util'
+import { AccountData as AccountDataBody, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 
@@ -14,20 +14,20 @@ type AccountData = {
 
 type GetAccountRangeOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   root: Buffer
   origin: Buffer
   limit: Buffer
-  bytes: BN
+  bytes: bigint
 }
 
 type GetStorageRangesOpts = {
-  reqId?: BN
+  reqId?: bigint
   root: Buffer
   accounts: Buffer[]
   origin: Buffer
   limit: Buffer
-  bytes: BN
+  bytes: bigint
 }
 
 type StorageData = {
@@ -36,16 +36,16 @@ type StorageData = {
 }
 
 type GetByteCodesOpts = {
-  reqId?: BN
+  reqId?: bigint
   hashes: Buffer[]
-  bytes: BN
+  bytes: bigint
 }
 
 type GetTrieNodesOpts = {
-  reqId?: BN
+  reqId?: bigint
   root: Buffer
   paths: Buffer[][]
-  bytes: BN
+  bytes: bigint
 }
 /*
  * Messages with responses that are added as
@@ -54,10 +54,8 @@ type GetTrieNodesOpts = {
 export interface SnapProtocolMethods {
   getAccountRange: (
     opts: GetAccountRangeOpts
-  ) => Promise<{ reqId: BN; accounts: AccountData[]; proof: Buffer[][] }>
+  ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[][] }>
 }
-
-const id = new BN(0)
 
 /**
  * Implements snap/1 protocol
@@ -65,28 +63,24 @@ const id = new BN(0)
  */
 export class SnapProtocol extends Protocol {
   private chain: Chain
+  private nextReqId = BigInt(0)
 
+  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'GetAccountRange',
       code: 0x00,
       response: 0x01,
       encode: ({ reqId, root, origin, limit, bytes }: GetAccountRangeOpts) => {
-        return [
-          (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-          root,
-          origin,
-          limit,
-          bytes,
-        ]
+        return [bigIntToBuffer(reqId ?? ++this.nextReqId), root, origin, limit, bytes]
       },
       decode: ([reqId, root, origin, limit, bytes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           root,
           origin,
           limit,
-          bytes: new BN(bytes),
+          bytes: bufferToBigInt(bytes),
         }
       },
     },
@@ -98,19 +92,19 @@ export class SnapProtocol extends Protocol {
         accounts,
         proof,
       }: {
-        reqId: BN
+        reqId: bigint
         accounts: AccountData[]
         proof: Buffer[]
       }) => {
         return [
-          reqId.toArrayLike(Buffer),
+          bigIntToBuffer(reqId ?? ++this.nextReqId),
           accounts.map((account) => [account.hash, account.body]),
           proof,
         ]
       },
       decode: ([reqId, accounts, proof]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           accounts: accounts.map(([hash, body]: any) => ({ hash, body } as AccountData)),
           proof,
         }
@@ -122,34 +116,46 @@ export class SnapProtocol extends Protocol {
       response: 0x03,
       encode: ({ reqId, root, accounts, origin, limit, bytes }: GetStorageRangesOpts) => {
         return [
-          (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+          bigIntToBuffer(reqId ?? ++this.nextReqId),
           root,
           accounts,
           origin,
           limit,
-          bytes,
+          bigIntToBuffer(bytes),
         ]
       },
       decode: ([reqId, root, accounts, origin, limit, bytes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           root,
           accounts,
           origin,
           limit,
-          bytes: new BN(bytes),
+          bytes: bufferToBigInt(bytes),
         }
       },
     },
     {
       name: 'StorageRanges',
       code: 0x03,
-      encode: ({ reqId, slots, proof }: { reqId: BN; slots: StorageData[]; proof: Buffer[] }) => {
-        return [reqId.toArrayLike(Buffer), slots.map((slot) => [slot.hash, slot.body]), proof]
+      encode: ({
+        reqId,
+        slots,
+        proof,
+      }: {
+        reqId: bigint
+        slots: StorageData[]
+        proof: Buffer[]
+      }) => {
+        return [
+          bigIntToBuffer(reqId ?? ++this.nextReqId),
+          slots.map((slot) => [slot.hash, slot.body]),
+          proof,
+        ]
       },
       decode: ([reqId, slots, proof]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           slots: slots.map(([hash, body]: any) => ({ hash, body } as StorageData)),
           proof,
         }
@@ -160,29 +166,25 @@ export class SnapProtocol extends Protocol {
       code: 0x04,
       response: 0x05,
       encode: ({ reqId, hashes, bytes }: GetByteCodesOpts) => {
-        return [
-          (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-          hashes,
-          bytes,
-        ]
+        return [bigIntToBuffer(reqId ?? ++this.nextReqId), hashes, bigIntToBuffer(bytes)]
       },
       decode: ([reqId, hashes, bytes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           hashes,
-          bytes: new BN(bytes),
+          bytes: bufferToBigInt(bytes),
         }
       },
     },
     {
       name: 'ByteCodes',
       code: 0x05,
-      encode: ({ reqId, codes }: { reqId: BN; codes: Buffer[] }) => {
-        return [reqId.toArrayLike(Buffer), codes]
+      encode: ({ reqId, codes }: { reqId: bigint; codes: Buffer[] }) => {
+        return [bigIntToBuffer(reqId ?? ++this.nextReqId), codes]
       },
       decode: ([reqId, codes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           codes,
         }
       },
@@ -192,31 +194,26 @@ export class SnapProtocol extends Protocol {
       code: 0x06,
       response: 0x07,
       encode: ({ reqId, root, paths, bytes }: GetTrieNodesOpts) => {
-        return [
-          (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-          root,
-          paths,
-          bytes,
-        ]
+        return [bigIntToBuffer(reqId ?? ++this.nextReqId), root, paths, bigIntToBuffer(bytes)]
       },
       decode: ([reqId, root, paths, bytes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           root,
           paths,
-          bytes: new BN(bytes),
+          bytes: bufferToBigInt(bytes),
         }
       },
     },
     {
       name: 'TrieNodes',
       code: 0x07,
-      encode: ({ reqId, nodes }: { reqId: BN; nodes: Buffer[] }) => {
-        return [reqId.toArrayLike(Buffer), nodes]
+      encode: ({ reqId, nodes }: { reqId: bigint; nodes: Buffer[] }) => {
+        return [bigIntToBuffer(reqId ?? ++this.nextReqId), nodes]
       },
       decode: ([reqId, nodes]: any) => {
         return {
-          reqId: new BN(reqId),
+          reqId: bufferToBigInt(reqId),
           nodes,
         }
       },
