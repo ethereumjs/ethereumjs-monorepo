@@ -38,6 +38,10 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 ```
 
+## SNAP Protocol Support
+
+[Ethereum Snapshot Protocol](https://github.com/ethereum/devp2p/blob/master/caps/snap.md) (SNAP) support has been added in PR [#1883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1883). This allows to run the SNAP protocol as a side-protocol to the ETH protocol for exchanging state snapshots between peers.
+
 ## Other Changes
 
 - Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 

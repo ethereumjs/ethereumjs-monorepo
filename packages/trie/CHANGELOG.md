@@ -20,6 +20,20 @@ Now every import is a named import and we think the long term benefits will very
 
 So if you use the Trie library together with other EthereumJS libraries check if the respetive imports need an update.
 
+## Custom Hash Function
+
+There is a new constructor option `hash` which allows to customize the hash function used for secure trie key hashing - see PR [#2043](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2043) - thanks to @libotony for the great contribution on this! ❤️
+
+This allows to swap out the applied `keccak256` hash functionality from the [@noble/hashes](https://github.com/paulmillr/noble-hashes) library and e.g. use a faster native implementation or an alternative hash function (the PR contribution e.g. was done with the goal to switch to `blake2b256` hashing).
+
+**Breaking:** Note that this change made it necessary to switch the current proof functionality methods from static to object-bound member functions.
+
+So the usage of the following methods change and need to be updated (for all types of tries):
+
+- `Trie.createProof(trie, myKey)` -> `trie.createProof(myKey)`
+- `Trie.verifyProof(trie.root, myKey, proof)` -> `trie.verifyProof(trie.root, myKey, proof)`
+- `Trie.verifyRangeProof(...)` -> `trie.verifyRangeProof(...)`
+
 ## Other Changes
 
 - Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
