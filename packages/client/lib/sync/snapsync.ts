@@ -1,7 +1,5 @@
-import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import type { Peer } from '../net/peer/peer'
-import { BN } from 'ethereumjs-util'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {}
 
@@ -37,14 +35,14 @@ export class SnapSynchronizer extends Synchronizer {
    * blockchain. Returns null if no valid peer is found
    */
   async best(): Promise<Peer | undefined> {
-    let best: [Peer, BN] | undefined
+    let best: [Peer, bigint] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number.gte(this.chain.blocks.height)) || (best && best[1].lt(number))) {
+        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
           best = [peer, number]
         }
       }
@@ -72,27 +70,32 @@ export class SnapSynchronizer extends Synchronizer {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
-    const stateRoot = latest.stateRoot
-    const rangeResult = await peer!.snap!.getAccountRange({
-      root: stateRoot,
-      origin: Buffer.from(
-        '0000000000000000000000000000000000000000000000000000000000000000',
-        'hex'
-      ),
-      limit: Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
-      bytes: new BN(5000000),
-    })
+    // Just a small snipped to test out the methods manually
+    // From/for g11tech:
+    //  Clean it up, once we have a full fetcher implemented, else let them
+    //  stay commented for easy reference and manual testing
+    //
+    // const stateRoot = latest.stateRoot
+    // const rangeResult = await peer!.snap!.getAccountRange({
+    //   root: stateRoot,
+    //   origin: Buffer.from(
+    //     '0000000000000000000000000000000000000000000000000000000000000000',
+    //     'hex'
+    //   ),
+    //   limit: Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+    //   bytes: BigInt(5000000),
+    // })
 
-    console.log({ rangeResult: rangeResult?.accounts[0] })
+    // console.log({ rangeResult: rangeResult?.accounts[0] })
     // if (rangeResult) {
     //   process.exit()
     // }
 
-    const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(latest.number)) {
-      this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
-    }
+    // const height = latest.number
+    // if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+    //   this.config.syncTargetHeight = height
+    //   this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+    // }
 
     return false
   }
