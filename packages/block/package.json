@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Provides Block serialization and help functions",
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
@@ -29,12 +29,12 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.1",
-    "@ethereumjs/trie": "5.0.0-beta.1",
-    "@ethereumjs/tx": "4.0.0-beta.1",
-    "@ethereumjs/util": "8.0.0-beta.1",
+    "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/trie": "5.0.0-beta.2",
+    "@ethereumjs/tx": "4.0.0-beta.2",
+    "@ethereumjs/util": "8.0.0-beta.2",
     "ethereum-cryptography": "^1.1.2",
-    "rlp": "4.0.0-beta.1"
+    "rlp": "4.0.0-beta.2"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",

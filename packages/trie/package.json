@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
@@ -33,13 +33,13 @@
     "test:node": "tape -r ts-node/register 'test/**/*.ts'"
   },
   "dependencies": {
-    "@ethereumjs/util": "8.0.0-beta.1",
+    "@ethereumjs/util": "8.0.0-beta.2",
     "abstract-level": "^1.0.3",
     "ethereum-cryptography": "^1.1.2",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "readable-stream": "^3.6.0",
-    "rlp": "4.0.0-beta.1",
+    "rlp": "4.0.0-beta.2",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {

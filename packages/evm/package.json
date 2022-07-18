@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "license": "MPL-2.0",
   "author": "EthereumJS",
@@ -34,17 +34,17 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.1",
+    "@ethereumjs/common": "3.0.0-beta.2",
     "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
-    "@ethereumjs/util": "8.0.0-beta.1",
+    "@ethereumjs/util": "8.0.0-beta.2",
     "ethereum-cryptography": "^1.1.2",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
-    "@ethereumjs/statemanager": "1.0.0-beta.1",
+    "@ethereumjs/statemanager": "1.0.0-beta.2",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
