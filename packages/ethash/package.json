@@ -21,6 +21,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
     "test": "tape -r ts-node/register test/*.spec.ts",

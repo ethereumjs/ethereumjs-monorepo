@@ -22,6 +22,7 @@
     "docs:build": "typedoc --options typedoc.js",
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",

@@ -39,6 +39,7 @@
     "coverage": "nyc npm run test:unit",
     "docs:build": "typedoc --options typedoc.js --tsconfig tsconfig.prod.json",
     "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:unit && npm run test:integration",
