@@ -1,4 +1,3 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { nibblesToBuffer } from '../../util/nibbles'
@@ -52,9 +51,5 @@ export class ExtensionNode {
 
   serialize(): Buffer {
     return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
-  }
-
-  hash(): Buffer {
-    return Buffer.from(keccak256(this.serialize()))
   }
 }

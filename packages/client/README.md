@@ -97,7 +97,7 @@ There are dedicated instructions on how to setup for running the client in conju
 
 Testnet Instructions:
 
-- [Kiln v2.1 Public Testnet](./kiln/)
+- [Merge Testnet Setup](./merge/)
 
 #### Sync Scenarios
 

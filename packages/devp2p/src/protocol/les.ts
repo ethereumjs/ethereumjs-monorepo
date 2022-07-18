@@ -91,7 +91,7 @@ export class LES extends Protocol {
 
   _handleStatus() {
     if (this._status === null || this._peerStatus === null) return
-    clearTimeout(this._statusTimeoutId)
+    clearTimeout(this._statusTimeoutId!)
     assertEq(
       this._status['protocolVersion'],
       this._peerStatus['protocolVersion'],

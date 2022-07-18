@@ -1,6 +1,6 @@
 import { nibblesToBuffer, nibblesCompare } from '../util/nibbles'
 import { Trie, BranchNode, ExtensionNode, LeafNode } from '../trie'
-import { Nibbles, TrieNode } from '../types'
+import { HashFunc, Nibbles, TrieNode } from '../types'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -315,11 +315,12 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 async function verifyProof(
   rootHash: Buffer,
   key: Buffer,
-  proof: Buffer[]
+  proof: Buffer[],
+  hash: HashFunc
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  let proofTrie = new Trie({ root: rootHash })
+  const proofTrie = new Trie({ root: rootHash, hash: hash })
   try {
-    proofTrie = await Trie.fromProof(proof, proofTrie)
+    await proofTrie.fromProof(proof)
   } catch (e) {
     throw new Error('Invalid proof nodes given')
   }
@@ -411,7 +412,8 @@ export async function verifyRangeProof(
   lastKey: Nibbles | null,
   keys: Nibbles[],
   values: Buffer[],
-  proof: Buffer[] | null
+  proof: Buffer[] | null,
+  hash: HashFunc
 ): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
@@ -432,7 +434,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie()
+    const trie = new Trie({ hash: hash })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
@@ -450,7 +452,7 @@ export async function verifyRangeProof(
 
   // Zero element proof
   if (keys.length === 0) {
-    const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof)
+    const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof, hash)
 
     if (value !== null || (await hasRightElement(trie, firstKey))) {
       throw new Error('invalid zero element proof: value mismatch')
@@ -461,7 +463,7 @@ export async function verifyRangeProof(
 
   // One element proof
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
-    const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof)
+    const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof, hash)
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
       throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
@@ -483,8 +485,8 @@ export async function verifyRangeProof(
     )
   }
 
-  let trie = new Trie({ root: rootHash })
-  trie = await Trie.fromProof(proof, trie)
+  const trie = new Trie({ root: rootHash, hash: hash })
+  await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)

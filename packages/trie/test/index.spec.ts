@@ -1,11 +1,14 @@
 import * as tape from 'tape'
-import { bufArrToArr, KECCAK256_NULL } from '@ethereumjs/util'
+import { bufArrToArr, KECCAK256_NULL, KECCAK256_RLP_S } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { CheckpointTrie, LevelDB, Trie } from '../src'
+import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'
 
 // explicitly import buffer,
 // needed for karma-typescript bundling
 import { Buffer } from 'buffer'
+import { blake2b } from 'ethereum-cryptography/blake2b'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bufferToNibbles } from '../src/util/nibbles'
 
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
@@ -247,7 +250,7 @@ tape('shall handle the case of node not found correctly', async (t) => {
   t.ok(path.node != null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
-  await trie.db.del(stack[1].hash()) // delete the BranchNode -> value1 from the DB
+  await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
 
   path = await trie.findPath(Buffer.from('aaa'))
 
@@ -337,5 +340,43 @@ tape('setting back state root (deleteFromDB)', async (t) => {
     t.deepEqual(await s.trie.get(k1), s.expected, s.msg)
   }
 
+  t.end()
+})
+
+tape('dummy hash', async (t) => {
+  const hash: HashFunc = (msg) => {
+    const hashLen = 32
+    if (msg.length <= hashLen - 5) {
+      return Buffer.concat([Buffer.from('hash_'), Buffer.alloc(hashLen - msg.length, 0), msg])
+    } else {
+      return Buffer.concat([Buffer.from('hash_'), msg.slice(0, hashLen - 5)])
+    }
+  }
+
+  const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
+  const expectedRoot = Buffer.from(hash(new LeafNode(bufferToNibbles(k), v).serialize()))
+
+  const trie = new Trie({ hash: hash })
+  await trie.put(k, v)
+  t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
+
+  t.end()
+})
+
+tape('blake2b256 trie root', async (t) => {
+  const trie = new Trie({ hash: (msg) => blake2b(msg, 32) })
+  await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+
+  t.equal(
+    trie.root.toString('hex'),
+    'e118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
+  )
+  t.end()
+})
+
+tape('empty root', async (t) => {
+  const trie = new Trie()
+
+  t.equal(trie.root.toString('hex'), KECCAK256_RLP_S)
   t.end()
 })

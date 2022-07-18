@@ -58,3 +58,8 @@ export const KECCAK256_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc0
  * Keccak-256 hash of the RLP of null
  */
 export const KECCAK256_RLP = Buffer.from(KECCAK256_RLP_S, 'hex')
+
+/**
+ *  RLP encoded empty string
+ */
+export const RLP_EMPTY_STRING = Buffer.from([0x80])
