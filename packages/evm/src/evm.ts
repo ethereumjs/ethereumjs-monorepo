@@ -548,7 +548,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
           if (
             EOF.validOpcodes(
               result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
-            ) !== false
+            ) === false
           ) {
             result = {
               ...result,
