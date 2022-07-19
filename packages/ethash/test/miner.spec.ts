@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Ethash from '../src'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Ethash } from '../src'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 
 const cacheDB = new MemoryLevel()

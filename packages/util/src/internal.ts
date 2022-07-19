@@ -102,7 +102,7 @@ export function arrayContainsArray(
     )
   }
 
-  return subset[some ? 'some' : 'every']((value) => superset.indexOf(value) >= 0)
+  return subset[some === true ? 'some' : 'every']((value) => superset.indexOf(value) >= 0)
 }
 
 /**
@@ -182,7 +182,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
 
   for (let i = 0; i < params.length; i++) {
     let value = params[i][key]
-    if (allowEmpty && !value) {
+    if (allowEmpty === true && !value) {
       value = ''
     } else if (typeof value !== 'string') {
       throw new Error(`invalid abi - expected type 'string', received ${typeof value}`)
@@ -203,7 +203,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
 export function isHexString(value: string, length?: number): boolean {
   if (typeof value !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) return false
 
-  if (length && value.length !== 2 + 2 * length) return false
+  if (typeof length !== 'undefined' && length > 0 && value.length !== 2 + 2 * length) return false
 
   return true
 }

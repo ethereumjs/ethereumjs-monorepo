@@ -1,6 +1,6 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import Ethash from '../src'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Ethash } from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
 import { BlockHeader } from '@ethereumjs/block'
 const powTests = require('./ethash_tests.json')

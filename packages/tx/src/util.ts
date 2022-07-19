@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 
@@ -18,7 +18,7 @@ export class AccessLists {
   public static getAccessListData(accessList: AccessListBuffer | AccessList) {
     let AccessListJSON
     let bufferAccessList
-    if (accessList && isAccessList(accessList)) {
+    if (isAccessList(accessList)) {
       AccessListJSON = accessList
       const newAccessList: AccessListBuffer = []
 

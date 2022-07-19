@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import * as vm from 'vm'
-import RLP from '../src'
+import { RLP } from '../src'
 import { bytesToUtf8 } from './utils'
 import * as official from './fixture/rlptest.json'
 

@@ -1,7 +1,7 @@
 import * as test from 'tape'
 import * as devp2p from '../../src'
 import * as util from './util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ETH } from '../../src'
 
 const GENESIS_TD = 17179869184

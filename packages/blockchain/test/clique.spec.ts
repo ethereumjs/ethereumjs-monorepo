@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
-import Common, {
+import {
+  Common,
   Chain,
   CliqueConfig,
   ConsensusAlgorithm,
@@ -8,7 +9,7 @@ import Common, {
 } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
-import Blockchain from '../src'
+import { Blockchain } from '../src'
 import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
 
 tape('Clique: Initialization', (t) => {
@@ -211,7 +212,9 @@ tape('Clique: Initialization', (t) => {
       await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error: any) {
-      if (error.message.includes('checkpoint signer not found in active signers list')) {
+      if (
+        (error.message as string).includes('checkpoint signer not found in active signers list')
+      ) {
         st.pass('correct error')
       } else {
         st.fail('should fail with appropriate error')
@@ -244,7 +247,11 @@ tape('Clique: Initialization', (t) => {
       await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error: any) {
-      if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
+      if (
+        (error.message as string).includes(
+          'difficulty for clique block must be INTURN (2) or NOTURN (1)'
+        )
+      ) {
         st.pass('correct error')
       } else {
         st.fail('should fail with appropriate error')
@@ -270,7 +277,7 @@ tape('Clique: Initialization', (t) => {
       await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error: any) {
-      if (error.message.includes('invalid clique difficulty')) {
+      if ((error.message as string).includes('invalid clique difficulty')) {
         st.pass('correct error')
       } else {
         st.fail('should fail with appropriate error')
@@ -648,7 +655,7 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, B)
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('invalid PoA block signature (clique)')) {
+      if ((error.message as string).includes('invalid PoA block signature (clique)')) {
         st.pass('correct error thrown')
       } else {
         st.fail('correct error not thrown')
@@ -666,7 +673,7 @@ tape('Clique: Initialization', (t) => {
         await addNextBlock(blockchain, blocks, A)
         st.fail('should throw error')
       } catch (error: any) {
-        if (error.message.includes('recently signed')) {
+        if ((error.message as string).includes('recently signed')) {
           st.pass('correct error thrown')
         } else {
           st.fail('correct error not thrown')
@@ -703,7 +710,7 @@ tape('Clique: Initialization', (t) => {
         await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
         st.fail('should throw error')
       } catch (error: any) {
-        if (error.message.includes('recently signed')) {
+        if ((error.message as string).includes('recently signed')) {
           st.pass('correct error thrown')
         } else {
           st.fail('correct error not thrown')

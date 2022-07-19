@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Block, BlockData, HeaderData } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 

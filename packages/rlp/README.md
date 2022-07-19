@@ -18,7 +18,7 @@ install with `-g` if you want to use the CLI.
 
 ```typescript
 import assert from 'assert'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
@@ -39,7 +39,7 @@ If you would like to continue using Buffers like in rlp v2, you can use:
 ```typescript
 import assert from 'assert'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 
 const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = RLP.encode(bufArrToArr(bufferList))
@@ -48,6 +48,12 @@ const decoded = RLP.decode(Uint8Array.from(encodedAsBuffer)) // or RLP.decode(en
 const decodedAsBuffers = arrToBufArr(decoded)
 assert.deepEqual(bufferList, decodedAsBuffers)
 ```
+
+### BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ## CLI
 

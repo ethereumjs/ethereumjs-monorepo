@@ -1,8 +1,9 @@
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { CustomOpcode } from '../types'
 import { getFullname } from './util'
 import { AsyncDynamicGasHandler, dynamicGasHandlers, SyncDynamicGasHandler } from './gas'
 import { handlers, OpHandler } from './functions'
+import { isTruthy } from '@ethereumjs/util'
 
 export class Opcode {
   readonly code: number
@@ -321,7 +322,7 @@ type OpcodeContext = {
  * Get suitable opcodes for the required hardfork.
  *
  * @param common {Common} Ethereumjs Common metadata object.
- * @param customOpcodes List with custom opcodes (see VM `customOpcodes` option description).
+ * @param customOpcodes List with custom opcodes (see EVM `customOpcodes` option description).
  * @returns {OpcodeList} Opcodes dictionary object.
  */
 export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {
@@ -373,7 +374,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
         },
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
-      if (code.gasFunction) {
+      if (isTruthy(code.gasFunction)) {
         dynamicGasHandlersCopy.set(code.opcode, code.gasFunction)
       }
       // logicFunction is never undefined

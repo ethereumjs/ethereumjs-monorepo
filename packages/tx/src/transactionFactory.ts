@@ -8,7 +8,7 @@ import {
 } from './types'
 import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
 
-export default class TransactionFactory {
+export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
   private constructor() {}
 

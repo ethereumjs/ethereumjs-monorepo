@@ -1,9 +1,9 @@
-import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
+import { RLP } from 'rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
-import Cache from './cache'
+import { Cache } from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 class NotFoundError extends Error {
@@ -12,7 +12,8 @@ class NotFoundError extends Error {
   constructor(blockNumber: bigint) {
     super(`Key ${blockNumber.toString()} was not found`)
 
-    if (Error.captureStackTrace) {
+    // `Error.captureStackTrace` is not defined in some browser contexts
+    if (typeof Error.captureStackTrace !== 'undefined') {
       Error.captureStackTrace(this, this.constructor)
     }
   }
@@ -181,8 +182,8 @@ export class DBManager {
     const dbKey = dbGetOperation.baseDBOp.key
     const dbOpts = dbGetOperation.baseDBOp
 
-    if (cacheString) {
-      if (!this._cache[cacheString]) {
+    if (isTruthy(cacheString)) {
+      if (isFalsy(this._cache[cacheString])) {
         throw new Error(`Invalid cache: ${cacheString}`)
       }
 

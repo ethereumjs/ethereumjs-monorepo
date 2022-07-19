@@ -1,11 +1,11 @@
-import { isHexString } from '@ethereumjs/util'
+import { isFalsy, isHexString } from '@ethereumjs/util'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
  * @param {string} input string to check, convert, and return
  */
 export const numberToHex = function (input?: string) {
-  if (!input) return undefined
+  if (isFalsy(input)) return undefined
   if (!isHexString(input)) {
     const regex = new RegExp(/^\d+$/) // test to make sure input contains only digits
     if (!regex.test(input)) {

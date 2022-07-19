@@ -1,5 +1,6 @@
-import Common, {
+import {
   Chain,
+  Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
@@ -22,8 +23,10 @@ import {
   toType,
   TypeOutput,
   zeros,
+  isTruthy,
+  isFalsy,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
@@ -64,7 +67,7 @@ export class BlockHeader {
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
   get prevRandao() {
-    if (!this._common.isActivatedEIP(4399)) {
+    if (this._common.isActivatedEIP(4399) === false) {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
@@ -86,17 +89,17 @@ export class BlockHeader {
   /**
    * Static constructor to create a block header from a RLP-serialized header
    *
-   * @param headerData
+   * @param serializedHeaderData
    * @param opts
    */
-  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as Buffer[]
+  public static fromRLPSerializedHeader(serializedHeaderData: Buffer, opts: BlockOptions = {}) {
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serializedHeaderData)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
     }
 
-    return BlockHeader.fromValuesArray(values, opts)
+    return BlockHeader.fromValuesArray(values as Buffer[], opts)
   }
 
   /**
@@ -197,7 +200,7 @@ export class BlockHeader {
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
     const uncleHash = toType(headerData.uncleHash, TypeOutput.Buffer) ?? defaults.uncleHash
-    const coinbase = headerData.coinbase
+    const coinbase = isTruthy(headerData.coinbase)
       ? new Address(toType(headerData.coinbase, TypeOutput.Buffer))
       : defaults.coinbase
     const stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
@@ -221,11 +224,9 @@ export class BlockHeader {
       this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
     }
 
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       if (baseFeePerGas === undefined) {
-        const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-        const isInitialEIP1559Block = number === londonHfBlock
-        if (isInitialEIP1559Block) {
+        if (number === this._common.hardforkBlock(Hardfork.London)) {
           baseFeePerGas = this._common.param('gasConfig', 'initialBaseFee')
         } else {
           // Minimum possible value for baseFeePerGas is 7,
@@ -257,7 +258,6 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
 
     this._genericFormatValidation()
-    this._consensusFormatValidation()
     this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -281,6 +281,9 @@ export class BlockHeader {
 
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
+
+    // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
+    this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -341,14 +344,13 @@ export class BlockHeader {
     }
 
     // Validation for EIP-1559 blocks
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
-      if (isInitialEIP1559Block) {
+      if (isTruthy(londonHfBlock) && this.number === londonHfBlock) {
         const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
         if (this.baseFeePerGas! !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
@@ -452,7 +454,7 @@ export class BlockHeader {
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (londonHardforkBlock && this.number === londonHardforkBlock) {
+    if (isTruthy(londonHardforkBlock) && this.number === londonHardforkBlock) {
       const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
@@ -486,7 +488,7 @@ export class BlockHeader {
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
-    if (!this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === false) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
@@ -548,7 +550,7 @@ export class BlockHeader {
       this.nonce,
     ]
 
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
@@ -612,7 +614,7 @@ export class BlockHeader {
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -624,13 +626,13 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
       // Get delay as parameter from common
       num = num - this._common.param('pow', 'difficultyBombDelay')
       if (num < BigInt(0)) {
         num = BigInt(0)
       }
-    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
+    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead) === true) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
@@ -807,7 +809,7 @@ export class BlockHeader {
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),
     }
-    if (this._common.isActivatedEIP(1559)) {
+    if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     return jsonDict
@@ -818,15 +820,11 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   private _validateDAOExtraData() {
-    if (!this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
+    if (this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
-    if (
-      !DAOActivationBlock ||
-      DAOActivationBlock === BigInt(0) ||
-      this.number < DAOActivationBlock
-    ) {
+    if (isFalsy(DAOActivationBlock) || this.number < DAOActivationBlock) {
       return
     }
     const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')

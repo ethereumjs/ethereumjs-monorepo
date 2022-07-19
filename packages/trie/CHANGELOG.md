@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+# 5.0.0-beta.2 - 2022-07-15
+
+Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/CHANGELOG.md)) for the main change set description.
+
+### Removed Default Exports
+
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+
+Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
+
+Now every import is a named import and we think the long term benefits will very much outweigh the one-time hassle of some import adoptions.
+
+So if you use the Trie library together with other EthereumJS libraries check if the respetive imports need an update.
+
+## Custom Hash Function
+
+There is a new constructor option `hash` which allows to customize the hash function used for secure trie key hashing - see PR [#2043](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2043) - thanks to @libotony for the great contribution on this! ❤️
+
+This allows to swap out the applied `keccak256` hash functionality from the [@noble/hashes](https://github.com/paulmillr/noble-hashes) library and e.g. use a faster native implementation or an alternative hash function (the PR contribution e.g. was done with the goal to switch to `blake2b256` hashing).
+
+**Breaking:** Note that this change made it necessary to switch the current proof functionality methods from static to object-bound member functions.
+
+So the usage of the following methods change and need to be updated (for all types of tries):
+
+- `Trie.createProof(trie, myKey)` -> `trie.createProof(myKey)`
+- `Trie.verifyProof(trie.root, myKey, proof)` -> `trie.verifyProof(trie.root, myKey, proof)`
+- `Trie.verifyRangeProof(...)` -> `trie.verifyRangeProof(...)`
+
+## Other Changes
+
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
+
+
 # 5.0.0-beta.1 - 2022-06-30
 
 This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️

@@ -163,12 +163,12 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   G1.setY(Fp_Y)
   G1.setZ(One)
 
-  if (!G1.isValidOrder()) {
+  if (G1.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   // Check if these coordinates are actually on the curve.
-  if (!G1.isValid()) {
+  if (G1.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
@@ -237,11 +237,11 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
   mclPoint.setY(Fp2Y)
   mclPoint.setZ(Fp2One)
 
-  if (!mclPoint.isValidOrder()) {
+  if (mclPoint.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
-  if (!mclPoint.isValid()) {
+  if (mclPoint.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 

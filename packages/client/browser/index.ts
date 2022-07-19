@@ -1,4 +1,4 @@
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -23,7 +23,7 @@ export * from '../lib/net/server/libp2pserver'
 
 // EthereumClient
 export * from '../lib/client'
-import EthereumClient from '../lib/client'
+import { EthereumClient } from '../lib/client'
 
 // Service
 export * from '../lib/service/service'
@@ -44,13 +44,14 @@ import { Config } from '../lib/config'
 export * from './logging'
 import { getLogger } from './logging'
 import { Level } from 'level'
+import { isTruthy } from '@ethereumjs/util'
 
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const common = new Common({ chain: args.network ?? Chain.Mainnet })
   const key = await Config.getClientKey(datadir, common)
-  const bootnodes = args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined
+  const bootnodes = isTruthy(args.bootnodes) ? parseMultiaddrs(args.bootnodes) : undefined
   const config = new Config({
     common,
     key,

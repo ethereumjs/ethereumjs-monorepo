@@ -9,7 +9,7 @@ import {
   bufferToInt,
   intToBuffer,
 } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from 'rlp'
 import { MetaDBManager, DBKey } from '../util/metaDBManager'
 import type { Block } from '@ethereumjs/block'
 
@@ -111,12 +111,12 @@ export class ReceiptsManager extends MetaDBManager {
    */
   async getReceipts(
     blockHash: Buffer,
-    calcBloom?: Boolean,
+    calcBloom?: boolean,
     includeTxType?: true
   ): Promise<TxReceiptWithType[]>
   async getReceipts(
     blockHash: Buffer,
-    calcBloom?: Boolean,
+    calcBloom?: boolean,
     includeTxType?: false
   ): Promise<TxReceipt[]>
   async getReceipts(

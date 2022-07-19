@@ -12,11 +12,13 @@ import {
   KECCAK256_RLP,
   setLengthLeft,
   short,
+  isFalsy,
+  isTruthy,
 } from '@ethereumjs/util'
-import Common from '@ethereumjs/common'
-import RLP from 'rlp'
+import { Common } from '@ethereumjs/common'
+import { RLP } from 'rlp'
 import { StateManager, StorageDump } from './interface'
-import Cache, { getCb, putCb } from './cache'
+import { Cache, getCb, putCb } from './cache'
 import { BaseStateManager } from './'
 
 type StorageProof = {
@@ -69,7 +71,7 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export default class DefaultStateManager extends BaseStateManager implements StateManager {
+export class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 
@@ -176,7 +178,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     // from storage cache
     const addressHex = address.buf.toString('hex')
     let storageTrie = this._storageTries[addressHex]
-    if (!storageTrie) {
+    if (isFalsy(storageTrie)) {
       // lookup from state
       storageTrie = await this._lookupStorageTrie(address)
     }
@@ -251,7 +253,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (value && value.length) {
+      if (isTruthy(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
@@ -318,14 +320,14 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (await Trie.createProof(this._trie, address.buf)).map(
-      (p) => bufferToHex(p)
+    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.buf)).map((p) =>
+      bufferToHex(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
-      const proof = (await Trie.createProof(storageTrie, storageKey)).map((p) => bufferToHex(p))
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
       let value = bufferToHex(await this.getContractStorage(address, storageKey))
       if (value === '0x') {
         value = '0x0'
@@ -363,7 +365,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(rootHash, key, accountProof)
+    const value = await new Trie().verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -409,7 +411,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await new Trie().verifyProof(storageRoot, storageKey, storageProof)
       const reportedValue = setLengthLeft(
         Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
         32
@@ -496,7 +498,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && !(account as any).virtual && !this._cache.keyIsDeleted(address)) {
+    if (account && isFalsy((account as any).virtual) && !this._cache.keyIsDeleted(address)) {
       return true
     }
     if (await this._trie.get(address.buf)) {

@@ -12,6 +12,7 @@ import { Miner } from '../miner'
 import { VMExecution } from '../execution'
 
 import type { Block } from '@ethereumjs/block'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */
@@ -51,7 +52,7 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       if (!this.config.disableBeaconSync) {
         void this.switchToBeaconSync()
       }
@@ -209,8 +210,8 @@ export class FullEthereumService extends EthereumService {
       const { reqId, block, max, skip, reverse } = message.data
       if (typeof block === 'bigint') {
         if (
-          (reverse && block > this.chain.headers.height) ||
-          (!reverse && block + BigInt(max * skip) > this.chain.headers.height)
+          (isTruthy(reverse) && block > this.chain.headers.height) ||
+          (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
         ) {
           // Don't respond to requests greater than the current height
           return
@@ -226,7 +227,7 @@ export class FullEthereumService extends EthereumService {
       const bodies = blocks.map((block) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
         )
@@ -237,7 +238,7 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'Transactions') {
       await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
         )
@@ -260,7 +261,7 @@ export class FullEthereumService extends EthereumService {
       let receiptsSize = 0
       for (const hash of hashes) {
         const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
-        if (!blockReceipts) continue
+        if (isFalsy(blockReceipts)) continue
         receipts.push(...blockReceipts)
         const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
         receiptsSize += Buffer.byteLength(receiptsBuffer)
@@ -288,8 +289,8 @@ export class FullEthereumService extends EthereumService {
       } else {
         if (typeof block === 'bigint') {
           if (
-            (reverse && block > this.chain.headers.height) ||
-            (!reverse && block + BigInt(max * skip) > this.chain.headers.height)
+            (isTruthy(reverse) && block > this.chain.headers.height) ||
+            (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
           ) {
             // Don't respond to requests greater than the current height
             return

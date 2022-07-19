@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "8.0.0-beta.1",
+  "version": "8.0.0-beta.2",
   "description": "A collection of utility functions for Ethereum",
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
@@ -33,8 +33,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "ethereum-cryptography": "^1.0.3",
-    "rlp": "4.0.0-beta.1"
+    "ethereum-cryptography": "^1.1.2",
+    "rlp": "4.0.0-beta.2"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { parseCustomParams } from '../../lib/util'
@@ -269,7 +269,10 @@ tape('[Skeleton]', async (t) => {
           st.pass(`test ${testCaseIndex}: successfully passed`)
         }
       } catch (error: any) {
-        if (error.message.includes(testCase.err?.message)) {
+        if (
+          typeof testCase.err?.message === 'string' &&
+          (error.message as string).includes(testCase.err.message)
+        ) {
           st.pass(`test ${testCaseIndex}: passed with correct error`)
         } else {
           st.fail(`test ${testCaseIndex}: received wrong error`)

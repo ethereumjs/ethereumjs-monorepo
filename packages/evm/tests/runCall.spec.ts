@@ -1,10 +1,9 @@
 import * as tape from 'tape'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Account, Address, MAX_UINT64, padToEven } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import VM from '../src'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '../src/exceptions'
-import EVM from '../src'
+import { EVM } from '../src'
 import { getEEI } from './utils'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
@@ -14,10 +13,23 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
   return new Address(Buffer.from(keccak256(hashBuffer)).slice(12))
 }
 
+tape('Create where FROM account nonce is 0', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+  const res = await evm.runCall({ to: undefined })
+  t.equals(
+    res.createdAddress?.toString(),
+    '0xbd770416a3345f91e4b34576cb804a576fa48eb1',
+    'created valid address when FROM account nonce is 0'
+  )
+  t.end()
+})
+
 /*
     This test:
         Setups a contract at address 0x00..ff 
-        Instantiates the VM at the Constantinople fork
+        Instantiates the EVM at the Constantinople fork
         Calls the address with various arguments (callvalue is used as argument). VMs `runCall` is used.
         The CREATE2 address which the contract creates is checked against the expected CREATE2 value.
 */
@@ -141,7 +153,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
   const code = '61000260005561000160005500'
   /*
       idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
@@ -193,7 +205,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
   // push 1 push 0 sstore stop
   const code = '600160015500'
 
@@ -253,7 +265,7 @@ tape(
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     const eei = await getEEI()
-    const evm = await VM.create({ common, eei })
+    const evm = await EVM.create({ common, eei })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
     const code = '61FFFF60FF60006000600060EE6000F200'
@@ -284,7 +296,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -315,7 +327,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -386,7 +398,7 @@ tape(
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const eei = await getEEI()
-    const evm = await VM.create({ common, eei })
+    const evm = await EVM.create({ common, eei })
     const code = '60008080F060005500'
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
@@ -441,7 +453,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
   const account = await eei.getAccount(caller)
@@ -458,14 +470,13 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   }
 
   const result = await evm.runCall(runCallArgs)
-
-  const expectedAddress = Buffer.from('8eae784e072e961f76948a785b62c9a950fb17ae', 'hex')
+  const expectedAddress = '0x8eae784e072e961f76948a785b62c9a950fb17ae'
   const expectedCode = Buffer.from(
     '0000000000000000000000008eae784e072e961f76948a785b62c9a950fb17ae62c9a950fb17ae00000000000000000000000000000000000000000000000000',
     'hex'
   )
 
-  t.ok(result.createdAddress?.buf.equals(expectedAddress), 'created address correct')
+  t.equals(result.createdAddress?.toString(), expectedAddress, 'created address correct')
   const deployedCode = await eei.getContractCode(result.createdAddress!)
   t.ok(deployedCode.equals(expectedCode), 'deployed code correct')
 
@@ -476,7 +487,7 @@ tape('Throws on negative call value', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
 
   // setup the call arguments
   const runCallArgs = {
@@ -498,7 +509,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   t.plan(7)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const eei = await getEEI()
-  const evm = await VM.create({ common, eei })
+  const evm = await EVM.create({ common, eei })
 
   // runCall against a contract to reach `_reduceSenderBalance`
   const contractCode = Buffer.from('00', 'hex') // 00: STOP

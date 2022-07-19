@@ -6,6 +6,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Peer } from '../net/peer/peer'
 import { errSyncReorged, Skeleton } from './skeleton'
 import type { VMExecution } from '../execution'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -55,7 +56,7 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     const subchain = this.skeleton.bounds()
-    if (subchain) {
+    if (isTruthy(subchain)) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
     }
@@ -196,7 +197,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -204,11 +205,9 @@ export class BeaconSynchronizer extends Synchronizer {
     const { tail } = this.skeleton.bounds()
     const first = tail - BigInt(1)
     // Sync from tail to next subchain or chain height
+    const subChainHead = (this.skeleton as any).status.progress.subchains[1]?.head
     const count =
-      first -
-      ((this.skeleton as any).status.progress.subchains[1]?.head
-        ? (this.skeleton as any).status.progress.subchains[1].head - BigInt(1)
-        : this.chain.blocks.height)
+      first - (isTruthy(subChainHead) ? subChainHead - BigInt(1) : this.chain.blocks.height)
     if (count > BigInt(0) && (!this.fetcher || this.fetcher.errored)) {
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
@@ -249,7 +248,7 @@ export class BeaconSynchronizer extends Synchronizer {
     // Execute single block when within 50 blocks of head,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
-      (this.skeleton.bounds() &&
+      (isTruthy(this.skeleton.bounds()) &&
         this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)) ||
       this.chain.blocks.height % BigInt(50) === BigInt(0)
     ) {

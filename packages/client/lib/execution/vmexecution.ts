@@ -5,8 +5,8 @@ import {
   DBSetHashToNumber,
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
-import { bufferToHex } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
+import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
 import { short } from '../util'
@@ -34,7 +34,7 @@ export class VMExecution extends Execution {
   constructor(options: ExecutionOptions) {
     super(options)
 
-    if (!this.config.vm) {
+    if (isFalsy(this.config.vm)) {
       const trie = new Trie({ db: new LevelDB(this.stateDB) })
 
       const stateManager = new DefaultStateManager({
@@ -92,7 +92,7 @@ export class VMExecution extends Execution {
       const result = await this.vm.runBlock(opts)
       receipts = result.receipts
     }
-    if (receipts) {
+    if (isTruthy(receipts)) {
       // Save receipts
       this.pendingReceipts?.set(block.hash().toString('hex'), receipts)
     }
@@ -147,7 +147,7 @@ export class VMExecution extends Execution {
 
     while (
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
-      !startHeadBlock.hash().equals(canonicalHead.hash())
+      startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
       let txCounter = 0
       headBlock = undefined
@@ -183,10 +183,14 @@ export class VMExecution extends Execution {
               // (signer states might have moved on when sync is ahead)
               skipBlockValidation = true
             }
+
+            // we are skipping header validation because the block has been picked from the
+            // blockchain and header should have already been validated while putBlock
             const result = await this.vm.runBlock({
               block,
               root: parentState,
               skipBlockValidation,
+              skipHeaderValidation: true,
             })
             void this.receiptsManager?.saveReceipts(block, result.receipts)
             txCounter += block.transactions.length
@@ -242,23 +246,28 @@ export class VMExecution extends Execution {
       )
       numExecuted = await this.vmPromise
 
-      if (errorBlock) {
-        await this.chain.blockchain.setIteratorHead('vm', (errorBlock as Block).header.parentHash)
+      if (isTruthy(errorBlock)) {
+        await this.chain.blockchain.setIteratorHead(
+          'vm',
+          (errorBlock as unknown as Block).header.parentHash
+        )
         return 0
       }
 
       const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
-      if (numExecuted && numExecuted > 0) {
+      if (isTruthy(numExecuted && numExecuted > 0)) {
         const firstNumber = startHeadBlock.header.number
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number
         const lastHash = short(endHeadBlock.hash())
-        const baseFeeAdd = this.config.execCommon.gteHardfork(Hardfork.London)
-          ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
-          : ''
-        const tdAdd = this.config.execCommon.gteHardfork(Hardfork.Merge)
-          ? ''
-          : `td=${this.chain.blocks.td} `
+        const baseFeeAdd =
+          this.config.execCommon.gteHardfork(Hardfork.London) === true
+            ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
+            : ''
+        const tdAdd =
+          this.config.execCommon.gteHardfork(Hardfork.Merge) === true
+            ? ''
+            : `td=${this.chain.blocks.td} `
         this.config.logger.info(
           `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
         )
@@ -313,7 +322,9 @@ export class VMExecution extends Execution {
       vm._common.setHardforkByBlockNumber(blockNumber, td)
 
       if (txHashes.length === 0) {
-        const res = await vm.runBlock({ block })
+        // we are skipping header validation because the block has been picked from the
+        // blockchain and header should have already been validated while putBlock
+        const res = await vm.runBlock({ block, skipHeaderValidation: true })
         this.config.logger.info(
           `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
             block.transactions.length

@@ -1,7 +1,7 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address } from '@ethereumjs/util'
-import Cache from './cache'
+import { Cache } from './cache'
 import { AccountFields } from './interface'
 import { DefaultStateManagerOpts } from './stateManager'
 
@@ -43,7 +43,7 @@ export abstract class BaseStateManager {
     this._common = common
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('statemanager:statemanager')

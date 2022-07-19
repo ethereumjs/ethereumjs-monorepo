@@ -6,18 +6,19 @@ import {
   bufferToBigInt,
   ECDSASignature,
   ecsign,
+  isTruthy,
   privateToAddress,
   setLengthLeft,
   toBuffer,
   zeros,
 } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import EVM from '@ethereumjs/evm'
+import { EVM } from '@ethereumjs/evm'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -169,24 +170,30 @@ function MSTORE(position: Buffer, value: Buffer) {
  */
 function getAuthCallCode(data: AuthcallData) {
   const ZEROS32 = zeros(32)
-  const gasLimitBuffer = setLengthLeft(data.gasLimit ? bigIntToBuffer(data.gasLimit) : ZEROS32, 32)
+  const gasLimitBuffer = setLengthLeft(
+    isTruthy(data.gasLimit) ? bigIntToBuffer(data.gasLimit) : ZEROS32,
+    32
+  )
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(data.value ? bigIntToBuffer(data.value) : ZEROS32, 32)
-  const valueExtBuffer = setLengthLeft(data.valueExt ? bigIntToBuffer(data.valueExt) : ZEROS32, 32)
+  const valueBuffer = setLengthLeft(isTruthy(data.value) ? bigIntToBuffer(data.value) : ZEROS32, 32)
+  const valueExtBuffer = setLengthLeft(
+    isTruthy(data.valueExt) ? bigIntToBuffer(data.valueExt) : ZEROS32,
+    32
+  )
   const argsOffsetBuffer = setLengthLeft(
-    data.argsOffset ? bigIntToBuffer(data.argsOffset) : ZEROS32,
+    isTruthy(data.argsOffset) ? bigIntToBuffer(data.argsOffset) : ZEROS32,
     32
   )
   const argsLengthBuffer = setLengthLeft(
-    data.argsLength ? bigIntToBuffer(data.argsLength) : ZEROS32,
+    isTruthy(data.argsLength) ? bigIntToBuffer(data.argsLength) : ZEROS32,
     32
   )
   const retOffsetBuffer = setLengthLeft(
-    data.retOffset ? bigIntToBuffer(data.retOffset) : ZEROS32,
+    isTruthy(data.retOffset) ? bigIntToBuffer(data.retOffset) : ZEROS32,
     32
   )
   const retLengthBuffer = setLengthLeft(
-    data.retLength ? bigIntToBuffer(data.retLength) : ZEROS32,
+    isTruthy(data.retLength) ? bigIntToBuffer(data.retLength) : ZEROS32,
     32
   )
   const PUSH32 = Buffer.from('7f', 'hex')

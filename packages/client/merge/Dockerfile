@@ -7,8 +7,6 @@ RUN git clone --depth 1 --branch master https://github.com/ethereumjs/ethereumjs
 WORKDIR /usr/app/ethereumjs-monorepo
 RUN npm i
 
-RUN cd packages/client/kiln && git init && git remote add -f origin https://github.com/eth-clients/merge-testnets.git && git config core.sparseCheckout true && echo "kiln/*" >> .git/info/sparse-checkout && git pull --depth=1 origin main && mv kiln config
-
 FROM node:16-alpine
 WORKDIR /usr/app
 COPY --from=build /usr/app .

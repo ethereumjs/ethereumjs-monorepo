@@ -1,6 +1,6 @@
 import { AddOpcode } from '../src/types'
 import { InterpreterStep, RunState } from '../src/interpreter'
-import EVM from '../src/evm'
+import { EVM } from '../src/evm'
 import { getEEI } from './utils'
 import * as tape from 'tape'
 
@@ -22,7 +22,7 @@ tape('VM: custom opcodes', (t) => {
     },
   }
 
-  t.test('should add custom opcodes to the VM', async (st) => {
+  t.test('should add custom opcodes to the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
       eei: await getEEI(),
@@ -43,7 +43,7 @@ tape('VM: custom opcodes', (t) => {
     st.ok(correctOpcodeName, 'succesfully set opcode name')
   })
 
-  t.test('should delete opcodes from the VM', async (st) => {
+  t.test('should delete opcodes from the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
       eei: await getEEI(),
@@ -58,7 +58,7 @@ tape('VM: custom opcodes', (t) => {
 
   t.test('should not override default opcodes', async (st) => {
     // This test ensures that always the original opcode map is used
-    // Thus, each time you recreate a VM, it is in a clean state
+    // Thus, each time you recreate a EVM, it is in a clean state
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
       eei: await getEEI(),
@@ -88,7 +88,7 @@ tape('VM: custom opcodes', (t) => {
     st.ok(result.returnValue.equals(Buffer.from('05', 'hex')))
   })
 
-  t.test('should override opcodes in the VM', async (st) => {
+  t.test('should override opcodes in the EVM', async (st) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
@@ -101,5 +101,31 @@ tape('VM: custom opcodes', (t) => {
     })
     st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
     st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
+  })
+
+  t.test('should pass the correct EVM options when copying the EVM', async (st) => {
+    const fee = 333
+    const stackPush = BigInt(1)
+
+    const testOpcode: AddOpcode = {
+      opcode: 0x21,
+      opcodeName: 'TEST',
+      baseFee: fee,
+      logicFunction: function (runState: RunState) {
+        runState.stack.push(BigInt(stackPush))
+      },
+    }
+
+    const evm = await EVM.create({
+      customOpcodes: [testOpcode],
+      eei: await getEEI(),
+    })
+    const evmCopy = evm.copy()
+
+    st.deepEqual(
+      (evmCopy as any)._customOpcodes,
+      (evmCopy as any)._customOpcodes,
+      'evm.copy() successfully copied customOpcodes option'
+    )
   })
 })

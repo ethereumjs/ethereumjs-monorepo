@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {
@@ -278,7 +278,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     for (const [chain, genesisHash] of chains) {
       c = new Common({ chain })
       for (const hf of c.hardforks()) {
-        if (hf.forkHash && hf.forkHash !== null) {
+        if (typeof hf.forkHash === 'string') {
           const msg = `Verify forkHash calculation for: ${Chain[chain]} -> ${hf.name}`
           st.equal(c._calcForkHash(hf.name, genesisHash), hf.forkHash, msg)
         }

@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { RLP } from 'rlp'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
-import blockFromRpc from '../src/from-rpc'
+import { blockFromRpc } from '../src/from-rpc'
 import * as testnetMerge from './testdata/testnetMerge.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
@@ -193,7 +193,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid transaction trie'))
+      st.ok((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -225,7 +225,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid uncle hash'))
+      st.ok((error.message as string).includes('invalid uncle hash'))
     }
   })
 

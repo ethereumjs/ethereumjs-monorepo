@@ -1,5 +1,5 @@
-import Common, { Hardfork } from '@ethereumjs/common'
-import VM from '@ethereumjs/vm'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { VM } from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from '@ethereumjs/util'
 import { Multiaddr } from 'multiaddr'
@@ -402,7 +402,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['ropsten', 'rinkeby', 'goerli']
+    const dnsNets = ['ropsten', 'rinkeby', 'goerli', 'sepolia']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 

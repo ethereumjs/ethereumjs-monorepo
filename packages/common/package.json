@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Resources common to all Ethereum implementations",
   "license": "MIT",
   "keywords": [
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "crc-32": "^1.2.0",
-    "@ethereumjs/util": "8.0.0-beta.1"
+    "@ethereumjs/util": "8.0.0-beta.2"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",

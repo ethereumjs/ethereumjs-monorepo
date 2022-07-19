@@ -1,11 +1,11 @@
 import * as tape from 'tape'
 import { Address, privateToAddress } from '@ethereumjs/util'
 import { VM } from '../../../src/vm'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import EVM from '@ethereumjs/evm'
+import { EVM } from '@ethereumjs/evm'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI

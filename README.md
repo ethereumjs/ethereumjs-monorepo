@@ -6,6 +6,7 @@
 
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
+[![GitPOAP][gitpoap-badge]][gitpoap-link]
 
 ## Packages
 
@@ -167,6 +168,8 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [evm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22evm%22
 [evm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=evm
 [evm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm
+[gitpoap-badge]: https://public-api.gitpoap.io/v1/repo/ethereumjs/ethereumjs-monorepo/badge
+[gitpoap-link]: https://www.gitpoap.io/gh/ethereumjs/ethereumjs-monorepo
 [tx-package]: ./packages/tx
 [tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg
 [tx-npm-link]: https://www.npmjs.com/package/@ethereumjs/tx

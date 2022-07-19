@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '../../../src/vm'
 import { getActivePrecompiles } from '@ethereumjs/evm'
 

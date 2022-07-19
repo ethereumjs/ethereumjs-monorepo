@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 import { BlockHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'

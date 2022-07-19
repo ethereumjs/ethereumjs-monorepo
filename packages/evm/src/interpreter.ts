@@ -5,21 +5,23 @@ import {
   bigIntToHex,
   bufferToBigInt,
   intToHex,
+  isFalsy,
+  isTruthy,
   MAX_UINT64,
 } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions'
-import Memory from './memory'
-import Stack from './stack'
+import { Memory } from './memory'
+import { Stack } from './stack'
 import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
-import EOF from './eof'
-import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
-import EVM, { EVMResult } from './evm'
-import Message from './message'
+import { EOF } from './eof'
+import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { EVM, EVMResult } from './evm'
+import { Message } from './message'
 import { Log } from './types'
 import { EEIInterface, Block } from './types'
 
-const debugGas = createDebugLogger('vm:eei:gas')
+const debugGas = createDebugLogger('evm:eei:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -103,7 +105,7 @@ export interface InterpreterStep {
 /**
  * Parses and executes EVM bytecode.
  */
-export default class Interpreter {
+export class Interpreter {
   protected _vm: any
   protected _runState: RunState
   protected _eei: EEIInterface
@@ -283,7 +285,7 @@ export default class Interpreter {
   }
 
   /**
-   * Get info for an opcode from VM's list of opcodes.
+   * Get info for an opcode from EVM's list of opcodes.
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
@@ -332,7 +334,7 @@ export default class Interpreter {
       }
 
       if (!(name in this.opDebuggers)) {
-        this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
+        this.opDebuggers[name] = createDebugLogger(`evm:ops:${name}`)
       }
       this.opDebuggers[name](JSON.stringify(opTrace))
     }
@@ -356,7 +358,7 @@ export default class Interpreter {
      * @property {Account} account the Account which owns the code running
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
-     * @property {Buffer} memory the memory of the VM as a `buffer`
+     * @property {Buffer} memory the memory of the EVM as a `buffer`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
@@ -398,7 +400,11 @@ export default class Interpreter {
   useGas(amount: bigint, context?: string): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._runState.gasLeft})`)
+      debugGas(
+        `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
+          this._runState.gasLeft
+        })`
+      )
     }
     if (this._runState.gasLeft < BigInt(0)) {
       this._runState.gasLeft = BigInt(0)
@@ -414,7 +420,9 @@ export default class Interpreter {
   refundGas(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
       debugGas(
-        `${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._runState.gasRefund})`
+        `${typeof context === 'string' ? context + ': ' : ''}refund ${amount} gas (-> ${
+          this._runState.gasRefund
+        })`
       )
     }
     this._runState.gasRefund += amount
@@ -428,7 +436,9 @@ export default class Interpreter {
   subRefund(amount: bigint, context?: string): void {
     if (this._evm.DEBUG) {
       debugGas(
-        `${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._runState.gasRefund})`
+        `${typeof context === 'string' ? context + ': ' : ''}sub gas refund ${amount} (-> ${
+          this._runState.gasRefund
+        })`
       )
     }
     this._runState.gasRefund -= amount
@@ -823,7 +833,7 @@ export default class Interpreter {
 
     // Set return value
     if (
-      results.execResult.returnValue &&
+      isTruthy(results.execResult.returnValue) &&
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
@@ -940,7 +950,7 @@ export default class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
+    if (isFalsy(this._result.selfdestruct[this._env.address.buf.toString('hex')])) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 

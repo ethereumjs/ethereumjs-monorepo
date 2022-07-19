@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | Implements schema and functions related to Ethereum's block. |
-| --- |
+| ------------------------------------------------------------ |
 
 Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceding release.
 
@@ -48,8 +48,8 @@ API Usage Example:
 
 ```typescript
 try {
-  await block.validate(blockchain)
-  // Block validation has passed
+  await block.validateData()
+  // Block data validation has passed
 } catch (err) {
   // handle errors appropriately
 }
@@ -57,22 +57,23 @@ try {
 
 ## EIP-1559 Blocks
 
-This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`.
-
-To instantiate an EIP-1559 block, the hardfork parameter on the `Common` instance needs to be set to `london` (this is now the default hardfork):
+This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const block = Block.fromBlockData({
-  header: {
-    baseFeePerGas: BigInt(10),
-    gasLimit: BigInt(100),
-    gasUsed: BigInt(60)
-  }
-}, { common })
+const block = Block.fromBlockData(
+  {
+    header: {
+      baseFeePerGas: BigInt(10),
+      gasLimit: BigInt(100),
+      gasUsed: BigInt(60),
+    },
+  },
+  { common }
+)
 
 // Base fee will increase for next block since the
 // gas used is greater than half the gas limit
@@ -81,21 +82,27 @@ block.header.calcNextBaseFee().toNumber() // 11
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
 
-const blockWithMatchingBaseFee = Block.fromBlockData({
-  header: {
-    baseFeePerGas: parentHeader.calcNextBaseFee(),
-    gasLimit: BigInt(100),
-    gasUsed: BigInt(60)
-  }
-}, { common })
-
+const blockWithMatchingBaseFee = Block.fromBlockData(
+  {
+    header: {
+      baseFeePerGas: parentHeader.calcNextBaseFee(),
+      gasLimit: BigInt(100),
+      gasUsed: BigInt(60),
+    },
+  },
+  { common }
+)
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
 ## Consensus Types
 
-The block library supports the creation as well as format and consensus validation of PoW `ethash` and PoA `clique` blocks.
+The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).
+
+Consensus format validation logic is encapsulated in the semi-private `BlockHeader._consensusFormatValidation()` method called from the constructor. If you want to add your own validation logic you can overwrite this method with your own rules.
+
+Note: Starting with `v4` consensus validation itself (e.g. Ethash verification) has moved to the `Blockchain` package.
 
 ### Ethash/PoW
 
@@ -103,14 +110,12 @@ An Ethash/PoW block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet })
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
 ```
-
-To validate that the difficulty of the block matches the canonical difficulty use `block.validate(blockchain)`.
 
 To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
@@ -120,14 +125,12 @@ A clique block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Goerli })
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Goerli })
 console.log(common.consensusType()) // 'poa'
 console.log(common.consensusAlgorithm()) // 'clique'
 const block = Block.fromBlockData({}, { common })
 ```
-
-For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
 
 For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
 
@@ -138,7 +141,6 @@ const block = Block.fromHeaderData(headerData, { cliqueSigner })
 
 Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
 
-- `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
 - `BlockHeader.cliqueSigHash()`
 - `BlockHeader.cliqueIsEpochTransition(): boolean`
 - `BlockHeader.cliqueExtraVanity(): Buffer`
@@ -149,7 +151,7 @@ Additionally there are the following utility methods for Clique/PoA related func
 
 See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
 
-### Casper/PoS (since v3.5.0) (experimental)
+### Casper/PoS (since v3.5.0)
 
 Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
@@ -157,18 +159,27 @@ You can instantiate a Merge/PoS block like this:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
-const block = Block.fromBlockData({
-  // Provide your block data here or use default values
-}, { common })
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
 ```
-
-Note that all `Merge` respectively `Casper/PoS` related functionality is still considered `experimental`.
 
 # API
 
-[Documentation](./docs/README.md)
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # TESTING
 

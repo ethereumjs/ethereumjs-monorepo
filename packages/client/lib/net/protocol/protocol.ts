@@ -1,3 +1,4 @@
+import { isTruthy } from '@ethereumjs/util'
 import { Config } from '../../config'
 import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
@@ -71,12 +72,12 @@ export class Protocol {
         reject(new Error(`Handshake timed out after ${this.timeout}ms`))
       }, this.timeout)
       const handleStatus = (status: any) => {
-        if (timeout) {
+        if (isTruthy(timeout)) {
           clearTimeout(timeout)
           resolve(this.decodeStatus(status))
         }
       }
-      if (sender.status) {
+      if (isTruthy(sender.status)) {
         handleStatus(sender.status)
       } else {
         sender.once('status', handleStatus)

@@ -1,8 +1,8 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
-import Blockchain from '../src'
+import { Blockchain } from '../src'
 import { CliqueConsensus, CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
 import { generateConsecutiveBlock } from './util'
 
@@ -36,7 +36,7 @@ tape('reorg tests', (t) => {
       while (TD_High < TD_Low) {
         blocks_lowTD.push(generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0))
         blocks_highTD.push(
-          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesis, 1)
+          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] ?? genesis, 1)
         )
 
         TD_Low += blocks_lowTD[blocks_lowTD.length - 1].header.difficulty

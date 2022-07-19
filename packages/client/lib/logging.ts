@@ -1,3 +1,4 @@
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as chalk from 'chalk'
 import { createLogger, format, transports as wTransports, Logger as WinstonLogger } from 'winston'
 const DailyRotateFile = require('winston-daily-rotate-file')
@@ -28,10 +29,10 @@ enum LevelColors {
  * Adds stack trace to error message if included
  */
 const errorFormat = format((info: any) => {
-  if (info.message instanceof Error && info.message.stack) {
+  if (info.message instanceof Error && isTruthy(info.message.stack)) {
     return { ...info, message: info.message.stack }
   }
-  if (info instanceof Error && info.stack) {
+  if (info instanceof Error && isTruthy(info.stack)) {
     return { ...info, message: info.stack }
   }
   return info
@@ -51,7 +52,7 @@ function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
 
-    if (!info.message) info.message = '(empty message)'
+    if (isFalsy(info.message)) info.message = '(empty message)'
 
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
@@ -61,8 +62,8 @@ function logFormat(colors = false) {
       const regex = /(\w+)=(.+?)(?:\s|$)/g
       const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
       info.message = info.message.replace(regex, replaceFn)
-      if (info.attentionCL) info.attentionCL = info.attentionCL.replace(regex, replaceFn)
-      if (info.attentionHF) info.attentionHF = info.attentionHF.replace(regex, replaceFn)
+      if (isTruthy(info.attentionCL)) info.attentionCL = info.attentionCL.replace(regex, replaceFn)
+      if (isTruthy(info.attentionHF)) info.attentionHF = info.attentionHF.replace(regex, replaceFn)
     }
 
     if (info.attentionCL !== undefined) attentionCL = info.attentionCL
@@ -97,7 +98,7 @@ function logFileTransport(args: any) {
     level: args.logLevelFile,
     format: formatConfig(),
   }
-  if (!args.logRotate) {
+  if (isFalsy(args.logRotate)) {
     return new wTransports.File({
       ...opts,
       filename,
@@ -125,7 +126,7 @@ export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
       format: formatConfig(true),
     }),
   ]
-  if (args.logFile) {
+  if (isTruthy(args.logFile)) {
     transports.push(logFileTransport(args))
   }
   const logger = createLogger({

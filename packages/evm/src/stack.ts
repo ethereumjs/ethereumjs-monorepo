@@ -4,7 +4,7 @@ import { ERROR, EvmError } from './exceptions'
 /**
  * Implementation of the stack used in evm.
  */
-export default class Stack {
+export class Stack {
   _store: bigint[]
   _maxHeight: number
 

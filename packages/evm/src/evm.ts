@@ -1,5 +1,5 @@
 import { promisify } from 'util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import {
@@ -8,6 +8,8 @@ import {
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
+  isFalsy,
+  isTruthy,
   KECCAK256_NULL,
   MAX_INTEGER,
   short,
@@ -15,9 +17,9 @@ import {
 } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions'
-import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
-import Message, { MessageWithTo } from './message'
-import EOF from './eof'
+import { Interpreter, InterpreterOpts, RunState } from './interpreter'
+import { Message, MessageWithTo } from './message'
+import { EOF } from './eof'
 import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
@@ -33,23 +35,23 @@ import {
   EVMRunCodeOpts,
 } from './types'
 import { EEIInterface } from './types'
-import TransientStorage from './transientStorage'
+import { TransientStorage } from './transientStorage'
 
-const debug = createDebugLogger('vm:evm')
-const debugGas = createDebugLogger('vm:evm:gas')
+const debug = createDebugLogger('evm')
+const debugGas = createDebugLogger('evm:gas')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 let mcl: any
 let mclInitPromise: any
 
-if (!isBrowser()) {
+if (isBrowser() === false) {
   mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
 
 /**
- * Options for instantiating a {@link VM}.
+ * Options for instantiating a {@link EVM}.
  */
 export interface EVMOpts {
   /**
@@ -91,10 +93,10 @@ export interface EVMOpts {
   allowUnlimitedContractSize?: boolean
 
   /**
-   * Override or add custom opcodes to the VM instruction set
+   * Override or add custom opcodes to the EVM instruction set
    * These custom opcodes are EIP-agnostic and are always statically added
-   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
-   * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
+   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the EVM.
+   * If this opcode is then used in the EVM, the `INVALID` opcode would instead be used.
    * To add an opcode, add an entry of the following format:
    * {
    *    // The opcode number which will invoke the custom opcode logic
@@ -132,7 +134,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
+export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -273,6 +275,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
+      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
     // Initialize the opcode data
@@ -280,7 +283,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
+      if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         this._mcl = mcl
@@ -288,7 +291,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
@@ -303,7 +306,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
 
     if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
+      if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         const mcl = this._mcl
@@ -319,7 +322,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
   /**
    * Returns a list with the currently activated opcodes
-   * available for VM execution
+   * available for EVM execution
    */
   getActiveOpcodes(): OpcodeList {
     const data = getOpcodesForHF(this._common, this._customOpcodes)
@@ -360,7 +363,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         debug(`Exit early on no code`)
       }
     }
-    if (errorMessage) {
+    if (isTruthy(errorMessage)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -472,13 +475,13 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
 
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (isFalsy(message.code) || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
-    if (errorMessage) {
+    if (isTruthy(errorMessage)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -533,7 +536,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
         const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (!eof1CodeAnalysisResults?.code) {
+        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
           result = {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
@@ -582,7 +585,11 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
     }
 
     // Save code if a new contract was created
-    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+    if (
+      !result.exceptionError &&
+      isTruthy(result.returnValue) &&
+      result.returnValue.toString() !== ''
+    ) {
       await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
@@ -684,9 +691,17 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
 
-      const caller = opts.caller ?? Address.zero()
+      let caller = opts.caller
+      if (!caller) {
+        // Set sensible default with correct nonce if no caller provided
+        caller = Address.zero()
+        const callerAccount = await this.eei.getAccount(caller)
+        callerAccount.nonce += BigInt(1)
+        await this.eei.putAccount(caller, callerAccount)
+      }
+
       const value = opts.value ?? BigInt(0)
-      if (opts.skipBalance) {
+      if (opts.skipBalance === true) {
         // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
         callerAccount.balance += value
@@ -711,7 +726,7 @@ export default class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInte
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this._common.isActivatedEIP(2929)) {
+    if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
       this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
     }

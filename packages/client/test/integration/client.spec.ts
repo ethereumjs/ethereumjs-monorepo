@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import { Config, SyncMode } from '../../lib/config'
-import EthereumClient from '../../lib/client'
+import { EthereumClient } from '../../lib/client'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
+import { MockServer } from './mocks/mockserver'
 
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config()

@@ -2,9 +2,9 @@ import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import { BigIntLike } from '@ethereumjs/util'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { StateManager } from '@ethereumjs/statemanager'
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Bloom } from './bloom'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
@@ -220,6 +220,13 @@ export interface RunBlockOpts {
    * the transactions, the transaction trie and the uncle hash.
    */
   skipBlockValidation?: boolean
+  /**
+   * if true, will skip "Header validation"
+   * If the block has been picked from the blockchain to be executed,
+   * header has already been validated, and can be skipped especially when
+   * consensus of the chain has moved ahead.
+   */
+  skipHeaderValidation?: boolean
   /**
    * If true, skips the nonce check
    */

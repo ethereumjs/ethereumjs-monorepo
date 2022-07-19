@@ -20,7 +20,7 @@ Note: this `README` reflects the state of the library from `v1.0.0` onwards. See
 ## PoW Validation
 
 ```typescript
-import Ethash from '@ethereumjs/ethash'
+import { Ethash } from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 
@@ -44,8 +44,8 @@ See the following example on how to use the new `Miner` class:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Ethash from '@ethereumjs/ethash'
-import Common from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
+import { Common } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { MemoryLevel } from 'memory-level'
 
@@ -64,7 +64,15 @@ const solution = await miner.iterate(-1) // iterate until solution is found
 
 # API
 
-See [Documentation](./docs/README.md).
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v2 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # LICENSE
 

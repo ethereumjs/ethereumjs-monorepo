@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Address } from '@ethereumjs/util'
 import { PrecompileInput } from '../src/precompiles'
-import EVM, { ExecResult } from '../src/evm'
+import { EVM, ExecResult } from '../src/evm'
 import { getEEI } from './utils'
 
 const sender = new Address(Buffer.from('44'.repeat(20), 'hex'))
@@ -117,6 +117,23 @@ tape('EVM -> custom precompiles', (t) => {
     st.ok(
       shaResult.execResult.executionGasUsed === shaResult2.execResult.executionGasUsed,
       'restored sha precompile - gas correct'
+    )
+  })
+  t.test('shold copy custom precompiles', async (st) => {
+    const evm = await EVM.create({
+      customPrecompiles: [
+        {
+          address: shaAddress,
+          function: customPrecompile,
+        },
+      ],
+      eei: await getEEI(),
+    })
+    const evmCopy = evm.copy()
+    st.deepEqual(
+      (evm as any)._customPrecompiles,
+      (evmCopy as any)._customPrecompiles,
+      'evm.copy() successfully copied customPrecompiles option'
     )
   })
 })

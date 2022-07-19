@@ -6,6 +6,7 @@ import { Event, Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
 import { Libp2pPeer } from '../peer'
 import { Server, ServerOptions } from './server'
+import { isTruthy } from '@ethereumjs/util'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */
@@ -135,7 +136,7 @@ export class Libp2pServer extends Server {
    */
   isBanned(peerId: string): boolean {
     const expireTime = this.banned.get(peerId)
-    if (expireTime && expireTime > Date.now()) {
+    if (isTruthy(expireTime) && expireTime > Date.now()) {
       return true
     }
     this.banned.delete(peerId)
