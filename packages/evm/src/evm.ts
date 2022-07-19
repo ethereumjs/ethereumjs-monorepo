@@ -691,14 +691,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
 
-      let caller = opts.caller
-      if (!caller) {
-        // Set sensible default with correct nonce if no caller provided
-        caller = Address.zero()
-        const callerAccount = await this.eei.getAccount(caller)
-        callerAccount.nonce += BigInt(1)
-        await this.eei.putAccount(caller, callerAccount)
-      }
+      const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
