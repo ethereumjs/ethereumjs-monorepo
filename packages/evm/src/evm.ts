@@ -8,8 +8,6 @@ import {
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
-  isFalsy,
-  isTruthy,
   KECCAK256_NULL,
   MAX_INTEGER,
   short,
@@ -363,7 +361,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (typeof errorMessage !== 'undefined') {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -475,13 +473,13 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     let exit = false
-    if (isFalsy(message.code) || message.code.length === 0) {
+    if (typeof message.code === 'undefined' || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (typeof errorMessage !== 'undefined') {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -587,7 +585,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     // Save code if a new contract was created
     if (
       !result.exceptionError &&
-      isTruthy(result.returnValue) &&
+      typeof result.returnValue !== 'undefined' &&
       result.returnValue.toString() !== ''
     ) {
       await this.eei.putContractCode(message.to, result.returnValue)
