@@ -548,9 +548,9 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
           // index 7 (if no data section is present) or index 10 (if a data section is present)
           // in the bytecode of the contract
           if (
-            !EOF.validOpcodes(
+            EOF.validOpcodes(
               result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
-            )
+            ) !== false
           ) {
             result = {
               ...result,
@@ -638,7 +638,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
-    if (message.selfdestruct) {
+    if (typeof message.selfdestruct !== 'undefined') {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 
@@ -646,7 +646,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
-    if (interpreterRes.exceptionError) {
+    if (typeof interpreterRes.exceptionError !== 'undefined') {
       if (
         interpreterRes.exceptionError.error !== ERROR.REVERT &&
         interpreterRes.exceptionError.error !== ERROR.INVALID_EOF_FORMAT
@@ -673,7 +673,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: typeof result.returnValue !== 'undefined' ? result.returnValue : Buffer.alloc(0),
     }
   }
 
@@ -744,7 +744,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       debug(
         `New message caller=${caller} gasLimit=${gasLimit} to=${
           to?.toString() ?? 'none'
-        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
+        } value=${value} delegatecall=${typeof delegatecall !== 'undefined' ? 'yes' : 'no'}`
       )
     }
     if (message.to) {
@@ -860,7 +860,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   }
 
   protected async _loadCode(message: Message): Promise<void> {
-    if (!message.code) {
+    if (typeof message.code === 'undefined') {
       const precompile = this.getPrecompile(message.codeAddress)
       if (precompile) {
         message.code = precompile
@@ -874,7 +874,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
   protected async _generateAddress(message: Message): Promise<Address> {
     let addr
-    if (message.salt) {
+    if (typeof message.salt !== 'undefined') {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
