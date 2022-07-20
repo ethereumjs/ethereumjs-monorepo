@@ -4,8 +4,8 @@ import * as tape from 'tape'
 import { EthersStateManager } from '../src/ethersStateManager'
 
 import { VM } from '@ethereumjs/vm'
-import { getTransaction } from '@ethereumjs/vm/tests/api/utils'
 import { Chain, Common } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 const provider = new CloudflareProvider()
 
@@ -50,12 +50,20 @@ tape('runTx tests', async (t) => {
   const state = new EthersStateManager({ provider: provider })
   const vm = await VM.create({ common, stateManager: state })
   const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const tx = FeeMarketEIP1559Transaction.fromTxData(
+    { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
+    { common }
+  ).sign(privateKey)
   const result = await vm.runTx({
     skipBalance: true,
     skipNonce: true,
-    tx: getTransaction(common, 0, true, '0x100', false, vitalikDotEth.toString()),
+    tx,
   })
 
-  t.equal(result.totalGasSpent, 21240n, 'sent some ETH to vitalik.eth')
+  t.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
   t.end()
 })
