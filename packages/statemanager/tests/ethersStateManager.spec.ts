@@ -17,10 +17,7 @@ tape('Ethers State Manager API tests', async (t) => {
 
   await state.putAccount(vitalikDotEth, account)
 
-  t.ok(
-    (state as any).accountsCache.get(vitalikDotEth.toString()).nonce > 0,
-    'Vitalik.eth is stored in accountCache'
-  )
+  t.ok((state as any)._cache.get(vitalikDotEth).nonce > 0, 'Vitalik.eth is stored in accountCache')
   const doesThisAccountExist = await state.accountExists(
     Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
   )

@@ -1,4 +1,4 @@
-import { Account, Address, KECCAK256_NULL, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { Account, Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 import { BaseStateManager, StateManager } from '.'
 import { StorageDump } from './interface'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -14,17 +14,19 @@ export interface EthersStateManagerOpts {
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
-  private accountsCache: Map<string, Account>
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, string>
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
     this.provider = opts.provider
-    this.accountsCache = new Map()
     this.contractCache = new Map()
-    this.storageCache = new Map() //@ts-ignore
-    this._cache = new Cache({ getCb: () => {}, putCb: () => {}, deleteCb: () => {} })
+    this.storageCache = new Map()
+    this._cache = new Cache({
+      getCb: (address) => this.getAccountFromProvider(address),
+      putCb: (_address, _account) => Promise.resolve(),
+      deleteCb: (_address) => Promise.resolve(),
+    })
   }
 
   async putContractCode(address: Address, value: Buffer): Promise<void> {
@@ -51,36 +53,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async accountExists(address: Address): Promise<boolean> {
-    const cachedAccount = this.accountsCache.get(address.toString())
-    if (typeof cachedAccount !== 'undefined') {
-      // Accounts in the cache must exist
-      return true
+    let account = this._cache.get(address)
+    if (account.isEmpty()) {
+      account = await this.getAccountFromProvider(address)
+      if (account.isEmpty()) return false
     }
-    const balance = await this.provider.getBalance(address.toString())
-    if (balance.gt(0)) {
-      // Accounts with a balance must exist
-      return true
-    }
-    const nonce = await this.provider.getTransactionCount(address.toString())
-    if (nonce > 0) {
-      // Accounts that have sent transactions must exist
-      return true
-    }
-    const code = await this.provider.getCode(address.toString())
-    if (!toBuffer(keccak256(toBuffer(code))).equals(KECCAK256_NULL)) {
-      // Accounts that have a non-null codeHash must exist
-      return true
-    }
-    const storage = await this.provider.getStorageAt(address.toString(), 0)
-    if (parseInt(storage) !== 0) {
-      // Accounts that have non-zero storage must exist
-      return true
-    }
-
-    return false
+    return true
   }
 
   async getAccount(address: Address): Promise<Account> {
+    const account = await this._cache.getOrLoad(address)
+    return account
+  }
+  async getAccountFromProvider(address: Address): Promise<Account> {
     const balance = await this.provider.getBalance(address.toString())
     const nonce = await this.provider.getTransactionCount(address.toString())
     const codeHash = keccak256(toBuffer(await this.provider.getCode(address.toString())))
@@ -89,12 +74,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       nonce: nonce,
       codeHash: codeHash,
     })
-    this.accountsCache.set(address.toString(), account)
     return account
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
-    this.accountsCache.set(address.toString(), account)
+    this._cache.put(address, account, false)
   }
 
   async getContractCode(address: Address): Promise<Buffer> {
