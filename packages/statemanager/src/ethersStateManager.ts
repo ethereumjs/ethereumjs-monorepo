@@ -5,6 +5,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Common } from '@ethereumjs/common'
+import { Cache } from './cache'
 
 export interface EthersStateManagerOpts {
   common?: Common
@@ -22,7 +23,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.provider = opts.provider
     this.accountsCache = new Map()
     this.contractCache = new Map()
-    this.storageCache = new Map()
+    this.storageCache = new Map() //@ts-ignore
+    this._cache = new Cache({ getCb: () => {}, putCb: () => {}, deleteCb: () => {} })
   }
 
   async putContractCode(address: Address, value: Buffer): Promise<void> {

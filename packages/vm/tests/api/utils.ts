@@ -46,9 +46,10 @@ export function getTransaction(
   txType = 0,
   sign = false,
   value = '0x00',
-  createContract = false
+  createContract = false,
+  toAddress: string | undefined = undefined
 ) {
-  let to: string | undefined = '0x0000000000000000000000000000000000000000'
+  let to: string | undefined = toAddress ?? '0x0000000000000000000000000000000000000000'
   let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
 
   if (createContract) {

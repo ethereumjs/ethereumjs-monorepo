@@ -39,6 +39,7 @@
     "rlp": "4.0.0-beta.2"
   },
   "devDependencies": {
+    "@ethereumjs/vm": "^6.0.0-beta.2",
     "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
