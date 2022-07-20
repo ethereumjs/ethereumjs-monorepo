@@ -25,6 +25,7 @@
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "npx typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
