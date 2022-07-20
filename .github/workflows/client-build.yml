@@ -5,6 +5,7 @@ on:
     tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/client
@@ -46,7 +47,7 @@ jobs:
         if: ${{ matrix.node-version == 16 }}
 
       - run: npm run test:integration
-      
+
       - run: npm run lint
   test-client-cli:
     runs-on: ubuntu-latest
