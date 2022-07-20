@@ -7,6 +7,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     paths: ['packages/rlp/**']
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/rlp
