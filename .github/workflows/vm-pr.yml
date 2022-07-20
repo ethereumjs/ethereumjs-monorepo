@@ -96,7 +96,6 @@ jobs:
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-blockchain:
-    if: ${{ !contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
