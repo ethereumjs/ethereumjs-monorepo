@@ -135,8 +135,10 @@ export class BlockHeader {
       throw new Error('invalid header. Less values than expected were received')
     }
 
-    if (opts.common?.isActivatedEIP(1559) && (baseFeePerGas === undefined)) {
-      const eip1559ActivationBlock = opts.common?.eipBlockBN(1559)?.toArrayLike(Buffer)
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }

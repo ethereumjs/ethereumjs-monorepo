@@ -96,6 +96,7 @@ jobs:
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-blockchain:
+    if: ${{ !contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -161,9 +162,7 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
-
-      - run: npm run test:blockchain:transitionForks
+      - run: npm run test:blockchain:allForks
 
   vm-benchmarks:
     runs-on: ubuntu-latest

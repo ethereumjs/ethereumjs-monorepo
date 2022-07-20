@@ -263,16 +263,17 @@ export function getTestDirs(network: string, testType: string) {
  * @returns {Common} the Common which should be used
  */
 export function getCommon(targetNetwork: string) {
-  let network = targetNetwork.toLowerCase()
+  let network = targetNetwork
+  const networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
     network = network.slice(0, index)
   }
-  if (normalHardforks.map((str) => str.toLowerCase()).includes(network)) {
+  if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // normal hard fork, return the common with this hard fork
     // find the right upper/lowercased version
     const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-      currentValue.toLowerCase() === network ? currentValue : previousValue
+      currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
     )
     const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
     const hardforks = mainnetCommon.hardforks()
