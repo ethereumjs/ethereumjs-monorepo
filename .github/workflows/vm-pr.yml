@@ -2,6 +2,7 @@ name: VM
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/vm
