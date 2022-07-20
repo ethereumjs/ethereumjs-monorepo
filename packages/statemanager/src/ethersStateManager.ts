@@ -13,14 +13,21 @@ export interface EthersStateManagerOpts {
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
+  private accountsCache: Map<string, Account>
+  private contractCache: Map<string, Buffer>
+  private storageCache: Map<string, string>
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
     this.provider = opts.provider
+    this.accountsCache = new Map()
+    this.contractCache = new Map()
+    this.storageCache = new Map()
   }
 
-  putContractCode(_address: Address, _value: Buffer): Promise<void> {
-    throw new Error('Method not implemented.')
+  async putContractCode(address: Address, value: Buffer): Promise<void> {
+    // Store contract code in the cache
+    this.contractCache.set(address.toString(), value)
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
@@ -40,7 +47,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   dumpStorage(_address: Address): Promise<StorageDump> {
     throw new Error('Method not implemented.')
   }
+
   async accountExists(address: Address): Promise<boolean> {
+    const cachedAccount = this.accountsCache.get(address.toString())
+    if (typeof cachedAccount !== 'undefined') {
+      // Accounts in the cache must exist
+      return true
+    }
     const balance = await this.provider.getBalance(address.toString())
     if (balance.gt(0)) {
       // Accounts with a balance must exist
@@ -69,16 +82,24 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const balance = await this.provider.getBalance(address.toString())
     const nonce = await this.provider.getTransactionCount(address.toString())
     const codeHash = keccak256(toBuffer(await this.provider.getCode(address.toString())))
-    return Account.fromAccountData({
+    const account = Account.fromAccountData({
       balance: balance.toBigInt(),
       nonce: nonce,
       codeHash: codeHash,
     })
+    this.accountsCache.set(address.toString(), account)
+    return account
+  }
+
+  async putAccount(address: Address, account: Account): Promise<void> {
+    this.accountsCache.set(address.toString(), account)
   }
 
   async getContractCode(address: Address): Promise<Buffer> {
     const code = await this.provider.getCode(address.toString())
-    return toBuffer(code)
+    const codeBuffer = toBuffer(code)
+    this.contractCache.set(address.toString(), codeBuffer)
+    return codeBuffer
   }
 
   clearContractStorage(_address: Address): Promise<void> {
