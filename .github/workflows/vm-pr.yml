@@ -146,6 +146,7 @@ jobs:
             '--fork=Istanbul --verify-test-amount-alltests',
             '--fork=MuirGlacier --verify-test-amount-alltests',
             '--fork=Berlin --verify-test-amount-alltests',
+            '--fork=London --verify-test-amount-alltests'
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
