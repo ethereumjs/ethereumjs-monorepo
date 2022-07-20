@@ -558,7 +558,7 @@ export class Common extends EventEmitter {
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if (hf['eips'].includes(eip)) {
-          return this.hardforkBlock(hf[0])
+          return this.hardforkBlock(hfChanges[0])
         }
       }
     }
