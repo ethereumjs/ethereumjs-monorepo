@@ -28,6 +28,7 @@
     "test": "npm run tape -- './tests/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js",
     "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "formatTest": "node ./scripts/formatTest",
     "tsc": "../../config/cli/ts-compile.sh",

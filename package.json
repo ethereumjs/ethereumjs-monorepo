@@ -23,7 +23,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run lint --workspaces"
+      "pre-push": "npm run lint:diff --workspaces"
     }
   },
   "scripts": {
