@@ -136,22 +136,22 @@ jobs:
         # Args to pass to the tester.
         args:
           [
-            '--fork=chainstart --verify-test-amount-alltests'
-            '--fork=homestead --verify-test-amount-alltests'
-            '--fork=tangerineWhistle --verify-test-amount-alltests'
-            '--fork=spuriousDragon --verify-test-amount-alltests'
-            '--fork=byzantium --verify-test-amount-alltests'
-            '--fork=constantinople --verify-test-amount-alltests'
-            '--fork=petersburg --verify-test-amount-alltests'
-            '--fork=istanbul --verify-test-amount-alltests'
-            '--fork=muirGlacier --verify-test-amount-alltests'
-            '--fork=berlin --verify-test-amount-alltests'
-            '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests'
-            '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests'
-            '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests'
-            '--fork=HomesteadToDaoAt5 --verify-test-amount-alltests'
-            '--fork=HomesteadToEIP150At5 --verify-test-amount-alltests'
-            '--fork=BerlinToLondonAt5 --verify-test-amount-alltests'
+            '--fork=chainstart --verify-test-amount-alltests',
+            '--fork=homestead --verify-test-amount-alltests',
+            '--fork=tangerineWhistle --verify-test-amount-alltests',
+            '--fork=spuriousDragon --verify-test-amount-alltests',
+            '--fork=byzantium --verify-test-amount-alltests',
+            '--fork=constantinople --verify-test-amount-alltests',
+            '--fork=petersburg --verify-test-amount-alltests',
+            '--fork=istanbul --verify-test-amount-alltests',
+            '--fork=muirGlacier --verify-test-amount-alltests',
+            '--fork=berlin --verify-test-amount-alltests',
+            '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
+            '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
+            '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
+            '--fork=HomesteadToDaoAt5 --verify-test-amount-alltests',
+            '--fork=HomesteadToEIP150At5 --verify-test-amount-alltests',
+            '--fork=BerlinToLondonAt5 --verify-test-amount-alltests',
           ]
       fail-fast: false
     steps:
