@@ -1,5 +1,13 @@
 #!/bin/sh
+REMOTE=$(git rev-parse --symbolic-full-name --abbrev-ref @{u})
 
+if [ -z "$REMOTE" ]; then
+    FILESCHANGED=". --ext .js,.jsx,.ts,.tsx"
+else
+    FILESCHANGED=$(git diff --diff-filter=d --name-only --relative $REMOTE | grep -E '\.(js|jsx|ts|tsx)')
+fi
+
+echo $FILESCHANGED
 BLUE="\033[0;34m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
@@ -22,7 +30,12 @@ dim "\t --ext .js,.jsx,.ts,.tsx \\ "
 
 blue "[Lint]${NOCOLOR} checking..."
 
-eslint --format codeframe --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx
+if [ -z "$FILESCHANGED" ]; then
+    blue "[Lint]${GREEN} DONE."
+    exit
+fi
+
+eslint --format codeframe --config ./.eslintrc.js $FILESCHANGED
 
 RETURN_CODE=$?
 
