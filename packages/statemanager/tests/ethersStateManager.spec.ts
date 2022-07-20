@@ -16,4 +16,15 @@ tape('Ethers State Manager tests', async (t) => {
     Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
   )
   t.ok(!doesThisAccountExist, 'accountExists returns false for non-existent account')
+
+  const UNIContractCode = await state.getContractCode(
+    Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+  )
+  t.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
+
+  const storageSlot = await state.getContractStorage(
+    Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'),
+    Buffer.from('1', 'hex')
+  )
+  t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 })
