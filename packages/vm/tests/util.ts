@@ -300,6 +300,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentDifficulty,
     currentNumber,
     currentBaseFee,
+    currentRandom,
   } = data
   const headerData: any = {
     number: currentNumber,
@@ -311,6 +312,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   }
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
+  }
+  if (opts?.common && opts.common.gteHardfork('merge')) {
+    headerData['mixHash'] = currentRandom
+    headerData['difficulty'] = 0
   }
   return BlockHeader.fromHeaderData(headerData, opts)
 }
