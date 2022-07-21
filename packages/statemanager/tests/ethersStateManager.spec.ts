@@ -1,4 +1,4 @@
-import { Address } from '@ethereumjs/util'
+import { Address, bigIntToBuffer, bufferToHex, setLengthLeft } from '@ethereumjs/util'
 import { CloudflareProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 
@@ -36,10 +36,17 @@ tape('Ethers State Manager API tests', async (t) => {
     'UNI ERC20 contract code was found in cache'
   )
   const storageSlot = await state.getContractStorage(
-    Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'),
-    Buffer.from('1', 'hex')
+    UNIerc20ContractAddress,
+    setLengthLeft(bigIntToBuffer(1n), 32)
   )
   t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+  t.notEqual(
+    (state as any).storageCache.get(
+      UNIerc20ContractAddress + '--' + bufferToHex(setLengthLeft(bigIntToBuffer(1n), 32))
+    ),
+    undefined,
+    'a storage slot for the UNI contract exists in the cache'
+  )
   t.end()
 })
 

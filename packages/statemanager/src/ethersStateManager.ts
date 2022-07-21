@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { Account, Address, bufferToBigInt, bufferToHex, toBuffer } from '@ethereumjs/util'
 import { BaseStateManager, StateManager } from '.'
 import { StorageDump } from './interface'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -15,7 +15,7 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
-  private storageCache: Map<string, string>
+  private storageCache: Map<string, Buffer>
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
@@ -35,13 +35,22 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    const slot = toType(key, TypeOutput.Number)
-    const storage = await this.provider.getStorageAt(address.toString(), slot)
-    return toBuffer(storage)
+    console.log('key', key, bufferToBigInt(key))
+    const slotCacheKey = `${address.toString()}--0x${key.toString('hex')}`
+    // Check storage slot in cache
+    let storage: Buffer | string | undefined = this.storageCache.get(slotCacheKey)
+    if (typeof storage !== 'undefined') return storage
+    // Retrieve storage slot from provider if not found in cache
+    storage = await this.provider.getStorageAt(address.toString(), bufferToBigInt(key))
+    const value = toBuffer(storage)
+    // Cache retrieved storage slot
+    await this.putContractStorage(address, key, value)
+    return value
   }
 
-  putContractStorage(_address: Address, _key: Buffer, _value: Buffer): Promise<void> {
-    throw new Error('Method not implemented.')
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    // Set value in storageCache with `[address]--[hexKey]` formatted key
+    this.storageCache.set(`${address.toString()}--${bufferToHex(key)}`, value)
   }
 
   copy(): EthersStateManager {
