@@ -1,4 +1,11 @@
-import { Account, Address, bufferToBigInt, bufferToHex, toBuffer } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToHex,
+  bufferToBigInt,
+  bufferToHex,
+  toBuffer,
+} from '@ethereumjs/util'
 import { BaseStateManager, StateManager } from '.'
 import { StorageDump } from './interface'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -6,20 +13,29 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Common } from '@ethereumjs/common'
 import { Cache } from './cache'
+import { SecureTrie } from '@ethereumjs/trie'
 
 export interface EthersStateManagerOpts {
   common?: Common
   provider: JsonRpcProvider
+  blockTag?: bigint | string
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Buffer>
+  private blockTag: string
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
     this.provider = opts.provider
+    if (typeof opts.blockTag === 'bigint') {
+      this.blockTag = bigIntToHex(opts.blockTag)
+    } else {
+      this.blockTag = opts.blockTag ?? 'latest'
+    }
+
     this.contractCache = new Map()
     this.storageCache = new Map()
     this._cache = new Cache({
@@ -35,7 +51,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    console.log('key', key, bufferToBigInt(key))
     const slotCacheKey = `${address.toString()}--0x${key.toString('hex')}`
     // Check storage slot in cache
     let storage: Buffer | string | undefined = this.storageCache.get(slotCacheKey)
@@ -62,10 +77,17 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async accountExists(address: Address): Promise<boolean> {
-    let account = this._cache.get(address)
+    const account = this._cache.get(address)
     if (account.isEmpty()) {
-      account = await this.getAccountFromProvider(address)
-      if (account.isEmpty()) return false
+      // Get latest block (or block specified in `this.blockTag`)
+      const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
+      // Get merkle proof for `address` from provider
+      const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
+      const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+      const trie = new SecureTrie()
+      const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
+      // if not verified (i.e. verifyProof returns null), account does not exist
+      if (verified === null) return false
     }
     return true
   }

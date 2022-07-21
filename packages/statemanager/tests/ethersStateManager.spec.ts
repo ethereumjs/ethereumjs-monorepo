@@ -24,6 +24,7 @@ tape('Ethers State Manager API tests', async (t) => {
   )
   t.ok(!doesThisAccountExist, 'accountExists returns false for non-existent account')
 
+  t.ok(state.accountExists(vitalikDotEth), 'vitalik.eth does exist')
   const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
   const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
 
