@@ -1,12 +1,14 @@
-import { Address, bigIntToBuffer, bufferToHex, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
 import { CloudflareProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
-
+import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
 import { VM } from '@ethereumjs/vm'
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 import { EthersStateManager } from '../src/ethersStateManager'
+import { fork } from 'child_process'
+import { Blockchain } from '@ethereumjs/blockchain'
 
 const provider = new CloudflareProvider()
 
@@ -79,4 +81,14 @@ tape('runTx tests', async (t) => {
 
   t.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
   t.end()
+})
+
+tape.only('runBlock test', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const state = new EthersStateManager({ provider: provider, blockTag: 20030n })
+  const vm = await VM.create({ common, stateManager: state })
+  const nextBlock = await provider.send('eth_getBlockByNumber', [bigIntToHex(20031n), false])
+  const block = blockFromRpc(nextBlock, undefined, { common })
+  const res = await vm.runBlock({ block, skipHeaderValidation: true, skipBlockValidation: true })
+  console.log(res)
 })
