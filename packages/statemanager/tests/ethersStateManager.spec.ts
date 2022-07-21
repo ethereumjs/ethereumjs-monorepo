@@ -1,11 +1,12 @@
 import { Address } from '@ethereumjs/util'
 import { CloudflareProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
-import { EthersStateManager } from '../src/ethersStateManager'
 
 import { VM } from '@ethereumjs/vm'
 import { Chain, Common } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+
+import { EthersStateManager } from '../src/ethersStateManager'
 
 const provider = new CloudflareProvider()
 
@@ -46,6 +47,7 @@ tape('runTx tests', async (t) => {
   const common = new Common({ chain: Chain.Mainnet })
   const state = new EthersStateManager({ provider: provider })
   const vm = await VM.create({ common, stateManager: state })
+
   const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
   const privateKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
