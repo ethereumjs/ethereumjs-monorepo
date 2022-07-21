@@ -170,6 +170,7 @@ const normalHardforks = [
   'berlin',
   'london',
   'merge',
+  'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
 
 const transitionNetworks: any = {
@@ -397,6 +398,7 @@ const expectedTestsFull: any = {
     MuirGlacier: 38773,
     Berlin: 41872,
     London: 61547,
+    ArrowGlacier: 0,
     Merge: 60373,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
