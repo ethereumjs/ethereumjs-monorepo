@@ -10,7 +10,6 @@ import { BaseStateManager, StateManager } from '.'
 import { StorageDump } from './interface'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Common } from '@ethereumjs/common'
 import { Cache } from './cache'
 import { SecureTrie } from '@ethereumjs/trie'
@@ -26,6 +25,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Buffer>
   private blockTag: string
+  private root: Buffer | undefined
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
@@ -97,13 +97,16 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    const balance = await this.provider.getBalance(address.toString())
-    const nonce = await this.provider.getTransactionCount(address.toString())
-    const codeHash = keccak256(toBuffer(await this.provider.getCode(address.toString())))
+    const accountData = await this.provider.send('eth_getProof', [
+      address.toString(),
+      [],
+      this.blockTag,
+    ])
     const account = Account.fromAccountData({
-      balance: balance.toBigInt(),
-      nonce: nonce,
-      codeHash: codeHash,
+      balance: BigInt(accountData.balance),
+      nonce: BigInt(accountData.nonce),
+      codeHash: toBuffer(accountData.codeHash),
+      stateRoot: await this.getStateRoot(),
     })
     return account
   }
@@ -122,9 +125,20 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   clearContractStorage(_address: Address): Promise<void> {
     throw new Error('Method not implemented.')
   }
-  getStateRoot(): Promise<Buffer> {
-    throw new Error('Method not implemented.')
+
+  async getStateRoot(): Promise<Buffer> {
+    if (this.blockTag === 'latest') {
+      const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
+      return toBuffer(block.stateRoot)
+    }
+    if (typeof this.root === 'undefined') {
+      this.root = toBuffer(
+        (await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])).stateRoot
+      )
+    }
+    return this.root
   }
+
   setStateRoot(_stateRoot: Buffer): Promise<void> {
     throw new Error('Method not implemented.')
   }
