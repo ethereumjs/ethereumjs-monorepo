@@ -343,7 +343,8 @@ export interface RunTxResult extends EVMResult {
 
   /**
    * The amount of gas used in this transaction, which is paid for
-   * This contains the gas units t
+   * This contains the gas units that have been used on execution, plus the upfront cost,
+   * which consists of calldata cost, intrinsic cost and optionally the access list costs
    */
   totalGasSpent: bigint
 
