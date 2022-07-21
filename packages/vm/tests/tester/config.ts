@@ -263,16 +263,17 @@ export function getTestDirs(network: string, testType: string) {
  * @returns {Common} the Common which should be used
  */
 export function getCommon(targetNetwork: string) {
-  let network = targetNetwork.toLowerCase()
+  let network = targetNetwork
+  const networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
     network = network.slice(0, index)
   }
-  if (normalHardforks.map((str) => str.toLowerCase()).includes(network)) {
+  if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // normal hard fork, return the common with this hard fork
     // find the right upper/lowercased version
     const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-      currentValue.toLowerCase() === network ? currentValue : previousValue
+      currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
     )
     const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
     const hardforks = mainnetCommon.hardforks()
@@ -355,36 +356,38 @@ export function getCommon(targetNetwork: string) {
 
 const expectedTestsFull: any = {
   BlockchainTests: {
-    Chainstart: 4385,
-    Homestead: 7001,
+    Chainstart: 4496,
+    Homestead: 7321,
     Dao: 0,
-    TangerineWhistle: 4255,
-    SpuriousDragon: 4305,
-    Byzantium: 15379,
-    Constantinople: 32750,
-    Petersburg: 32735,
-    Istanbul: 35378,
-    MuirGlacier: 35378,
-    Berlin: 33,
+    TangerineWhistle: 4609,
+    SpuriousDragon: 4632,
+    Byzantium: 15703,
+    Constantinople: 33146,
+    Petersburg: 33128,
+    Istanbul: 38773,
+    MuirGlacier: 38773,
+    Berlin: 41872,
+    London: 61547,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
-    FrontierToHomesteadAt5: 12,
-    HomesteadToDaoAt5: 18,
+    FrontierToHomesteadAt5: 13,
+    HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
-    BerlinToLondonAt5: 0,
+    BerlinToLondonAt5: 24,
   },
   GeneralStateTests: {
-    Chainstart: 896,
-    Homestead: 1847,
+    Chainstart: 1045,
+    Homestead: 2078,
     Dao: 0,
-    TangerineWhistle: 969,
-    SpuriousDragon: 1094,
-    Byzantium: 4626,
-    Constantinople: 10402,
-    Petersburg: 10397,
-    Istanbul: 10715,
-    MuirGlacier: 10715,
-    Berlin: 13065,
+    TangerineWhistle: 1200,
+    SpuriousDragon: 1325,
+    Byzantium: 4857,
+    Constantinople: 10648,
+    Petersburg: 10642,
+    Istanbul: 12439,
+    MuirGlacier: 12439,
+    Berlin: 13214,
+    London: 19449,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,
