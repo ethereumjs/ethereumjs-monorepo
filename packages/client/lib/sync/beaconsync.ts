@@ -115,7 +115,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    const isLinked = this.skeleton.isLinked()
+    const isLinked = await this.skeleton.isLinked()
     if (!isLinked) {
       while (this.running) {
         try {
@@ -198,7 +198,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.isLinked()) {
+    if (await this.skeleton.isLinked()) {
       this.clearFetcher()
       return true
     }
@@ -214,11 +214,20 @@ export class BeaconSynchronizer extends Synchronizer {
 
     const { tail } = this.skeleton.bounds()
     const first = tail - BigInt(1)
-    // Sync from tail to next subchain or chain height
-    const subChainHead = (this.skeleton as any).status.progress.subchains[1]?.head
-    const count =
-      first - (isTruthy(subChainHead) ? subChainHead - BigInt(1) : this.chain.blocks.height)
-    if (count > BigInt(0) && (!this.fetcher || this.fetcher.errored)) {
+
+    let count
+    if (first <= this.chain.blocks.height) {
+      // skeleton should have linked by now, if not it means skeleton is syncing the reorg
+      // to the current canonical, so we can lower the skeleton target by another 1000 blocks
+      count = BigInt(this.config.skeletonSubchainMergeMinimum)
+    } else {
+      count = tail - this.chain.blocks.height
+    }
+
+    if (count > BigInt(0) && (!isTruthy(this.fetcher) || isTruthy(this.fetcher.errored))) {
+      this.config.logger.debug(
+        `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
+      )
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -255,7 +264,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * Runs vm execution on {@link Event.CHAIN_UPDATED}
    */
   async runExecution(): Promise<void> {
-    // Execute single block when within 50 blocks of head,
+    // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     if (
       (isTruthy(this.skeleton.bounds()) &&
