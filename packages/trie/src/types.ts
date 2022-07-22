@@ -20,6 +20,11 @@ export type FoundNodeFunction = (
 
 export type HashFunc = (msg: Uint8Array) => Uint8Array
 
+export interface TrieOptsPersistentRoot {
+  enabled: boolean
+  key: Buffer
+}
+
 export interface TrieOpts {
   /**
    * A database instance.
@@ -39,6 +44,11 @@ export interface TrieOpts {
    * Hash function used for hashing trie node and securing key.
    */
   hash?: HashFunc
+
+  /**
+   * Store the root inside the database after every `write` operation
+   */
+  persistRoot?: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch

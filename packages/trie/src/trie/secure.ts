@@ -1,6 +1,7 @@
 import { CheckpointTrie } from './checkpoint'
 import { Proof } from '../types'
 import { isFalsy } from '@ethereumjs/util'
+import { ROOT_DB_KEY } from '../db'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -107,10 +108,20 @@ export class SecureTrie extends CheckpointTrie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
+      persistRoot: (this as any)._persistRoot,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       secureTrie.db.checkpoints = [...this.db.checkpoints]
     }
     return secureTrie
+  }
+
+  /**
+   * Persists the root hash in the underlying database
+   */
+  async persistRoot() {
+    if (this._persistRoot !== undefined) {
+      await this.db.put(this.hash(ROOT_DB_KEY), this.root)
+    }
   }
 }

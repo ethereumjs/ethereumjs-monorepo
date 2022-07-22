@@ -2,7 +2,7 @@ import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
-import { LevelDB } from '../db'
+import { LevelDB, ROOT_DB_KEY } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
 import { WalkController } from '../util/walkController'
@@ -32,6 +32,7 @@ export class Trie {
   private _root: Buffer
   private _deleteFromDB: boolean
   private _hashLen: number
+  protected _persistRoot: boolean
 
   /**
    * Create a new trie
@@ -49,9 +50,27 @@ export class Trie {
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
 
+    if (opts?.db) {
+      this._persistRoot = opts.persistRoot ?? true
+    } else {
+      this._persistRoot = false
+    }
+
     if (opts?.root) {
       this.root = opts.root
     }
+  }
+
+  static async make(opts?: TrieOpts) {
+    if (opts?.db !== undefined) {
+      opts.persistRoot = opts?.persistRoot ?? true
+
+      if (opts?.persistRoot && opts?.root === undefined) {
+        opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
+      }
+    }
+
+    return new Trie(opts)
   }
 
   /**
@@ -134,6 +153,7 @@ export class Trie {
       // then update
       await this._updateNode(key, value, remaining, stack)
     }
+    await this.persistRoot()
     this.lock.signal()
   }
 
@@ -149,6 +169,7 @@ export class Trie {
     if (node) {
       await this._deleteNode(key, stack)
     }
+    await this.persistRoot()
     this.lock.signal()
   }
 
@@ -243,6 +264,7 @@ export class Trie {
     const encoded = newNode.serialize()
     this.root = this.hash(encoded)
     await this.db.put(this.root, encoded)
+    await this.persistRoot()
   }
 
   /**
@@ -530,6 +552,7 @@ export class Trie {
     }
 
     await this.db.batch(opStack)
+    await this.persistRoot()
   }
 
   /**
@@ -598,6 +621,7 @@ export class Trie {
         await this.del(op.key)
       }
     }
+    await this.persistRoot()
   }
 
   /**
@@ -618,6 +642,7 @@ export class Trie {
     }
 
     await this.db.batch(opStack)
+    await this.persistRoot()
     return
   }
 
@@ -708,7 +733,17 @@ export class Trie {
       root: this.root,
       deleteFromDB: this._deleteFromDB,
       hash: this.hash,
+      persistRoot: this._persistRoot,
     })
+  }
+
+  /**
+   * Persists the root hash in the underlying database
+   */
+  async persistRoot() {
+    if (this._persistRoot !== undefined) {
+      await this.db.put(ROOT_DB_KEY, this.root)
+    }
   }
 
   /**
