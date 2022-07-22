@@ -221,7 +221,8 @@ export class BeaconSynchronizer extends Synchronizer {
       // to the current canonical, so we can lower the skeleton target by another 1000 blocks
       count = BigInt(this.config.skeletonSubchainMergeMinimum)
     } else {
-      count = tail - this.chain.blocks.height
+      // We sync one less because tail's next should be pointing to the block in chain
+      count = tail - this.chain.blocks.height - BigInt(1)
     }
 
     if (count > BigInt(0) && (!isTruthy(this.fetcher) || isTruthy(this.fetcher.errored))) {
