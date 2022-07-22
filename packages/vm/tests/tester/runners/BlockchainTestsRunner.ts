@@ -86,6 +86,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     state,
     blockchain,
     common,
+    hardforkByBlockNumber: true
   })
 
   // set up pre-state
@@ -95,8 +96,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
+      console.log(error)
       t.pass(`Expected exception ${expectException}`)
     } else {
+      console.log(error)
       t.fail(error)
     }
   }
@@ -124,8 +127,20 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
+      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       // Update common HF
-      common.setHardforkByBlockNumber(currentBlock)
+      let TD = undefined 
+      try {
+        const decoded: any = RLP.decode(blockRlp)
+        const parentHash = decoded[0][0]
+        const currentDifficulty = bufferToBigInt(decoded[0][7])
+        const prevTotalDifficulty = await blockchain.getTotalDifficulty(parentHash)
+        TD = prevTotalDifficulty + currentDifficulty
+      } catch (e) {
+
+      }
+
+      common.setHardforkByBlockNumber(currentBlock, TD)
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -155,8 +170,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis

@@ -54,10 +54,19 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     isTruthy(this._hardforkByTTD) ||
     isTruthy(opts.hardforkByTTD)
   ) {
+    let TD = undefined
+    try { 
+      TD = await this.blockchain.getTotalDifficulty(block.hash())
+    } catch(e) {
+
+    }
+    const value = opts.hardforkByTD ?? this._hardforkByTD ?? TD
+    console.log(value, value! > 0xC0000n, block.header.number)
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD
+      opts.hardforkByTTD ?? this._hardforkByTTD ?? TD
     )
+    console.log(this._common.hardfork())
   }
 
   if (this.DEBUG) {

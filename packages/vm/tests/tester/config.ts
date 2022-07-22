@@ -262,7 +262,7 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(targetNetwork: string, ttd?: string) {
+function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
   const networkLowercase = targetNetwork.toLowerCase()
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
@@ -296,7 +296,7 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: string) {
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd,
+          td: ttd,
         })
       }
     }
@@ -338,7 +338,7 @@ export function getCommon(targetNetwork: string) {
     const start = networkLowercase.match('tomergeatdiff')!.index!
     const end = start + 'tomergeatdiff'.length
     const startNetwork = network.substring(0, start) // HF before the merge
-    const TTD = Number('0x' + network.substring(end)).toString() // Total difficulty to transition to PoS
+    const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
