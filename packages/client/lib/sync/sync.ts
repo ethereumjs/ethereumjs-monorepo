@@ -174,7 +174,7 @@ export abstract class Synchronizer {
         this.clearFetcher()
         resolve(true)
         const heightStr = isTruthy(height) ? ` height=${height}` : ''
-        this.config.logger.debug(
+        this.config.logger.info(
           `Finishing up sync with the current fetcher${heightStr}
           }`
         )
@@ -184,9 +184,10 @@ export abstract class Synchronizer {
         if (this.fetcher) {
           await this.fetcher.fetch()
         }
+        this.config.logger.debug(`Fetcher finished fetching...`)
         resolveSync()
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger.error(
           `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
         )
         this.clearFetcher()
