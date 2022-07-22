@@ -107,6 +107,7 @@ export class SecureTrie extends CheckpointTrie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
+      hash: (this as any)._hash,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       secureTrie.db.checkpoints = [...this.db.checkpoints]
