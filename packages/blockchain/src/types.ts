@@ -36,6 +36,11 @@ export interface BlockchainInterface {
    * reorg: boolean)
    */
   iterator(name: string, onBlock: OnBlock): Promise<number>
+
+  /**
+   * Returns a copy of the blockchain
+   */
+  copy(): BlockchainInterface
 }
 
 /**

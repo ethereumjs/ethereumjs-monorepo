@@ -10,7 +10,7 @@ type Block = {
 }
 
 type Blockchain = {
-  getBlock(blockId: number): Promise<Block>
+  getBlock(blockId: number): Promise<Block | null>
   copy(): Blockchain
 }
 
@@ -64,7 +64,7 @@ export class EEI extends VmState implements EEIInterface {
    */
   async getBlockHash(num: bigint): Promise<bigint> {
     const block = await this._blockchain.getBlock(Number(num))
-    return bufferToBigInt(block.hash())
+    return bufferToBigInt(block!.hash())
   }
 
   /**
