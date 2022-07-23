@@ -40,6 +40,7 @@
     "rlp": "4.0.0-beta.2"
   },
   "devDependencies": {
+    "@ethereumjs/block": "^4.0.0-beta.2",
     "@ethereumjs/tx": "^4.0.0-beta.2",
     "@ethereumjs/vm": "^6.0.0-beta.2",
     "@types/node": "^16.11.7",

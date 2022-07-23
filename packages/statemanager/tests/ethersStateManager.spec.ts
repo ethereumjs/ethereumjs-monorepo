@@ -7,8 +7,6 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 import { EthersStateManager } from '../src/ethersStateManager'
-import { fork } from 'child_process'
-import { Blockchain } from '@ethereumjs/blockchain'
 
 const provider = new CloudflareProvider()
 
@@ -83,7 +81,13 @@ tape('runTx tests', async (t) => {
   t.end()
 })
 
+/** To run the block test, you will need an Infura or Alchemy URL that gives access to complete chain history.
+ *  Pass it in the PROVIDER=[provider url] npm run tape -- 'tests/ethersStateManager.spec.ts'
+ *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
+ */
+
 tape('runBlock test', async (t) => {
+  if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
   const blockTag = BigInt(
