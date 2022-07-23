@@ -183,7 +183,11 @@ tape('[BeaconSynchronizer]', async (t) => {
     skeleton.isLinked = async () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     await sync.open()
-    t.ok(await sync.syncWithPeer({} as any))
+    t.equal(
+      await sync.syncWithPeer({} as any),
+      false,
+      `syncWithPeer should return false as nothing to sync`
+    )
     await sync.stop()
     await sync.close()
     t.end()
