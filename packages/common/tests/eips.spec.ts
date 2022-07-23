@@ -58,4 +58,16 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
 
     st.end()
   })
+
+  t.test('eipBlock', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Mainnet })
+
+    let msg = 'should return correct value'
+    st.ok(c.eipBlock(1559)! === 12965000n, msg)
+
+    msg = 'should return null for unscheduled eip'
+    st.equal(c.eipBlock(0), null, msg)
+
+    st.end()
+  })
 })
