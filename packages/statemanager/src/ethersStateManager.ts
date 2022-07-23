@@ -13,7 +13,10 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { Common } from '@ethereumjs/common'
 import { Cache } from './cache'
 import { SecureTrie } from '@ethereumjs/trie'
+import { debug } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
+const log = debug('statemanager')
 export interface EthersStateManagerOpts {
   common?: Common
   provider: JsonRpcProvider
@@ -77,6 +80,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async accountExists(address: Address): Promise<boolean> {
+    log(`seeing if ${address.toString()} exists`)
     const account = this._cache.get(address)
     if (account.isEmpty()) {
       // Get latest block (or block specified in `this.blockTag`)
@@ -97,11 +101,21 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    const accountData = await this.provider.send('eth_getProof', [
-      address.toString(),
-      [],
-      this.blockTag,
-    ])
+    log(`getting account data for ${address.toString()}`)
+    let accountData
+    try {
+      accountData = await this.provider.send('eth_getProof', [
+        address.toString(),
+        [],
+        this.blockTag,
+      ])
+    } catch (e) {
+      accountData.balance = await this.provider.getBalance(address.toString(), this.blockTag)
+      accountData.nonce = await this.provider.getTransactionCount(address.toString(), this.blockTag)
+      accountData.codeHash = keccak256(
+        toBuffer(await this.provider.getCode(address.toString(), this.blockTag))
+      )
+    }
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),

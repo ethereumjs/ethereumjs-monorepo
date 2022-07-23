@@ -1,5 +1,5 @@
 import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
-import { CloudflareProvider } from '@ethersproject/providers'
+import { CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
 import { VM } from '@ethereumjs/vm'
@@ -83,12 +83,25 @@ tape('runTx tests', async (t) => {
   t.end()
 })
 
-tape.only('runBlock test', async (t) => {
+tape('runBlock test', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const state = new EthersStateManager({ provider: provider, blockTag: 20030n })
+  const provider = new JsonRpcProvider(process.env.PROVIDER)
+  const blockTag = BigInt(
+    (await provider.send('eth_getBlockByNumber', [bigIntToHex(20031n), false])).number
+  )
+  const state = new EthersStateManager({
+    provider: provider,
+    blockTag: blockTag,
+  })
   const vm = await VM.create({ common, stateManager: state })
-  const nextBlock = await provider.send('eth_getBlockByNumber', [bigIntToHex(20031n), false])
-  const block = blockFromRpc(nextBlock, undefined, { common })
-  const res = await vm.runBlock({ block, skipHeaderValidation: true, skipBlockValidation: true })
-  console.log(res)
+  const blockData = await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+  const block = blockFromRpc(blockData, undefined, { common })
+  const res = await vm.runBlock({
+    block,
+    skipHeaderValidation: true,
+    skipBlockValidation: true,
+    skipBalance: true,
+    skipNonce: true,
+  })
+  t.equal(bufferToHex(block.header.stateRoot), bufferToHex(res.stateRoot), 'was able to run block')
 })
