@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1658409311467,
+  "lastUpdate": 1658543367892,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5bcd389b8c98e2f8bcb243146ebad2f58ab5c251",
-          "message": "EVM Types Cleanup (#2001)\n\n* EVM: reorder types, add some code docs\r\n\r\n* EVM: do not export the the replicated intermediary state interfaces, only the resulting dedicated VmStateAccess interface\r\n\r\n* EVM: rename VmStateAccess -> EVMStateAccess\r\n\r\n* EVM: rename RunCallOpts -> EVMRunCallOpts, RunCodeOpts -> EVMRunCodeOpts interfaces to have these more prominently stand out\r\n\r\n* EVM: removed/internalized TxContext interface\r\n\r\n* EVM: localized NewContractEvent type\r\n\r\n* EVM: simplified test command (removed test:API), moved test files one level up\r\n\r\n* EVM: fixed test import references\r\n\r\n* EVM: moved all result types to file bottom",
-          "timestamp": "2022-06-28T12:21:33+02:00",
-          "tree_id": "5aed83d9bf593f5f52e47ec02d30cd67180b99af",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5bcd389b8c98e2f8bcb243146ebad2f58ab5c251"
-        },
-        "date": 1656411938587,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 32964,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 29837,
-            "range": "±9.66%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32378,
-            "range": "±0.87%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 32010,
-            "range": "±1.09%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 52170,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 932,
-            "range": "±6.96%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 130,
-            "range": "±54.41%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 95.44,
-            "range": "±5.77%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 7.42,
-            "range": "±85.42%",
-            "unit": "ops/sec",
-            "extra": "21 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±64.78%",
             "unit": "ops/sec",
             "extra": "24 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3ccd1b4ddcb1e7ab7d6846a2c0d86d063577115f",
+          "message": "fix(trie): pass down `hash` function for hashing on trie copies (#2068)",
+          "timestamp": "2022-07-22T22:21:45-04:00",
+          "tree_id": "d30b204f3cf9d52727b907f4e4232a1df1baf3a1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3ccd1b4ddcb1e7ab7d6846a2c0d86d063577115f"
+        },
+        "date": 1658543367259,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 22211,
+            "range": "±7.01%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21981,
+            "range": "±6.53%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23364,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 21754,
+            "range": "±7.93%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 26218,
+            "range": "±12.00%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 816,
+            "range": "±6.28%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 163,
+            "range": "±10.38%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 83.32,
+            "range": "±9.28%",
+            "unit": "ops/sec",
+            "extra": "45 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 15.05,
+            "range": "±25.25%",
+            "unit": "ops/sec",
+            "extra": "30 samples"
           }
         ]
       }
