@@ -1,8 +1,17 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
-import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode, HashFunc } from '../types'
-import { LevelDB, ROOT_DB_KEY } from '../db'
+import {
+  DB,
+  BatchDBOp,
+  PutBatch,
+  TrieNode,
+  Nibbles,
+  EmbeddedNode,
+  HashFunc,
+  ROOT_DB_KEY,
+} from '../types'
+import { LevelDB } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
 import { WalkController } from '../util/walkController'
@@ -136,7 +145,9 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    ok(!key.equals(ROOT_DB_KEY), `Attempted to set '__root__' key but it is not allowed.`)
+    if (this._persistRoot) {
+      ok(!key.equals(ROOT_DB_KEY), `Attempted to set '__root__' key but it is not allowed.`)
+    }
 
     // If value is empty, delete
     if (isFalsy(value) || value.toString() === '') {

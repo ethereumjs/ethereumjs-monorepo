@@ -1,5 +1,3 @@
-import { ok } from 'assert'
-import { ROOT_DB_KEY } from '.'
 import { DB, BatchDBOp, Checkpoint } from '../types'
 
 /**
@@ -98,8 +96,6 @@ export class CheckpointDB implements DB {
    * @inheritdoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    ok(!key.equals(ROOT_DB_KEY), `Attempted to set '__root__' key but it is not allowed.`)
-
     if (this.isCheckpoint) {
       // put value in cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)

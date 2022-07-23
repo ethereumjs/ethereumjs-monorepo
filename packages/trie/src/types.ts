@@ -20,11 +20,6 @@ export type FoundNodeFunction = (
 
 export type HashFunc = (msg: Uint8Array) => Uint8Array
 
-export interface TrieOptsPersistentRoot {
-  enabled: boolean
-  key: Buffer
-}
-
 export interface TrieOpts {
   /**
    * A database instance.
@@ -104,3 +99,5 @@ export type Checkpoint = {
   keyValueMap: Map<string, Buffer | null>
   root: Buffer
 }
+
+export const ROOT_DB_KEY = Buffer.from('__root__')
