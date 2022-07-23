@@ -1,4 +1,5 @@
 import { isTruthy } from '@ethereumjs/util'
+import { createHash } from 'crypto'
 import * as tape from 'tape'
 import { LevelDB, SecureTrie } from '../../src'
 
@@ -141,6 +142,21 @@ tape('SecureTrie.copy', function (it) {
 
   it.test('created copy includes values added before checkpoint', async function (t) {
     const trie = new SecureTrie({ db: new LevelDB() })
+
+    await trie.put(Buffer.from('key1'), Buffer.from('value1'))
+    trie.checkpoint()
+    await trie.put(Buffer.from('key2'), Buffer.from('value2'))
+    const trieCopy = trie.copy()
+    const value = await trieCopy.get(Buffer.from('key1'))
+    t.equal(value!.toString(), 'value1')
+    t.end()
+  })
+
+  it.test('created copy uses the correct hash function', async function (t) {
+    const trie = new SecureTrie({
+      db: new LevelDB(),
+      hash: (value) => createHash('sha256').update(value).digest(),
+    })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
