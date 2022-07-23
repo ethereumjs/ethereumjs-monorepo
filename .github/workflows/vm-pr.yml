@@ -134,19 +134,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester. Note that some have split the slow tests and only
-        # run on forks where applicable (see PR #489 for numbers on these)
-
-        # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
+        # Args to pass to the tester.
         args:
           [
-            '--fork=Berlin --expected-test-amount=33',
-            '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-            '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=16836',
-            '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-            '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=16821',
-            '--fork=Homestead --expected-test-amount=6623',
-            '--fork=Chainstart --expected-test-amount=4044',
+            '--fork=Chainstart --verify-test-amount-alltests',
+            '--fork=Homestead --verify-test-amount-alltests',
+            '--fork=TangerineWhistle --verify-test-amount-alltests',
+            '--fork=SpuriousDragon --verify-test-amount-alltests',
+            '--fork=Byzantium --verify-test-amount-alltests',
+            '--fork=Constantinople --verify-test-amount-alltests',
+            '--fork=Petersburg --verify-test-amount-alltests',
+            '--fork=Istanbul --verify-test-amount-alltests',
+            '--fork=MuirGlacier --verify-test-amount-alltests',
+            '--fork=Berlin --verify-test-amount-alltests',
+            '--fork=London --verify-test-amount-alltests',
+            '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
+            '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
+            '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
+            '--fork=HomesteadToDaoAt5 --verify-test-amount-alltests',
+            '--fork=HomesteadToEIP150At5 --verify-test-amount-alltests',
+            '--fork=BerlinToLondonAt5 --verify-test-amount-alltests',
           ]
       fail-fast: false
     steps:

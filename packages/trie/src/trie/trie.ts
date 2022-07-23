@@ -1,7 +1,7 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
-import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode } from '../types'
+import { DB, BatchDBOp, PutBatch, TrieNode, Nibbles, EmbeddedNode, HashFunc } from '../types'
 import { LevelDB, ROOT_DB_KEY } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
@@ -25,12 +25,12 @@ export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
-  protected hash: (msg: Uint8Array) => Buffer
 
   /** The backend DB */
   db: DB
   private _root: Buffer
   private _deleteFromDB: boolean
+  private _hash: HashFunc
   private _hashLen: number
   protected _persistRoot: boolean
 
@@ -40,11 +40,8 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
-    this.hash = (msg) => {
-      const _hash = opts?.hash ?? keccak256
-      return Buffer.from(_hash(msg))
-    }
     this.db = opts?.db ?? new LevelDB()
+    this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -676,7 +673,7 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const proofTrie = new Trie({ root: rootHash, hash: this.hash })
+    const proofTrie = new Trie({ root: rootHash, hash: this._hash })
     try {
       await proofTrie.fromProof(proof)
     } catch (e: any) {
@@ -712,7 +709,7 @@ export class Trie {
       keys.map(bufferToNibbles),
       values,
       proof,
-      this.hash
+      this._hash
     )
   }
 
@@ -732,8 +729,8 @@ export class Trie {
       db: this.db.copy(),
       root: this.root,
       deleteFromDB: this._deleteFromDB,
-      hash: this.hash,
       persistRoot: this._persistRoot,
+      hash: this._hash,
     })
   }
 
@@ -789,5 +786,9 @@ export class Trie {
       }
     }
     await this.walkTrie(this.root, outerOnFound)
+  }
+
+  protected hash(msg: Uint8Array): Buffer {
+    return Buffer.from(this._hash(msg))
   }
 }
