@@ -318,7 +318,7 @@ async function verifyProof(
   proof: Buffer[],
   hash: HashFunc
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, hash: hash })
+  const proofTrie = new Trie({ root: rootHash, hash })
   try {
     await proofTrie.fromProof(proof)
   } catch (e) {
@@ -434,7 +434,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ hash: hash })
+    const trie = new Trie({ hash })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
@@ -485,7 +485,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, hash: hash })
+  const trie = new Trie({ root: rootHash, hash })
   await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
