@@ -200,7 +200,7 @@ export class BeaconSynchronizer extends Synchronizer {
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (await this.skeleton.isLinked()) {
       this.clearFetcher()
-      return true
+      return false
     }
 
     const latest = peer ? await this.latest(peer) : undefined
