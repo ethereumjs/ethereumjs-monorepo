@@ -606,9 +606,9 @@ tape('[Skeleton]', async (t) => {
         'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)'
       )
       st.equal(
-        (skeleton as any).status.progress.subchains.length,
-        0,
-        `Subchains should have been cleared by now because of backstep and will need initSync to start`
+        (skeleton as any).status.progress.subchains[0].tail,
+        BigInt(4),
+        `Subchain should have been backstepped to 4`
       )
     }
   )
