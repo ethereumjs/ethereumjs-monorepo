@@ -362,7 +362,7 @@ export class Skeleton extends MetaDBManager {
             this.status.progress.subchains[0].next
           )}, block number=${number} hash=${short(block.hash())}`
         )
-        throw Error(`Block don't extend canonical subchain`)
+        throw Error(`Blocks don't extend canonical subchain`)
       }
       merged = await this.trySubChainsMerge()
       // If its merged, we need to break as the new tail could be quite ahead
