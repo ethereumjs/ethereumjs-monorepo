@@ -7,6 +7,7 @@ import { GenesisState } from './genesisStates'
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export interface BlockchainInterface {
+  consensus: Consensus
   /**
    * Adds a block to the blockchain.
    *
@@ -33,14 +34,20 @@ export interface BlockchainInterface {
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block: Block,
+   * @param maxBlocks - optional maximum number of blocks to iterate through
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock): Promise<number>
+  iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number>
 
   /**
    * Returns a copy of the blockchain
    */
   copy(): BlockchainInterface
+
+  getIteratorHead(name?: string): Promise<Block>
+  getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint>
+  genesisState(): GenesisState
+  getCanonicalHeadBlock(): Promise<Block>
 }
 
 /**

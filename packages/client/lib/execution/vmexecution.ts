@@ -161,7 +161,8 @@ export class VMExecution extends Execution {
           // if we are just starting or if a chain reorg has happened
           if (!headBlock || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
-            parentState = parentBlock.header.stateRoot
+            if (headBlock === null) throw new Error('No parent block found')
+            parentState = parentBlock!.header.stateRoot
           }
           // run block, update head if valid
           try {
@@ -313,8 +314,9 @@ export class VMExecution extends Execution {
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
+      if (block === null) throw new Error('No block found')
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
-
+      if (parentBlock === null) throw new Error('No block found')
       // Set the correct state root
       await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
