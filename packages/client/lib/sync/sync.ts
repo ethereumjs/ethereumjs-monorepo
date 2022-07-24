@@ -174,10 +174,7 @@ export abstract class Synchronizer {
         this.clearFetcher()
         resolve(true)
         const heightStr = isTruthy(height) ? ` height=${height}` : ''
-        this.config.logger.info(
-          `Finishing up sync with the current fetcher${heightStr}
-          }`
-        )
+        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
