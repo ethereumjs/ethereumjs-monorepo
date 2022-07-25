@@ -163,9 +163,8 @@ const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => 
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const td = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
-  if (td === undefined || td === null) return false
-  const ttd = BigInt(td)
+  const ttd = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
+  if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
   // Block is terminal if its td >= ttd and its parent td < ttd.
