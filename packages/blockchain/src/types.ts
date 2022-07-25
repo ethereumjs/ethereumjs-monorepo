@@ -44,9 +44,32 @@ export interface BlockchainInterface {
    */
   copy(): BlockchainInterface
 
+  /**
+   * Returns the specified iterator head.
+   *
+   * This function replaces the old {@link Blockchain.getHead} method. Note that
+   * the function deviates from the old behavior and returns the
+   * genesis hash instead of the current head block if an iterator
+   * has not been run. This matches the behavior of {@link Blockchain.iterator}.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
   getIteratorHead(name?: string): Promise<Block>
+
+  /**
+   * Gets total difficulty for a block specified by hash and number
+   */
   getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint>
+
+  /**
+   * Returns the genesis state of the blockchain.
+   * All values are provided as hex-prefixed strings.
+   */
   genesisState(): GenesisState
+
+  /**
+   * Returns the latest full block in the canonical chain.
+   */
   getCanonicalHeadBlock(): Promise<Block>
 }
 
