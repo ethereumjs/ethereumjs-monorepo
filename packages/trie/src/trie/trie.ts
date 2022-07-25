@@ -752,7 +752,7 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot !== undefined) {
+    if (this._persistRoot === true) {
       await this.db.put(ROOT_DB_KEY, this.root)
     }
   }
