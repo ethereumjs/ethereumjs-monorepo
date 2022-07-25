@@ -1,15 +1,13 @@
-import * as crypto from 'crypto'
-import { keccak256, sha256, toBuffer } from 'ethereumjs-util'
-import { scrypt } from 'scrypt-js'
-
+import { createDecipheriv } from 'crypto'
+import { toBuffer } from '@ethereumjs/util'
+import { decrypt } from 'ethereum-cryptography/aes'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
+import { scrypt } from 'ethereum-cryptography/scrypt'
+import { sha256 } from 'ethereum-cryptography/sha256'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
+import * as md5 from 'js-md5'
 import Wallet from './index'
-
-const utf8 = require('utf8')
-const aesjs = require('aes-js')
-
-function runCipherBuffer(cipher: crypto.Cipher | crypto.Decipher, data: Buffer): Buffer {
-  return Buffer.concat([cipher.update(data), cipher.final()])
-}
 
 // evp_kdf
 
@@ -55,16 +53,17 @@ function evp_kdf(data: Buffer, salt: Buffer, opts?: Partial<EvpKdfOpts>) {
 
   // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
   function iter(block: Buffer) {
-    let hash = crypto.createHash(params.digest)
+    if (params.digest !== 'md5') throw new Error('Only md5 is supported in evp_kdf')
+    let hash = md5.create()
     hash.update(block)
     hash.update(data)
     hash.update(salt)
-    block = hash.digest()
+    block = Buffer.from(hash.arrayBuffer())
 
     for (let i = 1, len = params.count; i < len; i++) {
-      hash = crypto.createHash(params.digest)
+      hash = md5.create()
       hash.update(block)
-      block = hash.digest()
+      block = Buffer.from(hash.arrayBuffer())
     }
     return block
   }
@@ -118,7 +117,10 @@ export interface EtherWalletOptions {
  * This wallet format is created by https://github.com/SilentCicero/ethereumjs-accounts
  * and used on https://www.myetherwallet.com/
  */
-export function fromEtherWallet(input: string | EtherWalletOptions, password: string): Wallet {
+export async function fromEtherWallet(
+  input: string | EtherWalletOptions,
+  password: string
+): Promise<Wallet> {
   const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 
   let privateKey: Buffer
@@ -149,13 +151,12 @@ export function fromEtherWallet(input: string | EtherWalletOptions, password: st
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    const decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
-    privateKey = runCipherBuffer(decipher, Buffer.from(cipher.ciphertext))
+    let pr = await decrypt(Buffer.from(cipher.ciphertext), evp.key, evp.iv, 'aes-256-cbc')
+    // privateKey = runCipherBuffer(decipher, )
 
     // NOTE: yes, they've run it through UTF8
-    privateKey = Buffer.from(utf8.decode(privateKey.toString()), 'hex')
+    privateKey = Buffer.from(bytesToUtf8(pr), 'hex')
   }
-
   const wallet = new Wallet(privateKey)
   if (wallet.getAddressString() !== json.address) {
     throw new Error('Invalid private key or address')
@@ -167,7 +168,7 @@ export function fromEtherWallet(input: string | EtherWalletOptions, password: st
  * Third Party API: Import a brain wallet used by Ether.Camp
  */
 export function fromEtherCamp(passphrase: string): Wallet {
-  return new Wallet(keccak256(Buffer.from(passphrase)))
+  return new Wallet(Buffer.from(keccak256(Buffer.from(passphrase))))
 }
 
 /**
@@ -210,7 +211,7 @@ export async function fromKryptoKit(entropy: string, password: string): Promise<
 
   let privateKey: Buffer
   if (type === 'd') {
-    privateKey = sha256(toBuffer(entropy))
+    privateKey = Buffer.from(sha256(toBuffer(entropy)))
   } else if (type === 'q') {
     if (typeof password !== 'string') {
       throw new Error('Password required')
@@ -219,30 +220,21 @@ export async function fromKryptoKit(entropy: string, password: string): Promise<
     const encryptedSeed = sha256(Buffer.from(entropy.slice(0, 30)))
     const checksum = entropy.slice(30, 46)
 
-    const salt = kryptoKitBrokenScryptSeed(encryptedSeed)
-    const aesKey = await scrypt(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
-
-    /* FIXME: try to use `crypto` instead of `aesjs`
+    const salt = kryptoKitBrokenScryptSeed(Buffer.from(encryptedSeed))
+    const aesKey = await scrypt(Buffer.from(password, 'utf8'), salt, 16384, 1, 8, 32)
 
     // NOTE: ECB doesn't use the IV, so it can be anything
-    var decipher = crypto.createDecipheriv("aes-256-ecb", aesKey, Buffer.from(0))
-
+    let decipher = createDecipheriv("aes-256-ecb", aesKey, Buffer.from([]))
     // FIXME: this is a clear abuse, but seems to match how ECB in aesjs works
-    privKey = Buffer.concat([
-      decipher.update(encryptedSeed).slice(0, 16),
-      decipher.update(encryptedSeed).slice(0, 16),
-    ])
-    */
-
-    const decipher = new aesjs.ModeOfOperation.ecb(aesKey)
-    /* decrypt returns an Uint8Array, perhaps there is a better way to concatenate */
     privateKey = Buffer.concat([
-      Buffer.from(decipher.decrypt(encryptedSeed.slice(0, 16))),
-      Buffer.from(decipher.decrypt(encryptedSeed.slice(16, 32))),
+      Uint8Array.from(decipher.update(encryptedSeed)).slice(0, 16),
+      Uint8Array.from(decipher.update(encryptedSeed)).slice(0, 16),
     ])
 
     if (checksum.length > 0) {
-      if (checksum !== sha256(sha256(privateKey)).slice(0, 8).toString('hex')) {
+      const dsha = sha256(sha256(Uint8Array.from(privateKey))).slice(0, 8)
+      const curr = Buffer.from(dsha).toString('hex')
+      if (curr !== checksum) {
         throw new Error('Failed to decrypt input - possibly invalid passphrase')
       }
     }
@@ -264,9 +256,9 @@ export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
     throw new Error('User id must be at least 10 characters')
   }
 
-  const merged = passphrase + userid
-  const seed = crypto.pbkdf2Sync(merged, merged, 2000, 32, 'sha256')
-  return new Wallet(seed)
+  const merged = utf8ToBytes(passphrase + userid)
+  const seed = pbkdf2Sync(merged, merged, 2000, 32, 'sha256')
+  return new Wallet(Buffer.from(seed))
 }
 
 const Thirdparty = {

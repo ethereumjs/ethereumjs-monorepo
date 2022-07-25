@@ -45,7 +45,7 @@ describe('.fromExtendedKey()', function () {
     )
     assert.throws(function () {
       hdnode.privateExtendedKey()
-    }, /^Error: This is a public key only wallet$/)
+    }, /^Error: No private key$/)
   })
   it('should work with private', function () {
     const hdnode = EthereumHDKey.fromExtendedKey(
