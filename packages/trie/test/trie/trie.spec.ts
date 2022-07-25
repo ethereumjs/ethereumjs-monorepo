@@ -59,6 +59,23 @@ tape('Trie', function (t) {
     st.equal(await trie.db.get(ROOT_DB_KEY), null)
   })
 
+  t.test('persist and restore the root', async function (st) {
+    const db = new LevelDB(new MemoryLevel())
+
+    const trie = await Trie.make({ db })
+    st.equal(await trie.db.get(ROOT_DB_KEY), null)
+    await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+    st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+
+    // Using the same database as `trie` so we should have restored the root
+    const copy = await Trie.make({ db })
+    st.notEqual(await copy.db.get(ROOT_DB_KEY), null)
+
+    // New trie with a new database so we shouldn't find a root to restore
+    const empty = await Trie.make({ db: new LevelDB(new MemoryLevel()) })
+    st.equal(await empty.db.get(ROOT_DB_KEY), null)
+  })
+
   t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
     const trie = new Trie({ db: new LevelDB() })
 
