@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
 import { Consensus } from '.'
@@ -47,11 +47,6 @@ export interface BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * This function replaces the old {@link Blockchain.getHead} method. Note that
-   * the function deviates from the old behavior and returns the
-   * genesis hash instead of the current head block if an iterator
-   * has not been run. This matches the behavior of {@link Blockchain.iterator}.
-   *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
   getIteratorHead(name?: string): Promise<Block>
@@ -71,6 +66,13 @@ export interface BlockchainInterface {
    * Returns the latest full block in the canonical chain.
    */
   getCanonicalHeadBlock(): Promise<Block>
+
+  /**
+   * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * @param header - header to be validated
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  validateHeader(header: BlockHeader, height?: bigint): Promise<void>
 }
 
 /**
