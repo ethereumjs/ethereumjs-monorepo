@@ -546,11 +546,83 @@ tape('[Skeleton]', async (t) => {
   )
 
   t.test(
+    'should abort filling the canonical chain and backstep if the terminal block is invalid',
+    async (st) => {
+      const genesis = {
+        ...genesisJSON,
+        config: {
+          ...genesisJSON.config,
+          terminalTotalDifficulty: 200,
+          clique: undefined,
+          ethash: {},
+        },
+        extraData: '0x00000000000000000',
+        difficulty: '0x1',
+      }
+      const params = await parseCustomParams(genesis, 'post-merge')
+      const common = new Common({
+        chain: params.name,
+        customChains: [params],
+      })
+      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      const config = new Config({
+        transports: [],
+        common,
+      })
+      const chain = new Chain({ config })
+      ;(chain.blockchain as any)._validateBlocks = false
+      ;(chain.blockchain as any)._validateConsensus = false
+      await chain.open()
+      const genesisBlock = await chain.getBlock(BigInt(0))
+
+      const block1 = Block.fromBlockData(
+        { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block2 = Block.fromBlockData(
+        { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block3PoW = Block.fromBlockData(
+        { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
+        { common }
+      )
+      const block4PoW = Block.fromBlockData(
+        { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
+        { common }
+      )
+
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+      await skeleton.open()
+
+      await skeleton.initSync(block4PoW)
+      await skeleton.putBlocks([block3PoW, block2])
+      st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
+      await skeleton.putBlocks([block1])
+      await wait(200)
+      st.equal(
+        chain.blocks.height,
+        BigInt(2),
+        'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)'
+      )
+      st.equal(
+        (skeleton as any).status.progress.subchains[0].tail,
+        BigInt(4),
+        `Subchain should have been backstepped to 4`
+      )
+    }
+  )
+
+  t.test(
     'should abort filling the canonical chain if a PoS block comes too early without hitting ttd',
     async (st) => {
       const genesis = {
         ...genesisJSON,
-        config: { ...genesisJSON.config, terminalTotalDifficulty: 200 },
+        config: {
+          ...genesisJSON.config,
+          terminalTotalDifficulty: 200,
+          skeletonFillCanonicalBackStep: 0,
+        },
         difficulty: '0x1',
       }
       const params = await parseCustomParams(genesis, 'post-merge')
