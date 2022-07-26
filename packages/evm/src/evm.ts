@@ -143,7 +143,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
   readonly _common: Common
 
-  protected readonly eei: EEIInterface
+  public eei: EEIInterface
 
   public readonly _transientStorage: TransientStorage
 
