@@ -86,7 +86,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     state,
     blockchain,
     common,
-    hardforkByBlockNumber: true
+    hardforkByBlockNumber: true,
   })
 
   // set up pre-state
@@ -129,16 +129,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       // Update common HF
-      let TD = undefined 
+      let TD = undefined
       try {
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
-        const currentDifficulty = bufferToBigInt(decoded[0][7])
-        const prevTotalDifficulty = await blockchain.getTotalDifficulty(parentHash)
-        TD = prevTotalDifficulty + currentDifficulty
-      } catch (e) {
-
-      }
+        TD = await blockchain.getTotalDifficulty(parentHash)
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
 
       common.setHardforkByBlockNumber(currentBlock, TD)
 
