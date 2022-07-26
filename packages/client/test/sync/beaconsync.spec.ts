@@ -105,7 +105,11 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('should sync to next subchain head or chain height', async (t) => {
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
+    const config = new Config({
+      transports: [],
+      safeReorgDistance: 0,
+      skeletonSubchainMergeMinimum: 0,
+    })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -128,13 +132,13 @@ tape('[BeaconSynchronizer]', async (t) => {
     void sync.sync()
     await wait(50)
     t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(2), 'should sync block 5 and 4')
+    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
     await wait(51)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     void sync.sync()
     await wait(50)
     t.equal(sync.fetcher!.first, BigInt(1), 'should sync block 1')
-    t.equal(sync.fetcher!.count, BigInt(1), 'should sync block 1')
+    t.equal(sync.fetcher!.count, BigInt(1), 'should target syncing all the way to chain')
     await wait(51)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
@@ -176,10 +180,14 @@ tape('[BeaconSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton.isLinked = () => true // stub
+    skeleton.isLinked = async () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     await sync.open()
-    t.ok(await sync.syncWithPeer({} as any))
+    t.equal(
+      await sync.syncWithPeer({} as any),
+      false,
+      `syncWithPeer should return false as nothing to sync`
+    )
     await sync.stop()
     await sync.close()
     t.end()

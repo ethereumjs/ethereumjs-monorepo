@@ -37,8 +37,9 @@ const hardforkTestData: TestData = {
   arrowGlacier:
     require('../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json')
       .difficultyArrowGlacier.ArrowGlacier,
-  grayGlacier: require('./testdata/dfGrayGlacier/difficultyGrayGlacier.json').difficultyGrayGlacier
-    .GrayGlacier,
+  grayGlacier:
+    require('../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json')
+      .difficultyGrayGlacier.GrayGlacier,
 }
 
 const chainTestData: TestData = {

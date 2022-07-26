@@ -209,7 +209,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
 
   t.test('should restart the fetcher when subchains are merged', async (st) => {
     td.reset()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], skeletonSubchainMergeMinimum: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

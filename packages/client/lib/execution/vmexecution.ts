@@ -76,6 +76,8 @@ export class VMExecution extends Execution {
     if (number === BigInt(0)) {
       await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
     }
+    // TODO: Should a run be started to execute any left over blocks?
+    // void this.run()
   }
 
   /**
@@ -116,7 +118,17 @@ export class VMExecution extends Execution {
    * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
   async setHead(blocks: Block[]): Promise<void> {
-    await this.chain.blockchain.setIteratorHead('vm', blocks[blocks.length - 1].hash())
+    const vmHeadBlock = blocks[blocks.length - 1]
+    if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
+      // If we set blockchain iterator to somewhere where we don't have stateroot
+      // execution run will always fail
+      throw Error(
+        `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
+          vmHeadBlock.header.stateRoot
+        )}`
+      )
+    }
+    await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
     await this.chain.putBlocks(blocks, true)
     for (const block of blocks) {
       const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
@@ -140,6 +152,10 @@ export class VMExecution extends Execution {
     const { blockchain } = this.vm
     let startHeadBlock = await blockchain.getIteratorHead()
     let canonicalHead = await blockchain.getCanonicalHeadBlock()
+
+    this.config.logger.debug(
+      `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
+    )
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
