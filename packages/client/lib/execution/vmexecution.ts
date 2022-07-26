@@ -322,7 +322,9 @@ export class VMExecution extends Execution {
       }
       startHeadBlock = endHeadBlock
       if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+        throw new Error(
+          'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+        )
       }
       canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
     }
