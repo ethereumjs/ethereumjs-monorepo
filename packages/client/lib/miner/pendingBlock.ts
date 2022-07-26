@@ -46,6 +46,9 @@ export class PendingBlock {
     // is based on the parent block's state
     await vm.eei.setStateRoot(parentBlock.header.stateRoot)
 
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
 

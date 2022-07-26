@@ -49,23 +49,6 @@ export interface BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead(name?: string): Promise<Block>
-
-  /**
-   * Gets total difficulty for a block specified by hash and number
-   */
-  getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint>
-
-  /**
-   * Returns the genesis state of the blockchain.
-   * All values are provided as hex-prefixed strings.
-   */
-  genesisState(): GenesisState
-
-  /**
-   * Returns the latest full block in the canonical chain.
-   */
-  getCanonicalHeadBlock(): Promise<Block>
 
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
@@ -73,6 +56,23 @@ export interface BlockchainInterface {
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   validateHeader(header: BlockHeader, height?: bigint): Promise<void>
+  getIteratorHead?(name?: string): Promise<Block>
+
+  /**
+   * Gets total difficulty for a block specified by hash and number
+   */
+  getTotalDifficulty?(hash: Buffer, number?: bigint): Promise<bigint>
+
+  /**
+   * Returns the genesis state of the blockchain.
+   * All values are provided as hex-prefixed strings.
+   */
+  genesisState?(): GenesisState
+
+  /**
+   * Returns the latest full block in the canonical chain.
+   */
+  getCanonicalHeadBlock?(): Promise<Block>
 }
 
 /**

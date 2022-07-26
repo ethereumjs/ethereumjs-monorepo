@@ -67,13 +67,22 @@ export class VMExecution extends Execution {
    */
   async open(): Promise<void> {
     await this.vm.init()
+    if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+    }
     const headBlock = await this.vm.blockchain.getIteratorHead()
     const { number } = headBlock.header
+    if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
     const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
     if (number === BigInt(0)) {
+      if (typeof this.vm.blockchain.genesisState !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no genesisState function')
+      }
       await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
     }
     // TODO: Should a run be started to execute any left over blocks?
@@ -150,7 +159,13 @@ export class VMExecution extends Execution {
     let numExecuted: number | undefined
 
     const { blockchain } = this.vm
+    if (typeof blockchain.getIteratorHead !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+    }
     let startHeadBlock = await blockchain.getIteratorHead()
+    if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getCanonicalHeadBlock function')
+    }
     let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
     this.config.logger.debug(
@@ -183,6 +198,11 @@ export class VMExecution extends Execution {
           // run block, update head if valid
           try {
             const { number } = block.header
+            if (typeof blockchain.getTotalDifficulty !== 'function') {
+              throw new Error(
+                'cannot get iterator head: blockchain has no getTotalDifficulty function'
+              )
+            }
             const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
             const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
@@ -270,8 +290,13 @@ export class VMExecution extends Execution {
         )
         return 0
       }
+      let endHeadBlock
+      if (typeof this.vm.blockchain.getIteratorHead === 'function') {
+        endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
+      } else {
+        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+      }
 
-      const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
       if (isTruthy(numExecuted && numExecuted > 0)) {
         const firstNumber = startHeadBlock.header.number
         const firstHash = short(startHeadBlock.hash())
@@ -296,6 +321,9 @@ export class VMExecution extends Execution {
         )
       }
       startHeadBlock = endHeadBlock
+      if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+      }
       canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
     }
     this.running = false
@@ -335,7 +363,9 @@ export class VMExecution extends Execution {
       if (parentBlock === null) throw new Error('No block found')
       // Set the correct state root
       await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
-
+      if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+      }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
       vm._common.setHardforkByBlockNumber(blockNumber, td)
 
