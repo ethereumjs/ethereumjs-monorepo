@@ -72,7 +72,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
-  const genesisBlock = new Block()
+  const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock })
   const state = new Trie()
   const vm = await VM.create({ state, common, blockchain })
@@ -122,6 +122,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         await vm.runTx({ tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
+        console.log(e)
         execInfo = `tx runtime error :${e.message}`
       }
     } else {
