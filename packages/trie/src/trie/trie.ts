@@ -68,7 +68,7 @@ export class Trie {
     }
   }
 
-  static async make(opts?: TrieOpts) {
+  static async create(opts?: TrieOpts) {
     if (opts?.db !== undefined) {
       opts.persistRoot = opts?.persistRoot ?? true
 

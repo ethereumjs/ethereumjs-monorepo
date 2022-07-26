@@ -8,7 +8,7 @@ tape('Trie', function (t) {
   t.test(
     'creates an instance via the static constructor `make` function and defaults to `true` with a database',
     async function (st) {
-      st.true(((await Trie.make({ db: new LevelDB(new Level(tmpdir())) })) as any)._persistRoot)
+      st.true(((await Trie.create({ db: new LevelDB(new Level(tmpdir())) })) as any)._persistRoot)
     }
   )
 
@@ -16,7 +16,7 @@ tape('Trie', function (t) {
     'creates an instance via the static constructor `make` function and respects the `persistRoot` option with a database',
     async function (st) {
       st.false(
-        ((await Trie.make({ db: new LevelDB(new Level(tmpdir())), persistRoot: false })) as any)
+        ((await Trie.create({ db: new LevelDB(new Level(tmpdir())), persistRoot: false })) as any)
           ._persistRoot
       )
     }
@@ -25,12 +25,12 @@ tape('Trie', function (t) {
   t.test(
     'creates an instance via the static constructor `make` function and defaults to `false` without a database',
     async function (st) {
-      st.false(((await Trie.make()) as any)._persistRoot)
+      st.false(((await Trie.create()) as any)._persistRoot)
     }
   )
 
   t.test('persist the root if the `persistRoot` option is not `false`', async function (st) {
-    const trie = await Trie.make({ db: new LevelDB(new MemoryLevel()) })
+    const trie = await Trie.create({ db: new LevelDB(new MemoryLevel()) })
 
     st.equal(await trie.db.get(ROOT_DB_KEY), null)
 
@@ -40,7 +40,7 @@ tape('Trie', function (t) {
   })
 
   t.test('does not persist the root if the `persistRoot` option is `false`', async function (st) {
-    const trie = await Trie.make({ db: new LevelDB(new MemoryLevel()), persistRoot: false })
+    const trie = await Trie.create({ db: new LevelDB(new MemoryLevel()), persistRoot: false })
 
     st.equal(await trie.db.get(ROOT_DB_KEY), null)
 
@@ -50,7 +50,7 @@ tape('Trie', function (t) {
   })
 
   t.test('does not persist the root if the `db` option is not provided', async function (st) {
-    const trie = await Trie.make()
+    const trie = await Trie.create()
 
     st.equal(await trie.db.get(ROOT_DB_KEY), null)
 
@@ -62,17 +62,17 @@ tape('Trie', function (t) {
   t.test('persist and restore the root', async function (st) {
     const db = new LevelDB(new MemoryLevel())
 
-    const trie = await Trie.make({ db })
+    const trie = await Trie.create({ db })
     st.equal(await trie.db.get(ROOT_DB_KEY), null)
     await trie.put(Buffer.from('foo'), Buffer.from('bar'))
     st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
 
     // Using the same database as `trie` so we should have restored the root
-    const copy = await Trie.make({ db })
+    const copy = await Trie.create({ db })
     st.notEqual(await copy.db.get(ROOT_DB_KEY), null)
 
     // New trie with a new database so we shouldn't find a root to restore
-    const empty = await Trie.make({ db: new LevelDB(new MemoryLevel()) })
+    const empty = await Trie.create({ db: new LevelDB(new MemoryLevel()) })
     st.equal(await empty.db.get(ROOT_DB_KEY), null)
   })
 
