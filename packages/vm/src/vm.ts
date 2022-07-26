@@ -35,7 +35,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface
+  readonly evm: EVMInterface | EVM
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
