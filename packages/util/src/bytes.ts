@@ -164,7 +164,8 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
   }
 
   if (typeof v === 'string') {
-    if (v === '0x-1') return Buffer.from(padToEven(stripHexPrefix('0x')), 'hex')
+    console.log('toBuffer v', v)
+    if (v.includes('-')) return Buffer.from(padToEven(stripHexPrefix('0x')), 'hex')
     if (!isHexString(v)) {
       throw new Error(
         `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`
