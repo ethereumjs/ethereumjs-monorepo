@@ -18,7 +18,6 @@ import { WalkController } from '../util/walkController'
 import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
 import { verifyRangeProof } from '../proof/range'
 import { FoundNodeFunction, Proof, TrieOpts } from '../types'
-import { ok } from 'assert'
 
 interface Path {
   node: TrieNode | null
@@ -145,8 +144,8 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._persistRoot) {
-      ok(!key.equals(ROOT_DB_KEY), `Attempted to set '__root__' key but it is not allowed.`)
+    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+      throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
     }
 
     // If value is empty, delete

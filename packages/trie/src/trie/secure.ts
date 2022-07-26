@@ -1,7 +1,6 @@
 import { CheckpointTrie } from './checkpoint'
 import { Proof, ROOT_DB_KEY } from '../types'
 import { isFalsy } from '@ethereumjs/util'
-import { ok } from 'assert'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -30,8 +29,8 @@ export class SecureTrie extends CheckpointTrie {
    * @param value
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    if (this._persistRoot) {
-      ok(!key.equals(ROOT_DB_KEY), `Attempted to set '__root__' key but it is not allowed.`)
+    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+      throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
     }
 
     if (isFalsy(val) || val.toString() === '') {
