@@ -92,7 +92,7 @@ export class Skeleton extends MetaDBManager {
     const reorged = await this.processNewHead(head, force)
 
     // If linked, fill the canonical chain.
-    if (force && this.isLinked()) {
+    if (force && (await this.isLinked())) {
       void this.fillCanonicalChain()
     }
 
@@ -184,7 +184,7 @@ export class Skeleton extends MetaDBManager {
     await this.writeSyncStatus()
 
     // If the sync is finished, start filling the canonical chain.
-    if (this.isLinked()) {
+    if (await this.isLinked()) {
       void this.fillCanonicalChain()
     }
   }
@@ -203,7 +203,11 @@ export class Skeleton extends MetaDBManager {
     const { number } = head.header
 
     const [lastchain] = this.status.progress.subchains
-    if (lastchain?.tail >= number) {
+    if (lastchain === undefined) {
+      this.config.logger.warn(`Skeleton reorged and cleaned, no current subchain newHead=${number}`)
+      return true
+    }
+    if (lastchain.tail >= number) {
       // If the chain is down to a single beacon header, and it is re-announced
       // once more, ignore it instead of tearing down sync for a noop.
       if (lastchain.head === lastchain.tail) {
@@ -220,7 +224,8 @@ export class Skeleton extends MetaDBManager {
       }
       return true
     }
-    if (lastchain.head && lastchain.head + BigInt(1) < number) {
+
+    if (lastchain.head + BigInt(1) < number) {
       if (force) {
         this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
       }
@@ -257,92 +262,112 @@ export class Skeleton extends MetaDBManager {
     return this.status.progress.subchains[0]
   }
 
+  async trySubChainsMerge(): Promise<boolean> {
+    let merged = false
+    let edited = false
+
+    // If the subchain extended into the next subchain, we need to handle
+    // the overlap. Since there could be many overlaps, do this in a loop.
+    while (
+      this.status.progress.subchains.length > 1 &&
+      this.status.progress.subchains[1].head >= this.status.progress.subchains[0].tail
+    ) {
+      // Extract some stats from the second subchain
+      const { head, tail, next } = this.status.progress.subchains[1]
+
+      // Since we just overwrote part of the next subchain, we need to trim
+      // its head independent of matching or mismatching content
+      if (tail >= this.status.progress.subchains[0].tail) {
+        // Fully overwritten, get rid of the subchain as a whole
+        this.config.logger.debug(
+          `Previous subchain fully overwritten head=${head} tail=${tail} next=${short(next)}`
+        )
+        this.status.progress.subchains.splice(1, 1)
+        edited = true
+        continue
+      } else {
+        // Partially overwritten, trim the head to the overwritten size
+        this.config.logger.debug(
+          `Previous subchain partially overwritten head=${head} tail=${tail} next=${short(next)}`
+        )
+        this.status.progress.subchains[1].head = this.status.progress.subchains[0].tail - BigInt(1)
+        edited = true
+      }
+      // If the old subchain is an extension of the new one, merge the two
+      // and let the skeleton syncer restart (to clean internal state)
+      if (
+        (await this.getBlock(this.status.progress.subchains[1].head))
+          ?.hash()
+          .equals(this.status.progress.subchains[0].next) === true
+      ) {
+        // only merge is we can integrate a big progress, as each merge leads
+        // to disruption of the block fetcher to start a fresh
+        if (head - tail > this.config.skeletonSubchainMergeMinimum) {
+          this.config.logger.debug(
+            `Previous subchain merged head=${head} tail=${tail} next=${short(next)}`
+          )
+          this.status.progress.subchains[0].tail = tail
+          this.status.progress.subchains[0].next = next
+          this.status.progress.subchains.splice(1, 1)
+          // If subchains were merged, all further available headers
+          // are invalid since we skipped ahead.
+          merged = true
+        } else {
+          this.config.logger.debug(
+            `Subchain ignored for merge head=${head} tail=${tail} count=${head - tail}`
+          )
+          this.status.progress.subchains.splice(1, 1)
+        }
+        edited = true
+      }
+    }
+    if (edited) await this.writeSyncStatus()
+    return merged
+  }
+
   /**
    * Writes skeleton blocks to the db by number
    * @returns number of blocks saved
    */
   async putBlocks(blocks: Block[]): Promise<number> {
     let merged = false
+    this.config.logger.debug(
+      `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(blocks[0]?.hash())} end=${
+        blocks[blocks.length - 1]?.header.number
+      } count=${blocks.length}, subchain head=${this.status.progress.subchains[0]?.head} tail = ${
+        this.status.progress.subchains[0].tail
+      } next=${short(this.status.progress.subchains[0]?.next)}`
+    )
     for (const block of blocks) {
-      await this.putBlock(block)
-      this.pulled += BigInt(1)
       const { number } = block.header
+      if (number >= this.status.progress.subchains[0].tail) {
+        // These blocks should already be in skeleton, and might be coming in
+        // from previous events especially if the previous subchains merge
+        continue
+      }
+
       // Extend subchain or create new segment if necessary
       if (this.status.progress.subchains[0].next.equals(block.hash())) {
+        await this.putBlock(block)
+        this.pulled += BigInt(1)
         this.status.progress.subchains[0].tail -= BigInt(1)
         this.status.progress.subchains[0].next = block.header.parentHash
       } else {
-        // See if the block can fit in an existing subchain. If not, create a new one.
-        const foundSubchain = this.status.progress.subchains.find((subchain) =>
-          subchain.next.equals(block.hash())
+        // Critical error, we expect new incoming blocks to extend the canonical
+        // subchain which is the [0]'th
+        this.config.logger.warn(
+          `Blocks don't extend canonical subchain head=${
+            this.status.progress.subchains[0].head
+          } tail=${this.status.progress.subchains[0].tail} next=${short(
+            this.status.progress.subchains[0].next
+          )}, block number=${number} hash=${short(block.hash())}`
         )
-        if (foundSubchain) {
-          // Extend
-          foundSubchain.tail -= BigInt(1)
-          foundSubchain.next = block.header.parentHash
-        } else {
-          // New subchain
-          if (
-            number < this.status.progress.subchains[this.status.progress.subchains.length - 1].tail
-          ) {
-            const subchain = {
-              head: number,
-              tail: number,
-              next: block.header.parentHash,
-            }
-            this.status.progress.subchains.push(subchain)
-          }
-        }
+        throw Error(`Blocks don't extend canonical subchain`)
       }
-
-      // If the subchain extended into the next subchain, we need to handle
-      // the overlap. Since there could be many overlaps, do this in a loop.
-      while (
-        this.status.progress.subchains.length > 1 &&
-        this.status.progress.subchains[1].head >= this.status.progress.subchains[0].tail
-      ) {
-        // Extract some stats from the second subchain
-        const { head, tail, next } = this.status.progress.subchains[1]
-
-        // Since we just overwrote part of the next subchain, we need to trim
-        // its head independent of matching or mismatching content
-        if (tail >= this.status.progress.subchains[0].tail) {
-          // Fully overwritten, get rid of the subchain as a whole
-          this.config.logger.debug(
-            `Previous subchain fully overwritten head=${head} tail=${tail} next=${short(next)}`
-          )
-          this.status.progress.subchains = this.status.progress.subchains.slice(1)
-          continue
-        } else {
-          // Partially overwritten, trim the head to the overwritten size
-          this.config.logger.debug(
-            `Previous subchain partially overwritten head=${head} tail=${tail} next=${short(next)}`
-          )
-          this.status.progress.subchains[1].head =
-            this.status.progress.subchains[0].tail - BigInt(1)
-        }
-        // If the old subchain is an extension of the new one, merge the two
-        // and let the skeleton syncer restart (to clean internal state)
-        if (
-          (await this.getBlock(this.status.progress.subchains[1].head))
-            ?.hash()
-            .equals(this.status.progress.subchains[0].next) === true
-        ) {
-          this.config.logger.debug(
-            `Previous subchain merged head=${head} tail=${tail} next=${short(next)}`
-          )
-          this.status.progress.subchains[0].tail = tail
-          this.status.progress.subchains[0].next = next
-          this.status.progress.subchains = [
-            this.status.progress.subchains[0],
-            ...this.status.progress.subchains.slice(2),
-          ]
-          // If subchains were merged, all further available headers
-          // are invalid since we skipped ahead.
-          merged = true
-          break
-        }
-      }
+      merged = await this.trySubChainsMerge()
+      // If its merged, we need to break as the new tail could be quite ahead
+      // so we need to clear out and run the reverse block fetcher again
+      if (merged) break
     }
 
     await this.writeSyncStatus()
@@ -350,7 +375,7 @@ export class Skeleton extends MetaDBManager {
     // Print a progress report making the UX a bit nicer
     if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
       let left = this.bounds().tail - BigInt(1) - this.chain.blocks.height
-      if (this.isLinked()) left = BigInt(0)
+      if (await this.isLinked()) left = BigInt(0)
       if (left > BigInt(0)) {
         this.logged = new Date().getTime()
         if (this.pulled === BigInt(0)) {
@@ -366,31 +391,64 @@ export class Skeleton extends MetaDBManager {
     }
 
     // If the sync is finished, start filling the canonical chain.
-    if (this.isLinked()) {
+    if (await this.isLinked()) {
       void this.fillCanonicalChain()
     }
 
     if (merged) throw errSyncMerged
-
     return blocks.length
   }
 
   /**
    * Returns true if the skeleton chain is linked to canonical
    */
-  isLinked() {
-    if (this.status.progress.subchains.length !== 1) return false
-    const { tail } = this.bounds()
+  async isLinked() {
+    if (this.status.progress.subchains.length === 0) return false
+    const { tail, next } = this.bounds()
+    // make check for genesis if tail is 1?
     if (tail <= this.chain.blocks.height + BigInt(1)) {
-      return true
+      const nextBlock = await this.chain.getBlock(tail - BigInt(1))
+      return next.equals(nextBlock.hash())
     }
     return false
+  }
+
+  async backStep(): Promise<bigint | null> {
+    if (this.config.skeletonFillCanonicalBackStep <= 0) return null
+    const { head, tail } = this.bounds()
+
+    let tailBlock
+    let newTail: bigint | null = tail
+    do {
+      newTail = newTail + BigInt(this.config.skeletonFillCanonicalBackStep)
+      tailBlock = await this.getBlock(newTail, true)
+    } while (!tailBlock && newTail <= head)
+    if (newTail > head) {
+      newTail = head
+      tailBlock = await this.getBlock(newTail, true)
+    }
+
+    if (tailBlock && newTail) {
+      this.config.logger.info(`Backstepped skeleton head=${head} tail=${newTail}`)
+      this.status.progress.subchains[0].tail = newTail
+      this.status.progress.subchains[0].next = tailBlock.header.parentHash
+      await this.writeSyncStatus()
+      return newTail
+    } else {
+      // we need a new head, emptying the subchains
+      this.status.progress.subchains = []
+      await this.writeSyncStatus()
+      this.config.logger.warn(
+        `Couldn't backStep subchain 0, dropping subchains for new head signal`
+      )
+      return null
+    }
   }
 
   /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
-  private async fillCanonicalChain() {
+  async fillCanonicalChain() {
     if (this.filling) return
     this.filling = true
     let canonicalHead = this.chain.blocks.height
@@ -404,7 +462,15 @@ export class Skeleton extends MetaDBManager {
       // Get next block
       const number = canonicalHead + BigInt(1)
       const block = await this.getBlock(number)
-      if (!block) break
+      if (!block) {
+        // This shouldn't happen, but if it does because of some issues, we should back step
+        // and fetch again
+        this.config.logger.debug(
+          `fillCanonicalChain block number=${number} not found, backStepping`
+        )
+        await this.backStep()
+        break
+      }
       // Insert into chain
       const numBlocksInserted = await this.chain.putBlocks([block], true)
       if (numBlocksInserted !== 1) {
@@ -425,7 +491,7 @@ export class Skeleton extends MetaDBManager {
       }
     }
     this.filling = false
-    this.config.logger.debug(
+    this.config.logger.info(
       `Successfully put blocks start=${start} end=${canonicalHead} skeletonHead=${head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
