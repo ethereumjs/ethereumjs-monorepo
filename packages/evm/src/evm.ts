@@ -875,6 +875,8 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       if (message.depth > 0) {
         newNonce--
       }
+      console.log('making a new address with nonce', newNonce)
+      if (newNonce < 0n) newNonce = 0n
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)
