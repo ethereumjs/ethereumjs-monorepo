@@ -96,10 +96,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
-      console.log(error)
       t.pass(`Expected exception ${expectException}`)
     } else {
-      console.log(error)
       t.fail(error)
     }
   }
@@ -168,7 +166,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       }
 
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
