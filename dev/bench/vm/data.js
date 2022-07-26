@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1658763106686,
+  "lastUpdate": 1658864045655,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "cfd7b7754490b072a035cceaba59c3dfb517effd",
-          "message": "client: Fix rpc import broken after tuning off esModuleInterop (#2006)",
-          "timestamp": "2022-07-01T15:03:22+05:30",
-          "tree_id": "a163819c7e31d59f03a259e0ae75f8db6e3c4f3a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cfd7b7754490b072a035cceaba59c3dfb517effd"
-        },
-        "date": 1656668243920,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 17721,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16575,
-            "range": "±4.96%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17854,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17458,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17092,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.21%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b7436b27d7d65993bb671121cdcd6936ca44f80d",
+          "message": "Move @types/async-eventemitter from devDependencis to dependencies (#2077)\n\n* evm: move packages to dependencies\r\n\r\n* vm: move package from devDependencies to dependencies",
+          "timestamp": "2022-07-26T21:24:46+02:00",
+          "tree_id": "1f963df497d46647746ea1ac0eb9283ddf87f852",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b7436b27d7d65993bb671121cdcd6936ca44f80d"
+        },
+        "date": 1658864044304,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22957,
+            "range": "±2.69%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22362,
+            "range": "±4.37%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22823,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20409,
+            "range": "±8.02%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22919,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
