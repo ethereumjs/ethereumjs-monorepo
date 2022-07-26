@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier']
+        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul']
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -110,6 +110,8 @@ jobs:
             '--fork=Berlin --excludeDir=stTimeConsuming',
             '--fork=London --dir=GeneralStateTests/stTimeConsuming',
             '--fork=London --excludeDir=stTimeConsuming',
+            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Istanbul --excludeDir=stTimeConsuming',
             '--fork=Merge --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Merge --excludeDir=stTimeConsuming',
             '--fork=ArrowGlacierToMergeAtDiffC0000',
