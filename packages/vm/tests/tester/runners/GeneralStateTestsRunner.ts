@@ -73,7 +73,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
-  const blockchain = await Blockchain.create({ genesisBlock })
+  const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie()
   const vm = await VM.create({ state, common, blockchain })
 
