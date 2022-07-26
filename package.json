@@ -19,7 +19,7 @@
     "husky": "^4.2.5",
     "nyc-report-lcov-absolute": "^1.0.0",
     "typedoc-plugin-markdown": "^3.10.4",
-    "verdaccio": "^4.12.2"
+    "verdaccio": "^5.0.0-alpha.7"
   },
   "husky": {
     "hooks": {
