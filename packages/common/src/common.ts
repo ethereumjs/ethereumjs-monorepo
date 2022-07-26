@@ -24,17 +24,6 @@ import * as kovan from './chains/kovan.json'
 import * as goerli from './chains/goerli.json'
 import * as sepolia from './chains/sepolia.json'
 
-// Map the td in the merge hardfork from string to bigint
-const defaultChains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia }
-Object.values(defaultChains).map((chainConfig) => {
-  ;(chainConfig.hardforks ?? []).forEach((hardforkConfig) => {
-    const td = (hardforkConfig as { td?: string }).td
-    if (td !== undefined) {
-      ;(hardforkConfig as HardforkConfig).td = BigInt(td)
-    }
-  })
-})
-
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -587,7 +576,7 @@ export class Common extends EventEmitter {
     if (td === undefined || td === null) {
       return null
     }
-    return td
+    return BigInt(td)
   }
 
   /**
@@ -861,7 +850,7 @@ export class Common extends EventEmitter {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = defaultChains as ChainsConfig
+    const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain
