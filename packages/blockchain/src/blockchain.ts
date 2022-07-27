@@ -283,7 +283,7 @@ export class Blockchain implements BlockchainInterface {
         td = await this.getTotalDifficulty(latestHeader.parentHash)
         // eslint-disable-next-line no-empty
       } catch (e) {}
-      this.checkAndTransitionHardForkByNumber(latestHeader.number, latestHeader, td)
+      this.checkAndTransitionHardForkByNumber(latestHeader.number, td)
     }
 
     this._isInitialized = true
@@ -511,7 +511,7 @@ export class Blockchain implements BlockchainInterface {
           // final PoW block and thus not yet a merge block
           // If TD would be used, then it would violate merge rules: difficulty has to be zero
           // (if this would be done, it would thus impossible to transition to the merge)
-          this.checkAndTransitionHardForkByNumber(blockNumber, header, parentTd)
+          this.checkAndTransitionHardForkByNumber(blockNumber, parentTd)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -1181,13 +1181,8 @@ export class Blockchain implements BlockchainInterface {
     return this.dbManager.getHeader(hash, number)
   }
 
-  protected checkAndTransitionHardForkByNumber(
-    number: bigint,
-    blockHeader: BlockHeader,
-    td?: BigIntLike
-  ): void {
+  protected checkAndTransitionHardForkByNumber(number: bigint, td?: BigIntLike): void {
     this._common.setHardforkByBlockNumber(number, td)
-    blockHeader._common.setHardforkByBlockNumber(number, td)
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
