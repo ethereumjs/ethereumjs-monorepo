@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1658929287056,
+  "lastUpdate": 1658930802441,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6618e5551d3676221620f146357d9ecc485eec83",
-          "message": "Blockchain: optional consensus (#2002)\n\n* blockchain: add optional consensus param\r\n\r\n* blockchain: add algorithm property to consensus\r\n\r\n* blockchain: rework consensus setup\r\n\r\n* fix examples\r\n\r\n* fix blockchain test runner\r\n\r\n* add more tests\r\n\r\n* add blockchain checks to clique\r\n\r\n* skip merge check on custom consensus\r\n\r\n* Fix consensus check and add more tests\r\n\r\n* lint fix",
-          "timestamp": "2022-07-04T22:55:35+02:00",
-          "tree_id": "5c9fa795f320946c0596a844563d17377c68526e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6618e5551d3676221620f146357d9ecc485eec83"
-        },
-        "date": 1656968397393,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 31858,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 25890,
-            "range": "±12.57%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 30136,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 31352,
-            "range": "±1.12%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 52152,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 883,
-            "range": "±6.85%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 106,
-            "range": "±65.01%",
-            "unit": "ops/sec",
-            "extra": "41 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 92.19,
-            "range": "±5.59%",
-            "unit": "ops/sec",
-            "extra": "60 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 14.85,
-            "range": "±33.68%",
-            "unit": "ops/sec",
-            "extra": "24 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±74.47%",
             "unit": "ops/sec",
             "extra": "38 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03ada864eae71882f344e28c7a000bdef27065d4",
+          "message": "common: Set goerli merge ttd to 10790000 (#2079)",
+          "timestamp": "2022-07-27T19:33:23+05:30",
+          "tree_id": "04d823d44929234e23c16369829e13da9a21554b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/03ada864eae71882f344e28c7a000bdef27065d4"
+        },
+        "date": 1658930801422,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23652,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 22096,
+            "range": "±7.53%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23319,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 22885,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31665,
+            "range": "±1.21%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 917,
+            "range": "±5.31%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 148,
+            "range": "±39.95%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 94.65,
+            "range": "±4.41%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 13.61,
+            "range": "±62.36%",
+            "unit": "ops/sec",
+            "extra": "28 samples"
           }
         ]
       }
