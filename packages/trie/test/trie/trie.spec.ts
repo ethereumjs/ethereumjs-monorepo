@@ -6,14 +6,14 @@ import { LevelDB, ROOT_DB_KEY, Trie } from '../../src'
 
 tape('Trie', function (t) {
   t.test(
-    'creates an instance via the static constructor `make` function and defaults to `true` with a database',
+    'creates an instance via the static constructor `create` function and defaults to `true` with a database',
     async function (st) {
       st.true(((await Trie.create({ db: new LevelDB(new Level(tmpdir())) })) as any)._persistRoot)
     }
   )
 
   t.test(
-    'creates an instance via the static constructor `make` function and respects the `persistRoot` option with a database',
+    'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
     async function (st) {
       st.false(
         ((await Trie.create({ db: new LevelDB(new Level(tmpdir())), persistRoot: false })) as any)
@@ -23,7 +23,7 @@ tape('Trie', function (t) {
   )
 
   t.test(
-    'creates an instance via the static constructor `make` function and defaults to `false` without a database',
+    'creates an instance via the static constructor `create` function and defaults to `false` without a database',
     async function (st) {
       st.false(((await Trie.create()) as any)._persistRoot)
     }
