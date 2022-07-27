@@ -277,12 +277,7 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      let td
-      try {
-        // This throws if `latestHeader` is a genesis block
-        td = await this.getTotalDifficulty(latestHeader.parentHash)
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      const td = await this.getTotalDifficulty(this._headHeaderHash)
       this.checkAndTransitionHardForkByNumber(latestHeader.number, td)
     }
 
@@ -507,11 +502,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          // Have to use `parentTd`, not the actual `td` here: reason is that the transition block is the
-          // final PoW block and thus not yet a merge block
-          // If TD would be used, then it would violate merge rules: difficulty has to be zero
-          // (if this would be done, it would thus impossible to transition to the merge)
-          this.checkAndTransitionHardForkByNumber(blockNumber, parentTd)
+          this.checkAndTransitionHardForkByNumber(blockNumber, td)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
