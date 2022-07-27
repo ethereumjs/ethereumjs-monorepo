@@ -56,7 +56,7 @@ export class Trie {
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
 
-    if (opts?.db) {
+    if (opts?.db !== undefined) {
       this._persistRoot = opts.persistRoot ?? true
     } else {
       this._persistRoot = false
