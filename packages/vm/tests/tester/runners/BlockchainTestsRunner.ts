@@ -180,7 +180,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, hardforkByTD: TD })
+            await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
