@@ -33,11 +33,11 @@ export interface BlockOptions {
    * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
    * and determines the HF by both the block number and the TD.
    *
-   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
+   * Since the TTD is only a threshold the block number will in doubt take precedence (imagine
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BigIntLike
+  hardforkByTTD?: BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated

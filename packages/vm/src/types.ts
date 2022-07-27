@@ -128,7 +128,7 @@ export interface VMOpts {
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BigIntLike
+  hardforkByTTD?: BigIntLike
 
   /**
    * Use a custom EEI for the EVM. If this is not present, use the default EEI.
@@ -238,7 +238,7 @@ export interface RunBlockOpts {
   /**
    * For merge transition support, pass the chain TD up to the block being run
    */
-  hardforkByTD?: bigint
+  hardforkByTTD?: bigint
 }
 
 /**

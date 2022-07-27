@@ -211,10 +211,10 @@ export class FullSynchronizer extends Synchronizer {
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
         this.config.chainCommon.gteHardfork(Hardfork.Merge) === false
       ) {
-        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
+        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
-        const remaining = mergeTD - td
-        if (remaining <= mergeTD / BigInt(10)) {
+        const remaining = mergeTTD - td
+        if (remaining <= mergeTTD / BigInt(10)) {
           attentionHF = `Merge HF in ${remaining} TD`
         }
       }
