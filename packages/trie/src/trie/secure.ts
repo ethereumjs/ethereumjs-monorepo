@@ -30,7 +30,7 @@ export class SecureTrie extends CheckpointTrie {
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
-      throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
+      throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
     if (isFalsy(val) || val.toString() === '') {
@@ -111,7 +111,7 @@ export class SecureTrie extends CheckpointTrie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
-      persistRoot: (this as any)._persistRoot,
+      persistRoot: this._persistRoot,
       hash: (this as any)._hash,
     })
     if (includeCheckpoints && this.isCheckpoint) {

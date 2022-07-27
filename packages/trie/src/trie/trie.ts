@@ -149,7 +149,7 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
-      throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
+      throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
     // If value is empty, delete
