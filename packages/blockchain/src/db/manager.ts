@@ -115,7 +115,7 @@ export class DBManager {
     if (number === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -138,7 +138,7 @@ export class DBManager {
       opts.hardforkByBlockNumber = true
     } else {
       const parentHash = await this.numberToHash(blockNumber - BigInt(1))
-      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }

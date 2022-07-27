@@ -55,7 +55,7 @@
     {
       "name": "merge",
       "block": null,
-      "td": 5000
+      "ttd": "5000"
     },
     {
       "name": "shanghai",

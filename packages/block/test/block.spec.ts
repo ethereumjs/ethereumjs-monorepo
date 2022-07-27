@@ -86,12 +86,12 @@ tape('[Block]: block functions', function (t) {
           number: 20, // Future block
         },
       },
-      { common, hardforkByTD: 5001 }
+      { common, hardforkByTTD: 5001 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Merge,
-      'should use hardforkByTD option (td > threshold)'
+      'should use hardforkByTTD option (td > threshold)'
     )
 
     block = Block.fromBlockData(
@@ -101,23 +101,23 @@ tape('[Block]: block functions', function (t) {
           extraData: Buffer.alloc(97),
         },
       },
-      { common, hardforkByTD: 3000 }
+      { common, hardforkByTTD: 3000 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Berlin,
-      'should work with hardforkByTD option (td < threshold)'
+      'should work with hardforkByTTD option (td < threshold)'
     )
 
     try {
-      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )
