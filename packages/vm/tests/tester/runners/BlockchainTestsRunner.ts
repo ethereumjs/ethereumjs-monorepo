@@ -98,6 +98,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
+      console.log(error)
       t.fail(error)
     }
   }
@@ -127,7 +128,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       // Update common HF
-      let TD = undefined
+      let TD: bigint | undefined = undefined
       try {
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
@@ -179,7 +180,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState })
+            await vm.runBlock({ block, root: parentState, hardforkByTD: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
