@@ -71,8 +71,12 @@ export class Trie {
     if (opts?.db !== undefined) {
       opts.persistRoot = opts?.persistRoot ?? true
 
-      if (opts?.persistRoot && opts?.root === undefined) {
-        opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
+      if (opts?.persistRoot) {
+        if (opts?.root === undefined) {
+          opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
+        } else {
+          await opts?.db.put(ROOT_DB_KEY, opts.root)
+        }
       }
     }
 

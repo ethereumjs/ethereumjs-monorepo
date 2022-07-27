@@ -1,3 +1,4 @@
+import { KECCAK256_RLP } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 import { tmpdir } from 'os'
@@ -37,6 +38,19 @@ tape('Trie', function (t) {
     await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
     st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+  })
+
+  t.test('persist the root if the `root` option is given', async function (st) {
+    const trie = await Trie.create({
+      db: new LevelDB(new MemoryLevel()),
+      root: KECCAK256_RLP,
+    })
+
+    st.true((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+
+    await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+
+    st.false((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
   })
 
   t.test('does not persist the root if the `persistRoot` option is `false`', async function (st) {
