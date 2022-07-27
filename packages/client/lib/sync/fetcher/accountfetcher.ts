@@ -1,5 +1,5 @@
 import { Fetcher, FetcherOptions } from './fetcher'
-import { Account, BN } from 'ethereumjs-util'
+import { Account } from '@ethereumjs/util'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
 import { Peer } from '../../net/peer'
@@ -15,7 +15,7 @@ export interface AccountFetcherOptions extends FetcherOptions {
 	limit: Buffer
 
 	/** Soft limit at which to stop returning data */
-	bytes: BN
+	bytes: bigint
 
 	/** Destroy fetcher once all tasks are done */
 	destroyWhenDone?: boolean
@@ -26,7 +26,7 @@ export type JobTask = {
 	root: Buffer
 	origin: Buffer
 	limit: Buffer
-	bytes: BN
+	bytes: bigint
 }
 
 export class AccountFetcher<JobResult, StorageItem> extends Fetcher<
@@ -49,7 +49,7 @@ export class AccountFetcher<JobResult, StorageItem> extends Fetcher<
 	/**
 	 * Soft limit at which to stop returning data
 	 */
-	bytes: BN
+	bytes: bigint
 
 	/**
 	 * Create new block fetcher
