@@ -47,7 +47,7 @@ export interface GenesisBlockConfig {
 export interface HardforkConfig {
   name: Hardfork | string
   block: number | null
-  td?: bigint | string
+  ttd?: bigint | string
   forkHash?: string | null
 }
 

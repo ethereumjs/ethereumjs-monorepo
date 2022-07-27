@@ -144,26 +144,26 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   )
 })
 
-tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain', (t) => {
-  t.test('hardforkByBlockNumber, hardforkByTD', async (st) => {
+tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain', (t) => {
+  t.test('hardforkByBlockNumber, hardforkByTTD', async (st) => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, hardforkByBlockNumber: true })
     st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
 
-    vm = await VM.create({ common, hardforkByTD: 5001 })
-    st.equal((vm as any)._hardforkByTD, BigInt(5001), 'should set hardforkByTD option')
+    vm = await VM.create({ common, hardforkByTTD: 5001 })
+    st.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
 
     try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )
@@ -218,19 +218,19 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     //
 
     opts = {
-      hardforkByTD: BigInt(5001),
+      hardforkByTTD: BigInt(5001),
     }
     vm = await VM.create(opts)
     vmCopy = await vm.copy()
     st.deepEqual(
-      (vmCopy as any)._hardforkByTD,
+      (vmCopy as any)._hardforkByTTD,
       BigInt(5001),
-      'copy() correctly passes hardforkByTD option'
+      'copy() correctly passes hardforkByTTD option'
     )
     st.deepEqual(
       (vm as any)._hardforkByBlockNumber,
       (vmCopy as any)._hardforkByBlockNumber,
-      'hardforkByTD options match'
+      'hardforkByTTD options match'
     )
   })
   tape('Ensure that precompile activation creates non-empty accounts', async (t) => {

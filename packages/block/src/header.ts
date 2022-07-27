@@ -182,9 +182,9 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
+    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
@@ -229,8 +229,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
+    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {

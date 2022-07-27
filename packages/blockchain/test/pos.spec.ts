@@ -29,7 +29,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        hardforkByTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
+        hardforkByTTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
       }
     )
     blocks.push(block)
