@@ -296,7 +296,7 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
         testHardforks.push({
           name: hf.name,
           block: null,
-          td: ttd,
+          ttd: BigInt(ttd),
         })
       }
     }
