@@ -1,7 +1,7 @@
 import { isTruthy } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import * as tape from 'tape'
-import { LevelDB, SecureTrie } from '../../src'
+import { LevelDB, ROOT_DB_KEY, SecureTrie } from '../../src'
 
 tape('SecureTrie', function (t) {
   const trie = new SecureTrie({ db: new LevelDB() })
@@ -12,6 +12,17 @@ tape('SecureTrie', function (t) {
     await trie.put(k, v)
     const res = await trie.get(k)
     st.ok(v.equals(res!))
+    st.end()
+  })
+
+  t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
+    try {
+      await trie.put(ROOT_DB_KEY, v)
+      st.fail("Attempting to set '__root__' should fail but it did not.")
+    } catch ({ message }) {
+      st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
+    }
+
     st.end()
   })
 
@@ -67,6 +78,18 @@ tape('SecureTrie', function (t) {
       }
       t.equal('0x' + trie.root.toString('hex'), jsonTests.jeff.root.toString('hex'))
       t.end()
+    })
+
+    it.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
+      const trie = new SecureTrie({ db: new LevelDB() })
+
+      try {
+        await trie.put(ROOT_DB_KEY, Buffer.from('bar'))
+
+        st.fail("Attempting to set '__root__' should fail but it did not.")
+      } catch ({ message }) {
+        st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
+      }
     })
   })
 })

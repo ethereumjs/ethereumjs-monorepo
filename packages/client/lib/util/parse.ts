@@ -184,7 +184,7 @@ async function parseGethParams(json: any) {
   if (config.terminalTotalDifficulty !== undefined) {
     params.hardforks.push({
       name: Hardfork.Merge,
-      td: config.terminalTotalDifficulty,
+      ttd: config.terminalTotalDifficulty,
       block: null,
     })
   }

@@ -76,7 +76,7 @@
     {
       "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
       "name": "merge",
-      "td": 17000000000000000,
+      "ttd": "17000000000000000",
       "block": null,
       "forkHash": "0xfe3366e7"
     },

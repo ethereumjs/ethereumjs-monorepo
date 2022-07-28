@@ -49,10 +49,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    */
   await this._emit('beforeBlock', block)
 
-  if (this._hardforkByBlockNumber || isTruthy(this._hardforkByTD) || isTruthy(opts.hardforkByTD)) {
+  if (
+    this._hardforkByBlockNumber ||
+    isTruthy(this._hardforkByTTD) ||
+    isTruthy(opts.hardforkByTTD)
+  ) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTD ?? this._hardforkByTD
+      opts.hardforkByTTD ?? this._hardforkByTTD
     )
   }
 

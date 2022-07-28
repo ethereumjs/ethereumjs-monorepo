@@ -54,8 +54,8 @@ export class Block {
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // Uncles are obsolete post-merge (no use for hardforkByTD)
-      hardforkByTD: undefined,
+      // Uncles are obsolete post-merge (no use for hardforkByTTD)
+      hardforkByTTD: undefined,
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -118,7 +118,7 @@ export class Block {
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
     }
-    if (isTruthy(uncleOpts.hardforkByTD)) {
+    if (isTruthy(uncleOpts.hardforkByTTD)) {
       delete uncleOpts.hardforkByBlockNumber
     }
     for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {

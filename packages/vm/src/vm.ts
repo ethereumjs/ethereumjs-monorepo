@@ -42,7 +42,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   protected _isInitialized: boolean = false
 
   protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTD?: bigint
+  protected readonly _hardforkByTTD?: bigint
 
   /**
    * Cached emit() function, not for public usage
@@ -126,14 +126,14 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
+    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
+    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
     if (typeof process?.env.DEBUG !== 'undefined') {
@@ -230,7 +230,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       common: (eeiCopy as any)._common,
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTD: isTruthy(this._hardforkByTD) ? this._hardforkByTD : undefined,
+      hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })
   }
 
