@@ -122,7 +122,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         await vm.runTx({ tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
-        console.log(e)
         execInfo = `tx runtime error :${e.message}`
       }
     } else {
