@@ -130,13 +130,13 @@ tape('consensus transition checks', async (t) => {
   const blockchain = await Blockchain.create({ common, consensus })
 
   t.doesNotThrow(
-    () => (blockchain as any).checkAndTransitionHardForkByNumber(5, header),
+    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
     'checkAndTransitionHardForkByNumber should not throw with custom consensus'
   )
   ;(blockchain as any).consensus = new EthashConsensus()
   ;(blockchain._common as any).consensusAlgorithm = () => 'fibonacci'
   t.throws(
-    () => (blockchain as any).checkAndTransitionHardForkByNumber(5, header),
+    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
     'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
   )
 })
