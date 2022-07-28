@@ -39,6 +39,11 @@ export interface TrieOpts {
    * Hash function used for hashing trie node and securing key.
    */
   hash?: HashFunc
+
+  /**
+   * Store the root inside the database after every `write` operation
+   */
+  persistRoot?: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch
@@ -94,3 +99,5 @@ export type Checkpoint = {
   keyValueMap: Map<string, Buffer | null>
   root: Buffer
 }
+
+export const ROOT_DB_KEY = Buffer.from('__root__')

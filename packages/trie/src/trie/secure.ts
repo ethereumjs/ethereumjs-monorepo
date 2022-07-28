@@ -1,5 +1,5 @@
 import { CheckpointTrie } from './checkpoint'
-import { Proof } from '../types'
+import { Proof, ROOT_DB_KEY } from '../types'
 import { isFalsy } from '@ethereumjs/util'
 
 /**
@@ -29,6 +29,10 @@ export class SecureTrie extends CheckpointTrie {
    * @param value
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
+    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+      throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
+    }
+
     if (isFalsy(val) || val.toString() === '') {
       await this.del(key)
     } else {
@@ -107,11 +111,21 @@ export class SecureTrie extends CheckpointTrie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
+      persistRoot: this._persistRoot,
       hash: (this as any)._hash,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       secureTrie.db.checkpoints = [...this.db.checkpoints]
     }
     return secureTrie
+  }
+
+  /**
+   * Persists the root hash in the underlying database
+   */
+  async persistRoot() {
+    if (this._persistRoot !== undefined) {
+      await this.db.put(this.hash(ROOT_DB_KEY), this.root)
+    }
   }
 }
