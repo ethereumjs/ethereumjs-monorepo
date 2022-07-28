@@ -98,7 +98,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
-      console.log(error)
       t.fail(error)
     }
   }
