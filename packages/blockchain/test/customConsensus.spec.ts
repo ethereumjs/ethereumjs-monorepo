@@ -125,7 +125,6 @@ tape('Custom consensus validation rules', async (t) => {
 tape('consensus transition checks', async (t) => {
   t.plan(2)
   const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
-  const header = BlockHeader.fromHeaderData({})
   const consensus = new fibonacciConsensus()
   const blockchain = await Blockchain.create({ common, consensus })
 
