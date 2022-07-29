@@ -169,6 +169,8 @@ const normalHardforks = [
   'muirGlacier',
   'berlin',
   'london',
+  'merge',
+  'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
 
 const transitionNetworks: any = {
@@ -227,6 +229,8 @@ const testLegacy: any = {
   istanbul: false,
   muirGlacier: false,
   berlin: false,
+  london: false,
+  merge: false,
   ByzantiumToConstantinopleFixAt5: false,
   EIP158ToByzantiumAt5: false,
   FrontierToHomesteadAt5: false,
@@ -252,6 +256,64 @@ export function getTestDirs(network: string, testType: string) {
   }
   return testDirs
 }
+/**
+ * Setups the common with networks
+ * @param targetNetwork Network target
+ * @param ttd If set: total terminal difficulty to switch to merge
+ * @returns
+ */
+function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
+  const networkLowercase = targetNetwork.toLowerCase()
+  // normal hard fork, return the common with this hard fork
+  // find the right upper/lowercased version
+  const hfName = normalHardforks.reduce((previousValue, currentValue) =>
+    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
+  )
+  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const hardforks = mainnetCommon.hardforks()
+  const testHardforks = []
+  for (const hf of hardforks) {
+    // check if we enable this hf
+    // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+    if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
+      // this hardfork should be activated at block 0
+      testHardforks.push({
+        name: hf.name,
+        // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
+        // forkHash: hf.forkHash,
+        block: 0,
+      })
+    } else {
+      // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+      if (ttd === undefined) {
+        testHardforks.push({
+          name: hf.name,
+          //forkHash: hf.forkHash,
+          block: null,
+        })
+      } else if (hf.name === 'merge') {
+        // merge will currently always be after a hardfork, so add it here
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          ttd: BigInt(ttd),
+        })
+      }
+    }
+  }
+  const common = Common.custom(
+    {
+      hardforks: testHardforks,
+      defaultHardfork: hfName,
+    },
+    { eips: [3607] }
+  )
+  const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+  if (eips) {
+    common.setEIPs(eips.map((e: string) => parseInt(e)))
+  }
+  return common
+}
 
 /**
  * Returns a Common for the given network (a test parameter)
@@ -270,46 +332,14 @@ export function getCommon(targetNetwork: string) {
     network = network.slice(0, index)
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
-    // normal hard fork, return the common with this hard fork
-    // find the right upper/lowercased version
-    const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-      currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
-    )
-    const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
-    const hardforks = mainnetCommon.hardforks()
-    const testHardforks = []
-    for (const hf of hardforks) {
-      // check if we enable this hf
-      // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-      if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
-        // this hardfork should be activated at block 0
-        testHardforks.push({
-          name: hf.name,
-          // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
-          // forkHash: hf.forkHash,
-          block: 0,
-        })
-      } else {
-        // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-        testHardforks.push({
-          name: hf.name,
-          //forkHash: hf.forkHash,
-          block: null,
-        })
-      }
-    }
-    const common = Common.custom(
-      {
-        hardforks: testHardforks,
-        defaultHardfork: hfName,
-      },
-      { eips: [3607] }
-    )
-    const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
-    if (eips) {
-      common.setEIPs(eips.map((e: string) => parseInt(e)))
-    }
-    return common
+    return setupCommonWithNetworks(targetNetwork)
+  } else if (networkLowercase.match('tomergeatdiff')) {
+    // This is a HF -> Merge transition
+    const start = networkLowercase.match('tomergeatdiff')!.index!
+    const end = start + 'tomergeatdiff'.length
+    const startNetwork = network.substring(0, start) // HF before the merge
+    const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
+    return setupCommonWithNetworks(startNetwork, TTD)
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
     const transitionForks = isTruthy(transitionNetworks[network])
@@ -368,6 +398,8 @@ const expectedTestsFull: any = {
     MuirGlacier: 38773,
     Berlin: 41872,
     London: 61547,
+    ArrowGlacier: 0,
+    Merge: 60373,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
     FrontierToHomesteadAt5: 13,
