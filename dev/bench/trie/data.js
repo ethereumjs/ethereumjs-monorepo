@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659100549329,
+  "lastUpdate": 1659101747489,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "01f38c8db0b962fe039c0c74ee76261e4f4014c4",
-          "message": "Fix consensus validation bugs (#2031)\n\n* client: fix extradata in devnet settings\r\n* block: move consensus format validation to corret place",
-          "timestamp": "2022-07-09T14:49:39-04:00",
-          "tree_id": "95220d0e75e4ec28c0919936183e8e4a4c3460db",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/01f38c8db0b962fe039c0c74ee76261e4f4014c4"
-        },
-        "date": 1657392840863,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 33045,
-            "range": "±1.82%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 30711,
-            "range": "±6.60%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32230,
-            "range": "±1.04%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 31853,
-            "range": "±1.18%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 53765,
-            "range": "±1.13%",
-            "unit": "ops/sec",
-            "extra": "94 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 749,
-            "range": "±42.60%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 193,
-            "range": "±5.99%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 90.83,
-            "range": "±17.02%",
-            "unit": "ops/sec",
-            "extra": "60 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 13.27,
-            "range": "±58.61%",
-            "unit": "ops/sec",
-            "extra": "34 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±31.90%",
             "unit": "ops/sec",
             "extra": "27 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd6302a6a40a5aff3b689a16c9ec25a5ff916fd0",
+          "message": "EVM/VM fixes (#2078)\n\n* reuse eei from evm when evm opt provided\r\n\r\n* Make vm evm property interface or class\r\n\r\n* fix EEI export\r\n\r\n* Add tests for eei sameness",
+          "timestamp": "2022-07-29T09:31:32-04:00",
+          "tree_id": "5ad722db12a413b9f5c36fade7b0abb42c0c6f41",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dd6302a6a40a5aff3b689a16c9ec25a5ff916fd0"
+        },
+        "date": 1659101745278,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 19423,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 19395,
+            "range": "±2.26%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 17722,
+            "range": "±8.86%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 19107,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 26493,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 800,
+            "range": "±6.09%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 114,
+            "range": "±49.46%",
+            "unit": "ops/sec",
+            "extra": "48 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 85.35,
+            "range": "±5.48%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 14.99,
+            "range": "±26.27%",
+            "unit": "ops/sec",
+            "extra": "29 samples"
           }
         ]
       }
