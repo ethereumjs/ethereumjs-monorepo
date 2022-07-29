@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659091493442,
+  "lastUpdate": 1659100549329,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "12a81f6ca9205d5d4fc7668b67027ce4f950f20d",
-          "message": "master-vm-copy-bug (#2027)\n\n* vm: include hardfork options in VM.copy()\r\n\r\n* vm: edit vm.copy() to only copy evm and derive rest\r\n\r\n* vm: add new tests for copying hardfork options\r\n\r\n* evm: add tests for copying of customOpcodes and customPrecompiles",
-          "timestamp": "2022-07-08T11:16:40+02:00",
-          "tree_id": "f61c2155bb2e149dd0e949d48ee1017bff609589",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/12a81f6ca9205d5d4fc7668b67027ce4f950f20d"
-        },
-        "date": 1657272067413,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 32906,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 30157,
-            "range": "±8.81%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32928,
-            "range": "±1.15%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 31444,
-            "range": "±1.21%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 52636,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 954,
-            "range": "±6.81%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 181,
-            "range": "±9.16%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 87.18,
-            "range": "±19.95%",
-            "unit": "ops/sec",
-            "extra": "58 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 10.01,
-            "range": "±92.11%",
-            "unit": "ops/sec",
-            "extra": "22 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±7.28%",
             "unit": "ops/sec",
             "extra": "38 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e6e9d2f4162bce1a3af1b0c9f4b22107a8fa7d90",
+          "message": "Merge tests (#2064)\n\n* vm: add merge tests\r\n\r\n* vm/ci: fix test runner for Merge\r\n\r\n* vm: fix merge state tests\r\n\r\n* stash changes\r\n\r\n* vm/blockchain: fix PoS transition\r\n\r\n* vm: unstash changes\r\n\r\n* vm: fix state tests\r\n\r\n* blockchain: fix tests\r\n\r\n* ci: revert changes\r\n\r\n* vm: fix state tests\r\n\r\n* ci: update to required\r\n\r\n* ci: fix\r\n\r\n* blockchain: remove set common hf in block on update\r\n\r\n* blockchain: revert changes\r\n\r\n* vm: revert changes, update test runner\r\n\r\n* fix merge block ttd\r\n\r\n* fix the hardforkByTTD arg in runner\r\n\r\n* remove console.log\r\n\r\n* reverting checkAndTransitionHardForkByNumber args in customConsensus\r\n\r\n* lint\r\n\r\n* Remove console.log\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-07-29T18:42:15+05:30",
+          "tree_id": "faadd3d006a94385122fb51739bdd68d5d370f0f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6e9d2f4162bce1a3af1b0c9f4b22107a8fa7d90"
+        },
+        "date": 1659100548760,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 18691,
+            "range": "±3.80%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 19031,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 17187,
+            "range": "±8.00%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 18678,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 25711,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 752,
+            "range": "±7.72%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 129,
+            "range": "±39.96%",
+            "unit": "ops/sec",
+            "extra": "50 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 75.5,
+            "range": "±10.68%",
+            "unit": "ops/sec",
+            "extra": "59 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 13.47,
+            "range": "±31.90%",
+            "unit": "ops/sec",
+            "extra": "27 samples"
           }
         ]
       }
