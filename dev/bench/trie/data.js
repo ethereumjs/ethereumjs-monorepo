@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659017833692,
+  "lastUpdate": 1659091493442,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b30f914aeef2ca0bca2937f3e2674f1ff65b2426",
-          "message": "Monorepo: remove default exports (#2018)\n\n* Monorepo: remove default exports and adjust imports in non-test files\r\n\r\n* Monorepo: adjust removal of default exports in test files\r\n\r\n* Monorepo: add no-default-export eslint rule\r\n\r\n* Monorepo: update README with non-default named imports",
-          "timestamp": "2022-07-08T10:43:48+02:00",
-          "tree_id": "16335b0243822917e43ab8ca67f35598a757c024",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b30f914aeef2ca0bca2937f3e2674f1ff65b2426"
-        },
-        "date": 1657270147145,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 27283,
-            "range": "±4.52%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 25360,
-            "range": "±8.45%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 27904,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 27633,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 45904,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 831,
-            "range": "±6.41%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 99.82,
-            "range": "±66.66%",
-            "unit": "ops/sec",
-            "extra": "42 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 87.08,
-            "range": "±5.73%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 15.36,
-            "range": "±24.43%",
-            "unit": "ops/sec",
-            "extra": "30 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±18.26%",
             "unit": "ops/sec",
             "extra": "39 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dbc3ba8b7025e13de0a03415ff992d22b16e6875",
+          "message": "block: Set hardforkbyblocknumber true on rlp block constructor (#2081)\n\n* Set hardforkbyblocknumber true on rlp block constructor\n\n* check for hardforkByTTD\n\n* Add coverage test",
+          "timestamp": "2022-07-29T06:41:44-04:00",
+          "tree_id": "4a756ac702cd4a22c3ecce5fd7778646ee4726c9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dbc3ba8b7025e13de0a03415ff992d22b16e6875"
+        },
+        "date": 1659091492743,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23158,
+            "range": "±2.15%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21551,
+            "range": "±6.94%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23081,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 22788,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31721,
+            "range": "±0.95%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 806,
+            "range": "±36.25%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 199,
+            "range": "±8.76%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 95.24,
+            "range": "±15.50%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 19.58,
+            "range": "±7.28%",
+            "unit": "ops/sec",
+            "extra": "38 samples"
           }
         ]
       }
