@@ -1,1 +1,6 @@
-module.exports = require('@ethereumjs/eslint-config-defaults/prettier.config.js')
+module.exports = {
+    semi: false,
+    singleQuote: true,
+    printWidth: 100,
+  }
+  

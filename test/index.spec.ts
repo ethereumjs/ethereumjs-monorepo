@@ -165,7 +165,7 @@ describe('.generate()', function () {
     const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
     const wallet = Wallet.generate(true)
     assert.strictEqual(wallet.getPrivateKey().length, 32)
-    const addr = wallet.getAddress().toString('hex');
+    const addr = wallet.getAddress().toString('hex')
     assert.strictEqual(BigInt('0x' + addr) <= max, true)
   })
 })

@@ -30,10 +30,10 @@ function mergeEvpKdfOptsWithDefaults(opts?: Partial<EvpKdfOpts>): EvpKdfOpts {
     return evpKdfDefaults
   }
   return {
-    count: opts.count || evpKdfDefaults.count,
-    keysize: opts.keysize || evpKdfDefaults.keysize,
-    ivsize: opts.ivsize || evpKdfDefaults.ivsize,
-    digest: opts.digest || evpKdfDefaults.digest,
+    count: opts.count ?? evpKdfDefaults.count,
+    keysize: opts.keysize ?? evpKdfDefaults.keysize,
+    ivsize: opts.ivsize ?? evpKdfDefaults.ivsize,
+    digest: opts.digest ?? evpKdfDefaults.digest,
   }
 }
 
@@ -151,7 +151,7 @@ export async function fromEtherWallet(
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    let pr = await decrypt(Buffer.from(cipher.ciphertext), evp.key, evp.iv, 'aes-256-cbc')
+    const pr = await decrypt(Buffer.from(cipher.ciphertext), evp.key, evp.iv, 'aes-256-cbc')
     // privateKey = runCipherBuffer(decipher, )
 
     // NOTE: yes, they've run it through UTF8
@@ -224,7 +224,7 @@ export async function fromKryptoKit(entropy: string, password: string): Promise<
     const aesKey = await scrypt(Buffer.from(password, 'utf8'), salt, 16384, 1, 8, 32)
 
     // NOTE: ECB doesn't use the IV, so it can be anything
-    let decipher = createDecipheriv("aes-256-ecb", aesKey, Buffer.from([]))
+    const decipher = createDecipheriv('aes-256-ecb', aesKey, Buffer.from([]))
     // FIXME: this is a clear abuse, but seems to match how ECB in aesjs works
     privateKey = Buffer.concat([
       Uint8Array.from(decipher.update(encryptedSeed)).slice(0, 16),
