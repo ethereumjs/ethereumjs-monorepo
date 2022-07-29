@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659091483381,
+  "lastUpdate": 1659100518524,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "12a81f6ca9205d5d4fc7668b67027ce4f950f20d",
-          "message": "master-vm-copy-bug (#2027)\n\n* vm: include hardfork options in VM.copy()\r\n\r\n* vm: edit vm.copy() to only copy evm and derive rest\r\n\r\n* vm: add new tests for copying hardfork options\r\n\r\n* evm: add tests for copying of customOpcodes and customPrecompiles",
-          "timestamp": "2022-07-08T11:16:40+02:00",
-          "tree_id": "f61c2155bb2e149dd0e949d48ee1017bff609589",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/12a81f6ca9205d5d4fc7668b67027ce4f950f20d"
-        },
-        "date": 1657272081049,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28507,
-            "range": "±2.41%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 27098,
-            "range": "±7.29%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27406,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 23498,
-            "range": "±12.30%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28639,
-            "range": "±1.98%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.18%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e6e9d2f4162bce1a3af1b0c9f4b22107a8fa7d90",
+          "message": "Merge tests (#2064)\n\n* vm: add merge tests\r\n\r\n* vm/ci: fix test runner for Merge\r\n\r\n* vm: fix merge state tests\r\n\r\n* stash changes\r\n\r\n* vm/blockchain: fix PoS transition\r\n\r\n* vm: unstash changes\r\n\r\n* vm: fix state tests\r\n\r\n* blockchain: fix tests\r\n\r\n* ci: revert changes\r\n\r\n* vm: fix state tests\r\n\r\n* ci: update to required\r\n\r\n* ci: fix\r\n\r\n* blockchain: remove set common hf in block on update\r\n\r\n* blockchain: revert changes\r\n\r\n* vm: revert changes, update test runner\r\n\r\n* fix merge block ttd\r\n\r\n* fix the hardforkByTTD arg in runner\r\n\r\n* remove console.log\r\n\r\n* reverting checkAndTransitionHardForkByNumber args in customConsensus\r\n\r\n* lint\r\n\r\n* Remove console.log\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-07-29T18:42:15+05:30",
+          "tree_id": "faadd3d006a94385122fb51739bdd68d5d370f0f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6e9d2f4162bce1a3af1b0c9f4b22107a8fa7d90"
+        },
+        "date": 1659100516921,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22013,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21088,
+            "range": "±5.68%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21450,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21194,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18836,
+            "range": "±11.13%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
