@@ -99,6 +99,15 @@ export class BlockHeader {
       throw new Error('Invalid serialized header input. Must be array')
     }
 
+    // If an RLP serialized block header is provided and no `hardforkByBlockNumber` opt is provided, default true to
+    // avoid scenarios where no `opts.common` or `opts.hardforkByBlockNumber` is provided and a serialized blockheader
+    // is provided that predates London result in a default base fee being added to the block
+    // (resulting in an erroneous block hash since the default `common` hardfork is London and the blockheader constructor
+    // adds a default basefee if EIP-1559 is active and no basefee is provided in the `headerData`)
+    if (opts.hardforkByTTD === undefined) {
+      opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
+    }
+
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
   }
 
