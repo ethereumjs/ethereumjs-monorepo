@@ -104,7 +104,10 @@ export class BlockHeader {
     // is provided that predates London result in a default base fee being added to the block
     // (resulting in an erroneous block hash since the default `common` hardfork is London and the blockheader constructor
     // adds a default basefee if EIP-1559 is active and no basefee is provided in the `headerData`)
-    opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
+    if (opts.hardforkByTTD === undefined) {
+      opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
+    }
+
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
   }
 
