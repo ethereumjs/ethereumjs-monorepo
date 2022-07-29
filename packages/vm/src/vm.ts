@@ -35,7 +35,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface
+  readonly evm: EVMInterface | EVM
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
@@ -104,9 +104,16 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     // TODO tests
     if (opts.eei) {
+      if (opts.evm) {
+        throw new Error('cannot specify EEI if EVM opt provided')
+      }
       this.eei = opts.eei
     } else {
-      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      if (opts.evm) {
+        this.eei = opts.evm.eei
+      } else {
+        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      }
     }
 
     // TODO tests
@@ -216,13 +223,12 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    */
   async copy(): Promise<VM> {
     const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = (evmCopy as any).eei
+    const eeiCopy: EEIInterface = evmCopy.eei
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
       evm: evmCopy,
-      eei: eeiCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })
