@@ -63,7 +63,6 @@ export class Blockchain implements BlockchainInterface {
    *
    * @param opts Constructor options, see {@link BlockchainOptions}
    */
-
   public static async create(opts: BlockchainOptions = {}) {
     const blockchain = new Blockchain(opts)
     await blockchain._init(opts.genesisBlock)
