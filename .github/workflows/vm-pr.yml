@@ -19,7 +19,7 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -47,7 +47,7 @@ jobs:
         fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -82,10 +82,9 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -118,7 +117,7 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -160,10 +159,9 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -177,9 +175,7 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:
