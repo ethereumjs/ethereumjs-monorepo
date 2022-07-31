@@ -104,6 +104,13 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = 'should return the correct return value with no gas limit provided'
     t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
   }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, [{ gasLimit, data }, 'latest'])
+  expectRes = (res: any) => {
+    const msg = `should let run call without 'to' for contract creation`
+    t.equal(res.body.result, bufferToHex(result.results[0].execResult.returnValue), msg)
+  }
   await baseRequest(t, server, req, 200, expectRes, true)
 })
 
