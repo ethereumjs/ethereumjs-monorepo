@@ -37,7 +37,7 @@ tape('[Integration:Merge]', async (t) => {
         },
       ],
     },
-    { baseChain: ChainCommon.Goerli }
+    { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
   )
   const commonPoW = Common.custom(
     {

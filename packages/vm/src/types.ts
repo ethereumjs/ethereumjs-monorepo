@@ -66,7 +66,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `London` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `Merge` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
@@ -77,7 +77,7 @@ export interface VMOpts {
    * Default setup if no `Common` instance is provided:
    *
    * - `chain`: `mainnet`
-   * - `hardfork`: `london`
+   * - `hardfork`: `merge`
    * - `eips`: `[]`
    */
   common?: Common
