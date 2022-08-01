@@ -90,7 +90,8 @@
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
     "typescript": "^4.4.2",
-    "solc": "^0.8.1"
+    "solc": "^0.8.1",
+    "yargs": "^17.5.1"
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
