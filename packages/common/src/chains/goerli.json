@@ -2,7 +2,7 @@
   "name": "goerli",
   "chainId": 5,
   "networkId": 5,
-  "defaultHardfork": "london",
+  "defaultHardfork": "merge",
   "consensus": {
     "type": "poa",
     "algorithm": "clique",

@@ -41,7 +41,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `Hardfork.London`
+Current `DEFAULT_HARDFORK`: `Hardfork.Merge`
 
 Here are some simple usage examples:
 

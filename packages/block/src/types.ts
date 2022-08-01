@@ -18,7 +18,7 @@ export interface BlockOptions {
    * Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
    * hardfork in the {@link Common} class.
    *
-   * Current default hardfork: `london`
+   * Current default hardfork: `merge`
    */
   common?: Common
   /**
