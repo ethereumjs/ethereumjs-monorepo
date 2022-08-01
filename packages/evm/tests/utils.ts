@@ -31,5 +31,5 @@ export function isRunningInKarma(): boolean {
  * @param file
  */
 export function getSingleFile(file: string) {
-  return require(path.join(path.resolve('../ethereum-tests'), file)) // eslint-disable-line import/no-dynamic-require
+  return require(path.join(path.resolve('../ethereum-tests'), file))
 }

@@ -1,5 +1,7 @@
+// explicitly import util
+// needed for karma-typescript bundling
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { Buffer } from 'buffer'
 import * as tape from 'tape'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -12,9 +14,6 @@ import { setupVM } from './utils'
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
-
-// explicitly import util and buffer,
-// needed for karma-typescript bundling
 
 /**
  * Tests for the main constructor API and
