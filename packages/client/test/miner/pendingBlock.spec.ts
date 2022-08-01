@@ -5,10 +5,10 @@ import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import { VM } from '@ethereumjs/vm'
 import { Address, Account } from '@ethereumjs/util'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),

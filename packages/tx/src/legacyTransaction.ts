@@ -12,9 +12,9 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
+import { Common } from '@ethereumjs/common'
 import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
-import { Common } from '@ethereumjs/common'
 import { checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 0

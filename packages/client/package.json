@@ -77,6 +77,7 @@
     "level": "^8.0.0",
     "libp2p": "^0.30.7",
     "libp2p-bootstrap": "^0.14.0",
+    "libp2p-crypto": "^0.21.2",
     "libp2p-interfaces": "^1.2.0",
     "libp2p-kad-dht": "^0.20.6",
     "libp2p-mplex": "^0.10.2",

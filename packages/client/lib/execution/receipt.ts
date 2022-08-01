@@ -10,8 +10,8 @@ import {
   intToBuffer,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { MetaDBManager, DBKey } from '../util/metaDBManager'
 import type { Block } from '@ethereumjs/block'
+import { MetaDBManager, DBKey } from '../util/metaDBManager'
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:

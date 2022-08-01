@@ -3,9 +3,9 @@ import { sscanf } from 'scanf'
 import { Multiaddr } from 'multiaddr'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import { RLP } from 'rlp'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 import { PeerInfo } from '../dpt'
 import { toNewUint8Array, keccak256 } from '../util'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 
 const Convert = require('multiaddr/src/convert')
 

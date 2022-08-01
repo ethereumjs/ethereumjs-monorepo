@@ -1,8 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
 import {
   Address,
   BigIntLike,
+  isTruthy,
   toBuffer,
   MAX_INTEGER,
   MAX_UINT64,

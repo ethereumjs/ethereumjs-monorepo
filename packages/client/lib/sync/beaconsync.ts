@@ -1,12 +1,12 @@
+import type { Block } from '@ethereumjs/block'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { short } from '../util'
 import { Event } from '../types'
+import type { Peer } from '../net/peer/peer'
+import type { VMExecution } from '../execution'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { ReverseBlockFetcher } from './fetcher'
-import type { Block } from '@ethereumjs/block'
-import type { Peer } from '../net/peer/peer'
 import { errSyncReorged, Skeleton } from './skeleton'
-import type { VMExecution } from '../execution'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */

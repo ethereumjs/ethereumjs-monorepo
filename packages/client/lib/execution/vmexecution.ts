@@ -9,13 +9,13 @@ import { VM } from '@ethereumjs/vm'
 import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
+import type { Block } from '@ethereumjs/block'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
 import { ReceiptsManager } from './receipt'
-import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM

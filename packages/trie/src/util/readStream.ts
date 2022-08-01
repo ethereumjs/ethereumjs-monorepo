@@ -1,6 +1,6 @@
+import { Readable } from 'readable-stream'
 import { nibblesToBuffer } from '../util/nibbles'
 import { Trie } from '../trie'
-import { Readable } from 'readable-stream'
 
 export class TrieReadStream extends Readable {
   private trie: Trie

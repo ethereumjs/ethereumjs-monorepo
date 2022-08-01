@@ -1,8 +1,8 @@
-import { Blockchain } from '../../blockchain/src'
+import path from 'path'
 import { Chain, Common } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, isTruthy } from '@ethereumjs/util'
-import path from 'path'
+import { Blockchain } from '../../blockchain/src'
 import { EEI } from '../../vm/src/eei/eei'
 
 export async function getEEI() {
@@ -31,5 +31,5 @@ export function isRunningInKarma(): boolean {
  * @param file
  */
 export function getSingleFile(file: string) {
-  return require(path.join(path.resolve('../ethereum-tests'), file))
+  return require(path.join(path.resolve('../ethereum-tests'), file)) // eslint-disable-line import/no-dynamic-require
 }

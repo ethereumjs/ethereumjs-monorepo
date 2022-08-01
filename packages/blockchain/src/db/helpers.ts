@@ -1,7 +1,7 @@
-import { DBOp, DBTarget } from './operation'
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { DBOp, DBTarget } from './operation'
 import { bufBE8 } from './constants'
 
 /*

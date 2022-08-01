@@ -10,16 +10,15 @@ import {
   MAX_UINT64,
 } from '@ethereumjs/util'
 
+import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Stack } from './stack'
 import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
 import { EOF } from './eof'
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { EVM, EVMResult } from './evm'
 import { Message } from './message'
-import { Log } from './types'
-import { EEIInterface, Block } from './types'
+import { Block, EEIInterface, Log } from './types'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 

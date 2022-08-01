@@ -1,11 +1,10 @@
 import * as tape from 'tape'
 import * as minimist from 'minimist'
-import { toBuffer } from '@ethereumjs/util'
+import { isTruthy, toBuffer } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '../src'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 import { getTests } from './testLoader'
-import { isTruthy } from '@ethereumjs/util'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

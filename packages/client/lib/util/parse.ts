@@ -10,9 +10,9 @@ import {
   isTruthy,
   stripHexPrefix,
 } from '@ethereumjs/util'
-import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { Common } from '@ethereumjs/common'
+import type { MultiaddrLike } from '../types'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.

@@ -13,6 +13,8 @@ import {
   SECP256K1_ORDER_DIV_2,
   setLengthRight,
 } from '@ethereumjs/util'
+import { ERROR } from '../exceptions'
+import { RunState } from '../interpreter'
 import {
   addressToBuffer,
   describeLocation,
@@ -25,8 +27,6 @@ import {
   fromTwos,
   toTwos,
 } from './util'
-import { ERROR } from '../exceptions'
-import { RunState } from './../interpreter'
 import { exponentation } from '.'
 
 const EIP3074MAGIC = Buffer.from('03', 'hex')

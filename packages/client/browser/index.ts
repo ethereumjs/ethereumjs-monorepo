@@ -1,4 +1,10 @@
 import { Chain, Common } from '@ethereumjs/common'
+import { Level } from 'level'
+import { isTruthy } from '@ethereumjs/util'
+import { EthereumClient } from '../lib/client'
+import { parseMultiaddrs } from '../lib/util'
+import { Config } from '../lib/config'
+import { getLogger } from './logging'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -23,7 +29,6 @@ export * from '../lib/net/server/libp2pserver'
 
 // EthereumClient
 export * from '../lib/client'
-import { EthereumClient } from '../lib/client'
 
 // Service
 export * from '../lib/service/service'
@@ -37,14 +42,9 @@ export * from '../lib/sync/lightsync'
 
 // Utilities
 export * from '../lib/util'
-import { parseMultiaddrs } from '../lib/util'
-import { Config } from '../lib/config'
 
 // Logging
 export * from './logging'
-import { getLogger } from './logging'
-import { Level } from 'level'
-import { isTruthy } from '@ethereumjs/util'
 
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })

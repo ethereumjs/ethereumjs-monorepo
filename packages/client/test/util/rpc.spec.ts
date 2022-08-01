@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+import { isTruthy } from '@ethereumjs/util'
 import { RPCManager } from '../../lib/rpc'
 import {
   createRPCServer,
@@ -9,7 +10,6 @@ import {
 import { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
-import { isTruthy } from '@ethereumjs/util'
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {

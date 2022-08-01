@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as dir from 'node-dir'
-import { DEFAULT_TESTS_PATH } from './config'
 import { isTruthy } from '@ethereumjs/util'
+import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false
 
@@ -158,5 +158,5 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
  * @param file
  */
 export function getSingleFile(file: string) {
-  return require(path.join(DEFAULT_TESTS_PATH, file))
+  return require(path.join(DEFAULT_TESTS_PATH, file)) // eslint-disable-line import/no-dynamic-require
 }

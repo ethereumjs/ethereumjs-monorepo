@@ -19,7 +19,7 @@ import { Common } from '@ethereumjs/common'
 import { RLP } from 'rlp'
 import { StateManager, StorageDump } from './interface'
 import { Cache, getCb, putCb } from './cache'
-import { BaseStateManager } from './'
+import { BaseStateManager } from '.'
 
 type StorageProof = {
   key: PrefixedHexString

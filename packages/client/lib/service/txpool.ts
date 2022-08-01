@@ -6,13 +6,13 @@ import {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import { Address, bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
-import { Config } from '../config'
-import { Peer } from '../net/peer'
 import type { VM } from '@ethereumjs/vm'
-import type { FullEthereumService } from './fullethereumservice'
-import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
 import Heap = require('qheap')
+import { Config } from '../config'
+import { Peer } from '../net/peer'
+import type { PeerPool } from '../net/peerpool'
+import type { FullEthereumService } from './fullethereumservice'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

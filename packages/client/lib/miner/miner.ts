@@ -3,13 +3,12 @@ import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { MemoryLevel } from 'memory-level'
 import { Event } from '../types'
 import { Config } from '../config'
 import { FullEthereumService } from '../service'
 import { VMExecution } from '../execution'
 import type { FullSynchronizer } from '../sync'
-
-import { MemoryLevel } from 'memory-level'
 
 export interface MinerOptions {
   /* Config */

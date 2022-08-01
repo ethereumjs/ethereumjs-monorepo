@@ -8,9 +8,9 @@ import {
   FeeMarketEIP1559Transaction,
   FeeMarketEIP1559TxData,
 } from '@ethereumjs/tx'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { VM } from '../../src/vm'
 import { createAccount, getTransaction, setBalance } from './utils'
-import { Blockchain } from '@ethereumjs/blockchain'
 
 const TRANSACTION_TYPES = [
   {

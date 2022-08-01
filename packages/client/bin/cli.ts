@@ -9,6 +9,9 @@ import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork, ConsensusAlgorithm } from '@ethereumjs/common'
 import { Address, isFalsy, isTruthy, toBuffer } from '@ethereumjs/util'
+import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import { Level } from 'level'
+import { AbstractLevel } from 'abstract-level'
 import {
   parseMultiaddrs,
   parseGenesisState,
@@ -18,11 +21,8 @@ import {
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
-import { startRPCServers, helprpc } from './startRpc'
 import { FullEthereumService } from '../lib/service'
-import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-import { Level } from 'level'
-import { AbstractLevel } from 'abstract-level'
+import { startRPCServers, helprpc } from './startRpc'
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 

@@ -8,13 +8,13 @@ import {
   Hardfork,
 } from '@ethereumjs/common'
 import { Address, isFalsy, isTruthy } from '@ethereumjs/util'
+import { BlockHeader } from '@ethereumjs/block'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import { MockServer } from './mocks/mockserver'
 import { setup, destroy } from './util'
-import { BlockHeader } from '@ethereumjs/block'
 
 tape('[Integration:Merge]', async (t) => {
   const commonPoA = Common.custom(

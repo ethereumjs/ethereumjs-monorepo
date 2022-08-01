@@ -16,10 +16,10 @@ import {
   intToBuffer,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
-import type { TxReceiptWithType } from '../../execution/receipt'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { TxReceiptWithType } from '../../execution/receipt'
+import { Chain } from '../../blockchain'
+import { Message, Protocol, ProtocolOptions } from './protocol'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */

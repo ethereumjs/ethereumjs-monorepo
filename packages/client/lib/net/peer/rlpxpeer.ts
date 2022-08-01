@@ -6,11 +6,11 @@ import {
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
 } from '@ethereumjs/devp2p'
+import { isTruthy } from '@ethereumjs/util'
 import { Protocol, RlpxSender } from '../protocol'
-import { Peer, PeerOptions } from './peer'
 import { RlpxServer } from '../server'
 import { Event } from '../../types'
-import { isTruthy } from '@ethereumjs/util'
+import { Peer, PeerOptions } from './peer'
 const devp2pCapabilities: any = {
   eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,

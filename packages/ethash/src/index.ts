@@ -1,27 +1,27 @@
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 import {
-  zeros,
   TWO_POW256,
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
-  setLengthLeft,
-  isTruthy,
   isFalsy,
+  isTruthy,
+  setLengthLeft,
+  zeros,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import {
-  params,
-  fnv,
-  fnvBuffer,
-  bufReverse,
-  getEpoc,
-  getCacheSize,
-  getFullSize,
-  getSeed,
-} from './util'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
 import { AbstractLevel } from 'abstract-level'
+import {
+  bufReverse,
+  fnv,
+  fnvBuffer,
+  getCacheSize,
+  getEpoc,
+  getFullSize,
+  getSeed,
+  params,
+} from './util'
 const xor = require('buffer-xor')
 
 export type Solution = {

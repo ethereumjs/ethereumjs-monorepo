@@ -3,11 +3,11 @@ import { VM } from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from '@ethereumjs/util'
 import { Multiaddr } from 'multiaddr'
+import { Level } from 'level'
 import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
-import { Level } from 'level'
 
 export enum DataDirectory {
   Chain = 'chain',

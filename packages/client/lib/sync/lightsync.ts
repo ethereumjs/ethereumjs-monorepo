@@ -1,11 +1,11 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
-import { Event } from '../types'
 import type { BlockHeader } from '@ethereumjs/block'
 import { isFalsy } from '@ethereumjs/util'
+import { Peer } from '../net/peer/peer'
+import { short } from '../util'
+import { Event } from '../types'
+import { Synchronizer, SynchronizerOptions } from './sync'
+import { HeaderFetcher } from './fetcher'
 
 /**
  * Implements an ethereum light sync synchronizer

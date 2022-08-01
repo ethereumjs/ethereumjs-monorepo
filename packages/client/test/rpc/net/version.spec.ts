@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import { Chain, Common } from '@ethereumjs/common'
-import { startRPC, createManager, createClient, baseSetup, params, baseRequest } from '../helpers'
 import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
+import { startRPC, createManager, createClient, baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'net_version'
 

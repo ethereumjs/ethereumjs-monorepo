@@ -10,14 +10,14 @@ import {
 } from '@ethereumjs/common'
 import { BigIntLike, isFalsy, isTruthy } from '@ethereumjs/util'
 
+import { MemoryLevel } from 'memory-level'
+import { AbstractLevel } from 'abstract-level'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
 import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
 import { GenesisState, genesisStateRoot } from './genesisStates'
 
-import { MemoryLevel } from 'memory-level'
-import { AbstractLevel } from 'abstract-level'
 import { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 
 /**

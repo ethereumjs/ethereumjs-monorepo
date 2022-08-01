@@ -5,6 +5,9 @@ import {
   DB,
   BatchDBOp,
   PutBatch,
+  FoundNodeFunction,
+  Proof,
+  TrieOpts,
   TrieNode,
   Nibbles,
   EmbeddedNode,
@@ -15,9 +18,8 @@ import { LevelDB } from '../db'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
 import { WalkController } from '../util/walkController'
-import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
 import { verifyRangeProof } from '../proof/range'
-import { FoundNodeFunction, Proof, TrieOpts } from '../types'
+import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
 
 interface Path {
   node: TrieNode | null

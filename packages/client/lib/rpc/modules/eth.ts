@@ -18,22 +18,21 @@ import {
   setLengthLeft,
   toType,
   TypeOutput,
+  isTruthy,
+  isFalsy,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
+import type { VM, PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { Log } from '@ethereumjs/evm'
+import type { Proof } from '@ethereumjs/statemanager'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import { EthereumService, FullEthereumService } from '../../service'
-import type { VM } from '@ethereumjs/vm'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
-import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
 import type { ReceiptsManager } from '../../execution/receipt'
-import { isTruthy } from '@ethereumjs/util'
-import { isFalsy } from '@ethereumjs/util'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")

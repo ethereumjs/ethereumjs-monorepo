@@ -1,12 +1,12 @@
-import * as devp2p from '../src/index'
-import { LES, Peer } from '../src/index'
+import { randomBytes } from 'crypto'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import ms from 'ms'
 import chalk from 'chalk'
-import { randomBytes } from 'crypto'
 import { isTruthy } from '@ethereumjs/util'
+import { LES, Peer } from '../src/index'
+import * as devp2p from '../src/index'
 
 const PRIVATE_KEY = randomBytes(32)
 

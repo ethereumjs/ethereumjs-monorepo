@@ -13,9 +13,9 @@ import {
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { setupPreConditions, verifyPostConditions } from '../../util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+import { setupPreConditions, verifyPostConditions } from '../../util'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

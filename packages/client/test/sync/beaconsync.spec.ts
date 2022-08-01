@@ -1,11 +1,11 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 import { Block } from '@ethereumjs/block'
+import { MemoryLevel } from 'memory-level'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Skeleton } from '../../lib/sync'
 import { wait } from '../integration/util'
-import { MemoryLevel } from 'memory-level'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }

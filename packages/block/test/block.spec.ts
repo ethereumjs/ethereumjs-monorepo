@@ -1,3 +1,6 @@
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import util from 'util'
 import * as tape from 'tape'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
 import { RLP } from 'rlp'
@@ -9,10 +12,6 @@ import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
-
-// explicitly import util, needed for karma-typescript bundling
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import util from 'util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {

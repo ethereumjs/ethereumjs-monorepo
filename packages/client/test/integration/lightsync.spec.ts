@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Event } from '../../lib/types'
-import { wait, setup, destroy } from './util'
 import { SyncMode } from '../../lib/config'
+import { wait, setup, destroy } from './util'
 
 tape('[Integration:LightSync]', async (t) => {
   t.test('should sync headers', async (t) => {

@@ -3,7 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { setLengthRight, setLengthLeft, bigIntToBuffer } from '@ethereumjs/util'
 import { ERROR, EvmError } from '../exceptions'
-import { RunState } from './../interpreter'
+import { RunState } from '../interpreter'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 

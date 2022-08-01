@@ -1,5 +1,6 @@
 import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import { EthereumClient } from '../lib/client'
 import {
@@ -10,7 +11,6 @@ import {
 } from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 type RPCArgs = {
   rpc: boolean

@@ -6,7 +6,7 @@ import {
   isTruthy,
 } from '@ethereumjs/util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
-import { Chain } from './../../blockchain'
+import { Chain } from '../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { FlowControl } from './flowcontrol'
 

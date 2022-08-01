@@ -4,23 +4,27 @@ import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common } from '@ethereumjs/common'
 import { Address, isTruthy } from '@ethereumjs/util'
+import type { IncomingMessage } from 'connect'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import { MemoryLevel } from 'memory-level'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
-import { parseCustomParams, parseGenesisState } from '../../lib/util'
+import {
+  parseCustomParams,
+  parseGenesisState,
+  createRPCServerListener,
+  createWsRPCServerListener,
+} from '../../lib/util'
 import { Event } from '../../lib/types'
 import { TxPool } from '../../lib/service/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { VMExecution } from '../../lib/execution'
-import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
-import { mockBlockchain } from './mockBlockchain'
-import type { IncomingMessage } from 'connect'
-import type { TypedTransaction } from '@ethereumjs/tx'
 import type { EthereumClient } from '../../lib/client'
 import type { FullEthereumService } from '../../lib/service'
+import { mockBlockchain } from './mockBlockchain'
 const request = require('supertest')
-import { MemoryLevel } from 'memory-level'
 
 const config: any = {}
 config.logger = getLogger(config)

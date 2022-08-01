@@ -26,6 +26,7 @@ import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precom
 import {
   Block,
   CustomOpcode,
+  EEIInterface,
   EVMEvents,
   EVMInterface,
   /*ExternalInterface,*/
@@ -34,7 +35,6 @@ import {
   EVMRunCallOpts,
   EVMRunCodeOpts,
 } from './types'
-import { EEIInterface } from './types'
 import { TransientStorage } from './transientStorage'
 
 const debug = createDebugLogger('evm')

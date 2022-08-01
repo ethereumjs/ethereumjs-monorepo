@@ -1,5 +1,5 @@
-import { INVALID_PARAMS } from './error-code'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { INVALID_PARAMS } from './error-code'
 
 /**
  * middleware for parameters validation

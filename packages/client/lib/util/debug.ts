@@ -1,5 +1,5 @@
-import { DataDirectory } from '../'
 import type { Block } from '@ethereumjs/block'
+import { DataDirectory } from '..'
 import type { VMExecution } from '../execution'
 
 /**

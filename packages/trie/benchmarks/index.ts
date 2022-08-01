@@ -1,7 +1,7 @@
 import * as Benchmark from 'benchmark'
+import { LevelDB } from '../dist'
 import { runTrie } from './random'
 import { iterTest } from './checkpointing'
-import { LevelDB } from '../dist'
 
 const suite = new Benchmark.Suite()
 

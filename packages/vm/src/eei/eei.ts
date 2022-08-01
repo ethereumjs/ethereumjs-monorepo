@@ -1,9 +1,9 @@
 import { Address, bufferToBigInt } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 
-import { VmState } from './vmState'
 import { StateManager } from '@ethereumjs/statemanager'
 import { EEIInterface } from '@ethereumjs/evm'
+import { VmState } from './vmState'
 
 type Block = {
   hash(): Buffer

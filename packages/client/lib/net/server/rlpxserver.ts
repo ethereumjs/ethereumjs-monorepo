@@ -1,8 +1,8 @@
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
-import { RlpxPeer } from '../peer/rlpxpeer'
-import { Server, ServerOptions } from './server'
-import { Event } from '../../types'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { RlpxPeer } from '../peer/rlpxpeer'
+import { Event } from '../../types'
+import { Server, ServerOptions } from './server'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */

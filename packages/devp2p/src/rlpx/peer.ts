@@ -4,12 +4,11 @@ import BufferList = require('bl')
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
 import { Common } from '@ethereumjs/common'
 import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { ETH, LES } from '../'
-import { int2buffer, buffer2int, formatLogData } from '../util'
+import { devp2pDebug, int2buffer, buffer2int, formatLogData } from '../util'
+import { ETH, LES } from '..'
 import { ECIES } from './ecies'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'

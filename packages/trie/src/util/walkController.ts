@@ -1,7 +1,7 @@
 import { Trie } from '../trie'
 import { FoundNodeFunction, Nibbles, TrieNode } from '../types'
-import { PrioritizedTaskExecutor } from './tasks'
 import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
+import { PrioritizedTaskExecutor } from './tasks'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.

@@ -1,7 +1,7 @@
 import * as tape from 'tape'
-import { getEEI } from './utils'
-import { EVM } from '../src'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { EVM } from '../src'
+import { getEEI } from './utils'
 
 const STOP = '00'
 const JUMP = '56'

@@ -1,9 +1,9 @@
 import * as tape from 'tape'
-import { VM } from '../../../src/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
+import { VM } from '../../../src/vm'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))

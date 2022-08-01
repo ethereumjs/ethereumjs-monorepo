@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as tape from 'tape'
 import * as minimist from 'minimist'
 import { Common } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import {
   getCommon,
   getExpectedTests,
@@ -15,7 +16,6 @@ import {
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 /**
  * Test runner

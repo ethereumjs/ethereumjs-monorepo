@@ -1,8 +1,8 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Skeleton } from '../sync/skeleton'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
-import { EthereumService, EthereumServiceOptions } from './ethereumservice'
-import { TxPool } from './txpool'
+import type { Block } from '@ethereumjs/block'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { Skeleton } from '../sync/skeleton'
 import { BeaconSynchronizer, FullSynchronizer } from '../sync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
@@ -10,9 +10,8 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import { VMExecution } from '../execution'
-
-import type { Block } from '@ethereumjs/block'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { TxPool } from './txpool'
+import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */

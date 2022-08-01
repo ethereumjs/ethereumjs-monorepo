@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import { Buffer } from 'buffer'
+import * as tape from 'tape'
 import {
   arrToBufArr,
   bufferToBigInt,

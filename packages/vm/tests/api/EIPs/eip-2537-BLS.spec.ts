@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getActivePrecompiles } from '@ethereumjs/evm'
 import { VM } from '../../../src/vm'
 import { isRunningInKarma } from '../../util'
-import { getActivePrecompiles } from '@ethereumjs/evm'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12

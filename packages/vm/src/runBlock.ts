@@ -12,6 +12,7 @@ import {
 import { RLP } from 'rlp'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { EVMStateAccess } from '@ethereumjs/evm'
 import { VM } from './vm'
 import { Bloom } from './bloom'
 import type {
@@ -23,7 +24,6 @@ import type {
   AfterBlockEvent,
 } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
-import { EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 

@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+import { BlockHeader } from '@ethereumjs/block'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
-import { BlockHeader } from '@ethereumjs/block'
 
 tape('[LightSynchronizer]', async (t) => {
   class PeerPool {
