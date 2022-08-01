@@ -44,6 +44,8 @@ git config user.name "someone"
 # Clear prepublish script (no need to run clean/build/test)
 cp /dev/null config/cli/prepublish.sh
 
+cat config/cli/prepublish.sh
+
 # Publish to e2e tag
 npm publish \
   --dist-tag e2e \
