@@ -29,7 +29,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 npm run e2e:inject
 
 cd hardhat
-git rev-parse --abbrev-ref HEAD
+
 rm yarn.lock
 cd packages/hardhat-core
 yarn config set registry http://localhost:4873
