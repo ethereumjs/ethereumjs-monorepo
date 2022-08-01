@@ -20,7 +20,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Cloning hardhat                             "
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-git clone https://github.com/nomiclabs/hardhat.git
+git clone -b upgrade-ethereumjs https://github.com/nomiclabs/hardhat.git
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Installing updated ethereumjs components via virtual registry"
@@ -29,6 +29,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 npm run e2e:inject
 
 cd hardhat
+git rev-parse --abbrev-ref HEAD
 rm yarn.lock
 cd packages/hardhat-core
 yarn config set registry http://localhost:4873
