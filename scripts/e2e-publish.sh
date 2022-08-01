@@ -44,6 +44,8 @@ git config user.name "someone"
 # Clear prepublish script (no need to run clean/build/test)
 cp /dev/null config/cli/prepublish.sh
 
+sed -i s/"..\/..\/config\/cli\/prepublish.sh && npm run test:buildIntegrity"/"..\/..\/config\/cli\/prepublish.sh"/ packages/vm/package.json
+
 # Publish to e2e tag
 npm publish \
   --dist-tag e2e \
