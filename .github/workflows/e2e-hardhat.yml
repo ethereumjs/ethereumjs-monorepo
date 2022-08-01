@@ -34,6 +34,9 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      - run: cp /dev/null config/cli/prepublish.sh
+      - run: cat config/cli/prepublish.sh
+      
       # Publish all packages to virtual npm registry
       # after giving each a minor version bump
       - name: Publish to virtual registry
