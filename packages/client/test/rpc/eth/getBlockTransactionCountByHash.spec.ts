@@ -1,6 +1,7 @@
 import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest } from '../helpers'
+import { baseRequest, baseSetup, params } from '../helpers'
 import { checkError } from '../util'
 
 const method = 'eth_getBlockTransactionCountByHash'

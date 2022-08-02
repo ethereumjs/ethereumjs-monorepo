@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/'
+
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {

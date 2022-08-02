@@ -1,6 +1,7 @@
-import { isTruthy } from '@ethereumjs/util'
 import { createHash } from 'crypto'
+import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import { LevelDB, ROOT_DB_KEY, SecureTrie } from '../../src'
 
 tape('SecureTrie', function (t) {

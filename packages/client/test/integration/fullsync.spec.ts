@@ -1,6 +1,7 @@
 import * as tape from 'tape'
+
 import { Event } from '../../lib/types'
-import { wait, setup, destroy } from './util'
+import { destroy, setup, wait } from './util'
 
 tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {

@@ -1,12 +1,13 @@
 import {
-  setLengthRight,
-  setLengthLeft,
-  bufferToBigInt,
   bigIntToBuffer,
+  bufferToBigInt,
   isFalsy,
+  setLengthLeft,
+  setLengthRight,
 } from '@ethereumjs/util'
+
+import { ExecResult, OOGResult } from '../evm'
 import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
 
 function multComplexity(x: bigint): bigint {
   let fac1

@@ -1,7 +1,8 @@
 import * as tape from 'tape'
-import { middleware, validators } from '../../lib/rpc/validation'
+
 import { INVALID_PARAMS } from '../../lib/rpc/error-code'
-import { startRPC, baseRequest } from './helpers'
+import { middleware, validators } from '../../lib/rpc/validation'
+import { baseRequest, startRPC } from './helpers'
 import { checkError } from './util'
 
 const prefix = 'rpc/validation:'

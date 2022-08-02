@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { Chain, Common } from '@ethereumjs/common'
 import { bufferToInt } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { Block } from '../src'
 
 function runDifficultyTests(

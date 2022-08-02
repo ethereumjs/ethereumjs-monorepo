@@ -1,6 +1,7 @@
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
 import { isFalsy } from '@ethereumjs/util'
+
+import { ExecResult, OOGResult } from '../evm'
+import { PrecompileInput } from './types'
 
 export function precompile04(opts: PrecompileInput): ExecResult {
   if (isFalsy(opts.data)) throw new Error('opts.data missing but required')

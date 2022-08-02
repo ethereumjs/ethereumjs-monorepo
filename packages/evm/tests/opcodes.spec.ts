@@ -1,7 +1,8 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { getEEI } from './utils'
+import * as tape from 'tape'
+
 import { EVM } from '../src'
+import { getEEI } from './utils'
 
 tape('EVM -> getActiveOpcodes()', (t) => {
   const CHAINID = 0x46 //istanbul opcode

@@ -1,18 +1,19 @@
-import { Trie } from '@ethereumjs/trie'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import { Common, ConsensusType } from '@ethereumjs/common'
+import { Trie } from '@ethereumjs/trie'
 import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
+  Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capability,
+  TransactionFactory,
+  TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
+import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { RLP } from 'rlp'
+
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
+import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
 
 /**
  * An object that represents the block.

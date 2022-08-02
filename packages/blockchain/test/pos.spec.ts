@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
 import { Blockchain } from '../src'
 import * as testnet from './testdata/testnet.json'
 

@@ -1,5 +1,6 @@
-import * as tape from 'tape'
 import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { TransientStorage } from '../src/transientStorage'
 
 tape('Transient Storage', (tester) => {

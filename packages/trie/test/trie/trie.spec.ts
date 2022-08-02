@@ -1,8 +1,9 @@
+import { tmpdir } from 'os'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
-import { tmpdir } from 'os'
 import * as tape from 'tape'
+
 import { LevelDB, ROOT_DB_KEY, Trie } from '../../src'
 
 tape('Trie', function (t) {

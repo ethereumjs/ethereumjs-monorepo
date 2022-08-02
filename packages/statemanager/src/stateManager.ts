@@ -1,25 +1,26 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Common } from '@ethereumjs/common'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
-  toBuffer,
-  KECCAK256_NULL,
-  unpadBuffer,
-  PrefixedHexString,
-  bufferToHex,
   bigIntToHex,
-  KECCAK256_RLP,
-  setLengthLeft,
-  short,
+  bufferToHex,
   isFalsy,
   isTruthy,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  PrefixedHexString,
+  setLengthLeft,
+  short,
+  toBuffer,
+  unpadBuffer,
 } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { RLP } from 'rlp'
-import { StateManager, StorageDump } from './interface'
+
+import { BaseStateManager } from './baseStateManager'
 import { Cache, getCb, putCb } from './cache'
-import { BaseStateManager } from './'
+import { StateManager, StorageDump } from './interface'
 
 type StorageProof = {
   key: PrefixedHexString

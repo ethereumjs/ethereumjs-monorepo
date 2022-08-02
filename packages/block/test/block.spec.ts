@@ -1,18 +1,19 @@
-import * as tape from 'tape'
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
+import util from 'util'
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
 import { Block, BlockBuffer } from '../src'
 import { blockFromRpc } from '../src/from-rpc'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
-import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
-
-// explicitly import util, needed for karma-typescript bundling
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import util from 'util'
+import * as testnetMerge from './testdata/testnetMerge.json'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {

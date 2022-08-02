@@ -1,28 +1,29 @@
 import { EventEmitter } from 'events'
+import { BigIntLike, intToBuffer, isFalsy, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
-import { BigIntLike, toType, TypeOutput, intToBuffer, isTruthy, isFalsy } from '@ethereumjs/util'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
+
+import * as goerli from './chains/goerli.json'
+import * as kovan from './chains/kovan.json'
+import * as mainnet from './chains/mainnet.json'
+import * as rinkeby from './chains/rinkeby.json'
+import * as ropsten from './chains/ropsten.json'
+import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips'
-import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
+import { Chain, ConsensusAlgorithm, ConsensusType, CustomChain, Hardfork } from './enums'
+import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import {
   BootstrapNodeConfig,
+  CasperConfig,
   ChainConfig,
-  GenesisBlockConfig,
-  HardforkConfig,
   ChainName,
   ChainsConfig,
   CliqueConfig,
-  EthashConfig,
-  CasperConfig,
   CommonOpts,
   CustomCommonOpts,
+  EthashConfig,
+  GenesisBlockConfig,
+  HardforkConfig,
 } from './types'
-import * as mainnet from './chains/mainnet.json'
-import * as ropsten from './chains/ropsten.json'
-import * as rinkeby from './chains/rinkeby.json'
-import * as kovan from './chains/kovan.json'
-import * as goerli from './chains/goerli.json'
-import * as sepolia from './chains/sepolia.json'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
