@@ -4,7 +4,7 @@
  */
 
 import { NOISE } from '@chainsafe/libp2p-noise'
-import LibP2p from 'libp2p'
+import Libp2p from 'libp2p'
 import PeerId from 'peer-id'
 import { Multiaddr } from 'multiaddr'
 import Bootstrap from 'libp2p-bootstrap'
@@ -27,7 +27,7 @@ export interface Libp2pNodeOptions {
   bootnodes?: Multiaddr[]
 }
 
-export class Libp2pNode extends LibP2p {
+export class Libp2pNode extends Libp2p {
   constructor(options: Libp2pNodeOptions) {
     const wsTransportKey = Websockets.prototype[Symbol.toStringTag]
     options.bootnodes = options.bootnodes ?? []
