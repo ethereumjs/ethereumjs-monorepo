@@ -16,7 +16,7 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 11
         },
-        sourceMap: true,
+      //  sourceMap: true,
         exclude:['async_hooks'],
         resolve: {
           alias: {
@@ -27,7 +27,12 @@ module.exports = function (config) {
           }
         },
         transforms: [
-          require("karma-typescript-es6-transform")(),
+          require("karma-typescript-es6-transform")({
+            presets:[
+              ["@babel/preset-env", {"exclude": ["@babel/plugin-transform-exponentiation-operator"]}
+              ]
+            ]
+          }),
           function (context, callback) {
             // you may ask why on earth do we need this...,
             // so this is to make sure `cjs` extensions are treated as actual scripts and not text files
@@ -44,7 +49,7 @@ module.exports = function (config) {
       tsconfig: './tsconfig.karma.json',
     },
 
-    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
+    browsers: ['FirefoxHeadless','ChromeHeadless'],
 
     colors: true,
 
