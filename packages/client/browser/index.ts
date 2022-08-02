@@ -36,7 +36,7 @@ export * from '../lib/sync/fullsync'
 export * from '../lib/sync/lightsync'
 
 // Utilities
-export * from '../lib/util'
+export * from '../lib/util/parse'
 import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
 

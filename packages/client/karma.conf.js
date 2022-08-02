@@ -16,15 +16,18 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 11
         },
+        sourceMap: true,
+        exclude:['async_hooks'],
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12
               'multiformats/bases/base58': '../../node_modules/multiformats/cjs/src/bases/base58.js',
               'multiformats/hashes/identity': '../../node_modules/multiformats/cjs/src/hashes/identity.js',
-              'multiformats/hashes/sha2': '../../node_modules/multiformats/cjs/src/hashes/sha2-browser.js'
+              'multiformats/hashes/sha2': '../../node_modules/multiformats/cjs/src/hashes/sha2-browser.js',
           }
         },
         transforms: [
+          require("karma-typescript-es6-transform")(),
           function (context, callback) {
             // you may ask why on earth do we need this...,
             // so this is to make sure `cjs` extensions are treated as actual scripts and not text files
