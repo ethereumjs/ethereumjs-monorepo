@@ -1,8 +1,12 @@
-import { TransactionFactory } from '@ethereumjs/tx'
+import { Block } from '@ethereumjs/block'
+import { Transaction } from '@ethereumjs/tx'
+import { arrToBufArr } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { RLP } from 'rlp'
-import { VM } from '../../src'
+import { PostByzantiumTxReceipt, VM } from '../../src'
+import { BlockBuilder } from '../../src/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
@@ -42,17 +46,57 @@ async function runTransition() {
   const vm = await VM.create({ common })
   await setupPreConditions(<any>vm.eei, { pre: alloc })
 
-  const block = await makeBlockFromEnv(inputEnv, { common })
+  const block = makeBlockFromEnv(inputEnv, { common })
 
-  const txsData = RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex'))
+  const txsData = arrToBufArr(RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex')))
+
+  const builder = new BlockBuilder(vm, {
+    parentBlock: new Block(),
+    headerData: block.header.toJSON(),
+    blockOpts: { putBlockIntoBlockchain: false },
+  })
+
+  const receipts: any = []
+
+  let txCounter = 0
+
+  vm.on('afterTx', async (afterTx, continueFn) => {
+    const receipt = <PostByzantiumTxReceipt>afterTx.receipt
+    const pushReceipt = {
+      root: '0x',
+      status: receipt.status === 0 ? '0x' : '0x1',
+      cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
+      logsBloom: '0x' + receipt.bitvector.toString('hex'),
+      logs: null,
+      transactionHash: '0x' + afterTx.transaction.hash().toString('hex'),
+      contractAddress: '0x0000000000000000000000000000000000000000',
+      gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
+      blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      transactionIndex: '0x' + txCounter.toString(16),
+    }
+    receipts.push(pushReceipt)
+    txCounter++
+    continueFn!(undefined)
+  })
 
   for (const txData of txsData) {
-    const tx = TransactionFactory.fromSerializedData(Buffer.from(<Uint8Array>txData))
-    await vm.runTx({ tx })
+    const tx = Transaction.fromValuesArray(<any>txData)
+    await builder.addTransaction(tx)
   }
 
-  const output = {}
-  const outputAlloc = {}
+  const logsBloom = builder.logsBloom()
+  const logsHash = Buffer.from(keccak256(logsBloom))
+
+  const output = {
+    stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
+    txRoot: '0x' + (await builder.transactionsTrie()).toString('hex'),
+    receiptsRoot: '0x' + (await builder.receiptTrie()).toString('hex'),
+    logsHash: '0x' + logsHash.toString('hex'),
+    logsBloom: '0x' + logsBloom.toString('hex'),
+    currentDifficulty: '0x20000',
+    receipts, // TODO fixme
+  }
+  const outputAlloc = alloc //{}
 
   const outputResultFilePath = join(args.output.basedir, args.output.result)
   const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
