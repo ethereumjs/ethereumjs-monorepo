@@ -48,7 +48,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     }
     const headers = headersResult[1]
     const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
-    if (isFalsy(bodiesResult) || bodiesResult[1].length === 0) {
+    if (isFalsy(bodiesResult) || isFalsy(bodiesResult[1]) || bodiesResult[1].length === 0) {
       // Catch occasional null or empty responses
       this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
       return []

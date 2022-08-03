@@ -233,7 +233,11 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    await this.execution.run()
+    // Batch the execution if we are not close to the head
+    const shouldRunOnlyBatched =
+      isTruthy(this.config.syncTargetHeight) &&
+      this.chain.blocks.height < this.config.syncTargetHeight
+    await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
     return true
   }
