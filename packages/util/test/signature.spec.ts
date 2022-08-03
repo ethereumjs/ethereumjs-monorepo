@@ -12,6 +12,8 @@ import {
   toCompactSig,
   toRpcSig,
   calculateSigRecovery,
+  SECP256K1_ORDER,
+  SECP256K1_ORDER_DIV_2,
 } from '../src'
 
 const echash = Buffer.from(
@@ -238,13 +240,25 @@ tape('isValidSignature', function (t) {
     st.notOk(isValidSignature(BigInt(29), r, s))
     st.end()
   })
-  t.test('should fail when on homestead and s > secp256k1n/2', function (st) {
-    const SECP256K1_N_DIV_2 = BigInt(
-      '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0'
-    )
-
+  t.test('should fail when on homestead and s > secp256k1n_order', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
-    const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
+    const s = bigIntToBuffer(SECP256K1_ORDER + BigInt(1))
+
+    const v = BigInt(27)
+    st.notOk(isValidSignature(v, r, s, true))
+    st.end()
+  })
+  t.test('should fail when on homestead and r > secp256k1n_order', function (st) {
+    const r = bigIntToBuffer(SECP256K1_ORDER + BigInt(1))
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+
+    const v = BigInt(27)
+    st.notOk(isValidSignature(v, r, s, true))
+    st.end()
+  })
+  t.test('should fail when not on homestead and s > secp256k1n/2', function (st) {
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = bigIntToBuffer(SECP256K1_ORDER_DIV_2 + BigInt(1))
 
     const v = BigInt(27)
     st.notOk(isValidSignature(v, r, s, true))
@@ -317,7 +331,7 @@ tape('message sig', function (t) {
     st.end()
   })
 
-  t.test('should support compact signature representation (EIP-2098)', function (st) {
+  t.test('should support compact signature representation (EIP-2098) (v=27)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     const v = BigInt(27)
@@ -325,6 +339,39 @@ tape('message sig', function (t) {
     st.equal(toCompactSig(v, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v,
+      r,
+      s,
+      recovery,
+    })
+    st.end()
+  })
+  t.test('should support compact signature representation (EIP-2098) (v=28)', function (st) {
+    const v = BigInt(28)
+    const recovery = calculateSigRecovery(v)
+    st.deepEqual(fromRpcSig(toCompactSig(v, r, s)), {
+      v,
+      r,
+      s,
+      recovery,
+    })
+    st.end()
+  })
+  t.test('should support compact signature representation (EIP-2098) (v=35)', function (st) {
+    const v = BigInt(35)
+    const recovery = calculateSigRecovery(v)
+    st.deepEqual(fromRpcSig(toCompactSig(v, r, s)), {
+      v: BigInt(28),
+      r,
+      s,
+      recovery,
+    })
+    st.end()
+  })
+  t.test('should support compact signature representation (EIP-2098) (v=36)', function (st) {
+    const v = BigInt(36)
+    const recovery = calculateSigRecovery(v)
+    st.deepEqual(fromRpcSig(toCompactSig(v, r, s)), {
+      v: BigInt(27),
       r,
       s,
       recovery,
