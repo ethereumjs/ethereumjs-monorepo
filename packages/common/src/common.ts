@@ -186,7 +186,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
     this._hardfork = this.DEFAULT_HARDFORK
     if (isTruthy(opts.hardfork)) {
       this.setHardfork(opts.hardfork)
