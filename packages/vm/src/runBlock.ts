@@ -138,7 +138,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
-    if (result.receiptRoot?.equals(block.header.receiptTrie) === false) {
+    if (result.receiptRoot.equals(block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
           `Invalid receiptTrie received=${result.receiptRoot.toString(

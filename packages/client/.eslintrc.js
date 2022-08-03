@@ -3,7 +3,6 @@ module.exports = {
   parserOptions: {
     project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json'],
   },
-  rules: {},
   overrides: [
     {
       files: ['test/**/*.ts'],
@@ -18,5 +17,4 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['webpack.config.js'],
 }

@@ -1,10 +1,6 @@
 module.exports = {
-  extends: "../../config/eslint.js",
-  parserOptions: {
-    project: ['./tsconfig.json'],
-  },
+  extends: '../../config/eslint.js',
   env: {
-    es2020: true,
     mocha: true,
   },
   rules: {
