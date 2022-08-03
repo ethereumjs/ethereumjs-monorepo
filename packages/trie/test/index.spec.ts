@@ -7,18 +7,7 @@ import * as tape from 'tape'
 import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import {
-  CheckpointTrie,
-  HashFunc,
-  LeafNode,
-  LevelDB,
-  Trie,
-  CheckpointTrie,
-  HashFunc,
-  LeafNode,
-  LevelDB,
-  Trie,
-} from '../src'
+import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'
 
 import { bufferToNibbles } from '../src/util/nibbles'
 
