@@ -7,6 +7,10 @@
     "utilities",
     "utils"
   ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+util%22"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
