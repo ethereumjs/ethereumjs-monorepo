@@ -1,7 +1,7 @@
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { unstrictDecode } from '../util'
 import { MAC } from './mac'

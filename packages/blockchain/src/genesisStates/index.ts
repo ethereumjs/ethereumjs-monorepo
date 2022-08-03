@@ -8,7 +8,7 @@ import {
   PrefixedHexString,
   isTruthy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
 

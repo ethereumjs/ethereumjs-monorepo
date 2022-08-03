@@ -1,4 +1,4 @@
-import { RLP, utils } from 'rlp'
+import { RLP, utils } from '@ethereumjs/rlp'
 import { Peer } from '../rlpx/peer'
 import { formatLogData } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'

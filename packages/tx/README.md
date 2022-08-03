@@ -267,7 +267,7 @@ Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain, Common } from '@ethereumjs/common'
 import { bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)

@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { arrToBufArr, toBuffer } from '@ethereumjs/util'
 import { Ethash } from '../src'
 import { MemoryLevel } from 'memory-level'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 const cacheDB = new MemoryLevel()
 

@@ -16,7 +16,7 @@ import {
   isTruthy,
 } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { StateManager, StorageDump } from './interface'
 import { Cache, getCb, putCb } from './cache'
 import { BaseStateManager } from './'

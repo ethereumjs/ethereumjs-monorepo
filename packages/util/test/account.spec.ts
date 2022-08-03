@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   isValidPrivate,

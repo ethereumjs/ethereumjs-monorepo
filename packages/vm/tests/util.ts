@@ -22,7 +22,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { VmState } from '../src/eei/vmState'
 
 export function dumpState(state: any, cb: Function) {

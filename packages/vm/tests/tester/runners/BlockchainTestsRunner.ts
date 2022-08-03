@@ -11,7 +11,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 import { Level } from 'level'

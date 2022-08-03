@@ -1,7 +1,7 @@
 import { Trie } from '@ethereumjs/trie'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,

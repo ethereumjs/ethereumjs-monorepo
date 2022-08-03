@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { bufArrToArr, KECCAK256_NULL, KECCAK256_RLP_S } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'
 
 // explicitly import buffer,

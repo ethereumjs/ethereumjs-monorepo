@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Chain, Common, CliqueConfig, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'

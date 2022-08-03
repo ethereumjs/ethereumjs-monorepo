@@ -1,5 +1,5 @@
 import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'

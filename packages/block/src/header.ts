@@ -26,7 +26,7 @@ import {
   isTruthy,
   isFalsy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 

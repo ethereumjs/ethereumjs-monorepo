@@ -10,7 +10,7 @@ import {
   toBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Common } from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {

@@ -6,7 +6,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { arrToBufArr, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
 

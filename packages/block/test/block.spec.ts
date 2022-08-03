@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import { blockFromRpc } from '../src/from-rpc'

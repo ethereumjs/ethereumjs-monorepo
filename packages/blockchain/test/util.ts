@@ -1,5 +1,5 @@
 import { bufArrToArr, isTruthy, toBuffer } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Blockchain } from '../src'

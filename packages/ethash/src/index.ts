@@ -9,7 +9,7 @@ import {
   isTruthy,
   isFalsy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import {
   params,
   fnv,

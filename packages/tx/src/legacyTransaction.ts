@@ -11,7 +11,7 @@ import {
   unpadBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
 import { Common } from '@ethereumjs/common'
@@ -208,7 +208,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    *
    * ```javascript
    * import { bufArrToArr } from '@ethereumjs/util'
-   * import { RLP } from 'rlp'
+   * import { RLP } from '@ethereumjs/rlp'
    * const message = tx.getMessageToSign(false)
    * const serializedMessage = Buffer.from(RLP.encode(bufArrToArr(message))) // use this for the HW wallet input
    * ```
