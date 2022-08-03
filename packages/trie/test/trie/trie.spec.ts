@@ -21,7 +21,12 @@ for (const { constructor, title } of [
     title: 'SecureTrie',
   },
 ]) {
-  const dbTmpDir = mkdtempSync(join(tmpdir(), title))
+  let dbTmpDir: string
+  try {
+    dbTmpDir = mkdtempSync(join(tmpdir(), title))
+  } catch (error) {
+    dbTmpDir = tmpdir()
+  }
 
   tape(`${title} (Persistence)`, function ({ test }) {
     test('creates an instance via the static constructor `create` function and defaults to `true` with a database', async function (assert) {
