@@ -2,34 +2,51 @@
   "name": "rlp",
   "version": "4.0.0-beta.2",
   "description": "Recursive Length Prefix Encoding Module",
-  "license": "MPL-2.0",
   "keywords": [
     "rlp",
     "ethereum"
   ],
-  "files": [
-    "dist",
-    "bin",
-    "src"
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+rlp%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": {
+    "name": "martin becze",
+    "email": "mjbecze@gmail.com"
+  },
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>",
+    "Holger Drewes <Holger.Drewes@gmail.com>",
+    "Paul Miller <pkg@paulmillr.com>"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "rlp": "bin/rlp"
   },
+  "files": [
+    "dist",
+    "bin",
+    "src"
+  ],
   "scripts": {
     "build": "../../config/cli/ts-build.sh node",
-    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
-    "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- test/*.spec.ts",
-    "test:browser": "karma start karma.conf.js"
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
@@ -44,22 +61,5 @@
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2"
-  },
-  "author": {
-    "name": "martin becze",
-    "email": "mjbecze@gmail.com"
-  },
-  "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>",
-    "Holger Drewes <Holger.Drewes@gmail.com>",
-    "Paul Miller <pkg@paulmillr.com>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+rlp%22"
   }
 }

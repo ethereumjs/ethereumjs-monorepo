@@ -2,39 +2,50 @@
   "name": "@ethereumjs/statemanager",
   "version": "1.0.0-beta.2",
   "description": "An Ethereum statemanager implementation",
-  "license": "MPL-2.0",
-  "author": "EthereumJS Team",
   "keywords": [
     "ethereum",
     "statemanager"
   ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "contributors": [
+    "g11tech <gajinder@g11.in>"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
-    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
-    "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- tests/*.spec.ts",
-    "test:browser": "karma start karma.conf.js"
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/common": "3.0.0-beta.2",
     "@ethereumjs/trie": "5.0.0-beta.2",
+    "@ethereumjs/util": "8.0.0-beta.2",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
     "functional-red-black-tree": "^1.0.1",
     "rlp": "4.0.0-beta.2"
   },
@@ -54,16 +65,5 @@
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
-  },
-  "contributors": [
-    "g11tech <gajinder@g11.in>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
   }
 }
