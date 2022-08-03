@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659378170076,
+  "lastUpdate": 1659519633826,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c17346ce62a0725800b89d180ca3c98d3ced79c1",
-          "message": "Monorepo: eslint strict boolean expressions (#2030)\n\n* Monorepo: add @typescript-eslint/strict-boolean-expressions rule\r\n\r\n* util: isFalsy and isTruthy utils\r\n\r\n* blockchain: apply strict-boolean-expressions\r\n\r\n* util: apply strict-boolean-expressions\r\n\r\n* common: apply strict-boolean-expressions\r\n\r\n* tx: apply strict-boolean-expressions\r\n\r\n* trie: apply strict-boolean-expressions\r\n\r\n* evm: apply strict-boolean-expressions\r\n\r\n* devp2p: apply strict-boolean-expressions\r\n\r\n* vm: apply strict-boolean-expressions\r\n\r\n* stateManager: apply strict-boolean-expressions\r\n\r\n* ethash: apply strict-boolean-expressions\r\n\r\n* rlp: apply strict-boolean-expressions\r\n\r\n* block: apply strict-boolean-expressions\r\n\r\n* client: apply strict-boolean-expressions",
-          "timestamp": "2022-07-13T11:38:30+02:00",
-          "tree_id": "9f0b5b3674ef7b01add07c45ceb0da9a17bf4a3e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c17346ce62a0725800b89d180ca3c98d3ced79c1"
-        },
-        "date": 1657705375348,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 32887,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 31005,
-            "range": "±6.25%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32385,
-            "range": "±0.96%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 32059,
-            "range": "±1.20%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 53390,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 761,
-            "range": "±43.43%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 197,
-            "range": "±8.93%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 95.63,
-            "range": "±16.07%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 14.52,
-            "range": "±57.10%",
-            "unit": "ops/sec",
-            "extra": "38 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±58.28%",
             "unit": "ops/sec",
             "extra": "37 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "afead41142ceb458a7f1377ff2a0228860cb274b",
+          "message": "chore: set up `eslint-plugin-simple-import-sort` and `eslint-plugin-import` (#2086)",
+          "timestamp": "2022-08-03T11:37:44+02:00",
+          "tree_id": "3d2f0651bcfb434259bcad0e215dbd0c605f0139",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/afead41142ceb458a7f1377ff2a0228860cb274b"
+        },
+        "date": 1659519633242,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23337,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21967,
+            "range": "±7.05%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23050,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 23022,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31722,
+            "range": "±0.87%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 814,
+            "range": "±35.97%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 203,
+            "range": "±8.63%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 97.27,
+            "range": "±14.91%",
+            "unit": "ops/sec",
+            "extra": "63 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 20.11,
+            "range": "±8.18%",
+            "unit": "ops/sec",
+            "extra": "39 samples"
           }
         ]
       }
