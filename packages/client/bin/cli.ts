@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 import { randomBytes } from 'crypto'
+import { existsSync } from 'fs'
+import { homedir } from 'os'
+import * as path from 'path'
+import * as readline from 'readline'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, isFalsy, isTruthy, toBuffer } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
-import { homedir } from 'os'
-import * as path from 'path'
-import * as readline from 'readline'
 
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
