@@ -1,11 +1,12 @@
-import { base32, base64url } from '@scure/base'
-import { sscanf } from 'scanf'
-import { Multiaddr } from 'multiaddr'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { PeerInfo } from '../dpt'
-import { toNewUint8Array, keccak256 } from '../util'
+import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
+import { Multiaddr } from 'multiaddr'
+import { RLP } from 'rlp'
+import { sscanf } from 'scanf'
+
+import { PeerInfo } from '../dpt'
+import { keccak256, toNewUint8Array } from '../util'
 
 const Convert = require('multiaddr/src/convert')
 

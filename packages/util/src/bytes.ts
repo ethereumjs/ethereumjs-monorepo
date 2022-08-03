@@ -1,12 +1,12 @@
-import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
+import { assertIsArray, assertIsBuffer, assertIsHexString } from './helpers'
+import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
 import {
+  NestedBufferArray,
+  NestedUint8Array,
   PrefixedHexString,
   TransformableToArray,
   TransformableToBuffer,
-  NestedBufferArray,
-  NestedUint8Array,
 } from './types'
-import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
  * Converts a `Number` into a hex `String`

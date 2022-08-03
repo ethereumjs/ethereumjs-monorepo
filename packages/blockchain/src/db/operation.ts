@@ -1,15 +1,15 @@
 import { isTruthy } from '@ethereumjs/util'
-import {
-  HEADS_KEY,
-  HEAD_HEADER_KEY,
-  HEAD_BLOCK_KEY,
-  tdKey,
-  headerKey,
-  bodyKey,
-  numberToHashKey,
-  hashToNumberKey,
-} from './constants'
 
+import {
+  bodyKey,
+  hashToNumberKey,
+  HEAD_BLOCK_KEY,
+  HEAD_HEADER_KEY,
+  headerKey,
+  HEADS_KEY,
+  numberToHashKey,
+  tdKey,
+} from './constants'
 import { CacheMap } from './manager'
 
 export enum DBTarget {

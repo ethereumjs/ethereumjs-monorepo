@@ -1,13 +1,14 @@
-import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
-import { Trie } from '@ethereumjs/trie'
-import { RLP } from 'rlp'
 import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
+import { Trie } from '@ethereumjs/trie'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { VM } from './vm'
+import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { RLP } from 'rlp'
+
 import { Bloom } from './bloom'
-import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
-import { BuildBlockOpts, BuilderOpts, SealBlockOpts, RunTxResult } from './types'
+import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
+import { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
+import { VM } from './vm'
 
 export class BlockBuilder {
   /**

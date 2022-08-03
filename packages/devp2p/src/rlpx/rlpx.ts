@@ -1,18 +1,18 @@
+import { EventEmitter } from 'events'
 import * as net from 'net'
 import * as os from 'os'
 import ms = require('ms')
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
-import { EventEmitter } from 'events'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
-import * as LRUCache from 'lru-cache'
 import { Common } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import * as LRUCache from 'lru-cache'
+
+import { DPT, PeerInfo } from '../dpt'
+import { buffer2int, createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { Capabilities, DISCONNECT_REASONS, Peer } from './peer'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
-import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
-import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
-import { DPT, PeerInfo } from '../dpt'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled

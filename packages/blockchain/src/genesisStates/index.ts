@@ -1,13 +1,13 @@
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Account,
   isHexPrefixed,
+  isTruthy,
+  PrefixedHexString,
   toBuffer,
   unpadBuffer,
-  PrefixedHexString,
-  isTruthy,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { RLP } from 'rlp'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]

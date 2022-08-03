@@ -1,5 +1,5 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 const DuplexPair = require('it-pair/duplex')
 
 const Stream = function (protocols: string[]) {

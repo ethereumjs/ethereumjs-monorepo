@@ -1,5 +1,6 @@
-import { padToEven, bufferToBigInt } from '@ethereumjs/util'
-import { EvmError, ERROR } from '../../exceptions'
+import { bufferToBigInt, padToEven } from '@ethereumjs/util'
+
+import { ERROR, EvmError } from '../../exceptions'
 
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(
@@ -326,11 +327,11 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl:
 }
 
 export {
-  BLS12_381_ToG1Point,
   BLS12_381_FromG1Point,
-  BLS12_381_ToG2Point,
   BLS12_381_FromG2Point,
-  BLS12_381_ToFrPoint,
-  BLS12_381_ToFpPoint,
   BLS12_381_ToFp2Point,
+  BLS12_381_ToFpPoint,
+  BLS12_381_ToFrPoint,
+  BLS12_381_ToG1Point,
+  BLS12_381_ToG2Point,
 }

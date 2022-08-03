@@ -1,6 +1,7 @@
-import * as tape from 'tape'
-import { KECCAK256_RLP } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { KECCAK256_RLP } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VM } from '../../../src/vm'
 
 tape('General MuirGlacier VM tests', (t) => {

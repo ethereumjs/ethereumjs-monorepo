@@ -1,6 +1,6 @@
 import { Config } from '../config'
-import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
+import { PeerPool } from '../net/peerpool'
 import { Protocol } from '../net/protocol'
 import { Event } from '../types'
 

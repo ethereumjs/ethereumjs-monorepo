@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { VM } from '../../../src/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })

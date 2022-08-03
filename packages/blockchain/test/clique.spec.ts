@@ -1,16 +1,17 @@
 import { Block } from '@ethereumjs/block'
 import {
-  Common,
   Chain,
   CliqueConfig,
+  Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import { Blockchain } from '../src'
-import { CliqueConsensus, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique'
 
 tape('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {

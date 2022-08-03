@@ -1,11 +1,12 @@
 import { arrToBufArr, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { debug as createDebugLogger } from 'debug'
+import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
-import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
+import { RLP } from 'rlp'
+
 import { ETH } from './protocol/eth'
 import { LES } from './protocol/les'
-import { debug as createDebugLogger } from 'debug'
 
 export const devp2pDebug = createDebugLogger('devp2p')
 

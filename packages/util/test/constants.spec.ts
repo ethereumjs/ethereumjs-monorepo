@@ -1,13 +1,14 @@
 import * as tape from 'tape'
+
 import {
+  KECCAK256_NULL,
+  KECCAK256_NULL_S,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  KECCAK256_RLP_ARRAY_S,
+  KECCAK256_RLP_S,
   MAX_INTEGER,
   TWO_POW256,
-  KECCAK256_NULL_S,
-  KECCAK256_NULL,
-  KECCAK256_RLP_ARRAY_S,
-  KECCAK256_RLP_ARRAY,
-  KECCAK256_RLP_S,
-  KECCAK256_RLP,
 } from '../src'
 
 tape('constants', function (t) {

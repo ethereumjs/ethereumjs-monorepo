@@ -1,11 +1,12 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import * as tape from 'tape'
+
 import type { FullEthereumService } from '../../../lib/service'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'eth_getProof'
 

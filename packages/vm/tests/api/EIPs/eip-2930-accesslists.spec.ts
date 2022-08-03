@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '../../../src/vm'
-import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 import { EVM } from '@ethereumjs/evm'
+import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { Account, Address, bufferToHex } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 const common = new Common({
   eips: [2718, 2929, 2930],

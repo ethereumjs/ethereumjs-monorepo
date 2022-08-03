@@ -1,11 +1,12 @@
-import * as tape from 'tape'
-import { Account, Address } from '@ethereumjs/util'
-import { DefaultStateManager as StateManager } from '@ethereumjs/statemanager'
-import { EEI } from '../../../vm/src/eei/eei'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
+import { DefaultStateManager as StateManager } from '@ethereumjs/statemanager'
+import { Account, Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VM } from '../../src'
+import { EEI } from '../../src/eei/eei'
 
 const ZeroAddress = Address.zero()
 

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-import type { Multiaddr } from 'multiaddr'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Multiaddr } from 'multiaddr'
 import type Connection = require('../../../node_modules/libp2p-interfaces/dist/src/connection/connection')
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import { Peer } from './net/peer'

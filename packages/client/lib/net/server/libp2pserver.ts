@@ -1,12 +1,13 @@
-import * as PeerId from 'peer-id'
-// eslint-disable-next-line implicit-dependencies/no-implicit
+import { isTruthy } from '@ethereumjs/util'
+// eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
 import { Multiaddr, multiaddr } from 'multiaddr'
+import * as PeerId from 'peer-id'
+
 import { Event, Libp2pConnection as Connection } from '../../types'
-import { Libp2pNode } from '../peer/libp2pnode'
 import { Libp2pPeer } from '../peer'
+import { Libp2pNode } from '../peer/libp2pnode'
 import { Server, ServerOptions } from './server'
-import { isTruthy } from '@ethereumjs/util'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */

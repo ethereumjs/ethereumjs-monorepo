@@ -1,10 +1,11 @@
-import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createAccount, isRunningInKarma } from './utils'
+import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VmState } from '../../src/eei/vmState'
+import { createAccount, isRunningInKarma } from './utils'
 
 const StateManager = DefaultStateManager
 

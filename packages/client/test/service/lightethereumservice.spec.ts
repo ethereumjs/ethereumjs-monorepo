@@ -1,8 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+
+import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-import { Chain } from '../../lib/blockchain'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool {
