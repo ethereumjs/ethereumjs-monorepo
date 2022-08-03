@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import { Buffer } from 'buffer'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   arrToBufArr,
   bufferToBigInt,
@@ -9,7 +9,8 @@ import {
   unpadBuffer,
 } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
 import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 

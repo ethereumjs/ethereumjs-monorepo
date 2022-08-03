@@ -1,4 +1,4 @@
-import { ConsensusAlgorithm, ConsensusType, Hardfork, Chain } from './enums'
+import { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
 
 export interface ChainName {
   [chainId: string]: string

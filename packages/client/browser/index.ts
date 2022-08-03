@@ -1,50 +1,51 @@
 import { Chain, Common } from '@ethereumjs/common'
+import { isTruthy } from '@ethereumjs/util'
+import { Level } from 'level'
+
+import { EthereumClient } from '../lib/client'
+import { Config } from '../lib/config'
+import { parseMultiaddrs } from '../lib/util'
+import { getLogger } from './logging'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
 
 // Peer
-export * from '../lib/net/peer/peer'
 export * from '../lib/net/peer/libp2ppeer'
+export * from '../lib/net/peer/peer'
 export * from './libp2pnode'
 
 // Peer Pool
 export * from '../lib/net/peerpool'
 
 // Protocol
-export * from '../lib/net/protocol/protocol'
 export * from '../lib/net/protocol/ethprotocol'
-export * from '../lib/net/protocol/lesprotocol'
 export * from '../lib/net/protocol/flowcontrol'
+export * from '../lib/net/protocol/lesprotocol'
+export * from '../lib/net/protocol/protocol'
 
 // Server
-export * from '../lib/net/server/server'
 export * from '../lib/net/server/libp2pserver'
+export * from '../lib/net/server/server'
 
 // EthereumClient
 export * from '../lib/client'
-import { EthereumClient } from '../lib/client'
 
 // Service
-export * from '../lib/service/service'
 export * from '../lib/service/fullethereumservice'
 export * from '../lib/service/lightethereumservice'
+export * from '../lib/service/service'
 
 // Synchronizer
-export * from '../lib/sync/sync'
 export * from '../lib/sync/fullsync'
 export * from '../lib/sync/lightsync'
+export * from '../lib/sync/sync'
 
 // Utilities
 export * from '../lib/util'
-import { parseMultiaddrs } from '../lib/util'
-import { Config } from '../lib/config'
 
 // Logging
 export * from './logging'
-import { getLogger } from './logging'
-import { Level } from 'level'
-import { isTruthy } from '@ethereumjs/util'
 
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })

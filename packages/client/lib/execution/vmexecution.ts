@@ -1,21 +1,22 @@
+import type { Block } from '@ethereumjs/block'
 import {
-  DBSetTD,
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
+  DBSetTD,
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
-import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
+import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
+import { VM } from '@ethereumjs/vm'
+
+import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
-import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
 import { ReceiptsManager } from './receipt'
-import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM

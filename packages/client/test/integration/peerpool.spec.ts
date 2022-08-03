@@ -1,11 +1,12 @@
-import * as tape from 'tape'
 import { Blockchain } from '@ethereumjs/blockchain'
+import * as tape from 'tape'
+
 import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
-import { EthProtocol } from '../../lib/net/protocol'
 import { PeerPool } from '../../lib/net/peerpool'
-import { MockServer } from './mocks/mockserver'
+import { EthProtocol } from '../../lib/net/protocol'
+import { Event } from '../../lib/types'
 import { MockChain } from './mocks/mockchain'
+import { MockServer } from './mocks/mockserver'
 import { wait } from './util'
 
 tape('[Integration:PeerPool]', async (t) => {

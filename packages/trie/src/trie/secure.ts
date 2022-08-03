@@ -1,6 +1,7 @@
-import { CheckpointTrie } from './checkpoint'
-import { Proof, ROOT_DB_KEY } from '../types'
 import { isFalsy } from '@ethereumjs/util'
+
+import { Proof, ROOT_DB_KEY } from '../types'
+import { CheckpointTrie } from './checkpoint'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed

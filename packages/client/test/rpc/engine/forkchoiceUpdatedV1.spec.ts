@@ -1,13 +1,15 @@
-import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { bufferToHex, zeros } from '@ethereumjs/util'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { params, baseRequest, baseSetup, setupChain } from '../helpers'
+import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import blocks = require('../../testdata/blocks/beacon.json')
+
 import { batchBlocks } from './newPayloadV1.spec'
-import { bufferToHex, zeros } from '@ethereumjs/util'
-import * as td from 'testdouble'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

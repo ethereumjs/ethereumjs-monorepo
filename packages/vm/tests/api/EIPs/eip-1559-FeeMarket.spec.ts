@@ -1,6 +1,4 @@
-import * as tape from 'tape'
-import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
-import { VM } from '../../../src/vm'
+import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
@@ -8,7 +6,10 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 const GWEI = BigInt('1000000000')
 

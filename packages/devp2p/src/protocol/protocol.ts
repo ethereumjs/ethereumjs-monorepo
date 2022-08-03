@@ -1,9 +1,10 @@
-import ms = require('ms')
-import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
-import { devp2pDebug } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import ms = require('ms')
 import { isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger, Debugger } from 'debug'
+
+import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { devp2pDebug } from '../util'
 
 export enum EthProtocol { // What does this represent?
   ETH = 'eth',

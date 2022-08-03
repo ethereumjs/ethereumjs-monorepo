@@ -1,7 +1,8 @@
 import { Block } from '@ethereumjs/block'
-import { toBuffer } from '@ethereumjs/util'
-import { dummy } from './helpers'
 import { Transaction } from '@ethereumjs/tx'
+import { toBuffer } from '@ethereumjs/util'
+
+import { dummy } from './helpers'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'

@@ -1,8 +1,9 @@
-import * as test from 'tape'
-import { Capabilities, DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import { Chain, Common } from '@ethereumjs/common'
-import * as testdata from '../testdata.json'
 import { isTruthy } from '@ethereumjs/util'
+import * as test from 'tape'
+
+import { Capabilities, DPT, ETH, genPrivateKey, RLPx } from '../../src'
+import * as testdata from '../testdata.json'
 
 type Test = test.Test
 

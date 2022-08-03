@@ -2,8 +2,9 @@ import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@et
 import { RLP } from 'rlp'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
-import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+
+import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1

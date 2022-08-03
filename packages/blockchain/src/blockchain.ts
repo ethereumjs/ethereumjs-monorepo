@@ -1,4 +1,3 @@
-import Semaphore from 'semaphore-async-await'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import {
   Chain,
@@ -9,15 +8,15 @@ import {
   Hardfork,
 } from '@ethereumjs/common'
 import { BigIntLike, isFalsy, isTruthy } from '@ethereumjs/util'
-
-import { DBManager } from './db/manager'
-import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
-import { DBTarget } from './db/operation'
-import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
-import { GenesisState, genesisStateRoot } from './genesisStates'
-
-import { MemoryLevel } from 'memory-level'
 import { AbstractLevel } from 'abstract-level'
+import { MemoryLevel } from 'memory-level'
+import Semaphore from 'semaphore-async-await'
+
+import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
+import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
+import { DBManager } from './db/manager'
+import { DBTarget } from './db/operation'
+import { GenesisState, genesisStateRoot } from './genesisStates'
 import { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 
 /**

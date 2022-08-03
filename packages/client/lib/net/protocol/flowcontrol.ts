@@ -1,5 +1,6 @@
-import { Peer } from '../peer/peer'
 import { isTruthy } from '@ethereumjs/util'
+
+import { Peer } from '../peer/peer'
 
 interface Mrc {
   [key: string]: {

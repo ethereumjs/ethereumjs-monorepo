@@ -1,11 +1,12 @@
-import * as tape from 'tape'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest } from '../helpers'
-import { checkError } from '../util'
 import { FullEthereumService } from '../../../lib/service'
+import { baseRequest, baseSetup, params } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_sendRawTransaction'
 

@@ -1,10 +1,11 @@
 import { bufferToHex } from '@ethereumjs/util'
+
+import type { Chain } from '../../blockchain'
+import type { EthereumClient } from '../../client'
+import type { RlpxServer } from '../../net/server'
+import type { EthereumService } from '../../service'
 import { getClientVersion } from '../../util'
 import { middleware } from '../validation'
-import type { Chain } from '../../blockchain'
-import type { RlpxServer } from '../../net/server'
-import type { EthereumClient } from '../../client'
-import type { EthereumService } from '../../service'
 
 /**
  * admin_* RPC module

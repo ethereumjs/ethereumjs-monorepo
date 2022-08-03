@@ -1,6 +1,7 @@
 import * as tape from 'tape'
-import { Config, SyncMode } from '../../lib/config'
+
 import { EthereumClient } from '../../lib/client'
+import { Config, SyncMode } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { MockServer } from './mocks/mockserver'
 

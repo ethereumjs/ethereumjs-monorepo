@@ -1,11 +1,12 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {

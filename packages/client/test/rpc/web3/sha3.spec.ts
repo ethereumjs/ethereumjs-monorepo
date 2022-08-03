@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import { baseSetup, params, baseRequest } from '../helpers'
+
+import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'web3_sha3'
 

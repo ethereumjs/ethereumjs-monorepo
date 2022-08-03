@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { dns } from '../src/browser/dns'
 
 tape('dns browser polyfill stub', async (t) => {

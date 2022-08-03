@@ -1,6 +1,7 @@
-import { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
-import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
+import { AccessListEIP2930TxData, FeeMarketEIP1559TxData, JsonTx, TxData } from '@ethereumjs/tx'
+import { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
+
 import { BlockHeader } from './header'
 
 /**

@@ -1,12 +1,12 @@
-import * as tape from 'tape'
-import { Common } from '@ethereumjs/common'
-import { Event } from '../../lib/types'
-import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
-import { parseCustomParams } from '../../lib/util'
-import { wait, setup, destroy } from './util'
-
-import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
+import { Common } from '@ethereumjs/common'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
+import { Event } from '../../lib/types'
+import { parseCustomParams } from '../../lib/util'
+import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { destroy, setup, wait } from './util'
 
 const originalValidate = BlockHeader.prototype._consensusFormatValidation
 

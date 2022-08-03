@@ -1,12 +1,11 @@
 import {
   Block,
+  BlockBodyBuffer,
   BlockBuffer,
   BlockHeader,
   BlockHeaderBuffer,
-  BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 import {
   arrToBufArr,
   bigIntToBuffer,
@@ -15,11 +14,13 @@ import {
   bufferToInt,
   intToBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
-import type { TxReceiptWithType } from '../../execution/receipt'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { RLP } from 'rlp'
+
+import { Chain } from '../../blockchain'
+import type { TxReceiptWithType } from '../../execution/receipt'
+import { Message, Protocol, ProtocolOptions } from './protocol'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */

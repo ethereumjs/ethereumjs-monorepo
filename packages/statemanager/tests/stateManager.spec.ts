@@ -1,21 +1,22 @@
-import * as tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+// explicitly import `inherits` to fix karma-typescript issue
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { inherits } from 'util'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  toBuffer,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
+  toBuffer,
   unpadBuffer,
   zeros,
 } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
+
 import { DefaultStateManager } from '../src'
 import { createAccount } from './util'
-
-// explicitly import `inherits` to fix karma-typescript issue
-import { inherits } from 'util' // eslint-disable-line
 
 tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {
