@@ -31,7 +31,7 @@ tape('[Integration:Miner]', async (t) => {
         },
       },
     },
-    { baseChain: ChainCommon.Goerli }
+    { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
   )
   const accounts: [Address, Buffer][] = [
     [

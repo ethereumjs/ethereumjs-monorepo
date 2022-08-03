@@ -126,8 +126,9 @@ Currently the following hardfork rules are supported:
 - `berlin` (`v5.2.0`+)
 - `london` (`v5.4.0`+)
 - `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
+- `merge` (only `goerli`, `ropsten` and soon `mainnet`)
 
-Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
+Default: `merge` (taken from `Common.DEFAULT_HARDFORK`)
 
 A specific hardfork EVM ruleset can be activated by passing in the hardfork
 along the `Common` instance to the outer `@ethereumjs/vm` instance.
