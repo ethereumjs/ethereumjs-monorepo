@@ -15,6 +15,7 @@ import {
   privateToPublic,
   publicToAddress,
   toBuffer,
+  toChecksumAddress,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
