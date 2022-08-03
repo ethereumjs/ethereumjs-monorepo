@@ -165,7 +165,7 @@ export class VMExecution extends Execution {
     while (
       (!runOnlybatched ||
         (runOnlybatched &&
-          canonicalHead.header.number - startHeadBlock.header.number >
+          canonicalHead.header.number - startHeadBlock.header.number >=
             BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
