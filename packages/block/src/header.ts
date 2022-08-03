@@ -1,12 +1,11 @@
 import {
   Chain,
+  CliqueConfig,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
-  CliqueConfig,
 } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,
   arrToBufArr,
@@ -18,17 +17,19 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  KECCAK256_RLP_ARRAY,
+  isFalsy,
+  isTruthy,
   KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   toType,
   TypeOutput,
   zeros,
-  isTruthy,
-  isFalsy,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { RLP } from 'rlp'
+
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
 interface HeaderCache {
   hash: Buffer | undefined

@@ -1,3 +1,11 @@
+import { Common, Hardfork } from '@ethereumjs/common'
+import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
+
+import { ERROR } from '../exceptions'
+import { RunState } from '../interpreter'
+import { updateSstoreGasEIP1283 } from './EIP1283'
+import { updateSstoreGasEIP2200 } from './EIP2200'
+import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
 import {
   addressToBuffer,
   divCeil,
@@ -6,14 +14,7 @@ import {
   subMemUsage,
   trap,
   updateSstoreGas,
-} from '.'
-import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
-import { ERROR } from '../exceptions'
-import { RunState } from '../interpreter'
-import { Common, Hardfork } from '@ethereumjs/common'
-import { updateSstoreGasEIP1283 } from './EIP1283'
-import { updateSstoreGasEIP2200 } from './EIP2200'
-import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
+} from './util'
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas

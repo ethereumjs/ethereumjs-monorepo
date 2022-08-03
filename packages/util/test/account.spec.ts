@@ -1,20 +1,21 @@
-import * as tape from 'tape'
 import { RLP } from 'rlp'
+import * as tape from 'tape'
+
 import {
   Account,
-  isValidPrivate,
-  isValidPublic,
-  importPublic,
-  publicToAddress,
-  privateToAddress,
-  privateToPublic,
+  bufferToBigInt,
   generateAddress,
   generateAddress2,
-  toBuffer,
-  isValidChecksumAddress,
+  importPublic,
   isValidAddress,
+  isValidChecksumAddress,
+  isValidPrivate,
+  isValidPublic,
+  privateToAddress,
+  privateToPublic,
+  publicToAddress,
+  toBuffer,
   toChecksumAddress,
-  bufferToBigInt,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 

@@ -1,5 +1,6 @@
-import { Sender } from './sender'
 import { ETH as Devp2pETH, LES as Devp2pLES } from '@ethereumjs/devp2p'
+
+import { Sender } from './sender'
 
 /**
  * DevP2P/RLPx protocol sender

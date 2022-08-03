@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+
 import { Blockchain } from '..'
 
 /**

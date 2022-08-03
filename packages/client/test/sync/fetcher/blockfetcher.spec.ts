@@ -1,9 +1,10 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Config } from '../../../lib/config'
+
 import { Chain } from '../../../lib/blockchain/chain'
-import { wait } from '../../integration/util'
+import { Config } from '../../../lib/config'
 import { Event } from '../../../lib/types'
+import { wait } from '../../integration/util'
 
 tape('[BlockFetcher]', async (t) => {
   class PeerPool {

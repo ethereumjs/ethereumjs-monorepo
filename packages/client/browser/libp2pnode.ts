@@ -5,9 +5,9 @@
 
 import { NOISE } from '@chainsafe/libp2p-noise'
 import LibP2p from 'libp2p'
-import PeerId from 'peer-id'
-import { Multiaddr } from 'multiaddr'
 import Bootstrap from 'libp2p-bootstrap'
+import { Multiaddr } from 'multiaddr'
+import PeerId from 'peer-id'
 const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const MPLEX = require('libp2p-mplex')

@@ -1,37 +1,26 @@
+import { tmpdir } from 'os'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { mkdtempSync } from 'fs'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import * as tape from 'tape'
-import { CheckpointTrie, SecureTrie, Trie, LevelDB, ROOT_DB_KEY } from '../../src'
 
-for (const { constructor, title } of [
-  {
-    constructor: Trie,
-    title: 'Trie',
-  },
-  {
-    constructor: CheckpointTrie,
-    title: 'CheckpointTrie',
-  },
-  {
-    constructor: SecureTrie,
-    title: 'SecureTrie',
-  },
-]) {
-  let dbTmpDir: string
-  try {
-    dbTmpDir = mkdtempSync(join(tmpdir(), title))
-  } catch (error) {
-    dbTmpDir = tmpdir()
-  }
+import { LevelDB, ROOT_DB_KEY, Trie } from '../../src'
 
-  tape(`${title} (Persistence)`, function ({ test }) {
-    test('creates an instance via the static constructor `create` function and defaults to `true` with a database', async function (assert) {
-      assert.true(
-        ((await constructor.create({ db: new LevelDB(new Level(dbTmpDir)) })) as any)._persistRoot
+tape('Trie', function (t) {
+  t.test(
+    'creates an instance via the static constructor `create` function and defaults to `true` with a database',
+    async function (st) {
+      st.true(((await Trie.create({ db: new LevelDB(new Level(tmpdir())) })) as any)._persistRoot)
+    }
+  )
+
+  t.test(
+    'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
+    async function (st) {
+      st.false(
+        ((await Trie.create({ db: new LevelDB(new Level(tmpdir())), persistRoot: false })) as any)
+          ._persistRoot
       )
     })
 

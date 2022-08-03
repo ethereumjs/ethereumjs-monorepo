@@ -1,8 +1,9 @@
-import * as test from 'tape'
-import * as devp2p from '../../src'
-import * as util from './util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import * as test from 'tape'
+
+import * as devp2p from '../../src'
 import { ETH } from '../../src'
+import * as util from './util'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = Buffer.from(

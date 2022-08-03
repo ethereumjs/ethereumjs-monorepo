@@ -1,13 +1,14 @@
 import * as events from 'events'
+
+import { Config } from '../../config'
 import {
-  Protocol,
   BoundProtocol,
   EthProtocolMethods,
   LesProtocolMethods,
+  Protocol,
   Sender,
 } from '../protocol'
 import { Server } from '../server'
-import { Config } from '../../config'
 
 export interface PeerOptions {
   /* Config */

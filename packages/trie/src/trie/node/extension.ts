@@ -1,8 +1,9 @@
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from 'rlp'
-import { nibblesToBuffer } from '../../util/nibbles'
-import { addHexPrefix, removeHexPrefix } from '../../util/hex'
+
 import { Nibbles } from '../../types'
+import { addHexPrefix, removeHexPrefix } from '../../util/hex'
+import { nibblesToBuffer } from '../../util/nibbles'
 
 export class ExtensionNode {
   _nibbles: Nibbles

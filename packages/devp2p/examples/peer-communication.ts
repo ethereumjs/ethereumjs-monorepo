@@ -1,12 +1,13 @@
 import { randomBytes } from 'crypto'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { arrToBufArr, isTruthy } from '@ethereumjs/util'
+import chalk from 'chalk'
 import LRUCache from 'lru-cache'
 import ms from 'ms'
-import chalk from 'chalk'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { arrToBufArr, isTruthy } from '@ethereumjs/util'
 import { RLP } from 'rlp'
+
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
 

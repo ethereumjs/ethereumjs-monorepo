@@ -1,12 +1,12 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import * as tape from 'tape'
-import { Blockchain } from '../src'
-import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import * as blocksData from './testdata/blocks_mainnet.json'
-
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
+import * as tape from 'tape'
+
+import { Blockchain } from '../src'
+import * as blocksData from './testdata/blocks_mainnet.json'
+import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util'
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {

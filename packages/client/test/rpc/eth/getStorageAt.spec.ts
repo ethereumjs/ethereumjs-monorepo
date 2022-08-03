@@ -1,14 +1,15 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Address, bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
-import { checkError } from '../util'
 import type { FullEthereumService } from '../../../lib/service'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_getStorageAt'
 

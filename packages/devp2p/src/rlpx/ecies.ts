@@ -1,23 +1,23 @@
 import * as crypto from 'crypto'
-import { debug as createDebugLogger } from 'debug'
 import { bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
-import { unstrictDecode } from '../util'
-import { MAC } from './mac'
+import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { RLP } from 'rlp'
 
 import {
-  pk2id,
-  genPrivateKey,
-  keccak256,
-  id2pk,
   assertEq,
-  xor,
-  int2buffer,
   buffer2int,
+  genPrivateKey,
+  id2pk,
+  int2buffer,
+  keccak256,
+  pk2id,
+  unstrictDecode,
+  xor,
   zfill,
 } from '../util'
-import { ecdsaSign, ecdsaRecover, ecdh } from 'ethereum-cryptography/secp256k1-compat'
+import { MAC } from './mac'
 type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
