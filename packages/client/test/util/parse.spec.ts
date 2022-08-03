@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { multiaddr } from 'multiaddr'
-import { parseMultiaddrs, parseTransports, parseCustomParams } from '../../lib/util'
+import * as tape from 'tape'
+
+import { parseCustomParams, parseMultiaddrs, parseTransports } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {

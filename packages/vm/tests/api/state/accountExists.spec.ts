@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import { VM } from '../../../src/vm'
 
 tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', async (t) => {

@@ -1,9 +1,10 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
 import { RLP } from '@ethereumjs/rlp'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
+
 import {
   arrToBufArr,
   bigIntToUnpaddedBuffer,
@@ -13,7 +14,7 @@ import {
   toBuffer,
   zeros,
 } from './bytes'
-import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
+import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
 import { BigIntLike, BufferLike, isTruthy } from './types'
 
 const _0n = BigInt(0)

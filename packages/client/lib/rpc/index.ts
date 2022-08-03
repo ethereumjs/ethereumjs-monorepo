@@ -1,7 +1,7 @@
-import { Config } from '../config'
 import { EthereumClient } from '../client'
-import * as modules from './modules'
+import { Config } from '../config'
 import { INTERNAL_ERROR } from './error-code'
+import * as modules from './modules'
 
 export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTransactionByHash']
 

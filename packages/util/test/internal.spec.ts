@@ -1,13 +1,14 @@
 import * as tape from 'tape'
+
 import {
-  isHexPrefixed,
-  stripHexPrefix,
-  padToEven,
-  getBinarySize,
   arrayContainsArray,
-  toAscii,
+  getBinarySize,
   getKeys,
+  isHexPrefixed,
   isHexString,
+  padToEven,
+  stripHexPrefix,
+  toAscii,
 } from '../src/internal'
 
 const buf = Buffer.from('hello')

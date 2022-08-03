@@ -1,9 +1,10 @@
+import { bufArrToArr } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import * as ip from 'ip'
-import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
+
 import { PeerInfo } from './dpt'
 
 const debug = createDebugLogger('devp2p:dpt:server')

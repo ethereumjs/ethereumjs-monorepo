@@ -1,33 +1,34 @@
 import { Common } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Address,
-  TWO_POW256,
-  MAX_INTEGER_BIGINT,
-  bufferToBigInt,
   bigIntToBuffer,
-  setLengthLeft,
+  bufferToBigInt,
   ecrecover,
+  MAX_INTEGER_BIGINT,
   publicToAddress,
   SECP256K1_ORDER_DIV_2,
+  setLengthLeft,
   setLengthRight,
+  TWO_POW256,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
+import { ERROR } from '../exceptions'
+import { RunState } from '../interpreter'
 import {
   addressToBuffer,
   describeLocation,
+  exponentation,
+  fromTwos,
   getDataSlice,
   jumpIsValid,
   jumpSubIsValid,
+  mod,
+  toTwos,
   trap,
   writeCallOutput,
-  mod,
-  fromTwos,
-  toTwos,
 } from './util'
-import { ERROR } from '../exceptions'
-import { RunState } from './../interpreter'
-import { exponentation } from '.'
 
 const EIP3074MAGIC = Buffer.from('03', 'hex')
 

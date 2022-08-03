@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { CheckpointTrie, LevelDB } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {

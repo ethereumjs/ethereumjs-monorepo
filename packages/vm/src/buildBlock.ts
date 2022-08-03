@@ -4,10 +4,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { VM } from './vm'
+
 import { Bloom } from './bloom'
-import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
-import { BuildBlockOpts, BuilderOpts, SealBlockOpts, RunTxResult } from './types'
+import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
+import { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
+import { VM } from './vm'
 
 export class BlockBuilder {
   /**

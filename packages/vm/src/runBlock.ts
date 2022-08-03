@@ -1,4 +1,6 @@
-import { debug as createDebugLogger } from 'debug'
+import { Block } from '@ethereumjs/block'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { EVMStateAccess } from '@ethereumjs/evm'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -10,20 +12,19 @@ import {
   short,
 } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
-import { Block } from '@ethereumjs/block'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { debug as createDebugLogger } from 'debug'
 import { VM } from './vm'
+
 import { Bloom } from './bloom'
+import * as DAOConfig from './config/dao_fork_accounts_config.json'
 import type {
-  TxReceipt,
-  PreByzantiumTxReceipt,
+  AfterBlockEvent,
   PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
   RunBlockOpts,
   RunBlockResult,
-  AfterBlockEvent,
+  TxReceipt,
 } from './types'
-import * as DAOConfig from './config/dao_fork_accounts_config.json'
-import { EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 

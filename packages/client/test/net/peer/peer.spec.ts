@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Peer } from '../../../lib/net/peer'
+
 import { Config } from '../../../lib/config'
+import { Peer } from '../../../lib/net/peer'
 import { Event } from '../../../lib/types'
 
 tape('[Peer]', (t) => {

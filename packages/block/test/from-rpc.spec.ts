@@ -1,13 +1,14 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
+import * as tape from 'tape'
+
 import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
 import * as blockData from './testdata/testdata-from-rpc.json'
 import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-difficulty-as-integer.json'
+import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
 import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.json'
-import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 
 tape('[fromRPC]: block #2924874', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

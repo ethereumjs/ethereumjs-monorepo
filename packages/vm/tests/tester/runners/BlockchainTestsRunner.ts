@@ -1,7 +1,7 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   bufferToBigInt,
@@ -12,10 +12,11 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { setupPreConditions, verifyPostConditions } from '../../util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+
+import * as tape from 'tape'
+import { setupPreConditions, verifyPostConditions } from '../../util'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

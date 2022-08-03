@@ -2,6 +2,7 @@ import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 import { nibblesToBuffer } from '../../util/nibbles'
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
+
 import { Nibbles } from '../../types'
 
 export class LeafNode {

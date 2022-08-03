@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { Libp2pSender } from '../../../lib/net/protocol'
 const DuplexPair = require('it-pair/duplex')
 

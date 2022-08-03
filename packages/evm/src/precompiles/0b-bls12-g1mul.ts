@@ -1,7 +1,8 @@
-import { PrecompileInput } from './types'
+import { isFalsy } from '@ethereumjs/util'
+
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
-import { isFalsy } from '@ethereumjs/util'
+import { PrecompileInput } from './types'
 const {
   BLS12_381_ToG1Point,
   BLS12_381_FromG1Point,

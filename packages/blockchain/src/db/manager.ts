@@ -3,8 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { AbstractLevel } from 'abstract-level'
+
 import { Cache } from './cache'
-import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+import { DatabaseKey, DBOp, DBOpData, DBTarget } from './operation'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'

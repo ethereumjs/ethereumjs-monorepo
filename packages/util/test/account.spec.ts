@@ -1,20 +1,20 @@
 import * as tape from 'tape'
 import { RLP } from '@ethereumjs/rlp'
+
 import {
   Account,
-  isValidPrivate,
-  isValidPublic,
-  importPublic,
-  publicToAddress,
-  privateToAddress,
-  privateToPublic,
+  bufferToBigInt,
   generateAddress,
   generateAddress2,
-  toBuffer,
-  isValidChecksumAddress,
+  importPublic,
   isValidAddress,
-  toChecksumAddress,
-  bufferToBigInt,
+  isValidChecksumAddress,
+  isValidPrivate,
+  isValidPublic,
+  privateToAddress,
+  privateToPublic,
+  publicToAddress,
+  toBuffer,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 

@@ -4,15 +4,16 @@ import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '
 import { RLP } from '@ethereumjs/rlp'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
+  Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capability,
+  TransactionFactory,
+  TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
+
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
+import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
 
 /**
  * An object that represents the block.

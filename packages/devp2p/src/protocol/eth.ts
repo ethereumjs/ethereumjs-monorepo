@@ -1,4 +1,3 @@
-import * as snappy from 'snappyjs'
 import {
   arrToBufArr,
   bigIntToBuffer,
@@ -8,7 +7,9 @@ import {
   isTruthy,
 } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
+import * as snappy from 'snappyjs'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
+
 import { Peer } from '../rlpx/peer'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 

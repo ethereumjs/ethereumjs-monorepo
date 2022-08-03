@@ -1,4 +1,5 @@
 import { isTruthy } from '@ethereumjs/util'
+
 import { Config } from '../../config'
 import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
