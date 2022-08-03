@@ -52,14 +52,14 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
  */
 
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-    if (v === BigInt(0) || v === BigInt(1)) {
-      return v
+  if (v === BigInt(0) || v === BigInt(1)) {
+    return v
   }
   if (v === BigInt(27) || v === BigInt(28)) {
-      return v - BigInt(27)
+    return v - BigInt(27)
   }
   if (chainId !== undefined) {
-      return v - (chainId * BigInt(2) + BigInt(35))
+    return v - (chainId * BigInt(2) + BigInt(35))
   } else {
     if (v < BigInt(27)) {
       // Returns an invalid signature value instead of throwing error
@@ -69,10 +69,10 @@ export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
       throw new Error('invlaid v value')
     } else if (v % BigInt(2) === BigInt(1)) {
       return BigInt(1)
-  } else {
+    } else {
       return BigInt(0)
+    }
   }
-}
 }
 
 /**
@@ -125,7 +125,6 @@ export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer): string {
 
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
- *
  * NOTE: For an extracted `v` value < 27 (see Geth bug https://github.com/ethereum/go-ethereum/issues/2053)
  * `v + 27` is returned for the `v` value
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
