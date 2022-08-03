@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659526724441,
+  "lastUpdate": 1659546854047,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "22a30ae3c421f9bc94831c1c3d637f373cc60b76",
-          "message": "Miscellaneous fixes/improvements for evm, client, consensus and crypto (#2040)\n\n* Miscellaneous fixes/improvements for evm, client, consensus and crypto\r\n\r\n* skip header validation while runBlock if block picked from blockchain\r\n\r\n* update the ethereum-cryptography to 1.1.2 with 0 msgHash fix",
-          "timestamp": "2022-07-15T11:16:16+02:00",
-          "tree_id": "c2986abf5a61b6fb7e8063fcd6dbdf2d38375e07",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/22a30ae3c421f9bc94831c1c3d637f373cc60b76"
-        },
-        "date": 1657876862503,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 33459,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 30931,
-            "range": "±7.17%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32834,
-            "range": "±0.95%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 32261,
-            "range": "±0.82%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 54217,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 784,
-            "range": "±45.26%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 199,
-            "range": "±7.86%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 105,
-            "range": "±4.45%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 10.77,
-            "range": "±86.09%",
-            "unit": "ops/sec",
-            "extra": "38 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±28.27%",
             "unit": "ops/sec",
             "extra": "30 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5dc46fec979d46ff497d7f2db32135c78f62f451",
+          "message": "client: Run execution in batches when not near head (#2096)\n\n* client: Run execution in batches when not near head\r\n\r\n* relax batching condition a bit\r\n\r\n* match the sync target height update text\r\n\r\n* relax batch condition for full sync",
+          "timestamp": "2022-08-03T22:41:43+05:30",
+          "tree_id": "1ccadb3dfd8e4d2376ad0ac5b5f73043f9ac3677",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5dc46fec979d46ff497d7f2db32135c78f62f451"
+        },
+        "date": 1659546853013,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23654,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21876,
+            "range": "±7.07%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23195,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 23200,
+            "range": "±1.84%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31817,
+            "range": "±0.80%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 858,
+            "range": "±17.85%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 182,
+            "range": "±11.00%",
+            "unit": "ops/sec",
+            "extra": "64 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 87.51,
+            "range": "±20.10%",
+            "unit": "ops/sec",
+            "extra": "60 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 11.41,
+            "range": "±77.99%",
+            "unit": "ops/sec",
+            "extra": "25 samples"
           }
         ]
       }
