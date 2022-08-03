@@ -4,8 +4,21 @@
   "workspaces": [
     "packages/*"
   ],
-  "engines": {
-    "npm": ">=7"
+  "scripts": {
+    "checkNpmVersion": "./scripts/check-npm-version.sh",
+    "clean": "./config/cli/clean-root.sh",
+    "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
+    "e2e:publish": "./scripts/e2e-publish.sh",
+    "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
+    "examples": "npm run examples --workspaces --if-present",
+    "preinstall": "npm run checkNpmVersion",
+    "postinstall": "npm run build --workspaces",
+    "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint:diff --workspaces"
+    }
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.27.0",
@@ -19,22 +32,11 @@
     "eslint-plugin-sonarjs": "^0.5.0",
     "husky": "^4.2.5",
     "nyc-report-lcov-absolute": "^1.0.0",
+    "sort-package-json": "^1.57.0",
     "typedoc-plugin-markdown": "^3.10.4",
     "verdaccio": "^4.12.2"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint:diff --workspaces"
-    }
-  },
-  "scripts": {
-    "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces",
-    "checkNpmVersion": "./scripts/check-npm-version.sh",
-    "examples": "npm run examples --workspaces --if-present",
-    "clean": "./config/cli/clean-root.sh",
-    "e2e:publish": "./scripts/e2e-publish.sh",
-    "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
-    "e2e:inject": "node ./scripts/e2e-inject-resolutions.js"
+  "engines": {
+    "npm": ">=7"
   }
 }

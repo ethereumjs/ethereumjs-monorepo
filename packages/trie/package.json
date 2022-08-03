@@ -2,36 +2,47 @@
   "name": "@ethereumjs/trie",
   "version": "5.0.0-beta.2",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
-  "license": "MPL-2.0",
-  "author": "EthereumJS Team",
   "keywords": [
     "merkle",
     "radix",
     "trie",
     "ethereum"
   ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "contributors": [
+    "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
-    "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
-    "prepublishOnly": "../../config/cli/prepublish.sh",
-    "clean": "../../config/cli/clean-package.sh",
     "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "tsc": "../../config/cli/ts-compile.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register 'test/**/*.ts'"
+    "test:node": "tape -r ts-node/register 'test/**/*.ts'",
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/util": "8.0.0-beta.2",
@@ -44,11 +55,11 @@
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
+    "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "@types/node": "^16.11.7",
     "@types/readable-stream": "^2.3.13",
     "@types/tape": "^4.13.2",
-    "0x": "^4.9.1",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
@@ -62,16 +73,5 @@
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#readme",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
-  },
-  "contributors": [
-    "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
-  ]
+  }
 }
