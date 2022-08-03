@@ -2,7 +2,7 @@
   "name": "ropsten",
   "chainId": 3,
   "networkId": 3,
-  "defaultHardfork": "london",
+  "defaultHardfork": "merge",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
