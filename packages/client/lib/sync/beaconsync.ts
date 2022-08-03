@@ -268,12 +268,12 @@ export class BeaconSynchronizer extends Synchronizer {
   async runExecution(): Promise<void> {
     // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
-    if (
-      (isTruthy(this.skeleton.bounds()) &&
-        this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)) ||
-      this.chain.blocks.height % BigInt(50) === BigInt(0)
-    ) {
-      void this.execution.run(false)
+    const shouldRunOnlyBatched = !(
+      isTruthy(this.skeleton.bounds()) &&
+      this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
+    )
+    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
+      void this.execution.run(false, shouldRunOnlyBatched)
     }
   }
 
