@@ -21,7 +21,7 @@ export interface ECDSASignature {
   /**
    * yParity: either 0 or 1, depending on which point on the elliptic curve should be used.
    */
-  recovery: bigint
+  recovery?: bigint
 }
 
 /**
