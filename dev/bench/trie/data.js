@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659519633826,
+  "lastUpdate": 1659526724441,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jaypuntambekar@gmail.com",
-            "name": "Jay Puntham-Baker",
-            "username": "peebeejay"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a60b878c377a55cd17a6e633a59bc4400713eddb",
-          "message": "[README] Add GitPOAP Badge to Display Number of Minted GitPOAPs for Contributors (#2035)",
-          "timestamp": "2022-07-13T11:40:22+02:00",
-          "tree_id": "b1b205635638e99482a9e940eb898d98a8e8a743",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a60b878c377a55cd17a6e633a59bc4400713eddb"
-        },
-        "date": 1657706687391,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 33198,
-            "range": "±2.42%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 30686,
-            "range": "±7.74%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 32859,
-            "range": "±0.91%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 32352,
-            "range": "±0.92%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 54139,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 813,
-            "range": "±34.38%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 191,
-            "range": "±9.67%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 92.63,
-            "range": "±18.64%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 19.52,
-            "range": "±8.48%",
-            "unit": "ops/sec",
-            "extra": "37 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±8.18%",
             "unit": "ops/sec",
             "extra": "39 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "674b6e032444dfb724aff461a888335994ad1f62",
+          "message": "chore: wip (#2093)\n\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-03T13:28:07+02:00",
+          "tree_id": "6de10e713fb7eb08b037273b5ca1e55bf1c942cb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/674b6e032444dfb724aff461a888335994ad1f62"
+        },
+        "date": 1659526723894,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 22265,
+            "range": "±5.17%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21946,
+            "range": "±6.98%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23114,
+            "range": "±1.77%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 20091,
+            "range": "±8.74%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 30907,
+            "range": "±0.74%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 911,
+            "range": "±6.46%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 149,
+            "range": "±28.12%",
+            "unit": "ops/sec",
+            "extra": "47 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 94.9,
+            "range": "±5.39%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 15.59,
+            "range": "±28.27%",
+            "unit": "ops/sec",
+            "extra": "30 samples"
           }
         ]
       }
