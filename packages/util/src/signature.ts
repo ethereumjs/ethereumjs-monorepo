@@ -52,36 +52,25 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): E
  */
 
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-  if (chainId !== undefined) {
     if (v === BigInt(0) || v === BigInt(1)) {
       return v
-    } else if (v === BigInt(27) || v === BigInt(28)) {
+  }
+  if (v === BigInt(27) || v === BigInt(28)) {
       return v - BigInt(27)
-    } else {
+  }
+  if (chainId !== undefined) {
       return v - (chainId * BigInt(2) + BigInt(35))
-    }
-  } else if (chainId === undefined) {
-    if (v === BigInt(0) || v === BigInt(1)) {
-      return v
-    } else if (v < BigInt(27)) {
+  } else {
+    if (v < BigInt(27)) {
       // Returns an invalid signature value instead of throwing error
-      throw new Error('invlaid v value < 27')
+      throw new Error('invlaid v value')
     } else if (v > BigInt(28) && v < BigInt(35)) {
       // Returns an invalid signature value instead of throwing error
-      throw new Error('invlaid v value >28 & <35 ')
-    } else if (v > BigInt(36)) {
-      throw new Error('invlaid v value > 36')
-    }
-
-    if (v === BigInt(27) || v === BigInt(28)) {
-      return v - BigInt(27)
-    } else if ((((v - BigInt(35) - BigInt(0)) / BigInt(2)) * BigInt(2)) % BigInt(2) === BigInt(0)) {
-      return BigInt(0)
-    } else {
+      throw new Error('invlaid v value')
+    } else if (v % BigInt(2) === BigInt(1)) {
       return BigInt(1)
-    }
   } else {
-    throw new Error('unknown signature error')
+      return BigInt(0)
   }
 }
 
