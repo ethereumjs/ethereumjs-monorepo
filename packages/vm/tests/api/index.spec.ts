@@ -1,11 +1,11 @@
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
 import { Buffer } from 'buffer'
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import * as tape from 'tape'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import { VMOpts } from '../../src'
 import { VM } from '../../src/vm'

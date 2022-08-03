@@ -1,5 +1,5 @@
-import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 

@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bigIntToHex,
@@ -11,11 +12,10 @@ import {
   unpadBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
 
 import { BaseTransaction } from './baseTransaction'
+import { Capability, JsonTx, TxData, TxOptions, TxValuesArray } from './types'
 import { checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 0

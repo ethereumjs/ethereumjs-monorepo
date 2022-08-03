@@ -1,8 +1,6 @@
-import { Trie } from '@ethereumjs/trie'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
 import { Common, ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
 import {
   Capability,
   FeeMarketEIP1559Transaction,
@@ -11,6 +9,8 @@ import {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BlockHeader } from './header'
 import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'

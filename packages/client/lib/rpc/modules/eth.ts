@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
+import { RLP } from '@ethereumjs/rlp'
 import type { Proof } from '@ethereumjs/statemanager'
 import {
   Capability,
@@ -23,17 +24,16 @@ import {
   toType,
   TypeOutput,
 } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
-import type { VM, PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { RpcTx } from '../types'
-import { EthereumService, FullEthereumService } from '../../service'
+import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { ReceiptsManager } from '../../execution/receipt'
 import type { EthProtocol } from '../../net/protocol'
+import { EthereumService, FullEthereumService } from '../../service'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { RpcTx } from '../types'
+import { middleware, validators } from '../validation'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")

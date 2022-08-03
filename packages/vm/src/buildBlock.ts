@@ -1,9 +1,9 @@
-import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
-import { Trie } from '@ethereumjs/trie'
-import { RLP } from '@ethereumjs/rlp'
 import { Block, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
 import { TypedTransaction } from '@ethereumjs/tx'
+import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'

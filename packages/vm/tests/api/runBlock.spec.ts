@@ -1,8 +1,6 @@
-import * as tape from 'tape'
-import { Account, Address, toBuffer, KECCAK256_RLP } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -10,6 +8,8 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
 
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../src/types'
 import { AfterBlockEvent, RunBlockOpts } from '../../src/types'

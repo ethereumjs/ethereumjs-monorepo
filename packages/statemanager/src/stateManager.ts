@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -15,12 +16,11 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { StateManager, StorageDump } from './interface'
 
 import { BaseStateManager } from './baseStateManager'
 import { Cache, getCb, putCb } from './cache'
+import { StateManager, StorageDump } from './interface'
 
 type StorageProof = {
   key: PrefixedHexString

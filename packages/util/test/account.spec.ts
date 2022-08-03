@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import { RLP } from '@ethereumjs/rlp'
+import * as tape from 'tape'
 
 import {
   Account,

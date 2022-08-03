@@ -1,3 +1,4 @@
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bigIntToBuffer,
@@ -6,11 +7,10 @@ import {
   bufferToHex,
   isTruthy,
 } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
 import * as snappy from 'snappyjs'
-import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 
 import { Peer } from '../rlpx/peer'
+import { assertEq, buffer2int, formatLogData, formatLogId, int2buffer } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export class ETH extends Protocol {

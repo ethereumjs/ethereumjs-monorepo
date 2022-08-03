@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bufferToBigInt,
@@ -8,8 +9,6 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
-
 import * as tape from 'tape'
 
 import { Transaction, TxData } from '../src'

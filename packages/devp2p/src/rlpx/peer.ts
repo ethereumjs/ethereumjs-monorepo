@@ -3,13 +3,13 @@ import { Socket } from 'net'
 import BufferList = require('bl')
 import ms = require('ms')
 import { Common } from '@ethereumjs/common'
-import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import * as snappy from 'snappyjs'
-import { ETH, LES } from '..'
-import { int2buffer, buffer2int, formatLogData, devp2pDebug } from '../util'
 
+import { ETH, LES } from '..'
+import { buffer2int, devp2pDebug, formatLogData, int2buffer } from '../util'
 import { ECIES } from './ecies'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'

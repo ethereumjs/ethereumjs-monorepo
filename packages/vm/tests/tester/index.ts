@@ -1,8 +1,8 @@
 import * as path from 'path'
-import * as process from 'process'
 import { Common } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as minimist from 'minimist'
+import * as process from 'process'
 import * as tape from 'tape'
 
 import {

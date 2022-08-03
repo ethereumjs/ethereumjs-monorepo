@@ -1,11 +1,11 @@
 import { createServer } from 'http'
-import { inspect } from 'util'
 import { isTruthy } from '@ethereumjs/util'
 import { json as jsonParser } from 'body-parser'
 import * as Connect from 'connect'
 import * as cors from 'cors'
 import { HttpServer, Server as RPCServer } from 'jayson/promise'
 import { decode, TAlgorithm } from 'jwt-simple'
+import { inspect } from 'util'
 
 import { Logger } from '../logging'
 import { RPCManager } from '../rpc'
