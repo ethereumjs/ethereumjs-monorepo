@@ -73,9 +73,6 @@ export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
       return BigInt(0)
   }
 }
-
-function isValidSigRecovery(recovery: bigint): boolean {
-  return recovery === BigInt(0) || recovery === BigInt(1)
 }
 
 /**
@@ -92,9 +89,6 @@ export const ecrecover = function (
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
-  if (!isValidSigRecovery(recovery)) {
-    throw new Error(`Invalid signature v value`)
-  }
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
 }
@@ -105,11 +99,11 @@ export const ecrecover = function (
  * @returns Signature
  */
 export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
-  const recovery = calculateSigRecovery(v, chainId)
-  if (!isValidSigRecovery(recovery)) {
+  try {
+    calculateSigRecovery(v, chainId)
+  } catch {
     throw new Error('Invalid signature v value')
   }
-
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
   return bufferToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32), toBuffer(v)]))
 }
@@ -119,12 +113,7 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: big
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
-  const recovery = calculateSigRecovery(v, chainId)
-  if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
-  }
-
+export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer): string {
   let ss = s
   if ((v > BigInt(28) && v % BigInt(2) === BigInt(1)) || v === BigInt(1) || v === BigInt(28)) {
     ss = Buffer.from(s)
@@ -198,10 +187,7 @@ export const isValidSignature = function (
   }
 
   try {
-    const recovery = calculateSigRecovery(v, chainId)
-    if (!isValidSigRecovery(recovery)) {
-      return false
-    }
+    calculateSigRecovery(v, chainId)
   } catch {
     return false
   }
