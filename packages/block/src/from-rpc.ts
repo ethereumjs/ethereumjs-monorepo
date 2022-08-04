@@ -8,12 +8,12 @@ import { Block, BlockOptions } from './index'
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
-  txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
+  txParams.gasLimit = toType((txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit), TypeOutput.BigInt)
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // check and convert gasPrice and value params
-  txParams.gasPrice = numberToHex(txParams.gasPrice)
-  txParams.value = numberToHex(txParams.value)
+  txParams.gasPrice = toType(txParams.gasPrice, TypeOutput.BigInt)
+  txParams.value = toType(txParams.value, TypeOutput.BigInt)
 
   // strict byte length checking
   txParams.to = isTruthy(txParams.to) ? setLengthLeft(toBuffer(txParams.to), 20) : null
@@ -21,7 +21,7 @@ function normalizeTxParams(_txParams: any) {
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
   // https://ethereum.stackexchange.com/questions/40679/why-the-value-of-v-is-always-either-27-11011-or-28-11100
-  txParams.v = toType(txParams.v, TypeOutput.Number)!
+  txParams.v = toType(txParams.v, TypeOutput.BigInt)!
 
   return txParams
 }
@@ -41,6 +41,7 @@ export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: Blo
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
+      console.log(txParams)
       const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
       transactions.push(tx)
     }
