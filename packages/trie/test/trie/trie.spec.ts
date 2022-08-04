@@ -176,5 +176,7 @@ for (const { constructor, title } of [
 
       st.end()
     })
+
+    t.end()
   })
 }
