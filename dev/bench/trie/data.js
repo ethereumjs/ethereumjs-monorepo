@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659607129490,
+  "lastUpdate": 1659643663101,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "liboliqi@gmail.com",
-            "name": "libotony",
-            "username": "libotony"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "319d42b0737b303f1ce5dac52913de3a950d31d7",
-          "message": "Trie: allow customizing hash algorithm in trie options (#2043)",
-          "timestamp": "2022-07-16T17:22:51+02:00",
-          "tree_id": "6be3d2432ce08084c9d7532b35da1e695aa904a9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/319d42b0737b303f1ce5dac52913de3a950d31d7"
-        },
-        "date": 1657985215068,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 20289,
-            "range": "±8.02%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 19588,
-            "range": "±6.93%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 20561,
-            "range": "±2.29%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 20398,
-            "range": "±2.36%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 26180,
-            "range": "±6.66%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 665,
-            "range": "±16.17%",
-            "unit": "ops/sec",
-            "extra": "62 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 180,
-            "range": "±9.71%",
-            "unit": "ops/sec",
-            "extra": "65 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 60.02,
-            "range": "±59.54%",
-            "unit": "ops/sec",
-            "extra": "38 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 18.86,
-            "range": "±4.71%",
-            "unit": "ops/sec",
-            "extra": "32 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±29.48%",
             "unit": "ops/sec",
             "extra": "28 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "80b08796399e39409d3e1901af8e7d58ffb95c2f",
+          "message": "client: Add client protocol and synchronizer for snap sync (#1897)\n\n* a small add for client\r\n\r\n* don't offer snap yet, try only consuming from other peers\r\n\r\n* Add snap protocol/methods availability in the peer\r\n\r\n* Snap sync syncronizer stub\r\n\r\n* client: send empty list in case of non-existing headers\r\n\r\n* setup snap sender to make request\r\n\r\n* devp2p: fix ETH66 length\r\n\r\n* devp2p: update eth65/eth64 protocol length\r\n\r\n* client/snapsync: fix GetAccountRange encoding\r\n\r\n* decode account range response\r\n\r\n* Add other methods of snapsync\r\n\r\n* rebase fixes for new master\r\n\r\n* enable running snapsync with a forceSnapSync flag\r\n\r\n* fix fullethereumservice spec\r\n\r\n* fix rlpxpeer spec\r\n\r\n* compare directly to undefined\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix typo\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* incorporate some review suggestions\r\n\r\n* compare directly to undefined\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix snap availability conditional\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-08-05T01:35:17+05:30",
+          "tree_id": "b6fccdea54716bde8fed3f3fdb5577876a88d27d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/80b08796399e39409d3e1901af8e7d58ffb95c2f"
+        },
+        "date": 1659643661793,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23049,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21217,
+            "range": "±8.86%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23152,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 22809,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 30965,
+            "range": "±0.90%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 911,
+            "range": "±7.15%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 151,
+            "range": "±24.66%",
+            "unit": "ops/sec",
+            "extra": "48 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 95.9,
+            "range": "±5.35%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 9.55,
+            "range": "±78.11%",
+            "unit": "ops/sec",
+            "extra": "21 samples"
           }
         ]
       }
