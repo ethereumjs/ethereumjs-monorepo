@@ -52,20 +52,31 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
-      if (!this.config.disableBeaconSync) {
-        void this.switchToBeaconSync()
-      }
-    } else {
-      // This is just for testing a proper syncronizer change condition
-      // should comeup, irrespective of pre-merge/post merge ideally
-      // depending on how far we are from the last executed block
+    // This flag is just to run and test snap sync, when fully ready, this needs to
+    // be replaced by a more sophisticated condition based on how far back we are
+    // from the head, and how to run it in conjuction with the beacon sync
+    if (this.config.forceSnapSync) {
       this.synchronizer = new SnapSynchronizer({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
         interval: this.interval,
       })
+    } else {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+        if (!this.config.disableBeaconSync) {
+          void this.switchToBeaconSync()
+        }
+      } else {
+        this.synchronizer = new FullSynchronizer({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          txPool: this.txPool,
+          execution: this.execution,
+          interval: this.interval,
+        })
+      }
     }
 
     if (this.config.mine) {

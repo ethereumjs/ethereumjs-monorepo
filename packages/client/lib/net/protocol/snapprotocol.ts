@@ -1,5 +1,5 @@
 import { AccountData as AccountDataBody, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
-import { Chain } from './../../blockchain'
+import { Chain } from '../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 
 interface SnapProtocolOptions extends ProtocolOptions {
