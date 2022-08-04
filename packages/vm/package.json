@@ -60,6 +60,7 @@
     "@ethereumjs/blockchain": "6.0.0-beta.2",
     "@ethereumjs/common": "3.0.0-beta.2",
     "@ethereumjs/evm": "1.0.0-beta.2",
+    "@ethereumjs/rlp": "4.0.0-beta.2",
     "@ethereumjs/statemanager": "1.0.0-beta.2",
     "@ethereumjs/trie": "5.0.0-beta.2",
     "@ethereumjs/tx": "4.0.0-beta.2",
@@ -71,7 +72,6 @@
     "ethereum-cryptography": "^1.1.2",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
-    "rlp": "4.0.0-beta.2",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {

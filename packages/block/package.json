@@ -39,11 +39,11 @@
   },
   "dependencies": {
     "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/rlp": "4.0.0-beta.2",
     "@ethereumjs/trie": "5.0.0-beta.2",
     "@ethereumjs/tx": "4.0.0-beta.2",
     "@ethereumjs/util": "8.0.0-beta.2",
-    "ethereum-cryptography": "^1.1.2",
-    "rlp": "4.0.0-beta.2"
+    "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",

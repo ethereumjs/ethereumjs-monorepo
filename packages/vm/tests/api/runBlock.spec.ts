@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -8,7 +9,6 @@ import {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../src/types'

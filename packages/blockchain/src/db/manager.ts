@@ -1,8 +1,8 @@
 import { Block, BlockBodyBuffer, BlockBuffer, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-import { RLP } from 'rlp'
 
 import { Cache } from './cache'
 import { DatabaseKey, DBOp, DBOpData, DBTarget } from './operation'

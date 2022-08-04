@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { EVMStateAccess } from '@ethereumjs/evm'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -12,7 +13,6 @@ import {
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { RLP } from 'rlp'
 
 import { Bloom } from './bloom'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'

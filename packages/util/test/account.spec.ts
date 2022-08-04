@@ -1,4 +1,4 @@
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 import * as tape from 'tape'
 
 import {

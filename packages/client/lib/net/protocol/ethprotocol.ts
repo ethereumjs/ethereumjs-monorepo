@@ -5,6 +5,7 @@ import {
   BlockHeader,
   BlockHeaderBuffer,
 } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import {
   arrToBufArr,
@@ -16,7 +17,6 @@ import {
 } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
-import { RLP } from 'rlp'
 
 import { Chain } from '../../blockchain'
 import type { TxReceiptWithType } from '../../execution/receipt'

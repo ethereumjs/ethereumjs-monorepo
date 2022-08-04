@@ -1,6 +1,6 @@
 import { Chain, CliqueConfig, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import { Block } from '../src'

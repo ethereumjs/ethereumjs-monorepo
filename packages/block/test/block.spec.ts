@@ -4,7 +4,8 @@ import util from 'util'
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
+
 import * as tape from 'tape'
 
 import { Block, BlockBuffer } from '../src'

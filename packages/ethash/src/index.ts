@@ -1,4 +1,5 @@
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import {
   bigIntToBuffer,
   bufArrToArr,
@@ -11,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
-import { RLP } from 'rlp'
 
 import {
   bufReverse,

@@ -1,7 +1,7 @@
+import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { RLP } from 'rlp'
 
 import {
   arrToBufArr,
