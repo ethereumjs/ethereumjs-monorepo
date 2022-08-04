@@ -47,6 +47,7 @@ ipc.serve(() => {
     child.send(message)
 
     child.on('message', (_childMessage: any) => {
+      childObject.active = false
       ipc.server.emit(socket, 'message', 'KILL')
     })
   })

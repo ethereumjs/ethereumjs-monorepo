@@ -1,4 +1,3 @@
-console.log('load me')
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
@@ -15,7 +14,6 @@ const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 
 async function runTransition(argsIn: any) {
-  console.log(argsIn)
   const args = yargs(hideBin(argsIn))
     .option('state.fork', {
       describe: 'Fork to use',
@@ -112,13 +110,10 @@ process.on('message', async (message) => {
     process.exit()
   } else {
     try {
-      console.log('GO')
       await runTransition(message)
-      console.log('DONE')
-    } catch (e) {
-      console.log(e)
-    }
-    // eslint-ignore-next-line @typescript-eslint/strict-boolean-expressions
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (process && process.send) {
       process.send('done')
     }
