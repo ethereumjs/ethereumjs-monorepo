@@ -91,7 +91,8 @@
     "typedoc": "^0.22.4",
     "typescript": "^4.4.2",
     "solc": "^0.8.1",
-    "yargs": "^17.5.1"
+    "yargs": "^17.5.1",
+    "node-ipc": "10.1.0"
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"

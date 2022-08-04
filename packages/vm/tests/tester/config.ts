@@ -263,6 +263,9 @@ export function getTestDirs(network: string, testType: string) {
  * @returns {Common} the Common which should be used
  */
 export function getCommon(targetNetwork: string) {
+  if (targetNetwork === 'ConstantinopleFix') {
+    targetNetwork = 'Petersburg' // Fix for retesteth
+  }
   let network = targetNetwork
   const networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
