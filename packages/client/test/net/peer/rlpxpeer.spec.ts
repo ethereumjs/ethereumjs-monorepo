@@ -7,12 +7,12 @@ import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'
 import { Event } from '../../../lib/types'
 
 tape('[RlpxPeer]', async (t) => {
-  const { DPT, ETH, LES } = await import('@ethereumjs/devp2p')
+  const { DPT, ETH, LES, SNAP } = await import('@ethereumjs/devp2p')
   class RLPx extends EventEmitter {
     connect(_: any) {}
   }
   RLPx.prototype.connect = td.func<any>()
-  td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, RLPx })
+  td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
   const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {
@@ -32,6 +32,7 @@ tape('[RlpxPeer]', async (t) => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
       { name: 'les', versions: [4] },
+      { name: 'snap', versions: [1]},
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
       name,
@@ -41,8 +42,9 @@ tape('[RlpxPeer]', async (t) => {
     t.deepEquals(
       caps,
       [
-        { name: 'eth', version: 66, length: 29 },
+        { name: 'eth', version: 66, length: 17 },
         { name: 'les', version: 4, length: 23 },
+        {name: 'snap', version: 1, length: 8}
       ],
       'correct capabilities'
     )
@@ -118,9 +120,13 @@ tape('[RlpxPeer]', async (t) => {
     const protocols = [{ name: 'proto0' }] as any
     const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
     const proto0 = new (class Proto0 extends EventEmitter {})()
-    const rlpxPeer = { getProtocols: td.func() } as any
-    ;(peer as any).bindProtocol = td.func<typeof peer['bindProtocol']>()
+
+    const rlpxPeer = { getProtocols: td.func()} as any
+    ;(peer as any).bindProtocol = td.func<typeof peer['bindProtocols']>()
+    const bindProtocolThen = td.func();
+    td.when((peer as any).bindProtocol(td.matchers.anything(),td.matchers.anything())).thenReturn({then:bindProtocolThen});
     td.when(rlpxPeer.getProtocols()).thenReturn([proto0])
+    
     await (peer as any).bindProtocols(rlpxPeer)
     td.verify((peer as any).bindProtocol({ name: 'proto0' } as any, td.matchers.isA(RlpxSender)))
     t.ok(peer.connected, 'connected set to true')
