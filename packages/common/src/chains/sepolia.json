@@ -82,8 +82,8 @@
     },
     {
       "name": "mergeForkIdTransition",
-      "block": null,
-      "forkHash": null
+      "block": 1735371,
+      "forkHash": "0xb96cbd13"
     },
     {
       "name": "shanghai",
