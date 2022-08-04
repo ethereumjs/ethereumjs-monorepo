@@ -70,7 +70,7 @@ export class SnapSynchronizer extends Synchronizer {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
-    // Just a small snipped to test out the methods manually
+    // Just a small snippet to test out the methods manually
     // From/for g11tech:
     //  Clean it up, once we have a full fetcher implemented, else let them
     //  stay commented for easy reference and manual testing
