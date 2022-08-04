@@ -171,10 +171,10 @@ export class RlpxPeer extends Peer {
                 .getProtocols()
                 .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
               const snapProtocol =
-              (snapRlpxProtocol !== undefined) &&
+              (snapRlpxProtocol !== undefined)?
                 this.protocols.find(
                   (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
-                )
+                ):undefined
               if (snapProtocol !== undefined) {
                 const snapSender = new RlpxSender(snapRlpxProtocol)
                 return this.bindProtocol(snapProtocol, snapSender)
