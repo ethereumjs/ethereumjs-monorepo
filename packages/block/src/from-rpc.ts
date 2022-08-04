@@ -1,5 +1,5 @@
 import { TransactionFactory, TxData, TypedTransaction } from '@ethereumjs/tx'
-import { isTruthy, setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { isTruthy, setLengthLeft, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 import { numberToHex } from './helpers'
@@ -21,8 +21,7 @@ function normalizeTxParams(_txParams: any) {
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
   // https://ethereum.stackexchange.com/questions/40679/why-the-value-of-v-is-always-either-27-11011-or-28-11100
-  const v: number = txParams.v
-  txParams.v = v < 27 ? v + 27 : v
+  txParams.v = toType(txParams.v, TypeOutput.Number)!
 
   return txParams
 }
