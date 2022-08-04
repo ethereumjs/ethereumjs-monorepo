@@ -145,7 +145,7 @@ export class VMExecution extends Execution {
    * @param loop Whether to continue iterating until vm head equals chain head (default: true)
    * @returns number of blocks executed
    */
-  async run(loop = true): Promise<number> {
+  async run(loop = true, runOnlybatched = false): Promise<number> {
     if (this.running) return 0
     this.running = true
     let numExecuted: number | undefined
@@ -163,6 +163,10 @@ export class VMExecution extends Execution {
     let errorBlock: Block | undefined
 
     while (
+      (!runOnlybatched ||
+        (runOnlybatched &&
+          canonicalHead.header.number - startHeadBlock.header.number >=
+            BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
