@@ -27,9 +27,7 @@ jobs:
         node: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2

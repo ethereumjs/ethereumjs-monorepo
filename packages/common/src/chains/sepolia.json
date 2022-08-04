@@ -2,7 +2,7 @@
   "name": "sepolia",
   "chainId": 11155111,
   "networkId": 11155111,
-  "defaultHardfork": "london",
+  "defaultHardfork": "merge",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
@@ -76,14 +76,14 @@
     {
       "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
       "name": "merge",
-      "td": 17000000000000000,
+      "ttd": "17000000000000000",
       "block": null,
       "forkHash": "0xfe3366e7"
     },
     {
       "name": "mergeForkIdTransition",
-      "block": null,
-      "forkHash": null
+      "block": 1735371,
+      "forkHash": "0xb96cbd13"
     },
     {
       "name": "shanghai",

@@ -63,7 +63,11 @@ Starting with v6 there is a dedicated consensus class for each type of supported
 - `validateDifficulty(header: BlockHeader): Promise<void>`
 - `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
 
-For applying a modfied version of an existing consensus mechanism or applying a different mechanism an own consensus class can be written and passed in to the library with the `consensus` option along instantiation.
+### Custom Conensus Algorithms
+
+Also part of V6, you can also create a custom consensus class implementing the above interface and pass it into the `Blockchain` constructor using the `consensus` option at instantiation. See [this test script](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/test/customConsensus.spec.ts) for a complete example of how write and use a custom consensus implementation.
+
+Note, if you construct a blockchain with a custom consensus implementation, transition checks for switching from PoW to PoS are disabled so defining a merge hardfork will have no impact on the consensus mechanism defined for the chain.
 
 ## Custom Genesis State
 

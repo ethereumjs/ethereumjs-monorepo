@@ -1,13 +1,14 @@
-import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Event } from '../types'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { BlockFetcher } from './fetcher'
-import { VMExecution } from '../execution'
 import type { Block } from '@ethereumjs/block'
-import type { TxPool } from '../service/txpool'
+import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { VMExecution } from '../execution'
+import { Peer } from '../net/peer/peer'
+import type { TxPool } from '../service/txpool'
+import { Event } from '../types'
+import { short } from '../util'
+import { BlockFetcher } from './fetcher'
+import { Synchronizer, SynchronizerOptions } from './sync'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
@@ -211,10 +212,10 @@ export class FullSynchronizer extends Synchronizer {
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
         this.config.chainCommon.gteHardfork(Hardfork.Merge) === false
       ) {
-        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
+        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
-        const remaining = mergeTD - td
-        if (remaining <= mergeTD / BigInt(10)) {
+        const remaining = mergeTTD - td
+        if (remaining <= mergeTTD / BigInt(10)) {
           attentionHF = `Merge HF in ${remaining} TD`
         }
       }
@@ -232,7 +233,11 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    await this.execution.run()
+    // Batch the execution if we are not close to the head
+    const shouldRunOnlyBatched =
+      isTruthy(this.config.syncTargetHeight) &&
+      this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
+    await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
     return true
   }
@@ -342,7 +347,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!newSyncHeight) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
-    this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
+    this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)
     // Enqueue if we are close enough to chain head
     if (min < this.chain.headers.height + BigInt(3000)) {
       this.fetcher.enqueueByNumberList(blockNumberList, min, height)

@@ -1,7 +1,8 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   bufferToBigInt,
@@ -11,11 +12,11 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { setupPreConditions, verifyPostConditions } from '../../util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+import * as tape from 'tape'
+
+import { setupPreConditions, verifyPostConditions } from '../../util'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -86,6 +87,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     state,
     blockchain,
     common,
+    hardforkByBlockNumber: true,
   })
 
   // set up pre-state
@@ -124,8 +126,17 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
+      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       // Update common HF
-      common.setHardforkByBlockNumber(currentBlock)
+      let TD: bigint | undefined = undefined
+      try {
+        const decoded: any = RLP.decode(blockRlp)
+        const parentHash = decoded[0][0]
+        TD = await blockchain.getTotalDifficulty(parentHash)
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+
+      common.setHardforkByBlockNumber(currentBlock, TD)
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -155,7 +166,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       await blockchain.putBlock(block)
 
@@ -170,7 +180,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState })
+            await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block

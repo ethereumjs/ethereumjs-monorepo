@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { RLP, utils } from '../src'
 import { bytesToUtf8 } from './utils'
 

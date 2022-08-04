@@ -1,15 +1,16 @@
 import * as tape from 'tape'
+
 import {
-  ecsign,
+  bigIntToBuffer,
+  bufferToBigInt,
   ecrecover,
-  privateToPublic,
+  ecsign,
+  fromRpcSig,
   hashPersonalMessage,
   isValidSignature,
-  fromRpcSig,
-  toRpcSig,
+  privateToPublic,
   toCompactSig,
-  bufferToBigInt,
-  bigIntToBuffer,
+  toRpcSig,
 } from '../src'
 
 const echash = Buffer.from(

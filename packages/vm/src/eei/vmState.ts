@@ -1,13 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
+import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
+import { AccountFields, StateManager } from '@ethereumjs/statemanager'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, isTruthy, toBuffer } from '@ethereumjs/util'
-const Set = require('core-js-pure/es/set')
-
-import { StateManager, AccountFields } from '@ethereumjs/statemanager'
-
-import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
+const Set = require('core-js-pure/es/set')
 
 type AddressHex = string
 
@@ -49,7 +47,7 @@ export class VmState implements EVMStateAccess {
     this._accessedStorageReverted = [new Map()]
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('vm:state')
@@ -218,7 +216,7 @@ export class VmState implements EVMStateAccess {
 
     if (isTruthy(mapTarget)) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
+      storageMap.forEach((slotSet: Set<string>, addressString: string) => {
         const addressExists = mapTarget.get(addressString)
         if (!addressExists) {
           mapTarget.set(addressString, new Set())

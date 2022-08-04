@@ -1,21 +1,22 @@
+import type { Block } from '@ethereumjs/block'
 import {
-  DBSetTD,
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
+  DBSetTD,
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
-import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
+import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
+import { VM } from '@ethereumjs/vm'
+
+import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
-import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
 import { ReceiptsManager } from './receipt'
-import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -76,6 +77,8 @@ export class VMExecution extends Execution {
     if (number === BigInt(0)) {
       await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
     }
+    // TODO: Should a run be started to execute any left over blocks?
+    // void this.run()
   }
 
   /**
@@ -116,7 +119,17 @@ export class VMExecution extends Execution {
    * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
   async setHead(blocks: Block[]): Promise<void> {
-    await this.chain.blockchain.setIteratorHead('vm', blocks[blocks.length - 1].hash())
+    const vmHeadBlock = blocks[blocks.length - 1]
+    if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
+      // If we set blockchain iterator to somewhere where we don't have stateroot
+      // execution run will always fail
+      throw Error(
+        `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
+          vmHeadBlock.header.stateRoot
+        )}`
+      )
+    }
+    await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
     await this.chain.putBlocks(blocks, true)
     for (const block of blocks) {
       const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
@@ -132,7 +145,7 @@ export class VMExecution extends Execution {
    * @param loop Whether to continue iterating until vm head equals chain head (default: true)
    * @returns number of blocks executed
    */
-  async run(loop = true): Promise<number> {
+  async run(loop = true, runOnlybatched = false): Promise<number> {
     if (this.running) return 0
     this.running = true
     let numExecuted: number | undefined
@@ -141,11 +154,19 @@ export class VMExecution extends Execution {
     let startHeadBlock = await blockchain.getIteratorHead()
     let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
+    this.config.logger.debug(
+      `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
+    )
+
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
     let errorBlock: Block | undefined
 
     while (
+      (!runOnlybatched ||
+        (runOnlybatched &&
+          canonicalHead.header.number - startHeadBlock.header.number >=
+            BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {

@@ -1,18 +1,19 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  bufferToBigInt,
   bufferToHex,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   privateToAddress,
-  bufferToBigInt,
+  SECP256K1_ORDER_DIV_2,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import {
   AccessList,
-  AccessListEIP2930Transaction,
   AccessListBufferItem,
+  AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
 } from '../src'
 

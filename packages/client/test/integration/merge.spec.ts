@@ -1,20 +1,21 @@
-import * as tape from 'tape'
+import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import {
-  Common,
   Chain as ChainCommon,
-  ConsensusType,
+  Common,
   ConsensusAlgorithm,
+  ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
 import { Address, isFalsy, isTruthy } from '@ethereumjs/util'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import { MockServer } from './mocks/mockserver'
-import { setup, destroy } from './util'
-import { BlockHeader } from '@ethereumjs/block'
+import { destroy, setup } from './util'
 
 tape('[Integration:Merge]', async (t) => {
   const commonPoA = Common.custom(
@@ -33,11 +34,11 @@ tape('[Integration:Merge]', async (t) => {
           name: 'merge',
           block: null,
           forkHash: null,
-          td: 5,
+          ttd: BigInt(5),
         },
       ],
     },
-    { baseChain: ChainCommon.Goerli }
+    { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
   )
   const commonPoW = Common.custom(
     {
@@ -53,7 +54,7 @@ tape('[Integration:Merge]', async (t) => {
           name: 'merge',
           block: null,
           forkHash: null,
-          td: 1000,
+          ttd: BigInt(1000),
         },
       ],
     },

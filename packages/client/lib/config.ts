@@ -1,13 +1,14 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from '@ethereumjs/util'
-import { Multiaddr } from 'multiaddr'
-import { Logger, getLogger } from './logging'
-import { Libp2pServer, RlpxServer } from './net/server'
-import { parseTransports } from './util'
-import { EventBus, EventBusType } from './types'
+import { VM } from '@ethereumjs/vm'
 import { Level } from 'level'
+import { Multiaddr } from 'multiaddr'
+
+import { getLogger, Logger } from './logging'
+import { Libp2pServer, RlpxServer } from './net/server'
+import { EventBus, EventBusType } from './types'
+import { parseTransports } from './util'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -217,6 +218,20 @@ export interface ConfigOptions {
    * to try to refetch and refeed the blocks.
    */
   safeReorgDistance?: number
+
+  /**
+   * If there is a skeleton fillCanonicalChain block lookup errors
+   * because of closing chain conditions, this allows skeleton
+   * to backstep and fill again using reverse block fetcher.
+   */
+  skeletonFillCanonicalBackStep?: number
+
+  /**
+   * If skeleton subchains can be merged, what is the minimum tail
+   * gain, as subchain merge will lead to the ReverseBlockFetcher
+   * reset
+   */
+  skeletonSubchainMergeMinimum?: number
 }
 
 export class Config {
@@ -239,6 +254,8 @@ export class Config {
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
+  public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
+  public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -264,7 +281,10 @@ export class Config {
   public readonly mine: boolean
   public readonly accounts: [address: Address, privKey: Buffer][]
   public readonly minerCoinbase?: Address
+
   public readonly safeReorgDistance: number
+  public readonly skeletonFillCanonicalBackStep: number
+  public readonly skeletonSubchainMergeMinimum: number
   public readonly disableBeaconSync: boolean
 
   public synchronized: boolean
@@ -302,6 +322,10 @@ export class Config {
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
     this.safeReorgDistance = options.safeReorgDistance ?? Config.SAFE_REORG_DISTANCE
+    this.skeletonFillCanonicalBackStep =
+      options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
+    this.skeletonSubchainMergeMinimum =
+      options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
     this.disableBeaconSync = options.disableBeaconSync ?? false
 
     this.synchronized = false

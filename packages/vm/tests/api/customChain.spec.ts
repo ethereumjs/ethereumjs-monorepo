@@ -1,14 +1,15 @@
-import * as tape from 'tape'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
-import * as testChain from './testdata/testnet.json'
-import { VM } from '../../src/vm'
-import { TransactionFactory } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { Interface } from '@ethersproject/abi'
-import { Address } from '@ethereumjs/util'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { Blockchain } from '@ethereumjs/blockchain'
 import type { AccountState } from '@ethereumjs/blockchain/dist/genesisStates'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { Address } from '@ethereumjs/util'
+import { Interface } from '@ethersproject/abi'
+import * as tape from 'tape'
+
+import { VM } from '../../src/vm'
+import * as testChain from './testdata/testnet.json'
+import * as testnetMerge from './testdata/testnetMerge.json'
 
 const storage: Array<[string, string]> = [
   [
@@ -107,25 +108,25 @@ tape('VM initialized with custom state', (t) => {
     t.end()
   })
 
-  t.test('hardforkByBlockNumber, hardforkByTD', async (st) => {
+  t.test('hardforkByBlockNumber, hardforkByTTD', async (st) => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, hardforkByBlockNumber: true })
     st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
 
-    vm = await VM.create({ common, hardforkByTD: 5001 })
-    st.equal((vm as any)._hardforkByTD, BigInt(5001), 'should set hardforkByTD option')
+    vm = await VM.create({ common, hardforkByTTD: 5001 })
+    st.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
 
     try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )

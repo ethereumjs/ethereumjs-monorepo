@@ -1,5 +1,6 @@
 import { URL } from 'url'
-import { Multiaddr, multiaddr } from 'multiaddr'
+import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import {
   addHexPrefix,
@@ -10,9 +11,9 @@ import {
   isTruthy,
   stripHexPrefix,
 } from '@ethereumjs/util'
+import { Multiaddr, multiaddr } from 'multiaddr'
+
 import type { MultiaddrLike } from '../types'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-import type { Common } from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -184,7 +185,7 @@ async function parseGethParams(json: any) {
   if (config.terminalTotalDifficulty !== undefined) {
     params.hardforks.push({
       name: Hardfork.Merge,
-      td: config.terminalTotalDifficulty,
+      ttd: config.terminalTotalDifficulty,
       block: null,
     })
   }

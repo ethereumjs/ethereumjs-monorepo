@@ -1,13 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
-import { PeerPool } from '../net/peerpool'
-import { Peer } from '../net/peer/peer'
-import { FlowControl } from '../net/protocol'
-import { Config } from '../config'
-import { Chain } from '../blockchain'
-import { Event } from '../types'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
-import { short } from '../util'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { Chain } from '../blockchain'
+import { Config } from '../config'
+import { Peer } from '../net/peer/peer'
+import { PeerPool } from '../net/peerpool'
+import { FlowControl } from '../net/protocol'
+import { Event } from '../types'
+import { short } from '../util'
+import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -174,19 +175,17 @@ export abstract class Synchronizer {
         this.clearFetcher()
         resolve(true)
         const heightStr = isTruthy(height) ? ` height=${height}` : ''
-        this.config.logger.debug(
-          `Finishing up sync with the current fetcher${heightStr}
-          }`
-        )
+        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
         if (this.fetcher) {
           await this.fetcher.fetch()
         }
+        this.config.logger.debug(`Fetcher finished fetching...`)
         resolveSync()
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger.error(
           `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
         )
         this.clearFetcher()

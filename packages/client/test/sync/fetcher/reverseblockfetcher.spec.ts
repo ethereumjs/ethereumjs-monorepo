@@ -1,12 +1,13 @@
+import { Block } from '@ethereumjs/block'
+import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Block } from '@ethereumjs/block'
-import { Config } from '../../../lib/config'
+
 import { Chain } from '../../../lib/blockchain/chain'
+import { Config } from '../../../lib/config'
 import { Skeleton } from '../../../lib/sync'
-import { wait } from '../../integration/util'
 import { Event } from '../../../lib/types'
-import { MemoryLevel } from 'memory-level'
+import { wait } from '../../integration/util'
 
 tape('[ReverseBlockFetcher]', async (t) => {
   class PeerPool {
@@ -209,7 +210,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
 
   t.test('should restart the fetcher when subchains are merged', async (st) => {
     td.reset()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], skeletonSubchainMergeMinimum: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

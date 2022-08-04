@@ -61,13 +61,13 @@ const hashToNumberKey = (hash: Buffer) => Buffer.concat([BLOCK_HASH_PEFIX, hash]
  * @hidden
  */
 export {
-  HEADS_KEY,
-  HEAD_HEADER_KEY,
-  HEAD_BLOCK_KEY,
-  bufBE8,
-  tdKey,
-  headerKey,
   bodyKey,
-  numberToHashKey,
+  bufBE8,
   hashToNumberKey,
+  HEAD_BLOCK_KEY,
+  HEAD_HEADER_KEY,
+  headerKey,
+  HEADS_KEY,
+  numberToHashKey,
+  tdKey,
 }

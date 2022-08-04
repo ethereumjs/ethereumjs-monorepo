@@ -1,12 +1,13 @@
-import * as tape from 'tape'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { Account, isFalsy, isTruthy, privateToAddress } from '@ethereumjs/util'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { StateManager } from '@ethereumjs/statemanager'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Account, isFalsy, isTruthy, privateToAddress } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { Config } from '../../lib/config'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
-import { Config } from '../../lib/config'
 
 const setup = () => {
   const config = new Config({ transports: [] })

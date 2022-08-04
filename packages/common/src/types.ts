@@ -1,4 +1,4 @@
-import { ConsensusAlgorithm, ConsensusType, Hardfork, Chain } from './enums'
+import { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
 
 export interface ChainName {
   [chainId: string]: string
@@ -47,7 +47,7 @@ export interface GenesisBlockConfig {
 export interface HardforkConfig {
   name: Hardfork | string
   block: number | null
-  td?: number
+  ttd?: bigint | string
   forkHash?: string | null
 }
 

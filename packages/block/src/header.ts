@@ -1,12 +1,12 @@
 import {
   Chain,
+  CliqueConfig,
   Common,
   ConsensusAlgorithm,
   ConsensusType,
   Hardfork,
-  CliqueConfig,
 } from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   arrToBufArr,
@@ -18,17 +18,18 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  KECCAK256_RLP_ARRAY,
+  isFalsy,
+  isTruthy,
   KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   toType,
   TypeOutput,
   zeros,
-  isTruthy,
-  isFalsy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -97,6 +98,15 @@ export class BlockHeader {
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
+    }
+
+    // If an RLP serialized block header is provided and no `hardforkByBlockNumber` opt is provided, default true to
+    // avoid scenarios where no `opts.common` or `opts.hardforkByBlockNumber` is provided and a serialized blockheader
+    // is provided that predates London result in a default base fee being added to the block
+    // (resulting in an erroneous block hash since the default `common` hardfork is London and the blockheader constructor
+    // adds a default basefee if EIP-1559 is active and no basefee is provided in the `headerData`)
+    if (opts.hardforkByTTD === undefined) {
+      opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
     }
 
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
@@ -182,9 +192,9 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
+    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
@@ -229,8 +239,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
+    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {

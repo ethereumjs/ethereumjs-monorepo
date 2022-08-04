@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { Address, toBuffer } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
