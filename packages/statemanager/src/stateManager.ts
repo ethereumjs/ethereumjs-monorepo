@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -16,7 +17,6 @@ import {
   unpadBuffer,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { RLP } from 'rlp'
 
 import { BaseStateManager } from './baseStateManager'
 import { Cache, getCb, putCb } from './cache'

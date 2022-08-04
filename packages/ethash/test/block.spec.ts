@@ -1,8 +1,8 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, toBuffer } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'

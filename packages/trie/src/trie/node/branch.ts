@@ -1,5 +1,5 @@
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 
 import { EmbeddedNode } from '../../types'
 

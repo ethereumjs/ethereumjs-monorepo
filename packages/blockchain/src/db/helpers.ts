@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 
 import { bufBE8 } from './constants'
 import { DBOp, DBTarget } from './operation'

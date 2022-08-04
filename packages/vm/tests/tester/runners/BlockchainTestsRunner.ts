@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -13,7 +14,6 @@ import {
 } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'

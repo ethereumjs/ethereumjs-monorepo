@@ -1,8 +1,8 @@
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 import { Multiaddr } from 'multiaddr'
-import { RLP } from 'rlp'
 import { sscanf } from 'scanf'
 
 import { PeerInfo } from '../dpt'

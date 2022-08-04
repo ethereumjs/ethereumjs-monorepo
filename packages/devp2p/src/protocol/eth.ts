@@ -1,3 +1,4 @@
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bigIntToBuffer,
@@ -6,7 +7,6 @@ import {
   bufferToHex,
   isTruthy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import * as snappy from 'snappyjs'
 
 import { Peer } from '../rlpx/peer'

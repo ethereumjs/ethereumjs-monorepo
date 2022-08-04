@@ -1,8 +1,8 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { CliqueConfig, ConsensusAlgorithm } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Address, arrToBufArr, bigIntToBuffer, bufArrToArr, bufferToBigInt } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { RLP } from 'rlp'
 
 import { Blockchain } from '..'
 import { Consensus, ConsensusOptions } from './interface'

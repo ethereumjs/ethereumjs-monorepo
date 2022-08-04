@@ -45,13 +45,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@ethereumjs/rlp": "4.0.0-beta.2",
     "@ethereumjs/util": "8.0.0-beta.2",
     "abstract-level": "^1.0.3",
     "ethereum-cryptography": "^1.1.2",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "readable-stream": "^3.6.0",
-    "rlp": "4.0.0-beta.2",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {

@@ -1,9 +1,9 @@
 import * as crypto from 'crypto'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { RLP } from 'rlp'
 
 import {
   assertEq,

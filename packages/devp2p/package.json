@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/rlp": "4.0.0-beta.2",
     "@ethereumjs/util": "8.0.0-beta.2",
     "@scure/base": "1.1.1",
     "@types/bl": "^2.1.0",
@@ -64,7 +65,6 @@
     "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
     "multiaddr": "^10.0.1",
-    "rlp": "4.0.0-beta.2",
     "scanf": "^1.1.2",
     "snappyjs": "^0.6.1"
   },

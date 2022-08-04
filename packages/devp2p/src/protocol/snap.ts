@@ -1,5 +1,5 @@
+import { RLP, utils } from '@ethereumjs/rlp'
 import { isTruthy } from '@ethereumjs/util'
-import { RLP, utils } from 'rlp'
 import * as snappy from 'snappyjs'
 
 import { Peer } from '../rlpx/peer'

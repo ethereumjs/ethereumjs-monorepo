@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
+import { RLP } from '@ethereumjs/rlp'
 import type { Proof } from '@ethereumjs/statemanager'
 import {
   Capability,
@@ -24,7 +25,6 @@ import {
   TypeOutput,
 } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
-import { RLP } from 'rlp'
 
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'

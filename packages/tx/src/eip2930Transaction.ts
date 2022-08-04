@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bigIntToHex,
@@ -11,7 +12,6 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { RLP } from 'rlp'
 
 import { BaseTransaction } from './baseTransaction'
 import {

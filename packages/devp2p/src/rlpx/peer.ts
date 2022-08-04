@@ -3,9 +3,9 @@ import { Socket } from 'net'
 import BufferList = require('bl')
 import ms = require('ms')
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { RLP } from 'rlp'
 import * as snappy from 'snappyjs'
 
 import { ETH, LES } from '..'

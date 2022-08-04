@@ -1,10 +1,10 @@
 // explicitly import buffer,
 // needed for karma-typescript bundling
 import { Buffer } from 'buffer'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr, KECCAK256_NULL, KECCAK256_RLP_S } from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'

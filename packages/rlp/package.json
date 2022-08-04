@@ -1,5 +1,5 @@
 {
-  "name": "rlp",
+  "name": "@ethereumjs/rlp",
   "version": "4.0.0-beta.2",
   "description": "Recursive Length Prefix Encoding Module",
   "keywords": [

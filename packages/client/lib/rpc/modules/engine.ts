@@ -1,10 +1,10 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
-import { RLP } from 'rlp'
 
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'

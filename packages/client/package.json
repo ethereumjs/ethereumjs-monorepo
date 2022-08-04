@@ -62,6 +62,7 @@
     "@ethereumjs/devp2p": "5.0.0-beta.2",
     "@ethereumjs/ethash": "2.0.0-beta.2",
     "@ethereumjs/evm": "1.0.0-beta.2",
+    "@ethereumjs/rlp": "4.0.0-beta.2",
     "@ethereumjs/statemanager": "1.0.0-beta.2",
     "@ethereumjs/trie": "5.0.0-beta.2",
     "@ethereumjs/tx": "4.0.0-beta.2",
@@ -91,7 +92,6 @@
     "multiaddr": "^10.0.1",
     "peer-id": "^0.14.3",
     "qheap": "^1.4.0",
-    "rlp": "4.0.0-beta.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
     "yargs": "^17.2.1"

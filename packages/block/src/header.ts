@@ -6,6 +6,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   arrToBufArr,
@@ -26,7 +27,6 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { RLP } from 'rlp'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'

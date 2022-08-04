@@ -18,7 +18,7 @@ install with `-g` if you want to use the CLI.
 
 ```typescript
 import assert from 'assert'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
@@ -39,7 +39,7 @@ If you would like to continue using Buffers like in rlp v2, you can use:
 ```typescript
 import assert from 'assert'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = RLP.encode(bufArrToArr(bufferList))
@@ -91,8 +91,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[rlp-npm-badge]: https://img.shields.io/npm/v/rlp.svg
-[rlp-npm-link]: https://www.npmjs.com/package/rlp
+[rlp-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/rlp.svg
+[rlp-npm-link]: https://www.npmjs.com/package/@ethereumjs/rlp
 [rlp-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20rlp?label=issues
 [rlp-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+rlp"
 [rlp-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/rlp/badge.svg
