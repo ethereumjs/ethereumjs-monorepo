@@ -8,6 +8,10 @@ import * as tape from 'tape'
 
 import { CheckpointTrie, SecureTrie, Trie, LevelDB, ROOT_DB_KEY } from '../../src'
 
+function bytesToHex(bytes: Buffer | null) {
+  return bytes?.toString('hex')
+}
+
 for (const { constructor, title } of [
   {
     constructor: Trie,
@@ -85,7 +89,10 @@ for (const { constructor, title } of [
 
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
-      st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+      st.equal(
+        bytesToHex(await trie.db.get(ROOT_DB_KEY)),
+        '99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
+      )
 
       st.end()
     })
@@ -138,11 +145,17 @@ for (const { constructor, title } of [
       const trie = await constructor.create({ db })
       st.equal(await trie.db.get(ROOT_DB_KEY), null)
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
-      st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+      st.equal(
+        bytesToHex(await trie.db.get(ROOT_DB_KEY)),
+        '99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
+      )
 
       // Using the same database as `trie` so we should have restored the root
       const copy = await constructor.create({ db })
-      st.notEqual(await copy.db.get(ROOT_DB_KEY), null)
+      st.equal(
+        bytesToHex(await copy.db.get(ROOT_DB_KEY)),
+        '99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
+      )
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({ db: new LevelDB(new MemoryLevel()) })
