@@ -233,7 +233,11 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    await this.execution.run()
+    // Batch the execution if we are not close to the head
+    const shouldRunOnlyBatched =
+      isTruthy(this.config.syncTargetHeight) &&
+      this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
+    await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
     return true
   }
@@ -343,7 +347,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!newSyncHeight) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
-    this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
+    this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)
     // Enqueue if we are close enough to chain head
     if (min < this.chain.headers.height + BigInt(3000)) {
       this.fetcher.enqueueByNumberList(blockNumberList, min, height)
