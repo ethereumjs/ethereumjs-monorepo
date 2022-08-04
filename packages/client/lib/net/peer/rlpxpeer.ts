@@ -174,7 +174,7 @@ export class RlpxPeer extends Peer {
                 .getProtocols()
                 .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
               const snapProtocol =
-                isTruthy(snapRlpxProtocol) &&
+              (snapRlpxProtocol !== undefined) &&
                 this.protocols.find(
                   (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
                 )
