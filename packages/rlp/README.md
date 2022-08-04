@@ -1,4 +1,4 @@
-# rlp
+# @ethereumjs/rlp
 
 [![NPM Package][rlp-npm-badge]][rlp-npm-link]
 [![GitHub Issues][rlp-issues-badge]][rlp-issues-link]
@@ -10,7 +10,7 @@
 
 ## INSTALL
 
-`npm install rlp`
+`npm install @ethereumjs/rlp`
 
 install with `-g` if you want to use the CLI.
 

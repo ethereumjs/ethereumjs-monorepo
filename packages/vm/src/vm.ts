@@ -144,7 +144,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 

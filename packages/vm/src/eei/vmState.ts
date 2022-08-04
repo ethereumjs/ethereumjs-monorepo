@@ -47,7 +47,7 @@ export class VmState implements EVMStateAccess {
     this._accessedStorageReverted = [new Map()]
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('vm:state')
@@ -216,7 +216,7 @@ export class VmState implements EVMStateAccess {
 
     if (isTruthy(mapTarget)) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
+      storageMap.forEach((slotSet: Set<string>, addressString: string) => {
         const addressExists = mapTarget.get(addressString)
         if (!addressExists) {
           mapTarget.set(addressString, new Set())

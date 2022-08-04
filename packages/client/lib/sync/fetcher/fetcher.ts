@@ -216,7 +216,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       resultSet = 'undefined'
       reenqueue = true
     }
-    if (result && (result as any).length === 0) {
+    if (result !== undefined && (result as any).length === 0) {
       resultSet = 'empty'
       reenqueue = true
     }

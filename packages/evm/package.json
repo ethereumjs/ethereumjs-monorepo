@@ -66,7 +66,7 @@
     "@types/node-dir": "^0.0.34",
     "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
-    "eslint": "^6.8.0",
+    "eslint": "^8.0.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",

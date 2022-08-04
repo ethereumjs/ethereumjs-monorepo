@@ -511,7 +511,7 @@ export class Engine {
             headBlock.hash()
           )}`
         )
-        this.service.beaconSync?.setHead(headBlock)
+        await this.service.beaconSync?.setHead(headBlock)
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }

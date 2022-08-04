@@ -1,6 +1,1 @@
-module.exports = {
-  extends: "../../config/eslint.js",
-  ignorePatterns: ["karma.conf.js"],
-  rules: {
-  }
-}
+module.exports = require('../../config/eslint.js')

@@ -106,7 +106,7 @@
     "@types/tape": "^4.13.2",
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
-    "eslint": "^6.8.0",
+    "eslint": "^8.0.0",
     "file-replace-loader": "^1.2.0",
     "it-pair": "^1.0.0",
     "karma": "^6.3.2",
