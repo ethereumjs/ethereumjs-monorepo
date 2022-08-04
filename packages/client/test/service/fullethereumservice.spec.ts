@@ -1,6 +1,5 @@
 import { Common } from '@ethereumjs/common'
 import { Log } from '@ethereumjs/evm/dist/types'
-import { isTruthy } from '@ethereumjs/util'
 
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -77,16 +76,16 @@ tape('[FullEthereumService]', async (t) => {
     let config = new Config({ transports: [] })
     const chain = new Chain({ config })
     let service = new FullEthereumService({ config, chain })
-    t.ok(isTruthy(service.protocols.filter((p) => p instanceof EthProtocol)[0]), 'full protocol')
+    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length>0, 'full protocol')
     t.notOk(
-      isTruthy(service.protocols.filter((p) => p instanceof LesProtocol)[0]),
+      service.protocols.filter((p) => p instanceof LesProtocol).length>0,
       'no light protocol'
     )
     config = new Config({ transports: [], lightserv: true })
     service = new FullEthereumService({ config, chain })
-    t.ok(isTruthy(service.protocols.filter((p) => p instanceof EthProtocol)[0]), 'full protocol')
+    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length>0, 'full protocol')
     t.ok(
-      isTruthy(service.protocols.filter((p) => p instanceof LesProtocol)[0]),
+      service.protocols.filter((p) => p instanceof LesProtocol).length >0,
       'lightserv protocols'
     )
     t.end()

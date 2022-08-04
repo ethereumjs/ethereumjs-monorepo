@@ -166,9 +166,6 @@ export class RlpxPeer extends Peer {
         if (protocol && name != 'snap') {
           const sender = new RlpxSender(rlpxProtocol)
           return this.bindProtocol(protocol, sender).then(() => {
-            // use the same sender to bind snap as snap doesn't need any of its own
-            // handshake. May be this conditional could be handled better or
-            // somewhere else
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
