@@ -44,7 +44,11 @@ jobs:
           flags: client
         if: ${{ matrix.node-version == 16 }}
 
-      - run: npm run test:integration
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
       - run: npm run lint
   test-client-cli:
@@ -69,5 +73,4 @@ jobs:
         with:
           timeout_minutes: 15
           max_attempts: 3
-          retry_on: error
-          command: npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx
+          command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx
