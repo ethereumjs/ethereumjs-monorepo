@@ -1,6 +1,7 @@
 import {
   Account,
   Address,
+  arrToBufArr,
   bigIntToHex,
   bufferToBigInt,
   bufferToHex,
@@ -29,9 +30,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private storageCache: Map<string, Buffer>
   private blockTag: string
   private root: Buffer | undefined
+  private trie: SecureTrie
 
   constructor(opts: EthersStateManagerOpts) {
     super({ common: opts.common })
+    this.trie = new SecureTrie()
     this.provider = opts.provider
     if (typeof opts.blockTag === 'bigint') {
       this.blockTag = bigIntToHex(opts.blockTag)
@@ -43,8 +46,14 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.storageCache = new Map()
     this._cache = new Cache({
       getCb: (address) => this.getAccountFromProvider(address),
-      putCb: (_address, _account) => Promise.resolve(),
-      deleteCb: (_address) => Promise.resolve(),
+      putCb: async (keyBuf, accountRlp) => {
+        const trie = this.trie
+        await trie.put(keyBuf, accountRlp)
+      },
+      deleteCb: async (keyBuf) => {
+        const trie = this.trie
+        await trie.del(keyBuf)
+      },
     })
   }
 
@@ -109,6 +118,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
         [],
         this.blockTag,
       ])
+      const rawData = accountData.accountProof
+      for (const proofItem of rawData) {
+        const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
+        const hash = keccak256(dataBuffer)
+        await this.trie.db.put(arrToBufArr(hash), dataBuffer)
+      }
     } catch (e) {
       accountData.balance = await this.provider.getBalance(address.toString(), this.blockTag)
       accountData.nonce = await this.provider.getTransactionCount(address.toString(), this.blockTag)
@@ -141,7 +156,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getStateRoot(): Promise<Buffer> {
-    if (this.blockTag === 'latest') {
+    /*if (this.blockTag === 'latest') {
       const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
       return toBuffer(block.stateRoot)
     }
@@ -149,12 +164,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       this.root = toBuffer(
         (await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])).stateRoot
       )
-    }
-    return this.root
+    }*/
+    return this.trie.root
   }
 
-  setStateRoot(_stateRoot: Buffer): Promise<void> {
-    throw new Error('Method not implemented.')
+  async setStateRoot(_stateRoot: Buffer): Promise<void> {
+    this.trie.root = _stateRoot
   }
   hasStateRoot(_root: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')

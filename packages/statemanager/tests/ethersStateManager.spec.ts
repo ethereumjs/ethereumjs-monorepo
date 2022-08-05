@@ -99,11 +99,14 @@ tape.only('runBlock test', async (t) => {
     blockTag: blockTag - 1n,
   })
   const vm = await VM.create({ common, stateManager: state })
+  const previousStateRoot = Buffer.from((await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])).stateRoot.slice(2), 'hex')
+  await state.setStateRoot(previousStateRoot)
   const blockData = await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
   const block = blockFromRpc(blockData, undefined, { common, hardforkByBlockNumber: true})
   const res = await vm.runBlock({
     block,
     skipHeaderValidation: true,
   })
+
   t.equal(bufferToHex(block.header.stateRoot), bufferToHex(res.stateRoot), 'was able to run block')
 })
