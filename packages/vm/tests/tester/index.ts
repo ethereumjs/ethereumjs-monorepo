@@ -1,21 +1,22 @@
-import * as process from 'process'
 import * as path from 'path'
-import * as tape from 'tape'
-import * as minimist from 'minimist'
+import * as process from 'process'
 import { Common } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+import * as minimist from 'minimist'
+import * as tape from 'tape'
+
 import {
+  DEFAULT_FORK_CONFIG,
+  DEFAULT_TESTS_PATH,
   getCommon,
   getExpectedTests,
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-  DEFAULT_FORK_CONFIG,
-  DEFAULT_TESTS_PATH,
 } from './config'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { runStateTest } from './runners/GeneralStateTestsRunner'
+import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
 /**
  * Test runner

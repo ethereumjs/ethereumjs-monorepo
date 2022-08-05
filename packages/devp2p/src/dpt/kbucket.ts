@@ -1,5 +1,5 @@
-import { isTruthy } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
+import { isTruthy } from '@ethereumjs/util'
 import _KBucket = require('k-bucket')
 import { PeerInfo } from './dpt'
 

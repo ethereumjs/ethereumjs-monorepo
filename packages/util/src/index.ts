@@ -32,14 +32,14 @@ export * from './types'
  * Export ethjs-util methods
  */
 export {
-  isHexPrefixed,
-  stripHexPrefix,
-  padToEven,
-  getBinarySize,
   arrayContainsArray,
-  toAscii,
-  fromUtf8,
   fromAscii,
+  fromUtf8,
+  getBinarySize,
   getKeys,
+  isHexPrefixed,
   isHexString,
+  padToEven,
+  stripHexPrefix,
+  toAscii,
 } from './internal'

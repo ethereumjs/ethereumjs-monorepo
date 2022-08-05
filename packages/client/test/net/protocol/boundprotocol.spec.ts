@@ -2,9 +2,10 @@
 import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Sender } from '../../../lib/net/protocol/sender'
-import { BoundProtocol } from '../../../lib/net/protocol'
+
 import { Config } from '../../../lib/config'
+import { BoundProtocol } from '../../../lib/net/protocol'
+import { Sender } from '../../../lib/net/protocol/sender'
 import { Event } from '../../../lib/types'
 
 tape('[BoundProtocol]', (t) => {

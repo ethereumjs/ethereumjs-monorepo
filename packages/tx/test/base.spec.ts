@@ -1,22 +1,23 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
-  Transaction,
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  Capability,
-} from '../src'
-import { TxsJsonEntry } from './types'
-import { BaseTransaction } from '../src/baseTransaction'
-import {
-  privateToPublic,
-  toBuffer,
+  bufferToBigInt,
+  isTruthy,
   MAX_INTEGER,
   MAX_UINT64,
+  privateToPublic,
   SECP256K1_ORDER,
-  bufferToBigInt,
+  toBuffer,
 } from '@ethereumjs/util'
-import { isTruthy } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import {
+  AccessListEIP2930Transaction,
+  Capability,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+} from '../src'
+import { BaseTransaction } from '../src/baseTransaction'
+import { TxsJsonEntry } from './types'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)

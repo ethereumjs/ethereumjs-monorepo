@@ -1,5 +1,6 @@
-import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt, Bloom } from '@ethereumjs/vm'
+import type { Block } from '@ethereumjs/block'
 import { Log } from '@ethereumjs/evm'
+import { RLP } from '@ethereumjs/rlp'
 import { TypedTransaction } from '@ethereumjs/tx'
 import {
   arrToBufArr,
@@ -9,9 +10,9 @@ import {
   bufferToInt,
   intToBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { MetaDBManager, DBKey } from '../util/metaDBManager'
-import type { Block } from '@ethereumjs/block'
+import { Bloom, PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+
+import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:

@@ -1,5 +1,6 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'

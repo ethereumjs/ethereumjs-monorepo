@@ -1,12 +1,5 @@
 module.exports = {
-  extends: "../../config/eslint.js",
-  parserOptions: {
-    project: ['./tsconfig.json'],
-  },
-  env: {
-    es2020: true,
-    mocha: true,
-  },
+  extends: '../../config/eslint.js',
   rules: {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-unused-vars': 'off',

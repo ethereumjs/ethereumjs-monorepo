@@ -1,23 +1,26 @@
-import Semaphore from 'semaphore-async-await'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
-import {
-  DB,
-  BatchDBOp,
-  PutBatch,
-  TrieNode,
-  Nibbles,
-  EmbeddedNode,
-  HashFunc,
-  ROOT_DB_KEY,
-} from '../types'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import Semaphore from 'semaphore-async-await'
+
 import { LevelDB } from '../db'
-import { TrieReadStream as ReadStream } from '../util/readStream'
-import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
-import { WalkController } from '../util/walkController'
-import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
 import { verifyRangeProof } from '../proof/range'
-import { FoundNodeFunction, Proof, TrieOpts } from '../types'
+import {
+  BatchDBOp,
+  DB,
+  EmbeddedNode,
+  FoundNodeFunction,
+  HashFunc,
+  Nibbles,
+  Proof,
+  PutBatch,
+  ROOT_DB_KEY,
+  TrieNode,
+  TrieOpts,
+} from '../types'
+import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import { TrieReadStream as ReadStream } from '../util/readStream'
+import { WalkController } from '../util/walkController'
+import { BranchNode, decodeNode, decodeRawNode, ExtensionNode, isRawNode, LeafNode } from './node'
 
 interface Path {
   node: TrieNode | null

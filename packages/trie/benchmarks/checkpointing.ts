@@ -1,4 +1,5 @@
 import { pseudoRandomBytes } from 'crypto'
+
 import { CheckpointTrie, DB } from '../dist'
 
 export const iterTest = async (db: DB, numOfIter: number) => {

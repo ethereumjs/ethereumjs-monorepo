@@ -1,5 +1,6 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 

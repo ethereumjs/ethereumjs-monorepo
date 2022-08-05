@@ -1,5 +1,6 @@
 'use strict'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+
 import { CheckpointTrie as Trie, DB } from '../dist'
 
 // References:

@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { Common, Hardfork } from '../src'
 import * as testnetMerge from './data/merge/testnetMerge.json'
 import * as testnetPOS from './data/merge/testnetPOS.json'

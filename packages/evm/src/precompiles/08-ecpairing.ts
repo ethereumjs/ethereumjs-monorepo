@@ -1,6 +1,7 @@
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
 import { isFalsy } from '@ethereumjs/util'
+
+import { ExecResult, OOGResult } from '../evm'
+import { PrecompileInput } from './types'
 const bn128 = require('rustbn.js')
 
 export function precompile08(opts: PrecompileInput): ExecResult {

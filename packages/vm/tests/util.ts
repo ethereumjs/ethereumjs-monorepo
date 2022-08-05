@@ -1,14 +1,12 @@
-import * as tape from 'tape'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
   TxOptions,
 } from '@ethereumjs/tx'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import {
   Account,
   Address,
@@ -22,7 +20,10 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
+
 import { VmState } from '../src/eei/vmState'
 
 export function dumpState(state: any, cb: Function) {

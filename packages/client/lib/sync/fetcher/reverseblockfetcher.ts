@@ -1,8 +1,9 @@
-import { Event } from '../../types'
-import { Skeleton, errSyncMerged } from '../skeleton'
-import { BlockFetcherOptions } from './blockfetcherbase'
-import { BlockFetcher } from './blockfetcher'
 import type { Block } from '@ethereumjs/block'
+
+import { Event } from '../../types'
+import { errSyncMerged, Skeleton } from '../skeleton'
+import { BlockFetcher } from './blockfetcher'
+import { BlockFetcherOptions } from './blockfetcherbase'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
   /** Skeleton */

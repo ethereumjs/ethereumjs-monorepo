@@ -1,8 +1,9 @@
-import * as tape from 'tape'
-import { encode, TAlgorithm } from 'jwt-simple'
-import { startRPC, closeRPC } from './helpers'
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 import { isFalsy } from '@ethereumjs/util'
+import { encode, TAlgorithm } from 'jwt-simple'
+import * as tape from 'tape'
+
+import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { closeRPC, startRPC } from './helpers'
 const request = require('supertest')
 
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))

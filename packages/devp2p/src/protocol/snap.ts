@@ -1,9 +1,10 @@
-import { RLP, utils } from 'rlp'
+import { RLP, utils } from '@ethereumjs/rlp'
+import { isTruthy } from '@ethereumjs/util'
+import * as snappy from 'snappyjs'
+
 import { Peer } from '../rlpx/peer'
 import { formatLogData } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
-import * as snappy from 'snappyjs'
-import { isTruthy } from '@ethereumjs/util'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
@@ -36,6 +37,10 @@ export class SNAP extends Protocol {
     }
 
     this.emit('message', code, payload)
+  }
+
+  sendStatus() {
+    throw Error('SNAP prococol doesnot support status handshake')
   }
 
   /**

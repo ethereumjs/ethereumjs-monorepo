@@ -1,9 +1,10 @@
+import { Chain, CliqueConfig, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Chain, Common, CliqueConfig, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+
 import { Block } from '../src'
+import { BlockHeader } from '../src/header'
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')
 
