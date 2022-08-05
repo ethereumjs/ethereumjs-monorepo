@@ -229,6 +229,22 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       })
   })
 
+  t.test('should fail when no `validateHeader` method exists on blockchain class', async (t) => {
+    const vm = await VM.create({ common })
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    ;(vm.blockchain as any).validateHeader = undefined
+    try {
+      await vm.runBlock({ block })
+    } catch (err: any) {
+      t.equal(
+        err.message,
+        'cannot validate header: blockchain has no `validateHeader` method',
+        'should error'
+      )
+    }
+  })
+
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
     const vm = await VM.create({ common })
 
