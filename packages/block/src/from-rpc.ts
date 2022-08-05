@@ -2,7 +2,6 @@ import { TransactionFactory, TxData, TypedTransaction } from '@ethereumjs/tx'
 import { isTruthy, setLengthLeft, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
-import { numberToHex } from './helpers'
 import { Block, BlockOptions } from './index'
 
 function normalizeTxParams(_txParams: any) {
@@ -41,7 +40,6 @@ export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: Blo
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
-      console.log(txParams)
       const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
       transactions.push(tx)
     }
