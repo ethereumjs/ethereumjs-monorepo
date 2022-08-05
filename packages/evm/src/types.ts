@@ -1,4 +1,5 @@
 import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+
 import { EVM, EVMResult, ExecResult } from './evm'
 import { InterpreterStep } from './interpreter'
 import { Message } from './message'
@@ -13,6 +14,7 @@ export interface EVMInterface {
   runCode?(opts: EVMRunCodeOpts): Promise<ExecResult>
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
+  eei: EEIInterface
 }
 
 /**

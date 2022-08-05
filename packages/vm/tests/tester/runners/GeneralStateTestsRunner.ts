@@ -1,8 +1,11 @@
-import * as tape from 'tape'
+import { Block } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { isTruthy, toBuffer } from '@ethereumjs/util'
-import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
-import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import * as tape from 'tape'
+
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -68,8 +71,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const begin = Date.now()
   const common = options.common
 
+  // Have to create a blockchain with empty block as genesisBlock for Merge
+  // Otherwise mainnet genesis will throw since this has difficulty nonzero
+  const genesisBlock = new Block(undefined, undefined, undefined, { common })
+  const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie()
-  const vm = await VM.create({ state, common })
+  const vm = await VM.create({ state, common, blockchain })
 
   await setupPreConditions(vm.eei, testData)
 

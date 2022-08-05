@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import { Chain, Common, Hardfork } from '../src/'
+
+import { Chain, Common, Hardfork } from '../src'
 
 tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {

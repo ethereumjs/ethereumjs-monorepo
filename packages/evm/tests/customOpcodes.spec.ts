@@ -1,8 +1,9 @@
-import { AddOpcode } from '../src/types'
-import { InterpreterStep, RunState } from '../src/interpreter'
-import { EVM } from '../src/evm'
-import { getEEI } from './utils'
 import * as tape from 'tape'
+
+import { EVM } from '../src/evm'
+import { InterpreterStep, RunState } from '../src/interpreter'
+import { AddOpcode } from '../src/types'
+import { getEEI } from './utils'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333

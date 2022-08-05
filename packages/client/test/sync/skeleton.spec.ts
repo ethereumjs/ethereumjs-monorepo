@@ -1,14 +1,15 @@
-import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import { Config } from '../../lib/config'
+import { MemoryLevel } from 'memory-level'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
+import { errReorgDenied, errSyncMerged, Skeleton } from '../../lib/sync/skeleton'
 import { parseCustomParams } from '../../lib/util'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
-import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
 type Subchain = {
   head: bigint
   tail: bigint

@@ -1,9 +1,10 @@
-import * as tape from 'tape'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { VMExecution } from '../../lib/execution'
 import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import blocksDataGoerli = require('../testdata/blocks/goerli.json')

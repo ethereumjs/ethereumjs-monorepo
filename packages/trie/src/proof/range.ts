@@ -1,6 +1,6 @@
-import { nibblesToBuffer, nibblesCompare } from '../util/nibbles'
-import { Trie, BranchNode, ExtensionNode, LeafNode } from '../trie'
+import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
 import { HashFunc, Nibbles, TrieNode } from '../types'
+import { nibblesCompare, nibblesToBuffer } from '../util/nibbles'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 

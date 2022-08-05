@@ -1,5 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
+import type { Log } from '@ethereumjs/evm'
+import { RLP } from '@ethereumjs/rlp'
+import type { Proof } from '@ethereumjs/statemanager'
 import {
   Capability,
   FeeMarketEIP1559Transaction,
@@ -11,29 +14,26 @@ import {
 import {
   Account,
   Address,
-  bufferToHex,
   bigIntToHex,
+  bufferToHex,
   intToHex,
-  toBuffer,
+  isFalsy,
+  isTruthy,
   setLengthLeft,
+  toBuffer,
   toType,
   TypeOutput,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { RpcTx } from '../types'
-import { EthereumService, FullEthereumService } from '../../service'
-import type { VM } from '@ethereumjs/vm'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
-import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
+import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
+
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
-import type { EthProtocol } from '../../net/protocol'
 import type { ReceiptsManager } from '../../execution/receipt'
-import { isTruthy } from '@ethereumjs/util'
-import { isFalsy } from '@ethereumjs/util'
+import type { EthProtocol } from '../../net/protocol'
+import { EthereumService, FullEthereumService } from '../../service'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { RpcTx } from '../types'
+import { middleware, validators } from '../validation'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -313,7 +313,7 @@ export class Eth {
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
 
     this.call = middleware(this.call.bind(this), 2, [
-      [validators.transaction(['to'])],
+      [validators.transaction()],
       [validators.blockOption],
     ])
 

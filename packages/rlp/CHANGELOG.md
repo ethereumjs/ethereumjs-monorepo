@@ -23,13 +23,13 @@ Now every import is a named import and we think the long term benefits will very
 The main `RLP` class import has been updated, so import changes from:
 
 ```typescript
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 ```
 
 to:
 
 ```typescript
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 ```
 
 ## Other Changes
@@ -81,7 +81,7 @@ A new default export `RLP` now contains `encode` and `decode`.
 You can now import and use RLP like this:
 
 ```javascript
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 RLP.encode(1)
 ```
 
@@ -95,13 +95,13 @@ Example:
 
 ```typescript
 // Old, rlp v2
-import * as rlp from 'rlp'
+import * as rlp from '@ethereumjs/rlp'
 const bufArr = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = rlp.encode(bufArr)
 const decoded = rlp.decode(encoded)
 
 // New, rlp v3
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 const encoded: Uint8Array = RLP.encode(bufArrToArr(bufArr))
 const encodedAsBuffer = Buffer.from(encoded)
 const decoded: Uint8Array[] = RLP.decode(encoded)

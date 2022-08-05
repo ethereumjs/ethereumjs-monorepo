@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 
-import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'
 import { short, timeDuration } from '../util'
+import { DBKey, MetaDBManager, MetaDBManagerOptions } from '../util/metaDBManager'
 
 // Thanks to go-ethereum for the skeleton design
 

@@ -1,17 +1,25 @@
-import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
+import { promisify } from 'util'
 import { Blockchain, BlockchainInterface } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
-import { runTx } from './runTx'
-import { runBlock } from './runBlock'
-import { buildBlock, BlockBuilder } from './buildBlock'
-import { RunTxOpts, RunTxResult, RunBlockOpts, RunBlockResult } from './types'
-import AsyncEventEmitter = require('async-eventemitter')
-import { promisify } from 'util'
-import { VMEvents, VMOpts, BuildBlockOpts } from './types'
+import { DefaultStateManager, StateManager } from '@ethereumjs/statemanager'
+import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 
-import { EVM, getActivePrecompiles, EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import AsyncEventEmitter = require('async-eventemitter')
+import { EEIInterface, EVM, EVMInterface, getActivePrecompiles } from '@ethereumjs/evm'
+
+import { BlockBuilder, buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
+import { runBlock } from './runBlock'
+import { runTx } from './runTx'
+import {
+  BuildBlockOpts,
+  RunBlockOpts,
+  RunBlockResult,
+  RunTxOpts,
+  RunTxResult,
+  VMEvents,
+  VMOpts,
+} from './types'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -35,14 +43,14 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface
+  readonly evm: EVMInterface | EVM
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
 
   protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTD?: bigint
+  protected readonly _hardforkByTTD?: bigint
 
   /**
    * Cached emit() function, not for public usage
@@ -104,9 +112,16 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     // TODO tests
     if (opts.eei) {
+      if (opts.evm) {
+        throw new Error('cannot specify EEI if EVM opt provided')
+      }
       this.eei = opts.eei
     } else {
-      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      if (opts.evm) {
+        this.eei = opts.evm.eei
+      } else {
+        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      }
     }
 
     // TODO tests
@@ -119,17 +134,17 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
+    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
+    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
@@ -224,15 +239,14 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    */
   async copy(): Promise<VM> {
     const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = (evmCopy as any).eei
+    const eeiCopy: EEIInterface = evmCopy.eei
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
       evm: evmCopy,
-      eei: eeiCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTD: isTruthy(this._hardforkByTD) ? this._hardforkByTD : undefined,
+      hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })
   }
 

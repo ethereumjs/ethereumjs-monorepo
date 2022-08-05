@@ -4,36 +4,40 @@
   "workspaces": [
     "packages/*"
   ],
-  "engines": {
-    "npm": ">=7"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-config-typestrict": "1.0.3",
-    "eslint-plugin-implicit-dependencies": "^1.0.4",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "eslint-plugin-sonarjs": "^0.5.0",
-    "husky": "^4.2.5",
-    "nyc-report-lcov-absolute": "^1.0.0",
-    "typedoc-plugin-markdown": "^3.10.4",
-    "verdaccio": "^4.12.2"
+  "scripts": {
+    "checkNpmVersion": "./scripts/check-npm-version.sh",
+    "clean": "./config/cli/clean-root.sh",
+    "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
+    "e2e:publish": "./scripts/e2e-publish.sh",
+    "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
+    "examples": "npm run examples --workspaces --if-present",
+    "preinstall": "npm run checkNpmVersion",
+    "postinstall": "npm run build --workspaces",
+    "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
   },
   "husky": {
     "hooks": {
       "pre-push": "npm run lint:diff --workspaces"
     }
   },
-  "scripts": {
-    "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces",
-    "checkNpmVersion": "./scripts/check-npm-version.sh",
-    "examples": "npm run examples --workspaces --if-present",
-    "clean": "./config/cli/clean-root.sh",
-    "e2e:publish": "./scripts/e2e-publish.sh",
-    "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
-    "e2e:inject": "node ./scripts/e2e-inject-resolutions.js"
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-typestrict": "1.0.5",
+    "eslint-formatter-codeframe": "^7.32.1",
+    "eslint-plugin-implicit-dependencies": "^1.1.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-sonarjs": "^0.14.0",
+    "husky": "^4.2.5",
+    "nyc-report-lcov-absolute": "^1.0.0",
+    "sort-package-json": "^1.57.0",
+    "typedoc-plugin-markdown": "^3.10.4",
+    "verdaccio": "^4.12.2"
+  },
+  "engines": {
+    "npm": ">=7"
   }
 }

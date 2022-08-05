@@ -66,7 +66,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `London` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `Merge` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
@@ -77,7 +77,7 @@ export interface VMOpts {
    * Default setup if no `Common` instance is provided:
    *
    * - `chain`: `mainnet`
-   * - `hardfork`: `london`
+   * - `hardfork`: `merge`
    * - `eips`: `[]`
    */
   common?: Common
@@ -128,7 +128,7 @@ export interface VMOpts {
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BigIntLike
+  hardforkByTTD?: BigIntLike
 
   /**
    * Use a custom EEI for the EVM. If this is not present, use the default EEI.
@@ -238,7 +238,7 @@ export interface RunBlockOpts {
   /**
    * For merge transition support, pass the chain TD up to the block being run
    */
-  hardforkByTD?: bigint
+  hardforkByTTD?: bigint
 }
 
 /**
@@ -343,7 +343,8 @@ export interface RunTxResult extends EVMResult {
 
   /**
    * The amount of gas used in this transaction, which is paid for
-   * This contains the gas units t
+   * This contains the gas units that have been used on execution, plus the upfront cost,
+   * which consists of calldata cost, intrinsic cost and optionally the access list costs
    */
   totalGasSpent: bigint
 

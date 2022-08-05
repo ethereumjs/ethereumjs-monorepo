@@ -19,7 +19,7 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -44,10 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Istanbul', 'MuirGlacier']
+        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -82,10 +82,9 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -106,16 +105,19 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-            '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
             '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Berlin --excludeDir=stTimeConsuming',
             '--fork=London --dir=GeneralStateTests/stTimeConsuming',
             '--fork=London --excludeDir=stTimeConsuming',
+            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+            '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
+            '--fork=Merge --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Merge --excludeDir=stTimeConsuming',
+            '--fork=ArrowGlacierToMergeAtDiffC0000',
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -157,10 +159,9 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -174,9 +175,7 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:

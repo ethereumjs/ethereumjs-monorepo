@@ -1,28 +1,29 @@
 import { EventEmitter } from 'events'
+import { BigIntLike, intToBuffer, isFalsy, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
-import { BigIntLike, toType, TypeOutput, intToBuffer, isTruthy, isFalsy } from '@ethereumjs/util'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
+
+import * as goerli from './chains/goerli.json'
+import * as kovan from './chains/kovan.json'
+import * as mainnet from './chains/mainnet.json'
+import * as rinkeby from './chains/rinkeby.json'
+import * as ropsten from './chains/ropsten.json'
+import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips'
-import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
+import { Chain, ConsensusAlgorithm, ConsensusType, CustomChain, Hardfork } from './enums'
+import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import {
   BootstrapNodeConfig,
+  CasperConfig,
   ChainConfig,
-  GenesisBlockConfig,
-  HardforkConfig,
   ChainName,
   ChainsConfig,
   CliqueConfig,
-  EthashConfig,
-  CasperConfig,
   CommonOpts,
   CustomCommonOpts,
+  EthashConfig,
+  GenesisBlockConfig,
+  HardforkConfig,
 } from './types'
-import * as mainnet from './chains/mainnet.json'
-import * as ropsten from './chains/ropsten.json'
-import * as rinkeby from './chains/rinkeby.json'
-import * as kovan from './chains/kovan.json'
-import * as goerli from './chains/goerli.json'
-import * as sepolia from './chains/sepolia.json'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -186,7 +187,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
     this._hardfork = this.DEFAULT_HARDFORK
     if (isTruthy(opts.hardfork)) {
       this.setHardfork(opts.hardfork)
@@ -267,8 +268,8 @@ export class Common extends EventEmitter {
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
-        if (td !== undefined && td !== null && hf.td !== undefined && hf.td !== null) {
-          if (td >= BigInt(hf.td)) {
+        if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
+          if (td >= BigInt(hf.ttd)) {
             return hf.name
           }
         }
@@ -277,8 +278,8 @@ export class Common extends EventEmitter {
       if (blockNumber >= BigInt(hf.block)) {
         hardfork = hf.name as Hardfork
       }
-      if (td && isTruthy(hf.td)) {
-        if (td >= BigInt(hf.td)) {
+      if (td && isTruthy(hf.ttd)) {
+        if (td >= BigInt(hf.ttd)) {
           minTdHF = hf.name
         } else {
           maxTdHF = previousHF
@@ -570,13 +571,13 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Total difficulty or null if no set
    */
-  hardforkTD(hardfork?: string | Hardfork): bigint | null {
+  hardforkTTD(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
-    const td = this._getHardfork(hardfork)?.['td']
-    if (td === undefined || td === null) {
+    const ttd = this._getHardfork(hardfork)?.['ttd']
+    if (ttd === undefined || ttd === null) {
       return null
     }
-    return BigInt(td)
+    return BigInt(ttd)
   }
 
   /**
@@ -668,7 +669,7 @@ export class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data === null || (data?.block === null && data?.td === undefined)) {
+    if (data === null || (data?.block === null && data?.ttd === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
@@ -850,14 +851,7 @@ export class Common extends EventEmitter {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains: ChainsConfig = {
-      mainnet,
-      ropsten,
-      rinkeby,
-      kovan,
-      goerli,
-      sepolia,
-    }
+    const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain

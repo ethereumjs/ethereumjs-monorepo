@@ -1,7 +1,8 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Config } from '../../lib/config'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { Synchronizer } from '../../lib/sync/sync'
 import { Event } from '../../lib/types'
 

@@ -1,5 +1,6 @@
 import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import { getLogger } from '../lib/logging'
 
 tape('[Logging]', (t) => {

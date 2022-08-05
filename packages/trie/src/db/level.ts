@@ -2,6 +2,7 @@
 import { isTruthy } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { MemoryLevel } from 'memory-level'
+
 import { BatchDBOp, DB } from '../types'
 
 export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }

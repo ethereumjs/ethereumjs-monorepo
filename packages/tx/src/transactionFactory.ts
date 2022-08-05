@@ -1,12 +1,15 @@
 import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
+
+import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
+import { AccessListEIP2930Transaction } from './eip2930Transaction'
+import { Transaction } from './legacyTransaction'
 import {
-  TxOptions,
-  TypedTransaction,
-  TxData,
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,
+  TxData,
+  TxOptions,
+  TypedTransaction,
 } from './types'
-import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
 
 export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.

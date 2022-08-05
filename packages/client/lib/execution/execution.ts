@@ -1,6 +1,7 @@
-import { Config } from '../config'
-import { Chain } from '../blockchain'
 import { AbstractLevel } from 'abstract-level'
+
+import { Chain } from '../blockchain'
+import { Config } from '../config'
 
 export interface ExecutionOptions {
   /* Config */
