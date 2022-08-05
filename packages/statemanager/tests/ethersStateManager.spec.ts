@@ -104,9 +104,6 @@ tape.only('runBlock test', async (t) => {
   const res = await vm.runBlock({
     block,
     skipHeaderValidation: true,
-    skipBlockValidation: true,
-    skipBalance: true,
-    skipNonce: true,
   })
   t.equal(bufferToHex(block.header.stateRoot), bufferToHex(res.stateRoot), 'was able to run block')
 })
