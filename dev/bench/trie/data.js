@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659695833472,
+  "lastUpdate": 1659698953595,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2dd63b91109188e5b4f5b251f47aae756f7e1841",
-          "message": "Sepolia (Beta 2) Releases (#2045)\n\n* Block -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Blockchain -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Common -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Devp2p -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Ethash -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* EVM -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* RLP -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* StateManager -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Trie -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Tx -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Util -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* VM -> Beta 2 Release: updated CHANGELOG, bumped version, updated upstream dependency versions\r\n\r\n* Client -> Release: bumped version to v0.6.0, added CHANGELOG entry, updated README\r\n\r\n* Client: Minor Merge README updates\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Devp2p, Trie: added missing CHANGELOG entries\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-07-17T17:51:03+02:00",
-          "tree_id": "ae3f4807277a75c74ca00369ce7bd05a1911255d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2dd63b91109188e5b4f5b251f47aae756f7e1841"
-        },
-        "date": 1658073652204,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 22381,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 20754,
-            "range": "±7.27%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 21958,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 21715,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 29833,
-            "range": "±1.20%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 846,
-            "range": "±7.21%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 125,
-            "range": "±49.31%",
-            "unit": "ops/sec",
-            "extra": "50 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 90.54,
-            "range": "±5.74%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 10.14,
-            "range": "±67.40%",
-            "unit": "ops/sec",
-            "extra": "23 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±79.49%",
             "unit": "ops/sec",
             "extra": "25 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6c12b97f10ec420a2f094a0c9eade8d7082d987",
+          "message": "trie: remove unnecessary temp variables and buffer creation (#2103)\n\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-05T07:26:44-04:00",
+          "tree_id": "3107318484197d860674a6168e6e9567f8181871",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f6c12b97f10ec420a2f094a0c9eade8d7082d987"
+        },
+        "date": 1659698952949,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23039,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 21596,
+            "range": "±7.08%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23207,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 22743,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31191,
+            "range": "±1.31%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 957,
+            "range": "±5.02%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 164,
+            "range": "±36.34%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 102,
+            "range": "±4.04%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 15.27,
+            "range": "±50.39%",
+            "unit": "ops/sec",
+            "extra": "38 samples"
           }
         ]
       }
