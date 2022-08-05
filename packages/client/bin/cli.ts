@@ -263,6 +263,10 @@ const args = yargs(hideBin(process.argv))
       'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
     boolean: true,
   })
+  .option('forceSnapSync', {
+    describe: 'Force a snap sync run (for testing and development purposes)',
+    boolean: true,
+  })
   .option('txLookupLimit', {
     describe:
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',

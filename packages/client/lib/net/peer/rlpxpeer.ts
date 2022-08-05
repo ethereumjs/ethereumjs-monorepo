@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import {
   Capabilities as Devp2pCapabilities,
   ETH as Devp2pETH,
+  SNAP as Devp2pSNAP,
   LES as Devp2pLES,
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
@@ -13,6 +14,7 @@ import { Protocol, RlpxSender } from '../protocol'
 import { RlpxServer } from '../server'
 import { Peer, PeerOptions } from './peer'
 const devp2pCapabilities: any = {
+  snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,
   les3: Devp2pLES.les3,
@@ -159,8 +161,26 @@ export class RlpxPeer extends Peer {
       rlpxPeer.getProtocols().map((rlpxProtocol) => {
         const name = rlpxProtocol.constructor.name.toLowerCase()
         const protocol = this.protocols.find((p) => p.name === name)
-        if (protocol) {
-          return this.bindProtocol(protocol, new RlpxSender(rlpxProtocol))
+        // Since snap is running atop/besides eth, it doesn't need a separate sender
+        // handshake, and can just use the eth handshake
+        if (protocol && name != 'snap') {
+          const sender = new RlpxSender(rlpxProtocol)
+          return this.bindProtocol(protocol, sender).then(() => {
+            if (name === 'eth') {
+              const snapRlpxProtocol = rlpxPeer
+                .getProtocols()
+                .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
+              const snapProtocol =
+              (snapRlpxProtocol !== undefined)?
+                this.protocols.find(
+                  (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
+                ):undefined
+              if (snapProtocol !== undefined) {
+                const snapSender = new RlpxSender(snapRlpxProtocol)
+                return this.bindProtocol(snapProtocol, snapSender)
+              }
+            }
+          })
         }
       })
     )
