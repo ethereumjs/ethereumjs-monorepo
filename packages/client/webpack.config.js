@@ -27,6 +27,7 @@ module.exports = {
               [resolve('./dist.browser/lib/net/peer/libp2pnode.js')]: resolve(
                 './dist.browser/browser/libp2pnode.js'
               ),
+              [resolve('./dist.browser/lib/util/index.js')]: resolve('./dist.browser/browser/util/index.js')
             }
             return mapping[resourcePath]
           },
@@ -64,5 +65,6 @@ module.exports = {
   performance: {
     hints: false, // suppress maxAssetSize warnings etc..
   },
-  externals: ['dns'],
+  externals: ['dns', 'jayson'],
+  devtool: 'eval-source-map',
 }
