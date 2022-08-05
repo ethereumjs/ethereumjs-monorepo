@@ -58,7 +58,8 @@ module.exports = {
       os: require.resolve('os-browserify/browser'), // used by: bin/cli.ts, web3_clientVersion rpc
       path: false, // used by: bin/cli.ts
       stream: require.resolve('stream-browserify'), // used by: fetcher
-      tls: false, // used by: jayson
+      tls: false, // used by: jayson,
+      util: require.resolve('util/'), // used by: evm
       zlib: false, // used by: body-parser
     },
   },
