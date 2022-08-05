@@ -6,15 +6,15 @@ import {
   bufferToHex,
   toBuffer,
 } from '@ethereumjs/util'
-import { BaseStateManager, StateManager } from '.'
-import { StorageDump } from './interface'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { Common } from '@ethereumjs/common'
-import { Cache } from './cache'
 import { SecureTrie } from '@ethereumjs/trie'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Cache } from './cache'
+import { StorageDump } from './interface'
+import { BaseStateManager, StateManager } from '.'
 
 const log = debug('statemanager')
 export interface EthersStateManagerOpts {
