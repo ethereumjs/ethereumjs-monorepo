@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1659643661932,
+  "lastUpdate": 1659692920319,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "76b349c4005bf39694d9aec6e5755124255b3e6b",
-          "message": "DevP2P: add snap protocol (#1883)\n\n* devp2p: add snap protocol\r\n\r\n* a small add for client\r\n\r\n* devp2p: Snap devp2p tests (#1893)\r\n\r\n* Add tests for SNAP protocol\r\n\r\n* Fix linting issues\r\n\r\n* Remove unneeded switch block\r\n\r\n* don't offer snap yet, try only consuming from other peers\r\n\r\n* prevent disconnect on snap on status timeout as no status handshake on snap\r\n\r\n* rebase fixes\r\n\r\n* fixes\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: Amir G <indigophi@protonmail.com>",
-          "timestamp": "2022-07-16T17:45:28+02:00",
-          "tree_id": "0fae0eaa0d4d44d64174b8ed9e7a25833944e772",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/76b349c4005bf39694d9aec6e5755124255b3e6b"
-        },
-        "date": 1657986529027,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23571,
-            "range": "±2.32%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22938,
-            "range": "±3.61%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 23182,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21045,
-            "range": "±8.66%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23424,
-            "range": "±1.46%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.46%",
             "unit": "ops/sec",
             "extra": "66 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "291d698abed15ce7a2bfade97e768d00a70ed0fc",
+          "message": "ci: retry `test-client` and `test-client-cli` jobs up to 3 times (#2104)\n\n* ci: retry `test-client-cli` job up to 3 times\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nchore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nchore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nchore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-05T05:46:29-04:00",
+          "tree_id": "4937b0a268d394d7386aa23791590c2cedee1bd6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/291d698abed15ce7a2bfade97e768d00a70ed0fc"
+        },
+        "date": 1659692919703,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21750,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20681,
+            "range": "±4.78%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21342,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21246,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18529,
+            "range": "±10.35%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
           }
         ]
       }
