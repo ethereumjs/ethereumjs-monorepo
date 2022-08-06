@@ -266,6 +266,8 @@ export interface ConfigOptions {
    * The time after which synced state is downgraded to unsynced
    */
   syncedStateRemovalPeriod?: number
+
+  maxStorageRange?: bigint
 }
 
 export class Config {
@@ -295,6 +297,9 @@ export class Config {
   // This should get like 100 accounts in this range
   public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
+
+  // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
+  public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -329,6 +334,7 @@ export class Config {
   public readonly maxRangeBytes: number
   public readonly maxAccountRange: bigint
   public readonly syncedStateRemovalPeriod: number
+  public readonly maxStorageRange: bigint
 
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
@@ -382,6 +388,7 @@ export class Config {
     this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
+    this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false

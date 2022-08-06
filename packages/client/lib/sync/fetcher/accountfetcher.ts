@@ -1,15 +1,26 @@
 import { Trie } from '@ethereumjs/trie'
-import { accountBodyToRLP, bigIntToBuffer, bufferToBigInt, setLengthLeft } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  accountBodyToRLP,
+  bigIntToBuffer,
+  bufferToBigInt,
+  bufferToHex,
+  setLengthLeft,
+} from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
 
 import { LevelDB } from '../../execution/level'
 import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
+import { StorageFetcher } from './storagefetcher'
 
 import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
+import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
+import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -40,6 +51,8 @@ export type JobTask = {
 }
 
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
+  protected debug: Debugger
+
   /**
    * The stateRoot for the fetcher which sorts of pin it to a snapshot.
    * This might eventually be removed as the snapshots are moving and not static
@@ -52,6 +65,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
   count: bigint
 
+  storageFetcher: StorageFetcher
+
   /**
    * Create new block fetcher
    */
@@ -61,6 +76,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
+    this.debug = createDebugLogger('client:AccountFetcher')
+
+    this.storageFetcher = new StorageFetcher({
+      config: this.config,
+      pool: this.pool,
+      root: this.root,
+      storageRequests: [],
+      first: BigInt(1),
+      destroyWhenDone: false,
+    })
+    this.storageFetcher.fetch()
 
     const fullJob = { task: { first: this.first, count: this.count } } as Job<
       JobTask,
@@ -83,9 +109,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     { accounts, proof }: { accounts: AccountData[]; proof: Buffer[] }
   ): Promise<boolean> {
     this.debug(
-      `verifyRangeProof accounts:${accounts.length} first=${short(accounts[0].hash)} last=${short(
-        accounts[accounts.length - 1].hash
-      )}`
+      `verifyRangeProof accounts:${accounts.length} first=${bufferToHex(
+        accounts[0].hash
+      )} last=${short(accounts[accounts.length - 1].hash)}`
     )
 
     for (let i = 0; i < accounts.length - 1; i++) {
@@ -123,6 +149,18 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     return setLengthLeft(limit, 32)
   }
 
+  private isMissingRightRange(
+    limit: Buffer,
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Buffer[] }
+  ): boolean {
+    if (accounts.length > 0 && accounts[accounts.length - 1]?.hash.compare(limit) >= 0) {
+      return false
+    } else {
+      // TODO: Check if there is a proof of missing limit in state
+      return true
+    }
+  }
+
   /**
    * Request results from peer for the given job.
    * Resolves with the raw result
@@ -153,17 +191,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // validate the proof
       try {
         // verifyRangeProof will also verify validate there are no missed states between origin and
-        // response data and returns a boolean indiciating if there are more accounts remaining to fetch
-        // in the specified range
-        const isMissingRightRange: boolean = await this.verifyRangeProof(
-          this.root,
-          origin,
-          rangeResult
-        )
+        // response data
+        const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
 
         // Check if there is any pending data to be synced to the right
         let completed: boolean
-        if (isMissingRightRange) {
+        if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
           this.debug(
             `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
               rangeResult.accounts.length - 1
@@ -173,6 +206,28 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         } else {
           completed = true
         }
+
+        // queue accounts that have a storage component to them for storage fetching
+        const storageFetchRequests: StorageRequest[] = []
+        for (const account of rangeResult.accounts) {
+          const storageRoot: Buffer = account.body[2] as Buffer
+          if (storageRoot.compare(KECCAK256_RLP) !== 0) {
+            storageFetchRequests.push({
+              accountHash: account.hash,
+              storageRoot,
+              first: BigInt(0),
+              count: BigInt(2) ** BigInt(256) - BigInt(1),
+            })
+          }
+        }
+
+        // TODO have to redesign task functions to be able to enqueue a single task here
+        // TODO we may need to make the enqueue method bellow async and await it here so
+        //      that concurrent fetches to add fetch requests for the same account multiple times
+        // UPDATE just move this to the process phase where things are synchronous by nature
+        if (storageFetchRequests.length > 0)
+          this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
+
         return Object.assign([], rangeResult.accounts, { completed })
       } catch (err) {
         throw Error(`InvalidAccountRange: ${err}`)
@@ -191,6 +246,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>,
     result: AccountDataResponse
   ): AccountData[] | undefined {
+    // TODO this seems like a good spot to enqueue tasks for storage and byte code fetching
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
     if (result.completed === true) {
