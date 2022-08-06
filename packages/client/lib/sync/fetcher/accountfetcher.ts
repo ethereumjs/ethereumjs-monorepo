@@ -29,7 +29,7 @@ export type JobTask = {
 	bytes: bigint
 }
 
-export class AccountFetcher extends Fetcher<
+export class AccountFetcher<JobResult, StorageItem> extends Fetcher<
 	JobTask,
 	Account[],
 	Account
@@ -73,29 +73,8 @@ export class AccountFetcher extends Fetcher<
 	 * @param job
 	 * @param peer
 	 */
-	async request(job: Job<JobTask, Account[], Account>): Promise<Account[] | undefined> {
-        // const { task, peer, partialResult } = job
-        // let { root, origin, limit, bytes } = task
-
-        // const rangeResult = await peer!.snap!.getAccountRange({
-        //   root: root,
-        //   origin: origin,
-        //   limit: limit,
-        //   bytes: bytes,
-        // })
-
-        // for (let i = 0; i < rangeResult.accounts.length; i++) {
-        //   console.log({ 
-        //     account: rangeResult?.accounts[i],
-        //     proof: rangeResult?.proof[i]
-        //    })
-        // }
-
-        // if (rangeResult) {
-        //   process.exit()
-        // }
-        
-        // return
+	async request(job: Job<JobTask, Account[], Account>, peer: Peer): Promise<Account[] | undefined> {
+		return
 	}
 
 	/**
