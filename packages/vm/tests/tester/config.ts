@@ -324,15 +324,15 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
  * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns {Common} the Common which should be used
  */
-export function getCommon(targetNetwork: string) {
-  let network = targetNetwork
-  const networkLowercase = network.toLowerCase()
+export function getCommon(network: string) {
+  let networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
     network = network.slice(0, index)
+    networkLowercase = network.toLowerCase()
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
-    return setupCommonWithNetworks(targetNetwork)
+    return setupCommonWithNetworks(network)
   } else if (networkLowercase.match('tomergeatdiff')) {
     // This is a HF -> Merge transition
     const start = networkLowercase.match('tomergeatdiff')!.index!
