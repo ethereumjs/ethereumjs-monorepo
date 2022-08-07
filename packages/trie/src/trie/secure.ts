@@ -18,9 +18,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    const hash = Buffer.from(this.hash(key))
-    const value = await super.get(hash)
-    return value
+    return super.get(this.hash(key))
   }
 
   /**
@@ -37,8 +35,7 @@ export class SecureTrie extends CheckpointTrie {
     if (isFalsy(val) || val.toString() === '') {
       await this.del(key)
     } else {
-      const hash = Buffer.from(this.hash(key))
-      await super.put(hash, val)
+      await super.put(this.hash(key), val)
     }
   }
 
@@ -47,8 +44,7 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   async del(key: Buffer): Promise<void> {
-    const hash = Buffer.from(this.hash(key))
-    await super.del(hash)
+    await super.del(this.hash(key))
   }
 
   /**
@@ -65,8 +61,7 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   async createProof(key: Buffer): Promise<Proof> {
-    const hash = this.hash(key)
-    return super.createProof(hash)
+    return super.createProof(this.hash(key))
   }
 
   /**
@@ -78,8 +73,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns The value from the key.
    */
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const hash = this.hash(key)
-    return super.verifyProof(rootHash, hash, proof)
+    return super.verifyProof(rootHash, this.hash(key), proof)
   }
 
   /**

@@ -1,11 +1,10 @@
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
-import { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
-import { StateManager } from '@ethereumjs/statemanager'
 import { AccessList, TypedTransaction } from '@ethereumjs/tx'
+import { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import { BigIntLike } from '@ethereumjs/util'
-
+import { BlockchainInterface } from '@ethereumjs/blockchain'
+import { StateManager } from '@ethereumjs/statemanager'
+import { Common } from '@ethereumjs/common'
 import { Bloom } from './bloom'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
@@ -89,7 +88,7 @@ export interface VMOpts {
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
-  blockchain?: Blockchain
+  blockchain?: BlockchainInterface
   /**
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
