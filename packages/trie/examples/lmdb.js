@@ -40,7 +40,6 @@ class LMDB {
   }
 }
 
-
 const trie = new Trie({ db: new LMDB('MY_TRIE_DB_LOCATION') })
 
 async function test() {
