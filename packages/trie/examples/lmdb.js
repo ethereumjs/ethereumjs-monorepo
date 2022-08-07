@@ -30,7 +30,7 @@ class LMDB {
       }
 
       if (op.type === 'del') {
-        await this.del(op.key, op.value)
+        await this.del(op.key)
       }
     }
   }
