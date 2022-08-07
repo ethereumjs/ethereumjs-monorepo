@@ -17,6 +17,7 @@
   },
   "husky": {
     "hooks": {
+      "pre-commit": "lint-staged",
       "pre-push": "npm run lint:diff --workspaces"
     }
   },
@@ -31,7 +32,8 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-sonarjs": "^0.14.0",
-    "husky": "^4.2.5",
+    "husky": "^4.3.8",
+    "lint-staged": "^13.0.3",
     "nyc-report-lcov-absolute": "^1.0.0",
     "sort-package-json": "^1.57.0",
     "typedoc-plugin-markdown": "^3.10.4",
