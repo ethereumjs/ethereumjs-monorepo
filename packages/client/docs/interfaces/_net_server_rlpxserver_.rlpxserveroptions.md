@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* [ServerOptions](_net_server_server_.serveroptions.md)
+- [ServerOptions](_net_server_server_.serveroptions.md)
 
   ↳ **RlpxServerOptions**
 
@@ -12,65 +12,65 @@
 
 ### Properties
 
-* [bootnodes](_net_server_rlpxserver_.rlpxserveroptions.md#optional-bootnodes)
-* [clientFilter](_net_server_rlpxserver_.rlpxserveroptions.md#optional-clientfilter)
-* [config](_net_server_rlpxserver_.rlpxserveroptions.md#config)
-* [key](_net_server_rlpxserver_.rlpxserveroptions.md#optional-key)
-* [port](_net_server_rlpxserver_.rlpxserveroptions.md#optional-port)
-* [refreshInterval](_net_server_rlpxserver_.rlpxserveroptions.md#optional-refreshinterval)
+- [bootnodes](_net_server_rlpxserver_.rlpxserveroptions.md#optional-bootnodes)
+- [clientFilter](_net_server_rlpxserver_.rlpxserveroptions.md#optional-clientfilter)
+- [config](_net_server_rlpxserver_.rlpxserveroptions.md#config)
+- [key](_net_server_rlpxserver_.rlpxserveroptions.md#optional-key)
+- [port](_net_server_rlpxserver_.rlpxserveroptions.md#optional-port)
+- [refreshInterval](_net_server_rlpxserver_.rlpxserveroptions.md#optional-refreshinterval)
 
 ## Properties
 
 ### `Optional` bootnodes
 
-• **bootnodes**? : *[BootnodeLike](../modules/_types_.md#bootnodelike)*
+• **bootnodes**? : _[BootnodeLike](../modules/_types_.md#bootnodelike)_
 
-*Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[bootnodes](_net_server_server_.serveroptions.md#optional-bootnodes)*
+_Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[bootnodes](_net_server_server_.serveroptions.md#optional-bootnodes)_
 
-*Defined in [lib/net/server/server.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L18)*
+_Defined in [lib/net/server/server.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L18)_
 
-___
+---
 
 ### `Optional` clientFilter
 
-• **clientFilter**? : *string[]*
+• **clientFilter**? : _string[]_
 
-*Defined in [lib/net/server/rlpxserver.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L11)*
+_Defined in [lib/net/server/rlpxserver.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L11)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[config](_net_server_server_.serveroptions.md#config)*
+_Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[config](_net_server_server_.serveroptions.md#config)_
 
-*Defined in [lib/net/server/server.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L9)*
+_Defined in [lib/net/server/server.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L9)_
 
-___
+---
 
 ### `Optional` key
 
-• **key**? : *[KeyLike](../modules/_types_.md#keylike)*
+• **key**? : _[KeyLike](../modules/_types_.md#keylike)_
 
-*Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[key](_net_server_server_.serveroptions.md#optional-key)*
+_Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[key](_net_server_server_.serveroptions.md#optional-key)_
 
-*Defined in [lib/net/server/server.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L15)*
+_Defined in [lib/net/server/server.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L15)_
 
-___
+---
 
 ### `Optional` port
 
-• **port**? : *undefined | number*
+• **port**? : _undefined | number_
 
-*Defined in [lib/net/server/rlpxserver.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L8)*
+_Defined in [lib/net/server/rlpxserver.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L8)_
 
-___
+---
 
 ### `Optional` refreshInterval
 
-• **refreshInterval**? : *undefined | number*
+• **refreshInterval**? : _undefined | number_
 
-*Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[refreshInterval](_net_server_server_.serveroptions.md#optional-refreshinterval)*
+_Inherited from [ServerOptions](_net_server_server_.serveroptions.md).[refreshInterval](_net_server_server_.serveroptions.md#optional-refreshinterval)_
 
-*Defined in [lib/net/server/server.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L12)*
+_Defined in [lib/net/server/server.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L12)_

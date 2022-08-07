@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Server](../classes/_net_server_server_.server.md)
+- [Server](../classes/_net_server_server_.server.md)
 
 ### Interfaces
 
-* [ServerOptions](../interfaces/_net_server_server_.serveroptions.md)
+- [ServerOptions](../interfaces/_net_server_server_.serveroptions.md)

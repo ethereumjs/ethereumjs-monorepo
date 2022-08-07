@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* any
+- any
 
   ↳ **Libp2pNode**
 
@@ -12,59 +12,59 @@
 
 ### Constructors
 
-* [constructor](_net_peer_libp2pnode_.libp2pnode.md#constructor)
+- [constructor](_net_peer_libp2pnode_.libp2pnode.md#constructor)
 
 ### Properties
 
-* [asyncDial](_net_peer_libp2pnode_.libp2pnode.md#asyncdial)
-* [asyncDialProtocol](_net_peer_libp2pnode_.libp2pnode.md#asyncdialprotocol)
-* [asyncStart](_net_peer_libp2pnode_.libp2pnode.md#asyncstart)
-* [asyncStop](_net_peer_libp2pnode_.libp2pnode.md#asyncstop)
+- [asyncDial](_net_peer_libp2pnode_.libp2pnode.md#asyncdial)
+- [asyncDialProtocol](_net_peer_libp2pnode_.libp2pnode.md#asyncdialprotocol)
+- [asyncStart](_net_peer_libp2pnode_.libp2pnode.md#asyncstart)
+- [asyncStop](_net_peer_libp2pnode_.libp2pnode.md#asyncstop)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Libp2pNode**(`options`: any): *[Libp2pNode](_net_peer_libp2pnode_.libp2pnode.md)*
+\+ **new Libp2pNode**(`options`: any): _[Libp2pNode](_net_peer_libp2pnode_.libp2pnode.md)_
 
-*Defined in [lib/net/peer/libp2pnode.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L21)*
+_Defined in [lib/net/peer/libp2pnode.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L21)_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`options` | any |
+| Name      | Type |
+| --------- | ---- |
+| `options` | any  |
 
-**Returns:** *[Libp2pNode](_net_peer_libp2pnode_.libp2pnode.md)*
+**Returns:** _[Libp2pNode](_net_peer_libp2pnode_.libp2pnode.md)_
 
 ## Properties
 
-###  asyncDial
+### asyncDial
 
-• **asyncDial**: *Function*
+• **asyncDial**: _Function_
 
-*Defined in [lib/net/peer/libp2pnode.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L20)*
+_Defined in [lib/net/peer/libp2pnode.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L20)_
 
-___
+---
 
-###  asyncDialProtocol
+### asyncDialProtocol
 
-• **asyncDialProtocol**: *Function*
+• **asyncDialProtocol**: _Function_
 
-*Defined in [lib/net/peer/libp2pnode.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L21)*
+_Defined in [lib/net/peer/libp2pnode.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L21)_
 
-___
+---
 
-###  asyncStart
+### asyncStart
 
-• **asyncStart**: *Function*
+• **asyncStart**: _Function_
 
-*Defined in [lib/net/peer/libp2pnode.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L18)*
+_Defined in [lib/net/peer/libp2pnode.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L18)_
 
-___
+---
 
-###  asyncStop
+### asyncStop
 
-• **asyncStop**: *Function*
+• **asyncStop**: _Function_
 
-*Defined in [lib/net/peer/libp2pnode.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L19)*
+_Defined in [lib/net/peer/libp2pnode.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2pnode.ts#L19)_

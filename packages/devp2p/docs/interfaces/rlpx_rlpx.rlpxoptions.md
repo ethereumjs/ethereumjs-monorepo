@@ -27,7 +27,7 @@
 
 [packages/devp2p/src/rlpx/rlpx.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L26)
 
-___
+---
 
 ### clientId
 
@@ -37,7 +37,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L19)
 
-___
+---
 
 ### common
 
@@ -47,27 +47,27 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L27)
 
-___
+---
 
 ### dpt
 
-• `Optional` **dpt**: ``null`` \| [DPT](../classes/dpt_dpt.dpt.md)
+• `Optional` **dpt**: `null` \| [DPT](../classes/dpt_dpt.dpt.md)
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L22)
 
-___
+---
 
 ### listenPort
 
-• `Optional` **listenPort**: ``null`` \| `number`
+• `Optional` **listenPort**: `null` \| `number`
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L28)
 
-___
+---
 
 ### maxPeers
 
@@ -77,7 +77,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L24)
 
-___
+---
 
 ### remoteClientIdFilter
 
@@ -87,7 +87,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L25)
 
-___
+---
 
 ### timeout
 

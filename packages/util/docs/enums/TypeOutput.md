@@ -22,7 +22,7 @@ Type output options
 
 [packages/util/src/types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L85)
 
-___
+---
 
 ### Number
 
@@ -32,7 +32,7 @@ ___
 
 [packages/util/src/types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L83)
 
-___
+---
 
 ### PrefixedHexString
 

@@ -35,7 +35,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 [types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
 
-___
+---
 
 ### cliqueSigner
 
@@ -48,7 +48,7 @@ Will throw if provided on a non-PoA chain.
 
 [types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
 
-___
+---
 
 ### common
 
@@ -68,7 +68,7 @@ Current default hardfork: `istanbul`
 
 [types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L24)
 
-___
+---
 
 ### freeze
 
@@ -88,7 +88,7 @@ Default: true
 
 [types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
-___
+---
 
 ### hardforkByBlockNumber
 
@@ -102,7 +102,7 @@ Default: `false` (HF is set to whatever default HF is set by the {@link Common} 
 
 [types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L30)
 
-___
+---
 
 ### hardforkByTD
 
@@ -121,7 +121,7 @@ pointing to a Shanghai block: this will lead to set the HF as Shanghai and not t
 
 [types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)
 
-___
+---
 
 ### initWithGenesisHeader
 

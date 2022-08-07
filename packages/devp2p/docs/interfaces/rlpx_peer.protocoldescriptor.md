@@ -22,7 +22,7 @@
 
 [packages/devp2p/src/rlpx/peer.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L56)
 
-___
+---
 
 ### offset
 
@@ -32,7 +32,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L55)
 
-___
+---
 
 ### protocol
 

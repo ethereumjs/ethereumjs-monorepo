@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Libp2pServer](../classes/_net_server_libp2pserver_.libp2pserver.md)
+- [Libp2pServer](../classes/_net_server_libp2pserver_.libp2pserver.md)
 
 ### Interfaces
 
-* [Libp2pServerOptions](../interfaces/_net_server_libp2pserver_.libp2pserveroptions.md)
+- [Libp2pServerOptions](../interfaces/_net_server_libp2pserver_.libp2pserveroptions.md)

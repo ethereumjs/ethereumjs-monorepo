@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     browserNoActivityTimeout: 60000,
     frameworks: ['karma-typescript', 'tap'],
@@ -11,8 +11,8 @@ module.exports = function(config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11
-        }
+          ecmaVersion: 11,
+        },
       },
     },
     concurrency: 1,

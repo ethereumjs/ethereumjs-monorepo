@@ -33,10 +33,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
-| `maxAge?` | `number` |
+| Name      | Type                                                                  |
+| :-------- | :-------------------------------------------------------------------- |
+| `obj`     | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
+| `maxAge?` | `number`                                                              |
 
 #### Returns
 
@@ -46,7 +46,7 @@
 
 [packages/devp2p/src/dpt/ban-list.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L16)
 
-___
+---
 
 ### has
 
@@ -54,8 +54,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                  |
+| :---- | :-------------------------------------------------------------------- |
 | `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
 
 #### Returns

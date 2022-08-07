@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Admin](../classes/_rpc_modules_admin_.admin.md)
+- [Admin](../classes/_rpc_modules_admin_.admin.md)

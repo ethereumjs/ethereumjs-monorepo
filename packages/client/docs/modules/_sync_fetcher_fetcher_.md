@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Fetcher](../classes/_sync_fetcher_fetcher_.fetcher.md)
+- [Fetcher](../classes/_sync_fetcher_fetcher_.fetcher.md)
 
 ### Interfaces
 
-* [FetcherOptions](../interfaces/_sync_fetcher_fetcher_.fetcheroptions.md)
+- [FetcherOptions](../interfaces/_sync_fetcher_fetcher_.fetcheroptions.md)

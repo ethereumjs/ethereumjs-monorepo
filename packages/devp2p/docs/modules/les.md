@@ -14,13 +14,13 @@
 
 ### Variables
 
-- [DEFAULT\_ANNOUNCE\_TYPE](les.md#default_announce_type)
+- [DEFAULT_ANNOUNCE_TYPE](les.md#default_announce_type)
 
 ## Variables
 
-### DEFAULT\_ANNOUNCE\_TYPE
+### DEFAULT_ANNOUNCE_TYPE
 
-• `Const` **DEFAULT\_ANNOUNCE\_TYPE**: ``1``
+• `Const` **DEFAULT_ANNOUNCE_TYPE**: `1`
 
 #### Defined in
 

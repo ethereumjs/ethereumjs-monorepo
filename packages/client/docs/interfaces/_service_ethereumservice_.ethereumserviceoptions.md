@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* [ServiceOptions](_service_service_.serviceoptions.md)
+- [ServiceOptions](_service_service_.serviceoptions.md)
 
   ↳ **EthereumServiceOptions**
 
@@ -12,50 +12,50 @@
 
 ### Properties
 
-* [chain](_service_ethereumservice_.ethereumserviceoptions.md#optional-chain)
-* [config](_service_ethereumservice_.ethereumserviceoptions.md#config)
-* [db](_service_ethereumservice_.ethereumserviceoptions.md#optional-db)
-* [interval](_service_ethereumservice_.ethereumserviceoptions.md#optional-interval)
-* [timeout](_service_ethereumservice_.ethereumserviceoptions.md#optional-timeout)
+- [chain](_service_ethereumservice_.ethereumserviceoptions.md#optional-chain)
+- [config](_service_ethereumservice_.ethereumserviceoptions.md#config)
+- [db](_service_ethereumservice_.ethereumserviceoptions.md#optional-db)
+- [interval](_service_ethereumservice_.ethereumserviceoptions.md#optional-interval)
+- [timeout](_service_ethereumservice_.ethereumserviceoptions.md#optional-timeout)
 
 ## Properties
 
 ### `Optional` chain
 
-• **chain**? : *[Chain](../classes/_blockchain_chain_.chain.md)*
+• **chain**? : _[Chain](../classes/_blockchain_chain_.chain.md)_
 
-*Defined in [lib/service/ethereumservice.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L9)*
+_Defined in [lib/service/ethereumservice.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L9)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Inherited from [ServiceOptions](_service_service_.serviceoptions.md).[config](_service_service_.serviceoptions.md#config)*
+_Inherited from [ServiceOptions](_service_service_.serviceoptions.md).[config](_service_service_.serviceoptions.md#config)_
 
-*Defined in [lib/service/service.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L9)*
+_Defined in [lib/service/service.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L9)_
 
-___
+---
 
 ### `Optional` db
 
-• **db**? : *LevelUp*
+• **db**? : _LevelUp_
 
-*Defined in [lib/service/ethereumservice.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L12)*
+_Defined in [lib/service/ethereumservice.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L12)_
 
-___
+---
 
 ### `Optional` interval
 
-• **interval**? : *undefined | number*
+• **interval**? : _undefined | number_
 
-*Defined in [lib/service/ethereumservice.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L18)*
+_Defined in [lib/service/ethereumservice.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L18)_
 
-___
+---
 
 ### `Optional` timeout
 
-• **timeout**? : *undefined | number*
+• **timeout**? : _undefined | number_
 
-*Defined in [lib/service/ethereumservice.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L15)*
+_Defined in [lib/service/ethereumservice.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L15)_

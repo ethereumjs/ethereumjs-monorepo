@@ -89,7 +89,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to _not_ do which you didn't have before).
 
 ### General and BigInt-Related API Changes
 
@@ -161,7 +161,6 @@ The most imminent benefit from this is a **dramatically reduced bundle size for 
 
 - New experimental EIP `EIP-3074`: Authcall, PR [#1789](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1789)
 
-
 ## 2.6.4 - 2022-04-14
 
 ### EIP-3651: Warm COINBASE
@@ -228,7 +227,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacie
 
 ### Optimism L2 Support
 
-There is now a better Optimism L2 chain integration in Common (PR [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)) allowing to directly instantiate an Optimism chain with the `Common.custom()` constructor. Note that this only sets the correct chain ID (and e.g. *not* corresponding HF blocks or similar) and is therefore only suitable for a limited set of use cases (e.g. sending a tx to an Optimism chain).
+There is now a better Optimism L2 chain integration in Common (PR [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)) allowing to directly instantiate an Optimism chain with the `Common.custom()` constructor. Note that this only sets the correct chain ID (and e.g. _not_ corresponding HF blocks or similar) and is therefore only suitable for a limited set of use cases (e.g. sending a tx to an Optimism chain).
 
 Following Optimism chains are now integrated:
 
@@ -255,7 +254,10 @@ In addition to initializing Common with a custom chain configuration it is now a
 ```typescript
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, chain1GenesisState]],
+})
 ```
 
 Accessing the genesis state is now integrated into the `Common` class and can be accessed in a much more natural way by doing:
@@ -301,7 +303,7 @@ Improved Signature Types:
 - -> `bootstrapNodes(): BootstrapNode[]`
 - -> `dnsNetworks(): string[]`
 
-**Potentially TypeScript Breaking**: Note while this is not strictly `TypeScript` breaking this might cause problems e.g. in the combination of using custom chain files with incomplete (but previously unused) parameters. So it is recommended to be a bit careful here. 
+**Potentially TypeScript Breaking**: Note while this is not strictly `TypeScript` breaking this might cause problems e.g. in the combination of using custom chain files with incomplete (but previously unused) parameters. So it is recommended to be a bit careful here.
 
 ### Changed Null Semantics for Hardfork Block Numbers in Chain Files
 
@@ -396,7 +398,7 @@ All new EIPs have their dedicated EIP configuration file and can also be activat
 
 ```typescript
 import Common from '@ethereumjs/common'
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [ 3529 ] })
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3529] })
 ```
 
 ### Bug Fixes
@@ -494,11 +496,14 @@ This new way adds a new `customChains` constructor option and can be used as fol
 import myCustomChain1 from './[PATH]/myCustomChain1.json'
 import myCustomChain2 from './[PATH]/myCustomChain2.json'
 // Add two custom chains, initial mainnet activation
-const common1 = new Common({ chain: 'mainnet', customChains: [ myCustomChain1, myCustomChain2 ] })
+const common1 = new Common({ chain: 'mainnet', customChains: [myCustomChain1, myCustomChain2] })
 // Somewhat later down the road...
 common1.setChain('customChain1')
 // Add two custom chains, activate customChain1
-const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
+const common1 = new Common({
+  chain: 'customChain1',
+  customChains: [myCustomChain1, myCustomChain2],
+})
 ```
 
 The [README section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#working-with-privatecustom-chains) on working with custom chains has been significantly expanded along the way and is a recommended read if you use common for custom chain initialization.
@@ -707,8 +712,8 @@ Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethe
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` 
+We significantly updated our internal tool and CI setup along the work on
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce

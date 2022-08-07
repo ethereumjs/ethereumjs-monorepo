@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [LightSynchronizer](../classes/_sync_lightsync_.lightsynchronizer.md)
+- [LightSynchronizer](../classes/_sync_lightsync_.lightsynchronizer.md)

@@ -4,36 +4,36 @@
 
 ## Hierarchy
 
-* **Bootnode**
+- **Bootnode**
 
 ## Index
 
 ### Properties
 
-* [id](_types_.bootnode.md#optional-id)
-* [ip](_types_.bootnode.md#ip)
-* [port](_types_.bootnode.md#port)
+- [id](_types_.bootnode.md#optional-id)
+- [ip](_types_.bootnode.md#ip)
+- [port](_types_.bootnode.md#port)
 
 ## Properties
 
 ### `Optional` id
 
-• **id**? : *string | null*
+• **id**? : _string | null_
 
-*Defined in [lib/types.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L8)*
+_Defined in [lib/types.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L8)_
 
-___
+---
 
-###  ip
+### ip
 
-• **ip**: *string | null*
+• **ip**: _string | null_
 
-*Defined in [lib/types.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L9)*
+_Defined in [lib/types.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L9)_
 
-___
+---
 
-###  port
+### port
 
-• **port**: *number*
+• **port**: _number_
 
-*Defined in [lib/types.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L10)*
+_Defined in [lib/types.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L10)_

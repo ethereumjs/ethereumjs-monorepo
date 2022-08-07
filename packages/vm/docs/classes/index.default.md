@@ -50,8 +50,8 @@ Instantiates a new {@link VM} Object.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                      |
+| :----- | :---------------------------------------- |
 | `opts` | [`VMOpts`](../interfaces/index.VMOpts.md) |
 
 #### Overrides
@@ -72,7 +72,7 @@ AsyncEventEmitter.constructor
 
 [index.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L126)
 
-___
+---
 
 ### blockchain
 
@@ -84,7 +84,7 @@ The blockchain the VM operates on
 
 [index.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L124)
 
-___
+---
 
 ### stateManager
 
@@ -111,8 +111,8 @@ or discarded with [BlockBuilder.revert](buildBlock.BlockBuilder.md#revert).
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                           |
+| :----- | :------------------------------------------------------------- |
 | `opts` | [`BuildBlockOpts`](../interfaces/buildBlock.BuildBlockOpts.md) |
 
 #### Returns
@@ -120,6 +120,7 @@ or discarded with [BlockBuilder.revert](buildBlock.BlockBuilder.md#revert).
 `Promise`<[`BlockBuilder`](buildBlock.BlockBuilder.md)\>
 
 An instance of [BlockBuilder](buildBlock.BlockBuilder.md) with methods:
+
 - [BlockBuilder.addTransaction](buildBlock.BlockBuilder.md#addtransaction)
 - [BlockBuilder.build](buildBlock.BlockBuilder.md#build)
 - [BlockBuilder.revert](buildBlock.BlockBuilder.md#revert)
@@ -128,7 +129,7 @@ An instance of [BlockBuilder](buildBlock.BlockBuilder.md) with methods:
 
 [index.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L370)
 
-___
+---
 
 ### copy
 
@@ -144,7 +145,7 @@ Returns a copy of the {@link VM} instance.
 
 [index.ts:386](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L386)
 
-___
+---
 
 ### getActiveOpcodes
 
@@ -161,7 +162,7 @@ available for VM execution
 
 [index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L379)
 
-___
+---
 
 ### init
 
@@ -175,7 +176,7 @@ ___
 
 [index.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L256)
 
-___
+---
 
 ### runBlock
 
@@ -189,9 +190,9 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `opts` | [`RunBlockOpts`](../interfaces/runBlock.RunBlockOpts.md) | Default values for options:  - `generate`: false |
+| Name   | Type                                                     | Description                                     |
+| :----- | :------------------------------------------------------- | :---------------------------------------------- |
+| `opts` | [`RunBlockOpts`](../interfaces/runBlock.RunBlockOpts.md) | Default values for options: - `generate`: false |
 
 #### Returns
 
@@ -201,7 +202,7 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 [index.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L313)
 
-___
+---
 
 ### runBlockchain
 
@@ -213,10 +214,10 @@ This method modifies the state.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name          | Type      | Description                            |
+| :------------ | :-------- | :------------------------------------- |
 | `blockchain?` | `default` | A {@link Blockchain} object to process |
-| `maxBlocks?` | `number` | - |
+| `maxBlocks?`  | `number`  | -                                      |
 
 #### Returns
 
@@ -226,7 +227,7 @@ This method modifies the state.
 
 [index.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L298)
 
-___
+---
 
 ### runCall
 
@@ -238,8 +239,8 @@ This method modifies the state.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                  |
+| :----- | :---------------------------------------------------- |
 | `opts` | [`RunCallOpts`](../interfaces/runCall.RunCallOpts.md) |
 
 #### Returns
@@ -250,7 +251,7 @@ This method modifies the state.
 
 [index.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L339)
 
-___
+---
 
 ### runCode
 
@@ -262,8 +263,8 @@ This method modifies the state.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                  |
+| :----- | :---------------------------------------------------- |
 | `opts` | [`RunCodeOpts`](../interfaces/runCode.RunCodeOpts.md) |
 
 #### Returns
@@ -274,7 +275,7 @@ This method modifies the state.
 
 [index.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L351)
 
-___
+---
 
 ### runTx
 
@@ -288,8 +289,8 @@ reverted.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                            |
+| :----- | :---------------------------------------------- |
 | `opts` | [`RunTxOpts`](../interfaces/runTx.RunTxOpts.md) |
 
 #### Returns
@@ -300,7 +301,7 @@ reverted.
 
 [index.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L327)
 
-___
+---
 
 ### create
 
@@ -310,8 +311,8 @@ VM async constructor. Creates engine instance and initializes it.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name   | Type                                      | Description                   |
+| :----- | :---------------------------------------- | :---------------------------- |
 | `opts` | [`VMOpts`](../interfaces/index.VMOpts.md) | VM engine constructor options |
 
 #### Returns

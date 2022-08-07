@@ -34,7 +34,7 @@ passed in via [CommonOpts.customChains](CommonOpts.md#customchains).
 
 [packages/common/src/index.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L130)
 
-___
+---
 
 ### customChains
 
@@ -49,7 +49,7 @@ Pattern 1 (without genesis state):
 
 ```javascript
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
+const common = new Common({ chain: 'myCustomChain1', customChains: [myCustomChain1] })
 ```
 
 Pattern 2 (with genesis state see {@link GenesisState} for format):
@@ -60,7 +60,10 @@ const simpleState = {
 }
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, simpleState ] ]})
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, simpleState]],
+})
 ```
 
 Pattern 3 (with complex genesis state, containing contract accounts and storage).
@@ -72,17 +75,27 @@ A complex genesis state with Contract and EoA states would have the following fo
 ```javascript
 const complexState = {
   '0x0...01': '0x100', // For EoA
-  '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
+  '0x0...02': [
+    '0x1',
+    '0xRUNTIME_BYTECODE',
+    [
+      [keyOne, valueOne],
+      [keyTwo, valueTwo],
+    ],
+  ], // For contracts
 }
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, complexState]],
+})
 ```
 
 #### Defined in
 
 [packages/common/src/index.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L170)
 
-___
+---
 
 ### eips
 
@@ -103,7 +116,7 @@ BaseOpts.eips
 
 [packages/common/src/index.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L118)
 
-___
+---
 
 ### hardfork
 
@@ -121,7 +134,7 @@ BaseOpts.hardfork
 
 [packages/common/src/index.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L105)
 
-___
+---
 
 ### supportedHardforks
 

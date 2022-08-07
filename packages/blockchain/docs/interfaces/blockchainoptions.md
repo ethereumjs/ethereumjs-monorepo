@@ -29,7 +29,7 @@ If not provided this defaults to chain `mainnet` and hardfork `chainstart`
 
 [index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L71)
 
-___
+---
 
 ### db
 
@@ -39,15 +39,15 @@ Database to store blocks and metadata.
 Should be an `abstract-leveldown` compliant store
 wrapped with `encoding-down`.
 For example:
-  `levelup(encode(leveldown('./db1')))`
+`levelup(encode(leveldown('./db1')))`
 or use the `level` convenience package:
-  `level('./db1')`
+`level('./db1')`
 
 #### Defined in
 
 [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L93)
 
-___
+---
 
 ### genesisBlock
 
@@ -63,7 +63,7 @@ provided from the `common` will be used.
 
 [index.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L121)
 
-___
+---
 
 ### hardforkByHeadBlockNumber
 
@@ -81,7 +81,7 @@ Default: `false` (HF is set to whatever default HF is set by the {@link Common} 
 
 [index.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L82)
 
-___
+---
 
 ### validateBlocks
 
@@ -95,7 +95,7 @@ see Block#validate for details.
 
 [index.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L112)
 
-___
+---
 
 ### validateConsensus
 
@@ -105,9 +105,10 @@ This flags indicates if a block should be validated along the consensus algorith
 or protocol used by the chain, e.g. by verifying the PoW on the block.
 
 Supported consensus types and algorithms (taken from the `Common` instance):
+
 - 'pow' with 'ethash' algorithm (validates the proof-of-work)
 - 'poa' with 'clique' algorithm (verifies the block signatures)
-Default: `true`.
+  Default: `true`.
 
 #### Defined in
 

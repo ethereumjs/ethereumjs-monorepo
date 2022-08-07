@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Config](../classes/_config_.config.md)
+- [Config](../classes/_config_.config.md)
 
 ### Interfaces
 
-* [ConfigOptions](../interfaces/_config_.configoptions.md)
+- [ConfigOptions](../interfaces/_config_.configoptions.md)

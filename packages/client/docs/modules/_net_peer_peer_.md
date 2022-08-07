@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Peer](../classes/_net_peer_peer_.peer.md)
+- [Peer](../classes/_net_peer_peer_.peer.md)
 
 ### Interfaces
 
-* [PeerOptions](../interfaces/_net_peer_peer_.peeroptions.md)
+- [PeerOptions](../interfaces/_net_peer_peer_.peeroptions.md)

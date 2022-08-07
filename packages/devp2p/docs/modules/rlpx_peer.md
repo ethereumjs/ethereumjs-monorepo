@@ -6,7 +6,7 @@
 
 ### Enumerations
 
-- [DISCONNECT\_REASONS](../enums/rlpx_peer.disconnect_reasons.md)
+- [DISCONNECT_REASONS](../enums/rlpx_peer.disconnect_reasons.md)
 - [PREFIXES](../enums/rlpx_peer.prefixes.md)
 
 ### Classes
@@ -26,9 +26,9 @@
 
 ### Variables
 
-- [BASE\_PROTOCOL\_LENGTH](rlpx_peer.md#base_protocol_length)
-- [BASE\_PROTOCOL\_VERSION](rlpx_peer.md#base_protocol_version)
-- [PING\_INTERVAL](rlpx_peer.md#ping_interval)
+- [BASE_PROTOCOL_LENGTH](rlpx_peer.md#base_protocol_length)
+- [BASE_PROTOCOL_VERSION](rlpx_peer.md#base_protocol_version)
+- [PING_INTERVAL](rlpx_peer.md#ping_interval)
 
 ## Type aliases
 
@@ -38,14 +38,14 @@
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `0` | `Buffer` |
-| `1` | `Buffer` |
-| `2` | `Buffer`[][] |
-| `3` | `Buffer` |
-| `4` | `Buffer` |
-| `length` | ``5`` |
+| Name     | Type         |
+| :------- | :----------- |
+| `0`      | `Buffer`     |
+| `1`      | `Buffer`     |
+| `2`      | `Buffer`[][] |
+| `3`      | `Buffer`     |
+| `4`      | `Buffer`     |
+| `length` | `5`          |
 
 #### Defined in
 
@@ -53,29 +53,29 @@
 
 ## Variables
 
-### BASE\_PROTOCOL\_LENGTH
+### BASE_PROTOCOL_LENGTH
 
-• `Const` **BASE\_PROTOCOL\_LENGTH**: ``16``
+• `Const` **BASE_PROTOCOL_LENGTH**: `16`
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/peer.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L17)
 
-___
+---
 
-### BASE\_PROTOCOL\_VERSION
+### BASE_PROTOCOL_VERSION
 
-• `Const` **BASE\_PROTOCOL\_VERSION**: ``4``
+• `Const` **BASE_PROTOCOL_VERSION**: `4`
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/peer.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L16)
 
-___
+---
 
-### PING\_INTERVAL
+### PING_INTERVAL
 
-• `Const` **PING\_INTERVAL**: `number`
+• `Const` **PING_INTERVAL**: `number`
 
 #### Defined in
 

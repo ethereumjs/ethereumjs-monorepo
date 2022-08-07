@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* **ServerOptions**
+- **ServerOptions**
 
   ↳ [RlpxServerOptions](_net_server_rlpxserver_.rlpxserveroptions.md)
 
@@ -14,39 +14,39 @@
 
 ### Properties
 
-* [bootnodes](_net_server_server_.serveroptions.md#optional-bootnodes)
-* [config](_net_server_server_.serveroptions.md#config)
-* [key](_net_server_server_.serveroptions.md#optional-key)
-* [refreshInterval](_net_server_server_.serveroptions.md#optional-refreshinterval)
+- [bootnodes](_net_server_server_.serveroptions.md#optional-bootnodes)
+- [config](_net_server_server_.serveroptions.md#config)
+- [key](_net_server_server_.serveroptions.md#optional-key)
+- [refreshInterval](_net_server_server_.serveroptions.md#optional-refreshinterval)
 
 ## Properties
 
 ### `Optional` bootnodes
 
-• **bootnodes**? : *[BootnodeLike](../modules/_types_.md#bootnodelike)*
+• **bootnodes**? : _[BootnodeLike](../modules/_types_.md#bootnodelike)_
 
-*Defined in [lib/net/server/server.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L18)*
+_Defined in [lib/net/server/server.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L18)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/net/server/server.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L9)*
+_Defined in [lib/net/server/server.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L9)_
 
-___
+---
 
 ### `Optional` key
 
-• **key**? : *[KeyLike](../modules/_types_.md#keylike)*
+• **key**? : _[KeyLike](../modules/_types_.md#keylike)_
 
-*Defined in [lib/net/server/server.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L15)*
+_Defined in [lib/net/server/server.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L15)_
 
-___
+---
 
 ### `Optional` refreshInterval
 
-• **refreshInterval**? : *undefined | number*
+• **refreshInterval**? : _undefined | number_
 
-*Defined in [lib/net/server/server.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L12)*
+_Defined in [lib/net/server/server.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L12)_

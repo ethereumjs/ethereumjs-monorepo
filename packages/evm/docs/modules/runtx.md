@@ -24,11 +24,11 @@ Returns the tx receipt.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `tx` | `TypedTransaction` | The transaction |
-| `txResult` | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) | The tx result |
-| `cumulativeGasUsed` | `BN` | The gas used in the block including this tx |
+| Name                | Type                                                | Description                                 |
+| :------------------ | :-------------------------------------------------- | :------------------------------------------ |
+| `tx`                | `TypedTransaction`                                  | The transaction                             |
+| `txResult`          | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) | The tx result                               |
+| `cumulativeGasUsed` | `BN`                                                | The gas used in the block including this tx |
 
 #### Returns
 

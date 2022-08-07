@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [FullSynchronizer](../classes/_sync_fullsync_.fullsynchronizer.md)
+- [FullSynchronizer](../classes/_sync_fullsync_.fullsynchronizer.md)

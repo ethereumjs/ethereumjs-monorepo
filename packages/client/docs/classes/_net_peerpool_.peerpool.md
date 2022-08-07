@@ -24,7 +24,7 @@ Pool of connected peers
 
 ## Hierarchy
 
-* EventEmitter
+- EventEmitter
 
   ↳ **PeerPool**
 
@@ -32,94 +32,94 @@ Pool of connected peers
 
 ### Constructors
 
-* [constructor](_net_peerpool_.peerpool.md#constructor)
+- [constructor](_net_peerpool_.peerpool.md#constructor)
 
 ### Properties
 
-* [config](_net_peerpool_.peerpool.md#config)
-* [defaultMaxListeners](_net_peerpool_.peerpool.md#static-defaultmaxlisteners)
-* [errorMonitor](_net_peerpool_.peerpool.md#static-errormonitor)
+- [config](_net_peerpool_.peerpool.md#config)
+- [defaultMaxListeners](_net_peerpool_.peerpool.md#static-defaultmaxlisteners)
+- [errorMonitor](_net_peerpool_.peerpool.md#static-errormonitor)
 
 ### Accessors
 
-* [peers](_net_peerpool_.peerpool.md#peers)
-* [size](_net_peerpool_.peerpool.md#size)
+- [peers](_net_peerpool_.peerpool.md#peers)
+- [size](_net_peerpool_.peerpool.md#size)
 
 ### Methods
 
-* [_statusCheck](_net_peerpool_.peerpool.md#_statuscheck)
-* [add](_net_peerpool_.peerpool.md#add)
-* [addListener](_net_peerpool_.peerpool.md#addlistener)
-* [ban](_net_peerpool_.peerpool.md#ban)
-* [close](_net_peerpool_.peerpool.md#close)
-* [connected](_net_peerpool_.peerpool.md#private-connected)
-* [contains](_net_peerpool_.peerpool.md#contains)
-* [disconnected](_net_peerpool_.peerpool.md#private-disconnected)
-* [emit](_net_peerpool_.peerpool.md#emit)
-* [eventNames](_net_peerpool_.peerpool.md#eventnames)
-* [getMaxListeners](_net_peerpool_.peerpool.md#getmaxlisteners)
-* [idle](_net_peerpool_.peerpool.md#idle)
-* [init](_net_peerpool_.peerpool.md#init)
-* [listenerCount](_net_peerpool_.peerpool.md#listenercount)
-* [listeners](_net_peerpool_.peerpool.md#listeners)
-* [off](_net_peerpool_.peerpool.md#off)
-* [on](_net_peerpool_.peerpool.md#on)
-* [once](_net_peerpool_.peerpool.md#once)
-* [open](_net_peerpool_.peerpool.md#open)
-* [prependListener](_net_peerpool_.peerpool.md#prependlistener)
-* [prependOnceListener](_net_peerpool_.peerpool.md#prependoncelistener)
-* [rawListeners](_net_peerpool_.peerpool.md#rawlisteners)
-* [remove](_net_peerpool_.peerpool.md#remove)
-* [removeAllListeners](_net_peerpool_.peerpool.md#removealllisteners)
-* [removeListener](_net_peerpool_.peerpool.md#removelistener)
-* [setMaxListeners](_net_peerpool_.peerpool.md#setmaxlisteners)
-* [listenerCount](_net_peerpool_.peerpool.md#static-listenercount)
+- [\_statusCheck](_net_peerpool_.peerpool.md#_statuscheck)
+- [add](_net_peerpool_.peerpool.md#add)
+- [addListener](_net_peerpool_.peerpool.md#addlistener)
+- [ban](_net_peerpool_.peerpool.md#ban)
+- [close](_net_peerpool_.peerpool.md#close)
+- [connected](_net_peerpool_.peerpool.md#private-connected)
+- [contains](_net_peerpool_.peerpool.md#contains)
+- [disconnected](_net_peerpool_.peerpool.md#private-disconnected)
+- [emit](_net_peerpool_.peerpool.md#emit)
+- [eventNames](_net_peerpool_.peerpool.md#eventnames)
+- [getMaxListeners](_net_peerpool_.peerpool.md#getmaxlisteners)
+- [idle](_net_peerpool_.peerpool.md#idle)
+- [init](_net_peerpool_.peerpool.md#init)
+- [listenerCount](_net_peerpool_.peerpool.md#listenercount)
+- [listeners](_net_peerpool_.peerpool.md#listeners)
+- [off](_net_peerpool_.peerpool.md#off)
+- [on](_net_peerpool_.peerpool.md#on)
+- [once](_net_peerpool_.peerpool.md#once)
+- [open](_net_peerpool_.peerpool.md#open)
+- [prependListener](_net_peerpool_.peerpool.md#prependlistener)
+- [prependOnceListener](_net_peerpool_.peerpool.md#prependoncelistener)
+- [rawListeners](_net_peerpool_.peerpool.md#rawlisteners)
+- [remove](_net_peerpool_.peerpool.md#remove)
+- [removeAllListeners](_net_peerpool_.peerpool.md#removealllisteners)
+- [removeListener](_net_peerpool_.peerpool.md#removelistener)
+- [setMaxListeners](_net_peerpool_.peerpool.md#setmaxlisteners)
+- [listenerCount](_net_peerpool_.peerpool.md#static-listenercount)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new PeerPool**(`options`: [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md)): *[PeerPool](_net_peerpool_.peerpool.md)*
+\+ **new PeerPool**(`options`: [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md)): _[PeerPool](_net_peerpool_.peerpool.md)_
 
-*Overrides void*
+_Overrides void_
 
-*Defined in [lib/net/peerpool.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L33)*
+_Defined in [lib/net/peerpool.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L33)_
 
 Create new peer pool
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`options` | [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md) | constructor parameters  |
+| Name      | Type                                                               | Description            |
+| --------- | ------------------------------------------------------------------ | ---------------------- |
+| `options` | [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md) | constructor parameters |
 
-**Returns:** *[PeerPool](_net_peerpool_.peerpool.md)*
+**Returns:** _[PeerPool](_net_peerpool_.peerpool.md)_
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Defined in [lib/net/peerpool.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L28)*
+_Defined in [lib/net/peerpool.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L28)_
 
-___
+---
 
 ### `Static` defaultMaxListeners
 
-▪ **defaultMaxListeners**: *number*
+▪ **defaultMaxListeners**: _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:45
 
-___
+---
 
 ### `Static` errorMonitor
 
-▪ **errorMonitor**: *keyof symbol*
+▪ **errorMonitor**: _keyof symbol_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)_
 
 Defined in node_modules/@types/node/events.d.ts:55
 
@@ -133,49 +133,49 @@ regular `'error'` listener is installed.
 
 ## Accessors
 
-###  peers
+### peers
 
-• **get peers**(): *[Peer](_net_peer_peer_.peer.md)[]*
+• **get peers**(): _[Peer](_net_peer_peer_.peer.md)[]_
 
-*Defined in [lib/net/peerpool.ts:90](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L90)*
+_Defined in [lib/net/peerpool.ts:90](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L90)_
 
 Connected peers
 
-**Returns:** *[Peer](_net_peer_peer_.peer.md)[]*
+**Returns:** _[Peer](_net_peer_peer_.peer.md)[]_
 
-___
+---
 
-###  size
+### size
 
-• **get size**(): *number*
+• **get size**(): _number_
 
-*Defined in [lib/net/peerpool.ts:99](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L99)*
+_Defined in [lib/net/peerpool.ts:99](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L99)_
 
 Number of peers in pool
 
 **`type`** {number}
 
-**Returns:** *number*
+**Returns:** _number_
 
 ## Methods
 
-###  _statusCheck
+### \_statusCheck
 
-▸ **_statusCheck**(): *Promise‹void›*
+▸ **\_statusCheck**(): _Promise‹void›_
 
-*Defined in [lib/net/peerpool.ts:202](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L202)*
+_Defined in [lib/net/peerpool.ts:202](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L202)_
 
 Peer pool status check on a repeated interval
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  add
+### add
 
-▸ **add**(`peer?`: [Peer](_net_peer_peer_.peer.md)): *void*
+▸ **add**(`peer?`: [Peer](_net_peer_peer_.peer.md)): _void_
 
-*Defined in [lib/net/peerpool.ts:179](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L179)*
+_Defined in [lib/net/peerpool.ts:179](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L179)_
 
 Add peer to pool
 
@@ -187,45 +187,45 @@ Add peer to pool
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`peer?` | [Peer](_net_peer_peer_.peer.md) |
+| Name    | Type                            |
+| ------- | ------------------------------- |
+| `peer?` | [Peer](_net_peer_peer_.peer.md) |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  ban
+### ban
 
-▸ **ban**(`peer`: [Peer](_net_peer_peer_.peer.md), `maxAge`: number): *void*
+▸ **ban**(`peer`: [Peer](_net_peer_peer_.peer.md), `maxAge`: number): _void_
 
-*Defined in [lib/net/peerpool.ts:162](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L162)*
+_Defined in [lib/net/peerpool.ts:162](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L162)_
 
 Ban peer from being added to the pool for a period of time
 
@@ -233,353 +233,353 @@ Ban peer from being added to the pool for a period of time
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`peer` | [Peer](_net_peer_peer_.peer.md) | - | - |
-`maxAge` | number | 60000 | ban period in milliseconds |
+| Name     | Type                            | Default | Description                |
+| -------- | ------------------------------- | ------- | -------------------------- |
+| `peer`   | [Peer](_net_peer_peer_.peer.md) | -       | -                          |
+| `maxAge` | number                          | 60000   | ban period in milliseconds |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  close
+### close
 
-▸ **close**(): *Promise‹void›*
+▸ **close**(): _Promise‹void›_
 
-*Defined in [lib/net/peerpool.ts:81](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L81)*
+_Defined in [lib/net/peerpool.ts:81](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L81)_
 
 Close pool
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
 ### `Private` connected
 
-▸ **connected**(`peer`: [Peer](_net_peer_peer_.peer.md)): *void*
+▸ **connected**(`peer`: [Peer](_net_peer_peer_.peer.md)): _void_
 
-*Defined in [lib/net/peerpool.ts:130](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L130)*
+_Defined in [lib/net/peerpool.ts:130](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L130)_
 
 Handler for peer connections
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`peer` | [Peer](_net_peer_peer_.peer.md) |   |
+| Name   | Type                            | Description |
+| ------ | ------------------------------- | ----------- |
+| `peer` | [Peer](_net_peer_peer_.peer.md) |             |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  contains
+### contains
 
-▸ **contains**(`peer`: [Peer](_net_peer_peer_.peer.md) | string): *boolean*
+▸ **contains**(`peer`: [Peer](_net_peer_peer_.peer.md) | string): _boolean_
 
-*Defined in [lib/net/peerpool.ts:107](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L107)*
+_Defined in [lib/net/peerpool.ts:107](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L107)_
 
 Return true if pool contains the specified peer
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`peer` | [Peer](_net_peer_peer_.peer.md) &#124; string | object or peer id  |
+| Name   | Type                                          | Description       |
+| ------ | --------------------------------------------- | ----------------- |
+| `peer` | [Peer](_net_peer_peer_.peer.md) &#124; string | object or peer id |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
 ### `Private` disconnected
 
-▸ **disconnected**(`peer`: [Peer](_net_peer_peer_.peer.md)): *void*
+▸ **disconnected**(`peer`: [Peer](_net_peer_peer_.peer.md)): _void_
 
-*Defined in [lib/net/peerpool.ts:152](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L152)*
+_Defined in [lib/net/peerpool.ts:152](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L152)_
 
 Handler for peer disconnections
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`peer` | [Peer](_net_peer_peer_.peer.md) |   |
+| Name   | Type                            | Description |
+| ------ | ------------------------------- | ----------- |
+| `peer` | [Peer](_net_peer_peer_.peer.md) |             |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  idle
+### idle
 
-▸ **idle**(`filterFn`: (Anonymous function)): *[Peer](_net_peer_peer_.peer.md)*
+▸ **idle**(`filterFn`: (Anonymous function)): _[Peer](_net_peer_peer_.peer.md)_
 
-*Defined in [lib/net/peerpool.ts:119](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L119)*
+_Defined in [lib/net/peerpool.ts:119](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L119)_
 
 Returns a random idle peer from the pool
 
 **Parameters:**
 
-Name | Type | Default |
------- | ------ | ------ |
-`filterFn` | (Anonymous function) | (_peer: Peer) => true |
+| Name       | Type                 | Default                |
+| ---------- | -------------------- | ---------------------- |
+| `filterFn` | (Anonymous function) | (\_peer: Peer) => true |
 
-**Returns:** *[Peer](_net_peer_peer_.peer.md)*
+**Returns:** _[Peer](_net_peer_peer_.peer.md)_
 
-___
+---
 
-###  init
+### init
 
-▸ **init**(): *void*
+▸ **init**(): _void_
 
-*Defined in [lib/net/peerpool.ts:52](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L52)*
+_Defined in [lib/net/peerpool.ts:52](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L52)_
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  open
+### open
 
-▸ **open**(): *Promise‹boolean | void›*
+▸ **open**(): _Promise‹boolean | void›_
 
-*Defined in [lib/net/peerpool.ts:60](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L60)*
+_Defined in [lib/net/peerpool.ts:60](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L60)_
 
 Open pool
 
-**Returns:** *Promise‹boolean | void›*
+**Returns:** _Promise‹boolean | void›_
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  remove
+### remove
 
-▸ **remove**(`peer?`: [Peer](_net_peer_peer_.peer.md)): *void*
+▸ **remove**(`peer?`: [Peer](_net_peer_peer_.peer.md)): _void_
 
-*Defined in [lib/net/peerpool.ts:191](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L191)*
+_Defined in [lib/net/peerpool.ts:191](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L191)_
 
 Remove peer from pool
 
@@ -587,81 +587,81 @@ Remove peer from pool
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`peer?` | [Peer](_net_peer_peer_.peer.md) |
+| Name    | Type                            |
+| ------- | ------------------------------- |
+| `peer?` | [Peer](_net_peer_peer_.peer.md) |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
 ### `Static` listenerCount
 
-▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): *number*
+▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:44
 
@@ -669,9 +669,9 @@ Defined in node_modules/@types/node/events.d.ts:44
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`emitter` | EventEmitter |
-`event` | string &#124; symbol |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `emitter` | EventEmitter         |
+| `event`   | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_

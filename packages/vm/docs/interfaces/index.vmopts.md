@@ -39,7 +39,7 @@ Default: `false`
 
 [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L93)
 
-___
+---
 
 ### allowUnlimitedContractSize
 
@@ -54,7 +54,7 @@ Default: `false` [ONLY set to `true` during debugging]
 
 [index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L100)
 
-___
+---
 
 ### blockchain
 
@@ -66,7 +66,7 @@ A {@link Blockchain} object for storing/retrieving blocks
 
 [index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L80)
 
-___
+---
 
 ### common
 
@@ -94,7 +94,7 @@ if you want to change the chain setup.
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
 
-*Annotations:*
+_Annotations:_
 
 - `experimental`: behaviour can change on patch versions
 
@@ -110,7 +110,7 @@ Default setup if no `Common` instance is provided:
 
 [index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L67)
 
-___
+---
 
 ### hardforkByBlockNumber
 
@@ -124,7 +124,7 @@ Default: `false`
 
 [index.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L107)
 
-___
+---
 
 ### state
 
@@ -138,7 +138,7 @@ A {@link SecureTrie} instance for the state tree (ignored if stateManager is pas
 
 [index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L76)
 
-___
+---
 
 ### stateManager
 

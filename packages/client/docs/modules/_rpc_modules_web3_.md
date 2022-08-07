@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Web3](../classes/_rpc_modules_web3_.web3.md)
+- [Web3](../classes/_rpc_modules_web3_.web3.md)

@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [PeerPool](../classes/_net_peerpool_.peerpool.md)
+- [PeerPool](../classes/_net_peerpool_.peerpool.md)
 
 ### Interfaces
 
-* [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md)
+- [PeerPoolOptions](../interfaces/_net_peerpool_.peerpooloptions.md)

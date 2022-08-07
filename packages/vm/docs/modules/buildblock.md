@@ -25,8 +25,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                           |
+| :----- | :------------------------------------------------------------- |
 | `opts` | [`BuildBlockOpts`](../interfaces/buildBlock.BuildBlockOpts.md) |
 
 #### Returns

@@ -6,19 +6,19 @@
 
 ### Functions
 
-* [middleware](_rpc_validation_.md#middleware)
+- [middleware](_rpc_validation_.md#middleware)
 
 ### Object literals
 
-* [validators](_rpc_validation_.md#const-validators)
+- [validators](_rpc_validation_.md#const-validators)
 
 ## Functions
 
-###  middleware
+### middleware
 
-▸ **middleware**(`method`: any, `requiredParamsCount`: number, `validators`: any[]): *any*
+▸ **middleware**(`method`: any, `requiredParamsCount`: number, `validators`: any[]): _any_
 
-*Defined in [lib/rpc/validation.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L10)*
+_Defined in [lib/rpc/validation.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L10)_
 
 middleware for parameters validation
 
@@ -26,71 +26,71 @@ middleware for parameters validation
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`method` | any | - | function to add middleware |
-`requiredParamsCount` | number | - | required parameters count |
-`validators` | any[] | [] | array of validator  |
+| Name                  | Type   | Default | Description                |
+| --------------------- | ------ | ------- | -------------------------- |
+| `method`              | any    | -       | function to add middleware |
+| `requiredParamsCount` | number | -       | required parameters count  |
+| `validators`          | any[]  | []      | array of validator         |
 
-**Returns:** *any*
+**Returns:** _any_
 
 ## Object literals
 
 ### `Const` validators
 
-### ▪ **validators**: *object*
+### ▪ **validators**: _object_
 
-*Defined in [lib/rpc/validation.ts:38](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L38)*
+_Defined in [lib/rpc/validation.ts:38](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L38)_
 
 **`memberof`** module:rpc
 
-###  blockHash
+### blockHash
 
-▸ **blockHash**(`params`: any[], `index`: number): *any*
+▸ **blockHash**(`params`: any[], `index`: number): _any_
 
-*Defined in [lib/rpc/validation.ts:68](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L68)*
+_Defined in [lib/rpc/validation.ts:68](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L68)_
 
 hex validator to validate block hash
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`params` | any[] | parameters of method |
-`index` | number | index of parameter  |
+| Name     | Type   | Description          |
+| -------- | ------ | -------------------- |
+| `params` | any[]  | parameters of method |
+| `index`  | number | index of parameter   |
 
-**Returns:** *any*
+**Returns:** _any_
 
-###  bool
+### bool
 
-▸ **bool**(`params`: any[], `index`: number): *any*
+▸ **bool**(`params`: any[], `index`: number): _any_
 
-*Defined in [lib/rpc/validation.ts:95](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L95)*
+_Defined in [lib/rpc/validation.ts:95](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L95)_
 
 bool validator to check if type is boolean
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`params` | any[] | parameters of method |
-`index` | number | index of parameter  |
+| Name     | Type   | Description          |
+| -------- | ------ | -------------------- |
+| `params` | any[]  | parameters of method |
+| `index`  | number | index of parameter   |
 
-**Returns:** *any*
+**Returns:** _any_
 
-###  hex
+### hex
 
-▸ **hex**(`params`: any[], `index`: number): *any*
+▸ **hex**(`params`: any[], `index`: number): _any_
 
-*Defined in [lib/rpc/validation.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L44)*
+_Defined in [lib/rpc/validation.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/validation.ts#L44)_
 
 hex validator to ensure has "0x" prefix
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`params` | any[] | parameters of method |
-`index` | number | index of parameter  |
+| Name     | Type   | Description          |
+| -------- | ------ | -------------------- |
+| `params` | any[]  | parameters of method |
+| `index`  | number | index of parameter   |
 
-**Returns:** *any*
+**Returns:** _any_

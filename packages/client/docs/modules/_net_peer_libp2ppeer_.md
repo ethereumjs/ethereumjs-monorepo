@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Libp2pPeer](../classes/_net_peer_libp2ppeer_.libp2ppeer.md)
+- [Libp2pPeer](../classes/_net_peer_libp2ppeer_.libp2ppeer.md)
 
 ### Interfaces
 
-* [Libp2pPeerOptions](../interfaces/_net_peer_libp2ppeer_.libp2ppeeroptions.md)
+- [Libp2pPeerOptions](../interfaces/_net_peer_libp2ppeer_.libp2ppeeroptions.md)

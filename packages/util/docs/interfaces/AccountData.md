@@ -21,7 +21,7 @@
 
 [packages/util/src/account.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L18)
 
-___
+---
 
 ### codeHash
 
@@ -31,7 +31,7 @@ ___
 
 [packages/util/src/account.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L20)
 
-___
+---
 
 ### nonce
 
@@ -41,7 +41,7 @@ ___
 
 [packages/util/src/account.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L17)
 
-___
+---
 
 ### stateRoot
 

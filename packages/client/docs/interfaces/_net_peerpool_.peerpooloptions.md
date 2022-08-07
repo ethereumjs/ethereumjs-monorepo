@@ -4,18 +4,18 @@
 
 ## Hierarchy
 
-* **PeerPoolOptions**
+- **PeerPoolOptions**
 
 ## Index
 
 ### Properties
 
-* [config](_net_peerpool_.peerpooloptions.md#config)
+- [config](_net_peerpool_.peerpooloptions.md#config)
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/net/peerpool.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L8)*
+_Defined in [lib/net/peerpool.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peerpool.ts#L8)_

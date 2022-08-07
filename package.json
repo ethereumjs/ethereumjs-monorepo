@@ -12,6 +12,7 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
+    "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "postinstall": "npm run build --workspaces",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
   },

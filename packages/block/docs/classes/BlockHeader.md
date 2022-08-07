@@ -75,25 +75,25 @@ varying data types. For a default empty header, use [BlockHeader.fromHeaderData]
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `parentHash` | `Buffer` |
-| `uncleHash` | `Buffer` |
-| `coinbase` | `Address` |
-| `stateRoot` | `Buffer` |
-| `transactionsTrie` | `Buffer` |
-| `receiptTrie` | `Buffer` |
-| `logsBloom` | `Buffer` |
-| `difficulty` | `BN` |
-| `number` | `BN` |
-| `gasLimit` | `BN` |
-| `gasUsed` | `BN` |
-| `timestamp` | `BN` |
-| `extraData` | `Buffer` |
-| `mixHash` | `Buffer` |
-| `nonce` | `Buffer` |
-| `options` | [`BlockOptions`](../interfaces/BlockOptions.md) |
-| `baseFeePerGas?` | `BN` |
+| Name               | Type                                            |
+| :----------------- | :---------------------------------------------- |
+| `parentHash`       | `Buffer`                                        |
+| `uncleHash`        | `Buffer`                                        |
+| `coinbase`         | `Address`                                       |
+| `stateRoot`        | `Buffer`                                        |
+| `transactionsTrie` | `Buffer`                                        |
+| `receiptTrie`      | `Buffer`                                        |
+| `logsBloom`        | `Buffer`                                        |
+| `difficulty`       | `BN`                                            |
+| `number`           | `BN`                                            |
+| `gasLimit`         | `BN`                                            |
+| `gasUsed`          | `BN`                                            |
+| `timestamp`        | `BN`                                            |
+| `extraData`        | `Buffer`                                        |
+| `mixHash`          | `Buffer`                                        |
+| `nonce`            | `Buffer`                                        |
+| `options`          | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| `baseFeePerGas?`   | `BN`                                            |
 
 #### Defined in
 
@@ -109,7 +109,7 @@ varying data types. For a default empty header, use [BlockHeader.fromHeaderData]
 
 [header.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L53)
 
-___
+---
 
 ### baseFeePerGas
 
@@ -119,7 +119,7 @@ ___
 
 [header.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L51)
 
-___
+---
 
 ### coinbase
 
@@ -129,7 +129,7 @@ ___
 
 [header.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L38)
 
-___
+---
 
 ### difficulty
 
@@ -139,7 +139,7 @@ ___
 
 [header.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L43)
 
-___
+---
 
 ### extraData
 
@@ -149,7 +149,7 @@ ___
 
 [header.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L48)
 
-___
+---
 
 ### gasLimit
 
@@ -159,7 +159,7 @@ ___
 
 [header.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L45)
 
-___
+---
 
 ### gasUsed
 
@@ -169,7 +169,7 @@ ___
 
 [header.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L46)
 
-___
+---
 
 ### logsBloom
 
@@ -179,7 +179,7 @@ ___
 
 [header.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L42)
 
-___
+---
 
 ### mixHash
 
@@ -189,7 +189,7 @@ ___
 
 [header.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L49)
 
-___
+---
 
 ### nonce
 
@@ -199,7 +199,7 @@ ___
 
 [header.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L50)
 
-___
+---
 
 ### number
 
@@ -209,7 +209,7 @@ ___
 
 [header.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L44)
 
-___
+---
 
 ### parentHash
 
@@ -219,7 +219,7 @@ ___
 
 [header.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L36)
 
-___
+---
 
 ### receiptTrie
 
@@ -229,7 +229,7 @@ ___
 
 [header.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L41)
 
-___
+---
 
 ### stateRoot
 
@@ -239,7 +239,7 @@ ___
 
 [header.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L39)
 
-___
+---
 
 ### timestamp
 
@@ -249,7 +249,7 @@ ___
 
 [header.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L47)
 
-___
+---
 
 ### transactionsTrie
 
@@ -259,7 +259,7 @@ ___
 
 [header.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L40)
 
-___
+---
 
 ### uncleHash
 
@@ -288,7 +288,7 @@ Backwards compatible alias for [BlockHeader.logsBloom](BlockHeader.md#logsbloom)
 
 [header.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L64)
 
-___
+---
 
 ### prevRandao
 
@@ -311,7 +311,7 @@ use with care.
 
 ### \_validateHeaderFields
 
-▸ **_validateHeaderFields**(): `void`
+▸ **\_validateHeaderFields**(): `void`
 
 Validates correct buffer lengths, throws if invalid.
 
@@ -323,7 +323,7 @@ Validates correct buffer lengths, throws if invalid.
 
 [header.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L363)
 
-___
+---
 
 ### calcNextBaseFee
 
@@ -339,7 +339,7 @@ Calculates the base fee for a potential next block
 
 [header.ts:754](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L754)
 
-___
+---
 
 ### canonicalDifficulty
 
@@ -349,8 +349,8 @@ Returns the canonical difficulty for this block.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name                | Type                            | Description                                       |
+| :------------------ | :------------------------------ | :------------------------------------------------ |
 | `parentBlockHeader` | [`BlockHeader`](BlockHeader.md) | the header from the parent `Block` of this header |
 
 #### Returns
@@ -361,7 +361,7 @@ Returns the canonical difficulty for this block.
 
 [header.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L453)
 
-___
+---
 
 ### cliqueEpochTransitionSigners
 
@@ -382,7 +382,7 @@ in conjunction with [BlockHeader.cliqueIsEpochTransition](BlockHeader.md#cliquei
 
 [header.ts:912](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L912)
 
-___
+---
 
 ### cliqueExtraSeal
 
@@ -399,7 +399,7 @@ Returns extra seal data
 
 [header.ts:883](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L883)
 
-___
+---
 
 ### cliqueExtraVanity
 
@@ -416,7 +416,7 @@ Returns extra vanity data
 
 [header.ts:874](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L874)
 
-___
+---
 
 ### cliqueIsEpochTransition
 
@@ -433,7 +433,7 @@ header (only clique PoA, throws otherwise)
 
 [header.ts:862](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L862)
 
-___
+---
 
 ### cliqueSigHash
 
@@ -449,7 +449,7 @@ PoA clique signature hash without the seal.
 
 [header.ts:851](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L851)
 
-___
+---
 
 ### cliqueSigner
 
@@ -465,7 +465,7 @@ Returns the signer address
 
 [header.ts:949](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L949)
 
-___
+---
 
 ### cliqueVerifySignature
 
@@ -474,12 +474,12 @@ ___
 Verifies the signature of the block (last 65 bytes of extraData field)
 (only clique PoA, throws otherwise)
 
- Method throws if signature is invalid
+Method throws if signature is invalid
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type        |
+| :----------- | :---------- |
 | `signerList` | `Address`[] |
 
 #### Returns
@@ -490,7 +490,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 [header.ts:937](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L937)
 
-___
+---
 
 ### errorStr
 
@@ -506,7 +506,7 @@ Return a compact error string representation of the object
 
 [header.ts:1043](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L1043)
 
-___
+---
 
 ### hash
 
@@ -522,7 +522,7 @@ Returns the hash of the block header.
 
 [header.ts:821](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L821)
 
-___
+---
 
 ### isGenesis
 
@@ -538,7 +538,7 @@ Checks if the block header is a genesis header.
 
 [header.ts:835](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L835)
 
-___
+---
 
 ### raw
 
@@ -554,7 +554,7 @@ Returns a Buffer Array of the raw Buffers in this header, in order.
 
 [header.ts:792](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L792)
 
-___
+---
 
 ### serialize
 
@@ -570,7 +570,7 @@ Returns the rlp encoding of the block header.
 
 [header.ts:966](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L966)
 
-___
+---
 
 ### toJSON
 
@@ -586,7 +586,7 @@ Returns the block header in JSON format.
 
 [header.ts:973](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L973)
 
-___
+---
 
 ### validate
 
@@ -594,6 +594,7 @@ ___
 
 Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
 It verifies the current block against the `parentHash`:
+
 - The `parentHash` is part of the blockchain (it is a valid header)
 - Current block number is parent block number + 1
 - Current block has a strictly higher timestamp
@@ -608,10 +609,10 @@ It verifies the current block against the `parentHash`:
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `blockchain` | [`Blockchain`](../interfaces/Blockchain.md) | validate against an @ethereumjs/blockchain |
-| `height?` | `BN` | If this is an uncle header, this is the height of the block that is including it |
+| Name         | Type                                        | Description                                                                      |
+| :----------- | :------------------------------------------ | :------------------------------------------------------------------------------- |
+| `blockchain` | [`Blockchain`](../interfaces/Blockchain.md) | validate against an @ethereumjs/blockchain                                       |
+| `height?`    | `BN`                                        | If this is an uncle header, this is the height of the block that is including it |
 
 #### Returns
 
@@ -621,7 +622,7 @@ It verifies the current block against the `parentHash`:
 
 [header.ts:620](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L620)
 
-___
+---
 
 ### validateCliqueDifficulty
 
@@ -632,8 +633,8 @@ Returns false if invalid.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type                                        |
+| :----------- | :------------------------------------------ |
 | `blockchain` | [`Blockchain`](../interfaces/Blockchain.md) |
 
 #### Returns
@@ -644,7 +645,7 @@ Returns false if invalid.
 
 [header.ts:541](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L541)
 
-___
+---
 
 ### validateDifficulty
 
@@ -654,8 +655,8 @@ Checks that the block's `difficulty` matches the canonical difficulty.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name                | Type                            | Description                                       |
+| :------------------ | :------------------------------ | :------------------------------------------------ |
 | `parentBlockHeader` | [`BlockHeader`](BlockHeader.md) | the header from the parent `Block` of this header |
 
 #### Returns
@@ -666,7 +667,7 @@ Checks that the block's `difficulty` matches the canonical difficulty.
 
 [header.ts:533](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L533)
 
-___
+---
 
 ### validateGasLimit
 
@@ -677,8 +678,8 @@ boundaries set by the protocol.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name                | Type                            | Description                                       |
+| :------------------ | :------------------------------ | :------------------------------------------------ |
 | `parentBlockHeader` | [`BlockHeader`](BlockHeader.md) | the header from the parent `Block` of this header |
 
 #### Returns
@@ -689,7 +690,7 @@ boundaries set by the protocol.
 
 [header.ts:577](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L577)
 
-___
+---
 
 ### fromHeaderData
 
@@ -699,10 +700,10 @@ Static constructor to create a block header from a header data dictionary
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `headerData` | [`HeaderData`](../interfaces/HeaderData.md) |
-| `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| Name         | Type                                            |
+| :----------- | :---------------------------------------------- |
+| `headerData` | [`HeaderData`](../interfaces/HeaderData.md)     |
+| `opts`       | [`BlockOptions`](../interfaces/BlockOptions.md) |
 
 #### Returns
 
@@ -712,7 +713,7 @@ Static constructor to create a block header from a header data dictionary
 
 [header.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L90)
 
-___
+---
 
 ### fromRLPSerializedHeader
 
@@ -722,10 +723,10 @@ Static constructor to create a block header from a RLP-serialized header
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Buffer` |
-| `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| Name         | Type                                            |
+| :----------- | :---------------------------------------------- |
+| `serialized` | `Buffer`                                        |
+| `opts`       | [`BlockOptions`](../interfaces/BlockOptions.md) |
 
 #### Returns
 
@@ -735,7 +736,7 @@ Static constructor to create a block header from a RLP-serialized header
 
 [header.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L144)
 
-___
+---
 
 ### fromValuesArray
 
@@ -745,10 +746,10 @@ Static constructor to create a block header from an array of Buffer values
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                                  |
+| :------- | :---------------------------------------------------- |
 | `values` | [`BlockHeaderBuffer`](../README.md#blockheaderbuffer) |
-| `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| `opts`   | [`BlockOptions`](../interfaces/BlockOptions.md)       |
 
 #### Returns
 
@@ -758,7 +759,7 @@ Static constructor to create a block header from an array of Buffer values
 
 [header.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L160)
 
-___
+---
 
 ### genesis
 
@@ -768,10 +769,10 @@ Alias for [BlockHeader.fromHeaderData](BlockHeader.md#fromheaderdata) with [Bloc
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `headerData` | [`HeaderData`](../interfaces/HeaderData.md) |
-| `opts?` | [`BlockOptions`](../interfaces/BlockOptions.md) |
+| Name         | Type                                            |
+| :----------- | :---------------------------------------------- |
+| `headerData` | [`HeaderData`](../interfaces/HeaderData.md)     |
+| `opts?`      | [`BlockOptions`](../interfaces/BlockOptions.md) |
 
 #### Returns
 

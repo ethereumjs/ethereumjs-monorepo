@@ -20,7 +20,7 @@
 
 [packages/util/src/signature.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L16)
 
-___
+---
 
 ### s
 
@@ -30,7 +30,7 @@ ___
 
 [packages/util/src/signature.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L17)
 
-___
+---
 
 ### v
 

@@ -23,7 +23,7 @@
 
 [packages/util/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L38)
 
-___
+---
 
 ### toBuffer
 
