@@ -2,14 +2,14 @@ import type { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
-
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
+import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
-import { BeaconSynchronizer, FullSynchronizer } from '../sync'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
@@ -24,7 +24,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer!: BeaconSynchronizer | FullSynchronizer
+  public synchronizer!: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -52,19 +52,31 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
-      if (!this.config.disableBeaconSync) {
-        void this.switchToBeaconSync()
-      }
-    } else {
-      this.synchronizer = new FullSynchronizer({
+    // This flag is just to run and test snap sync, when fully ready, this needs to
+    // be replaced by a more sophisticated condition based on how far back we are
+    // from the head, and how to run it in conjuction with the beacon sync
+    if (this.config.forceSnapSync) {
+      this.synchronizer = new SnapSynchronizer({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
-        txPool: this.txPool,
-        execution: this.execution,
         interval: this.interval,
       })
+    } else {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+        if (!this.config.disableBeaconSync) {
+          void this.switchToBeaconSync()
+        }
+      } else {
+        this.synchronizer = new FullSynchronizer({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          txPool: this.txPool,
+          execution: this.execution,
+          interval: this.interval,
+        })
+      }
     }
 
     if (this.config.mine) {
@@ -172,6 +184,11 @@ export class FullEthereumService extends EthereumService {
         chain: this.chain,
         timeout: this.timeout,
       }),
+      new SnapProtocol({
+        config: this.config,
+        chain: this.chain,
+        timeout: this.timeout,
+      }),
     ]
     if (this.config.lightserv) {
       protocols.push(
@@ -213,7 +230,11 @@ export class FullEthereumService extends EthereumService {
           (isTruthy(reverse) && block > this.chain.headers.height) ||
           (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
         ) {
-          // Don't respond to requests greater than the current height
+          // Respond with an empty list in case the header is higher than the current height
+          // This is to ensure Geth does not disconnect with "useless peer"
+          // TODO: in batch queries filter out the headers we do not have and do not send
+          // the empty list in case one or more headers are not available
+          peer.eth!.send('BlockHeaders', { reqId, headers: [] })
           return
         }
       }

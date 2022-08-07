@@ -39,6 +39,10 @@ export class SNAP extends Protocol {
     this.emit('message', code, payload)
   }
 
+  sendStatus() {
+    throw Error('SNAP prococol doesnot support status handshake')
+  }
+
   /**
    *
    * @param code Message code

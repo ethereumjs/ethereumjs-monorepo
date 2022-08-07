@@ -12,7 +12,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
-    const genesis = await vm.blockchain.getCanonicalHeadBlock()
+    const genesis = await vm.blockchain.getCanonicalHeadBlock!()
     const header = {
       number: 1,
       parentHash: genesis.header.hash(),
