@@ -490,6 +490,16 @@ export class Interpreter {
   }
 
   /**
+   * Loads a 256-bit value to memory from persistent storage.
+   * @param address - Address of account
+   * @param key - Storage key
+   * @param original - If true, return the original storage value (default: false)
+   */
+  async externalStorageLoad(address: Address, key: Buffer, original = false): Promise<Buffer> {
+    return this._eei.storageLoad(address, key, original)
+  }
+
+  /**
    * Store 256-bit a value in memory to transient storage.
    * @param address Address to use
    * @param key Storage key

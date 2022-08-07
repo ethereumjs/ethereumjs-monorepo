@@ -199,7 +199,13 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
 
         if (common.isActivatedEIP(2929) === true) {
-          gas += accessStorageEIP2929(runState, keyBuf, false, common)
+          gas += accessStorageEIP2929(
+            runState,
+            runState.interpreter.getAddress(),
+            keyBuf,
+            false,
+            common
+          )
         }
         return gas
       },
@@ -251,7 +257,27 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // We have to do this after the Istanbul (EIP2200) checks.
           // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
           // if we deduct extra gas first.
-          gas += accessStorageEIP2929(runState, keyBuf, true, common)
+          gas += accessStorageEIP2929(
+            runState,
+            runState.interpreter.getAddress(),
+            keyBuf,
+            true,
+            common
+          )
+        }
+        return gas
+      },
+    ],
+    [
+      /* EXTSLOAD */
+      0x5c,
+      async function (runState, gas, common): Promise<bigint> {
+        if (common.isActivatedEIP(2330) && common.isActivatedEIP(2929)) {
+          const [addressBigInt, keyBigInt] = runState.stack.peek(2)
+          const address = new Address(addressToBuffer(addressBigInt))
+          const key = setLengthLeft(bigIntToBuffer(keyBigInt), 32)
+          gas += accessAddressEIP2929(runState, address, common)
+          gas += accessStorageEIP2929(runState, address, key, false, common)
         }
         return gas
       },

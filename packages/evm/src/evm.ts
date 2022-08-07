@@ -62,6 +62,7 @@ export interface EVMOpts {
    * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
+   * - [EIP-2330](https://eips.ethereum.org/EIPS/eip-2330) - EXTSLOAD (`experimental`)
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
@@ -235,8 +236,8 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 5133,
+      1153, 1559, 2315, 2330, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607,
+      3651, 3670, 3855, 3860, 4399, 5133,
     ]
 
     for (const eip of this._common.eips()) {

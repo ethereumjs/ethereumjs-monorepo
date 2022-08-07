@@ -766,11 +766,24 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0x5b: JUMPDEST
   [0x5b, function () {}],
-  // 0x5c: BEGINSUB
+  // 0x5c: BEGINSUB or EXTSLOAD
   [
     0x5c,
-    function (runState) {
-      trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        // BEGINSUB is sync
+        trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+      } else if (common.isActivatedEIP(2330)) {
+        // EXTSLOAD is async
+        const addressBigInt = runState.stack.pop()
+        const address = new Address(addressToBuffer(addressBigInt))
+        const keyBigInt = runState.stack.pop()
+        const key = setLengthLeft(bigIntToBuffer(keyBigInt), 32)
+        return runState.interpreter.externalStorageLoad(address, key).then((value) => {
+          const valueBigInt = value.length ? bufferToBigInt(value) : BigInt(0)
+          runState.stack.push(valueBigInt)
+        })
+      }
     },
   ],
   // 0x5d: RETURNSUB

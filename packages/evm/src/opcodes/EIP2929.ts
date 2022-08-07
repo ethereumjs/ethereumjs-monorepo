@@ -46,24 +46,24 @@ export function accessAddressEIP2929(
  * Adjusts cost incurred for executing opcode based on whether storage read
  * is warm/cold. (EIP 2929)
  * @param {RunState} runState
+ * @param {Address} address (of the account)
  * @param {Buffer} key (to storage slot)
  * @param {Common} common
  */
 export function accessStorageEIP2929(
   runState: RunState,
+  address: Address,
   key: Buffer,
   isSstore: boolean,
   common: Common
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const eei = runState.eei
-  const address = runState.interpreter.getAddress().buf
-  const slotIsCold = !eei.isWarmedStorage(address, key)
+  const slotIsCold = !runState.eei.isWarmedStorage(address.buf, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    eei.addWarmedStorage(address, key)
+    runState.eei.addWarmedStorage(address.buf, key)
     return common.param('gasPrices', 'coldsload')
   } else if (!isSstore) {
     return common.param('gasPrices', 'warmstorageread')
