@@ -161,7 +161,12 @@ export class Protocol {
       peer: peer,
       sender: sender,
     })
-    await bound.handshake(sender)
+    // Handshake only when snap, else
+    if (this.name !== 'snap') {
+      await bound.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
     //@ts-ignore TODO: evaluate this line
     peer[this.name] = bound
     return bound
