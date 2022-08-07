@@ -1,5 +1,5 @@
 import { promisify } from 'util'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Blockchain, BlockchainInterface } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { DefaultStateManager, StateManager } from '@ethereumjs/statemanager'
 import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
@@ -36,7 +36,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: Blockchain
+  readonly blockchain: BlockchainInterface
 
   readonly _common: Common
 
@@ -155,11 +155,19 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
   async init(): Promise<void> {
     if (this._isInitialized) return
-    await (this.blockchain as any)._init()
+    if (typeof (<any>this.blockchain)._init === 'function') {
+      await (this.blockchain as any)._init()
+    }
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState === true) {
-        await this.eei.generateCanonicalGenesis(this.blockchain.genesisState())
+        if (typeof (<any>this.blockchain).genesisState === 'function') {
+          await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
+        } else {
+          throw new Error(
+            'cannot activate genesis state: blockchain object has no `genesisState` method'
+          )
+        }
       }
     }
 
