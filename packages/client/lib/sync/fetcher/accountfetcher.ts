@@ -29,7 +29,7 @@ export type JobTask = {
 	bytes: bigint
 }
 
-export class AccountFetcher<JobResult, StorageItem> extends Fetcher<
+export class AccountFetcher extends Fetcher<
 	JobTask,
 	Account[],
 	Account
