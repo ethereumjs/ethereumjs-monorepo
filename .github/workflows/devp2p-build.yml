@@ -38,7 +38,7 @@ jobs:
 
       - uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 15
+          timeout_minutes: 10
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
 
