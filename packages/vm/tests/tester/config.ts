@@ -262,8 +262,17 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
-  const networkLowercase = targetNetwork.toLowerCase()
+function setupCommonWithNetworks(network: string, ttd?: number) {
+  let networkLowercase: string
+  let targetNetwork: string
+  if (network.includes('+')) {
+    const index = network.indexOf('+')
+    networkLowercase = network.slice(0, index).toLowerCase()
+    targetNetwork = network
+  } else {
+    networkLowercase = network.toLowerCase()
+    targetNetwork = network
+  }
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
@@ -328,8 +337,7 @@ export function getCommon(network: string) {
   let networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
-    network = network.slice(0, index)
-    networkLowercase = network.toLowerCase()
+    networkLowercase = network.slice(0, index).toLowerCase()
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     return setupCommonWithNetworks(network)
