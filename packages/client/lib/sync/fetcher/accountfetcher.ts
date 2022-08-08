@@ -1,8 +1,8 @@
-import { Fetcher, FetcherOptions } from './fetcher'
 import { Account } from '@ethereumjs/util'
+import { Peer } from '../../net/peer'
+import { Fetcher, FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
-import { Peer } from '../../net/peer'
 
 export interface AccountFetcherOptions extends FetcherOptions {
 	/** Root hash of the account trie to serve */
@@ -73,8 +73,29 @@ export class AccountFetcher extends Fetcher<
 	 * @param job
 	 * @param peer
 	 */
-	async request(job: Job<JobTask, Account[], Account>, peer: Peer): Promise<Account[] | undefined> {
-		return
+	async request(job: Job<JobTask, Account[], Account>): Promise<Account[] | undefined> {
+        // const { task, peer, partialResult } = job
+        // let { root, origin, limit, bytes } = task
+
+        // const rangeResult = await peer!.snap!.getAccountRange({
+        //   root: root,
+        //   origin: origin,
+        //   limit: limit,
+        //   bytes: bytes,
+        // })
+
+        // for (let i = 0; i < rangeResult.accounts.length; i++) {
+        //   console.log({ 
+        //     account: rangeResult?.accounts[i],
+        //     proof: rangeResult?.proof[i]
+        //    })
+        // }
+
+        // if (rangeResult) {
+        //   process.exit()
+        // }
+        
+        // return
 	}
 
 	/**
