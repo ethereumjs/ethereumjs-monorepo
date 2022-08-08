@@ -56,7 +56,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:49](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L49)
+[packages/trie/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L49)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:96](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L96)
+[packages/trie/src/types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L96)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:10](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L10)
+[packages/trie/src/types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L10)
 
 ___
 
@@ -110,7 +110,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:14](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L14)
+[packages/trie/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L14)
 
 ___
 
@@ -134,7 +134,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:21](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L21)
+[packages/trie/src/types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L21)
 
 ___
 
@@ -144,7 +144,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:6](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L6)
+[packages/trie/src/types.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L6)
 
 ___
 
@@ -154,7 +154,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:12](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L12)
+[packages/trie/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L12)
 
 ___
 
@@ -164,7 +164,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:4](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L4)
+[packages/trie/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L4)
 
 ## Variables
 
@@ -181,7 +181,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:8](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L8)
+[packages/trie/src/db/level.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L8)
 
 ___
 
@@ -191,7 +191,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:103](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L103)
+[packages/trie/src/types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L103)
 
 ## Functions
 
@@ -211,7 +211,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:24](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L24)
+[packages/trie/src/trie/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L24)
 
 ___
 
@@ -231,7 +231,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:10](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L10)
+[packages/trie/src/trie/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L10)
 
 ___
 
@@ -251,7 +251,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:32](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L32)
+[packages/trie/src/trie/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L32)
 
 ___
 
@@ -298,4 +298,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:409](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L409)
+[packages/trie/src/proof/range.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L409)

@@ -70,7 +70,7 @@ Adds checkpointing to the [Trie](Trie.md)
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:12](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L12)
+[packages/trie/src/trie/checkpoint.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L12)
 
 ## Properties
 
@@ -86,7 +86,7 @@ The root for an empty trie
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:38](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L38)
+[packages/trie/src/trie/trie.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L38)
 
 ___
 
@@ -102,7 +102,7 @@ The backend DB
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:9](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L9)
+[packages/trie/src/trie/checkpoint.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L9)
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:10](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L10)
+[packages/trie/src/trie/checkpoint.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L10)
 
 ## Accessors
 
@@ -132,7 +132,7 @@ Trie.isCheckpoint
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:21](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L21)
+[packages/trie/src/trie/checkpoint.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L21)
 
 ___
 
@@ -152,7 +152,7 @@ Trie.root
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:104](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L104)
+[packages/trie/src/trie/trie.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L104)
 
 • `set` **root**(`value`): `void`
 
@@ -174,7 +174,7 @@ Trie.root
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:92](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L92)
+[packages/trie/src/trie/trie.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L92)
 
 ## Methods
 
@@ -214,7 +214,7 @@ await trie.batch(ops)
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:630](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L630)
+[packages/trie/src/trie/trie.ts:630](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L630)
 
 ___
 
@@ -240,7 +240,7 @@ Checks if a given root exists.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:111](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L111)
+[packages/trie/src/trie/trie.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L111)
 
 ___
 
@@ -257,7 +257,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:29](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L29)
+[packages/trie/src/trie/checkpoint.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L29)
 
 ___
 
@@ -278,7 +278,7 @@ If not during a checkpoint phase
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:38](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L38)
+[packages/trie/src/trie/checkpoint.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L38)
 
 ___
 
@@ -304,7 +304,7 @@ Returns a copy of the underlying trie with the interface of CheckpointTrie.
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:69](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L69)
+[packages/trie/src/trie/checkpoint.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L69)
 
 ___
 
@@ -330,7 +330,7 @@ Creates a proof from a trie and key that can be verified using [verifyProof](Tri
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:679](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L679)
+[packages/trie/src/trie/trie.ts:679](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L679)
 
 ___
 
@@ -352,7 +352,7 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:740](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L740)
+[packages/trie/src/trie/trie.ts:740](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L740)
 
 ___
 
@@ -381,7 +381,7 @@ A Promise that resolves once value is deleted.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:183](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L183)
+[packages/trie/src/trie/trie.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L183)
 
 ___
 
@@ -409,7 +409,7 @@ It returns a `stack` of nodes to the closest node.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:199](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L199)
+[packages/trie/src/trie/trie.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L199)
 
 ___
 
@@ -435,7 +435,7 @@ Saves the nodes from a proof into the trie.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:648](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L648)
+[packages/trie/src/trie/trie.ts:648](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L648)
 
 ___
 
@@ -464,7 +464,7 @@ A Promise that resolves to `Buffer` if a value was found or `null` if no value w
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:137](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L137)
+[packages/trie/src/trie/trie.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L137)
 
 ___
 
@@ -490,7 +490,7 @@ Retrieves a node from db by hash.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:290](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L290)
+[packages/trie/src/trie/trie.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L290)
 
 ___
 
@@ -510,7 +510,7 @@ Persists the root hash in the underlying database
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:760](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L760)
+[packages/trie/src/trie/trie.ts:760](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L760)
 
 ___
 
@@ -538,7 +538,7 @@ prove has been renamed to [createProof](Trie.md#createproof).
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:671](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L671)
+[packages/trie/src/trie/trie.ts:671](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L671)
 
 ___
 
@@ -568,7 +568,7 @@ A Promise that resolves once value is stored.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:153](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L153)
+[packages/trie/src/trie/trie.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L153)
 
 ___
 
@@ -586,7 +586,7 @@ parent checkpoint as current.
 
 #### Defined in
 
-[packages/trie/src/trie/checkpoint.ts:54](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L54)
+[packages/trie/src/trie/checkpoint.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/checkpoint.ts#L54)
 
 ___
 
@@ -620,7 +620,7 @@ The value from the key, or null if valid proof of non-existence.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:695](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L695)
+[packages/trie/src/trie/trie.ts:695](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L695)
 
 ___
 
@@ -651,7 +651,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:717](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L717)
+[packages/trie/src/trie/trie.ts:717](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L717)
 
 ___
 
@@ -680,7 +680,7 @@ Resolves when finished walking trie.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:270](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L270)
+[packages/trie/src/trie/trie.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L270)
 
 ___
 
@@ -704,4 +704,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:73](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L73)
+[packages/trie/src/trie/trie.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L73)

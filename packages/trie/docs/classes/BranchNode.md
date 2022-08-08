@@ -34,7 +34,7 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:10](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L10)
+[packages/trie/src/trie/node/branch.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L10)
 
 ## Properties
 
@@ -44,7 +44,7 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:7](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L7)
+[packages/trie/src/trie/node/branch.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L7)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:8](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L8)
+[packages/trie/src/trie/node/branch.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L8)
 
 ## Accessors
 
@@ -68,7 +68,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:22](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L22)
+[packages/trie/src/trie/node/branch.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L22)
 
 • `set` **value**(`v`): `void`
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:26](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L26)
+[packages/trie/src/trie/node/branch.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L26)
 
 ## Methods
 
@@ -104,7 +104,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:42](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L42)
+[packages/trie/src/trie/node/branch.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L42)
 
 ___
 
@@ -118,7 +118,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:51](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L51)
+[packages/trie/src/trie/node/branch.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L51)
 
 ___
 
@@ -132,7 +132,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:34](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L34)
+[packages/trie/src/trie/node/branch.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L34)
 
 ___
 
@@ -146,7 +146,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:38](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L38)
+[packages/trie/src/trie/node/branch.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L38)
 
 ___
 
@@ -167,7 +167,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:30](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L30)
+[packages/trie/src/trie/node/branch.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L30)
 
 ___
 
@@ -187,4 +187,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:15](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L15)
+[packages/trie/src/trie/node/branch.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L15)

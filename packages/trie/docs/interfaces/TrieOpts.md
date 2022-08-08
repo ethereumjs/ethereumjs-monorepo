@@ -22,7 +22,7 @@ A database instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:27](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L27)
+[packages/trie/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L27)
 
 ___
 
@@ -35,7 +35,7 @@ Default: `false`
 
 #### Defined in
 
-[packages/trie/src/types.ts:36](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
+[packages/trie/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
 
 ___
 
@@ -47,7 +47,7 @@ Hash function used for hashing trie node and securing key.
 
 #### Defined in
 
-[packages/trie/src/types.ts:41](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L41)
+[packages/trie/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L41)
 
 ___
 
@@ -59,7 +59,7 @@ Store the root inside the database after every `write` operation
 
 #### Defined in
 
-[packages/trie/src/types.ts:46](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L46)
+[packages/trie/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L46)
 
 ___
 
@@ -71,4 +71,4 @@ A `Buffer` for the root of a previously stored trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:31](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L31)
+[packages/trie/src/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L31)

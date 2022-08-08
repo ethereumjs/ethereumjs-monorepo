@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:12](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L12)
+[packages/trie/src/trie/node/leaf.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L12)
 
 ## Properties
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:9](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L9)
+[packages/trie/src/trie/node/leaf.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L9)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:10](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L10)
+[packages/trie/src/trie/node/leaf.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L10)
 
 ## Accessors
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:25](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L25)
+[packages/trie/src/trie/node/leaf.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L25)
 
 • `set` **key**(`k`): `void`
 
@@ -92,7 +92,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:29](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L29)
+[packages/trie/src/trie/node/leaf.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L29)
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:33](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L33)
+[packages/trie/src/trie/node/leaf.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L33)
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:37](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L37)
+[packages/trie/src/trie/node/leaf.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L37)
 
 • `set` **value**(`v`): `void`
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:41](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L41)
+[packages/trie/src/trie/node/leaf.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L41)
 
 ## Methods
 
@@ -150,7 +150,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:45](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L45)
+[packages/trie/src/trie/node/leaf.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L45)
 
 ___
 
@@ -164,7 +164,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:49](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L49)
+[packages/trie/src/trie/node/leaf.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L49)
 
 ___
 
@@ -178,7 +178,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:53](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L53)
+[packages/trie/src/trie/node/leaf.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L53)
 
 ___
 
@@ -198,7 +198,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:21](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L21)
+[packages/trie/src/trie/node/leaf.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L21)
 
 ___
 
@@ -218,4 +218,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/leaf.ts:17](https://github.com/faustbrian/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L17)
+[packages/trie/src/trie/node/leaf.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/leaf.ts#L17)
