@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Net](../classes/_rpc_modules_net_.net.md)
+- [Net](../classes/_rpc_modules_net_.net.md)

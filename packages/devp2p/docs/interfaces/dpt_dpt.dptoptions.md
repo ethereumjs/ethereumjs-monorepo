@@ -32,7 +32,7 @@ Default: dgram-created socket
 
 [packages/devp2p/src/dpt/dpt.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L41)
 
-___
+---
 
 ### dnsAddr
 
@@ -44,7 +44,7 @@ DNS server to query DNS TXT records from for peer discovery
 
 [packages/devp2p/src/dpt/dpt.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L83)
 
-___
+---
 
 ### dnsNetworks
 
@@ -58,7 +58,7 @@ Default: (network dependent)
 
 [packages/devp2p/src/dpt/dpt.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L78)
 
-___
+---
 
 ### dnsRefreshQuantity
 
@@ -73,7 +73,7 @@ Default: 25
 
 [packages/devp2p/src/dpt/dpt.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L71)
 
-___
+---
 
 ### endpoint
 
@@ -87,7 +87,7 @@ Default: 0.0.0.0, no UDP or TCP port provided
 
 [packages/devp2p/src/dpt/dpt.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L34)
 
-___
+---
 
 ### refreshInterval
 
@@ -101,7 +101,7 @@ Default: 60s
 
 [packages/devp2p/src/dpt/dpt.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L48)
 
-___
+---
 
 ### shouldFindNeighbours
 
@@ -116,7 +116,7 @@ Default: true
 
 [packages/devp2p/src/dpt/dpt.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L56)
 
-___
+---
 
 ### shouldGetDnsPeers
 
@@ -130,7 +130,7 @@ Default: false
 
 [packages/devp2p/src/dpt/dpt.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L63)
 
-___
+---
 
 ### timeout
 

@@ -64,10 +64,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Buffer` |
-| `options` | [DPTOptions](../interfaces/dpt_dpt.dptoptions.md) |
+| Name         | Type                                              |
+| :----------- | :------------------------------------------------ |
+| `privateKey` | `Buffer`                                          |
+| `options`    | [DPTOptions](../interfaces/dpt_dpt.dptoptions.md) |
 
 #### Overrides
 
@@ -87,7 +87,7 @@ EventEmitter.constructor
 
 [packages/devp2p/src/dpt/dpt.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L88)
 
-___
+---
 
 ### dns
 
@@ -97,7 +97,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L89)
 
-___
+---
 
 ### privateKey
 
@@ -107,7 +107,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L87)
 
-___
+---
 
 ### defaultMaxListeners
 
@@ -125,12 +125,12 @@ node_modules/@types/node/events.d.ts:20
 
 ### \_addPeerBatch
 
-▸ **_addPeerBatch**(`peers`): `void`
+▸ **\_addPeerBatch**(`peers`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                                            |
+| :------ | :---------------------------------------------- |
 | `peers` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)[] |
 
 #### Returns
@@ -141,18 +141,18 @@ node_modules/@types/node/events.d.ts:20
 
 [packages/devp2p/src/dpt/dpt.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L173)
 
-___
+---
 
 ### \_onKBucketPing
 
-▸ **_onKBucketPing**(`oldPeers`, `newPeer`): `void`
+▸ **\_onKBucketPing**(`oldPeers`, `newPeer`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type                                            |
+| :--------- | :---------------------------------------------- |
 | `oldPeers` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)[] |
-| `newPeer` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
+| `newPeer`  | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)   |
 
 #### Returns
 
@@ -162,7 +162,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L152)
 
-___
+---
 
 ### addListener
 
@@ -170,9 +170,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -187,7 +187,7 @@ EventEmitter.addListener
 
 node_modules/@types/node/globals.d.ts:595
 
-___
+---
 
 ### addPeer
 
@@ -195,8 +195,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                          |
+| :---- | :-------------------------------------------- |
 | `obj` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
 
 #### Returns
@@ -207,7 +207,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L199)
 
-___
+---
 
 ### banPeer
 
@@ -215,10 +215,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
-| `maxAge?` | `number` |
+| Name      | Type                                                                  |
+| :-------- | :-------------------------------------------------------------------- |
+| `obj`     | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
+| `maxAge?` | `number`                                                              |
 
 #### Returns
 
@@ -228,7 +228,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L235)
 
-___
+---
 
 ### bind
 
@@ -236,8 +236,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 #### Returns
@@ -248,7 +248,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L143)
 
-___
+---
 
 ### bootstrap
 
@@ -256,8 +256,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                          |
+| :----- | :-------------------------------------------- |
 | `peer` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
 
 #### Returns
@@ -268,7 +268,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L186)
 
-___
+---
 
 ### destroy
 
@@ -276,8 +276,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 #### Returns
@@ -288,7 +288,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L147)
 
-___
+---
 
 ### emit
 
@@ -296,10 +296,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `...args` | `any`[] |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `event`   | `string` \| `symbol` |
+| `...args` | `any`[]              |
 
 #### Returns
 
@@ -313,7 +313,7 @@ EventEmitter.emit
 
 node_modules/@types/node/globals.d.ts:605
 
-___
+---
 
 ### eventNames
 
@@ -331,7 +331,7 @@ EventEmitter.eventNames
 
 node_modules/@types/node/globals.d.ts:610
 
-___
+---
 
 ### getClosestPeers
 
@@ -339,8 +339,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type     |
+| :--- | :------- |
 | `id` | `string` |
 
 #### Returns
@@ -351,7 +351,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L227)
 
-___
+---
 
 ### getDnsPeers
 
@@ -365,7 +365,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L240)
 
-___
+---
 
 ### getMaxListeners
 
@@ -383,27 +383,27 @@ EventEmitter.getMaxListeners
 
 node_modules/@types/node/globals.d.ts:602
 
-___
+---
 
 ### getPeer
 
-▸ **getPeer**(`obj`): ``null`` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
+▸ **getPeer**(`obj`): `null` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                  |
+| :---- | :-------------------------------------------------------------------- |
 | `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
 
 #### Returns
 
-``null`` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
+`null` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
 
 #### Defined in
 
 [packages/devp2p/src/dpt/dpt.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L219)
 
-___
+---
 
 ### getPeers
 
@@ -417,7 +417,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L223)
 
-___
+---
 
 ### listenerCount
 
@@ -425,8 +425,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `type` | `string` \| `symbol` |
 
 #### Returns
@@ -441,7 +441,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/globals.d.ts:606
 
-___
+---
 
 ### listeners
 
@@ -449,8 +449,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -465,7 +465,7 @@ EventEmitter.listeners
 
 node_modules/@types/node/globals.d.ts:603
 
-___
+---
 
 ### off
 
@@ -473,9 +473,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -490,7 +490,7 @@ EventEmitter.off
 
 node_modules/@types/node/globals.d.ts:599
 
-___
+---
 
 ### on
 
@@ -498,9 +498,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -515,7 +515,7 @@ EventEmitter.on
 
 node_modules/@types/node/globals.d.ts:596
 
-___
+---
 
 ### once
 
@@ -523,9 +523,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -540,7 +540,7 @@ EventEmitter.once
 
 node_modules/@types/node/globals.d.ts:597
 
-___
+---
 
 ### prependListener
 
@@ -548,9 +548,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -565,7 +565,7 @@ EventEmitter.prependListener
 
 node_modules/@types/node/globals.d.ts:608
 
-___
+---
 
 ### prependOnceListener
 
@@ -573,9 +573,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -590,7 +590,7 @@ EventEmitter.prependOnceListener
 
 node_modules/@types/node/globals.d.ts:609
 
-___
+---
 
 ### rawListeners
 
@@ -598,8 +598,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -614,7 +614,7 @@ EventEmitter.rawListeners
 
 node_modules/@types/node/globals.d.ts:604
 
-___
+---
 
 ### refresh
 
@@ -628,7 +628,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L244)
 
-___
+---
 
 ### removeAllListeners
 
@@ -636,8 +636,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                 |
+| :------- | :------------------- |
 | `event?` | `string` \| `symbol` |
 
 #### Returns
@@ -652,7 +652,7 @@ EventEmitter.removeAllListeners
 
 node_modules/@types/node/globals.d.ts:600
 
-___
+---
 
 ### removeListener
 
@@ -660,9 +660,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -677,7 +677,7 @@ EventEmitter.removeListener
 
 node_modules/@types/node/globals.d.ts:598
 
-___
+---
 
 ### removePeer
 
@@ -685,8 +685,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type  |
+| :---- | :---- |
 | `obj` | `any` |
 
 #### Returns
@@ -697,7 +697,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L231)
 
-___
+---
 
 ### setMaxListeners
 
@@ -705,9 +705,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `n` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `n`  | `number` |
 
 #### Returns
 
@@ -721,7 +721,7 @@ EventEmitter.setMaxListeners
 
 node_modules/@types/node/globals.d.ts:601
 
-___
+---
 
 ### listenerCount
 
@@ -731,10 +731,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `EventEmitter`       |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -748,7 +748,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/events.d.ts:17
 
-___
+---
 
 ### once
 
@@ -756,10 +756,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `NodeEventTarget`    |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -777,10 +777,10 @@ node_modules/@types/node/events.d.ts:13
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type             |
+| :-------- | :--------------- |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `event`   | `string`         |
 
 #### Returns
 

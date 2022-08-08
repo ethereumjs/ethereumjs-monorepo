@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* **ProtocolOptions**
+- **ProtocolOptions**
 
   ↳ [LesProtocolOptions](_net_protocol_lesprotocol_.lesprotocoloptions.md)
 
@@ -12,21 +12,21 @@
 
 ### Properties
 
-* [config](_net_protocol_protocol_.protocoloptions.md#config)
-* [timeout](_net_protocol_protocol_.protocoloptions.md#optional-timeout)
+- [config](_net_protocol_protocol_.protocoloptions.md#config)
+- [timeout](_net_protocol_protocol_.protocoloptions.md#optional-timeout)
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/net/protocol/protocol.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L8)*
+_Defined in [lib/net/protocol/protocol.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L8)_
 
-___
+---
 
 ### `Optional` timeout
 
-• **timeout**? : *undefined | number*
+• **timeout**? : _undefined | number_
 
-*Defined in [lib/net/protocol/protocol.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L11)*
+_Defined in [lib/net/protocol/protocol.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L11)_

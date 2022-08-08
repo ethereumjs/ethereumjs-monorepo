@@ -32,8 +32,8 @@
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type                                                             |
+| :-------- | :--------------------------------------------------------------- |
 | `resolve` | (`_url`: `string`, `_recordType`: `string`) => `Promise`<any[]\> |
 
 #### Defined in
@@ -48,8 +48,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type       |
+| :--------- | :--------- |
 | `_servers` | `string`[] |
 
 #### Returns

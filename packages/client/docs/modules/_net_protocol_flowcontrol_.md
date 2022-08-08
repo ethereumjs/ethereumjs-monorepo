@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)
+- [FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)
 
 ### Interfaces
 
-* [FlowControlOptions](../interfaces/_net_protocol_flowcontrol_.flowcontroloptions.md)
+- [FlowControlOptions](../interfaces/_net_protocol_flowcontrol_.flowcontroloptions.md)

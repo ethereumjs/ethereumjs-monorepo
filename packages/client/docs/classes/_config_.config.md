@@ -4,262 +4,262 @@
 
 ## Hierarchy
 
-* **Config**
+- **Config**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_config_.config.md#constructor)
+- [constructor](_config_.config.md#constructor)
 
 ### Properties
 
-* [common](_config_.config.md#common)
-* [datadir](_config_.config.md#datadir)
-* [lightserv](_config_.config.md#lightserv)
-* [logger](_config_.config.md#logger)
-* [loglevel](_config_.config.md#loglevel)
-* [maxPeers](_config_.config.md#maxpeers)
-* [minPeers](_config_.config.md#minpeers)
-* [rpc](_config_.config.md#rpc)
-* [rpcaddr](_config_.config.md#rpcaddr)
-* [rpcport](_config_.config.md#rpcport)
-* [servers](_config_.config.md#servers)
-* [syncmode](_config_.config.md#syncmode)
-* [transports](_config_.config.md#transports)
-* [COMMON_DEFAULT](_config_.config.md#static-common_default)
-* [DATADIR_DEFAULT](_config_.config.md#static-datadir_default)
-* [LIGHTSERV_DEFAULT](_config_.config.md#static-lightserv_default)
-* [LOGLEVEL_DEFAULT](_config_.config.md#static-loglevel_default)
-* [MAXPEERS_DEFAULT](_config_.config.md#static-maxpeers_default)
-* [MINPEERS_DEFAULT](_config_.config.md#static-minpeers_default)
-* [RPCADDR_DEFAULT](_config_.config.md#static-rpcaddr_default)
-* [RPCPORT_DEFAULT](_config_.config.md#static-rpcport_default)
-* [RPC_DEFAULT](_config_.config.md#static-rpc_default)
-* [SYNCMODE_DEFAULT](_config_.config.md#static-syncmode_default)
-* [TRANSPORTS_DEFAULT](_config_.config.md#static-transports_default)
+- [common](_config_.config.md#common)
+- [datadir](_config_.config.md#datadir)
+- [lightserv](_config_.config.md#lightserv)
+- [logger](_config_.config.md#logger)
+- [loglevel](_config_.config.md#loglevel)
+- [maxPeers](_config_.config.md#maxpeers)
+- [minPeers](_config_.config.md#minpeers)
+- [rpc](_config_.config.md#rpc)
+- [rpcaddr](_config_.config.md#rpcaddr)
+- [rpcport](_config_.config.md#rpcport)
+- [servers](_config_.config.md#servers)
+- [syncmode](_config_.config.md#syncmode)
+- [transports](_config_.config.md#transports)
+- [COMMON_DEFAULT](_config_.config.md#static-common_default)
+- [DATADIR_DEFAULT](_config_.config.md#static-datadir_default)
+- [LIGHTSERV_DEFAULT](_config_.config.md#static-lightserv_default)
+- [LOGLEVEL_DEFAULT](_config_.config.md#static-loglevel_default)
+- [MAXPEERS_DEFAULT](_config_.config.md#static-maxpeers_default)
+- [MINPEERS_DEFAULT](_config_.config.md#static-minpeers_default)
+- [RPCADDR_DEFAULT](_config_.config.md#static-rpcaddr_default)
+- [RPCPORT_DEFAULT](_config_.config.md#static-rpcport_default)
+- [RPC_DEFAULT](_config_.config.md#static-rpc_default)
+- [SYNCMODE_DEFAULT](_config_.config.md#static-syncmode_default)
+- [TRANSPORTS_DEFAULT](_config_.config.md#static-transports_default)
 
 ### Methods
 
-* [getSyncDataDirectory](_config_.config.md#getsyncdatadirectory)
+- [getSyncDataDirectory](_config_.config.md#getsyncdatadirectory)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Config**(`options`: [ConfigOptions](../interfaces/_config_.configoptions.md)): *[Config](_config_.config.md)*
+\+ **new Config**(`options`: [ConfigOptions](../interfaces/_config_.configoptions.md)): _[Config](_config_.config.md)_
 
-*Defined in [lib/config.ts:128](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L128)*
+_Defined in [lib/config.ts:128](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L128)_
 
 **Parameters:**
 
-Name | Type | Default |
------- | ------ | ------ |
-`options` | [ConfigOptions](../interfaces/_config_.configoptions.md) | {} |
+| Name      | Type                                                     | Default |
+| --------- | -------------------------------------------------------- | ------- |
+| `options` | [ConfigOptions](../interfaces/_config_.configoptions.md) | {}      |
 
-**Returns:** *[Config](_config_.config.md)*
+**Returns:** _[Config](_config_.config.md)_
 
 ## Properties
 
-###  common
+### common
 
-• **common**: *Common*
+• **common**: _Common_
 
-*Defined in [lib/config.ts:115](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L115)*
+_Defined in [lib/config.ts:115](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L115)_
 
-___
+---
 
-###  datadir
+### datadir
 
-• **datadir**: *string*
+• **datadir**: _string_
 
-*Defined in [lib/config.ts:119](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L119)*
+_Defined in [lib/config.ts:119](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L119)_
 
-___
+---
 
-###  lightserv
+### lightserv
 
-• **lightserv**: *boolean*
+• **lightserv**: _boolean_
 
-*Defined in [lib/config.ts:118](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L118)*
+_Defined in [lib/config.ts:118](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L118)_
 
-___
+---
 
-###  logger
+### logger
 
-• **logger**: *Logger*
+• **logger**: _Logger_
 
-*Defined in [lib/config.ts:116](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L116)*
+_Defined in [lib/config.ts:116](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L116)_
 
-___
+---
 
-###  loglevel
+### loglevel
 
-• **loglevel**: *string*
+• **loglevel**: _string_
 
-*Defined in [lib/config.ts:124](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L124)*
+_Defined in [lib/config.ts:124](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L124)_
 
-___
+---
 
-###  maxPeers
+### maxPeers
 
-• **maxPeers**: *number*
+• **maxPeers**: _number_
 
-*Defined in [lib/config.ts:126](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L126)*
+_Defined in [lib/config.ts:126](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L126)_
 
-___
+---
 
-###  minPeers
+### minPeers
 
-• **minPeers**: *number*
+• **minPeers**: _number_
 
-*Defined in [lib/config.ts:125](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L125)*
+_Defined in [lib/config.ts:125](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L125)_
 
-___
+---
 
-###  rpc
+### rpc
 
-• **rpc**: *boolean*
+• **rpc**: _boolean_
 
-*Defined in [lib/config.ts:121](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L121)*
+_Defined in [lib/config.ts:121](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L121)_
 
-___
+---
 
-###  rpcaddr
+### rpcaddr
 
-• **rpcaddr**: *string*
+• **rpcaddr**: _string_
 
-*Defined in [lib/config.ts:123](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L123)*
+_Defined in [lib/config.ts:123](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L123)_
 
-___
+---
 
-###  rpcport
+### rpcport
 
-• **rpcport**: *number*
+• **rpcport**: _number_
 
-*Defined in [lib/config.ts:122](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L122)*
+_Defined in [lib/config.ts:122](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L122)_
 
-___
+---
 
-###  servers
+### servers
 
-• **servers**: *([RlpxServer](_net_server_rlpxserver_.rlpxserver.md)‹› | [Libp2pServer](_net_server_libp2pserver_.libp2pserver.md)‹›)[]* = []
+• **servers**: _([RlpxServer](_net_server_rlpxserver_.rlpxserver.md)‹› | [Libp2pServer](_net_server_libp2pserver_.libp2pserver.md)‹›)[]_ = []
 
-*Defined in [lib/config.ts:128](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L128)*
+_Defined in [lib/config.ts:128](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L128)_
 
-___
+---
 
-###  syncmode
+### syncmode
 
-• **syncmode**: *string*
+• **syncmode**: _string_
 
-*Defined in [lib/config.ts:117](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L117)*
+_Defined in [lib/config.ts:117](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L117)_
 
-___
+---
 
-###  transports
+### transports
 
-• **transports**: *string[]*
+• **transports**: _string[]_
 
-*Defined in [lib/config.ts:120](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L120)*
+_Defined in [lib/config.ts:120](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L120)_
 
-___
+---
 
 ### `Static` COMMON_DEFAULT
 
-▪ **COMMON_DEFAULT**: *Common‹›* = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+▪ **COMMON_DEFAULT**: _Common‹›_ = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
 
-*Defined in [lib/config.ts:103](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L103)*
+_Defined in [lib/config.ts:103](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L103)_
 
-___
+---
 
 ### `Static` DATADIR_DEFAULT
 
-▪ **DATADIR_DEFAULT**: *string* = `${os.homedir()}/Library/Ethereum`
+▪ **DATADIR_DEFAULT**: _string_ = `${os.homedir()}/Library/Ethereum`
 
-*Defined in [lib/config.ts:106](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L106)*
+_Defined in [lib/config.ts:106](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L106)_
 
-___
+---
 
 ### `Static` LIGHTSERV_DEFAULT
 
-▪ **LIGHTSERV_DEFAULT**: *false* = false
+▪ **LIGHTSERV_DEFAULT**: _false_ = false
 
-*Defined in [lib/config.ts:105](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L105)*
+_Defined in [lib/config.ts:105](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L105)_
 
-___
+---
 
 ### `Static` LOGLEVEL_DEFAULT
 
-▪ **LOGLEVEL_DEFAULT**: *"info"* = "info"
+▪ **LOGLEVEL_DEFAULT**: _"info"_ = "info"
 
-*Defined in [lib/config.ts:111](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L111)*
+_Defined in [lib/config.ts:111](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L111)_
 
-___
+---
 
 ### `Static` MAXPEERS_DEFAULT
 
-▪ **MAXPEERS_DEFAULT**: *25* = 25
+▪ **MAXPEERS_DEFAULT**: _25_ = 25
 
-*Defined in [lib/config.ts:113](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L113)*
+_Defined in [lib/config.ts:113](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L113)_
 
-___
+---
 
 ### `Static` MINPEERS_DEFAULT
 
-▪ **MINPEERS_DEFAULT**: *2* = 2
+▪ **MINPEERS_DEFAULT**: _2_ = 2
 
-*Defined in [lib/config.ts:112](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L112)*
+_Defined in [lib/config.ts:112](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L112)_
 
-___
+---
 
 ### `Static` RPCADDR_DEFAULT
 
-▪ **RPCADDR_DEFAULT**: *"localhost"* = "localhost"
+▪ **RPCADDR_DEFAULT**: _"localhost"_ = "localhost"
 
-*Defined in [lib/config.ts:110](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L110)*
+_Defined in [lib/config.ts:110](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L110)_
 
-___
+---
 
 ### `Static` RPCPORT_DEFAULT
 
-▪ **RPCPORT_DEFAULT**: *8545* = 8545
+▪ **RPCPORT_DEFAULT**: _8545_ = 8545
 
-*Defined in [lib/config.ts:109](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L109)*
+_Defined in [lib/config.ts:109](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L109)_
 
-___
+---
 
 ### `Static` RPC_DEFAULT
 
-▪ **RPC_DEFAULT**: *false* = false
+▪ **RPC_DEFAULT**: _false_ = false
 
-*Defined in [lib/config.ts:108](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L108)*
+_Defined in [lib/config.ts:108](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L108)_
 
-___
+---
 
 ### `Static` SYNCMODE_DEFAULT
 
-▪ **SYNCMODE_DEFAULT**: *"full"* = "full"
+▪ **SYNCMODE_DEFAULT**: _"full"_ = "full"
 
-*Defined in [lib/config.ts:104](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L104)*
+_Defined in [lib/config.ts:104](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L104)_
 
-___
+---
 
 ### `Static` TRANSPORTS_DEFAULT
 
-▪ **TRANSPORTS_DEFAULT**: *string[]* = ['rlpx:port=30303', 'libp2p']
+▪ **TRANSPORTS_DEFAULT**: _string[]_ = ['rlpx:port=30303', 'libp2p']
 
-*Defined in [lib/config.ts:107](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L107)*
+_Defined in [lib/config.ts:107](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L107)_
 
 ## Methods
 
-###  getSyncDataDirectory
+### getSyncDataDirectory
 
-▸ **getSyncDataDirectory**(): *string*
+▸ **getSyncDataDirectory**(): _string_
 
-*Defined in [lib/config.ts:181](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L181)*
+_Defined in [lib/config.ts:181](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L181)_
 
 Returns the directory for storing the client sync data
 based on syncmode and selected chain (subdirectory of 'datadir')
 
-**Returns:** *string*
+**Returns:** _string_

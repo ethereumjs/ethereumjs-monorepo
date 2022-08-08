@@ -6,52 +6,52 @@
 
 ### Interfaces
 
-* [Bootnode](../interfaces/_types_.bootnode.md)
+- [Bootnode](../interfaces/_types_.bootnode.md)
 
 ### Type aliases
 
-* [BootnodeLike](_types_.md#bootnodelike)
-* [Key](_types_.md#key)
-* [KeyLike](_types_.md#keylike)
-* [Multiaddrs](_types_.md#multiaddrs)
-* [MultiaddrsLike](_types_.md#multiaddrslike)
+- [BootnodeLike](_types_.md#bootnodelike)
+- [Key](_types_.md#key)
+- [KeyLike](_types_.md#keylike)
+- [Multiaddrs](_types_.md#multiaddrs)
+- [MultiaddrsLike](_types_.md#multiaddrslike)
 
 ## Type aliases
 
-###  BootnodeLike
+### BootnodeLike
 
-Ƭ **BootnodeLike**: *string | string[] | [Bootnode](../interfaces/_types_.bootnode.md) | [Bootnode](../interfaces/_types_.bootnode.md)[]*
+Ƭ **BootnodeLike**: _string | string[] | [Bootnode](../interfaces/_types_.bootnode.md) | [Bootnode](../interfaces/_types_.bootnode.md)[]_
 
-*Defined in [lib/types.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L12)*
+_Defined in [lib/types.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L12)_
 
-___
+---
 
-###  Key
+### Key
 
-Ƭ **Key**: *Buffer*
+Ƭ **Key**: _Buffer_
 
-*Defined in [lib/types.ts:1](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L1)*
+_Defined in [lib/types.ts:1](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L1)_
 
-___
+---
 
-###  KeyLike
+### KeyLike
 
-Ƭ **KeyLike**: *string | [Key](_types_.md#key)*
+Ƭ **KeyLike**: _string | [Key](_types_.md#key)_
 
-*Defined in [lib/types.ts:2](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L2)*
+_Defined in [lib/types.ts:2](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L2)_
 
-___
+---
 
-###  Multiaddrs
+### Multiaddrs
 
-Ƭ **Multiaddrs**: *string[]*
+Ƭ **Multiaddrs**: _string[]_
 
-*Defined in [lib/types.ts:4](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L4)*
+_Defined in [lib/types.ts:4](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L4)_
 
-___
+---
 
-###  MultiaddrsLike
+### MultiaddrsLike
 
-Ƭ **MultiaddrsLike**: *string | [Multiaddrs](_types_.md#multiaddrs)*
+Ƭ **MultiaddrsLike**: _string | [Multiaddrs](_types_.md#multiaddrs)_
 
-*Defined in [lib/types.ts:5](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L5)*
+_Defined in [lib/types.ts:5](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/types.ts#L5)_

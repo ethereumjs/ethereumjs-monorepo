@@ -8,7 +8,7 @@ Base class for blockchain synchronizers
 
 ## Hierarchy
 
-* EventEmitter
+- EventEmitter
 
   ↳ **Synchronizer**
 
@@ -20,86 +20,86 @@ Base class for blockchain synchronizers
 
 ### Constructors
 
-* [constructor](_sync_sync_.synchronizer.md#constructor)
+- [constructor](_sync_sync_.synchronizer.md#constructor)
 
 ### Properties
 
-* [config](_sync_sync_.synchronizer.md#config)
-* [defaultMaxListeners](_sync_sync_.synchronizer.md#static-defaultmaxlisteners)
-* [errorMonitor](_sync_sync_.synchronizer.md#static-errormonitor)
+- [config](_sync_sync_.synchronizer.md#config)
+- [defaultMaxListeners](_sync_sync_.synchronizer.md#static-defaultmaxlisteners)
+- [errorMonitor](_sync_sync_.synchronizer.md#static-errormonitor)
 
 ### Accessors
 
-* [type](_sync_sync_.synchronizer.md#type)
+- [type](_sync_sync_.synchronizer.md#type)
 
 ### Methods
 
-* [addListener](_sync_sync_.synchronizer.md#addlistener)
-* [emit](_sync_sync_.synchronizer.md#emit)
-* [eventNames](_sync_sync_.synchronizer.md#eventnames)
-* [getMaxListeners](_sync_sync_.synchronizer.md#getmaxlisteners)
-* [listenerCount](_sync_sync_.synchronizer.md#listenercount)
-* [listeners](_sync_sync_.synchronizer.md#listeners)
-* [off](_sync_sync_.synchronizer.md#off)
-* [on](_sync_sync_.synchronizer.md#on)
-* [once](_sync_sync_.synchronizer.md#once)
-* [open](_sync_sync_.synchronizer.md#open)
-* [prependListener](_sync_sync_.synchronizer.md#prependlistener)
-* [prependOnceListener](_sync_sync_.synchronizer.md#prependoncelistener)
-* [rawListeners](_sync_sync_.synchronizer.md#rawlisteners)
-* [removeAllListeners](_sync_sync_.synchronizer.md#removealllisteners)
-* [removeListener](_sync_sync_.synchronizer.md#removelistener)
-* [setMaxListeners](_sync_sync_.synchronizer.md#setmaxlisteners)
-* [start](_sync_sync_.synchronizer.md#start)
-* [stop](_sync_sync_.synchronizer.md#stop)
-* [syncable](_sync_sync_.synchronizer.md#syncable)
-* [listenerCount](_sync_sync_.synchronizer.md#static-listenercount)
+- [addListener](_sync_sync_.synchronizer.md#addlistener)
+- [emit](_sync_sync_.synchronizer.md#emit)
+- [eventNames](_sync_sync_.synchronizer.md#eventnames)
+- [getMaxListeners](_sync_sync_.synchronizer.md#getmaxlisteners)
+- [listenerCount](_sync_sync_.synchronizer.md#listenercount)
+- [listeners](_sync_sync_.synchronizer.md#listeners)
+- [off](_sync_sync_.synchronizer.md#off)
+- [on](_sync_sync_.synchronizer.md#on)
+- [once](_sync_sync_.synchronizer.md#once)
+- [open](_sync_sync_.synchronizer.md#open)
+- [prependListener](_sync_sync_.synchronizer.md#prependlistener)
+- [prependOnceListener](_sync_sync_.synchronizer.md#prependoncelistener)
+- [rawListeners](_sync_sync_.synchronizer.md#rawlisteners)
+- [removeAllListeners](_sync_sync_.synchronizer.md#removealllisteners)
+- [removeListener](_sync_sync_.synchronizer.md#removelistener)
+- [setMaxListeners](_sync_sync_.synchronizer.md#setmaxlisteners)
+- [start](_sync_sync_.synchronizer.md#start)
+- [stop](_sync_sync_.synchronizer.md#stop)
+- [syncable](_sync_sync_.synchronizer.md#syncable)
+- [listenerCount](_sync_sync_.synchronizer.md#static-listenercount)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Synchronizer**(`options`: [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md)): *[Synchronizer](_sync_sync_.synchronizer.md)*
+\+ **new Synchronizer**(`options`: [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md)): _[Synchronizer](_sync_sync_.synchronizer.md)_
 
-*Overrides void*
+_Overrides void_
 
-*Defined in [lib/sync/sync.ts:37](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L37)*
+_Defined in [lib/sync/sync.ts:37](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L37)_
 
 Create new node
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`options` | [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md) |
+| Name      | Type                                                                    |
+| --------- | ----------------------------------------------------------------------- |
+| `options` | [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md) |
 
-**Returns:** *[Synchronizer](_sync_sync_.synchronizer.md)*
+**Returns:** _[Synchronizer](_sync_sync_.synchronizer.md)_
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Defined in [lib/sync/sync.ts:30](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L30)*
+_Defined in [lib/sync/sync.ts:30](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L30)_
 
-___
+---
 
 ### `Static` defaultMaxListeners
 
-▪ **defaultMaxListeners**: *number*
+▪ **defaultMaxListeners**: _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:45
 
-___
+---
 
 ### `Static` errorMonitor
 
-▪ **errorMonitor**: *keyof symbol*
+▪ **errorMonitor**: _keyof symbol_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)_
 
 Defined in node_modules/@types/node/events.d.ts:55
 
@@ -113,392 +113,392 @@ regular `'error'` listener is installed.
 
 ## Accessors
 
-###  type
+### type
 
-• **get type**(): *string*
+• **get type**(): _string_
 
-*Defined in [lib/sync/sync.ts:65](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L65)*
+_Defined in [lib/sync/sync.ts:65](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L65)_
 
 Returns synchronizer type
 
-**Returns:** *string*
+**Returns:** _string_
 
 ## Methods
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  open
+### open
 
-▸ **open**(): *Promise‹void›*
+▸ **open**(): _Promise‹void›_
 
-*Defined in [lib/sync/sync.ts:73](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L73)*
+_Defined in [lib/sync/sync.ts:73](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L73)_
 
 Open synchronizer. Must be called before sync() is called
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  start
+### start
 
-▸ **start**(): *Promise‹void | boolean›*
+▸ **start**(): _Promise‹void | boolean›_
 
-*Defined in [lib/sync/sync.ts:87](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L87)*
+_Defined in [lib/sync/sync.ts:87](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L87)_
 
 Start synchronization
 
-**Returns:** *Promise‹void | boolean›*
+**Returns:** _Promise‹void | boolean›_
 
-___
+---
 
-###  stop
+### stop
 
-▸ **stop**(): *Promise‹boolean›*
+▸ **stop**(): _Promise‹boolean›_
 
-*Defined in [lib/sync/sync.ts:110](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L110)*
+_Defined in [lib/sync/sync.ts:110](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L110)_
 
 Stop synchronization. Returns a promise that resolves once stopped.
 
-**Returns:** *Promise‹boolean›*
+**Returns:** _Promise‹boolean›_
 
-___
+---
 
-###  syncable
+### syncable
 
-▸ **syncable**(`_peer`: any): *boolean*
+▸ **syncable**(`_peer`: any): _boolean_
 
-*Defined in [lib/sync/sync.ts:80](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L80)*
+_Defined in [lib/sync/sync.ts:80](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L80)_
 
 Returns true if peer can be used for syncing
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`_peer` | any |
+| Name    | Type |
+| ------- | ---- |
+| `_peer` | any  |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
 ### `Static` listenerCount
 
-▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): *number*
+▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:44
 
@@ -506,9 +506,9 @@ Defined in node_modules/@types/node/events.d.ts:44
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`emitter` | EventEmitter |
-`event` | string &#124; symbol |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `emitter` | EventEmitter         |
+| `event`   | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_

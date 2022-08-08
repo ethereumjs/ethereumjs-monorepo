@@ -36,12 +36,12 @@ Use the static factory methods to assist in creating an Account from varying dat
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `nonce` | [`BN`](BN.md) | `undefined` |
-| `balance` | [`BN`](BN.md) | `undefined` |
-| `stateRoot` | `Buffer` | `KECCAK256_RLP` |
-| `codeHash` | `Buffer` | `KECCAK256_NULL` |
+| Name        | Type          | Default value    |
+| :---------- | :------------ | :--------------- |
+| `nonce`     | [`BN`](BN.md) | `undefined`      |
+| `balance`   | [`BN`](BN.md) | `undefined`      |
+| `stateRoot` | `Buffer`      | `KECCAK256_RLP`  |
+| `codeHash`  | `Buffer`      | `KECCAK256_NULL` |
 
 #### Defined in
 
@@ -57,7 +57,7 @@ Use the static factory methods to assist in creating an Account from varying dat
 
 [packages/util/src/account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
 
-___
+---
 
 ### codeHash
 
@@ -67,7 +67,7 @@ ___
 
 [packages/util/src/account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)
 
-___
+---
 
 ### nonce
 
@@ -77,7 +77,7 @@ ___
 
 [packages/util/src/account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L24)
 
-___
+---
 
 ### stateRoot
 
@@ -103,7 +103,7 @@ Returns a `Boolean` determining if the account is a contract.
 
 [packages/util/src/account.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L111)
 
-___
+---
 
 ### isEmpty
 
@@ -121,7 +121,7 @@ account emptiness in [EIP-161](https://eips.ethereum.org/EIPS/eip-161):
 
 [packages/util/src/account.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L120)
 
-___
+---
 
 ### raw
 
@@ -137,7 +137,7 @@ Returns a Buffer Array of the raw Buffers for the account, in order.
 
 [packages/util/src/account.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L92)
 
-___
+---
 
 ### serialize
 
@@ -153,7 +153,7 @@ Returns the RLP serialization of the account as a `Buffer`.
 
 [packages/util/src/account.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L104)
 
-___
+---
 
 ### fromAccountData
 
@@ -161,8 +161,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                                          |
+| :------------ | :-------------------------------------------- |
 | `accountData` | [`AccountData`](../interfaces/AccountData.md) |
 
 #### Returns
@@ -173,7 +173,7 @@ ___
 
 [packages/util/src/account.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L29)
 
-___
+---
 
 ### fromRlpSerializedAccount
 
@@ -181,8 +181,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `serialized` | `Buffer` |
 
 #### Returns
@@ -193,7 +193,7 @@ ___
 
 [packages/util/src/account.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L40)
 
-___
+---
 
 ### fromValuesArray
 
@@ -201,8 +201,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type       |
+| :------- | :--------- |
 | `values` | `Buffer`[] |
 
 #### Returns

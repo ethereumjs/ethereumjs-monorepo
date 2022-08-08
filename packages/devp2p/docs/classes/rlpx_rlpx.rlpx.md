@@ -75,10 +75,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Buffer` |
-| `options` | [RLPxOptions](../interfaces/rlpx_rlpx.rlpxoptions.md) |
+| Name         | Type                                                  |
+| :----------- | :---------------------------------------------------- |
+| `privateKey` | `Buffer`                                              |
+| `options`    | [RLPxOptions](../interfaces/rlpx_rlpx.rlpxoptions.md) |
 
 #### Overrides
 
@@ -98,7 +98,7 @@ EventEmitter.constructor
 
 [packages/devp2p/src/rlpx/rlpx.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L39)
 
-___
+---
 
 ### \_clientId
 
@@ -108,7 +108,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L37)
 
-___
+---
 
 ### \_common
 
@@ -118,17 +118,17 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L40)
 
-___
+---
 
 ### \_dpt
 
-• **\_dpt**: ``null`` \| [DPT](dpt_dpt.dpt.md)
+• **\_dpt**: `null` \| [DPT](dpt_dpt.dpt.md)
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L42)
 
-___
+---
 
 ### \_id
 
@@ -138,17 +138,17 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L33)
 
-___
+---
 
 ### \_listenPort
 
-• **\_listenPort**: ``null`` \| `number`
+• **\_listenPort**: `null` \| `number`
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L41)
 
-___
+---
 
 ### \_maxPeers
 
@@ -158,7 +158,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L36)
 
-___
+---
 
 ### \_peers
 
@@ -168,7 +168,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L47)
 
-___
+---
 
 ### \_peersLRU
 
@@ -178,17 +178,17 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L44)
 
-___
+---
 
 ### \_peersQueue
 
-• **\_peersQueue**: { `peer`: [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) ; `ts`: `number`  }[]
+• **\_peersQueue**: { `peer`: [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) ; `ts`: `number` }[]
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L45)
 
-___
+---
 
 ### \_privateKey
 
@@ -198,7 +198,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L32)
 
-___
+---
 
 ### \_refillIntervalId
 
@@ -208,7 +208,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L49)
 
-___
+---
 
 ### \_refillIntervalSelectionCounter
 
@@ -218,7 +218,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L50)
 
-___
+---
 
 ### \_remoteClientIdFilter
 
@@ -228,17 +228,17 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L38)
 
-___
+---
 
 ### \_server
 
-• **\_server**: ``null`` \| `Server`
+• **\_server**: `null` \| `Server`
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/rlpx.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L46)
 
-___
+---
 
 ### \_timeout
 
@@ -248,7 +248,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L35)
 
-___
+---
 
 ### defaultMaxListeners
 
@@ -266,12 +266,12 @@ node_modules/@types/node/events.d.ts:20
 
 ### \_connectToPeer
 
-▸ **_connectToPeer**(`peer`): `void`
+▸ **\_connectToPeer**(`peer`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                          |
+| :----- | :-------------------------------------------- |
 | `peer` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
 
 #### Returns
@@ -282,11 +282,11 @@ node_modules/@types/node/events.d.ts:20
 
 [packages/devp2p/src/rlpx/rlpx.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L178)
 
-___
+---
 
 ### \_getOpenSlots
 
-▸ **_getOpenSlots**(): `number`
+▸ **\_getOpenSlots**(): `number`
 
 #### Returns
 
@@ -296,11 +296,11 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L174)
 
-___
+---
 
 ### \_isAlive
 
-▸ **_isAlive**(): `boolean`
+▸ **\_isAlive**(): `boolean`
 
 #### Returns
 
@@ -310,11 +310,11 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L166)
 
-___
+---
 
 ### \_isAliveCheck
 
-▸ **_isAliveCheck**(): `void`
+▸ **\_isAliveCheck**(): `void`
 
 #### Returns
 
@@ -324,18 +324,18 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L170)
 
-___
+---
 
 ### \_onConnect
 
-▸ **_onConnect**(`socket`, `peerId`): `void`
+▸ **\_onConnect**(`socket`, `peerId`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `socket` | `Socket` |
-| `peerId` | ``null`` \| `Buffer` |
+| Name     | Type               |
+| :------- | :----------------- |
+| `socket` | `Socket`           |
+| `peerId` | `null` \| `Buffer` |
 
 #### Returns
 
@@ -345,11 +345,11 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L187)
 
-___
+---
 
 ### \_refillConnections
 
-▸ **_refillConnections**(): `void`
+▸ **\_refillConnections**(): `void`
 
 #### Returns
 
@@ -359,7 +359,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L267)
 
-___
+---
 
 ### addListener
 
@@ -367,9 +367,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -384,7 +384,7 @@ EventEmitter.addListener
 
 node_modules/@types/node/globals.d.ts:595
 
-___
+---
 
 ### connect
 
@@ -392,8 +392,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                          |
+| :----- | :-------------------------------------------- |
 | `peer` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
 
 #### Returns
@@ -404,7 +404,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L129)
 
-___
+---
 
 ### destroy
 
@@ -412,8 +412,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 #### Returns
@@ -424,7 +424,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L117)
 
-___
+---
 
 ### disconnect
 
@@ -432,8 +432,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type     |
+| :--- | :------- |
 | `id` | `Buffer` |
 
 #### Returns
@@ -444,7 +444,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L161)
 
-___
+---
 
 ### emit
 
@@ -452,10 +452,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `...args` | `any`[] |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `event`   | `string` \| `symbol` |
+| `...args` | `any`[]              |
 
 #### Returns
 
@@ -469,7 +469,7 @@ EventEmitter.emit
 
 node_modules/@types/node/globals.d.ts:605
 
-___
+---
 
 ### eventNames
 
@@ -487,7 +487,7 @@ EventEmitter.eventNames
 
 node_modules/@types/node/globals.d.ts:610
 
-___
+---
 
 ### getMaxListeners
 
@@ -505,7 +505,7 @@ EventEmitter.getMaxListeners
 
 node_modules/@types/node/globals.d.ts:602
 
-___
+---
 
 ### getPeers
 
@@ -519,7 +519,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L157)
 
-___
+---
 
 ### listen
 
@@ -527,8 +527,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 #### Returns
@@ -539,7 +539,7 @@ ___
 
 [packages/devp2p/src/rlpx/rlpx.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L110)
 
-___
+---
 
 ### listenerCount
 
@@ -547,8 +547,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `type` | `string` \| `symbol` |
 
 #### Returns
@@ -563,7 +563,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/globals.d.ts:606
 
-___
+---
 
 ### listeners
 
@@ -571,8 +571,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -587,7 +587,7 @@ EventEmitter.listeners
 
 node_modules/@types/node/globals.d.ts:603
 
-___
+---
 
 ### off
 
@@ -595,9 +595,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -612,7 +612,7 @@ EventEmitter.off
 
 node_modules/@types/node/globals.d.ts:599
 
-___
+---
 
 ### on
 
@@ -620,9 +620,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -637,7 +637,7 @@ EventEmitter.on
 
 node_modules/@types/node/globals.d.ts:596
 
-___
+---
 
 ### once
 
@@ -645,9 +645,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -662,7 +662,7 @@ EventEmitter.once
 
 node_modules/@types/node/globals.d.ts:597
 
-___
+---
 
 ### prependListener
 
@@ -670,9 +670,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -687,7 +687,7 @@ EventEmitter.prependListener
 
 node_modules/@types/node/globals.d.ts:608
 
-___
+---
 
 ### prependOnceListener
 
@@ -695,9 +695,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -712,7 +712,7 @@ EventEmitter.prependOnceListener
 
 node_modules/@types/node/globals.d.ts:609
 
-___
+---
 
 ### rawListeners
 
@@ -720,8 +720,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -736,7 +736,7 @@ EventEmitter.rawListeners
 
 node_modules/@types/node/globals.d.ts:604
 
-___
+---
 
 ### removeAllListeners
 
@@ -744,8 +744,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                 |
+| :------- | :------------------- |
 | `event?` | `string` \| `symbol` |
 
 #### Returns
@@ -760,7 +760,7 @@ EventEmitter.removeAllListeners
 
 node_modules/@types/node/globals.d.ts:600
 
-___
+---
 
 ### removeListener
 
@@ -768,9 +768,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -785,7 +785,7 @@ EventEmitter.removeListener
 
 node_modules/@types/node/globals.d.ts:598
 
-___
+---
 
 ### setMaxListeners
 
@@ -793,9 +793,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `n` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `n`  | `number` |
 
 #### Returns
 
@@ -809,7 +809,7 @@ EventEmitter.setMaxListeners
 
 node_modules/@types/node/globals.d.ts:601
 
-___
+---
 
 ### listenerCount
 
@@ -819,10 +819,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `EventEmitter`       |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -836,7 +836,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/events.d.ts:17
 
-___
+---
 
 ### once
 
@@ -844,10 +844,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `NodeEventTarget`    |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -865,10 +865,10 @@ node_modules/@types/node/events.d.ts:13
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type             |
+| :-------- | :--------------- |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `event`   | `string`         |
 
 #### Returns
 

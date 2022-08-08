@@ -41,7 +41,7 @@ The access list which contains the addresses/storage slots which the transaction
 
 [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L178)
 
-___
+---
 
 ### chainId
 
@@ -53,7 +53,7 @@ The transaction's chain ID
 
 [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L173)
 
-___
+---
 
 ### data
 
@@ -69,7 +69,7 @@ TxData.data
 
 [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
 
-___
+---
 
 ### gasLimit
 
@@ -85,7 +85,7 @@ TxData.gasLimit
 
 [types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L127)
 
-___
+---
 
 ### gasPrice
 
@@ -101,7 +101,7 @@ TxData.gasPrice
 
 [types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L122)
 
-___
+---
 
 ### nonce
 
@@ -117,7 +117,7 @@ TxData.nonce
 
 [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L117)
 
-___
+---
 
 ### r
 
@@ -133,7 +133,7 @@ TxData.r
 
 [types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L152)
 
-___
+---
 
 ### s
 
@@ -149,7 +149,7 @@ TxData.s
 
 [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
 
-___
+---
 
 ### to
 
@@ -165,7 +165,7 @@ TxData.to
 
 [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
 
-___
+---
 
 ### type
 
@@ -181,7 +181,7 @@ TxData.type
 
 [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
 
-___
+---
 
 ### v
 
@@ -197,7 +197,7 @@ TxData.v
 
 [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
 
-___
+---
 
 ### value
 

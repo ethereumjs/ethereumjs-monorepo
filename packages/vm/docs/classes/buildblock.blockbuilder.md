@@ -28,9 +28,9 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `vm` | [`default`](index.default.md) |
+| Name   | Type                                                           |
+| :----- | :------------------------------------------------------------- |
+| `vm`   | [`default`](index.default.md)                                  |
 | `opts` | [`BuildBlockOpts`](../interfaces/buildBlock.BuildBlockOpts.md) |
 
 #### Defined in
@@ -62,8 +62,8 @@ the remaining gas in the block.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type               |
+| :--- | :----------------- |
 | `tx` | `TypedTransaction` |
 
 #### Returns
@@ -74,7 +74,7 @@ the remaining gas in the block.
 
 [buildBlock.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L148)
 
-___
+---
 
 ### build
 
@@ -82,18 +82,19 @@ ___
 
 This method returns the finalized block.
 It also:
- - Assigns the reward for miner (PoW)
- - Commits the checkpoint on the StateManager
- - Sets the tip of the VM's blockchain to this block
-For PoW, optionally seals the block with params `nonce` and `mixHash`,
-which is validated along with the block number and difficulty by ethash.
-For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
-as the signer will be awarded the txs amount spent on gas as they are added.
+
+- Assigns the reward for miner (PoW)
+- Commits the checkpoint on the StateManager
+- Sets the tip of the VM's blockchain to this block
+  For PoW, optionally seals the block with params `nonce` and `mixHash`,
+  which is validated along with the block number and difficulty by ethash.
+  For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
+  as the signer will be awarded the txs amount spent on gas as they are added.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type                                                         |
+| :---------- | :----------------------------------------------------------- |
 | `sealOpts?` | [`SealBlockOpts`](../interfaces/buildBlock.SealBlockOpts.md) |
 
 #### Returns
@@ -104,7 +105,7 @@ as the signer will be awarded the txs amount spent on gas as they are added.
 
 [buildBlock.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L202)
 
-___
+---
 
 ### revert
 

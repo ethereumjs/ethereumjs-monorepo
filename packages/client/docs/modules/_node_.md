@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Node](../classes/_node_.node.md)
+- [Node](../classes/_node_.node.md)
 
 ### Interfaces
 
-* [NodeOptions](../interfaces/_node_.nodeoptions.md)
+- [NodeOptions](../interfaces/_node_.nodeoptions.md)

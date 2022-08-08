@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* **FetcherOptions**
+- **FetcherOptions**
 
   ↳ [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md)
 
@@ -12,66 +12,66 @@
 
 ### Properties
 
-* [banTime](_sync_fetcher_fetcher_.fetcheroptions.md#optional-bantime)
-* [config](_sync_fetcher_fetcher_.fetcheroptions.md#config)
-* [interval](_sync_fetcher_fetcher_.fetcheroptions.md#optional-interval)
-* [maxPerRequest](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxperrequest)
-* [maxQueue](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxqueue)
-* [pool](_sync_fetcher_fetcher_.fetcheroptions.md#pool)
-* [timeout](_sync_fetcher_fetcher_.fetcheroptions.md#optional-timeout)
+- [banTime](_sync_fetcher_fetcher_.fetcheroptions.md#optional-bantime)
+- [config](_sync_fetcher_fetcher_.fetcheroptions.md#config)
+- [interval](_sync_fetcher_fetcher_.fetcheroptions.md#optional-interval)
+- [maxPerRequest](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxperrequest)
+- [maxQueue](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxqueue)
+- [pool](_sync_fetcher_fetcher_.fetcheroptions.md#pool)
+- [timeout](_sync_fetcher_fetcher_.fetcheroptions.md#optional-timeout)
 
 ## Properties
 
 ### `Optional` banTime
 
-• **banTime**? : *undefined | number*
+• **banTime**? : _undefined | number_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L17)*
+_Defined in [lib/sync/fetcher/fetcher.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L17)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L8)*
+_Defined in [lib/sync/fetcher/fetcher.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L8)_
 
-___
+---
 
 ### `Optional` interval
 
-• **interval**? : *undefined | number*
+• **interval**? : _undefined | number_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L26)*
+_Defined in [lib/sync/fetcher/fetcher.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L26)_
 
-___
+---
 
 ### `Optional` maxPerRequest
 
-• **maxPerRequest**? : *undefined | number*
+• **maxPerRequest**? : _undefined | number_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L23)*
+_Defined in [lib/sync/fetcher/fetcher.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L23)_
 
-___
+---
 
 ### `Optional` maxQueue
 
-• **maxQueue**? : *undefined | number*
+• **maxQueue**? : _undefined | number_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L20)*
+_Defined in [lib/sync/fetcher/fetcher.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L20)_
 
-___
+---
 
-###  pool
+### pool
 
-• **pool**: *[PeerPool](../classes/_net_peerpool_.peerpool.md)*
+• **pool**: _[PeerPool](../classes/_net_peerpool_.peerpool.md)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L11)*
+_Defined in [lib/sync/fetcher/fetcher.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L11)_
 
-___
+---
 
 ### `Optional` timeout
 
-• **timeout**? : *undefined | number*
+• **timeout**? : _undefined | number_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L14)*
+_Defined in [lib/sync/fetcher/fetcher.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L14)_

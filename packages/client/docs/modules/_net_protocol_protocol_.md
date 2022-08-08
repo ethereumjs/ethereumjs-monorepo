@@ -6,32 +6,32 @@
 
 ### Classes
 
-* [Protocol](../classes/_net_protocol_protocol_.protocol.md)
+- [Protocol](../classes/_net_protocol_protocol_.protocol.md)
 
 ### Interfaces
 
-* [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md)
+- [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md)
 
 ### Type aliases
 
-* [Message](_net_protocol_protocol_.md#message)
+- [Message](_net_protocol_protocol_.md#message)
 
 ## Type aliases
 
-###  Message
+### Message
 
-Ƭ **Message**: *object*
+Ƭ **Message**: _object_
 
-*Defined in [lib/net/protocol/protocol.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L14)*
+_Defined in [lib/net/protocol/protocol.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L14)_
 
 #### Type declaration:
 
-* **code**: *number*
+- **code**: _number_
 
-* **decode**? : *Function*
+- **decode**? : _Function_
 
-* **encode**? : *Function*
+- **encode**? : _Function_
 
-* **name**: *string*
+- **name**: _string_
 
-* **response**? : *undefined | number*
+- **response**? : _undefined | number_

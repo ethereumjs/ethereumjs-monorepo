@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [LightEthereumService](../classes/_service_lightethereumservice_.lightethereumservice.md)
+- [LightEthereumService](../classes/_service_lightethereumservice_.lightethereumservice.md)

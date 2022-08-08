@@ -34,7 +34,7 @@
 
 [packages/devp2p/src/dpt/dpt.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L16)
 
-___
+---
 
 ### id
 
@@ -48,11 +48,11 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L9)
 
-___
+---
 
 ### tcpPort
 
-• `Optional` **tcpPort**: ``null`` \| `number`
+• `Optional` **tcpPort**: `null` \| `number`
 
 #### Inherited from
 
@@ -62,11 +62,11 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L18)
 
-___
+---
 
 ### udpPort
 
-• `Optional` **udpPort**: ``null`` \| `number`
+• `Optional` **udpPort**: `null` \| `number`
 
 #### Inherited from
 
@@ -76,7 +76,7 @@ ___
 
 [packages/devp2p/src/dpt/dpt.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L17)
 
-___
+---
 
 ### vectorClock
 

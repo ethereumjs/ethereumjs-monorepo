@@ -26,8 +26,8 @@ deleted and any encountered heads are set to the parent block.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name        | Type     | Description                         |
+| :---------- | :------- | :---------------------------------- |
 | `blockHash` | `Buffer` | The hash of the block to be deleted |
 
 #### Returns
@@ -38,29 +38,29 @@ deleted and any encountered heads are set to the parent block.
 
 [index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L43)
 
-___
+---
 
 ### getBlock
 
-▸ **getBlock**(`blockId`): `Promise`<``null`` \| `Block`\>
+▸ **getBlock**(`blockId`): `Promise`<`null` \| `Block`\>
 
 Returns a block by its hash or number.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type                         |
+| :-------- | :--------------------------- |
 | `blockId` | `number` \| `Buffer` \| `BN` |
 
 #### Returns
 
-`Promise`<``null`` \| `Block`\>
+`Promise`<`null` \| `Block`\>
 
 #### Defined in
 
 [index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L48)
 
-___
+---
 
 ### iterator
 
@@ -71,9 +71,9 @@ the onBlock function on each block.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `name` | `string` | Name of the state root head |
+| Name      | Type      | Description                                                              |
+| :-------- | :-------- | :----------------------------------------------------------------------- |
+| `name`    | `string`  | Name of the state root head                                              |
 | `onBlock` | `OnBlock` | Function called on each block with params (block: Block, reorg: boolean) |
 
 #### Returns
@@ -84,7 +84,7 @@ the onBlock function on each block.
 
 [index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L58)
 
-___
+---
 
 ### putBlock
 
@@ -94,8 +94,8 @@ Adds a block to the blockchain.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name    | Type    | Description                              |
+| :------ | :------ | :--------------------------------------- |
 | `block` | `Block` | The block to be added to the blockchain. |
 
 #### Returns

@@ -29,7 +29,7 @@ The @ethereumjs/block to process
 
 [runBlock.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L35)
 
-___
+---
 
 ### generate
 
@@ -44,7 +44,7 @@ Defaults to `false`.
 
 [runBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L46)
 
-___
+---
 
 ### root
 
@@ -56,7 +56,7 @@ Root of the state trie
 
 [runBlock.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L39)
 
-___
+---
 
 ### skipBalance
 
@@ -68,7 +68,7 @@ If true, skips the balance check
 
 [runBlock.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L60)
 
-___
+---
 
 ### skipBlockValidation
 
@@ -82,7 +82,7 @@ the transactions, the transaction trie and the uncle hash.
 
 [runBlock.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L52)
 
-___
+---
 
 ### skipNonce
 

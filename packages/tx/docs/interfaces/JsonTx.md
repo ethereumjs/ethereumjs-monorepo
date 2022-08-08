@@ -38,7 +38,7 @@ and not all the values are present on all tx types
 
 [types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L261)
 
-___
+---
 
 ### chainId
 
@@ -48,7 +48,7 @@ ___
 
 [types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L260)
 
-___
+---
 
 ### data
 
@@ -58,7 +58,7 @@ ___
 
 [types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L255)
 
-___
+---
 
 ### gasLimit
 
@@ -68,7 +68,7 @@ ___
 
 [types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L253)
 
-___
+---
 
 ### gasPrice
 
@@ -78,7 +78,7 @@ ___
 
 [types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
 
-___
+---
 
 ### maxFeePerGas
 
@@ -88,7 +88,7 @@ ___
 
 [types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L264)
 
-___
+---
 
 ### maxPriorityFeePerGas
 
@@ -98,7 +98,7 @@ ___
 
 [types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L263)
 
-___
+---
 
 ### nonce
 
@@ -108,7 +108,7 @@ ___
 
 [types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L251)
 
-___
+---
 
 ### r
 
@@ -118,7 +118,7 @@ ___
 
 [types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L257)
 
-___
+---
 
 ### s
 
@@ -128,7 +128,7 @@ ___
 
 [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L258)
 
-___
+---
 
 ### to
 
@@ -138,7 +138,7 @@ ___
 
 [types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L254)
 
-___
+---
 
 ### type
 
@@ -148,7 +148,7 @@ ___
 
 [types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L262)
 
-___
+---
 
 ### v
 
@@ -158,7 +158,7 @@ ___
 
 [types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L256)
 
-___
+---
 
 ### value
 

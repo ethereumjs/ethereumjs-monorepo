@@ -36,7 +36,7 @@ A block header's data.
 
 [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
 
-___
+---
 
 ### bloom
 
@@ -46,7 +46,7 @@ ___
 
 [types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L109)
 
-___
+---
 
 ### coinbase
 
@@ -56,7 +56,7 @@ ___
 
 [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L88)
 
-___
+---
 
 ### difficulty
 
@@ -66,7 +66,7 @@ ___
 
 [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L93)
 
-___
+---
 
 ### extraData
 
@@ -76,7 +76,7 @@ ___
 
 [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L98)
 
-___
+---
 
 ### gasLimit
 
@@ -86,7 +86,7 @@ ___
 
 [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
 
-___
+---
 
 ### gasUsed
 
@@ -96,7 +96,7 @@ ___
 
 [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L96)
 
-___
+---
 
 ### logsBloom
 
@@ -106,7 +106,7 @@ ___
 
 [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L92)
 
-___
+---
 
 ### mixHash
 
@@ -116,7 +116,7 @@ ___
 
 [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L99)
 
-___
+---
 
 ### nonce
 
@@ -126,7 +126,7 @@ ___
 
 [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)
 
-___
+---
 
 ### number
 
@@ -136,7 +136,7 @@ ___
 
 [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L94)
 
-___
+---
 
 ### parentHash
 
@@ -146,7 +146,7 @@ ___
 
 [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
 
-___
+---
 
 ### receiptTrie
 
@@ -156,7 +156,7 @@ ___
 
 [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L91)
 
-___
+---
 
 ### stateRoot
 
@@ -166,7 +166,7 @@ ___
 
 [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L89)
 
-___
+---
 
 ### timestamp
 
@@ -176,7 +176,7 @@ ___
 
 [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L97)
 
-___
+---
 
 ### transactionsTrie
 
@@ -186,7 +186,7 @@ ___
 
 [types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L90)
 
-___
+---
 
 ### uncleHash
 

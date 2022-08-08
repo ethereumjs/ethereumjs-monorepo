@@ -4,72 +4,72 @@
 
 ## Hierarchy
 
-* **PeerOptions**
+- **PeerOptions**
 
 ## Index
 
 ### Properties
 
-* [address](_net_peer_peer_.peeroptions.md#address)
-* [config](_net_peer_peer_.peeroptions.md#config)
-* [id](_net_peer_peer_.peeroptions.md#optional-id)
-* [inbound](_net_peer_peer_.peeroptions.md#optional-inbound)
-* [protocols](_net_peer_peer_.peeroptions.md#optional-protocols)
-* [server](_net_peer_peer_.peeroptions.md#optional-server)
-* [transport](_net_peer_peer_.peeroptions.md#transport)
+- [address](_net_peer_peer_.peeroptions.md#address)
+- [config](_net_peer_peer_.peeroptions.md#config)
+- [id](_net_peer_peer_.peeroptions.md#optional-id)
+- [inbound](_net_peer_peer_.peeroptions.md#optional-inbound)
+- [protocols](_net_peer_peer_.peeroptions.md#optional-protocols)
+- [server](_net_peer_peer_.peeroptions.md#optional-server)
+- [transport](_net_peer_peer_.peeroptions.md#transport)
 
 ## Properties
 
-###  address
+### address
 
-• **address**: *string*
+• **address**: _string_
 
-*Defined in [lib/net/peer/peer.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L14)*
+_Defined in [lib/net/peer/peer.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L14)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/net/peer/peer.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L8)*
+_Defined in [lib/net/peer/peer.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L8)_
 
-___
+---
 
 ### `Optional` id
 
-• **id**? : *undefined | string*
+• **id**? : _undefined | string_
 
-*Defined in [lib/net/peer/peer.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L11)*
+_Defined in [lib/net/peer/peer.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L11)_
 
-___
+---
 
 ### `Optional` inbound
 
-• **inbound**? : *undefined | false | true*
+• **inbound**? : _undefined | false | true_
 
-*Defined in [lib/net/peer/peer.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L20)*
+_Defined in [lib/net/peer/peer.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L20)_
 
-___
+---
 
 ### `Optional` protocols
 
-• **protocols**? : *[Protocol](../classes/_net_protocol_protocol_.protocol.md)[]*
+• **protocols**? : _[Protocol](../classes/_net_protocol_protocol_.protocol.md)[]_
 
-*Defined in [lib/net/peer/peer.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L23)*
+_Defined in [lib/net/peer/peer.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L23)_
 
-___
+---
 
 ### `Optional` server
 
-• **server**? : *[Server](../classes/_net_server_server_.server.md)*
+• **server**? : _[Server](../classes/_net_server_server_.server.md)_
 
-*Defined in [lib/net/peer/peer.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L26)*
+_Defined in [lib/net/peer/peer.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L26)_
 
-___
+---
 
-###  transport
+### transport
 
-• **transport**: *string*
+• **transport**: _string_
 
-*Defined in [lib/net/peer/peer.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L17)*
+_Defined in [lib/net/peer/peer.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/peer.ts#L17)_

@@ -15,7 +15,7 @@
 
 Renames and exports: [default](../classes/state_stateManager.default.md)
 
-___
+---
 
 ### StateManager
 

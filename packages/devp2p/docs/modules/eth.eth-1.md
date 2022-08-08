@@ -8,7 +8,7 @@
 
 ### Enumerations
 
-- [MESSAGE\_CODES](../enums/eth.eth-1.message_codes.md)
+- [MESSAGE_CODES](../enums/eth.eth-1.message_codes.md)
 
 ### Interfaces
 
@@ -26,12 +26,12 @@
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `bestHash` | `Buffer` |
-| `genesisHash` | `Buffer` |
+| Name           | Type     |
+| :------------- | :------- |
+| `bestHash`     | `Buffer` |
+| `genesisHash`  | `Buffer` |
 | `latestBlock?` | `number` |
-| `td` | `Buffer` |
+| `td`           | `Buffer` |
 
 #### Defined in
 

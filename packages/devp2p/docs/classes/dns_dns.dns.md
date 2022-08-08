@@ -23,8 +23,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type                                           |
+| :-------- | :--------------------------------------------- |
 | `options` | [DNSOptions](../modules/dns_dns.md#dnsoptions) |
 
 #### Defined in
@@ -35,15 +35,15 @@
 
 ### \_\_setNativeDNSModuleResolve
 
-▸ **__setNativeDNSModuleResolve**(`mock`): `void`
+▸ **\_\_setNativeDNSModuleResolve**(`mock`): `void`
 
 Only used for testing. A stopgap to enable successful
 TestDouble mocking of the native `dns` module.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name   | Type  | Description   |
+| :----- | :---- | :------------ |
 | `mock` | `any` | TestDouble fn |
 
 #### Returns
@@ -54,7 +54,7 @@ TestDouble mocking of the native `dns` module.
 
 [packages/devp2p/src/dns/dns.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L215)
 
-___
+---
 
 ### getPeers
 
@@ -67,10 +67,10 @@ search exceeds `maxQuantity` plus the `errorTolerance` factor.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `maxQuantity` | `number` | max number to get |
-| `dnsNetworks` | `string`[] | - |
+| Name          | Type       | Description       |
+| :------------ | :--------- | :---------------- |
+| `maxQuantity` | `number`   | max number to get |
+| `dnsNetworks` | `string`[] | -                 |
 
 #### Returns
 

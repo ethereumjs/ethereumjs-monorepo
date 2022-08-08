@@ -27,7 +27,7 @@ See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
 
 [types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L22)
 
-___
+---
 
 ### EIP155ReplayProtection
 
@@ -40,7 +40,7 @@ See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP
 
 [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L16)
 
-___
+---
 
 ### EIP2718TypedTransaction
 
@@ -53,7 +53,7 @@ See: [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
 
 [types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L28)
 
-___
+---
 
 ### EIP2930AccessLists
 

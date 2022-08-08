@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Libp2pNode](../classes/_net_peer_libp2pnode_.libp2pnode.md)
+- [Libp2pNode](../classes/_net_peer_libp2pnode_.libp2pnode.md)

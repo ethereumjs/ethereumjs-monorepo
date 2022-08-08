@@ -40,15 +40,15 @@
 
 ### Variables
 
-- [KECCAK256\_NULL](README.md#keccak256_null)
-- [KECCAK256\_NULL\_S](README.md#keccak256_null_s)
-- [KECCAK256\_RLP](README.md#keccak256_rlp)
-- [KECCAK256\_RLP\_ARRAY](README.md#keccak256_rlp_array)
-- [KECCAK256\_RLP\_ARRAY\_S](README.md#keccak256_rlp_array_s)
-- [KECCAK256\_RLP\_S](README.md#keccak256_rlp_s)
-- [MAX\_INTEGER](README.md#max_integer)
-- [MAX\_UINT64](README.md#max_uint64)
-- [TWO\_POW256](README.md#two_pow256)
+- [KECCAK256_NULL](README.md#keccak256_null)
+- [KECCAK256_NULL_S](README.md#keccak256_null_s)
+- [KECCAK256_RLP](README.md#keccak256_rlp)
+- [KECCAK256_RLP_ARRAY](README.md#keccak256_rlp_array)
+- [KECCAK256_RLP_ARRAY_S](README.md#keccak256_rlp_array_s)
+- [KECCAK256_RLP_S](README.md#keccak256_rlp_s)
+- [MAX_INTEGER](README.md#max_integer)
+- [MAX_UINT64](README.md#max_uint64)
+- [TWO_POW256](README.md#two_pow256)
 
 ### Functions
 
@@ -133,7 +133,7 @@ To convert to address, use `new Address(toBuffer(value))`
 
 [packages/util/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L32)
 
-___
+---
 
 ### BNLike
 
@@ -143,7 +143,7 @@ ___
 
 [packages/util/src/types.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L9)
 
-___
+---
 
 ### BufferLike
 
@@ -153,7 +153,7 @@ ___
 
 [packages/util/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L14)
 
-___
+---
 
 ### NestedBufferArray
 
@@ -163,7 +163,7 @@ ___
 
 [packages/util/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L51)
 
-___
+---
 
 ### NestedUint8Array
 
@@ -173,7 +173,7 @@ ___
 
 [packages/util/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L50)
 
-___
+---
 
 ### PrefixedHexString
 
@@ -183,17 +183,17 @@ ___
 
 [packages/util/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L26)
 
-___
+---
 
 ### ToBufferInputTypes
 
-Ƭ **ToBufferInputTypes**: [`PrefixedHexString`](README.md#prefixedhexstring) \| `number` \| [`BN`](classes/BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] \| [`TransformableToArray`](interfaces/TransformableToArray.md) \| [`TransformableToBuffer`](interfaces/TransformableToBuffer.md) \| ``null`` \| `undefined`
+Ƭ **ToBufferInputTypes**: [`PrefixedHexString`](README.md#prefixedhexstring) \| `number` \| [`BN`](classes/BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] \| [`TransformableToArray`](interfaces/TransformableToArray.md) \| [`TransformableToBuffer`](interfaces/TransformableToBuffer.md) \| `null` \| `undefined`
 
 #### Defined in
 
 [packages/util/src/bytes.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L136)
 
-___
+---
 
 ### TypeOutputReturnType
 
@@ -201,12 +201,12 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `0` | `number` |
-| `1` | [`BN`](classes/BN.md) |
-| `2` | `Buffer` |
-| `3` | [`PrefixedHexString`](README.md#prefixedhexstring) |
+| Name | Type                                               |
+| :--- | :------------------------------------------------- |
+| `0`  | `number`                                           |
+| `1`  | [`BN`](classes/BN.md)                              |
+| `2`  | `Buffer`                                           |
+| `3`  | [`PrefixedHexString`](README.md#prefixedhexstring) |
 
 #### Defined in
 
@@ -214,9 +214,9 @@ ___
 
 ## Variables
 
-### KECCAK256\_NULL
+### KECCAK256_NULL
 
-• `Const` **KECCAK256\_NULL**: `Buffer`
+• `Const` **KECCAK256_NULL**: `Buffer`
 
 Keccak-256 hash of null
 
@@ -224,11 +224,11 @@ Keccak-256 hash of null
 
 [packages/util/src/constants.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L33)
 
-___
+---
 
-### KECCAK256\_NULL\_S
+### KECCAK256_NULL_S
 
-• `Const` **KECCAK256\_NULL\_S**: ``"c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"``
+• `Const` **KECCAK256_NULL_S**: `"c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"`
 
 Keccak-256 hash of null
 
@@ -236,11 +236,11 @@ Keccak-256 hash of null
 
 [packages/util/src/constants.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L28)
 
-___
+---
 
-### KECCAK256\_RLP
+### KECCAK256_RLP
 
-• `Const` **KECCAK256\_RLP**: `Buffer`
+• `Const` **KECCAK256_RLP**: `Buffer`
 
 Keccak-256 hash of the RLP of null
 
@@ -248,11 +248,11 @@ Keccak-256 hash of the RLP of null
 
 [packages/util/src/constants.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L54)
 
-___
+---
 
-### KECCAK256\_RLP\_ARRAY
+### KECCAK256_RLP_ARRAY
 
-• `Const` **KECCAK256\_RLP\_ARRAY**: `Buffer`
+• `Const` **KECCAK256_RLP_ARRAY**: `Buffer`
 
 Keccak-256 of an RLP of an empty array
 
@@ -260,11 +260,11 @@ Keccak-256 of an RLP of an empty array
 
 [packages/util/src/constants.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L44)
 
-___
+---
 
-### KECCAK256\_RLP\_ARRAY\_S
+### KECCAK256_RLP_ARRAY_S
 
-• `Const` **KECCAK256\_RLP\_ARRAY\_S**: ``"1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"``
+• `Const` **KECCAK256_RLP_ARRAY_S**: `"1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"`
 
 Keccak-256 of an RLP of an empty array
 
@@ -272,11 +272,11 @@ Keccak-256 of an RLP of an empty array
 
 [packages/util/src/constants.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L38)
 
-___
+---
 
-### KECCAK256\_RLP\_S
+### KECCAK256_RLP_S
 
-• `Const` **KECCAK256\_RLP\_S**: ``"56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"``
+• `Const` **KECCAK256_RLP_S**: `"56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"`
 
 Keccak-256 hash of the RLP of null
 
@@ -284,11 +284,11 @@ Keccak-256 hash of the RLP of null
 
 [packages/util/src/constants.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L49)
 
-___
+---
 
-### MAX\_INTEGER
+### MAX_INTEGER
 
-• `Const` **MAX\_INTEGER**: [`BN`](classes/BN.md)
+• `Const` **MAX_INTEGER**: [`BN`](classes/BN.md)
 
 The max integer that the evm can handle (2^256-1)
 
@@ -296,11 +296,11 @@ The max integer that the evm can handle (2^256-1)
 
 [packages/util/src/constants.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L12)
 
-___
+---
 
-### MAX\_UINT64
+### MAX_UINT64
 
-• `Const` **MAX\_UINT64**: [`BN`](classes/BN.md)
+• `Const` **MAX_UINT64**: [`BN`](classes/BN.md)
 
 2^64-1
 
@@ -308,11 +308,11 @@ ___
 
 [packages/util/src/constants.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L7)
 
-___
+---
 
-### TWO\_POW256
+### TWO_POW256
 
-• `Const` **TWO\_POW256**: [`BN`](classes/BN.md)
+• `Const` **TWO_POW256**: [`BN`](classes/BN.md)
 
 2^256
 
@@ -330,8 +330,8 @@ Adds "0x" to a given `String` if it does not already start with "0x".
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `str` | `string` |
 
 #### Returns
@@ -342,7 +342,7 @@ Adds "0x" to a given `String` if it does not already start with "0x".
 
 [packages/util/src/bytes.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L236)
 
-___
+---
 
 ### arrToBufArr
 
@@ -352,8 +352,8 @@ Converts a {@link Uint8Array} or [NestedUint8Array](README.md#nesteduint8array) 
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type         |
+| :---- | :----------- |
 | `arr` | `Uint8Array` |
 
 #### Returns
@@ -368,8 +368,8 @@ Converts a {@link Uint8Array} or [NestedUint8Array](README.md#nesteduint8array) 
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                             |
+| :---- | :----------------------------------------------- |
 | `arr` | [`NestedUint8Array`](README.md#nesteduint8array) |
 
 #### Returns
@@ -384,8 +384,8 @@ Converts a {@link Uint8Array} or [NestedUint8Array](README.md#nesteduint8array) 
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                             |
+| :---- | :--------------------------------------------------------------- |
 | `arr` | `Uint8Array` \| [`NestedUint8Array`](README.md#nesteduint8array) |
 
 #### Returns
@@ -396,7 +396,7 @@ Converts a {@link Uint8Array} or [NestedUint8Array](README.md#nesteduint8array) 
 
 [packages/util/src/bytes.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L315)
 
-___
+---
 
 ### arrayContainsArray
 
@@ -407,11 +407,11 @@ from the second one. FALSE otherwise.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type        |
+| :--------- | :---------- |
 | `superset` | `unknown`[] |
-| `subset` | `unknown`[] |
-| `some?` | `boolean` |
+| `subset`   | `unknown`[] |
+| `some?`    | `boolean`   |
 
 #### Returns
 
@@ -421,7 +421,7 @@ from the second one. FALSE otherwise.
 
 [packages/util/src/internal.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L89)
 
-___
+---
 
 ### baToJSON
 
@@ -431,8 +431,8 @@ Converts a `Buffer` or `Array` to JSON.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name | Type  | Description     |
+| :--- | :---- | :-------------- |
 | `ba` | `any` | (Buffer\|Array) |
 
 #### Returns
@@ -445,7 +445,7 @@ Converts a `Buffer` or `Array` to JSON.
 
 [packages/util/src/bytes.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L277)
 
-___
+---
 
 ### bigIntToHex
 
@@ -455,8 +455,8 @@ Convert BN to 0x-prefixed hex string.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                  |
+| :------ | :-------------------- |
 | `value` | [`BN`](classes/BN.md) |
 
 #### Returns
@@ -467,7 +467,7 @@ Convert BN to 0x-prefixed hex string.
 
 [packages/util/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L56)
 
-___
+---
 
 ### bnToRlp
 
@@ -479,8 +479,8 @@ Deprecated alias for [bigIntToUnpaddedBuffer](README.md#bigIntToUnpaddedBuffer)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                  |
+| :------ | :-------------------- |
 | `value` | [`BN`](classes/BN.md) |
 
 #### Returns
@@ -491,7 +491,7 @@ Deprecated alias for [bigIntToUnpaddedBuffer](README.md#bigIntToUnpaddedBuffer)
 
 [packages/util/src/types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L75)
 
-___
+---
 
 ### bigIntToUnpaddedBuffer
 
@@ -502,8 +502,8 @@ Convert value from BN to an unpadded Buffer
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name    | Type                  | Description      |
+| :------ | :-------------------- | :--------------- |
 | `value` | [`BN`](classes/BN.md) | value to convert |
 
 #### Returns
@@ -514,7 +514,7 @@ Convert value from BN to an unpadded Buffer
 
 [packages/util/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L65)
 
-___
+---
 
 ### bufArrToArr
 
@@ -524,8 +524,8 @@ Converts a [Buffer](enums/TypeOutput.md#buffer) or [NestedBufferArray](README.md
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `arr` | `Buffer` |
 
 #### Returns
@@ -540,8 +540,8 @@ Converts a [Buffer](enums/TypeOutput.md#buffer) or [NestedBufferArray](README.md
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                               |
+| :---- | :------------------------------------------------- |
 | `arr` | [`NestedBufferArray`](README.md#nestedbufferarray) |
 
 #### Returns
@@ -556,8 +556,8 @@ Converts a [Buffer](enums/TypeOutput.md#buffer) or [NestedBufferArray](README.md
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                           |
+| :---- | :------------------------------------------------------------- |
 | `arr` | `Buffer` \| [`NestedBufferArray`](README.md#nestedbufferarray) |
 
 #### Returns
@@ -568,7 +568,7 @@ Converts a [Buffer](enums/TypeOutput.md#buffer) or [NestedBufferArray](README.md
 
 [packages/util/src/bytes.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L328)
 
-___
+---
 
 ### bufferToHex
 
@@ -578,8 +578,8 @@ Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description                |
+| :---- | :------- | :------------------------- |
 | `buf` | `Buffer` | `Buffer` object to convert |
 
 #### Returns
@@ -590,7 +590,7 @@ Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
 [packages/util/src/bytes.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L212)
 
-___
+---
 
 ### bufferToInt
 
@@ -602,8 +602,8 @@ Converts a `Buffer` to a `Number`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description                |
+| :---- | :------- | :------------------------- |
 | `buf` | `Buffer` | `Buffer` object to convert |
 
 #### Returns
@@ -614,7 +614,7 @@ Converts a `Buffer` to a `Number`.
 
 [packages/util/src/bytes.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L204)
 
-___
+---
 
 ### defineProperties
 
@@ -626,11 +626,11 @@ Defines properties on a `Object`. It make the assumption that underlying data is
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `self` | `any` | the `Object` to define properties on |
-| `fields` | `any` | an array fields to define. Fields can contain: * `name` - the name of the properties * `length` - the number of bytes the field can have * `allowLess` - if the field can be less than the length * `allowEmpty` |
-| `data?` | `any` | data to be validated against the definitions |
+| Name     | Type  | Description                                                                                                                                                                                                      |
+| :------- | :---- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `self`   | `any` | the `Object` to define properties on                                                                                                                                                                             |
+| `fields` | `any` | an array fields to define. Fields can contain: _ `name` - the name of the properties _ `length` - the number of bytes the field can have _ `allowLess` - if the field can be less than the length _ `allowEmpty` |
+| `data?`  | `any` | data to be validated against the definitions                                                                                                                                                                     |
 
 #### Returns
 
@@ -640,7 +640,7 @@ Defines properties on a `Object`. It make the assumption that underlying data is
 
 [packages/util/src/object.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/object.ts#L17)
 
-___
+---
 
 ### ecrecover
 
@@ -651,12 +651,12 @@ NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msgHash` | `Buffer` |
-| `v` | [`BNLike`](README.md#bnlike) |
-| `r` | `Buffer` |
-| `s` | `Buffer` |
+| Name       | Type                         |
+| :--------- | :--------------------------- |
+| `msgHash`  | `Buffer`                     |
+| `v`        | [`BNLike`](README.md#bnlike) |
+| `r`        | `Buffer`                     |
+| `s`        | `Buffer`                     |
 | `chainId?` | [`BNLike`](README.md#bnlike) |
 
 #### Returns
@@ -669,7 +669,7 @@ Recovered public key
 
 [packages/util/src/signature.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L69)
 
-___
+---
 
 ### ecsign
 
@@ -679,11 +679,11 @@ Returns the ECDSA signature of a message hash.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msgHash` | `Buffer` |
+| Name         | Type     |
+| :----------- | :------- |
+| `msgHash`    | `Buffer` |
 | `privateKey` | `Buffer` |
-| `chainId?` | `number` |
+| `chainId?`   | `number` |
 
 #### Returns
 
@@ -697,11 +697,11 @@ Returns the ECDSA signature of a message hash.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msgHash` | `Buffer` |
-| `privateKey` | `Buffer` |
-| `chainId` | [`BNLike`](README.md#bnlike) |
+| Name         | Type                         |
+| :----------- | :--------------------------- |
+| `msgHash`    | `Buffer`                     |
+| `privateKey` | `Buffer`                     |
+| `chainId`    | [`BNLike`](README.md#bnlike) |
 
 #### Returns
 
@@ -711,7 +711,7 @@ Returns the ECDSA signature of a message hash.
 
 [packages/util/src/signature.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L24)
 
-___
+---
 
 ### fromAscii
 
@@ -721,8 +721,8 @@ Should be called to get hex representation (prefixed by 0x) of ascii string
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type     |
+| :------------ | :------- |
 | `stringValue` | `string` |
 
 #### Returns
@@ -735,7 +735,7 @@ hex representation of input string
 
 [packages/util/src/internal.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L149)
 
-___
+---
 
 ### fromRpcSig
 
@@ -748,8 +748,8 @@ it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if nee
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `sig` | `string` |
 
 #### Returns
@@ -760,7 +760,7 @@ it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if nee
 
 [packages/util/src/signature.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L127)
 
-___
+---
 
 ### fromSigned
 
@@ -770,8 +770,8 @@ Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit nu
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description          |
+| :---- | :------- | :------------------- |
 | `num` | `Buffer` | Signed integer value |
 
 #### Returns
@@ -782,7 +782,7 @@ Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit nu
 
 [packages/util/src/bytes.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L221)
 
-___
+---
 
 ### fromUtf8
 
@@ -792,8 +792,8 @@ Should be called to get hex representation (prefixed by 0x) of utf8 string
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type     |
+| :------------ | :------- |
 | `stringValue` | `string` |
 
 #### Returns
@@ -806,7 +806,7 @@ hex representation of input string
 
 [packages/util/src/internal.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L136)
 
-___
+---
 
 ### generateAddress
 
@@ -816,10 +816,10 @@ Generates an address of a newly created contract.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `from` | `Buffer` | The address which is creating this new address |
-| `nonce` | `Buffer` | The nonce of the from account |
+| Name    | Type     | Description                                    |
+| :------ | :------- | :--------------------------------------------- |
+| `from`  | `Buffer` | The address which is creating this new address |
+| `nonce` | `Buffer` | The nonce of the from account                  |
 
 #### Returns
 
@@ -829,7 +829,7 @@ Generates an address of a newly created contract.
 
 [packages/util/src/account.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L191)
 
-___
+---
 
 ### generateAddress2
 
@@ -839,11 +839,11 @@ Generates an address for a contract created using CREATE2.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `from` | `Buffer` | The address which is creating this new address |
-| `salt` | `Buffer` | A salt |
-| `initCode` | `Buffer` | The init code of the contract being created |
+| Name       | Type     | Description                                    |
+| :--------- | :------- | :--------------------------------------------- |
+| `from`     | `Buffer` | The address which is creating this new address |
+| `salt`     | `Buffer` | A salt                                         |
+| `initCode` | `Buffer` | The init code of the contract being created    |
 
 #### Returns
 
@@ -853,7 +853,7 @@ Generates an address for a contract created using CREATE2.
 
 [packages/util/src/account.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L212)
 
-___
+---
 
 ### getBinarySize
 
@@ -863,8 +863,8 @@ Get the binary size of a string
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `str` | `string` |
 
 #### Returns
@@ -877,7 +877,7 @@ the number of bytes contained within the string
 
 [packages/util/src/internal.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L73)
 
-___
+---
 
 ### getKeys
 
@@ -886,17 +886,18 @@ ___
 Returns the keys from an array of objects.
 
 **`example`**
+
 ```js
 getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
-````
+```
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `params` | `Record`<`string`, `string`\>[] |
-| `key` | `string` |
-| `allowEmpty?` | `boolean` |
+| Name          | Type                            |
+| :------------ | :------------------------------ |
+| `params`      | `Record`<`string`, `string`\>[] |
+| `key`         | `string`                        |
+| `allowEmpty?` | `boolean`                       |
 
 #### Returns
 
@@ -908,7 +909,7 @@ output just a simple array of output keys
 
 [packages/util/src/internal.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L171)
 
-___
+---
 
 ### hashPersonalMessage
 
@@ -921,8 +922,8 @@ used to produce the signature.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type     |
+| :-------- | :------- |
 | `message` | `Buffer` |
 
 #### Returns
@@ -933,7 +934,7 @@ used to produce the signature.
 
 [packages/util/src/signature.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L205)
 
-___
+---
 
 ### importPublic
 
@@ -943,8 +944,8 @@ Converts a public key to the Ethereum format.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type     |
+| :---------- | :------- |
 | `publicKey` | `Buffer` |
 
 #### Returns
@@ -955,7 +956,7 @@ Converts a public key to the Ethereum format.
 
 [packages/util/src/account.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L292)
 
-___
+---
 
 ### intToBuffer
 
@@ -965,9 +966,9 @@ Converts an `Number` to a `Buffer`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `i` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `i`  | `number` |
 
 #### Returns
 
@@ -977,7 +978,7 @@ Converts an `Number` to a `Buffer`
 
 [packages/util/src/bytes.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L29)
 
-___
+---
 
 ### intToHex
 
@@ -987,9 +988,9 @@ Converts a `Number` into a hex `String`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `i` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `i`  | `number` |
 
 #### Returns
 
@@ -999,7 +1000,7 @@ Converts a `Number` into a hex `String`
 
 [packages/util/src/bytes.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L17)
 
-___
+---
 
 ### isHexPrefixed
 
@@ -1011,8 +1012,8 @@ Returns a `Boolean` on whether or not the a `String` starts with '0x'
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description            |
+| :---- | :------- | :--------------------- |
 | `str` | `string` | the string input value |
 
 #### Returns
@@ -1025,7 +1026,7 @@ a boolean if it is or is not hex prefixed
 
 [packages/util/src/internal.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L31)
 
-___
+---
 
 ### isHexString
 
@@ -1035,9 +1036,9 @@ Is the string a hex string.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `value` | `string` |
+| Name      | Type     |
+| :-------- | :------- |
+| `value`   | `string` |
 | `length?` | `number` |
 
 #### Returns
@@ -1050,7 +1051,7 @@ output the string is a hex string
 
 [packages/util/src/internal.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L203)
 
-___
+---
 
 ### isValidAddress
 
@@ -1060,8 +1061,8 @@ Checks if the address is a valid. Accepts checksummed addresses too.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `hexAddress` | `string` |
 
 #### Returns
@@ -1072,7 +1073,7 @@ Checks if the address is a valid. Accepts checksummed addresses too.
 
 [packages/util/src/account.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L128)
 
-___
+---
 
 ### isValidChecksumAddress
 
@@ -1084,9 +1085,9 @@ See toChecksumAddress' documentation for details about the eip1191ChainId parame
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `hexAddress` | `string` |
+| Name              | Type                         |
+| :---------------- | :--------------------------- |
+| `hexAddress`      | `string`                     |
 | `eip1191ChainId?` | [`BNLike`](README.md#bnlike) |
 
 #### Returns
@@ -1097,7 +1098,7 @@ See toChecksumAddress' documentation for details about the eip1191ChainId parame
 
 [packages/util/src/account.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L179)
 
-___
+---
 
 ### isValidPrivate
 
@@ -1107,8 +1108,8 @@ Checks if the private key satisfies the rules of the curve secp256k1.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `privateKey` | `Buffer` |
 
 #### Returns
@@ -1119,7 +1120,7 @@ Checks if the private key satisfies the rules of the curve secp256k1.
 
 [packages/util/src/account.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L230)
 
-___
+---
 
 ### isValidPublic
 
@@ -1130,10 +1131,10 @@ and the requirements of Ethereum.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `publicKey` | `Buffer` | `undefined` | The two points of an uncompressed key, unless sanitize is enabled |
-| `sanitize` | `boolean` | `false` | Accept public keys in other formats |
+| Name        | Type      | Default value | Description                                                       |
+| :---------- | :-------- | :------------ | :---------------------------------------------------------------- |
+| `publicKey` | `Buffer`  | `undefined`   | The two points of an uncompressed key, unless sanitize is enabled |
+| `sanitize`  | `boolean` | `false`       | Accept public keys in other formats                               |
 
 #### Returns
 
@@ -1143,7 +1144,7 @@ and the requirements of Ethereum.
 
 [packages/util/src/account.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L240)
 
-___
+---
 
 ### isValidSignature
 
@@ -1154,13 +1155,13 @@ NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `v` | [`BNLike`](README.md#bnlike) | `undefined` | - |
-| `r` | `Buffer` | `undefined` | - |
-| `s` | `Buffer` | `undefined` | - |
-| `homesteadOrLater` | `boolean` | `true` | Indicates whether this is being used on either the homestead hardfork or a later one |
-| `chainId?` | [`BNLike`](README.md#bnlike) | `undefined` | - |
+| Name               | Type                         | Default value | Description                                                                          |
+| :----------------- | :--------------------------- | :------------ | :----------------------------------------------------------------------------------- |
+| `v`                | [`BNLike`](README.md#bnlike) | `undefined`   | -                                                                                    |
+| `r`                | `Buffer`                     | `undefined`   | -                                                                                    |
+| `s`                | `Buffer`                     | `undefined`   | -                                                                                    |
+| `homesteadOrLater` | `boolean`                    | `true`        | Indicates whether this is being used on either the homestead hardfork or a later one |
+| `chainId?`         | [`BNLike`](README.md#bnlike) | `undefined`   | -                                                                                    |
 
 #### Returns
 
@@ -1170,7 +1171,7 @@ NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 [packages/util/src/signature.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L164)
 
-___
+---
 
 ### isZeroAddress
 
@@ -1180,8 +1181,8 @@ Checks if a given address is the zero address.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `hexAddress` | `string` |
 
 #### Returns
@@ -1192,7 +1193,7 @@ Checks if a given address is the zero address.
 
 [packages/util/src/account.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L312)
 
-___
+---
 
 ### keccak
 
@@ -1202,10 +1203,10 @@ Creates Keccak hash of a Buffer input
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `a` | `Buffer` | `undefined` | The input data (Buffer) |
-| `bits` | `number` | `256` | (number = 256) The Keccak width |
+| Name   | Type     | Default value | Description                     |
+| :----- | :------- | :------------ | :------------------------------ |
+| `a`    | `Buffer` | `undefined`   | The input data (Buffer)         |
+| `bits` | `number` | `256`         | (number = 256) The Keccak width |
 
 #### Returns
 
@@ -1215,7 +1216,7 @@ Creates Keccak hash of a Buffer input
 
 [packages/util/src/hash.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L12)
 
-___
+---
 
 ### keccak256
 
@@ -1225,9 +1226,9 @@ Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `Buffer` | The input data (Buffer) |
+| Name | Type     | Description             |
+| :--- | :------- | :---------------------- |
+| `a`  | `Buffer` | The input data (Buffer) |
 
 #### Returns
 
@@ -1237,7 +1238,7 @@ Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
 [packages/util/src/hash.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L37)
 
-___
+---
 
 ### keccakFromArray
 
@@ -1247,10 +1248,10 @@ Creates Keccak hash of a number array input
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `a` | `number`[] | `undefined` | The input data (number[]) |
-| `bits` | `number` | `256` | (number = 256) The Keccak width |
+| Name   | Type       | Default value | Description                     |
+| :----- | :--------- | :------------ | :------------------------------ |
+| `a`    | `number`[] | `undefined`   | The input data (number[])       |
+| `bits` | `number`   | `256`         | (number = 256) The Keccak width |
 
 #### Returns
 
@@ -1260,7 +1261,7 @@ Creates Keccak hash of a number array input
 
 [packages/util/src/hash.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L67)
 
-___
+---
 
 ### keccakFromHexString
 
@@ -1270,10 +1271,10 @@ Creates Keccak hash of an 0x-prefixed string input
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `a` | `string` | `undefined` | The input data (String) |
-| `bits` | `number` | `256` | (number = 256) The Keccak width |
+| Name   | Type     | Default value | Description                     |
+| :----- | :------- | :------------ | :------------------------------ |
+| `a`    | `string` | `undefined`   | The input data (String)         |
+| `bits` | `number` | `256`         | (number = 256) The Keccak width |
 
 #### Returns
 
@@ -1283,7 +1284,7 @@ Creates Keccak hash of an 0x-prefixed string input
 
 [packages/util/src/hash.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L57)
 
-___
+---
 
 ### keccakFromString
 
@@ -1293,10 +1294,10 @@ Creates Keccak hash of a utf-8 string input
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `a` | `string` | `undefined` | The input data (String) |
-| `bits` | `number` | `256` | (number = 256) The Keccak width |
+| Name   | Type     | Default value | Description                     |
+| :----- | :------- | :------------ | :------------------------------ |
+| `a`    | `string` | `undefined`   | The input data (String)         |
+| `bits` | `number` | `256`         | (number = 256) The Keccak width |
 
 #### Returns
 
@@ -1306,7 +1307,7 @@ Creates Keccak hash of a utf-8 string input
 
 [packages/util/src/hash.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L46)
 
-___
+---
 
 ### padToEven
 
@@ -1316,8 +1317,8 @@ Pads a `String` to have an even length
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type     |
+| :------ | :------- |
 | `value` | `string` |
 
 #### Returns
@@ -1330,7 +1331,7 @@ output
 
 [packages/util/src/internal.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L56)
 
-___
+---
 
 ### privateToAddress
 
@@ -1340,8 +1341,8 @@ Returns the ethereum address of a given private key.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type     | Description                         |
+| :----------- | :------- | :---------------------------------- |
 | `privateKey` | `Buffer` | A private key must be 256 bits wide |
 
 #### Returns
@@ -1352,7 +1353,7 @@ Returns the ethereum address of a given private key.
 
 [packages/util/src/account.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L285)
 
-___
+---
 
 ### privateToPublic
 
@@ -1362,8 +1363,8 @@ Returns the ethereum public key of a given private key.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type     | Description                         |
+| :----------- | :------- | :---------------------------------- |
 | `privateKey` | `Buffer` | A private key must be 256 bits wide |
 
 #### Returns
@@ -1374,7 +1375,7 @@ Returns the ethereum public key of a given private key.
 
 [packages/util/src/account.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L275)
 
-___
+---
 
 ### pubToAddress
 
@@ -1385,10 +1386,10 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `pubKey` | `Buffer` | `undefined` | The two points of an uncompressed key, unless sanitize is enabled |
-| `sanitize` | `boolean` | `false` | Accept public keys in other formats |
+| Name       | Type      | Default value | Description                                                       |
+| :--------- | :-------- | :------------ | :---------------------------------------------------------------- |
+| `pubKey`   | `Buffer`  | `undefined`   | The two points of an uncompressed key, unless sanitize is enabled |
+| `sanitize` | `boolean` | `false`       | Accept public keys in other formats                               |
 
 #### Returns
 
@@ -1398,7 +1399,7 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 [packages/util/src/account.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L260)
 
-___
+---
 
 ### publicToAddress
 
@@ -1406,10 +1407,10 @@ ___
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `pubKey` | `Buffer` | `undefined` |
-| `sanitize` | `boolean` | `false` |
+| Name       | Type      | Default value |
+| :--------- | :-------- | :------------ |
+| `pubKey`   | `Buffer`  | `undefined`   |
+| `sanitize` | `boolean` | `false`       |
 
 #### Returns
 
@@ -1419,7 +1420,7 @@ ___
 
 [packages/util/src/account.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L269)
 
-___
+---
 
 ### ripemd160
 
@@ -1429,9 +1430,9 @@ Creates RIPEMD160 hash of a Buffer input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `Buffer` | The input data (Buffer) |
+| Name     | Type      | Description                                    |
+| :------- | :-------- | :--------------------------------------------- |
+| `a`      | `Buffer`  | The input data (Buffer)                        |
 | `padded` | `boolean` | Whether it should be padded to 256 bits or not |
 
 #### Returns
@@ -1442,7 +1443,7 @@ Creates RIPEMD160 hash of a Buffer input.
 
 [packages/util/src/hash.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L128)
 
-___
+---
 
 ### ripemd160FromArray
 
@@ -1452,10 +1453,10 @@ Creates RIPEMD160 hash of a number[] input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `number`[] | The input data (number[]) |
-| `padded` | `boolean` | Whether it should be padded to 256 bits or not |
+| Name     | Type       | Description                                    |
+| :------- | :--------- | :--------------------------------------------- |
+| `a`      | `number`[] | The input data (number[])                      |
+| `padded` | `boolean`  | Whether it should be padded to 256 bits or not |
 
 #### Returns
 
@@ -1465,7 +1466,7 @@ Creates RIPEMD160 hash of a number[] input.
 
 [packages/util/src/hash.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L148)
 
-___
+---
 
 ### ripemd160FromString
 
@@ -1475,9 +1476,9 @@ Creates RIPEMD160 hash of a string input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `string` | The input data (String) |
+| Name     | Type      | Description                                    |
+| :------- | :-------- | :--------------------------------------------- |
+| `a`      | `string`  | The input data (String)                        |
 | `padded` | `boolean` | Whether it should be padded to 256 bits or not |
 
 #### Returns
@@ -1488,7 +1489,7 @@ Creates RIPEMD160 hash of a string input.
 
 [packages/util/src/hash.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L138)
 
-___
+---
 
 ### rlphash
 
@@ -1498,9 +1499,9 @@ Creates SHA-3 hash of the RLP encoded version of the input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | [`Input`](modules/rlp.md#input) | The input data |
+| Name | Type                            | Description    |
+| :--- | :------------------------------ | :------------- |
+| `a`  | [`Input`](modules/rlp.md#input) | The input data |
 
 #### Returns
 
@@ -1510,7 +1511,7 @@ Creates SHA-3 hash of the RLP encoded version of the input.
 
 [packages/util/src/hash.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L157)
 
-___
+---
 
 ### setLengthLeft
 
@@ -1521,9 +1522,9 @@ Or it truncates the beginning if it exceeds.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `msg` | `Buffer` | the value to pad (Buffer) |
+| Name     | Type     | Description                              |
+| :------- | :------- | :--------------------------------------- |
+| `msg`    | `Buffer` | the value to pad (Buffer)                |
 | `length` | `number` | the number of bytes the output should be |
 
 #### Returns
@@ -1536,7 +1537,7 @@ Or it truncates the beginning if it exceeds.
 
 [packages/util/src/bytes.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L74)
 
-___
+---
 
 ### setLengthRight
 
@@ -1547,9 +1548,9 @@ it truncates the end if it exceeds.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `msg` | `Buffer` | the value to pad (Buffer) |
+| Name     | Type     | Description                              |
+| :------- | :------- | :--------------------------------------- |
+| `msg`    | `Buffer` | the value to pad (Buffer)                |
 | `length` | `number` | the number of bytes the output should be |
 
 #### Returns
@@ -1562,7 +1563,7 @@ it truncates the end if it exceeds.
 
 [packages/util/src/bytes.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L86)
 
-___
+---
 
 ### sha256
 
@@ -1572,9 +1573,9 @@ Creates SHA256 hash of a Buffer input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `Buffer` | The input data (Buffer) |
+| Name | Type     | Description             |
+| :--- | :------- | :---------------------- |
+| `a`  | `Buffer` | The input data (Buffer) |
 
 #### Returns
 
@@ -1584,7 +1585,7 @@ Creates SHA256 hash of a Buffer input.
 
 [packages/util/src/hash.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L85)
 
-___
+---
 
 ### sha256FromArray
 
@@ -1594,9 +1595,9 @@ Creates SHA256 hash of a number[] input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `number`[] | The input data (number[]) |
+| Name | Type       | Description               |
+| :--- | :--------- | :------------------------ |
+| `a`  | `number`[] | The input data (number[]) |
 
 #### Returns
 
@@ -1606,7 +1607,7 @@ Creates SHA256 hash of a number[] input.
 
 [packages/util/src/hash.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L103)
 
-___
+---
 
 ### sha256FromString
 
@@ -1616,9 +1617,9 @@ Creates SHA256 hash of a string input.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `string` | The input data (string) |
+| Name | Type     | Description             |
+| :--- | :------- | :---------------------- |
+| `a`  | `string` | The input data (string) |
 
 #### Returns
 
@@ -1628,7 +1629,7 @@ Creates SHA256 hash of a string input.
 
 [packages/util/src/hash.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L94)
 
-___
+---
 
 ### stripHexPrefix
 
@@ -1638,8 +1639,8 @@ Removes '0x' from a given `String` if present
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description      |
+| :---- | :------- | :--------------- |
 | `str` | `string` | the string value |
 
 #### Returns
@@ -1652,7 +1653,7 @@ the string without 0x prefix
 
 [packages/util/src/internal.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L44)
 
-___
+---
 
 ### toAscii
 
@@ -1662,8 +1663,8 @@ Should be called to get ascii from its hex representation
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `hex` | `string` |
 
 #### Returns
@@ -1676,7 +1677,7 @@ ascii string representation of hex value
 
 [packages/util/src/internal.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L114)
 
-___
+---
 
 ### toBuffer
 
@@ -1688,9 +1689,9 @@ with a `toArray()` or `toBuffer()` method.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `v` | [`ToBufferInputTypes`](README.md#tobufferinputtypes) | the value |
+| Name | Type                                                 | Description |
+| :--- | :--------------------------------------------------- | :---------- |
+| `v`  | [`ToBufferInputTypes`](README.md#tobufferinputtypes) | the value   |
 
 #### Returns
 
@@ -1700,7 +1701,7 @@ with a `toArray()` or `toBuffer()` method.
 
 [packages/util/src/bytes.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L154)
 
-___
+---
 
 ### toChecksumAddress
 
@@ -1719,9 +1720,9 @@ Usage of this EIP is therefore discouraged unless you have a very targeted use c
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `hexAddress` | `string` |
+| Name              | Type                         |
+| :---------------- | :--------------------------- |
+| `hexAddress`      | `string`                     |
 | `eip1191ChainId?` | [`BNLike`](README.md#bnlike) |
 
 #### Returns
@@ -1732,7 +1733,7 @@ Usage of this EIP is therefore discouraged unless you have a very targeted use c
 
 [packages/util/src/account.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L150)
 
-___
+---
 
 ### toCompactSig
 
@@ -1743,11 +1744,11 @@ NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `v` | [`BNLike`](README.md#bnlike) |
-| `r` | `Buffer` |
-| `s` | `Buffer` |
+| Name       | Type                         |
+| :--------- | :--------------------------- |
+| `v`        | [`BNLike`](README.md#bnlike) |
+| `r`        | `Buffer`                     |
+| `s`        | `Buffer`                     |
 | `chainId?` | [`BNLike`](README.md#bnlike) |
 
 #### Returns
@@ -1760,7 +1761,7 @@ Signature
 
 [packages/util/src/signature.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L105)
 
-___
+---
 
 ### toRpcSig
 
@@ -1771,11 +1772,11 @@ NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `v` | [`BNLike`](README.md#bnlike) |
-| `r` | `Buffer` |
-| `s` | `Buffer` |
+| Name       | Type                         |
+| :--------- | :--------------------------- |
+| `v`        | [`BNLike`](README.md#bnlike) |
+| `r`        | `Buffer`                     |
+| `s`        | `Buffer`                     |
 | `chainId?` | [`BNLike`](README.md#bnlike) |
 
 #### Returns
@@ -1788,31 +1789,31 @@ Signature
 
 [packages/util/src/signature.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L90)
 
-___
+---
 
 ### toType
 
-▸ **toType**<`T`\>(`input`, `outputType`): ``null``
+▸ **toType**<`T`\>(`input`, `outputType`): `null`
 
 Convert an input to a specified type.
 Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`TypeOutput`](enums/TypeOutput.md) |
+| Name | Type                                        |
+| :--- | :------------------------------------------ |
+| `T`  | extends [`TypeOutput`](enums/TypeOutput.md) |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `input` | ``null`` | value to convert |
-| `outputType` | `T` | type to output |
+| Name         | Type   | Description      |
+| :----------- | :----- | :--------------- |
+| `input`      | `null` | value to convert |
+| `outputType` | `T`    | type to output   |
 
 #### Returns
 
-``null``
+`null`
 
 #### Defined in
 
@@ -1822,16 +1823,16 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`TypeOutput`](enums/TypeOutput.md) |
+| Name | Type                                        |
+| :--- | :------------------------------------------ |
+| `T`  | extends [`TypeOutput`](enums/TypeOutput.md) |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `input` | `undefined` |
-| `outputType` | `T` |
+| Name         | Type        |
+| :----------- | :---------- |
+| `input`      | `undefined` |
+| `outputType` | `T`         |
 
 #### Returns
 
@@ -1845,16 +1846,16 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`TypeOutput`](enums/TypeOutput.md) |
+| Name | Type                                        |
+| :--- | :------------------------------------------ |
+| `T`  | extends [`TypeOutput`](enums/TypeOutput.md) |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `input` | [`ToBufferInputTypes`](README.md#tobufferinputtypes) |
-| `outputType` | `T` |
+| Name         | Type                                                 |
+| :----------- | :--------------------------------------------------- |
+| `input`      | [`ToBufferInputTypes`](README.md#tobufferinputtypes) |
+| `outputType` | `T`                                                  |
 
 #### Returns
 
@@ -1864,7 +1865,7 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 [packages/util/src/types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L104)
 
-___
+---
 
 ### toUnsigned
 
@@ -1874,8 +1875,8 @@ Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                  |
+| :---- | :-------------------- |
 | `num` | [`BN`](classes/BN.md) |
 
 #### Returns
@@ -1886,7 +1887,7 @@ Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256
 
 [packages/util/src/bytes.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L229)
 
-___
+---
 
 ### toUtf8
 
@@ -1907,8 +1908,8 @@ representing quantities in both big endian or little endian notation.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `hex` | `string` |
 
 #### Returns
@@ -1921,7 +1922,7 @@ Utf8 string
 
 [packages/util/src/bytes.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L261)
 
-___
+---
 
 ### unpadArray
 
@@ -1931,9 +1932,9 @@ Trims leading zeros from an `Array` (of numbers).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `number`[] | (number[]) |
+| Name | Type       | Description |
+| :--- | :--------- | :---------- |
+| `a`  | `number`[] | (number[])  |
 
 #### Returns
 
@@ -1945,7 +1946,7 @@ Trims leading zeros from an `Array` (of numbers).
 
 [packages/util/src/bytes.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L120)
 
-___
+---
 
 ### unpadBuffer
 
@@ -1955,9 +1956,9 @@ Trims leading zeros from a `Buffer`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `Buffer` | (Buffer) |
+| Name | Type     | Description |
+| :--- | :------- | :---------- |
+| `a`  | `Buffer` | (Buffer)    |
 
 #### Returns
 
@@ -1969,7 +1970,7 @@ Trims leading zeros from a `Buffer`.
 
 [packages/util/src/bytes.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L110)
 
-___
+---
 
 ### unpadHexString
 
@@ -1979,9 +1980,9 @@ Trims leading zeros from a hex-prefixed `String`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `a` | `string` | (String) |
+| Name | Type     | Description |
+| :--- | :------- | :---------- |
+| `a`  | `string` | (String)    |
 
 #### Returns
 
@@ -1993,7 +1994,7 @@ Trims leading zeros from a hex-prefixed `String`.
 
 [packages/util/src/bytes.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L130)
 
-___
+---
 
 ### validateNoLeadingZeroes
 
@@ -2013,8 +2014,8 @@ integer values encoded to RLP must be in the most compact form and contain no le
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type     | Description                                        |
+| :------- | :------- | :------------------------------------------------- |
 | `values` | `Object` | An object containing string keys and Buffer values |
 
 #### Returns
@@ -2025,7 +2026,7 @@ integer values encoded to RLP must be in the most compact form and contain no le
 
 [packages/util/src/bytes.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L302)
 
-___
+---
 
 ### zeroAddress
 
@@ -2041,7 +2042,7 @@ Returns the zero address.
 
 [packages/util/src/account.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L303)
 
-___
+---
 
 ### zeros
 
@@ -2051,8 +2052,8 @@ Returns a buffer filled with 0s.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name    | Type     | Description                              |
+| :------ | :------- | :--------------------------------------- |
 | `bytes` | `number` | the number of bytes the buffer should be |
 
 #### Returns

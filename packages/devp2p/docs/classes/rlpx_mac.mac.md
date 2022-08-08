@@ -30,8 +30,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `secret` | `Buffer` |
 
 #### Defined in
@@ -48,7 +48,7 @@
 
 [packages/devp2p/src/rlpx/mac.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L6)
 
-___
+---
 
 ### \_secret
 
@@ -72,7 +72,7 @@ ___
 
 [packages/devp2p/src/rlpx/mac.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L31)
 
-___
+---
 
 ### update
 
@@ -80,8 +80,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `data` | `string` \| `Buffer` |
 
 #### Returns
@@ -92,7 +92,7 @@ ___
 
 [packages/devp2p/src/rlpx/mac.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L13)
 
-___
+---
 
 ### updateBody
 
@@ -100,8 +100,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `data` | `string` \| `Buffer` |
 
 #### Returns
@@ -112,7 +112,7 @@ ___
 
 [packages/devp2p/src/rlpx/mac.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L23)
 
-___
+---
 
 ### updateHeader
 
@@ -120,8 +120,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `data` | `string` \| `Buffer` |
 
 #### Returns

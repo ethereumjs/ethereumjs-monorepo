@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [BlockFetcher](../classes/_sync_fetcher_blockfetcher_.blockfetcher.md)
+- [BlockFetcher](../classes/_sync_fetcher_blockfetcher_.blockfetcher.md)
 
 ### Interfaces
 
-* [BlockFetcherOptions](../interfaces/_sync_fetcher_blockfetcher_.blockfetcheroptions.md)
+- [BlockFetcherOptions](../interfaces/_sync_fetcher_blockfetcher_.blockfetcheroptions.md)

@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* **ServiceOptions**
+- **ServiceOptions**
 
   ↳ [EthereumServiceOptions](_service_ethereumservice_.ethereumserviceoptions.md)
 
@@ -12,12 +12,12 @@
 
 ### Properties
 
-* [config](_service_service_.serviceoptions.md#config)
+- [config](_service_service_.serviceoptions.md#config)
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/service/service.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L9)*
+_Defined in [lib/service/service.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L9)_

@@ -23,8 +23,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                                    |
+| :------ | :-------------------------------------- |
 | `error` | [`ERROR`](../enums/exceptions.ERROR.md) |
 
 #### Defined in
@@ -41,7 +41,7 @@
 
 [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L29)
 
-___
+---
 
 ### errorType
 
