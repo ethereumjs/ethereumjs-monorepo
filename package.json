@@ -14,7 +14,7 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "prepare": "husky install"
+    "prepare": "git config --local core.hooksPath .githooks"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
@@ -27,7 +27,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-sonarjs": "^0.14.0",
-    "husky": "^8.0.0",
     "nyc-report-lcov-absolute": "^1.0.0",
     "sort-package-json": "^1.57.0",
     "typedoc-plugin-markdown": "^3.10.4",
