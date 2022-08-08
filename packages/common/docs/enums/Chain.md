@@ -4,7 +4,7 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [Goerli](Chain.md#goerli)
 - [Kovan](Chain.md#kovan)
@@ -13,62 +13,62 @@
 - [Ropsten](Chain.md#ropsten)
 - [Sepolia](Chain.md#sepolia)
 
-## Enumeration members
+## Enumeration Members
 
 ### Goerli
 
-• **Goerli** = `5`
+• **Goerli** = ``5``
 
 #### Defined in
 
-[packages/common/src/index.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L64)
+[packages/common/src/enums.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L6)
 
 ___
 
 ### Kovan
 
-• **Kovan** = `42`
+• **Kovan** = ``42``
 
 #### Defined in
 
-[packages/common/src/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L63)
+[packages/common/src/enums.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L5)
 
 ___
 
 ### Mainnet
 
-• **Mainnet** = `1`
+• **Mainnet** = ``1``
 
 #### Defined in
 
-[packages/common/src/index.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L60)
+[packages/common/src/enums.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L2)
 
 ___
 
 ### Rinkeby
 
-• **Rinkeby** = `4`
+• **Rinkeby** = ``4``
 
 #### Defined in
 
-[packages/common/src/index.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L62)
+[packages/common/src/enums.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L4)
 
 ___
 
 ### Ropsten
 
-• **Ropsten** = `3`
+• **Ropsten** = ``3``
 
 #### Defined in
 
-[packages/common/src/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L61)
+[packages/common/src/enums.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L3)
 
 ___
 
 ### Sepolia
 
-• **Sepolia** = `11155111`
+• **Sepolia** = ``11155111``
 
 #### Defined in
 
-[packages/common/src/index.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L65)
+[packages/common/src/enums.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L7)
