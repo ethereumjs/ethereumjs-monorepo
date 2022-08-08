@@ -1,8 +1,6 @@
-import { Synchronizer } from './sync'
-
 import type { Peer } from '../net/peer/peer'
-import type { SynchronizerOptions } from './sync'
-
+import { Synchronizer, SynchronizerOptions } from './sync'
+import { AccountFetcher } from './fetcher'
 interface SnapSynchronizerOptions extends SynchronizerOptions {}
 
 export class SnapSynchronizer extends Synchronizer {
@@ -77,29 +75,49 @@ export class SnapSynchronizer extends Synchronizer {
     //  Clean it up, once we have a full fetcher implemented, else let them
     //  stay commented for easy reference and manual testing
     //
-    // const stateRoot = latest.stateRoot
+    const stateRoot = latest.stateRoot
+
+    // console.log('stateRoot is ' + stateRoot)
+
     // const rangeResult = await peer!.snap!.getAccountRange({
     //   root: stateRoot,
     //   origin: Buffer.from(
-    //     '0000000000000000000000000000000000000000000000000000000000000000',
+    //     '594132d95eef77d0e84f52dddc93c9eddf8b3c7b91bd5050d245090591534f21',
     //     'hex'
     //   ),
-    //   limit: Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
-    //   bytes: BigInt(5000000),
+    //   limit: Buffer.from('f000000000000000000000000000000000000000000000000000000000000010', 'hex'),
+    //   bytes: BigInt(1000),
     // })
 
-    // console.log({ rangeResult: rangeResult?.accounts[0] })
-    // if (rangeResult) {
-    //   process.exit()
+    // for (let i = 0; i < rangeResult.accounts.length; i++) {
+    //   console.log({ 
+    //     account: rangeResult?.accounts[i],
+    //     proof: rangeResult?.proof[i]
+    //    })
     // }
 
-    // const height = latest.number
-    // if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
-    //   this.config.syncTargetHeight = height
-    //   this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
-    // }
+    const height = latest.number
+    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+      this.config.syncTargetHeight = height
+      this.config.logger.info(`New sync target height=${height} hash=${latest.hash()}`)
+    }
 
-    return false
+    this.fetcher = new AccountFetcher({
+      config: this.config,
+      pool: this.pool,
+      root: stateRoot,
+      origin: Buffer.from(
+        '0000000000000000000000000000000000000000000000000000000000000000',
+        'hex'
+      ),
+      limit: Buffer.from(
+        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+        'hex'
+      ),
+      bytes: BigInt(50000),
+    })
+
+    return true
   }
 
   /**
