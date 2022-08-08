@@ -40,7 +40,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public _fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
