@@ -49,7 +49,7 @@ export * from './logging'
 
 export async function createClient(args: any) {
   // Turn on `debug` logs, defaults to all client logging
-  debug.enable(args.debugLogs ?? "client:*")
+  debug.enable(args.debugLogs ?? "")
   const logger = getLogger({ loglevel: args.loglevel })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const common = new Common({ chain: args.network ?? Chain.Mainnet })
