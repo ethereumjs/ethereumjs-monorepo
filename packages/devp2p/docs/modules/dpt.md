@@ -23,55 +23,55 @@
 
 Re-exports: [BanList](../classes/dpt_ban_list.banlist.md)
 
-___
+---
 
 ### CustomContact
 
 Re-exports: [CustomContact](../interfaces/dpt_kbucket.customcontact.md)
 
-___
+---
 
 ### DPT
 
 Re-exports: [DPT](../classes/dpt_dpt.dpt.md)
 
-___
+---
 
 ### DPTOptions
 
 Re-exports: [DPTOptions](../interfaces/dpt_dpt.dptoptions.md)
 
-___
+---
 
 ### DPTServerOptions
 
 Re-exports: [DPTServerOptions](../interfaces/dpt_server.dptserveroptions.md)
 
-___
+---
 
 ### KBucket
 
 Re-exports: [KBucket](../classes/dpt_kbucket.kbucket.md)
 
-___
+---
 
 ### PeerInfo
 
 Re-exports: [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
 
-___
+---
 
 ### Server
 
 Re-exports: [Server](../classes/dpt_server.server.md)
 
-___
+---
 
 ### decode
 
 Re-exports: [decode](dpt_message.md#decode)
 
-___
+---
 
 ### encode
 

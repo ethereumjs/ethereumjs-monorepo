@@ -24,9 +24,9 @@ This method returns the right transaction.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `data` | `Buffer` \| `Buffer`[] | A Buffer or Buffer[] |
+| Name        | Type                                      | Description             |
+| :---------- | :---------------------------------------- | :---------------------- |
+| `data`      | `Buffer` \| `Buffer`[]                    | A Buffer or Buffer[]    |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
@@ -37,7 +37,7 @@ This method returns the right transaction.
 
 [transactionFactory.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L83)
 
-___
+---
 
 ### fromSerializedData
 
@@ -47,9 +47,9 @@ This method tries to decode serialized data.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `data` | `Buffer` | The data Buffer |
+| Name        | Type                                      | Description             |
+| :---------- | :---------------------------------------- | :---------------------- |
+| `data`      | `Buffer`                                  | The data Buffer         |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
@@ -60,7 +60,7 @@ This method tries to decode serialized data.
 
 [transactionFactory.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L49)
 
-___
+---
 
 ### fromTxData
 
@@ -70,10 +70,10 @@ Create a transaction from a `txData` object
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `txData` | [`TxData`](../README.md#txdata) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
-| `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | Options to pass on to the constructor of the transaction |
+| Name        | Type                                                                                                                                                                            | Description                                                                                                                           |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `txData`    | [`TxData`](../README.md#txdata) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
+| `txOptions` | [`TxOptions`](../interfaces/TxOptions.md)                                                                                                                                       | Options to pass on to the constructor of the transaction                                                                              |
 
 #### Returns
 
@@ -83,7 +83,7 @@ Create a transaction from a `txData` object
 
 [transactionFactory.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L22)
 
-___
+---
 
 ### getTransactionClass
 
@@ -96,10 +96,10 @@ If transactionID is undefined, returns the legacy transaction class.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `transactionID` | `number` | `0` |  |
-| `_common?` | `default` | `undefined` | This option is not used |
+| Name            | Type      | Default value | Description             |
+| :-------------- | :-------- | :------------ | :---------------------- |
+| `transactionID` | `number`  | `0`           |                         |
+| `_common?`      | `default` | `undefined`   | This option is not used |
 
 #### Returns
 

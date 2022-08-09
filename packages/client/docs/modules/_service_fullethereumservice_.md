@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [FullEthereumService](../classes/_service_fullethereumservice_.fullethereumservice.md)
+- [FullEthereumService](../classes/_service_fullethereumservice_.fullethereumservice.md)

@@ -2,121 +2,121 @@
 
 # Class: Net
 
-net_* RPC module
+net\_\* RPC module
 
 **`memberof`** module:rpc/modules
 
 ## Hierarchy
 
-* **Net**
+- **Net**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_rpc_modules_net_.net.md#constructor)
+- [constructor](_rpc_modules_net_.net.md#constructor)
 
 ### Methods
 
-* [listening](_rpc_modules_net_.net.md#listening)
-* [peerCount](_rpc_modules_net_.net.md#peercount)
-* [version](_rpc_modules_net_.net.md#version)
+- [listening](_rpc_modules_net_.net.md#listening)
+- [peerCount](_rpc_modules_net_.net.md#peercount)
+- [version](_rpc_modules_net_.net.md#version)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Net**(`node`: any): *[Net](_rpc_modules_net_.net.md)*
+\+ **new Net**(`node`: any): _[Net](_rpc_modules_net_.net.md)_
 
-*Defined in [lib/rpc/modules/net.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L12)*
+_Defined in [lib/rpc/modules/net.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L12)_
 
-Create net_* RPC module
+Create net\_\* RPC module
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`node` | any |
+| Name   | Type |
+| ------ | ---- |
+| `node` | any  |
 
-**Returns:** *[Net](_rpc_modules_net_.net.md)*
+**Returns:** _[Net](_rpc_modules_net_.net.md)_
 
 ## Methods
 
-###  listening
+### listening
 
-▸ **listening**(`_params`: never[], `cb`: function): *void*
+▸ **listening**(`_params`: never[], `cb`: function): _void_
 
-*Defined in [lib/rpc/modules/net.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L45)*
+_Defined in [lib/rpc/modules/net.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L45)_
 
 Returns true if client is actively listening for network connections
 
 **Parameters:**
 
-▪`Default value`  **_params**: *never[]*= []
+▪`Default value` **\_params**: _never[]_= []
 
-▪ **cb**: *function*
+▪ **cb**: _function_
 
-▸ (`err`: Error | null, `isListening`: boolean): *void*
+▸ (`err`: Error | null, `isListening`: boolean): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`err` | Error &#124; null |
-`isListening` | boolean |
+| Name          | Type              |
+| ------------- | ----------------- |
+| `err`         | Error &#124; null |
+| `isListening` | boolean           |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  peerCount
+### peerCount
 
-▸ **peerCount**(`_params`: never[], `cb`: function): *void*
+▸ **peerCount**(`_params`: never[], `cb`: function): _void_
 
-*Defined in [lib/rpc/modules/net.ts:55](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L55)*
+_Defined in [lib/rpc/modules/net.ts:55](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L55)_
 
 Returns number of peers currently connected to the client
 
 **Parameters:**
 
-▪`Default value`  **_params**: *never[]*= []
+▪`Default value` **\_params**: _never[]_= []
 
-▪ **cb**: *function*
+▪ **cb**: _function_
 
-▸ (`err`: Error | null, `numberOfPeers`: string): *void*
+▸ (`err`: Error | null, `numberOfPeers`: string): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`err` | Error &#124; null |
-`numberOfPeers` | string |
+| Name            | Type              |
+| --------------- | ----------------- |
+| `err`           | Error &#124; null |
+| `numberOfPeers` | string            |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  version
+### version
 
-▸ **version**(`_params`: never[], `cb`: function): *void*
+▸ **version**(`_params`: never[], `cb`: function): _void_
 
-*Defined in [lib/rpc/modules/net.ts:35](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L35)*
+_Defined in [lib/rpc/modules/net.ts:35](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/net.ts#L35)_
 
 Returns the current network id
 
 **Parameters:**
 
-▪`Default value`  **_params**: *never[]*= []
+▪`Default value` **\_params**: _never[]_= []
 
-▪ **cb**: *function*
+▪ **cb**: _function_
 
-▸ (`err`: Error | null, `id`: string): *void*
+▸ (`err`: Error | null, `id`: string): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`err` | Error &#124; null |
-`id` | string |
+| Name  | Type              |
+| ----- | ----------------- |
+| `err` | Error &#124; null |
+| `id`  | string            |
 
-**Returns:** *void*
+**Returns:** _void_

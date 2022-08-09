@@ -1,6 +1,6 @@
 [@ethereumjs/devp2p](../README.md) / [les](../modules/les.md) / [LES](../modules/les.les-1.md) / MESSAGE_CODES
 
-# Enumeration: MESSAGE\_CODES
+# Enumeration: MESSAGE_CODES
 
 [les](../modules/les.md).[LES](../modules/les.les-1.md).MESSAGE_CODES
 
@@ -9,29 +9,29 @@
 ### Enumeration members
 
 - [ANNOUNCE](les.les-1.message_codes.md#announce)
-- [BLOCK\_BODIES](les.les-1.message_codes.md#block_bodies)
-- [BLOCK\_HEADERS](les.les-1.message_codes.md#block_headers)
-- [CONTRACT\_CODES](les.les-1.message_codes.md#contract_codes)
-- [GET\_BLOCK\_BODIES](les.les-1.message_codes.md#get_block_bodies)
-- [GET\_BLOCK\_HEADERS](les.les-1.message_codes.md#get_block_headers)
-- [GET\_CONTRACT\_CODES](les.les-1.message_codes.md#get_contract_codes)
-- [GET\_HEADER\_PROOFS](les.les-1.message_codes.md#get_header_proofs)
-- [GET\_HELPER\_TRIE\_PROOFS](les.les-1.message_codes.md#get_helper_trie_proofs)
-- [GET\_PROOFS](les.les-1.message_codes.md#get_proofs)
-- [GET\_PROOFS\_V2](les.les-1.message_codes.md#get_proofs_v2)
-- [GET\_RECEIPTS](les.les-1.message_codes.md#get_receipts)
-- [GET\_TX\_STATUS](les.les-1.message_codes.md#get_tx_status)
-- [HEADER\_PROOFS](les.les-1.message_codes.md#header_proofs)
-- [HELPER\_TRIE\_PROOFS](les.les-1.message_codes.md#helper_trie_proofs)
+- [BLOCK_BODIES](les.les-1.message_codes.md#block_bodies)
+- [BLOCK_HEADERS](les.les-1.message_codes.md#block_headers)
+- [CONTRACT_CODES](les.les-1.message_codes.md#contract_codes)
+- [GET_BLOCK_BODIES](les.les-1.message_codes.md#get_block_bodies)
+- [GET_BLOCK_HEADERS](les.les-1.message_codes.md#get_block_headers)
+- [GET_CONTRACT_CODES](les.les-1.message_codes.md#get_contract_codes)
+- [GET_HEADER_PROOFS](les.les-1.message_codes.md#get_header_proofs)
+- [GET_HELPER_TRIE_PROOFS](les.les-1.message_codes.md#get_helper_trie_proofs)
+- [GET_PROOFS](les.les-1.message_codes.md#get_proofs)
+- [GET_PROOFS_V2](les.les-1.message_codes.md#get_proofs_v2)
+- [GET_RECEIPTS](les.les-1.message_codes.md#get_receipts)
+- [GET_TX_STATUS](les.les-1.message_codes.md#get_tx_status)
+- [HEADER_PROOFS](les.les-1.message_codes.md#header_proofs)
+- [HELPER_TRIE_PROOFS](les.les-1.message_codes.md#helper_trie_proofs)
 - [PROOFS](les.les-1.message_codes.md#proofs)
-- [PROOFS\_V2](les.les-1.message_codes.md#proofs_v2)
+- [PROOFS_V2](les.les-1.message_codes.md#proofs_v2)
 - [RECEIPTS](les.les-1.message_codes.md#receipts)
-- [RESUME\_MSG](les.les-1.message_codes.md#resume_msg)
-- [SEND\_TX](les.les-1.message_codes.md#send_tx)
-- [SEND\_TX\_V2](les.les-1.message_codes.md#send_tx_v2)
+- [RESUME_MSG](les.les-1.message_codes.md#resume_msg)
+- [SEND_TX](les.les-1.message_codes.md#send_tx)
+- [SEND_TX_V2](les.les-1.message_codes.md#send_tx_v2)
 - [STATUS](les.les-1.message_codes.md#status)
-- [STOP\_MSG](les.les-1.message_codes.md#stop_msg)
-- [TX\_STATUS](les.les-1.message_codes.md#tx_status)
+- [STOP_MSG](les.les-1.message_codes.md#stop_msg)
+- [TX_STATUS](les.les-1.message_codes.md#tx_status)
 
 ## Enumeration members
 
@@ -43,147 +43,147 @@
 
 [packages/devp2p/src/les/index.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L254)
 
-___
+---
 
-### BLOCK\_BODIES
+### BLOCK_BODIES
 
-• **BLOCK\_BODIES** = 5
+• **BLOCK_BODIES** = 5
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L258)
 
-___
+---
 
-### BLOCK\_HEADERS
+### BLOCK_HEADERS
 
-• **BLOCK\_HEADERS** = 3
+• **BLOCK_HEADERS** = 3
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L256)
 
-___
+---
 
-### CONTRACT\_CODES
+### CONTRACT_CODES
 
-• **CONTRACT\_CODES** = 11
+• **CONTRACT_CODES** = 11
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L264)
 
-___
+---
 
-### GET\_BLOCK\_BODIES
+### GET_BLOCK_BODIES
 
-• **GET\_BLOCK\_BODIES** = 4
+• **GET_BLOCK_BODIES** = 4
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L257)
 
-___
+---
 
-### GET\_BLOCK\_HEADERS
+### GET_BLOCK_HEADERS
 
-• **GET\_BLOCK\_HEADERS** = 2
+• **GET_BLOCK_HEADERS** = 2
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L255)
 
-___
+---
 
-### GET\_CONTRACT\_CODES
+### GET_CONTRACT_CODES
 
-• **GET\_CONTRACT\_CODES** = 10
+• **GET_CONTRACT_CODES** = 10
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L263)
 
-___
+---
 
-### GET\_HEADER\_PROOFS
+### GET_HEADER_PROOFS
 
-• **GET\_HEADER\_PROOFS** = 13
+• **GET_HEADER_PROOFS** = 13
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L265)
 
-___
+---
 
-### GET\_HELPER\_TRIE\_PROOFS
+### GET_HELPER_TRIE_PROOFS
 
-• **GET\_HELPER\_TRIE\_PROOFS** = 17
+• **GET_HELPER_TRIE_PROOFS** = 17
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L272)
 
-___
+---
 
-### GET\_PROOFS
+### GET_PROOFS
 
-• **GET\_PROOFS** = 8
+• **GET_PROOFS** = 8
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L261)
 
-___
+---
 
-### GET\_PROOFS\_V2
+### GET_PROOFS_V2
 
-• **GET\_PROOFS\_V2** = 15
+• **GET_PROOFS_V2** = 15
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L270)
 
-___
+---
 
-### GET\_RECEIPTS
+### GET_RECEIPTS
 
-• **GET\_RECEIPTS** = 6
+• **GET_RECEIPTS** = 6
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L259)
 
-___
+---
 
-### GET\_TX\_STATUS
+### GET_TX_STATUS
 
-• **GET\_TX\_STATUS** = 20
+• **GET_TX_STATUS** = 20
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L275)
 
-___
+---
 
-### HEADER\_PROOFS
+### HEADER_PROOFS
 
-• **HEADER\_PROOFS** = 14
+• **HEADER_PROOFS** = 14
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L266)
 
-___
+---
 
-### HELPER\_TRIE\_PROOFS
+### HELPER_TRIE_PROOFS
 
-• **HELPER\_TRIE\_PROOFS** = 18
+• **HELPER_TRIE_PROOFS** = 18
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L273)
 
-___
+---
 
 ### PROOFS
 
@@ -193,17 +193,17 @@ ___
 
 [packages/devp2p/src/les/index.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L262)
 
-___
+---
 
-### PROOFS\_V2
+### PROOFS_V2
 
-• **PROOFS\_V2** = 16
+• **PROOFS_V2** = 16
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L271)
 
-___
+---
 
 ### RECEIPTS
 
@@ -213,37 +213,37 @@ ___
 
 [packages/devp2p/src/les/index.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L260)
 
-___
+---
 
-### RESUME\_MSG
+### RESUME_MSG
 
-• **RESUME\_MSG** = 23
+• **RESUME_MSG** = 23
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L280)
 
-___
+---
 
-### SEND\_TX
+### SEND_TX
 
-• **SEND\_TX** = 12
+• **SEND_TX** = 12
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L267)
 
-___
+---
 
-### SEND\_TX\_V2
+### SEND_TX_V2
 
-• **SEND\_TX\_V2** = 19
+• **SEND_TX_V2** = 19
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L274)
 
-___
+---
 
 ### STATUS
 
@@ -253,21 +253,21 @@ ___
 
 [packages/devp2p/src/les/index.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L253)
 
-___
+---
 
-### STOP\_MSG
+### STOP_MSG
 
-• **STOP\_MSG** = 22
+• **STOP_MSG** = 22
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L279)
 
-___
+---
 
-### TX\_STATUS
+### TX_STATUS
 
-• **TX\_STATUS** = 21
+• **TX_STATUS** = 21
 
 #### Defined in
 

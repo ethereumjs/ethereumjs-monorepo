@@ -4,45 +4,45 @@
 
 ## Hierarchy
 
-* **BoundProtocolOptions**
+- **BoundProtocolOptions**
 
 ## Index
 
 ### Properties
 
-* [config](_net_protocol_boundprotocol_.boundprotocoloptions.md#config)
-* [peer](_net_protocol_boundprotocol_.boundprotocoloptions.md#peer)
-* [protocol](_net_protocol_boundprotocol_.boundprotocoloptions.md#protocol)
-* [sender](_net_protocol_boundprotocol_.boundprotocoloptions.md#sender)
+- [config](_net_protocol_boundprotocol_.boundprotocoloptions.md#config)
+- [peer](_net_protocol_boundprotocol_.boundprotocoloptions.md#peer)
+- [protocol](_net_protocol_boundprotocol_.boundprotocoloptions.md#protocol)
+- [sender](_net_protocol_boundprotocol_.boundprotocoloptions.md#sender)
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/net/protocol/boundprotocol.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L8)*
+_Defined in [lib/net/protocol/boundprotocol.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L8)_
 
-___
+---
 
-###  peer
+### peer
 
-• **peer**: *[Peer](../classes/_net_peer_peer_.peer.md)*
+• **peer**: _[Peer](../classes/_net_peer_peer_.peer.md)_
 
-*Defined in [lib/net/protocol/boundprotocol.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L12)*
+_Defined in [lib/net/protocol/boundprotocol.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L12)_
 
-___
+---
 
-###  protocol
+### protocol
 
-• **protocol**: *[Protocol](../classes/_net_protocol_protocol_.protocol.md)*
+• **protocol**: _[Protocol](../classes/_net_protocol_protocol_.protocol.md)_
 
-*Defined in [lib/net/protocol/boundprotocol.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L10)*
+_Defined in [lib/net/protocol/boundprotocol.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L10)_
 
-___
+---
 
-###  sender
+### sender
 
-• **sender**: *[Sender](../classes/_net_protocol_sender_.sender.md)*
+• **sender**: _[Sender](../classes/_net_protocol_sender_.sender.md)_
 
-*Defined in [lib/net/protocol/boundprotocol.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L14)*
+_Defined in [lib/net/protocol/boundprotocol.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/boundprotocol.ts#L14)_

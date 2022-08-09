@@ -14,290 +14,290 @@ DevP2P/RLPx server
 
 ## Hierarchy
 
-  ↳ [Server](_net_server_server_.server.md)
+↳ [Server](_net_server_server_.server.md)
 
-  ↳ **RlpxServer**
+↳ **RlpxServer**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_net_server_rlpxserver_.rlpxserver.md#constructor)
+- [constructor](_net_server_rlpxserver_.rlpxserver.md#constructor)
 
 ### Properties
 
-* [bootnodes](_net_server_rlpxserver_.rlpxserver.md#bootnodes)
-* [config](_net_server_rlpxserver_.rlpxserver.md#config)
-* [dpt](_net_server_rlpxserver_.rlpxserver.md#dpt)
-* [ip](_net_server_rlpxserver_.rlpxserver.md#ip)
-* [key](_net_server_rlpxserver_.rlpxserver.md#key)
-* [port](_net_server_rlpxserver_.rlpxserver.md#port)
-* [rlpx](_net_server_rlpxserver_.rlpxserver.md#rlpx)
-* [started](_net_server_rlpxserver_.rlpxserver.md#started)
+- [bootnodes](_net_server_rlpxserver_.rlpxserver.md#bootnodes)
+- [config](_net_server_rlpxserver_.rlpxserver.md#config)
+- [dpt](_net_server_rlpxserver_.rlpxserver.md#dpt)
+- [ip](_net_server_rlpxserver_.rlpxserver.md#ip)
+- [key](_net_server_rlpxserver_.rlpxserver.md#key)
+- [port](_net_server_rlpxserver_.rlpxserver.md#port)
+- [rlpx](_net_server_rlpxserver_.rlpxserver.md#rlpx)
+- [started](_net_server_rlpxserver_.rlpxserver.md#started)
 
 ### Accessors
 
-* [name](_net_server_rlpxserver_.rlpxserver.md#name)
-* [running](_net_server_rlpxserver_.rlpxserver.md#running)
+- [name](_net_server_rlpxserver_.rlpxserver.md#name)
+- [running](_net_server_rlpxserver_.rlpxserver.md#running)
 
 ### Methods
 
-* [addListener](_net_server_rlpxserver_.rlpxserver.md#addlistener)
-* [addProtocols](_net_server_rlpxserver_.rlpxserver.md#addprotocols)
-* [ban](_net_server_rlpxserver_.rlpxserver.md#ban)
-* [bootstrap](_net_server_rlpxserver_.rlpxserver.md#bootstrap)
-* [emit](_net_server_rlpxserver_.rlpxserver.md#emit)
-* [error](_net_server_rlpxserver_.rlpxserver.md#private-error)
-* [eventNames](_net_server_rlpxserver_.rlpxserver.md#eventnames)
-* [getMaxListeners](_net_server_rlpxserver_.rlpxserver.md#getmaxlisteners)
-* [getRlpxInfo](_net_server_rlpxserver_.rlpxserver.md#getrlpxinfo)
-* [initDpt](_net_server_rlpxserver_.rlpxserver.md#private-initdpt)
-* [initRlpx](_net_server_rlpxserver_.rlpxserver.md#private-initrlpx)
-* [listenerCount](_net_server_rlpxserver_.rlpxserver.md#listenercount)
-* [listeners](_net_server_rlpxserver_.rlpxserver.md#listeners)
-* [off](_net_server_rlpxserver_.rlpxserver.md#off)
-* [on](_net_server_rlpxserver_.rlpxserver.md#on)
-* [once](_net_server_rlpxserver_.rlpxserver.md#once)
-* [prependListener](_net_server_rlpxserver_.rlpxserver.md#prependlistener)
-* [prependOnceListener](_net_server_rlpxserver_.rlpxserver.md#prependoncelistener)
-* [rawListeners](_net_server_rlpxserver_.rlpxserver.md#rawlisteners)
-* [removeAllListeners](_net_server_rlpxserver_.rlpxserver.md#removealllisteners)
-* [removeListener](_net_server_rlpxserver_.rlpxserver.md#removelistener)
-* [setMaxListeners](_net_server_rlpxserver_.rlpxserver.md#setmaxlisteners)
-* [start](_net_server_rlpxserver_.rlpxserver.md#start)
-* [stop](_net_server_rlpxserver_.rlpxserver.md#stop)
+- [addListener](_net_server_rlpxserver_.rlpxserver.md#addlistener)
+- [addProtocols](_net_server_rlpxserver_.rlpxserver.md#addprotocols)
+- [ban](_net_server_rlpxserver_.rlpxserver.md#ban)
+- [bootstrap](_net_server_rlpxserver_.rlpxserver.md#bootstrap)
+- [emit](_net_server_rlpxserver_.rlpxserver.md#emit)
+- [error](_net_server_rlpxserver_.rlpxserver.md#private-error)
+- [eventNames](_net_server_rlpxserver_.rlpxserver.md#eventnames)
+- [getMaxListeners](_net_server_rlpxserver_.rlpxserver.md#getmaxlisteners)
+- [getRlpxInfo](_net_server_rlpxserver_.rlpxserver.md#getrlpxinfo)
+- [initDpt](_net_server_rlpxserver_.rlpxserver.md#private-initdpt)
+- [initRlpx](_net_server_rlpxserver_.rlpxserver.md#private-initrlpx)
+- [listenerCount](_net_server_rlpxserver_.rlpxserver.md#listenercount)
+- [listeners](_net_server_rlpxserver_.rlpxserver.md#listeners)
+- [off](_net_server_rlpxserver_.rlpxserver.md#off)
+- [on](_net_server_rlpxserver_.rlpxserver.md#on)
+- [once](_net_server_rlpxserver_.rlpxserver.md#once)
+- [prependListener](_net_server_rlpxserver_.rlpxserver.md#prependlistener)
+- [prependOnceListener](_net_server_rlpxserver_.rlpxserver.md#prependoncelistener)
+- [rawListeners](_net_server_rlpxserver_.rlpxserver.md#rawlisteners)
+- [removeAllListeners](_net_server_rlpxserver_.rlpxserver.md#removealllisteners)
+- [removeListener](_net_server_rlpxserver_.rlpxserver.md#removelistener)
+- [setMaxListeners](_net_server_rlpxserver_.rlpxserver.md#setmaxlisteners)
+- [start](_net_server_rlpxserver_.rlpxserver.md#start)
+- [stop](_net_server_rlpxserver_.rlpxserver.md#stop)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new RlpxServer**(`options`: [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md)): *[RlpxServer](_net_server_rlpxserver_.rlpxserver.md)*
+\+ **new RlpxServer**(`options`: [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md)): _[RlpxServer](_net_server_rlpxserver_.rlpxserver.md)_
 
-*Overrides [Server](_net_server_server_.server.md).[constructor](_net_server_server_.server.md#constructor)*
+_Overrides [Server](_net_server_server_.server.md).[constructor](_net_server_server_.server.md#constructor)_
 
-*Defined in [lib/net/server/rlpxserver.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L45)*
+_Defined in [lib/net/server/rlpxserver.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L45)_
 
 Create new DevP2P/RLPx server
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`options` | [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md) |
+| Name      | Type                                                                            |
+| --------- | ------------------------------------------------------------------------------- |
+| `options` | [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md) |
 
-**Returns:** *[RlpxServer](_net_server_rlpxserver_.rlpxserver.md)*
+**Returns:** _[RlpxServer](_net_server_rlpxserver_.rlpxserver.md)_
 
 ## Properties
 
-###  bootnodes
+### bootnodes
 
-• **bootnodes**: *[Bootnode](../interfaces/_types_.bootnode.md)[]* = []
+• **bootnodes**: _[Bootnode](../interfaces/_types_.bootnode.md)[]_ = []
 
-*Inherited from [Server](_net_server_server_.server.md).[bootnodes](_net_server_server_.server.md#bootnodes)*
+_Inherited from [Server](_net_server_server_.server.md).[bootnodes](_net_server_server_.server.md#bootnodes)_
 
-*Defined in [lib/net/server/server.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L28)*
+_Defined in [lib/net/server/server.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L28)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Inherited from [Server](_net_server_server_.server.md).[config](_net_server_server_.server.md#config)*
+_Inherited from [Server](_net_server_server_.server.md).[config](_net_server_server_.server.md#config)_
 
-*Defined in [lib/net/server/server.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L26)*
+_Defined in [lib/net/server/server.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L26)_
 
-___
+---
 
-###  dpt
+### dpt
 
-• **dpt**: *Devp2pDPT | null* = null
+• **dpt**: _Devp2pDPT | null_ = null
 
-*Defined in [lib/net/server/rlpxserver.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L44)*
+_Defined in [lib/net/server/rlpxserver.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L44)_
 
-___
+---
 
-###  ip
+### ip
 
-• **ip**: *string* = "::"
+• **ip**: _string_ = "::"
 
-*Defined in [lib/net/server/rlpxserver.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L45)*
+_Defined in [lib/net/server/rlpxserver.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L45)_
 
-___
+---
 
-###  key
+### key
 
-• **key**: *Buffer | undefined*
+• **key**: _Buffer | undefined_
 
-*Inherited from [Server](_net_server_server_.server.md).[key](_net_server_server_.server.md#key)*
+_Inherited from [Server](_net_server_server_.server.md).[key](_net_server_server_.server.md#key)_
 
-*Defined in [lib/net/server/server.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L27)*
+_Defined in [lib/net/server/server.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L27)_
 
-___
+---
 
-###  port
+### port
 
-• **port**: *number*
+• **port**: _number_
 
-*Defined in [lib/net/server/rlpxserver.ts:40](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L40)*
+_Defined in [lib/net/server/rlpxserver.ts:40](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L40)_
 
-___
+---
 
-###  rlpx
+### rlpx
 
-• **rlpx**: *Devp2pRLPx | null* = null
+• **rlpx**: _Devp2pRLPx | null_ = null
 
-*Defined in [lib/net/server/rlpxserver.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L43)*
+_Defined in [lib/net/server/rlpxserver.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L43)_
 
-___
+---
 
-###  started
+### started
 
-• **started**: *boolean*
+• **started**: _boolean_
 
-*Inherited from [Server](_net_server_server_.server.md).[started](_net_server_server_.server.md#started)*
+_Inherited from [Server](_net_server_server_.server.md).[started](_net_server_server_.server.md#started)_
 
-*Defined in [lib/net/server/server.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L33)*
+_Defined in [lib/net/server/server.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L33)_
 
 ## Accessors
 
-###  name
+### name
 
-• **get name**(): *string*
+• **get name**(): _string_
 
-*Overrides [Server](_net_server_server_.server.md).[name](_net_server_server_.server.md#name)*
+_Overrides [Server](_net_server_server_.server.md).[name](_net_server_server_.server.md#name)_
 
-*Defined in [lib/net/server/rlpxserver.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L74)*
+_Defined in [lib/net/server/rlpxserver.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L74)_
 
 Server name
 
 **`type`** {string}
 
-**Returns:** *string*
+**Returns:** _string_
 
-___
+---
 
-###  running
+### running
 
-• **get running**(): *boolean*
+• **get running**(): _boolean_
 
-*Inherited from [Server](_net_server_server_.server.md).[running](_net_server_server_.server.md#running)*
+_Inherited from [Server](_net_server_server_.server.md).[running](_net_server_server_.server.md#running)_
 
-*Defined in [lib/net/server/server.ts:58](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L58)*
+_Defined in [lib/net/server/server.ts:58](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L58)_
 
 Check if server is running
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
 ## Methods
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  addProtocols
+### addProtocols
 
-▸ **addProtocols**(`protocols`: [Protocol](_net_protocol_protocol_.protocol.md)[]): *boolean*
+▸ **addProtocols**(`protocols`: [Protocol](_net_protocol_protocol_.protocol.md)[]): _boolean_
 
-*Inherited from [Server](_net_server_server_.server.md).[addProtocols](_net_server_server_.server.md#addprotocols)*
+_Inherited from [Server](_net_server_server_.server.md).[addProtocols](_net_server_server_.server.md#addprotocols)_
 
-*Defined in [lib/net/server/server.ts:92](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L92)*
+_Defined in [lib/net/server/server.ts:92](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/server.ts#L92)_
 
 Specify which protocols the server must support
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`protocols` | [Protocol](_net_protocol_protocol_.protocol.md)[] | protocol classes |
+| Name        | Type                                              | Description      |
+| ----------- | ------------------------------------------------- | ---------------- |
+| `protocols` | [Protocol](_net_protocol_protocol_.protocol.md)[] | protocol classes |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
 True if protocol added successfully
 
-___
+---
 
-###  ban
+### ban
 
-▸ **ban**(`peerId`: string, `maxAge`: number): *boolean*
+▸ **ban**(`peerId`: string, `maxAge`: number): _boolean_
 
-*Overrides [Server](_net_server_server_.server.md).[ban](_net_server_server_.server.md#protected-ban)*
+_Overrides [Server](_net_server_server_.server.md).[ban](_net_server_server_.server.md#protected-ban)_
 
-*Defined in [lib/net/server/rlpxserver.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L157)*
+_Defined in [lib/net/server/rlpxserver.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L157)_
 
 Ban peer for a specified time
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`peerId` | string | - | id of peer |
-`maxAge` | number | 60000 | - |
+| Name     | Type   | Default | Description |
+| -------- | ------ | ------- | ----------- |
+| `peerId` | string | -       | id of peer  |
+| `maxAge` | number | 60000   | -           |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
 True if ban was successfully executed
 
-___
+---
 
-###  bootstrap
+### bootstrap
 
-▸ **bootstrap**(): *Promise‹void›*
+▸ **bootstrap**(): _Promise‹void›_
 
-*Defined in [lib/net/server/rlpxserver.ts:122](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L122)*
+_Defined in [lib/net/server/rlpxserver.ts:122](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L122)_
 
 Bootstrap bootnode peers from the network
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
 ### `Private` error
 
-▸ **error**(`error`: Error, `peer?`: [RlpxPeer](_net_peer_rlpxpeer_.rlpxpeer.md)): *void*
+▸ **error**(`error`: Error, `peer?`: [RlpxPeer](_net_peer_rlpxpeer_.rlpxpeer.md)): _void_
 
-*Defined in [lib/net/server/rlpxserver.ts:172](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L172)*
+_Defined in [lib/net/server/rlpxserver.ts:172](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L172)_
 
 Handles errors from server and peers
 
@@ -305,345 +305,345 @@ Handles errors from server and peers
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`error` | Error |
-`peer?` | [RlpxPeer](_net_peer_rlpxpeer_.rlpxpeer.md) |
+| Name    | Type                                        |
+| ------- | ------------------------------------------- |
+| `error` | Error                                       |
+| `peer?` | [RlpxPeer](_net_peer_rlpxpeer_.rlpxpeer.md) |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  getRlpxInfo
+### getRlpxInfo
 
-▸ **getRlpxInfo**(): *object | object*
+▸ **getRlpxInfo**(): _object | object_
 
-*Defined in [lib/net/server/rlpxserver.ts:81](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L81)*
+_Defined in [lib/net/server/rlpxserver.ts:81](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L81)_
 
 Return Rlpx info
 
-**Returns:** *object | object*
+**Returns:** _object | object_
 
-___
+---
 
 ### `Private` initDpt
 
-▸ **initDpt**(): *void*
+▸ **initDpt**(): _void_
 
-*Defined in [lib/net/server/rlpxserver.ts:187](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L187)*
+_Defined in [lib/net/server/rlpxserver.ts:187](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L187)_
 
 Initializes DPT for peer discovery
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
 ### `Private` initRlpx
 
-▸ **initRlpx**(): *void*
+▸ **initRlpx**(): _void_
 
-*Defined in [lib/net/server/rlpxserver.ts:208](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L208)*
+_Defined in [lib/net/server/rlpxserver.ts:208](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L208)_
 
 Initializes RLPx instance for peer management
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  start
+### start
 
-▸ **start**(): *Promise‹boolean›*
+▸ **start**(): _Promise‹boolean›_
 
-*Overrides [Server](_net_server_server_.server.md).[start](_net_server_server_.server.md#start)*
+_Overrides [Server](_net_server_server_.server.md).[start](_net_server_server_.server.md#start)_
 
-*Defined in [lib/net/server/rlpxserver.ts:106](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L106)*
+_Defined in [lib/net/server/rlpxserver.ts:106](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L106)_
 
 Start Devp2p/RLPx server. Returns a promise that resolves once server has been started.
 
-**Returns:** *Promise‹boolean›*
+**Returns:** _Promise‹boolean›_
 
 Resolves with true if server successfully started
 
-___
+---
 
-###  stop
+### stop
 
-▸ **stop**(): *Promise‹boolean›*
+▸ **stop**(): _Promise‹boolean›_
 
-*Overrides [Server](_net_server_server_.server.md).[stop](_net_server_server_.server.md#stop)*
+_Overrides [Server](_net_server_server_.server.md).[stop](_net_server_server_.server.md#stop)_
 
-*Defined in [lib/net/server/rlpxserver.ts:141](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L141)*
+_Defined in [lib/net/server/rlpxserver.ts:141](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/server/rlpxserver.ts#L141)_
 
 Stop Devp2p/RLPx server. Returns a promise that resolves once server has been stopped.
 
-**Returns:** *Promise‹boolean›*
+**Returns:** _Promise‹boolean›_

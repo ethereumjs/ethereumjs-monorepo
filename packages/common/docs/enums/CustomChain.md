@@ -27,7 +27,7 @@ Arbitrum Rinkeby Testnet
 
 [packages/common/src/index.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L35)
 
-___
+---
 
 ### OptimisticEthereum
 
@@ -41,7 +41,7 @@ Optimistic Ethereum - mainnet for Optimism roll-up
 
 [packages/common/src/index.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L56)
 
-___
+---
 
 ### OptimisticKovan
 
@@ -55,7 +55,7 @@ Optimistic Kovan - testnet for Optimism roll-up
 
 [packages/common/src/index.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L49)
 
-___
+---
 
 ### PolygonMainnet
 
@@ -69,7 +69,7 @@ Polygon (Matic) Mainnet
 
 [packages/common/src/index.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L21)
 
-___
+---
 
 ### PolygonMumbai
 
@@ -83,7 +83,7 @@ Polygon (Matic) Mumbai Testnet
 
 [packages/common/src/index.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L28)
 
-___
+---
 
 ### xDaiChain
 

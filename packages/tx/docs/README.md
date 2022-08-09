@@ -36,7 +36,7 @@
 
 ### Variables
 
-- [N\_DIV\_2](README.md#n_div_2)
+- [N_DIV_2](README.md#n_div_2)
 
 ### Functions
 
@@ -53,7 +53,7 @@
 
 [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
 
-___
+---
 
 ### AccessListBuffer
 
@@ -63,7 +63,7 @@ ___
 
 [types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L79)
 
-___
+---
 
 ### AccessListBufferItem
 
@@ -73,7 +73,7 @@ ___
 
 [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
 
-___
+---
 
 ### AccessListEIP2930ValuesArray
 
@@ -85,7 +85,7 @@ Buffer values array for an [AccessListEIP2930Transaction](classes/AccessListEIP2
 
 [types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L208)
 
-___
+---
 
 ### AccessListItem
 
@@ -93,16 +93,16 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `PrefixedHexString` |
+| Name          | Type                  |
+| :------------ | :-------------------- |
+| `address`     | `PrefixedHexString`   |
 | `storageKeys` | `PrefixedHexString`[] |
 
 #### Defined in
 
 [types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L70)
 
-___
+---
 
 ### FeeMarketEIP1559ValuesArray
 
@@ -114,7 +114,7 @@ Buffer values array for a [FeeMarketEIP1559Transaction](classes/FeeMarketEIP1559
 
 [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
-___
+---
 
 ### TxData
 
@@ -124,24 +124,24 @@ Legacy [Transaction](classes/Transaction.md) Data
 
 #### Type declaration
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `data?` | `BufferLike` | This will contain the data of the message or the init of a contract. |
-| `gasLimit?` | `BNLike` | The transaction's gas limit. |
-| `gasPrice?` | `BNLike` | The transaction's gas price. |
-| `nonce?` | `BNLike` | The transaction's nonce. |
-| `r?` | `BNLike` | EC signature parameter. |
-| `s?` | `BNLike` | EC signature parameter. |
-| `to?` | `AddressLike` | The transaction's the address is sent to. |
-| `type?` | `BNLike` | The transaction type |
-| `v?` | `BNLike` | EC recovery ID. |
-| `value?` | `BNLike` | The amount of Ether sent. |
+| Name        | Type          | Description                                                          |
+| :---------- | :------------ | :------------------------------------------------------------------- |
+| `data?`     | `BufferLike`  | This will contain the data of the message or the init of a contract. |
+| `gasLimit?` | `BNLike`      | The transaction's gas limit.                                         |
+| `gasPrice?` | `BNLike`      | The transaction's gas price.                                         |
+| `nonce?`    | `BNLike`      | The transaction's nonce.                                             |
+| `r?`        | `BNLike`      | EC signature parameter.                                              |
+| `s?`        | `BNLike`      | EC signature parameter.                                              |
+| `to?`       | `AddressLike` | The transaction's the address is sent to.                            |
+| `type?`     | `BNLike`      | The transaction type                                                 |
+| `v?`        | `BNLike`      | EC recovery ID.                                                      |
+| `value?`    | `BNLike`      | The amount of Ether sent.                                            |
 
 #### Defined in
 
 [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
 
-___
+---
 
 ### TxValuesArray
 
@@ -153,7 +153,7 @@ Buffer values array for a legacy [Transaction](classes/Transaction.md)
 
 [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L203)
 
-___
+---
 
 ### TypedTransaction
 
@@ -170,9 +170,9 @@ referenced as [Transaction](classes/Transaction.md) for compatibility reasons.
 
 ## Variables
 
-### N\_DIV\_2
+### N_DIV_2
 
-• `Const` **N\_DIV\_2**: `BN`
+• `Const` **N_DIV_2**: `BN`
 
 A const defining secp256k1n/2
 
@@ -188,8 +188,8 @@ A const defining secp256k1n/2
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                                                                                     |
+| :------ | :--------------------------------------------------------------------------------------- |
 | `input` | [`AccessListBuffer`](README.md#accesslistbuffer) \| [`AccessList`](README.md#accesslist) |
 
 #### Returns
@@ -200,7 +200,7 @@ input is AccessList
 
 [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L95)
 
-___
+---
 
 ### isAccessListBuffer
 
@@ -208,8 +208,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                                                                                     |
+| :------ | :--------------------------------------------------------------------------------------- |
 | `input` | [`AccessListBuffer`](README.md#accesslistbuffer) \| [`AccessList`](README.md#accesslist) |
 
 #### Returns

@@ -6,42 +6,42 @@ Returns properties of the canonical blockchain.
 
 ## Hierarchy
 
-* **ChainBlocks**
+- **ChainBlocks**
 
 ## Index
 
 ### Properties
 
-* [height](_blockchain_chain_.chainblocks.md#height)
-* [latest](_blockchain_chain_.chainblocks.md#latest)
-* [td](_blockchain_chain_.chainblocks.md#td)
+- [height](_blockchain_chain_.chainblocks.md#height)
+- [latest](_blockchain_chain_.chainblocks.md#latest)
+- [td](_blockchain_chain_.chainblocks.md#td)
 
 ## Properties
 
-###  height
+### height
 
-• **height**: *BN*
+• **height**: _BN_
 
-*Defined in [lib/blockchain/chain.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L45)*
+_Defined in [lib/blockchain/chain.ts:45](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L45)_
 
 The height of the blockchain
 
-___
+---
 
-###  latest
+### latest
 
-• **latest**: *Block | null*
+• **latest**: _Block | null_
 
-*Defined in [lib/blockchain/chain.ts:35](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L35)*
+_Defined in [lib/blockchain/chain.ts:35](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L35)_
 
 The latest block in the chain
 
-___
+---
 
-###  td
+### td
 
-• **td**: *BN*
+• **td**: _BN_
 
-*Defined in [lib/blockchain/chain.ts:40](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L40)*
+_Defined in [lib/blockchain/chain.ts:40](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L40)_
 
 The total difficulty of the blockchain

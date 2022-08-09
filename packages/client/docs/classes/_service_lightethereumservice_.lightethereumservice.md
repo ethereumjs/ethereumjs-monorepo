@@ -8,594 +8,594 @@ Ethereum service
 
 ## Hierarchy
 
-  ↳ [EthereumService](_service_ethereumservice_.ethereumservice.md)
+↳ [EthereumService](_service_ethereumservice_.ethereumservice.md)
 
-  ↳ **LightEthereumService**
+↳ **LightEthereumService**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_service_lightethereumservice_.lightethereumservice.md#constructor)
+- [constructor](_service_lightethereumservice_.lightethereumservice.md#constructor)
 
 ### Properties
 
-* [chain](_service_lightethereumservice_.lightethereumservice.md#chain)
-* [config](_service_lightethereumservice_.lightethereumservice.md#config)
-* [flow](_service_lightethereumservice_.lightethereumservice.md#flow)
-* [interval](_service_lightethereumservice_.lightethereumservice.md#interval)
-* [opened](_service_lightethereumservice_.lightethereumservice.md#opened)
-* [pool](_service_lightethereumservice_.lightethereumservice.md#pool)
-* [running](_service_lightethereumservice_.lightethereumservice.md#running)
-* [synchronizer](_service_lightethereumservice_.lightethereumservice.md#synchronizer)
-* [timeout](_service_lightethereumservice_.lightethereumservice.md#timeout)
+- [chain](_service_lightethereumservice_.lightethereumservice.md#chain)
+- [config](_service_lightethereumservice_.lightethereumservice.md#config)
+- [flow](_service_lightethereumservice_.lightethereumservice.md#flow)
+- [interval](_service_lightethereumservice_.lightethereumservice.md#interval)
+- [opened](_service_lightethereumservice_.lightethereumservice.md#opened)
+- [pool](_service_lightethereumservice_.lightethereumservice.md#pool)
+- [running](_service_lightethereumservice_.lightethereumservice.md#running)
+- [synchronizer](_service_lightethereumservice_.lightethereumservice.md#synchronizer)
+- [timeout](_service_lightethereumservice_.lightethereumservice.md#timeout)
 
 ### Accessors
 
-* [name](_service_lightethereumservice_.lightethereumservice.md#protected-name)
-* [protocols](_service_lightethereumservice_.lightethereumservice.md#protocols)
+- [name](_service_lightethereumservice_.lightethereumservice.md#protected-name)
+- [protocols](_service_lightethereumservice_.lightethereumservice.md#protocols)
 
 ### Methods
 
-* [addListener](_service_lightethereumservice_.lightethereumservice.md#addlistener)
-* [close](_service_lightethereumservice_.lightethereumservice.md#close)
-* [emit](_service_lightethereumservice_.lightethereumservice.md#emit)
-* [eventNames](_service_lightethereumservice_.lightethereumservice.md#eventnames)
-* [getMaxListeners](_service_lightethereumservice_.lightethereumservice.md#getmaxlisteners)
-* [handle](_service_lightethereumservice_.lightethereumservice.md#handle)
-* [listenerCount](_service_lightethereumservice_.lightethereumservice.md#listenercount)
-* [listeners](_service_lightethereumservice_.lightethereumservice.md#listeners)
-* [off](_service_lightethereumservice_.lightethereumservice.md#off)
-* [on](_service_lightethereumservice_.lightethereumservice.md#on)
-* [once](_service_lightethereumservice_.lightethereumservice.md#once)
-* [open](_service_lightethereumservice_.lightethereumservice.md#open)
-* [prependListener](_service_lightethereumservice_.lightethereumservice.md#prependlistener)
-* [prependOnceListener](_service_lightethereumservice_.lightethereumservice.md#prependoncelistener)
-* [rawListeners](_service_lightethereumservice_.lightethereumservice.md#rawlisteners)
-* [removeAllListeners](_service_lightethereumservice_.lightethereumservice.md#removealllisteners)
-* [removeListener](_service_lightethereumservice_.lightethereumservice.md#removelistener)
-* [setMaxListeners](_service_lightethereumservice_.lightethereumservice.md#setmaxlisteners)
-* [start](_service_lightethereumservice_.lightethereumservice.md#start)
-* [stop](_service_lightethereumservice_.lightethereumservice.md#stop)
+- [addListener](_service_lightethereumservice_.lightethereumservice.md#addlistener)
+- [close](_service_lightethereumservice_.lightethereumservice.md#close)
+- [emit](_service_lightethereumservice_.lightethereumservice.md#emit)
+- [eventNames](_service_lightethereumservice_.lightethereumservice.md#eventnames)
+- [getMaxListeners](_service_lightethereumservice_.lightethereumservice.md#getmaxlisteners)
+- [handle](_service_lightethereumservice_.lightethereumservice.md#handle)
+- [listenerCount](_service_lightethereumservice_.lightethereumservice.md#listenercount)
+- [listeners](_service_lightethereumservice_.lightethereumservice.md#listeners)
+- [off](_service_lightethereumservice_.lightethereumservice.md#off)
+- [on](_service_lightethereumservice_.lightethereumservice.md#on)
+- [once](_service_lightethereumservice_.lightethereumservice.md#once)
+- [open](_service_lightethereumservice_.lightethereumservice.md#open)
+- [prependListener](_service_lightethereumservice_.lightethereumservice.md#prependlistener)
+- [prependOnceListener](_service_lightethereumservice_.lightethereumservice.md#prependoncelistener)
+- [rawListeners](_service_lightethereumservice_.lightethereumservice.md#rawlisteners)
+- [removeAllListeners](_service_lightethereumservice_.lightethereumservice.md#removealllisteners)
+- [removeListener](_service_lightethereumservice_.lightethereumservice.md#removelistener)
+- [setMaxListeners](_service_lightethereumservice_.lightethereumservice.md#setmaxlisteners)
+- [start](_service_lightethereumservice_.lightethereumservice.md#start)
+- [stop](_service_lightethereumservice_.lightethereumservice.md#stop)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new LightEthereumService**(`options`: [EthereumServiceOptions](../interfaces/_service_ethereumservice_.ethereumserviceoptions.md)): *[LightEthereumService](_service_lightethereumservice_.lightethereumservice.md)*
+\+ **new LightEthereumService**(`options`: [EthereumServiceOptions](../interfaces/_service_ethereumservice_.ethereumserviceoptions.md)): _[LightEthereumService](_service_lightethereumservice_.lightethereumservice.md)_
 
-*Overrides [EthereumService](_service_ethereumservice_.ethereumservice.md).[constructor](_service_ethereumservice_.ethereumservice.md#constructor)*
+_Overrides [EthereumService](_service_ethereumservice_.ethereumservice.md).[constructor](_service_ethereumservice_.ethereumservice.md#constructor)_
 
-*Defined in [lib/service/lightethereumservice.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L11)*
+_Defined in [lib/service/lightethereumservice.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L11)_
 
 Create new ETH service
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`options` | [EthereumServiceOptions](../interfaces/_service_ethereumservice_.ethereumserviceoptions.md) | constructor parameters  |
+| Name      | Type                                                                                        | Description            |
+| --------- | ------------------------------------------------------------------------------------------- | ---------------------- |
+| `options` | [EthereumServiceOptions](../interfaces/_service_ethereumservice_.ethereumserviceoptions.md) | constructor parameters |
 
-**Returns:** *[LightEthereumService](_service_lightethereumservice_.lightethereumservice.md)*
+**Returns:** _[LightEthereumService](_service_lightethereumservice_.lightethereumservice.md)_
 
 ## Properties
 
-###  chain
+### chain
 
-• **chain**: *[Chain](_blockchain_chain_.chain.md)*
+• **chain**: _[Chain](_blockchain_chain_.chain.md)_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[chain](_service_ethereumservice_.ethereumservice.md#chain)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[chain](_service_ethereumservice_.ethereumservice.md#chain)_
 
-*Defined in [lib/service/ethereumservice.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L27)*
+_Defined in [lib/service/ethereumservice.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L27)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Inherited from [Service](_service_service_.service.md).[config](_service_service_.service.md#config)*
+_Inherited from [Service](_service_service_.service.md).[config](_service_service_.service.md#config)_
 
-*Defined in [lib/service/service.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L17)*
+_Defined in [lib/service/service.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L17)_
 
-___
+---
 
-###  flow
+### flow
 
-• **flow**: *[FlowControl](_net_protocol_flowcontrol_.flowcontrol.md)*
+• **flow**: _[FlowControl](_net_protocol_flowcontrol_.flowcontrol.md)_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[flow](_service_ethereumservice_.ethereumservice.md#flow)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[flow](_service_ethereumservice_.ethereumservice.md#flow)_
 
-*Defined in [lib/service/ethereumservice.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L26)*
+_Defined in [lib/service/ethereumservice.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L26)_
 
-___
+---
 
-###  interval
+### interval
 
-• **interval**: *number*
+• **interval**: _number_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[interval](_service_ethereumservice_.ethereumservice.md#interval)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[interval](_service_ethereumservice_.ethereumservice.md#interval)_
 
-*Defined in [lib/service/ethereumservice.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L28)*
+_Defined in [lib/service/ethereumservice.ts:28](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L28)_
 
-___
+---
 
-###  opened
+### opened
 
-• **opened**: *boolean*
+• **opened**: _boolean_
 
-*Inherited from [Service](_service_service_.service.md).[opened](_service_service_.service.md#opened)*
+_Inherited from [Service](_service_service_.service.md).[opened](_service_service_.service.md#opened)_
 
-*Defined in [lib/service/service.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L18)*
+_Defined in [lib/service/service.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L18)_
 
-___
+---
 
-###  pool
+### pool
 
-• **pool**: *[PeerPool](_net_peerpool_.peerpool.md)*
+• **pool**: _[PeerPool](_net_peerpool_.peerpool.md)_
 
-*Inherited from [Service](_service_service_.service.md).[pool](_service_service_.service.md#pool)*
+_Inherited from [Service](_service_service_.service.md).[pool](_service_service_.service.md#pool)_
 
-*Defined in [lib/service/service.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L20)*
+_Defined in [lib/service/service.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L20)_
 
-___
+---
 
-###  running
+### running
 
-• **running**: *boolean*
+• **running**: _boolean_
 
-*Inherited from [Service](_service_service_.service.md).[running](_service_service_.service.md#running)*
+_Inherited from [Service](_service_service_.service.md).[running](_service_service_.service.md#running)_
 
-*Defined in [lib/service/service.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L19)*
+_Defined in [lib/service/service.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L19)_
 
-___
+---
 
-###  synchronizer
+### synchronizer
 
-• **synchronizer**: *[LightSynchronizer](_sync_lightsync_.lightsynchronizer.md)*
+• **synchronizer**: _[LightSynchronizer](_sync_lightsync_.lightsynchronizer.md)_
 
-*Overrides [EthereumService](_service_ethereumservice_.ethereumservice.md).[synchronizer](_service_ethereumservice_.ethereumservice.md#synchronizer)*
+_Overrides [EthereumService](_service_ethereumservice_.ethereumservice.md).[synchronizer](_service_ethereumservice_.ethereumservice.md#synchronizer)_
 
-*Defined in [lib/service/lightethereumservice.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L11)*
+_Defined in [lib/service/lightethereumservice.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L11)_
 
-___
+---
 
-###  timeout
+### timeout
 
-• **timeout**: *number*
+• **timeout**: _number_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[timeout](_service_ethereumservice_.ethereumservice.md#timeout)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[timeout](_service_ethereumservice_.ethereumservice.md#timeout)_
 
-*Defined in [lib/service/ethereumservice.ts:29](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L29)*
+_Defined in [lib/service/ethereumservice.ts:29](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L29)_
 
 ## Accessors
 
 ### `Protected` name
 
-• **get name**(): *string*
+• **get name**(): _string_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[name](_service_ethereumservice_.ethereumservice.md#protected-name)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[name](_service_ethereumservice_.ethereumservice.md#protected-name)_
 
-*Overrides [Service](_service_service_.service.md).[name](_service_service_.service.md#protected-name)*
+_Overrides [Service](_service_service_.service.md).[name](_service_service_.service.md#protected-name)_
 
-*Defined in [lib/service/ethereumservice.ts:50](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L50)*
+_Defined in [lib/service/ethereumservice.ts:50](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L50)_
 
 Service name
 
 **`type`** {string}
 
-**Returns:** *string*
+**Returns:** _string_
 
-___
+---
 
-###  protocols
+### protocols
 
-• **get protocols**(): *[LesProtocol](_net_protocol_lesprotocol_.lesprotocol.md)[]*
+• **get protocols**(): _[LesProtocol](_net_protocol_lesprotocol_.lesprotocol.md)[]_
 
-*Overrides [Service](_service_service_.service.md).[protocols](_service_service_.service.md#protocols)*
+_Overrides [Service](_service_service_.service.md).[protocols](_service_service_.service.md#protocols)_
 
-*Defined in [lib/service/lightethereumservice.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L33)*
+_Defined in [lib/service/lightethereumservice.ts:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L33)_
 
 Returns all protocols required by this service
 
-**Returns:** *[LesProtocol](_net_protocol_lesprotocol_.lesprotocol.md)[]*
+**Returns:** _[LesProtocol](_net_protocol_lesprotocol_.lesprotocol.md)[]_
 
 ## Methods
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  close
+### close
 
-▸ **close**(): *Promise‹void›*
+▸ **close**(): _Promise‹void›_
 
-*Inherited from [Service](_service_service_.service.md).[close](_service_service_.service.md#close)*
+_Inherited from [Service](_service_service_.service.md).[close](_service_service_.service.md#close)_
 
-*Defined in [lib/service/service.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L96)*
+_Defined in [lib/service/service.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/service.ts#L96)_
 
 Close service.
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  handle
+### handle
 
-▸ **handle**(`_message`: any, `_protocol`: string, `_peer`: [Peer](_net_peer_peer_.peer.md)): *Promise‹void›*
+▸ **handle**(`_message`: any, `_protocol`: string, `_peer`: [Peer](_net_peer_peer_.peer.md)): _Promise‹void›_
 
-*Overrides [Service](_service_service_.service.md).[handle](_service_service_.service.md#handle)*
+_Overrides [Service](_service_service_.service.md).[handle](_service_service_.service.md#handle)_
 
-*Defined in [lib/service/lightethereumservice.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L44)*
+_Defined in [lib/service/lightethereumservice.ts:44](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/lightethereumservice.ts#L44)_
 
 Handles incoming message from connected peer
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`_message` | any |
-`_protocol` | string |
-`_peer` | [Peer](_net_peer_peer_.peer.md) |
+| Name        | Type                            |
+| ----------- | ------------------------------- |
+| `_message`  | any                             |
+| `_protocol` | string                          |
+| `_peer`     | [Peer](_net_peer_peer_.peer.md) |
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  open
+### open
 
-▸ **open**(): *Promise‹undefined | false›*
+▸ **open**(): _Promise‹undefined | false›_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[open](_service_ethereumservice_.ethereumservice.md#open)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[open](_service_ethereumservice_.ethereumservice.md#open)_
 
-*Overrides [Service](_service_service_.service.md).[open](_service_service_.service.md#open)*
+_Overrides [Service](_service_service_.service.md).[open](_service_service_.service.md#open)_
 
-*Defined in [lib/service/ethereumservice.ts:58](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L58)*
+_Defined in [lib/service/ethereumservice.ts:58](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L58)_
 
 Open eth service. Must be called before service is started
 
-**Returns:** *Promise‹undefined | false›*
+**Returns:** _Promise‹undefined | false›_
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  start
+### start
 
-▸ **start**(): *Promise‹void | boolean›*
+▸ **start**(): _Promise‹void | boolean›_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[start](_service_ethereumservice_.ethereumservice.md#start)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[start](_service_ethereumservice_.ethereumservice.md#start)_
 
-*Overrides [Service](_service_service_.service.md).[start](_service_service_.service.md#start)*
+_Overrides [Service](_service_service_.service.md).[start](_service_service_.service.md#start)_
 
-*Defined in [lib/service/ethereumservice.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L74)*
+_Defined in [lib/service/ethereumservice.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L74)_
 
 Starts service and ensures blockchain is synchronized. Returns a promise
 that resolves once the service is started and blockchain is in sync.
 
-**Returns:** *Promise‹void | boolean›*
+**Returns:** _Promise‹void | boolean›_
 
-___
+---
 
-###  stop
+### stop
 
-▸ **stop**(): *Promise‹void | boolean›*
+▸ **stop**(): _Promise‹void | boolean›_
 
-*Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[stop](_service_ethereumservice_.ethereumservice.md#stop)*
+_Inherited from [EthereumService](_service_ethereumservice_.ethereumservice.md).[stop](_service_ethereumservice_.ethereumservice.md#stop)_
 
-*Overrides [Service](_service_service_.service.md).[stop](_service_service_.service.md#stop)*
+_Overrides [Service](_service_service_.service.md).[stop](_service_service_.service.md#stop)_
 
-*Defined in [lib/service/ethereumservice.ts:86](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L86)*
+_Defined in [lib/service/ethereumservice.ts:86](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/service/ethereumservice.ts#L86)_
 
 Stop service. Interrupts blockchain synchronization if its in progress.
 
-**Returns:** *Promise‹void | boolean›*
+**Returns:** _Promise‹void | boolean›_

@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [BoundProtocol](../classes/_net_protocol_boundprotocol_.boundprotocol.md)
+- [BoundProtocol](../classes/_net_protocol_boundprotocol_.boundprotocol.md)
 
 ### Interfaces
 
-* [BoundProtocolOptions](../interfaces/_net_protocol_boundprotocol_.boundprotocoloptions.md)
+- [BoundProtocolOptions](../interfaces/_net_protocol_boundprotocol_.boundprotocoloptions.md)

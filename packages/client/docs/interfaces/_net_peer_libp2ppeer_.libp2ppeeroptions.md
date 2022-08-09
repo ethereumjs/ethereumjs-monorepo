@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* object
+- object
 
   ↳ **Libp2pPeerOptions**
 
@@ -12,12 +12,12 @@
 
 ### Properties
 
-* [multiaddrs](_net_peer_libp2ppeer_.libp2ppeeroptions.md#optional-multiaddrs)
+- [multiaddrs](_net_peer_libp2ppeer_.libp2ppeeroptions.md#optional-multiaddrs)
 
 ## Properties
 
 ### `Optional` multiaddrs
 
-• **multiaddrs**? : *[MultiaddrsLike](../modules/_types_.md#multiaddrslike)*
+• **multiaddrs**? : _[MultiaddrsLike](../modules/_types_.md#multiaddrslike)_
 
-*Defined in [lib/net/peer/libp2ppeer.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2ppeer.ts#L11)*
+_Defined in [lib/net/peer/libp2ppeer.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/libp2ppeer.ts#L11)_

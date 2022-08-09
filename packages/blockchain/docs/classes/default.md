@@ -64,8 +64,8 @@ use the async {@link Blockchain.create} constructor instead (same API).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name   | Type                                                      | Description                                                                                                          |
+| :----- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
 | `opts` | [`BlockchainOptions`](../interfaces/BlockchainOptions.md) | An object with the options that this constructor takes. See [BlockchainOptions](../interfaces/BlockchainOptions.md). |
 
 #### Defined in
@@ -82,7 +82,7 @@ use the async {@link Blockchain.create} constructor instead (same API).
 
 [index.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L152)
 
-___
+---
 
 ### db
 
@@ -92,7 +92,7 @@ ___
 
 [index.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L128)
 
-___
+---
 
 ### dbManager
 
@@ -102,7 +102,7 @@ ___
 
 [index.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L129)
 
-___
+---
 
 ### initPromise
 
@@ -125,10 +125,10 @@ backwards compatibility.
 
 `Object`
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type                    |
+| :-------- | :---------------------- |
 | `genesis` | `undefined` \| `Buffer` |
-| `heads` | `Object` |
+| `heads`   | `Object`                |
 | `rawHead` | `undefined` \| `Buffer` |
 
 #### Defined in
@@ -152,7 +152,7 @@ Returns a list with the current block signers
 
 [index.ts:721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L721)
 
-___
+---
 
 ### cliqueSignerInTurn
 
@@ -162,8 +162,8 @@ Helper to determine if a signer is in or out of turn for the next block.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type      | Description        |
+| :------- | :-------- | :----------------- |
 | `signer` | `Address` | The signer address |
 
 #### Returns
@@ -174,7 +174,7 @@ Helper to determine if a signer is in or out of turn for the next block.
 
 [index.ts:1583](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1583)
 
-___
+---
 
 ### copy
 
@@ -190,7 +190,7 @@ Returns a deep copy of this {@link Blockchain} instance.
 
 [index.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L314)
 
-___
+---
 
 ### delBlock
 
@@ -207,8 +207,8 @@ we can be sure it is correct).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name        | Type     | Description                         |
+| :---------- | :------- | :---------------------------------- |
 | `blockHash` | `Buffer` | The hash of the block to be deleted |
 
 #### Returns
@@ -223,7 +223,7 @@ we can be sure it is correct).
 
 [index.ts:1159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1159)
 
-___
+---
 
 ### getBlock
 
@@ -233,8 +233,8 @@ Gets a block by its hash.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name      | Type                         | Description                                                                                                                                      |
+| :-------- | :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `blockId` | `number` \| `Buffer` \| `BN` | The block's hash or number. If a hash is provided, then this will be immediately looked up, otherwise it will wait until we have unlocked the DB |
 
 #### Returns
@@ -249,23 +249,22 @@ Gets a block by its hash.
 
 [index.ts:1042](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1042)
 
-___
+---
 
 ### getBlocks
 
 ▸ **getBlocks**(`blockId`, `maxBlocks`, `skip`, `reverse`): `Promise`<`Block`[]\>
 
-Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
-(0x03)` (ETH wire protocol) we have to support skip/reverse as well.
+Looks up many blocks relative to blockId Note: due to `GetBlockHeaders (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `blockId` | `number` \| `Buffer` \| `BN` | The block's hash or number |
-| `maxBlocks` | `number` | Max number of blocks to return |
-| `skip` | `number` | Number of blocks to skip apart |
-| `reverse` | `boolean` | Fetch blocks in reverse |
+| Name        | Type                         | Description                    |
+| :---------- | :--------------------------- | :----------------------------- |
+| `blockId`   | `number` \| `Buffer` \| `BN` | The block's hash or number     |
+| `maxBlocks` | `number`                     | Max number of blocks to return |
+| `skip`      | `number`                     | Number of blocks to skip apart |
+| `reverse`   | `boolean`                    | Fetch blocks in reverse        |
 
 #### Returns
 
@@ -275,7 +274,7 @@ Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 
 [index.ts:1077](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1077)
 
-___
+---
 
 ### getHead
 
@@ -291,9 +290,9 @@ on a first run)
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `name` | `string` | `'vm'` | Optional name of the iterator head (default: 'vm') |
+| Name   | Type     | Default value | Description                                        |
+| :----- | :------- | :------------ | :------------------------------------------------- |
+| `name` | `string` | `'vm'`        | Optional name of the iterator head (default: 'vm') |
 
 #### Returns
 
@@ -303,7 +302,7 @@ on a first run)
 
 [index.ts:775](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L775)
 
-___
+---
 
 ### getIteratorHead
 
@@ -318,9 +317,9 @@ has not been run. This matches the behavior of {@link Blockchain.iterator}.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `name` | `string` | `'vm'` | Optional name of the iterator head (default: 'vm') |
+| Name   | Type     | Default value | Description                                        |
+| :----- | :------- | :------------ | :------------------------------------------------- |
+| `name` | `string` | `'vm'`        | Optional name of the iterator head (default: 'vm') |
 
 #### Returns
 
@@ -330,7 +329,7 @@ has not been run. This matches the behavior of {@link Blockchain.iterator}.
 
 [index.ts:751](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L751)
 
-___
+---
 
 ### getLatestBlock
 
@@ -346,7 +345,7 @@ Returns the latest full block in the canonical chain.
 
 [index.ts:804](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L804)
 
-___
+---
 
 ### getLatestHeader
 
@@ -362,7 +361,7 @@ Returns the latest header in the canonical chain.
 
 [index.ts:791](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L791)
 
-___
+---
 
 ### getTotalDifficulty
 
@@ -372,10 +371,10 @@ Gets total difficulty for a block specified by hash and number
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `hash` | `Buffer` |
-| `number?` | `BN` |
+| Name      | Type     |
+| :-------- | :------- |
+| `hash`    | `Buffer` |
+| `number?` | `BN`     |
 
 #### Returns
 
@@ -385,7 +384,7 @@ Gets total difficulty for a block specified by hash and number
 
 [index.ts:1062](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1062)
 
-___
+---
 
 ### iterator
 
@@ -397,11 +396,11 @@ head can be retrieved using {@link Blockchain.getIteratorHead}.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `name` | `string` | Name of the state root head |
-| `onBlock` | `OnBlock` | Function called on each block with params (block, reorg) |
-| `maxBlocks?` | `number` | How many blocks to run. By default, run all unprocessed blocks in the canonical chain. |
+| Name         | Type      | Description                                                                            |
+| :----------- | :-------- | :------------------------------------------------------------------------------------- |
+| `name`       | `string`  | Name of the state root head                                                            |
+| `onBlock`    | `OnBlock` | Function called on each block with params (block, reorg)                               |
+| `maxBlocks?` | `number`  | How many blocks to run. By default, run all unprocessed blocks in the canonical chain. |
 
 #### Returns
 
@@ -417,7 +416,7 @@ number of blocks actually iterated
 
 [index.ts:1257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1257)
 
-___
+---
 
 ### putBlock
 
@@ -431,8 +430,8 @@ heads/hashes are overwritten.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name    | Type    | Description                             |
+| :------ | :------ | :-------------------------------------- |
 | `block` | `Block` | The block to be added to the blockchain |
 
 #### Returns
@@ -447,7 +446,7 @@ heads/hashes are overwritten.
 
 [index.ts:839](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L839)
 
-___
+---
 
 ### putBlocks
 
@@ -462,8 +461,8 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type      | Description                              |
+| :------- | :-------- | :--------------------------------------- |
 | `blocks` | `Block`[] | The blocks to be added to the blockchain |
 
 #### Returns
@@ -474,7 +473,7 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 [index.ts:824](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L824)
 
-___
+---
 
 ### putHeader
 
@@ -488,8 +487,8 @@ heads/hashes are overwritten.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type          | Description                              |
+| :------- | :------------ | :--------------------------------------- |
 | `header` | `BlockHeader` | The header to be added to the blockchain |
 
 #### Returns
@@ -500,7 +499,7 @@ heads/hashes are overwritten.
 
 [index.ts:868](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L868)
 
-___
+---
 
 ### putHeaders
 
@@ -515,8 +514,8 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name      | Type    | Description                               |
+| :-------- | :------ | :---------------------------------------- |
 | `headers` | `any`[] | The headers to be added to the blockchain |
 
 #### Returns
@@ -527,11 +526,11 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 [index.ts:853](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L853)
 
-___
+---
 
 ### safeNumberToHash
 
-▸ **safeNumberToHash**(`number`): `Promise`<``false`` \| `Buffer`\>
+▸ **safeNumberToHash**(`number`): `Promise`<`false` \| `Buffer`\>
 
 This method either returns a Buffer if there exists one in the DB or if it
 does not exist (DB throws a `NotFoundError`) then return false If DB throws
@@ -539,19 +538,19 @@ any other error, this function throws.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type |
+| :------- | :--- |
 | `number` | `BN` |
 
 #### Returns
 
-`Promise`<``false`` \| `Buffer`\>
+`Promise`<`false` \| `Buffer`\>
 
 #### Defined in
 
 [index.ts:1567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1567)
 
-___
+---
 
 ### selectNeededHashes
 
@@ -563,8 +562,8 @@ Therefore, the array needs to be ordered upon number.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type       | Description                                    |
+| :------- | :--------- | :--------------------------------------------- |
 | `hashes` | `Buffer`[] | Ordered array of hashes (ordered on `number`). |
 
 #### Returns
@@ -575,7 +574,7 @@ Therefore, the array needs to be ordered upon number.
 
 [index.ts:1119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1119)
 
-___
+---
 
 ### setHead
 
@@ -588,10 +587,10 @@ When calling the iterator, the iterator will start running the first child block
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `tag` | `string` | The tag to save the headHash to |
-| `headHash` | `Buffer` | The head hash to save |
+| Name       | Type     | Description                     |
+| :--------- | :------- | :------------------------------ |
+| `tag`      | `string` | The tag to save the headHash to |
+| `headHash` | `Buffer` | The head hash to save           |
 
 #### Returns
 
@@ -601,7 +600,7 @@ When calling the iterator, the iterator will start running the first child block
 
 [index.ts:1322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1322)
 
-___
+---
 
 ### setIteratorHead
 
@@ -612,10 +611,10 @@ When calling the iterator, the iterator will start running the first child block
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `tag` | `string` | The tag to save the headHash to |
-| `headHash` | `Buffer` | The head hash to save |
+| Name       | Type     | Description                     |
+| :--------- | :------- | :------------------------------ |
+| `tag`      | `string` | The tag to save the headHash to |
+| `headHash` | `Buffer` | The head hash to save           |
 
 #### Returns
 
@@ -625,7 +624,7 @@ When calling the iterator, the iterator will start running the first child block
 
 [index.ts:1310](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L1310)
 
-___
+---
 
 ### create
 
@@ -636,8 +635,8 @@ encouraged method to use when creating a blockchain object.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name   | Type                                                      | Description                                                                      |
+| :----- | :-------------------------------------------------------- | :------------------------------------------------------------------------------- |
 | `opts` | [`BlockchainOptions`](../interfaces/BlockchainOptions.md) | Constructor options, see [BlockchainOptions](../interfaces/BlockchainOptions.md) |
 
 #### Returns
@@ -648,7 +647,7 @@ encouraged method to use when creating a blockchain object.
 
 [index.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L208)
 
-___
+---
 
 ### fromBlocksData
 
@@ -659,10 +658,10 @@ objects must be readable by {@link Block.fromBlockData}
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `blocksData` | `BlockData`[] | - |
-| `opts` | [`BlockchainOptions`](../interfaces/BlockchainOptions.md) | Constructor options, see [BlockchainOptions](../interfaces/BlockchainOptions.md) |
+| Name         | Type                                                      | Description                                                                      |
+| :----------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| `blocksData` | `BlockData`[]                                             | -                                                                                |
+| `opts`       | [`BlockchainOptions`](../interfaces/BlockchainOptions.md) | Constructor options, see [BlockchainOptions](../interfaces/BlockchainOptions.md) |
 
 #### Returns
 

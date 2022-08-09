@@ -86,7 +86,7 @@ Array.\_\_@iterator
 
 node_modules/typescript/lib/lib.es2015.iterable.d.ts:60
 
-___
+---
 
 ### [Symbol.unscopables]
 
@@ -99,15 +99,15 @@ when they will be absent when used in a 'with' statement.
 
 `Object`
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type      |
+| :----------- | :-------- |
 | `copyWithin` | `boolean` |
-| `entries` | `boolean` |
-| `fill` | `boolean` |
-| `find` | `boolean` |
-| `findIndex` | `boolean` |
-| `keys` | `boolean` |
-| `values` | `boolean` |
+| `entries`    | `boolean` |
+| `fill`       | `boolean` |
+| `find`       | `boolean` |
+| `findIndex`  | `boolean` |
+| `keys`       | `boolean` |
+| `values`     | `boolean` |
 
 #### Inherited from
 
@@ -117,7 +117,7 @@ Array.\_\_@unscopables
 
 node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:94
 
-___
+---
 
 ### concat
 
@@ -127,8 +127,8 @@ Combines two or more arrays.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name       | Type                                 | Description                                   |
+| :--------- | :----------------------------------- | :-------------------------------------------- |
 | `...items` | `ConcatArray`<Buffer \| Buffer[]\>[] | Additional items to add to the end of array1. |
 
 #### Returns
@@ -149,8 +149,8 @@ Combines two or more arrays.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name       | Type                                                             | Description                                   |
+| :--------- | :--------------------------------------------------------------- | :-------------------------------------------- |
 | `...items` | (`Buffer` \| `Buffer`[] \| `ConcatArray`<Buffer \| Buffer[]\>)[] | Additional items to add to the end of array1. |
 
 #### Returns
@@ -165,7 +165,7 @@ Array.concat
 
 node_modules/typescript/lib/lib.es5.d.ts:1242
 
-___
+---
 
 ### copyWithin
 
@@ -176,11 +176,11 @@ to the same array starting at position target
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `target` | `number` | If target is negative, it is treated as length+target where length is the length of the array. |
-| `start` | `number` | If start is negative, it is treated as length+start. If end is negative, it is treated as length+end. |
-| `end?` | `number` | If not specified, length of the this object is used as its default value. |
+| Name     | Type     | Description                                                                                           |
+| :------- | :------- | :---------------------------------------------------------------------------------------------------- |
+| `target` | `number` | If target is negative, it is treated as length+target where length is the length of the array.        |
+| `start`  | `number` | If start is negative, it is treated as length+start. If end is negative, it is treated as length+end. |
+| `end?`   | `number` | If not specified, length of the this object is used as its default value.                             |
 
 #### Returns
 
@@ -194,7 +194,7 @@ Array.copyWithin
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:64
 
-___
+---
 
 ### entries
 
@@ -214,7 +214,7 @@ Array.entries
 
 node_modules/typescript/lib/lib.es2015.iterable.d.ts:65
 
-___
+---
 
 ### every
 
@@ -224,10 +224,10 @@ Determines whether all the members of an array satisfy the specified test.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                   | Description                                                                                                                                                                                                                                    |
+| :----------- | :----------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The every method calls the callbackfn function for each element in the array until the callbackfn returns a value which is coercible to the Boolean value false, or until the end of the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| `thisArg?`   | `any`                                                                                                  | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.                                                                                                          |
 
 #### Returns
 
@@ -241,7 +241,7 @@ Array.every
 
 node_modules/typescript/lib/lib.es5.d.ts:1310
 
-___
+---
 
 ### fill
 
@@ -251,11 +251,11 @@ Returns the this object after filling the section identified by start and end wi
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `value` | `Buffer` \| `Buffer`[] | value to fill array section with |
-| `start?` | `number` | index to start filling the array at. If start is negative, it is treated as length+start where length is the length of the array. |
-| `end?` | `number` | index to stop filling the array at. If end is negative, it is treated as length+end. |
+| Name     | Type                   | Description                                                                                                                       |
+| :------- | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `value`  | `Buffer` \| `Buffer`[] | value to fill array section with                                                                                                  |
+| `start?` | `number`               | index to start filling the array at. If start is negative, it is treated as length+start where length is the length of the array. |
+| `end?`   | `number`               | index to stop filling the array at. If end is negative, it is treated as length+end.                                              |
 
 #### Returns
 
@@ -269,7 +269,7 @@ Array.fill
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:53
 
-___
+---
 
 ### filter
 
@@ -279,16 +279,16 @@ Returns the elements of an array that meet the condition specified in a callback
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `S` | `S`: `Buffer` \| `Buffer`[] |
+| Name | Type                        |
+| :--- | :-------------------------- |
+| `S`  | `S`: `Buffer` \| `Buffer`[] |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                    | Description                                                                                                                            |
+| :----------- | :------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------- |
 | `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => value is S | A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| `thisArg?`   | `any`                                                                                                   | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.  |
 
 #### Returns
 
@@ -308,10 +308,10 @@ Returns the elements of an array that meet the condition specified in a callback
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                   | Description                                                                                                                            |
+| :----------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
 | `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| `thisArg?`   | `any`                                                                                                  | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.  |
 
 #### Returns
 
@@ -325,7 +325,7 @@ Array.filter
 
 node_modules/typescript/lib/lib.es5.d.ts:1343
 
-___
+---
 
 ### find
 
@@ -336,16 +336,16 @@ otherwise.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `S` | `S`: `Buffer` \| `Buffer`[] |
+| Name | Type                        |
+| :--- | :-------------------------- |
+| `S`  | `S`: `Buffer` \| `Buffer`[] |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name        | Type                                                                                                  | Description                                                                                                                                                                                                                                |
+| :---------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => value is S | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, find immediately returns that element value. Otherwise, find returns undefined. |
-| `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead. |
+| `thisArg?`  | `any`                                                                                                 | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.                                                                                                         |
 
 #### Returns
 
@@ -363,10 +363,10 @@ node_modules/typescript/lib/lib.es2015.core.d.ts:31
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type                                                                                                 |
+| :---------- | :--------------------------------------------------------------------------------------------------- |
 | `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => `unknown` |
-| `thisArg?` | `any` |
+| `thisArg?`  | `any`                                                                                                |
 
 #### Returns
 
@@ -380,7 +380,7 @@ Array.find
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:32
 
-___
+---
 
 ### findIndex
 
@@ -391,10 +391,10 @@ otherwise.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name        | Type                                                                                                 | Description                                                                                                                                                                                                                                   |
+| :---------- | :--------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => `unknown` | find calls predicate once for each element of the array, in ascending order, until it finds one where predicate returns true. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1. |
-| `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead. |
+| `thisArg?`  | `any`                                                                                                | If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.                                                                                                            |
 
 #### Returns
 
@@ -408,7 +408,7 @@ Array.findIndex
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:43
 
-___
+---
 
 ### forEach
 
@@ -418,10 +418,10 @@ Performs the specified action for each element in an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| Name         | Type                                                                                                | Description                                                                                                                           |
+| :----------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.          |
+| `thisArg?`   | `any`                                                                                               | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
 
@@ -435,7 +435,7 @@ Array.forEach
 
 node_modules/typescript/lib/lib.es5.d.ts:1325
 
-___
+---
 
 ### includes
 
@@ -445,10 +445,10 @@ Determines whether an array includes a certain element, returning true or false 
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The element to search for. |
-| `fromIndex?` | `number` | The position in this array at which to begin searching for searchElement. |
+| Name            | Type                   | Description                                                               |
+| :-------------- | :--------------------- | :------------------------------------------------------------------------ |
+| `searchElement` | `Buffer` \| `Buffer`[] | The element to search for.                                                |
+| `fromIndex?`    | `number`               | The position in this array at which to begin searching for searchElement. |
 
 #### Returns
 
@@ -462,7 +462,7 @@ Array.includes
 
 node_modules/typescript/lib/lib.es2016.array.include.d.ts:27
 
-___
+---
 
 ### indexOf
 
@@ -472,10 +472,10 @@ Returns the index of the first occurrence of a value in an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array. |
-| `fromIndex?` | `number` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
+| Name            | Type                   | Description                                                                                          |
+| :-------------- | :--------------------- | :--------------------------------------------------------------------------------------------------- |
+| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array.                                                                    |
+| `fromIndex?`    | `number`               | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
 
 #### Returns
 
@@ -489,7 +489,7 @@ Array.indexOf
 
 node_modules/typescript/lib/lib.es5.d.ts:1295
 
-___
+---
 
 ### join
 
@@ -499,8 +499,8 @@ Adds all the elements of an array separated by the specified separator string.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type     | Description                                                                                                                                         |
+| :----------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `separator?` | `string` | A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma. |
 
 #### Returns
@@ -515,7 +515,7 @@ Array.join
 
 node_modules/typescript/lib/lib.es5.d.ts:1247
 
-___
+---
 
 ### keys
 
@@ -535,7 +535,7 @@ Array.keys
 
 node_modules/typescript/lib/lib.es2015.iterable.d.ts:70
 
-___
+---
 
 ### lastIndexOf
 
@@ -545,10 +545,10 @@ Returns the index of the last occurrence of a specified value in an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array. |
-| `fromIndex?` | `number` | The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array. |
+| Name            | Type                   | Description                                                                                                              |
+| :-------------- | :--------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array.                                                                                        |
+| `fromIndex?`    | `number`               | The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array. |
 
 #### Returns
 
@@ -562,7 +562,7 @@ Array.lastIndexOf
 
 node_modules/typescript/lib/lib.es5.d.ts:1301
 
-___
+---
 
 ### map
 
@@ -573,15 +573,15 @@ Calls a defined callback function on each element of an array, and returns an ar
 #### Type parameters
 
 | Name |
-| :------ |
-| `U` |
+| :--- |
+| `U`  |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| Name         | Type                                                                                             | Description                                                                                                                           |
+| :----------- | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.   |
+| `thisArg?`   | `any`                                                                                            | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
 
@@ -595,7 +595,7 @@ Array.map
 
 node_modules/typescript/lib/lib.es5.d.ts:1331
 
-___
+---
 
 ### pop
 
@@ -615,7 +615,7 @@ Array.pop
 
 node_modules/typescript/lib/lib.es5.d.ts:1227
 
-___
+---
 
 ### push
 
@@ -625,8 +625,8 @@ Appends new elements to an array, and returns the new length of the array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name       | Type                       | Description                |
+| :--------- | :------------------------- | :------------------------- |
 | `...items` | (`Buffer` \| `Buffer`[])[] | New elements of the Array. |
 
 #### Returns
@@ -641,7 +641,7 @@ Array.push
 
 node_modules/typescript/lib/lib.es5.d.ts:1232
 
-___
+---
 
 ### reduce
 
@@ -651,8 +651,8 @@ Calls the specified callback function for all the elements in an array. The retu
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                                                                                       | Description                                                                                                                           |
+| :----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
 | `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
@@ -671,10 +671,10 @@ node_modules/typescript/lib/lib.es5.d.ts:1349
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
-| `initialValue` | `Buffer` \| `Buffer`[] |
+| Name           | Type                                                                                                                                                                       |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `callbackfn`   | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
+| `initialValue` | `Buffer` \| `Buffer`[]                                                                                                                                                     |
 
 #### Returns
 
@@ -695,15 +695,15 @@ Calls the specified callback function for all the elements in an array. The retu
 #### Type parameters
 
 | Name |
-| :------ |
-| `U` |
+| :--- |
+| `U`  |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
-| `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+| Name           | Type                                                                                                                                 | Description                                                                                                                                                                                      |
+| :------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `callbackfn`   | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.                                                            |
+| `initialValue` | `U`                                                                                                                                  | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
 
@@ -717,7 +717,7 @@ Array.reduce
 
 node_modules/typescript/lib/lib.es5.d.ts:1356
 
-___
+---
 
 ### reduceRight
 
@@ -727,8 +727,8 @@ Calls the specified callback function for all the elements in an array, in desce
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                                                                                       | Description                                                                                                                                |
+| :----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 | `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
@@ -747,10 +747,10 @@ node_modules/typescript/lib/lib.es5.d.ts:1362
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
-| `initialValue` | `Buffer` \| `Buffer`[] |
+| Name           | Type                                                                                                                                                                       |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `callbackfn`   | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
+| `initialValue` | `Buffer` \| `Buffer`[]                                                                                                                                                     |
 
 #### Returns
 
@@ -771,15 +771,15 @@ Calls the specified callback function for all the elements in an array, in desce
 #### Type parameters
 
 | Name |
-| :------ |
-| `U` |
+| :--- |
+| `U`  |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
-| `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+| Name           | Type                                                                                                                                 | Description                                                                                                                                                                                      |
+| :------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `callbackfn`   | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.                                                       |
+| `initialValue` | `U`                                                                                                                                  | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
 
@@ -793,7 +793,7 @@ Array.reduceRight
 
 node_modules/typescript/lib/lib.es5.d.ts:1369
 
-___
+---
 
 ### reverse
 
@@ -813,7 +813,7 @@ Array.reverse
 
 node_modules/typescript/lib/lib.es5.d.ts:1251
 
-___
+---
 
 ### shift
 
@@ -833,7 +833,7 @@ Array.shift
 
 node_modules/typescript/lib/lib.es5.d.ts:1255
 
-___
+---
 
 ### slice
 
@@ -843,10 +843,10 @@ Returns a section of an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `start?` | `number` | The beginning of the specified portion of the array. |
-| `end?` | `number` | The end of the specified portion of the array. This is exclusive of the element at the index 'end'. |
+| Name     | Type     | Description                                                                                         |
+| :------- | :------- | :-------------------------------------------------------------------------------------------------- |
+| `start?` | `number` | The beginning of the specified portion of the array.                                                |
+| `end?`   | `number` | The end of the specified portion of the array. This is exclusive of the element at the index 'end'. |
 
 #### Returns
 
@@ -860,7 +860,7 @@ Array.slice
 
 node_modules/typescript/lib/lib.es5.d.ts:1261
 
-___
+---
 
 ### some
 
@@ -870,10 +870,10 @@ Determines whether the specified callback function returns true for any element 
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name         | Type                                                                                                   | Description                                                                                                                                                                                                                                  |
+| :----------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The some method calls the callbackfn function for each element in the array until the callbackfn returns a value which is coercible to the Boolean value true, or until the end of the array. |
-| `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+| `thisArg?`   | `any`                                                                                                  | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.                                                                                                        |
 
 #### Returns
 
@@ -887,7 +887,7 @@ Array.some
 
 node_modules/typescript/lib/lib.es5.d.ts:1319
 
-___
+---
 
 ### sort
 
@@ -897,9 +897,9 @@ Sorts an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `compareFn?` | (`a`: `Buffer` \| `Buffer`[], `b`: `Buffer` \| `Buffer`[]) => `number` | Function used to determine the order of the elements. It is expected to return a negative value if first argument is less than second argument, zero if they're equal and a positive value otherwise. If omitted, the elements are sorted in ascending, ASCII character order. ```ts [11,2,22,1].sort((a, b) => a - b) ``` |
+| Name         | Type                                                                   | Description                                                                                                                                                                                                                                                                                                            |
+| :----------- | :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compareFn?` | (`a`: `Buffer` \| `Buffer`[], `b`: `Buffer` \| `Buffer`[]) => `number` | Function used to determine the order of the elements. It is expected to return a negative value if first argument is less than second argument, zero if they're equal and a positive value otherwise. If omitted, the elements are sorted in ascending, ASCII character order. `ts [11,2,22,1].sort((a, b) => a - b) ` |
 
 #### Returns
 
@@ -913,7 +913,7 @@ Array.sort
 
 node_modules/typescript/lib/lib.es5.d.ts:1271
 
-___
+---
 
 ### splice
 
@@ -923,10 +923,10 @@ Removes elements from an array and, if necessary, inserts new elements in their 
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `start` | `number` | The zero-based location in the array from which to start removing elements. |
-| `deleteCount?` | `number` | The number of elements to remove. |
+| Name           | Type     | Description                                                                 |
+| :------------- | :------- | :-------------------------------------------------------------------------- |
+| `start`        | `number` | The zero-based location in the array from which to start removing elements. |
+| `deleteCount?` | `number` | The number of elements to remove.                                           |
 
 #### Returns
 
@@ -946,11 +946,11 @@ Removes elements from an array and, if necessary, inserts new elements in their 
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `start` | `number` | The zero-based location in the array from which to start removing elements. |
-| `deleteCount` | `number` | The number of elements to remove. |
-| `...items` | (`Buffer` \| `Buffer`[])[] | Elements to insert into the array in place of the deleted elements. |
+| Name          | Type                       | Description                                                                 |
+| :------------ | :------------------------- | :-------------------------------------------------------------------------- |
+| `start`       | `number`                   | The zero-based location in the array from which to start removing elements. |
+| `deleteCount` | `number`                   | The number of elements to remove.                                           |
+| `...items`    | (`Buffer` \| `Buffer`[])[] | Elements to insert into the array in place of the deleted elements.         |
 
 #### Returns
 
@@ -964,7 +964,7 @@ Array.splice
 
 node_modules/typescript/lib/lib.es5.d.ts:1284
 
-___
+---
 
 ### toLocaleString
 
@@ -984,7 +984,7 @@ Array.toLocaleString
 
 node_modules/typescript/lib/lib.es5.d.ts:1223
 
-___
+---
 
 ### toString
 
@@ -1004,7 +1004,7 @@ Array.toString
 
 node_modules/typescript/lib/lib.es5.d.ts:1219
 
-___
+---
 
 ### unshift
 
@@ -1014,8 +1014,8 @@ Inserts new elements at the start of an array.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name       | Type                       | Description                                   |
+| :--------- | :------------------------- | :-------------------------------------------- |
 | `...items` | (`Buffer` \| `Buffer`[])[] | Elements to insert at the start of the Array. |
 
 #### Returns
@@ -1030,7 +1030,7 @@ Array.unshift
 
 node_modules/typescript/lib/lib.es5.d.ts:1289
 
-___
+---
 
 ### values
 

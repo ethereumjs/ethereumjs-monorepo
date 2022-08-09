@@ -29,13 +29,13 @@
 
 Re-exports: [EIP2930Receipt](../interfaces/types.EIP2930Receipt.md)
 
-___
+---
 
 ### PostByzantiumTxReceipt
 
 Re-exports: [PostByzantiumTxReceipt](../interfaces/types.PostByzantiumTxReceipt.md)
 
-___
+---
 
 ### PreByzantiumTxReceipt
 
@@ -49,10 +49,10 @@ Re-exports: [PreByzantiumTxReceipt](../interfaces/types.PreByzantiumTxReceipt.md
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `minerReward` | `BN` |
-| `ommersNum` | `number` |
+| Name          | Type     |
+| :------------ | :------- |
+| `minerReward` | `BN`     |
+| `ommersNum`   | `number` |
 
 #### Returns
 
@@ -62,7 +62,7 @@ Re-exports: [PreByzantiumTxReceipt](../interfaces/types.PreByzantiumTxReceipt.md
 
 [runBlock.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L410)
 
-___
+---
 
 ### encodeReceipt
 
@@ -72,9 +72,9 @@ Returns the encoded tx receipt.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `tx` | `TypedTransaction` |
+| Name      | Type                              |
+| :-------- | :-------------------------------- |
+| `tx`      | `TypedTransaction`                |
 | `receipt` | [`TxReceipt`](types.md#txreceipt) |
 
 #### Returns
@@ -85,7 +85,7 @@ Returns the encoded tx receipt.
 
 [runBlock.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L432)
 
-___
+---
 
 ### generateTxReceipt
 
@@ -97,11 +97,11 @@ Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `tx` | `TypedTransaction` |
-| `txRes` | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) |
-| `blockGasUsed` | `BN` |
+| Name           | Type                                                |
+| :------------- | :-------------------------------------------------- |
+| `tx`           | `TypedTransaction`                                  |
+| `txRes`        | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) |
+| `blockGasUsed` | `BN`                                                |
 
 #### Returns
 
@@ -111,7 +111,7 @@ Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 
 [runBlock.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L447)
 
-___
+---
 
 ### rewardAccount
 
@@ -119,11 +119,11 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `state` | [`StateManager`](../interfaces/state_interface.StateManager.md) |
-| `address` | `Address` |
-| `reward` | `BN` |
+| Name      | Type                                                            |
+| :-------- | :-------------------------------------------------------------- |
+| `state`   | [`StateManager`](../interfaces/state_interface.StateManager.md) |
+| `address` | `Address`                                                       |
+| `reward`  | `BN`                                                            |
 
 #### Returns
 

@@ -20,7 +20,7 @@
 
 [packages/common/src/index.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L96)
 
-___
+---
 
 ### Clique
 
@@ -30,7 +30,7 @@ ___
 
 [packages/common/src/index.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L95)
 
-___
+---
 
 ### Ethash
 

@@ -4,7 +4,4 @@ about: Create issue for @ethereumjs/client
 title: ''
 labels: 'package: client'
 assignees: ''
-
 ---
-
-

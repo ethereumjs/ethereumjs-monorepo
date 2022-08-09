@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [HeaderFetcher](../classes/_sync_fetcher_headerfetcher_.headerfetcher.md)
+- [HeaderFetcher](../classes/_sync_fetcher_headerfetcher_.headerfetcher.md)
 
 ### Interfaces
 
-* [HeaderFetcherOptions](../interfaces/_sync_fetcher_headerfetcher_.headerfetcheroptions.md)
+- [HeaderFetcherOptions](../interfaces/_sync_fetcher_headerfetcher_.headerfetcheroptions.md)

@@ -32,7 +32,7 @@ a standard chain used to base the custom chain params on.
 
 [packages/common/src/index.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L181)
 
-___
+---
 
 ### eips
 
@@ -53,7 +53,7 @@ BaseOpts.eips
 
 [packages/common/src/index.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L118)
 
-___
+---
 
 ### hardfork
 
@@ -71,7 +71,7 @@ BaseOpts.hardfork
 
 [packages/common/src/index.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L105)
 
-___
+---
 
 ### supportedHardforks
 

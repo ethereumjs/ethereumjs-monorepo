@@ -34,7 +34,7 @@ Bloom bitvector
 
 [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
 
-___
+---
 
 ### gasUsed
 
@@ -46,7 +46,7 @@ Cumulative gas used in the block including this tx
 
 [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
 
-___
+---
 
 ### logs
 

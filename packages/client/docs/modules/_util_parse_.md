@@ -6,89 +6,89 @@
 
 ### Functions
 
-* [parseBootnodes](_util_parse_.md#parsebootnodes)
-* [parseKey](_util_parse_.md#parsekey)
-* [parseMultiaddrs](_util_parse_.md#parsemultiaddrs)
-* [parseParams](_util_parse_.md#parseparams)
-* [parseTransports](_util_parse_.md#parsetransports)
+- [parseBootnodes](_util_parse_.md#parsebootnodes)
+- [parseKey](_util_parse_.md#parsekey)
+- [parseMultiaddrs](_util_parse_.md#parsemultiaddrs)
+- [parseParams](_util_parse_.md#parseparams)
+- [parseTransports](_util_parse_.md#parsetransports)
 
 ## Functions
 
-###  parseBootnodes
+### parseBootnodes
 
-▸ **parseBootnodes**(`input`: [BootnodeLike](_types_.md#bootnodelike)): *[Bootnode](../interfaces/_types_.bootnode.md)[]*
+▸ **parseBootnodes**(`input`: [BootnodeLike](_types_.md#bootnodelike)): _[Bootnode](../interfaces/_types_.bootnode.md)[]_
 
-*Defined in [lib/util/parse.ts:7](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L7)*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`input` | [BootnodeLike](_types_.md#bootnodelike) |
-
-**Returns:** *[Bootnode](../interfaces/_types_.bootnode.md)[]*
-
-___
-
-###  parseKey
-
-▸ **parseKey**(`input`: string | Buffer): *Buffer‹›*
-
-*Defined in [lib/util/parse.ts:180](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L180)*
+_Defined in [lib/util/parse.ts:7](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L7)_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`input` | string &#124; Buffer |
+| Name    | Type                                    |
+| ------- | --------------------------------------- |
+| `input` | [BootnodeLike](_types_.md#bootnodelike) |
 
-**Returns:** *Buffer‹›*
+**Returns:** _[Bootnode](../interfaces/_types_.bootnode.md)[]_
 
-___
+---
 
-###  parseMultiaddrs
+### parseKey
 
-▸ **parseMultiaddrs**(`input`: [MultiaddrsLike](_types_.md#multiaddrslike)): *[Multiaddrs](_types_.md#multiaddrs)*
+▸ **parseKey**(`input`: string | Buffer): _Buffer‹›_
 
-*Defined in [lib/util/parse.ts:173](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L173)*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`input` | [MultiaddrsLike](_types_.md#multiaddrslike) |
-
-**Returns:** *[Multiaddrs](_types_.md#multiaddrs)*
-
-___
-
-###  parseParams
-
-▸ **parseParams**(`json`: any, `name?`: undefined | string): *Promise‹any›*
-
-*Defined in [lib/util/parse.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L157)*
+_Defined in [lib/util/parse.ts:180](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L180)_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`json` | any |
-`name?` | undefined &#124; string |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `input` | string &#124; Buffer |
 
-**Returns:** *Promise‹any›*
+**Returns:** _Buffer‹›_
 
-___
+---
 
-###  parseTransports
+### parseMultiaddrs
 
-▸ **parseTransports**(`transports`: string[]): *object[]*
+▸ **parseMultiaddrs**(`input`: [MultiaddrsLike](_types_.md#multiaddrslike)): _[Multiaddrs](_types_.md#multiaddrs)_
 
-*Defined in [lib/util/parse.ts:34](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L34)*
+_Defined in [lib/util/parse.ts:173](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L173)_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`transports` | string[] |
+| Name    | Type                                        |
+| ------- | ------------------------------------------- |
+| `input` | [MultiaddrsLike](_types_.md#multiaddrslike) |
 
-**Returns:** *object[]*
+**Returns:** _[Multiaddrs](_types_.md#multiaddrs)_
+
+---
+
+### parseParams
+
+▸ **parseParams**(`json`: any, `name?`: undefined | string): _Promise‹any›_
+
+_Defined in [lib/util/parse.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L157)_
+
+**Parameters:**
+
+| Name    | Type                    |
+| ------- | ----------------------- |
+| `json`  | any                     |
+| `name?` | undefined &#124; string |
+
+**Returns:** _Promise‹any›_
+
+---
+
+### parseTransports
+
+▸ **parseTransports**(`transports`: string[]): _object[]_
+
+_Defined in [lib/util/parse.ts:34](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/util/parse.ts#L34)_
+
+**Parameters:**
+
+| Name         | Type     |
+| ------------ | -------- |
+| `transports` | string[] |
+
+**Returns:** _object[]_

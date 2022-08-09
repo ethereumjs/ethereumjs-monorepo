@@ -7,8 +7,8 @@
 ## Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 ## Table of contents
 
@@ -31,8 +31,8 @@
 #### Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 #### Defined in
 
@@ -48,7 +48,7 @@
 
 [packages/devp2p/src/util.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L106)
 
-___
+---
 
 ### reject
 
@@ -60,8 +60,8 @@ ___
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 ##### Returns
@@ -72,7 +72,7 @@ ___
 
 [packages/devp2p/src/util.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L108)
 
-___
+---
 
 ### resolve
 
@@ -84,8 +84,8 @@ ___
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type    |
+| :-------- | :------ |
 | `...args` | `any`[] |
 
 ##### Returns

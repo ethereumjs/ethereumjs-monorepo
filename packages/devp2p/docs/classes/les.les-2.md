@@ -64,11 +64,11 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `version` | `number` |
-| `peer` | [Peer](rlpx_peer.peer.md) |
-| `send` | `any` |
+| Name      | Type                      |
+| :-------- | :------------------------ |
+| `version` | `number`                  |
+| `peer`    | [Peer](rlpx_peer.peer.md) |
+| `send`    | `any`                     |
 
 #### Overrides
 
@@ -88,17 +88,17 @@ EventEmitter.constructor
 
 [packages/devp2p/src/les/index.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L15)
 
-___
+---
 
 ### \_peerStatus
 
-• **\_peerStatus**: ``null`` \| [Status](../interfaces/les.les-1.status.md)
+• **\_peerStatus**: `null` \| [Status](../interfaces/les.les-1.status.md)
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L18)
 
-___
+---
 
 ### \_send
 
@@ -108,17 +108,17 @@ ___
 
 [packages/devp2p/src/les/index.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L16)
 
-___
+---
 
 ### \_status
 
-• **\_status**: ``null`` \| [Status](../interfaces/les.les-1.status.md)
+• **\_status**: `null` \| [Status](../interfaces/les.les-1.status.md)
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L17)
 
-___
+---
 
 ### \_statusTimeoutId
 
@@ -128,7 +128,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L19)
 
-___
+---
 
 ### \_version
 
@@ -138,7 +138,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L14)
 
-___
+---
 
 ### defaultMaxListeners
 
@@ -152,7 +152,7 @@ EventEmitter.defaultMaxListeners
 
 node_modules/@types/node/events.d.ts:20
 
-___
+---
 
 ### les2
 
@@ -160,18 +160,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [LES](les.les-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L34)
 
-___
+---
 
 ### les3
 
@@ -179,18 +179,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [LES](les.les-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/les/index.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L35)
 
-___
+---
 
 ### les4
 
@@ -198,12 +198,12 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [LES](les.les-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
@@ -213,12 +213,12 @@ ___
 
 ### \_getStatusString
 
-▸ **_getStatusString**(`status`): `string`
+▸ **\_getStatusString**(`status`): `string`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                        |
+| :------- | :------------------------------------------ |
 | `status` | [Status](../interfaces/les.les-1.status.md) |
 
 #### Returns
@@ -229,18 +229,18 @@ ___
 
 [packages/devp2p/src/les/index.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L124)
 
-___
+---
 
 ### \_handleMessage
 
-▸ **_handleMessage**(`code`, `data`): `void`
+▸ **\_handleMessage**(`code`, `data`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `code` | [MESSAGE\_CODES](../enums/les.les-1.message_codes.md) |
-| `data` | `any` |
+| Name   | Type                                                 |
+| :----- | :--------------------------------------------------- |
+| `code` | [MESSAGE_CODES](../enums/les.les-1.message_codes.md) |
+| `data` | `any`                                                |
 
 #### Returns
 
@@ -250,11 +250,11 @@ ___
 
 [packages/devp2p/src/les/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L38)
 
-___
+---
 
 ### \_handleStatus
 
-▸ **_handleStatus**(): `void`
+▸ **\_handleStatus**(): `void`
 
 #### Returns
 
@@ -264,7 +264,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L100)
 
-___
+---
 
 ### addListener
 
@@ -272,9 +272,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -289,7 +289,7 @@ EventEmitter.addListener
 
 node_modules/@types/node/globals.d.ts:595
 
-___
+---
 
 ### emit
 
@@ -297,10 +297,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `...args` | `any`[] |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `event`   | `string` \| `symbol` |
+| `...args` | `any`[]              |
 
 #### Returns
 
@@ -314,7 +314,7 @@ EventEmitter.emit
 
 node_modules/@types/node/globals.d.ts:605
 
-___
+---
 
 ### eventNames
 
@@ -332,7 +332,7 @@ EventEmitter.eventNames
 
 node_modules/@types/node/globals.d.ts:610
 
-___
+---
 
 ### getMaxListeners
 
@@ -350,7 +350,7 @@ EventEmitter.getMaxListeners
 
 node_modules/@types/node/globals.d.ts:602
 
-___
+---
 
 ### getMsgPrefix
 
@@ -358,9 +358,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msgCode` | [MESSAGE\_CODES](../enums/les.les-1.message_codes.md) |
+| Name      | Type                                                 |
+| :-------- | :--------------------------------------------------- |
+| `msgCode` | [MESSAGE_CODES](../enums/les.les-1.message_codes.md) |
 
 #### Returns
 
@@ -370,7 +370,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L225)
 
-___
+---
 
 ### getVersion
 
@@ -384,7 +384,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L120)
 
-___
+---
 
 ### listenerCount
 
@@ -392,8 +392,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `type` | `string` \| `symbol` |
 
 #### Returns
@@ -408,7 +408,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/globals.d.ts:606
 
-___
+---
 
 ### listeners
 
@@ -416,8 +416,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -432,7 +432,7 @@ EventEmitter.listeners
 
 node_modules/@types/node/globals.d.ts:603
 
-___
+---
 
 ### off
 
@@ -440,9 +440,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -457,7 +457,7 @@ EventEmitter.off
 
 node_modules/@types/node/globals.d.ts:599
 
-___
+---
 
 ### on
 
@@ -465,9 +465,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -482,7 +482,7 @@ EventEmitter.on
 
 node_modules/@types/node/globals.d.ts:596
 
-___
+---
 
 ### once
 
@@ -490,9 +490,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -507,7 +507,7 @@ EventEmitter.once
 
 node_modules/@types/node/globals.d.ts:597
 
-___
+---
 
 ### prependListener
 
@@ -515,9 +515,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -532,7 +532,7 @@ EventEmitter.prependListener
 
 node_modules/@types/node/globals.d.ts:608
 
-___
+---
 
 ### prependOnceListener
 
@@ -540,9 +540,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -557,7 +557,7 @@ EventEmitter.prependOnceListener
 
 node_modules/@types/node/globals.d.ts:609
 
-___
+---
 
 ### rawListeners
 
@@ -565,8 +565,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -581,7 +581,7 @@ EventEmitter.rawListeners
 
 node_modules/@types/node/globals.d.ts:604
 
-___
+---
 
 ### removeAllListeners
 
@@ -589,8 +589,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                 |
+| :------- | :------------------- |
 | `event?` | `string` \| `symbol` |
 
 #### Returns
@@ -605,7 +605,7 @@ EventEmitter.removeAllListeners
 
 node_modules/@types/node/globals.d.ts:600
 
-___
+---
 
 ### removeListener
 
@@ -613,9 +613,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -630,7 +630,7 @@ EventEmitter.removeListener
 
 node_modules/@types/node/globals.d.ts:598
 
-___
+---
 
 ### sendMessage
 
@@ -638,10 +638,10 @@ ___
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `code` | [MESSAGE\_CODES](../enums/les.les-1.message_codes.md) | Message code |
-| `payload` | `any` | Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`) |
+| Name      | Type                                                 | Description                                              |
+| :-------- | :--------------------------------------------------- | :------------------------------------------------------- |
+| `code`    | [MESSAGE_CODES](../enums/les.les-1.message_codes.md) | Message code                                             |
+| `payload` | `any`                                                | Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`) |
 
 #### Returns
 
@@ -651,7 +651,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L178)
 
-___
+---
 
 ### sendStatus
 
@@ -659,8 +659,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                        |
+| :------- | :------------------------------------------ |
 | `status` | [Status](../interfaces/les.les-1.status.md) |
 
 #### Returns
@@ -671,7 +671,7 @@ ___
 
 [packages/devp2p/src/les/index.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L148)
 
-___
+---
 
 ### setMaxListeners
 
@@ -679,9 +679,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `n` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `n`  | `number` |
 
 #### Returns
 
@@ -695,7 +695,7 @@ EventEmitter.setMaxListeners
 
 node_modules/@types/node/globals.d.ts:601
 
-___
+---
 
 ### listenerCount
 
@@ -705,10 +705,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `EventEmitter`       |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -722,7 +722,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/events.d.ts:17
 
-___
+---
 
 ### once
 
@@ -730,10 +730,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `NodeEventTarget`    |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -751,10 +751,10 @@ node_modules/@types/node/events.d.ts:13
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type             |
+| :-------- | :--------------- |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `event`   | `string`         |
 
 #### Returns
 

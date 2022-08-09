@@ -6,11 +6,11 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "typeRoots": ["node_modules/@types", "src/@types"],
-    "composite": true,
+    "composite": true
   },
   "references": [
     { "path": "../common/tsconfig.prod.json" },
     { "path": "../rlp/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
-  ],
+  ]
 }

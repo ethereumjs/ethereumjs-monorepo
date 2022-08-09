@@ -30,7 +30,7 @@ Current default hardfork: `istanbul`
 
 [types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
 
-___
+---
 
 ### freeze
 

@@ -4,54 +4,54 @@
 
 ## Hierarchy
 
-* **SynchronizerOptions**
+- **SynchronizerOptions**
 
 ## Index
 
 ### Properties
 
-* [chain](_sync_sync_.synchronizeroptions.md#chain)
-* [config](_sync_sync_.synchronizeroptions.md#config)
-* [flow](_sync_sync_.synchronizeroptions.md#optional-flow)
-* [interval](_sync_sync_.synchronizeroptions.md#optional-interval)
-* [pool](_sync_sync_.synchronizeroptions.md#pool)
+- [chain](_sync_sync_.synchronizeroptions.md#chain)
+- [config](_sync_sync_.synchronizeroptions.md#config)
+- [flow](_sync_sync_.synchronizeroptions.md#optional-flow)
+- [interval](_sync_sync_.synchronizeroptions.md#optional-interval)
+- [pool](_sync_sync_.synchronizeroptions.md#pool)
 
 ## Properties
 
-###  chain
+### chain
 
-• **chain**: *[Chain](../classes/_blockchain_chain_.chain.md)*
+• **chain**: _[Chain](../classes/_blockchain_chain_.chain.md)_
 
-*Defined in [lib/sync/sync.ts:16](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L16)*
+_Defined in [lib/sync/sync.ts:16](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L16)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/sync/sync.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L10)*
+_Defined in [lib/sync/sync.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L10)_
 
-___
+---
 
 ### `Optional` flow
 
-• **flow**? : *[FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)*
+• **flow**? : _[FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)_
 
-*Defined in [lib/sync/sync.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L19)*
+_Defined in [lib/sync/sync.ts:19](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L19)_
 
-___
+---
 
 ### `Optional` interval
 
-• **interval**? : *undefined | number*
+• **interval**? : _undefined | number_
 
-*Defined in [lib/sync/sync.ts:22](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L22)*
+_Defined in [lib/sync/sync.ts:22](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L22)_
 
-___
+---
 
-###  pool
+### pool
 
-• **pool**: *[PeerPool](../classes/_net_peerpool_.peerpool.md)*
+• **pool**: _[PeerPool](../classes/_net_peerpool_.peerpool.md)_
 
-*Defined in [lib/sync/sync.ts:13](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L13)*
+_Defined in [lib/sync/sync.ts:13](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/sync.ts#L13)_

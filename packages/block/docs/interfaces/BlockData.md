@@ -24,7 +24,7 @@ Header data for the block
 
 [types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
 
-___
+---
 
 ### transactions
 
@@ -34,7 +34,7 @@ ___
 
 [types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L120)
 
-___
+---
 
 ### uncleHeaders
 

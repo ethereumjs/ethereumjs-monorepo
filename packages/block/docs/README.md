@@ -36,7 +36,7 @@
 
 [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
 
-___
+---
 
 ### BlockBuffer
 
@@ -46,7 +46,7 @@ ___
 
 [types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
 
-___
+---
 
 ### BlockHeaderBuffer
 
@@ -56,7 +56,7 @@ ___
 
 [types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L125)
 
-___
+---
 
 ### TransactionsBuffer
 
@@ -68,7 +68,7 @@ TransactionsBuffer can be an array of serialized txs for Typed Transactions or a
 
 [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
 
-___
+---
 
 ### UncleHeadersBuffer
 

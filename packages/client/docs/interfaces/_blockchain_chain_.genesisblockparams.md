@@ -6,10 +6,10 @@ common.genesis() <any> with all values converted to Buffer
 
 ## Hierarchy
 
-* **GenesisBlockParams**
+- **GenesisBlockParams**
 
 ## Indexable
 
-* \[ **key**: *string*\]: Buffer
+- \[ **key**: _string_\]: Buffer
 
 common.genesis() <any> with all values converted to Buffer

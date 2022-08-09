@@ -23,7 +23,7 @@
 
 [packages/devp2p/src/rlpx/peer.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L23)
 
-___
+---
 
 ### HELLO
 
@@ -33,7 +33,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L22)
 
-___
+---
 
 ### PING
 
@@ -43,7 +43,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L24)
 
-___
+---
 
 ### PONG
 

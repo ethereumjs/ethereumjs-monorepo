@@ -32,7 +32,7 @@
 
 [runBlock.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L95)
 
-___
+---
 
 ### gasUsed
 
@@ -48,7 +48,7 @@ The gas used after executing the block
 
 [runBlock.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L82)
 
-___
+---
 
 ### logsBloom
 
@@ -64,7 +64,7 @@ The bloom filter of the LOGs (events) after executing the block
 
 [runBlock.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L86)
 
-___
+---
 
 ### receiptRoot
 
@@ -80,7 +80,7 @@ The receipt root after executing the block
 
 [runBlock.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L90)
 
-___
+---
 
 ### receipts
 
@@ -96,7 +96,7 @@ Receipts generated for transactions in the block
 
 [runBlock.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L70)
 
-___
+---
 
 ### results
 
@@ -112,7 +112,7 @@ Results of executing the transactions in the block
 
 [runBlock.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L74)
 
-___
+---
 
 ### stateRoot
 

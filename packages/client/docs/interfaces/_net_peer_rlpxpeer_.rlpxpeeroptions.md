@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* object
+- object
 
   ↳ **RlpxPeerOptions**
 
@@ -12,21 +12,21 @@
 
 ### Properties
 
-* [host](_net_peer_rlpxpeer_.rlpxpeeroptions.md#host)
-* [port](_net_peer_rlpxpeer_.rlpxpeeroptions.md#port)
+- [host](_net_peer_rlpxpeer_.rlpxpeeroptions.md#host)
+- [port](_net_peer_rlpxpeer_.rlpxpeeroptions.md#port)
 
 ## Properties
 
-###  host
+### host
 
-• **host**: *string*
+• **host**: _string_
 
-*Defined in [lib/net/peer/rlpxpeer.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/rlpxpeer.ts#L21)*
+_Defined in [lib/net/peer/rlpxpeer.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/rlpxpeer.ts#L21)_
 
-___
+---
 
-###  port
+### port
 
-• **port**: *number*
+• **port**: _number_
 
-*Defined in [lib/net/peer/rlpxpeer.ts:24](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/rlpxpeer.ts#L24)*
+_Defined in [lib/net/peer/rlpxpeer.ts:24](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/peer/rlpxpeer.ts#L24)_

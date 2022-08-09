@@ -20,7 +20,7 @@
 
 [packages/common/src/index.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L90)
 
-___
+---
 
 ### ProofOfStake
 
@@ -30,7 +30,7 @@ ___
 
 [packages/common/src/index.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L88)
 
-___
+---
 
 ### ProofOfWork
 

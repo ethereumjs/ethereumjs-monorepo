@@ -3,5 +3,5 @@
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "lib/@types"]
-  },
+  }
 }

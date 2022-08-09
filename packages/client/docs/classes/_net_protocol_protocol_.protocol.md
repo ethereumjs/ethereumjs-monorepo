@@ -8,7 +8,7 @@ Base class for all wire protocols
 
 ## Hierarchy
 
-* EventEmitter
+- EventEmitter
 
   ↳ **Protocol**
 
@@ -20,109 +20,109 @@ Base class for all wire protocols
 
 ### Constructors
 
-* [constructor](_net_protocol_protocol_.protocol.md#constructor)
+- [constructor](_net_protocol_protocol_.protocol.md#constructor)
 
 ### Properties
 
-* [config](_net_protocol_protocol_.protocol.md#config)
-* [opened](_net_protocol_protocol_.protocol.md#opened)
-* [timeout](_net_protocol_protocol_.protocol.md#timeout)
-* [defaultMaxListeners](_net_protocol_protocol_.protocol.md#static-defaultmaxlisteners)
-* [errorMonitor](_net_protocol_protocol_.protocol.md#static-errormonitor)
+- [config](_net_protocol_protocol_.protocol.md#config)
+- [opened](_net_protocol_protocol_.protocol.md#opened)
+- [timeout](_net_protocol_protocol_.protocol.md#timeout)
+- [defaultMaxListeners](_net_protocol_protocol_.protocol.md#static-defaultmaxlisteners)
+- [errorMonitor](_net_protocol_protocol_.protocol.md#static-errormonitor)
 
 ### Accessors
 
-* [messages](_net_protocol_protocol_.protocol.md#messages)
-* [name](_net_protocol_protocol_.protocol.md#name)
-* [versions](_net_protocol_protocol_.protocol.md#versions)
+- [messages](_net_protocol_protocol_.protocol.md#messages)
+- [name](_net_protocol_protocol_.protocol.md#name)
+- [versions](_net_protocol_protocol_.protocol.md#versions)
 
 ### Methods
 
-* [addListener](_net_protocol_protocol_.protocol.md#addlistener)
-* [bind](_net_protocol_protocol_.protocol.md#bind)
-* [decode](_net_protocol_protocol_.protocol.md#protected-decode)
-* [decodeStatus](_net_protocol_protocol_.protocol.md#decodestatus)
-* [emit](_net_protocol_protocol_.protocol.md#emit)
-* [encode](_net_protocol_protocol_.protocol.md#protected-encode)
-* [encodeStatus](_net_protocol_protocol_.protocol.md#encodestatus)
-* [eventNames](_net_protocol_protocol_.protocol.md#eventnames)
-* [getMaxListeners](_net_protocol_protocol_.protocol.md#getmaxlisteners)
-* [handshake](_net_protocol_protocol_.protocol.md#private-handshake)
-* [listenerCount](_net_protocol_protocol_.protocol.md#listenercount)
-* [listeners](_net_protocol_protocol_.protocol.md#listeners)
-* [off](_net_protocol_protocol_.protocol.md#off)
-* [on](_net_protocol_protocol_.protocol.md#on)
-* [once](_net_protocol_protocol_.protocol.md#once)
-* [open](_net_protocol_protocol_.protocol.md#open)
-* [prependListener](_net_protocol_protocol_.protocol.md#prependlistener)
-* [prependOnceListener](_net_protocol_protocol_.protocol.md#prependoncelistener)
-* [rawListeners](_net_protocol_protocol_.protocol.md#rawlisteners)
-* [removeAllListeners](_net_protocol_protocol_.protocol.md#removealllisteners)
-* [removeListener](_net_protocol_protocol_.protocol.md#removelistener)
-* [setMaxListeners](_net_protocol_protocol_.protocol.md#setmaxlisteners)
-* [listenerCount](_net_protocol_protocol_.protocol.md#static-listenercount)
+- [addListener](_net_protocol_protocol_.protocol.md#addlistener)
+- [bind](_net_protocol_protocol_.protocol.md#bind)
+- [decode](_net_protocol_protocol_.protocol.md#protected-decode)
+- [decodeStatus](_net_protocol_protocol_.protocol.md#decodestatus)
+- [emit](_net_protocol_protocol_.protocol.md#emit)
+- [encode](_net_protocol_protocol_.protocol.md#protected-encode)
+- [encodeStatus](_net_protocol_protocol_.protocol.md#encodestatus)
+- [eventNames](_net_protocol_protocol_.protocol.md#eventnames)
+- [getMaxListeners](_net_protocol_protocol_.protocol.md#getmaxlisteners)
+- [handshake](_net_protocol_protocol_.protocol.md#private-handshake)
+- [listenerCount](_net_protocol_protocol_.protocol.md#listenercount)
+- [listeners](_net_protocol_protocol_.protocol.md#listeners)
+- [off](_net_protocol_protocol_.protocol.md#off)
+- [on](_net_protocol_protocol_.protocol.md#on)
+- [once](_net_protocol_protocol_.protocol.md#once)
+- [open](_net_protocol_protocol_.protocol.md#open)
+- [prependListener](_net_protocol_protocol_.protocol.md#prependlistener)
+- [prependOnceListener](_net_protocol_protocol_.protocol.md#prependoncelistener)
+- [rawListeners](_net_protocol_protocol_.protocol.md#rawlisteners)
+- [removeAllListeners](_net_protocol_protocol_.protocol.md#removealllisteners)
+- [removeListener](_net_protocol_protocol_.protocol.md#removelistener)
+- [setMaxListeners](_net_protocol_protocol_.protocol.md#setmaxlisteners)
+- [listenerCount](_net_protocol_protocol_.protocol.md#static-listenercount)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Protocol**(`options`: [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md)): *[Protocol](_net_protocol_protocol_.protocol.md)*
+\+ **new Protocol**(`options`: [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md)): _[Protocol](_net_protocol_protocol_.protocol.md)_
 
-*Overrides void*
+_Overrides void_
 
-*Defined in [lib/net/protocol/protocol.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L43)*
+_Defined in [lib/net/protocol/protocol.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L43)_
 
 Create new protocol
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`options` | [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md) |
+| Name      | Type                                                                        |
+| --------- | --------------------------------------------------------------------------- |
+| `options` | [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md) |
 
-**Returns:** *[Protocol](_net_protocol_protocol_.protocol.md)*
+**Returns:** _[Protocol](_net_protocol_protocol_.protocol.md)_
 
 ## Properties
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Defined in [lib/net/protocol/protocol.ts:41](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L41)*
+_Defined in [lib/net/protocol/protocol.ts:41](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L41)_
 
-___
+---
 
-###  opened
+### opened
 
-• **opened**: *boolean*
+• **opened**: _boolean_
 
-*Defined in [lib/net/protocol/protocol.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L43)*
+_Defined in [lib/net/protocol/protocol.ts:43](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L43)_
 
-___
+---
 
-###  timeout
+### timeout
 
-• **timeout**: *number*
+• **timeout**: _number_
 
-*Defined in [lib/net/protocol/protocol.ts:42](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L42)*
+_Defined in [lib/net/protocol/protocol.ts:42](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L42)_
 
-___
+---
 
 ### `Static` defaultMaxListeners
 
-▪ **defaultMaxListeners**: *number*
+▪ **defaultMaxListeners**: _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:45
 
-___
+---
 
 ### `Static` errorMonitor
 
-▪ **errorMonitor**: *keyof symbol*
+▪ **errorMonitor**: _keyof symbol_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)_
 
 Defined in node_modules/@types/node/events.d.ts:55
 
@@ -136,487 +136,487 @@ regular `'error'` listener is installed.
 
 ## Accessors
 
-###  messages
+### messages
 
-• **get messages**(): *[Message](../modules/_net_protocol_protocol_.md#message)[]*
+• **get messages**(): _[Message](../modules/_net_protocol_protocol_.md#message)[]_
 
-*Defined in [lib/net/protocol/protocol.ts:113](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L113)*
+_Defined in [lib/net/protocol/protocol.ts:113](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L113)_
 
 Messages defined by this protocol
 
 **`type`** {Protocol~Message[]}
 
-**Returns:** *[Message](../modules/_net_protocol_protocol_.md#message)[]*
+**Returns:** _[Message](../modules/_net_protocol_protocol_.md#message)[]_
 
-___
+---
 
-###  name
+### name
 
-• **get name**(): *string*
+• **get name**(): _string_
 
-*Defined in [lib/net/protocol/protocol.ts:97](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L97)*
+_Defined in [lib/net/protocol/protocol.ts:97](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L97)_
 
 Abstract getter for name of protocol
 
 **`type`** {string}
 
-**Returns:** *string*
+**Returns:** _string_
 
-___
+---
 
-###  versions
+### versions
 
-• **get versions**(): *number[]*
+• **get versions**(): _number[]_
 
-*Defined in [lib/net/protocol/protocol.ts:105](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L105)*
+_Defined in [lib/net/protocol/protocol.ts:105](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L105)_
 
 Protocol versions supported
 
 **`type`** {number[]}
 
-**Returns:** *number[]*
+**Returns:** _number[]_
 
 ## Methods
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  bind
+### bind
 
-▸ **bind**(`peer`: [Peer](_net_peer_peer_.peer.md), `sender`: [Sender](_net_protocol_sender_.sender.md)): *Promise‹[BoundProtocol](_net_protocol_boundprotocol_.boundprotocol.md)›*
+▸ **bind**(`peer`: [Peer](_net_peer_peer_.peer.md), `sender`: [Sender](_net_protocol_sender_.sender.md)): _Promise‹[BoundProtocol](_net_protocol_boundprotocol_.boundprotocol.md)›_
 
-*Defined in [lib/net/protocol/protocol.ts:171](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L171)*
+_Defined in [lib/net/protocol/protocol.ts:171](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L171)_
 
 Binds this protocol to a given peer using the specified sender to handle
 message communication.
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`peer` | [Peer](_net_peer_peer_.peer.md) | peer |
-`sender` | [Sender](_net_protocol_sender_.sender.md) | sender |
+| Name     | Type                                      | Description |
+| -------- | ----------------------------------------- | ----------- |
+| `peer`   | [Peer](_net_peer_peer_.peer.md)           | peer        |
+| `sender` | [Sender](_net_protocol_sender_.sender.md) | sender      |
 
-**Returns:** *Promise‹[BoundProtocol](_net_protocol_boundprotocol_.boundprotocol.md)›*
+**Returns:** _Promise‹[BoundProtocol](_net_protocol_boundprotocol_.boundprotocol.md)›_
 
-___
+---
 
 ### `Protected` decode
 
-▸ **decode**(`message`: [Message](../modules/_net_protocol_protocol_.md#message), `payload`: any): *any*
+▸ **decode**(`message`: [Message](../modules/_net_protocol_protocol_.md#message), `payload`: any): _any_
 
-*Defined in [lib/net/protocol/protocol.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L157)*
+_Defined in [lib/net/protocol/protocol.ts:157](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L157)_
 
 Decodes message payload
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`message` | [Message](../modules/_net_protocol_protocol_.md#message) | message definition |
-`payload` | any | message payload |
+| Name      | Type                                                     | Description        |
+| --------- | -------------------------------------------------------- | ------------------ |
+| `message` | [Message](../modules/_net_protocol_protocol_.md#message) | message definition |
+| `payload` | any                                                      | message payload    |
 
-**Returns:** *any*
+**Returns:** _any_
 
-___
+---
 
-###  decodeStatus
+### decodeStatus
 
-▸ **decodeStatus**(`_status`: any): *any*
+▸ **decodeStatus**(`_status`: any): _any_
 
-*Defined in [lib/net/protocol/protocol.ts:131](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L131)*
+_Defined in [lib/net/protocol/protocol.ts:131](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L131)_
 
-Decodes status message payload into a status object.  Must be implemented
+Decodes status message payload into a status object. Must be implemented
 by subclass.
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`_status` | any |
+| Name      | Type |
+| --------- | ---- |
+| `_status` | any  |
 
-**Returns:** *any*
+**Returns:** _any_
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
 ### `Protected` encode
 
-▸ **encode**(`message`: [Message](../modules/_net_protocol_protocol_.md#message), `args`: any): *any*
+▸ **encode**(`message`: [Message](../modules/_net_protocol_protocol_.md#message), `args`: any): _any_
 
-*Defined in [lib/net/protocol/protocol.ts:142](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L142)*
+_Defined in [lib/net/protocol/protocol.ts:142](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L142)_
 
 Encodes message into proper format before sending
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`message` | [Message](../modules/_net_protocol_protocol_.md#message) | message definition |
-`args` | any | message arguments |
+| Name      | Type                                                     | Description        |
+| --------- | -------------------------------------------------------- | ------------------ |
+| `message` | [Message](../modules/_net_protocol_protocol_.md#message) | message definition |
+| `args`    | any                                                      | message arguments  |
 
-**Returns:** *any*
+**Returns:** _any_
 
-___
+---
 
-###  encodeStatus
+### encodeStatus
 
-▸ **encodeStatus**(): *any*
+▸ **encodeStatus**(): _any_
 
-*Defined in [lib/net/protocol/protocol.ts:121](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L121)*
+_Defined in [lib/net/protocol/protocol.ts:121](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L121)_
 
 Encodes status into status message payload. Must be implemented by subclass.
 
-**Returns:** *any*
+**Returns:** _any_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
 ### `Private` handshake
 
-▸ **handshake**(`sender`: [Sender](_net_protocol_sender_.sender.md)): *Promise‹unknown›*
+▸ **handshake**(`sender`: [Sender](_net_protocol_sender_.sender.md)): _Promise‹unknown›_
 
-*Defined in [lib/net/protocol/protocol.ts:71](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L71)*
+_Defined in [lib/net/protocol/protocol.ts:71](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L71)_
 
 Perform handshake given a sender from subclass.
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`sender` | [Sender](_net_protocol_sender_.sender.md) |
+| Name     | Type                                      |
+| -------- | ----------------------------------------- |
+| `sender` | [Sender](_net_protocol_sender_.sender.md) |
 
-**Returns:** *Promise‹unknown›*
+**Returns:** _Promise‹unknown›_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  open
+### open
 
-▸ **open**(): *Promise‹boolean | void›*
+▸ **open**(): _Promise‹boolean | void›_
 
-*Defined in [lib/net/protocol/protocol.ts:62](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L62)*
+_Defined in [lib/net/protocol/protocol.ts:62](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L62)_
 
 Opens protocol and any associated dependencies
 
-**Returns:** *Promise‹boolean | void›*
+**Returns:** _Promise‹boolean | void›_
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
 ### `Static` listenerCount
 
-▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): *number*
+▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:44
 
@@ -624,9 +624,9 @@ Defined in node_modules/@types/node/events.d.ts:44
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`emitter` | EventEmitter |
-`event` | string &#124; symbol |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `emitter` | EventEmitter         |
+| `event`   | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_

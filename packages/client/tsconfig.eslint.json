@@ -1,5 +1,3 @@
 {
-  "include": [
-    "webpack.config.js",
-  ]
+  "include": ["webpack.config.js"]
 }

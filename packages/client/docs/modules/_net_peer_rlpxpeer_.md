@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [RlpxPeer](../classes/_net_peer_rlpxpeer_.rlpxpeer.md)
+- [RlpxPeer](../classes/_net_peer_rlpxpeer_.rlpxpeer.md)
 
 ### Interfaces
 
-* [RlpxPeerOptions](../interfaces/_net_peer_rlpxpeer_.rlpxpeeroptions.md)
+- [RlpxPeerOptions](../interfaces/_net_peer_rlpxpeer_.rlpxpeeroptions.md)

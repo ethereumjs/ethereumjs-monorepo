@@ -4,7 +4,4 @@ about: Create issue for @ethereumjs/devp2p
 title: ''
 labels: 'package: devp2p'
 assignees: ''
-
 ---
-
-

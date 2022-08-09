@@ -6,46 +6,46 @@
 
 ### Type aliases
 
-* [Logger](_logging_.md#logger)
+- [Logger](_logging_.md#logger)
 
 ### Variables
 
-* [defaultLogger](_logging_.md#const-defaultlogger)
+- [defaultLogger](_logging_.md#const-defaultlogger)
 
 ### Functions
 
-* [getLogger](_logging_.md#getlogger)
+- [getLogger](_logging_.md#getlogger)
 
 ## Type aliases
 
-###  Logger
+### Logger
 
-Ƭ **Logger**: *WinstonLogger*
+Ƭ **Logger**: _WinstonLogger_
 
-*Defined in [lib/logging.ts:4](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L4)*
+_Defined in [lib/logging.ts:4](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L4)_
 
 ## Variables
 
 ### `Const` defaultLogger
 
-• **defaultLogger**: *Logger‹›* = getLogger({ loglevel: 'info' })
+• **defaultLogger**: _Logger‹›_ = getLogger({ loglevel: 'info' })
 
-*Defined in [lib/logging.ts:56](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L56)*
+_Defined in [lib/logging.ts:56](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L56)_
 
 ## Functions
 
-###  getLogger
+### getLogger
 
-▸ **getLogger**(`options`: object): *Logger‹›*
+▸ **getLogger**(`options`: object): _Logger‹›_
 
-*Defined in [lib/logging.ts:39](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L39)*
+_Defined in [lib/logging.ts:39](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/logging.ts#L39)_
 
 **Parameters:**
 
-▪`Default value`  **options**: *object*= { loglevel: 'info' }
+▪`Default value` **options**: _object_= { loglevel: 'info' }
 
-Name | Type | Default |
------- | ------ | ------ |
-`loglevel` | string | "info" |
+| Name       | Type   | Default |
+| ---------- | ------ | ------- |
+| `loglevel` | string | "info"  |
 
-**Returns:** *Logger‹›*
+**Returns:** _Logger‹›_
