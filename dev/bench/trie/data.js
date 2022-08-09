@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660009155003,
+  "lastUpdate": 1660011260789,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d276fcc103533fdf7eec12b55f202efc74ceeea4",
-          "message": "CI: ensure all hardforks and transitions run when there is a \"test all hardforks\" label on PR (#1901)\n\n* vm/tests: update CI\r\n* block: semi-address Berlin->London transition bug\r\n* vm: add test for transitionTests\r\n* ci: update runnerrs\r\n* common: fix test\r\n* vm: update test count\r\n* ci: add london",
-          "timestamp": "2022-07-21T09:11:19-04:00",
-          "tree_id": "2d1ddab2073a7f74b45aa72d2a55d43f4ca1e4c9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d276fcc103533fdf7eec12b55f202efc74ceeea4"
-        },
-        "date": 1658409310008,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 23124,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 21522,
-            "range": "±6.87%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 23023,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 22425,
-            "range": "±1.84%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 31679,
-            "range": "±1.16%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 808,
-            "range": "±4.89%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 120,
-            "range": "±43.49%",
-            "unit": "ops/sec",
-            "extra": "53 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 82.53,
-            "range": "±5.12%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 10.41,
-            "range": "±64.78%",
-            "unit": "ops/sec",
-            "extra": "24 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±9.20%",
             "unit": "ops/sec",
             "extra": "40 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b049bee835d0945cd796b4bc54fcc3650662728b",
+          "message": "chore: fix documentation building (#2118)\n\n* chore: wip\n\n* chore: wip\n\n* chore: wip\n\n* chore: wip\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\n\n* chore: wip\n\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-08T22:10:52-04:00",
+          "tree_id": "732e639f9ff605263fd1ccb9861bd4426b524f22",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b049bee835d0945cd796b4bc54fcc3650662728b"
+        },
+        "date": 1660011259912,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23449,
+            "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 22372,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 22603,
+            "range": "±4.94%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 23094,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 32085,
+            "range": "±0.95%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 835,
+            "range": "±35.15%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 205,
+            "range": "±8.39%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 82,
+            "range": "±44.99%",
+            "unit": "ops/sec",
+            "extra": "64 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 21.08,
+            "range": "±4.79%",
+            "unit": "ops/sec",
+            "extra": "39 samples"
           }
         ]
       }
