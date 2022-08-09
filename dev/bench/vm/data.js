@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660011420478,
+  "lastUpdate": 1660045150396,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3ccd1b4ddcb1e7ab7d6846a2c0d86d063577115f",
-          "message": "fix(trie): pass down `hash` function for hashing on trie copies (#2068)",
-          "timestamp": "2022-07-22T22:21:45-04:00",
-          "tree_id": "d30b204f3cf9d52727b907f4e4232a1df1baf3a1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3ccd1b4ddcb1e7ab7d6846a2c0d86d063577115f"
-        },
-        "date": 1658543140647,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18436,
-            "range": "±3.54%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16982,
-            "range": "±6.25%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17783,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17422,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17051,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.12%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8a2a9ce20491db7b4184546b635d7ed828a8d124",
+          "message": "client: Make fetcher typesafe in syncronizers (#2120)\n\n* client: Make fetcher typesafe in syncronizers\r\n\r\n* pass the forceSnapSync flag from arg to config\r\n\r\n* add spacing in getter",
+          "timestamp": "2022-08-09T13:34:34+02:00",
+          "tree_id": "d2db5c36ef2c34d0033e930cc653fdaffb19bcba",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8a2a9ce20491db7b4184546b635d7ed828a8d124"
+        },
+        "date": 1660045149793,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21592,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20733,
+            "range": "±5.71%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20987,
+            "range": "±2.16%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20915,
+            "range": "±2.48%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18455,
+            "range": "±10.20%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
