@@ -21,9 +21,9 @@
 
 #### Defined in
 
-[packages/util/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L47)
+[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L45)
 
----
+___
 
 ### toBuffer
 
@@ -35,4 +35,4 @@
 
 #### Defined in
 
-[packages/util/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L46)
+[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L44)

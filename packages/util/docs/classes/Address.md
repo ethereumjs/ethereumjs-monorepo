@@ -34,13 +34,13 @@
 
 #### Parameters
 
-| Name  | Type     |
-| :---- | :------- |
+| Name | Type |
+| :------ | :------ |
 | `buf` | `Buffer` |
 
 #### Defined in
 
-[packages/util/src/address.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L15)
+[address.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L13)
 
 ## Properties
 
@@ -50,7 +50,7 @@
 
 #### Defined in
 
-[packages/util/src/address.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L13)
+[address.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L11)
 
 ## Methods
 
@@ -62,8 +62,8 @@ Is address equal to another.
 
 #### Parameters
 
-| Name      | Type                    |
-| :-------- | :---------------------- |
+| Name | Type |
+| :------ | :------ |
 | `address` | [`Address`](Address.md) |
 
 #### Returns
@@ -72,9 +72,9 @@ Is address equal to another.
 
 #### Defined in
 
-[packages/util/src/address.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L81)
+[address.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L93)
 
----
+___
 
 ### isPrecompileOrSystemAddress
 
@@ -89,9 +89,9 @@ by EIP-1352
 
 #### Defined in
 
-[packages/util/src/address.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L96)
+[address.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L108)
 
----
+___
 
 ### isZero
 
@@ -105,9 +105,9 @@ Is address zero.
 
 #### Defined in
 
-[packages/util/src/address.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L88)
+[address.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L100)
 
----
+___
 
 ### toBuffer
 
@@ -121,9 +121,9 @@ Returns Buffer representation of address.
 
 #### Defined in
 
-[packages/util/src/address.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L114)
+[address.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L125)
 
----
+___
 
 ### toString
 
@@ -137,9 +137,9 @@ Returns hex encoding of address.
 
 #### Defined in
 
-[packages/util/src/address.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L107)
+[address.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L118)
 
----
+___
 
 ### fromPrivateKey
 
@@ -149,8 +149,8 @@ Returns an address for a given private key.
 
 #### Parameters
 
-| Name         | Type     | Description                         |
-| :----------- | :------- | :---------------------------------- |
+| Name | Type | Description |
+| :------ | :------ | :------ |
 | `privateKey` | `Buffer` | A private key must be 256 bits wide |
 
 #### Returns
@@ -159,9 +159,9 @@ Returns an address for a given private key.
 
 #### Defined in
 
-[packages/util/src/address.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L50)
+[address.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L54)
 
----
+___
 
 ### fromPublicKey
 
@@ -171,8 +171,8 @@ Returns an address for a given public key.
 
 #### Parameters
 
-| Name     | Type     | Description                           |
-| :------- | :------- | :------------------------------------ |
+| Name | Type | Description |
+| :------ | :------ | :------ |
 | `pubKey` | `Buffer` | The two points of an uncompressed key |
 
 #### Returns
@@ -181,9 +181,9 @@ Returns an address for a given public key.
 
 #### Defined in
 
-[packages/util/src/address.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L40)
+[address.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L42)
 
----
+___
 
 ### fromString
 
@@ -193,8 +193,8 @@ Returns an Address object from a hex-encoded string.
 
 #### Parameters
 
-| Name  | Type     | Description         |
-| :---- | :------- | :------------------ |
+| Name | Type | Description |
+| :------ | :------ | :------ |
 | `str` | `string` | Hex-encoded address |
 
 #### Returns
@@ -203,9 +203,9 @@ Returns an Address object from a hex-encoded string.
 
 #### Defined in
 
-[packages/util/src/address.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L31)
+[address.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L31)
 
----
+___
 
 ### generate
 
@@ -215,10 +215,10 @@ Generates an address for a newly created contract.
 
 #### Parameters
 
-| Name    | Type                    | Description                                    |
-| :------ | :---------------------- | :--------------------------------------------- |
-| `from`  | [`Address`](Address.md) | The address which is creating this new address |
-| `nonce` | [`BN`](BN.md)           | The nonce of the from account                  |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `from` | [`Address`](Address.md) | The address which is creating this new address |
+| `nonce` | `bigint` | The nonce of the from account |
 
 #### Returns
 
@@ -226,9 +226,9 @@ Generates an address for a newly created contract.
 
 #### Defined in
 
-[packages/util/src/address.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L61)
+[address.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L67)
 
----
+___
 
 ### generate2
 
@@ -238,11 +238,11 @@ Generates an address for a contract created using CREATE2.
 
 #### Parameters
 
-| Name       | Type                    | Description                                    |
-| :--------- | :---------------------- | :--------------------------------------------- |
-| `from`     | [`Address`](Address.md) | The address which is creating this new address |
-| `salt`     | `Buffer`                | A salt                                         |
-| `initCode` | `Buffer`                | The init code of the contract being created    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `from` | [`Address`](Address.md) | The address which is creating this new address |
+| `salt` | `Buffer` | A salt |
+| `initCode` | `Buffer` | The init code of the contract being created |
 
 #### Returns
 
@@ -250,9 +250,9 @@ Generates an address for a contract created using CREATE2.
 
 #### Defined in
 
-[packages/util/src/address.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L72)
+[address.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L80)
 
----
+___
 
 ### zero
 
@@ -266,4 +266,4 @@ Returns the zero address.
 
 #### Defined in
 
-[packages/util/src/address.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L23)
+[address.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L23)

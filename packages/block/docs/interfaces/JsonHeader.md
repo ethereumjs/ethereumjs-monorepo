@@ -8,9 +8,7 @@ An object with the block header's data represented as strings.
 
 ### Properties
 
-- [baseFee](JsonHeader.md#basefee)
 - [baseFeePerGas](JsonHeader.md#basefeepergas)
-- [bloom](JsonHeader.md#bloom)
 - [coinbase](JsonHeader.md#coinbase)
 - [difficulty](JsonHeader.md#difficulty)
 - [extraData](JsonHeader.md#extradata)
@@ -29,35 +27,15 @@ An object with the block header's data represented as strings.
 
 ## Properties
 
-### baseFee
-
-• `Optional` **baseFee**: `string`
-
-#### Defined in
-
-[types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L171)
-
----
-
 ### baseFeePerGas
 
 • `Optional` **baseFeePerGas**: `string`
 
 #### Defined in
 
-[types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L164)
+[types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L144)
 
----
-
-### bloom
-
-• `Optional` **bloom**: `BufferLike`
-
-#### Defined in
-
-[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L177)
-
----
+___
 
 ### coinbase
 
@@ -65,9 +43,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L151)
+[types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
 
----
+___
 
 ### difficulty
 
@@ -75,9 +53,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L156)
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)
 
----
+___
 
 ### extraData
 
@@ -85,9 +63,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L161)
+[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L141)
 
----
+___
 
 ### gasLimit
 
@@ -95,9 +73,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L158)
+[types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L138)
 
----
+___
 
 ### gasUsed
 
@@ -105,9 +83,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
+[types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L139)
 
----
+___
 
 ### logsBloom
 
@@ -115,9 +93,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L155)
+[types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L135)
 
----
+___
 
 ### mixHash
 
@@ -125,9 +103,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L162)
+[types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L142)
 
----
+___
 
 ### nonce
 
@@ -135,9 +113,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L163)
+[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L143)
 
----
+___
 
 ### number
 
@@ -145,9 +123,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L157)
+[types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)
 
----
+___
 
 ### parentHash
 
@@ -155,9 +133,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L149)
+[types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L129)
 
----
+___
 
 ### receiptTrie
 
@@ -165,9 +143,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)
+[types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L134)
 
----
+___
 
 ### stateRoot
 
@@ -175,9 +153,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L152)
+[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
 
----
+___
 
 ### timestamp
 
@@ -185,9 +163,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
+[types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L140)
 
----
+___
 
 ### transactionsTrie
 
@@ -195,9 +173,9 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L153)
+[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
 
----
+___
 
 ### uncleHash
 
@@ -205,4 +183,4 @@ An object with the block header's data represented as strings.
 
 #### Defined in
 
-[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L150)
+[types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
