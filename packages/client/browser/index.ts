@@ -1,8 +1,9 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { isTruthy } from '@ethereumjs/util'
 import { Level } from 'level'
 
 import debug from 'debug'
+import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import { EthereumClient } from '../lib/client'
 import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
@@ -70,7 +71,16 @@ export async function createClient(args: any) {
   })
   config.events.setMaxListeners(50)
   const chainDB = new Level<string | Buffer, string | Buffer>(`${datadir}/${common.chainName()}`)
-  return new EthereumClient({ config, chainDB })
+
+
+  const blockchain = await Blockchain.create({
+    db: chainDB,
+    common: config.chainCommon,
+    hardforkByHeadBlockNumber: true,
+    validateBlocks: true,
+    validateConsensus: false,
+  })
+  return new EthereumClient({ config, blockchain,  chainDB })
 }
 
 export async function run(args: any) {
