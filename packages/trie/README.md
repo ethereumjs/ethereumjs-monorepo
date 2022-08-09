@@ -25,8 +25,8 @@ By default, trie nodes are not deleted from the underlying DB to not corrupt old
 ## Initialization and Basic Usage
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
@@ -50,8 +50,8 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 The new `DB` interface can be used like this for LevelDB:
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```

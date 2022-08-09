@@ -5,7 +5,7 @@
     "outDir": "./dist",
     "types": ["node"],
     "typeRoots": ["node_modules/@types"],
-    "composite": true,
+    "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
@@ -13,5 +13,5 @@
     { "path": "../ethash/tsconfig.prod.json" },
     { "path": "../rlp/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
-  ],
+  ]
 }

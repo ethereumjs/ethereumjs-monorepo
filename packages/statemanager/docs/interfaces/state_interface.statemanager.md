@@ -51,8 +51,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -63,7 +63,7 @@
 
 [state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
 
-___
+---
 
 ### accountIsEmpty
 
@@ -71,8 +71,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -83,7 +83,7 @@ ___
 
 [state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
 
-___
+---
 
 ### checkpoint
 
@@ -97,7 +97,7 @@ ___
 
 [state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
 
-___
+---
 
 ### cleanupTouchedAccounts
 
@@ -111,7 +111,7 @@ ___
 
 [state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
 
-___
+---
 
 ### clearContractStorage
 
@@ -119,8 +119,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -131,7 +131,7 @@ ___
 
 [state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
 
-___
+---
 
 ### clearOriginalStorageCache
 
@@ -145,7 +145,7 @@ ___
 
 [state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
 
-___
+---
 
 ### commit
 
@@ -159,7 +159,7 @@ ___
 
 [state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
 
-___
+---
 
 ### copy
 
@@ -173,7 +173,7 @@ ___
 
 [state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L12)
 
-___
+---
 
 ### deleteAccount
 
@@ -181,8 +181,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -193,7 +193,7 @@ ___
 
 [state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
 
-___
+---
 
 ### dumpStorage
 
@@ -201,8 +201,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -213,7 +213,7 @@ ___
 
 [state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
 
-___
+---
 
 ### generateCanonicalGenesis
 
@@ -227,7 +227,7 @@ ___
 
 [state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
 
-___
+---
 
 ### generateGenesis
 
@@ -235,8 +235,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type  |
+| :---------- | :---- |
 | `initState` | `any` |
 
 #### Returns
@@ -247,7 +247,7 @@ ___
 
 [state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
 
-___
+---
 
 ### getAccount
 
@@ -255,8 +255,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -267,7 +267,7 @@ ___
 
 [state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L13)
 
-___
+---
 
 ### getContractCode
 
@@ -275,8 +275,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns
@@ -287,7 +287,7 @@ ___
 
 [state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)
 
-___
+---
 
 ### getContractStorage
 
@@ -295,10 +295,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
-| `key` | `Buffer` |
+| `key`     | `Buffer`  |
 
 #### Returns
 
@@ -308,7 +308,7 @@ ___
 
 [state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
 
-___
+---
 
 ### getOriginalContractStorage
 
@@ -316,10 +316,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
-| `key` | `Buffer` |
+| `key`     | `Buffer`  |
 
 #### Returns
 
@@ -329,7 +329,7 @@ ___
 
 [state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
 
-___
+---
 
 ### getStateRoot
 
@@ -337,8 +337,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type      |
+| :------- | :-------- |
 | `force?` | `boolean` |
 
 #### Returns
@@ -349,7 +349,7 @@ ___
 
 [state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
 
-___
+---
 
 ### hasGenesisState
 
@@ -363,7 +363,7 @@ ___
 
 [state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L29)
 
-___
+---
 
 ### putAccount
 
@@ -371,8 +371,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 | `account` | `Account` |
 
@@ -384,7 +384,7 @@ ___
 
 [state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
 
-___
+---
 
 ### putContractCode
 
@@ -392,10 +392,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
-| `value` | `Buffer` |
+| `value`   | `Buffer`  |
 
 #### Returns
 
@@ -405,7 +405,7 @@ ___
 
 [state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
 
-___
+---
 
 ### putContractStorage
 
@@ -413,11 +413,11 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
-| `key` | `Buffer` |
-| `value` | `Buffer` |
+| `key`     | `Buffer`  |
+| `value`   | `Buffer`  |
 
 #### Returns
 
@@ -427,7 +427,7 @@ ___
 
 [state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
 
-___
+---
 
 ### revert
 
@@ -441,7 +441,7 @@ ___
 
 [state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
 
-___
+---
 
 ### setStateRoot
 
@@ -449,8 +449,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type     |
+| :---------- | :------- |
 | `stateRoot` | `Buffer` |
 
 #### Returns
@@ -461,7 +461,7 @@ ___
 
 [state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
 
-___
+---
 
 ### touchAccount
 
@@ -469,8 +469,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type      |
+| :-------- | :-------- |
 | `address` | `Address` |
 
 #### Returns

@@ -14,15 +14,17 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11
+          ecmaVersion: 11,
         },
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12
-              'multiformats/bases/base58': '../../node_modules/multiformats/cjs/src/bases/base58.js',
-              'multiformats/hashes/identity': '../../node_modules/multiformats/cjs/src/hashes/identity.js',
-              'multiformats/hashes/sha2': '../../node_modules/multiformats/cjs/src/hashes/sha2-browser.js'
-          }
+            'multiformats/bases/base58': '../../node_modules/multiformats/cjs/src/bases/base58.js',
+            'multiformats/hashes/identity':
+              '../../node_modules/multiformats/cjs/src/hashes/identity.js',
+            'multiformats/hashes/sha2':
+              '../../node_modules/multiformats/cjs/src/hashes/sha2-browser.js',
+          },
         },
         transforms: [
           function (context, callback) {
@@ -32,11 +34,11 @@ module.exports = function (config) {
             // luckily it's an OR with rhs being `this.transformedScript` expression, so all we need to do is to set it to true (which we do below)
             if (context.module.includes('web-encoding')) {
               // needed to set a flag transformedScript on BundledItem described above, https://github.com/monounity/karma-typescript/blob/master/packages/karma-typescript/src/bundler/transformer.ts#L94
-              return callback(0, { dirty: true, transformedScript: true });
+              return callback(0, { dirty: true, transformedScript: true })
             }
-            return callback(0, false);
+            return callback(0, false)
           },
-        ]
+        ],
       },
       tsconfig: './tsconfig.karma.json',
     },

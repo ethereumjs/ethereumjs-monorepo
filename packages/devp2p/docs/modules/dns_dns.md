@@ -20,8 +20,8 @@
 
 #### Type declaration
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name                | Type     | Description                                                                                                                                 |
+| :------------------ | :------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | `dnsServerAddress?` | `string` | ipv4 or ipv6 address of server to pass to native dns.setServers() Sets the IP address of servers to be used when performing DNS resolution. |
 
 #### Defined in

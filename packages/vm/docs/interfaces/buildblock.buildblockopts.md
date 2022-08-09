@@ -26,7 +26,7 @@ The block options to use.
 
 [buildBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L29)
 
-___
+---
 
 ### headerData
 
@@ -39,7 +39,7 @@ Defaults used for any values not provided.
 
 [buildBlock.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L24)
 
-___
+---
 
 ### parentBlock
 

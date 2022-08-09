@@ -20,7 +20,7 @@ It has the same methods and constructor as `Trie`.
 
 ### Properties
 
-- [EMPTY\_TRIE\_ROOT](SecureTrie.md#empty_trie_root)
+- [EMPTY_TRIE_ROOT](SecureTrie.md#empty_trie_root)
 - [db](SecureTrie.md#db)
 
 ### Accessors
@@ -60,8 +60,8 @@ test
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type  |
+| :-------- | :---- |
 | `...args` | `any` |
 
 #### Overrides
@@ -74,9 +74,9 @@ test
 
 ## Properties
 
-### EMPTY\_TRIE\_ROOT
+### EMPTY_TRIE_ROOT
 
-• **EMPTY\_TRIE\_ROOT**: `Buffer`
+• **EMPTY_TRIE_ROOT**: `Buffer`
 
 The root for an empty trie
 
@@ -88,7 +88,7 @@ The root for an empty trie
 
 [baseTrie.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L45)
 
-___
+---
 
 ### db
 
@@ -124,7 +124,7 @@ CheckpointTrie.isCheckpoint
 
 [checkpointTrie.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/checkpointTrie.ts#L18)
 
-___
+---
 
 ### root
 
@@ -150,8 +150,8 @@ Sets the current root of the `trie`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type     |
+| :------ | :------- |
 | `value` | `Buffer` |
 
 #### Returns
@@ -177,18 +177,18 @@ The given hash of operations (key additions or deletions) are executed on the tr
 
 **`example`**
 const ops = [
-   { type: 'del', key: Buffer.from('father') }
- , { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
- , { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
- , { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
- , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
+{ type: 'del', key: Buffer.from('father') }
+, { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
+, { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
+, { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
+, { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
 ]
 await trie.batch(ops)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type          |
+| :---- | :------------ |
 | `ops` | `BatchDBOp`[] |
 
 #### Returns
@@ -203,7 +203,7 @@ await trie.batch(ops)
 
 [baseTrie.ts:635](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L635)
 
-___
+---
 
 ### checkRoot
 
@@ -213,8 +213,8 @@ Checks if a given root exists.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `root` | `Buffer` |
 
 #### Returns
@@ -229,7 +229,7 @@ Checks if a given root exists.
 
 [baseTrie.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L105)
 
-___
+---
 
 ### checkpoint
 
@@ -250,7 +250,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 [checkpointTrie.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/checkpointTrie.ts#L26)
 
-___
+---
 
 ### commit
 
@@ -273,7 +273,7 @@ If nested, only sets the parent checkpoint as current checkpoint.
 
 [checkpointTrie.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/checkpointTrie.ts#L35)
 
-___
+---
 
 ### copy
 
@@ -283,9 +283,9 @@ Returns a copy of the underlying trie with the interface of SecureTrie.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `includeCheckpoints` | `boolean` | `true` | If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db. |
+| Name                 | Type      | Default value | Description                                                                                                                       |
+| :------------------- | :-------- | :------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `includeCheckpoints` | `boolean` | `true`        | If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db. |
 
 #### Returns
 
@@ -299,7 +299,7 @@ Returns a copy of the underlying trie with the interface of SecureTrie.
 
 [secure.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L111)
 
-___
+---
 
 ### createReadStream
 
@@ -321,7 +321,7 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 [baseTrie.ts:748](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L748)
 
-___
+---
 
 ### del
 
@@ -331,8 +331,8 @@ Deletes a value given a `key`.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `key` | `Buffer` |
 
 #### Returns
@@ -347,7 +347,7 @@ Deletes a value given a `key`.
 
 [secure.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L48)
 
-___
+---
 
 ### findPath
 
@@ -358,10 +358,10 @@ It returns a `stack` of nodes to the closest node.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `key` | `Buffer` | `undefined` | the search key |
-| `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
+| Name             | Type      | Default value | Description                                                                           |
+| :--------------- | :-------- | :------------ | :------------------------------------------------------------------------------------ |
+| `key`            | `Buffer`  | `undefined`   | the search key                                                                        |
+| `throwIfMissing` | `boolean` | `false`       | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
 
 #### Returns
 
@@ -375,23 +375,23 @@ It returns a `stack` of nodes to the closest node.
 
 [baseTrie.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L187)
 
-___
+---
 
 ### get
 
-▸ **get**(`key`): `Promise`<``null`` \| `Buffer`\>
+▸ **get**(`key`): `Promise`<`null` \| `Buffer`\>
 
 Gets a value given a `key`
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name  | Type     | Description           |
+| :---- | :------- | :-------------------- |
 | `key` | `Buffer` | the key to search for |
 
 #### Returns
 
-`Promise`<``null`` \| `Buffer`\>
+`Promise`<`null` \| `Buffer`\>
 
 A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
 
@@ -403,23 +403,23 @@ A Promise that resolves to `Buffer` if a value was found or `null` if no value w
 
 [secure.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L23)
 
-___
+---
 
 ### lookupNode
 
-▸ **lookupNode**(`node`): `Promise`<``null`` \| `TrieNode`\>
+▸ **lookupNode**(`node`): `Promise`<`null` \| `TrieNode`\>
 
 Retrieves a node from db by hash.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                   |
+| :----- | :--------------------- |
 | `node` | `Buffer` \| `Buffer`[] |
 
 #### Returns
 
-`Promise`<``null`` \| `TrieNode`\>
+`Promise`<`null` \| `TrieNode`\>
 
 #### Inherited from
 
@@ -429,7 +429,7 @@ Retrieves a node from db by hash.
 
 [baseTrie.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L285)
 
-___
+---
 
 ### put
 
@@ -440,8 +440,8 @@ For a falsey value, use the original key to avoid double hashing the key.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type     |
+| :---- | :------- |
 | `key` | `Buffer` |
 | `val` | `Buffer` |
 
@@ -457,7 +457,7 @@ For a falsey value, use the original key to avoid double hashing the key.
 
 [secure.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L35)
 
-___
+---
 
 ### revert
 
@@ -479,7 +479,7 @@ parent checkpoint as current.
 
 [checkpointTrie.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/checkpointTrie.ts#L50)
 
-___
+---
 
 ### setRoot
 
@@ -492,8 +492,8 @@ Please use {@link Trie.root} instead.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `value?` | `Buffer` |
 
 #### Returns
@@ -508,7 +508,7 @@ Please use {@link Trie.root} instead.
 
 [baseTrie.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L98)
 
-___
+---
 
 ### walkTrie
 
@@ -518,9 +518,9 @@ Walks a trie until finished.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `root` | `Buffer` |  |
+| Name      | Type                | Description                                                                                                       |
+| :-------- | :------------------ | :---------------------------------------------------------------------------------------------------------------- |
+| `root`    | `Buffer`            |                                                                                                                   |
 | `onFound` | `FoundNodeFunction` | callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves. |
 
 #### Returns
@@ -537,7 +537,7 @@ Resolves when finished walking trie.
 
 [baseTrie.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L258)
 
-___
+---
 
 ### createProof
 
@@ -547,10 +547,10 @@ Creates a proof that can be verified using [SecureTrie.verifyProof](SecureTrie.m
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                          |
+| :----- | :---------------------------- |
 | `trie` | [`SecureTrie`](SecureTrie.md) |
-| `key` | `Buffer` |
+| `key`  | `Buffer`                      |
 
 #### Returns
 
@@ -564,7 +564,7 @@ Creates a proof that can be verified using [SecureTrie.verifyProof](SecureTrie.m
 
 [secure.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L68)
 
-___
+---
 
 ### fromProof
 
@@ -574,9 +574,9 @@ Saves the nodes from a proof into the trie. If no trie is provided a new one wil
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `proof` | `Proof` |
+| Name    | Type                      |
+| :------ | :------------------------ |
+| `proof` | `Proof`                   |
 | `trie?` | [`BaseTrie`](BaseTrie.md) |
 
 #### Returns
@@ -591,7 +591,7 @@ Saves the nodes from a proof into the trie. If no trie is provided a new one wil
 
 [baseTrie.ts:653](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L653)
 
-___
+---
 
 ### prove
 
@@ -603,10 +603,10 @@ prove has been renamed to [SecureTrie.createProof](SecureTrie.md#createproof).
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                          |
+| :----- | :---------------------------- |
 | `trie` | [`SecureTrie`](SecureTrie.md) |
-| `key` | `Buffer` |
+| `key`  | `Buffer`                      |
 
 #### Returns
 
@@ -620,11 +620,11 @@ prove has been renamed to [SecureTrie.createProof](SecureTrie.md#createproof).
 
 [secure.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L59)
 
-___
+---
 
 ### verifyProof
 
-▸ `Static` **verifyProof**(`rootHash`, `key`, `proof`): `Promise`<``null`` \| `Buffer`\>
+▸ `Static` **verifyProof**(`rootHash`, `key`, `proof`): `Promise`<`null` \| `Buffer`\>
 
 Verifies a proof.
 
@@ -632,15 +632,15 @@ Verifies a proof.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type     |
+| :--------- | :------- |
 | `rootHash` | `Buffer` |
-| `key` | `Buffer` |
-| `proof` | `Proof` |
+| `key`      | `Buffer` |
+| `proof`    | `Proof`  |
 
 #### Returns
 
-`Promise`<``null`` \| `Buffer`\>
+`Promise`<`null` \| `Buffer`\>
 
 The value from the key.
 
@@ -652,7 +652,7 @@ The value from the key.
 
 [secure.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L81)
 
-___
+---
 
 ### verifyRangeProof
 
@@ -662,14 +662,14 @@ Verifies a range proof.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `rootHash` | `Buffer` |
-| `firstKey` | ``null`` \| `Buffer` |
-| `lastKey` | ``null`` \| `Buffer` |
-| `keys` | `Buffer`[] |
-| `values` | `Buffer`[] |
-| `proof` | ``null`` \| `Buffer`[] |
+| Name       | Type                 |
+| :--------- | :------------------- |
+| `rootHash` | `Buffer`             |
+| `firstKey` | `null` \| `Buffer`   |
+| `lastKey`  | `null` \| `Buffer`   |
+| `keys`     | `Buffer`[]           |
+| `values`   | `Buffer`[]           |
+| `proof`    | `null` \| `Buffer`[] |
 
 #### Returns
 

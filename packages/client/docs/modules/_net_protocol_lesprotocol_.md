@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [LesProtocol](../classes/_net_protocol_lesprotocol_.lesprotocol.md)
+- [LesProtocol](../classes/_net_protocol_lesprotocol_.lesprotocol.md)
 
 ### Interfaces
 
-* [LesProtocolOptions](../interfaces/_net_protocol_lesprotocol_.lesprotocoloptions.md)
+- [LesProtocolOptions](../interfaces/_net_protocol_lesprotocol_.lesprotocoloptions.md)

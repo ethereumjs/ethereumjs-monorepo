@@ -26,7 +26,7 @@ Overrides the value passed in the constructor.
 
 [buildBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L46)
 
-___
+---
 
 ### nonce
 

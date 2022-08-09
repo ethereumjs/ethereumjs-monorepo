@@ -36,7 +36,7 @@ EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 [runTx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L104)
 
-___
+---
 
 ### amountSpent
 
@@ -48,7 +48,7 @@ The amount of ether used by this transaction
 
 [runTx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L89)
 
-___
+---
 
 ### bloom
 
@@ -60,7 +60,7 @@ Bloom filter resulted from transaction
 
 [runTx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L84)
 
-___
+---
 
 ### gasRefund
 
@@ -72,7 +72,7 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 [runTx.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L99)
 
-___
+---
 
 ### receipt
 

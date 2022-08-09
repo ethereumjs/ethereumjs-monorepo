@@ -17,25 +17,25 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `buffer` | `Buffer` |
 
 #### Returns
 
 `Object`
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `any` |
-| `publicKey` | `Buffer` |
-| `typename` | `string` \| `number` |
+| Name        | Type                 |
+| :---------- | :------------------- |
+| `data`      | `any`                |
+| `publicKey` | `Buffer`             |
+| `typename`  | `string` \| `number` |
 
 #### Defined in
 
 [packages/devp2p/src/dpt/message.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L181)
 
-___
+---
 
 ### encode
 
@@ -44,15 +44,15 @@ ___
 #### Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `typename` | `string` |
-| `data` | `T` |
+| Name         | Type     |
+| :----------- | :------- |
+| `typename`   | `string` |
+| `data`       | `T`      |
 | `privateKey` | `Buffer` |
 
 #### Returns

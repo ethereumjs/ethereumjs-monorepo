@@ -25,7 +25,7 @@ Parameters of the chain {@link Common}
 
 [state/stateManager.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L33)
 
-___
+---
 
 ### trie
 

@@ -73,11 +73,11 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `version` | `number` |
-| `peer` | [Peer](rlpx_peer.peer.md) |
-| `send` | `SendMethod` |
+| Name      | Type                      |
+| :-------- | :------------------------ |
+| `version` | `number`                  |
+| `peer`    | [Peer](rlpx_peer.peer.md) |
+| `send`    | `SendMethod`              |
 
 #### Overrides
 
@@ -97,7 +97,7 @@ EventEmitter.constructor
 
 [packages/devp2p/src/eth/index.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L26)
 
-___
+---
 
 ### \_hardfork
 
@@ -107,7 +107,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L24)
 
-___
+---
 
 ### \_latestBlock
 
@@ -117,7 +117,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L25)
 
-___
+---
 
 ### \_nextForkBlock
 
@@ -127,7 +127,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L27)
 
-___
+---
 
 ### \_peer
 
@@ -137,17 +137,17 @@ ___
 
 [packages/devp2p/src/eth/index.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L17)
 
-___
+---
 
 ### \_peerStatus
 
-• **\_peerStatus**: ``null`` \| [StatusMsg](../interfaces/eth.eth-1.statusmsg.md)
+• **\_peerStatus**: `null` \| [StatusMsg](../interfaces/eth.eth-1.statusmsg.md)
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L19)
 
-___
+---
 
 ### \_send
 
@@ -157,17 +157,17 @@ ___
 
 [packages/devp2p/src/eth/index.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L21)
 
-___
+---
 
 ### \_status
 
-• **\_status**: ``null`` \| [StatusMsg](../interfaces/eth.eth-1.statusmsg.md)
+• **\_status**: `null` \| [StatusMsg](../interfaces/eth.eth-1.statusmsg.md)
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L18)
 
-___
+---
 
 ### \_statusTimeoutId
 
@@ -177,7 +177,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L20)
 
-___
+---
 
 ### \_version
 
@@ -187,7 +187,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L16)
 
-___
+---
 
 ### defaultMaxListeners
 
@@ -201,7 +201,7 @@ EventEmitter.defaultMaxListeners
 
 node_modules/@types/node/events.d.ts:20
 
-___
+---
 
 ### eth62
 
@@ -209,18 +209,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [ETH](eth.eth-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L55)
 
-___
+---
 
 ### eth63
 
@@ -228,18 +228,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [ETH](eth.eth-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L56)
 
-___
+---
 
 ### eth64
 
@@ -247,18 +247,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [ETH](eth.eth-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L57)
 
-___
+---
 
 ### eth65
 
@@ -266,18 +266,18 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [ETH](eth.eth-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
 [packages/devp2p/src/eth/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L58)
 
-___
+---
 
 ### eth66
 
@@ -285,12 +285,12 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type                       |
+| :------------ | :------------------------- |
 | `constructor` | typeof [ETH](eth.eth-2.md) |
-| `length` | `number` |
-| `name` | `string` |
-| `version` | `number` |
+| `length`      | `number`                   |
+| `name`        | `string`                   |
+| `version`     | `number`                   |
 
 #### Defined in
 
@@ -300,12 +300,12 @@ ___
 
 ### \_forkHashFromForkId
 
-▸ **_forkHashFromForkId**(`forkId`): `string`
+▸ **\_forkHashFromForkId**(`forkId`): `string`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `forkId` | `Buffer` |
 
 #### Returns
@@ -316,16 +316,16 @@ ___
 
 [packages/devp2p/src/eth/index.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L177)
 
-___
+---
 
 ### \_getStatusString
 
-▸ **_getStatusString**(`status`): `string`
+▸ **\_getStatusString**(`status`): `string`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                              |
+| :------- | :------------------------------------------------ |
 | `status` | [StatusMsg](../interfaces/eth.eth-1.statusmsg.md) |
 
 #### Returns
@@ -336,18 +336,18 @@ ___
 
 [packages/devp2p/src/eth/index.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L185)
 
-___
+---
 
 ### \_handleMessage
 
-▸ **_handleMessage**(`code`, `data`): `void`
+▸ **\_handleMessage**(`code`, `data`): `void`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `code` | [MESSAGE\_CODES](../enums/eth.eth-1.message_codes.md) |
-| `data` | `any` |
+| Name   | Type                                                 |
+| :----- | :--------------------------------------------------- |
+| `code` | [MESSAGE_CODES](../enums/eth.eth-1.message_codes.md) |
+| `data` | `any`                                                |
 
 #### Returns
 
@@ -357,11 +357,11 @@ ___
 
 [packages/devp2p/src/eth/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L61)
 
-___
+---
 
 ### \_handleStatus
 
-▸ **_handleStatus**(): `void`
+▸ **\_handleStatus**(): `void`
 
 #### Returns
 
@@ -371,16 +371,16 @@ ___
 
 [packages/devp2p/src/eth/index.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L149)
 
-___
+---
 
 ### \_nextForkFromForkId
 
-▸ **_nextForkFromForkId**(`forkId`): `number`
+▸ **\_nextForkFromForkId**(`forkId`): `number`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `forkId` | `Buffer` |
 
 #### Returns
@@ -391,18 +391,18 @@ ___
 
 [packages/devp2p/src/eth/index.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L181)
 
-___
+---
 
 ### \_validateForkId
 
-▸ **_validateForkId**(`forkId`): `void`
+▸ **\_validateForkId**(`forkId`): `void`
 
 Eth 64 Fork ID validation (EIP-2124)
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name     | Type       | Description    |
+| :------- | :--------- | :------------- |
 | `forkId` | `Buffer`[] | Remote fork ID |
 
 #### Returns
@@ -413,7 +413,7 @@ Eth 64 Fork ID validation (EIP-2124)
 
 [packages/devp2p/src/eth/index.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L116)
 
-___
+---
 
 ### addListener
 
@@ -421,9 +421,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -438,7 +438,7 @@ EventEmitter.addListener
 
 node_modules/@types/node/globals.d.ts:595
 
-___
+---
 
 ### emit
 
@@ -446,10 +446,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `...args` | `any`[] |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `event`   | `string` \| `symbol` |
+| `...args` | `any`[]              |
 
 #### Returns
 
@@ -463,7 +463,7 @@ EventEmitter.emit
 
 node_modules/@types/node/globals.d.ts:605
 
-___
+---
 
 ### eventNames
 
@@ -481,7 +481,7 @@ EventEmitter.eventNames
 
 node_modules/@types/node/globals.d.ts:610
 
-___
+---
 
 ### getMaxListeners
 
@@ -499,7 +499,7 @@ EventEmitter.getMaxListeners
 
 node_modules/@types/node/globals.d.ts:602
 
-___
+---
 
 ### getMsgPrefix
 
@@ -507,9 +507,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msgCode` | [MESSAGE\_CODES](../enums/eth.eth-1.message_codes.md) |
+| Name      | Type                                                 |
+| :-------- | :--------------------------------------------------- |
+| `msgCode` | [MESSAGE_CODES](../enums/eth.eth-1.message_codes.md) |
 
 #### Returns
 
@@ -519,7 +519,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L278)
 
-___
+---
 
 ### getVersion
 
@@ -533,7 +533,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L173)
 
-___
+---
 
 ### listenerCount
 
@@ -541,8 +541,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `type` | `string` \| `symbol` |
 
 #### Returns
@@ -557,7 +557,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/globals.d.ts:606
 
-___
+---
 
 ### listeners
 
@@ -565,8 +565,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -581,7 +581,7 @@ EventEmitter.listeners
 
 node_modules/@types/node/globals.d.ts:603
 
-___
+---
 
 ### off
 
@@ -589,9 +589,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -606,7 +606,7 @@ EventEmitter.off
 
 node_modules/@types/node/globals.d.ts:599
 
-___
+---
 
 ### on
 
@@ -614,9 +614,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -631,7 +631,7 @@ EventEmitter.on
 
 node_modules/@types/node/globals.d.ts:596
 
-___
+---
 
 ### once
 
@@ -639,9 +639,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -656,7 +656,7 @@ EventEmitter.once
 
 node_modules/@types/node/globals.d.ts:597
 
-___
+---
 
 ### prependListener
 
@@ -664,9 +664,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -681,7 +681,7 @@ EventEmitter.prependListener
 
 node_modules/@types/node/globals.d.ts:608
 
-___
+---
 
 ### prependOnceListener
 
@@ -689,9 +689,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -706,7 +706,7 @@ EventEmitter.prependOnceListener
 
 node_modules/@types/node/globals.d.ts:609
 
-___
+---
 
 ### rawListeners
 
@@ -714,8 +714,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -730,7 +730,7 @@ EventEmitter.rawListeners
 
 node_modules/@types/node/globals.d.ts:604
 
-___
+---
 
 ### removeAllListeners
 
@@ -738,8 +738,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                 |
+| :------- | :------------------- |
 | `event?` | `string` \| `symbol` |
 
 #### Returns
@@ -754,7 +754,7 @@ EventEmitter.removeAllListeners
 
 node_modules/@types/node/globals.d.ts:600
 
-___
+---
 
 ### removeListener
 
@@ -762,9 +762,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -779,7 +779,7 @@ EventEmitter.removeListener
 
 node_modules/@types/node/globals.d.ts:598
 
-___
+---
 
 ### sendMessage
 
@@ -787,10 +787,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `code` | [MESSAGE\_CODES](../enums/eth.eth-1.message_codes.md) |
-| `payload` | `any` |
+| Name      | Type                                                 |
+| :-------- | :--------------------------------------------------- |
+| `code`    | [MESSAGE_CODES](../enums/eth.eth-1.message_codes.md) |
+| `payload` | `any`                                                |
 
 #### Returns
 
@@ -800,7 +800,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L237)
 
-___
+---
 
 ### sendStatus
 
@@ -808,8 +808,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                             |
+| :------- | :----------------------------------------------- |
 | `status` | [StatusOpts](../modules/eth.eth-1.md#statusopts) |
 
 #### Returns
@@ -820,7 +820,7 @@ ___
 
 [packages/devp2p/src/eth/index.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/eth/index.ts#L201)
 
-___
+---
 
 ### setMaxListeners
 
@@ -828,9 +828,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `n` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `n`  | `number` |
 
 #### Returns
 
@@ -844,7 +844,7 @@ EventEmitter.setMaxListeners
 
 node_modules/@types/node/globals.d.ts:601
 
-___
+---
 
 ### listenerCount
 
@@ -854,10 +854,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `EventEmitter`       |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -871,7 +871,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/events.d.ts:17
 
-___
+---
 
 ### once
 
@@ -879,10 +879,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `NodeEventTarget`    |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -900,10 +900,10 @@ node_modules/@types/node/events.d.ts:13
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type             |
+| :-------- | :--------------- |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `event`   | `string`         |
 
 #### Returns
 

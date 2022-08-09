@@ -83,10 +83,10 @@ varying data types.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                                                  |
+| :------- | :-------------------------------------------------------------------- |
 | `txData` | [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md)                             |
 
 #### Overrides
 
@@ -106,7 +106,7 @@ BaseTransaction&lt;AccessListEIP2930Transaction\&gt;.constructor
 
 [eip2930Transaction.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L38)
 
-___
+---
 
 ### accessList
 
@@ -116,7 +116,7 @@ ___
 
 [eip2930Transaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L37)
 
-___
+---
 
 ### chainId
 
@@ -126,7 +126,7 @@ ___
 
 [eip2930Transaction.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L36)
 
-___
+---
 
 ### common
 
@@ -140,7 +140,7 @@ BaseTransaction.common
 
 [eip2930Transaction.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L41)
 
-___
+---
 
 ### data
 
@@ -154,7 +154,7 @@ BaseTransaction.data
 
 [baseTransaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L47)
 
-___
+---
 
 ### gasLimit
 
@@ -168,7 +168,7 @@ BaseTransaction.gasLimit
 
 [baseTransaction.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L44)
 
-___
+---
 
 ### gasPrice
 
@@ -178,7 +178,7 @@ ___
 
 [eip2930Transaction.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L39)
 
-___
+---
 
 ### nonce
 
@@ -192,7 +192,7 @@ BaseTransaction.nonce
 
 [baseTransaction.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L43)
 
-___
+---
 
 ### r
 
@@ -206,7 +206,7 @@ BaseTransaction.r
 
 [baseTransaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L50)
 
-___
+---
 
 ### s
 
@@ -220,7 +220,7 @@ BaseTransaction.s
 
 [baseTransaction.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L51)
 
-___
+---
 
 ### to
 
@@ -234,7 +234,7 @@ BaseTransaction.to
 
 [baseTransaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L45)
 
-___
+---
 
 ### v
 
@@ -248,7 +248,7 @@ BaseTransaction.v
 
 [baseTransaction.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L49)
 
-___
+---
 
 ### value
 
@@ -280,7 +280,7 @@ EIP-2930 alias for `r`
 
 [eip2930Transaction.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L56)
 
-___
+---
 
 ### senderS
 
@@ -298,7 +298,7 @@ EIP-2930 alias for `s`
 
 [eip2930Transaction.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L65)
 
-___
+---
 
 ### transactionType
 
@@ -320,7 +320,7 @@ BaseTransaction.transactionType
 
 [baseTransaction.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L118)
 
-___
+---
 
 ### type
 
@@ -342,7 +342,7 @@ BaseTransaction.type
 
 [baseTransaction.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L127)
 
-___
+---
 
 ### yParity
 
@@ -364,15 +364,15 @@ EIP-2930 alias for `v`
 
 ### \_processSignature
 
-▸ **_processSignature**(`v`, `r`, `s`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+▸ **\_processSignature**(`v`, `r`, `s`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `v` | `number` |
-| `r` | `Buffer` |
-| `s` | `Buffer` |
+| Name | Type     |
+| :--- | :------- |
+| `v`  | `number` |
+| `r`  | `Buffer` |
+| `s`  | `Buffer` |
 
 #### Returns
 
@@ -386,7 +386,7 @@ BaseTransaction.\_processSignature
 
 [eip2930Transaction.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L382)
 
-___
+---
 
 ### errorStr
 
@@ -406,7 +406,7 @@ BaseTransaction.errorStr
 
 [eip2930Transaction.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L429)
 
-___
+---
 
 ### getBaseFee
 
@@ -426,7 +426,7 @@ BaseTransaction.getBaseFee
 
 [baseTransaction.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L175)
 
-___
+---
 
 ### getDataFee
 
@@ -446,7 +446,7 @@ BaseTransaction.getDataFee
 
 [eip2930Transaction.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L227)
 
-___
+---
 
 ### getMessageToSign
 
@@ -464,9 +464,9 @@ const serializedMessage = tx.getMessageToSign(false) // use this for the HW wall
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `hashMessage` | `boolean` | `true` | Return hashed message if set to true (default: true) |
+| Name          | Type      | Default value | Description                                          |
+| :------------ | :-------- | :------------ | :--------------------------------------------------- |
+| `hashMessage` | `boolean` | `true`        | Return hashed message if set to true (default: true) |
 
 #### Returns
 
@@ -480,7 +480,7 @@ BaseTransaction.getMessageToSign
 
 [eip2930Transaction.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L309)
 
-___
+---
 
 ### getMessageToVerifySignature
 
@@ -500,7 +500,7 @@ BaseTransaction.getMessageToVerifySignature
 
 [eip2930Transaction.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L344)
 
-___
+---
 
 ### getSenderAddress
 
@@ -520,7 +520,7 @@ BaseTransaction.getSenderAddress
 
 [baseTransaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L280)
 
-___
+---
 
 ### getSenderPublicKey
 
@@ -540,7 +540,7 @@ BaseTransaction.getSenderPublicKey
 
 [eip2930Transaction.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L351)
 
-___
+---
 
 ### getUpfrontCost
 
@@ -560,7 +560,7 @@ BaseTransaction.getUpfrontCost
 
 [eip2930Transaction.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L248)
 
-___
+---
 
 ### hash
 
@@ -583,7 +583,7 @@ BaseTransaction.hash
 
 [eip2930Transaction.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L325)
 
-___
+---
 
 ### isSigned
 
@@ -601,7 +601,7 @@ BaseTransaction.isSigned
 
 [baseTransaction.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L247)
 
-___
+---
 
 ### raw
 
@@ -609,8 +609,7 @@ ___
 
 Returns a Buffer Array of the raw Buffers of the EIP-2930 transaction, in order.
 
-Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)]`
+Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, signatureYParity (v), signatureR (r), signatureS (s)]`
 
 Use [AccessListEIP2930Transaction.serialize](AccessListEIP2930Transaction.md#serialize) to add a transaction to a block
 with {@link Block.fromValuesArray}.
@@ -631,7 +630,7 @@ BaseTransaction.raw
 
 [eip2930Transaction.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L265)
 
-___
+---
 
 ### serialize
 
@@ -639,8 +638,7 @@ ___
 
 Returns the serialized encoding of the EIP-2930 transaction.
 
-Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)])`
+Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, signatureYParity (v), signatureR (r), signatureS (s)])`
 
 Note that in contrast to the legacy tx serialization format this is not
 valid RLP any more due to the raw tx type preceding and concatenated to
@@ -658,7 +656,7 @@ BaseTransaction.serialize
 
 [eip2930Transaction.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L291)
 
-___
+---
 
 ### sign
 
@@ -668,14 +666,15 @@ Signs a transaction.
 
 Note that the signed tx is returned as a new object,
 use as follows:
+
 ```javascript
 const signedTx = tx.sign(privateKey)
 ```
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `privateKey` | `Buffer` |
 
 #### Returns
@@ -690,7 +689,7 @@ BaseTransaction.sign
 
 [baseTransaction.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L298)
 
-___
+---
 
 ### supports
 
@@ -713,8 +712,8 @@ on all supported capabilities.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type                                   |
+| :----------- | :------------------------------------- |
 | `capability` | [`Capability`](../enums/Capability.md) |
 
 #### Returns
@@ -729,7 +728,7 @@ BaseTransaction.supports
 
 [baseTransaction.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L147)
 
-___
+---
 
 ### toCreationAddress
 
@@ -749,7 +748,7 @@ BaseTransaction.toCreationAddress
 
 [baseTransaction.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L215)
 
-___
+---
 
 ### toJSON
 
@@ -769,7 +768,7 @@ BaseTransaction.toJSON
 
 [eip2930Transaction.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L408)
 
-___
+---
 
 ### validate
 
@@ -794,9 +793,9 @@ BaseTransaction.validate
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `stringError` | ``false`` |
+| Name          | Type    |
+| :------------ | :------ |
+| `stringError` | `false` |
 
 #### Returns
 
@@ -814,9 +813,9 @@ BaseTransaction.validate
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `stringError` | ``true`` |
+| Name          | Type   |
+| :------------ | :----- |
+| `stringError` | `true` |
 
 #### Returns
 
@@ -830,7 +829,7 @@ BaseTransaction.validate
 
 [baseTransaction.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L157)
 
-___
+---
 
 ### verifySignature
 
@@ -850,7 +849,7 @@ BaseTransaction.verifySignature
 
 [baseTransaction.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L267)
 
-___
+---
 
 ### fromRlpSerializedTx
 
@@ -866,10 +865,10 @@ in favor of the [AccessListEIP2930Transaction.fromSerializedTx](AccessListEIP293
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Buffer` |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name         | Type                                      |
+| :----------- | :---------------------------------------- |
+| `serialized` | `Buffer`                                  |
+| `opts`       | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
@@ -879,7 +878,7 @@ in favor of the [AccessListEIP2930Transaction.fromSerializedTx](AccessListEIP293
 
 [eip2930Transaction.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L125)
 
-___
+---
 
 ### fromSerializedTx
 
@@ -887,15 +886,14 @@ ___
 
 Instantiate a transaction from the serialized tx.
 
-Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)])`
+Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, signatureYParity (v), signatureR (r), signatureS (s)])`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Buffer` |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name         | Type                                      |
+| :----------- | :---------------------------------------- |
+| `serialized` | `Buffer`                                  |
+| `opts`       | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
@@ -905,7 +903,7 @@ signatureYParity (v), signatureR (r), signatureS (s)])`
 
 [eip2930Transaction.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L98)
 
-___
+---
 
 ### fromTxData
 
@@ -917,15 +915,16 @@ Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
 v, r, s }
 
 Notes:
+
 - `chainId` will be set automatically if not provided
 - All parameters are optional and have some basic default values
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                                                  |
+| :------- | :-------------------------------------------------------------------- |
 | `txData` | [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md)                             |
 
 #### Returns
 
@@ -935,7 +934,7 @@ Notes:
 
 [eip2930Transaction.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L88)
 
-___
+---
 
 ### fromValuesArray
 
@@ -943,15 +942,14 @@ ___
 
 Create a transaction from a values array.
 
-Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)]`
+Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, signatureYParity (v), signatureR (r), signatureS (s)]`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                                                        |
+| :------- | :-------------------------------------------------------------------------- |
 | `values` | [`AccessListEIP2930ValuesArray`](../README.md#accesslisteip2930valuesarray) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md)                                   |
 
 #### Returns
 

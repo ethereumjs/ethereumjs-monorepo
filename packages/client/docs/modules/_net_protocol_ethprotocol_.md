@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [EthProtocol](../classes/_net_protocol_ethprotocol_.ethprotocol.md)
+- [EthProtocol](../classes/_net_protocol_ethprotocol_.ethprotocol.md)

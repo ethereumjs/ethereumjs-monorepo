@@ -2,93 +2,93 @@
 
 # Class: Web3
 
-web3_* RPC module
+web3\_\* RPC module
 
 **`memberof`** module:rpc/modules
 
 ## Hierarchy
 
-* **Web3**
+- **Web3**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_rpc_modules_web3_.web3.md#constructor)
+- [constructor](_rpc_modules_web3_.web3.md#constructor)
 
 ### Methods
 
-* [clientVersion](_rpc_modules_web3_.web3.md#clientversion)
-* [sha3](_rpc_modules_web3_.web3.md#sha3)
+- [clientVersion](_rpc_modules_web3_.web3.md#clientversion)
+- [sha3](_rpc_modules_web3_.web3.md#sha3)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Web3**(`node`: any): *[Web3](_rpc_modules_web3_.web3.md)*
+\+ **new Web3**(`node`: any): _[Web3](_rpc_modules_web3_.web3.md)_
 
-*Defined in [lib/rpc/modules/web3.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L10)*
+_Defined in [lib/rpc/modules/web3.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L10)_
 
-Create web3_* RPC module
+Create web3\_\* RPC module
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`node` | any |
+| Name   | Type |
+| ------ | ---- |
+| `node` | any  |
 
-**Returns:** *[Web3](_rpc_modules_web3_.web3.md)*
+**Returns:** _[Web3](_rpc_modules_web3_.web3.md)_
 
 ## Methods
 
-###  clientVersion
+### clientVersion
 
-▸ **clientVersion**(`_params`: never[], `cb`: function): *void*
+▸ **clientVersion**(`_params`: never[], `cb`: function): _void_
 
-*Defined in [lib/rpc/modules/web3.ts:31](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L31)*
+_Defined in [lib/rpc/modules/web3.ts:31](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L31)_
 
 Returns the current client version
 
 **Parameters:**
 
-▪`Default value`  **_params**: *never[]*= []
+▪`Default value` **\_params**: _never[]_= []
 
-▪ **cb**: *function*
+▪ **cb**: _function_
 
-▸ (`err`: null, `version`: string): *void*
+▸ (`err`: null, `version`: string): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`err` | null |
-`version` | string |
+| Name      | Type   |
+| --------- | ------ |
+| `err`     | null   |
+| `version` | string |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  sha3
+### sha3
 
-▸ **sha3**(`params`: string[], `cb`: function): *void*
+▸ **sha3**(`params`: string[], `cb`: function): _void_
 
-*Defined in [lib/rpc/modules/web3.ts:42](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L42)*
+_Defined in [lib/rpc/modules/web3.ts:42](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L42)_
 
 Returns Keccak-256 (not the standardized SHA3-256) of the given data
 
 **Parameters:**
 
-▪ **params**: *string[]*
+▪ **params**: _string[]_
 
-▪ **cb**: *function*
+▪ **cb**: _function_
 
-▸ (`err`: Error | null, `hash?`: undefined | string): *void*
+▸ (`err`: Error | null, `hash?`: undefined | string): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`err` | Error &#124; null |
-`hash?` | undefined &#124; string |
+| Name    | Type                    |
+| ------- | ----------------------- |
+| `err`   | Error &#124; null       |
+| `hash?` | undefined &#124; string |
 
-**Returns:** *void*
+**Returns:** _void_

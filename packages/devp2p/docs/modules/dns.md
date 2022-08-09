@@ -16,13 +16,13 @@
 
 Re-exports: [DNS](../classes/dns_dns.dns.md)
 
-___
+---
 
 ### DNSOptions
 
 Re-exports: [DNSOptions](dns_dns.md#dnsoptions)
 
-___
+---
 
 ### ENR
 

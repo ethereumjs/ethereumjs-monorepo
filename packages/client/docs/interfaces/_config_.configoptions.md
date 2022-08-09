@@ -4,176 +4,176 @@
 
 ## Hierarchy
 
-* **ConfigOptions**
+- **ConfigOptions**
 
 ## Index
 
 ### Properties
 
-* [common](_config_.configoptions.md#optional-common)
-* [datadir](_config_.configoptions.md#optional-datadir)
-* [lightserv](_config_.configoptions.md#optional-lightserv)
-* [logger](_config_.configoptions.md#optional-logger)
-* [loglevel](_config_.configoptions.md#optional-loglevel)
-* [maxPeers](_config_.configoptions.md#optional-maxpeers)
-* [minPeers](_config_.configoptions.md#optional-minpeers)
-* [rpc](_config_.configoptions.md#optional-rpc)
-* [rpcaddr](_config_.configoptions.md#optional-rpcaddr)
-* [rpcport](_config_.configoptions.md#optional-rpcport)
-* [servers](_config_.configoptions.md#optional-servers)
-* [syncmode](_config_.configoptions.md#optional-syncmode)
-* [transports](_config_.configoptions.md#optional-transports)
+- [common](_config_.configoptions.md#optional-common)
+- [datadir](_config_.configoptions.md#optional-datadir)
+- [lightserv](_config_.configoptions.md#optional-lightserv)
+- [logger](_config_.configoptions.md#optional-logger)
+- [loglevel](_config_.configoptions.md#optional-loglevel)
+- [maxPeers](_config_.configoptions.md#optional-maxpeers)
+- [minPeers](_config_.configoptions.md#optional-minpeers)
+- [rpc](_config_.configoptions.md#optional-rpc)
+- [rpcaddr](_config_.configoptions.md#optional-rpcaddr)
+- [rpcport](_config_.configoptions.md#optional-rpcport)
+- [servers](_config_.configoptions.md#optional-servers)
+- [syncmode](_config_.configoptions.md#optional-syncmode)
+- [transports](_config_.configoptions.md#optional-transports)
 
 ## Properties
 
 ### `Optional` common
 
-• **common**? : *Common*
+• **common**? : _Common_
 
-*Defined in [lib/config.ts:13](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L13)*
+_Defined in [lib/config.ts:13](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L13)_
 
 Specify the chain and hardfork by passing a Common instance.
 
 Default: chain 'mainnet' and hardfork 'chainstart'
 
-___
+---
 
 ### `Optional` datadir
 
-• **datadir**? : *undefined | string*
+• **datadir**? : _undefined | string_
 
-*Defined in [lib/config.ts:32](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L32)*
+_Defined in [lib/config.ts:32](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L32)_
 
 Root data directory for the blockchain
 
-___
+---
 
 ### `Optional` lightserv
 
-• **lightserv**? : *undefined | false | true*
+• **lightserv**? : _undefined | false | true_
 
-*Defined in [lib/config.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L27)*
+_Defined in [lib/config.ts:27](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L27)_
 
 Serve light peer requests
 
 Default: `false`
 
-___
+---
 
 ### `Optional` logger
 
-• **logger**? : *[Logger](../modules/_logging_.md#logger)*
+• **logger**? : _[Logger](../modules/_logging_.md#logger)_
 
-*Defined in [lib/config.ts:82](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L82)*
+_Defined in [lib/config.ts:82](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L82)_
 
 A custom winston logger can be provided
 if setting logging verbosity is not sufficient
 
 Default: Logger with loglevel 'info'
 
-___
+---
 
 ### `Optional` loglevel
 
-• **loglevel**? : *undefined | string*
+• **loglevel**? : _undefined | string_
 
-*Defined in [lib/config.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L74)*
+_Defined in [lib/config.ts:74](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L74)_
 
 Logging verbosity
 
 Choices: ['debug', 'info', 'warn', 'error', 'off']
 Default: 'info'
 
-___
+---
 
 ### `Optional` maxPeers
 
-• **maxPeers**? : *undefined | number*
+• **maxPeers**? : _undefined | number_
 
-*Defined in [lib/config.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L96)*
+_Defined in [lib/config.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L96)_
 
 Maximum peers allowed
 
 Default: `25`
 
-___
+---
 
 ### `Optional` minPeers
 
-• **minPeers**? : *undefined | number*
+• **minPeers**? : _undefined | number_
 
-*Defined in [lib/config.ts:89](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L89)*
+_Defined in [lib/config.ts:89](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L89)_
 
 Number of peers needed before syncing
 
 Default: `2`
 
-___
+---
 
 ### `Optional` rpc
 
-• **rpc**? : *undefined | false | true*
+• **rpc**? : _undefined | false | true_
 
-*Defined in [lib/config.ts:54](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L54)*
+_Defined in [lib/config.ts:54](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L54)_
 
 Enable the JSON-RPC server
 
 Default: false
 
-___
+---
 
 ### `Optional` rpcaddr
 
-• **rpcaddr**? : *undefined | string*
+• **rpcaddr**? : _undefined | string_
 
-*Defined in [lib/config.ts:66](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L66)*
+_Defined in [lib/config.ts:66](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L66)_
 
 HTTP-RPC server listening interface
 
-___
+---
 
 ### `Optional` rpcport
 
-• **rpcport**? : *undefined | number*
+• **rpcport**? : _undefined | number_
 
-*Defined in [lib/config.ts:61](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L61)*
+_Defined in [lib/config.ts:61](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L61)_
 
 HTTP-RPC server listening port
 
 Default: 8545
 
-___
+---
 
 ### `Optional` servers
 
-• **servers**? : *([RlpxServer](../classes/_net_server_rlpxserver_.rlpxserver.md)‹› | [Libp2pServer](../classes/_net_server_libp2pserver_.libp2pserver.md)‹›)[]*
+• **servers**? : _([RlpxServer](../classes/_net_server_rlpxserver_.rlpxserver.md)‹› | [Libp2pServer](../classes/_net_server_libp2pserver_.libp2pserver.md)‹›)[]_
 
-*Defined in [lib/config.ts:47](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L47)*
+_Defined in [lib/config.ts:47](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L47)_
 
 Transport servers (RLPx or Libp2p)
 Use `transports` option, only used for testing purposes
 
 Default: servers created from `transports` option
 
-___
+---
 
 ### `Optional` syncmode
 
-• **syncmode**? : *undefined | string*
+• **syncmode**? : _undefined | string_
 
-*Defined in [lib/config.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L20)*
+_Defined in [lib/config.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L20)_
 
 Synchronization mode ('full' or 'light')
 
 Default: 'full'
 
-___
+---
 
 ### `Optional` transports
 
-• **transports**? : *string[]*
+• **transports**? : _string[]_
 
-*Defined in [lib/config.ts:39](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L39)*
+_Defined in [lib/config.ts:39](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/config.ts#L39)_
 
 Network transports ('rlpx' and/or 'libp2p')
 

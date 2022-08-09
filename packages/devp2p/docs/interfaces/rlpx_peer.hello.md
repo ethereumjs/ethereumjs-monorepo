@@ -24,7 +24,7 @@
 
 [packages/devp2p/src/rlpx/peer.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L73)
 
-___
+---
 
 ### clientId
 
@@ -34,7 +34,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L72)
 
-___
+---
 
 ### id
 
@@ -44,7 +44,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L75)
 
-___
+---
 
 ### port
 
@@ -54,7 +54,7 @@ ___
 
 [packages/devp2p/src/rlpx/peer.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L74)
 
-___
+---
 
 ### protocolVersion
 

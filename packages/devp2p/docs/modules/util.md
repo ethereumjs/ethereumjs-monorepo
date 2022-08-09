@@ -33,12 +33,12 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type          |
+| :--------- | :------------ |
 | `expected` | `assertInput` |
-| `actual` | `assertInput` |
-| `msg` | `string` |
-| `debug` | `Function` |
+| `actual`   | `assertInput` |
+| `msg`      | `string`      |
+| `debug`    | `Function`    |
 
 #### Returns
 
@@ -48,7 +48,7 @@
 
 [packages/devp2p/src/util.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L63)
 
-___
+---
 
 ### buffer2int
 
@@ -56,8 +56,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `buffer` | `Buffer` |
 
 #### Returns
@@ -68,7 +68,7 @@ ___
 
 [packages/devp2p/src/util.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L39)
 
-___
+---
 
 ### createDeferred
 
@@ -77,8 +77,8 @@ ___
 #### Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 #### Returns
 
@@ -88,7 +88,7 @@ ___
 
 [packages/devp2p/src/util.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L117)
 
-___
+---
 
 ### formatLogData
 
@@ -96,9 +96,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `string` |
+| Name      | Type      |
+| :-------- | :-------- |
+| `data`    | `string`  |
 | `verbose` | `boolean` |
 
 #### Returns
@@ -109,7 +109,7 @@ ___
 
 [packages/devp2p/src/util.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L96)
 
-___
+---
 
 ### formatLogId
 
@@ -117,9 +117,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `id` | `string` |
+| Name      | Type      |
+| :-------- | :-------- |
+| `id`      | `string`  |
 | `verbose` | `boolean` |
 
 #### Returns
@@ -130,7 +130,7 @@ ___
 
 [packages/devp2p/src/util.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L87)
 
-___
+---
 
 ### genPrivateKey
 
@@ -144,7 +144,7 @@ ___
 
 [packages/devp2p/src/util.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L14)
 
-___
+---
 
 ### id2pk
 
@@ -152,8 +152,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type     |
+| :--- | :------- |
 | `id` | `Buffer` |
 
 #### Returns
@@ -164,7 +164,7 @@ ___
 
 [packages/devp2p/src/util.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L26)
 
-___
+---
 
 ### int2buffer
 
@@ -172,9 +172,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `v` | `number` \| ``null`` |
+| Name | Type               |
+| :--- | :----------------- |
+| `v`  | `number` \| `null` |
 
 #### Returns
 
@@ -184,7 +184,7 @@ ___
 
 [packages/devp2p/src/util.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L30)
 
-___
+---
 
 ### keccak256
 
@@ -192,8 +192,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type       |
+| :----------- | :--------- |
 | `...buffers` | `Buffer`[] |
 
 #### Returns
@@ -204,7 +204,7 @@ ___
 
 [packages/devp2p/src/util.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L9)
 
-___
+---
 
 ### pk2id
 
@@ -212,8 +212,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type     |
+| :--- | :------- |
 | `pk` | `Buffer` |
 
 #### Returns
@@ -224,7 +224,7 @@ ___
 
 [packages/devp2p/src/util.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L19)
 
-___
+---
 
 ### toNewUint8Array
 
@@ -232,8 +232,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type         |
+| :---- | :----------- |
 | `buf` | `Uint8Array` |
 
 #### Returns
@@ -244,7 +244,7 @@ ___
 
 [packages/devp2p/src/util.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L128)
 
-___
+---
 
 ### unstrictDecode
 
@@ -252,8 +252,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type     |
+| :------ | :------- |
 | `value` | `Buffer` |
 
 #### Returns
@@ -264,7 +264,7 @@ ___
 
 [packages/devp2p/src/util.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L121)
 
-___
+---
 
 ### xor
 
@@ -272,10 +272,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `a` | `Buffer` |
-| `b` | `any` |
+| Name | Type     |
+| :--- | :------- |
+| `a`  | `Buffer` |
+| `b`  | `any`    |
 
 #### Returns
 
@@ -285,7 +285,7 @@ ___
 
 [packages/devp2p/src/util.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L54)
 
-___
+---
 
 ### zfill
 
@@ -293,11 +293,11 @@ ___
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `buffer` | `Buffer` | `undefined` |
-| `size` | `number` | `undefined` |
-| `leftpad` | `boolean` | true |
+| Name      | Type      | Default value |
+| :-------- | :-------- | :------------ |
+| `buffer`  | `Buffer`  | `undefined`   |
+| `size`    | `number`  | `undefined`   |
+| `leftpad` | `boolean` | true          |
 
 #### Returns
 

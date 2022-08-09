@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [RlpxSender](../classes/_net_protocol_rlpxsender_.rlpxsender.md)
+- [RlpxSender](../classes/_net_protocol_rlpxsender_.rlpxsender.md)

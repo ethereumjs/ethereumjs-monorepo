@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Synchronizer](../classes/_sync_sync_.synchronizer.md)
+- [Synchronizer](../classes/_sync_sync_.synchronizer.md)
 
 ### Interfaces
 
-* [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md)
+- [SynchronizerOptions](../interfaces/_sync_sync_.synchronizeroptions.md)

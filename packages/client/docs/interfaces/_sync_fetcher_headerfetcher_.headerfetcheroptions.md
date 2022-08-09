@@ -4,130 +4,130 @@
 
 ## Hierarchy
 
-  ↳ [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md)
+↳ [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md)
 
-  ↳ **HeaderFetcherOptions**
+↳ **HeaderFetcherOptions**
 
 ## Index
 
 ### Properties
 
-* [banTime](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-bantime)
-* [chain](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#chain)
-* [config](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#config)
-* [count](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#count)
-* [first](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#first)
-* [flow](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#flow)
-* [interval](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-interval)
-* [maxPerRequest](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-maxperrequest)
-* [maxQueue](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-maxqueue)
-* [pool](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#pool)
-* [timeout](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-timeout)
+- [banTime](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-bantime)
+- [chain](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#chain)
+- [config](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#config)
+- [count](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#count)
+- [first](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#first)
+- [flow](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#flow)
+- [interval](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-interval)
+- [maxPerRequest](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-maxperrequest)
+- [maxQueue](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-maxqueue)
+- [pool](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#pool)
+- [timeout](_sync_fetcher_headerfetcher_.headerfetcheroptions.md#optional-timeout)
 
 ## Properties
 
 ### `Optional` banTime
 
-• **banTime**? : *undefined | number*
+• **banTime**? : _undefined | number_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[banTime](_sync_fetcher_fetcher_.fetcheroptions.md#optional-bantime)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[banTime](_sync_fetcher_fetcher_.fetcheroptions.md#optional-bantime)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L17)*
+_Defined in [lib/sync/fetcher/fetcher.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L17)_
 
-___
+---
 
-###  chain
+### chain
 
-• **chain**: *[Chain](../classes/_blockchain_chain_.chain.md)*
+• **chain**: _[Chain](../classes/_blockchain_chain_.chain.md)_
 
-*Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[chain](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#chain)*
+_Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[chain](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#chain)_
 
-*Defined in [lib/sync/fetcher/blockfetcher.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L9)*
+_Defined in [lib/sync/fetcher/blockfetcher.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L9)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[config](_sync_fetcher_fetcher_.fetcheroptions.md#config)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[config](_sync_fetcher_fetcher_.fetcheroptions.md#config)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L8)*
+_Defined in [lib/sync/fetcher/fetcher.ts:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L8)_
 
-___
+---
 
-###  count
+### count
 
-• **count**: *BN*
+• **count**: _BN_
 
-*Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[count](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#count)*
+_Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[count](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#count)_
 
-*Defined in [lib/sync/fetcher/blockfetcher.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L15)*
+_Defined in [lib/sync/fetcher/blockfetcher.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L15)_
 
-___
+---
 
-###  first
+### first
 
-• **first**: *BN*
+• **first**: _BN_
 
-*Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[first](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#first)*
+_Inherited from [BlockFetcherOptions](_sync_fetcher_blockfetcher_.blockfetcheroptions.md).[first](_sync_fetcher_blockfetcher_.blockfetcheroptions.md#first)_
 
-*Defined in [lib/sync/fetcher/blockfetcher.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L12)*
+_Defined in [lib/sync/fetcher/blockfetcher.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/blockfetcher.ts#L12)_
 
-___
+---
 
-###  flow
+### flow
 
-• **flow**: *[FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)*
+• **flow**: _[FlowControl](../classes/_net_protocol_flowcontrol_.flowcontrol.md)_
 
-*Defined in [lib/sync/fetcher/headerfetcher.ts:7](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/headerfetcher.ts#L7)*
+_Defined in [lib/sync/fetcher/headerfetcher.ts:7](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/headerfetcher.ts#L7)_
 
-___
+---
 
 ### `Optional` interval
 
-• **interval**? : *undefined | number*
+• **interval**? : _undefined | number_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[interval](_sync_fetcher_fetcher_.fetcheroptions.md#optional-interval)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[interval](_sync_fetcher_fetcher_.fetcheroptions.md#optional-interval)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L26)*
+_Defined in [lib/sync/fetcher/fetcher.ts:26](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L26)_
 
-___
+---
 
 ### `Optional` maxPerRequest
 
-• **maxPerRequest**? : *undefined | number*
+• **maxPerRequest**? : _undefined | number_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[maxPerRequest](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxperrequest)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[maxPerRequest](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxperrequest)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L23)*
+_Defined in [lib/sync/fetcher/fetcher.ts:23](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L23)_
 
-___
+---
 
 ### `Optional` maxQueue
 
-• **maxQueue**? : *undefined | number*
+• **maxQueue**? : _undefined | number_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[maxQueue](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxqueue)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[maxQueue](_sync_fetcher_fetcher_.fetcheroptions.md#optional-maxqueue)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L20)*
+_Defined in [lib/sync/fetcher/fetcher.ts:20](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L20)_
 
-___
+---
 
-###  pool
+### pool
 
-• **pool**: *[PeerPool](../classes/_net_peerpool_.peerpool.md)*
+• **pool**: _[PeerPool](../classes/_net_peerpool_.peerpool.md)_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[pool](_sync_fetcher_fetcher_.fetcheroptions.md#pool)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[pool](_sync_fetcher_fetcher_.fetcheroptions.md#pool)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L11)*
+_Defined in [lib/sync/fetcher/fetcher.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L11)_
 
-___
+---
 
 ### `Optional` timeout
 
-• **timeout**? : *undefined | number*
+• **timeout**? : _undefined | number_
 
-*Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[timeout](_sync_fetcher_fetcher_.fetcheroptions.md#optional-timeout)*
+_Inherited from [FetcherOptions](_sync_fetcher_fetcher_.fetcheroptions.md).[timeout](_sync_fetcher_fetcher_.fetcheroptions.md#optional-timeout)_
 
-*Defined in [lib/sync/fetcher/fetcher.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L14)*
+_Defined in [lib/sync/fetcher/fetcher.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L14)_

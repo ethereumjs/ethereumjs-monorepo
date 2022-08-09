@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [Service](../classes/_service_service_.service.md)
+- [Service](../classes/_service_service_.service.md)
 
 ### Interfaces
 
-* [ServiceOptions](../interfaces/_service_service_.serviceoptions.md)
+- [ServiceOptions](../interfaces/_service_service_.serviceoptions.md)

@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Eth](../classes/_rpc_modules_eth_.eth.md)
+- [Eth](../classes/_rpc_modules_eth_.eth.md)

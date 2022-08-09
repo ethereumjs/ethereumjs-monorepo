@@ -6,42 +6,42 @@ Returns properties of the canonical headerchain.
 
 ## Hierarchy
 
-* **ChainHeaders**
+- **ChainHeaders**
 
 ## Index
 
 ### Properties
 
-* [height](_blockchain_chain_.chainheaders.md#height)
-* [latest](_blockchain_chain_.chainheaders.md#latest)
-* [td](_blockchain_chain_.chainheaders.md#td)
+- [height](_blockchain_chain_.chainheaders.md#height)
+- [latest](_blockchain_chain_.chainheaders.md#latest)
+- [td](_blockchain_chain_.chainheaders.md#td)
 
 ## Properties
 
-###  height
+### height
 
-• **height**: *BN*
+• **height**: _BN_
 
-*Defined in [lib/blockchain/chain.ts:65](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L65)*
+_Defined in [lib/blockchain/chain.ts:65](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L65)_
 
 The height of the headerchain
 
-___
+---
 
-###  latest
+### latest
 
-• **latest**: *BlockHeader | null*
+• **latest**: _BlockHeader | null_
 
-*Defined in [lib/blockchain/chain.ts:55](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L55)*
+_Defined in [lib/blockchain/chain.ts:55](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L55)_
 
 The latest header in the chain
 
-___
+---
 
-###  td
+### td
 
-• **td**: *BN*
+• **td**: _BN_
 
-*Defined in [lib/blockchain/chain.ts:60](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L60)*
+_Defined in [lib/blockchain/chain.ts:60](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L60)_
 
 The total difficulty of the headerchain

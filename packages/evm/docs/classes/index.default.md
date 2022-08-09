@@ -9,7 +9,8 @@ blocks, individual transactions, or snippets of EVM bytecode.
 
 This class is an AsyncEventEmitter, please consult the README to learn how to use it.
 
-___
+---
+
 ### getActiveOpcodes
 
 ▸ **getActiveOpcodes**(): `OpcodeList`
@@ -25,7 +26,7 @@ available for VM execution
 
 [index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/index.ts#L379)
 
-___
+---
 
 ### runCall
 
@@ -37,8 +38,8 @@ This method modifies the state.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                  |
+| :----- | :---------------------------------------------------- |
 | `opts` | [`RunCallOpts`](../interfaces/runCall.RunCallOpts.md) |
 
 #### Returns
@@ -49,7 +50,7 @@ This method modifies the state.
 
 [index.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L339)
 
-___
+---
 
 ### runCode
 
@@ -61,8 +62,8 @@ This method modifies the state.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                  |
+| :----- | :---------------------------------------------------- |
 | `opts` | [`RunCodeOpts`](../interfaces/runCode.RunCodeOpts.md) |
 
 #### Returns
@@ -73,7 +74,7 @@ This method modifies the state.
 
 [index.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L351)
 
-___
+---
 
 ### runTx
 
@@ -87,8 +88,8 @@ reverted.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                            |
+| :----- | :---------------------------------------------- |
 | `opts` | [`RunTxOpts`](../interfaces/runTx.RunTxOpts.md) |
 
 #### Returns
@@ -99,4 +100,4 @@ reverted.
 
 [index.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L327)
 
-___
+---

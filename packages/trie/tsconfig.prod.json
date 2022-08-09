@@ -6,8 +6,5 @@
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    { "path": "../rlp/tsconfig.prod.json" },
-    { "path": "../util/tsconfig.prod.json" }
-  ]
+  "references": [{ "path": "../rlp/tsconfig.prod.json" }, { "path": "../util/tsconfig.prod.json" }]
 }

@@ -4,54 +4,54 @@
 
 ## Hierarchy
 
-* **NodeOptions**
+- **NodeOptions**
 
 ## Index
 
 ### Properties
 
-* [bootnodes](_node_.nodeoptions.md#optional-bootnodes)
-* [clientFilter](_node_.nodeoptions.md#optional-clientfilter)
-* [config](_node_.nodeoptions.md#config)
-* [db](_node_.nodeoptions.md#optional-db)
-* [refreshInterval](_node_.nodeoptions.md#optional-refreshinterval)
+- [bootnodes](_node_.nodeoptions.md#optional-bootnodes)
+- [clientFilter](_node_.nodeoptions.md#optional-clientfilter)
+- [config](_node_.nodeoptions.md#config)
+- [db](_node_.nodeoptions.md#optional-db)
+- [refreshInterval](_node_.nodeoptions.md#optional-refreshinterval)
 
 ## Properties
 
 ### `Optional` bootnodes
 
-• **bootnodes**? : *[BootnodeLike](../modules/_types_.md#bootnodelike)[]*
+• **bootnodes**? : _[BootnodeLike](../modules/_types_.md#bootnodelike)[]_
 
-*Defined in [lib/node.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L15)*
+_Defined in [lib/node.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L15)_
 
-___
+---
 
 ### `Optional` clientFilter
 
-• **clientFilter**? : *string[]*
+• **clientFilter**? : _string[]_
 
-*Defined in [lib/node.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L18)*
+_Defined in [lib/node.ts:18](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L18)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](../classes/_config_.config.md)*
+• **config**: _[Config](../classes/_config_.config.md)_
 
-*Defined in [lib/node.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L9)*
+_Defined in [lib/node.ts:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L9)_
 
-___
+---
 
 ### `Optional` db
 
-• **db**? : *LevelUp*
+• **db**? : _LevelUp_
 
-*Defined in [lib/node.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L12)*
+_Defined in [lib/node.ts:12](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L12)_
 
-___
+---
 
 ### `Optional` refreshInterval
 
-• **refreshInterval**? : *undefined | number*
+• **refreshInterval**? : _undefined | number_
 
-*Defined in [lib/node.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L21)*
+_Defined in [lib/node.ts:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/node.ts#L21)_

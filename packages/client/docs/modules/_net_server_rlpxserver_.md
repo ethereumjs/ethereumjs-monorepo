@@ -6,8 +6,8 @@
 
 ### Classes
 
-* [RlpxServer](../classes/_net_server_rlpxserver_.rlpxserver.md)
+- [RlpxServer](../classes/_net_server_rlpxserver_.rlpxserver.md)
 
 ### Interfaces
 
-* [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md)
+- [RlpxServerOptions](../interfaces/_net_server_rlpxserver_.rlpxserveroptions.md)

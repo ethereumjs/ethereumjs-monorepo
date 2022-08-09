@@ -2,88 +2,88 @@
 
 # Class: Admin
 
-admin_* RPC module
+admin\_\* RPC module
 
 **`memberof`** module:rpc/modules
 
 ## Hierarchy
 
-* **Admin**
+- **Admin**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_rpc_modules_admin_.admin.md#constructor)
+- [constructor](_rpc_modules_admin_.admin.md#constructor)
 
 ### Properties
 
-* [_chain](_rpc_modules_admin_.admin.md#_chain)
-* [_ethProtocol](_rpc_modules_admin_.admin.md#_ethprotocol)
-* [_node](_rpc_modules_admin_.admin.md#_node)
+- [\_chain](_rpc_modules_admin_.admin.md#_chain)
+- [\_ethProtocol](_rpc_modules_admin_.admin.md#_ethprotocol)
+- [\_node](_rpc_modules_admin_.admin.md#_node)
 
 ### Methods
 
-* [nodeInfo](_rpc_modules_admin_.admin.md#nodeinfo)
+- [nodeInfo](_rpc_modules_admin_.admin.md#nodeinfo)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Admin**(`node`: [Node](_node_.node.md)): *[Admin](_rpc_modules_admin_.admin.md)*
+\+ **new Admin**(`node`: [Node](_node_.node.md)): _[Admin](_rpc_modules_admin_.admin.md)_
 
-*Defined in [lib/rpc/modules/admin.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L17)*
+_Defined in [lib/rpc/modules/admin.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L17)_
 
-Create admin_* RPC module
+Create admin\_\* RPC module
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`node` | [Node](_node_.node.md) |
+| Name   | Type                   |
+| ------ | ---------------------- |
+| `node` | [Node](_node_.node.md) |
 
-**Returns:** *[Admin](_rpc_modules_admin_.admin.md)*
+**Returns:** _[Admin](_rpc_modules_admin_.admin.md)_
 
 ## Properties
 
-###  _chain
+### \_chain
 
-• **_chain**: *[Chain](_blockchain_chain_.chain.md)*
+• **\_chain**: _[Chain](_blockchain_chain_.chain.md)_
 
-*Defined in [lib/rpc/modules/admin.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L15)*
+_Defined in [lib/rpc/modules/admin.ts:15](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L15)_
 
-___
+---
 
-###  _ethProtocol
+### \_ethProtocol
 
-• **_ethProtocol**: *[EthProtocol](_net_protocol_ethprotocol_.ethprotocol.md)*
+• **\_ethProtocol**: _[EthProtocol](_net_protocol_ethprotocol_.ethprotocol.md)_
 
-*Defined in [lib/rpc/modules/admin.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L17)*
+_Defined in [lib/rpc/modules/admin.ts:17](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L17)_
 
-___
+---
 
-###  _node
+### \_node
 
-• **_node**: *[Node](_node_.node.md)*
+• **\_node**: _[Node](_node_.node.md)_
 
-*Defined in [lib/rpc/modules/admin.ts:16](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L16)*
+_Defined in [lib/rpc/modules/admin.ts:16](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L16)_
 
 ## Methods
 
-###  nodeInfo
+### nodeInfo
 
-▸ **nodeInfo**(`params`: any, `cb`: Function): *Promise‹any›*
+▸ **nodeInfo**(`params`: any, `cb`: Function): _Promise‹any›_
 
-*Defined in [lib/rpc/modules/admin.ts:38](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L38)*
+_Defined in [lib/rpc/modules/admin.ts:38](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/admin.ts#L38)_
 
 Returns information about the currently running node.
 see for reference: https://geth.ethereum.org/docs/rpc/ns-admin#admin_nodeinfo
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`params` | any |
-`cb` | Function |
+| Name     | Type     |
+| -------- | -------- |
+| `params` | any      |
+| `cb`     | Function |
 
-**Returns:** *Promise‹any›*
+**Returns:** _Promise‹any›_

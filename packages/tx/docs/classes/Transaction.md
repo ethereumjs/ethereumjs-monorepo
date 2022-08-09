@@ -73,10 +73,10 @@ varying data types.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `txData` | [`TxData`](../README.md#txdata) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name     | Type                                      |
+| :------- | :---------------------------------------- |
+| `txData` | [`TxData`](../README.md#txdata)           |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Overrides
 
@@ -100,7 +100,7 @@ BaseTransaction.common
 
 [legacyTransaction.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L26)
 
-___
+---
 
 ### data
 
@@ -114,7 +114,7 @@ BaseTransaction.data
 
 [baseTransaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L47)
 
-___
+---
 
 ### gasLimit
 
@@ -128,7 +128,7 @@ BaseTransaction.gasLimit
 
 [baseTransaction.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L44)
 
-___
+---
 
 ### gasPrice
 
@@ -138,7 +138,7 @@ ___
 
 [legacyTransaction.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L24)
 
-___
+---
 
 ### nonce
 
@@ -152,7 +152,7 @@ BaseTransaction.nonce
 
 [baseTransaction.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L43)
 
-___
+---
 
 ### r
 
@@ -166,7 +166,7 @@ BaseTransaction.r
 
 [baseTransaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L50)
 
-___
+---
 
 ### s
 
@@ -180,7 +180,7 @@ BaseTransaction.s
 
 [baseTransaction.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L51)
 
-___
+---
 
 ### to
 
@@ -194,7 +194,7 @@ BaseTransaction.to
 
 [baseTransaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L45)
 
-___
+---
 
 ### v
 
@@ -208,7 +208,7 @@ BaseTransaction.v
 
 [baseTransaction.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L49)
 
-___
+---
 
 ### value
 
@@ -244,7 +244,7 @@ BaseTransaction.transactionType
 
 [baseTransaction.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L118)
 
-___
+---
 
 ### type
 
@@ -286,7 +286,7 @@ BaseTransaction.errorStr
 
 [legacyTransaction.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L448)
 
-___
+---
 
 ### getBaseFee
 
@@ -306,7 +306,7 @@ BaseTransaction.getBaseFee
 
 [baseTransaction.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L175)
 
-___
+---
 
 ### getDataFee
 
@@ -326,7 +326,7 @@ BaseTransaction.getDataFee
 
 [legacyTransaction.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L237)
 
-___
+---
 
 ### getMessageToSign
 
@@ -346,9 +346,9 @@ const serializedMessage = RLP.encode(message) // use this for the HW wallet inpu
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `hashMessage` | ``false`` | Return hashed message if set to true (default: true) |
+| Name          | Type    | Description                                          |
+| :------------ | :------ | :--------------------------------------------------- |
+| `hashMessage` | `false` | Return hashed message if set to true (default: true) |
 
 #### Returns
 
@@ -366,9 +366,9 @@ BaseTransaction.getMessageToSign
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `hashMessage?` | ``true`` |
+| Name           | Type   |
+| :------------- | :----- |
+| `hashMessage?` | `true` |
 
 #### Returns
 
@@ -382,7 +382,7 @@ BaseTransaction.getMessageToSign
 
 [legacyTransaction.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L224)
 
-___
+---
 
 ### getMessageToVerifySignature
 
@@ -402,7 +402,7 @@ BaseTransaction.getMessageToVerifySignature
 
 [legacyTransaction.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L294)
 
-___
+---
 
 ### getSenderAddress
 
@@ -422,7 +422,7 @@ BaseTransaction.getSenderAddress
 
 [baseTransaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L280)
 
-___
+---
 
 ### getSenderPublicKey
 
@@ -442,7 +442,7 @@ BaseTransaction.getSenderPublicKey
 
 [legacyTransaction.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L306)
 
-___
+---
 
 ### getUpfrontCost
 
@@ -462,7 +462,7 @@ BaseTransaction.getUpfrontCost
 
 [legacyTransaction.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L255)
 
-___
+---
 
 ### hash
 
@@ -485,7 +485,7 @@ BaseTransaction.hash
 
 [legacyTransaction.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L265)
 
-___
+---
 
 ### isSigned
 
@@ -503,7 +503,7 @@ BaseTransaction.isSigned
 
 [baseTransaction.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L247)
 
-___
+---
 
 ### raw
 
@@ -533,7 +533,7 @@ BaseTransaction.raw
 
 [legacyTransaction.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L162)
 
-___
+---
 
 ### serialize
 
@@ -559,7 +559,7 @@ BaseTransaction.serialize
 
 [legacyTransaction.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L185)
 
-___
+---
 
 ### sign
 
@@ -569,14 +569,15 @@ Signs a transaction.
 
 Note that the signed tx is returned as a new object,
 use as follows:
+
 ```javascript
 const signedTx = tx.sign(privateKey)
 ```
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type     |
+| :----------- | :------- |
 | `privateKey` | `Buffer` |
 
 #### Returns
@@ -591,7 +592,7 @@ BaseTransaction.sign
 
 [baseTransaction.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L298)
 
-___
+---
 
 ### supports
 
@@ -614,8 +615,8 @@ on all supported capabilities.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type                                   |
+| :----------- | :------------------------------------- |
 | `capability` | [`Capability`](../enums/Capability.md) |
 
 #### Returns
@@ -630,7 +631,7 @@ BaseTransaction.supports
 
 [baseTransaction.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L147)
 
-___
+---
 
 ### toCreationAddress
 
@@ -650,7 +651,7 @@ BaseTransaction.toCreationAddress
 
 [baseTransaction.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L215)
 
-___
+---
 
 ### toJSON
 
@@ -670,7 +671,7 @@ BaseTransaction.toJSON
 
 [legacyTransaction.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L365)
 
-___
+---
 
 ### validate
 
@@ -695,9 +696,9 @@ BaseTransaction.validate
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `stringError` | ``false`` |
+| Name          | Type    |
+| :------------ | :------ |
+| `stringError` | `false` |
 
 #### Returns
 
@@ -715,9 +716,9 @@ BaseTransaction.validate
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `stringError` | ``true`` |
+| Name          | Type   |
+| :------------ | :----- |
+| `stringError` | `true` |
 
 #### Returns
 
@@ -731,7 +732,7 @@ BaseTransaction.validate
 
 [baseTransaction.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L157)
 
-___
+---
 
 ### verifySignature
 
@@ -751,7 +752,7 @@ BaseTransaction.verifySignature
 
 [baseTransaction.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L267)
 
-___
+---
 
 ### fromRlpSerializedTx
 
@@ -765,10 +766,10 @@ in favor of the [Transaction.fromSerializedTx](Transaction.md#fromserializedtx) 
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Buffer` |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name         | Type                                      |
+| :----------- | :---------------------------------------- |
+| `serialized` | `Buffer`                                  |
+| `opts`       | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
@@ -778,7 +779,7 @@ in favor of the [Transaction.fromSerializedTx](Transaction.md#fromserializedtx) 
 
 [legacyTransaction.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L62)
 
-___
+---
 
 ### fromSerializedTx
 
@@ -790,10 +791,10 @@ Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Buffer` |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name         | Type                                      |
+| :----------- | :---------------------------------------- |
+| `serialized` | `Buffer`                                  |
+| `opts`       | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
@@ -803,7 +804,7 @@ Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 [legacyTransaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L45)
 
-___
+---
 
 ### fromTxData
 
@@ -814,14 +815,15 @@ Instantiate a transaction from a data dictionary.
 Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
 
 Notes:
+
 - All parameters are optional and have some basic default values
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `txData` | [`TxData`](../README.md#txdata) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| Name     | Type                                      |
+| :------- | :---------------------------------------- |
+| `txData` | [`TxData`](../README.md#txdata)           |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
@@ -831,7 +833,7 @@ Notes:
 
 [legacyTransaction.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L36)
 
-___
+---
 
 ### fromValuesArray
 
@@ -843,10 +845,10 @@ Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                          |
+| :------- | :-------------------------------------------- |
 | `values` | [`TxValuesArray`](../README.md#txvaluesarray) |
-| `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
+| `opts`   | [`TxOptions`](../interfaces/TxOptions.md)     |
 
 #### Returns
 

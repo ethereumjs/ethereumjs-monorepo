@@ -56,8 +56,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name          | Type     |
+| :------------ | :------- |
 | `localNodeId` | `Buffer` |
 
 #### Overrides
@@ -78,7 +78,7 @@ EventEmitter.constructor
 
 [packages/devp2p/src/dpt/kbucket.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L15)
 
-___
+---
 
 ### \_peers
 
@@ -88,7 +88,7 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L14)
 
-___
+---
 
 ### defaultMaxListeners
 
@@ -110,8 +110,8 @@ node_modules/@types/node/events.d.ts:20
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                          |
+| :----- | :-------------------------------------------- |
 | `peer` | [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) |
 
 #### Returns
@@ -122,7 +122,7 @@ node_modules/@types/node/events.d.ts:20
 
 [packages/devp2p/src/dpt/kbucket.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L50)
 
-___
+---
 
 ### addListener
 
@@ -130,9 +130,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -147,7 +147,7 @@ EventEmitter.addListener
 
 node_modules/@types/node/globals.d.ts:595
 
-___
+---
 
 ### closest
 
@@ -155,8 +155,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type     |
+| :--- | :------- |
 | `id` | `string` |
 
 #### Returns
@@ -167,7 +167,7 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L68)
 
-___
+---
 
 ### emit
 
@@ -175,10 +175,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `...args` | `any`[] |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `event`   | `string` \| `symbol` |
+| `...args` | `any`[]              |
 
 #### Returns
 
@@ -192,7 +192,7 @@ EventEmitter.emit
 
 node_modules/@types/node/globals.d.ts:605
 
-___
+---
 
 ### eventNames
 
@@ -210,27 +210,27 @@ EventEmitter.eventNames
 
 node_modules/@types/node/globals.d.ts:610
 
-___
+---
 
 ### get
 
-▸ **get**(`obj`): ``null`` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
+▸ **get**(`obj`): `null` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                  |
+| :---- | :-------------------------------------------------------------------- |
 | `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
 
 #### Returns
 
-``null`` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
+`null` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md)
 
 #### Defined in
 
 [packages/devp2p/src/dpt/kbucket.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L55)
 
-___
+---
 
 ### getAll
 
@@ -244,7 +244,7 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L64)
 
-___
+---
 
 ### getMaxListeners
 
@@ -262,7 +262,7 @@ EventEmitter.getMaxListeners
 
 node_modules/@types/node/globals.d.ts:602
 
-___
+---
 
 ### listenerCount
 
@@ -270,8 +270,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                 |
+| :----- | :------------------- |
 | `type` | `string` \| `symbol` |
 
 #### Returns
@@ -286,7 +286,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/globals.d.ts:606
 
-___
+---
 
 ### listeners
 
@@ -294,8 +294,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -310,7 +310,7 @@ EventEmitter.listeners
 
 node_modules/@types/node/globals.d.ts:603
 
-___
+---
 
 ### off
 
@@ -318,9 +318,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -335,7 +335,7 @@ EventEmitter.off
 
 node_modules/@types/node/globals.d.ts:599
 
-___
+---
 
 ### on
 
@@ -343,9 +343,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -360,7 +360,7 @@ EventEmitter.on
 
 node_modules/@types/node/globals.d.ts:596
 
-___
+---
 
 ### once
 
@@ -368,9 +368,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -385,7 +385,7 @@ EventEmitter.once
 
 node_modules/@types/node/globals.d.ts:597
 
-___
+---
 
 ### prependListener
 
@@ -393,9 +393,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -410,7 +410,7 @@ EventEmitter.prependListener
 
 node_modules/@types/node/globals.d.ts:608
 
-___
+---
 
 ### prependOnceListener
 
@@ -418,9 +418,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -435,7 +435,7 @@ EventEmitter.prependOnceListener
 
 node_modules/@types/node/globals.d.ts:609
 
-___
+---
 
 ### rawListeners
 
@@ -443,8 +443,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                 |
+| :------ | :------------------- |
 | `event` | `string` \| `symbol` |
 
 #### Returns
@@ -459,7 +459,7 @@ EventEmitter.rawListeners
 
 node_modules/@types/node/globals.d.ts:604
 
-___
+---
 
 ### remove
 
@@ -467,8 +467,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                  |
+| :---- | :-------------------------------------------------------------------- |
 | `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
 
 #### Returns
@@ -479,7 +479,7 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L72)
 
-___
+---
 
 ### removeAllListeners
 
@@ -487,8 +487,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                 |
+| :------- | :------------------- |
 | `event?` | `string` \| `symbol` |
 
 #### Returns
@@ -503,7 +503,7 @@ EventEmitter.removeAllListeners
 
 node_modules/@types/node/globals.d.ts:600
 
-___
+---
 
 ### removeListener
 
@@ -511,9 +511,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `event`    | `string` \| `symbol`           |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -528,7 +528,7 @@ EventEmitter.removeListener
 
 node_modules/@types/node/globals.d.ts:598
 
-___
+---
 
 ### setMaxListeners
 
@@ -536,9 +536,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `n` | `number` |
+| Name | Type     |
+| :--- | :------- |
+| `n`  | `number` |
 
 #### Returns
 
@@ -552,7 +552,7 @@ EventEmitter.setMaxListeners
 
 node_modules/@types/node/globals.d.ts:601
 
-___
+---
 
 ### getKeys
 
@@ -560,8 +560,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                  |
+| :---- | :-------------------------------------------------------------------- |
 | `obj` | `string` \| [PeerInfo](../interfaces/dpt_dpt.peerinfo.md) \| `Buffer` |
 
 #### Returns
@@ -572,7 +572,7 @@ ___
 
 [packages/devp2p/src/dpt/kbucket.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L40)
 
-___
+---
 
 ### listenerCount
 
@@ -582,10 +582,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `EventEmitter`       |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -599,7 +599,7 @@ EventEmitter.listenerCount
 
 node_modules/@types/node/events.d.ts:17
 
-___
+---
 
 ### once
 
@@ -607,10 +607,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| Name      | Type                 |
+| :-------- | :------------------- |
+| `emitter` | `NodeEventTarget`    |
+| `event`   | `string` \| `symbol` |
 
 #### Returns
 
@@ -628,10 +628,10 @@ node_modules/@types/node/events.d.ts:13
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type             |
+| :-------- | :--------------- |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `event`   | `string`         |
 
 #### Returns
 

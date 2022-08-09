@@ -8,7 +8,7 @@ Blockchain
 
 ## Hierarchy
 
-* EventEmitter
+- EventEmitter
 
   ↳ **Chain**
 
@@ -16,123 +16,123 @@ Blockchain
 
 ### Constructors
 
-* [constructor](_blockchain_chain_.chain.md#constructor)
+- [constructor](_blockchain_chain_.chain.md#constructor)
 
 ### Properties
 
-* [blockchain](_blockchain_chain_.chain.md#blockchain)
-* [config](_blockchain_chain_.chain.md#config)
-* [db](_blockchain_chain_.chain.md#db)
-* [opened](_blockchain_chain_.chain.md#opened)
-* [defaultMaxListeners](_blockchain_chain_.chain.md#static-defaultmaxlisteners)
-* [errorMonitor](_blockchain_chain_.chain.md#static-errormonitor)
+- [blockchain](_blockchain_chain_.chain.md#blockchain)
+- [config](_blockchain_chain_.chain.md#config)
+- [db](_blockchain_chain_.chain.md#db)
+- [opened](_blockchain_chain_.chain.md#opened)
+- [defaultMaxListeners](_blockchain_chain_.chain.md#static-defaultmaxlisteners)
+- [errorMonitor](_blockchain_chain_.chain.md#static-errormonitor)
 
 ### Accessors
 
-* [blocks](_blockchain_chain_.chain.md#blocks)
-* [genesis](_blockchain_chain_.chain.md#genesis)
-* [headers](_blockchain_chain_.chain.md#headers)
-* [networkId](_blockchain_chain_.chain.md#networkid)
+- [blocks](_blockchain_chain_.chain.md#blocks)
+- [genesis](_blockchain_chain_.chain.md#genesis)
+- [headers](_blockchain_chain_.chain.md#headers)
+- [networkId](_blockchain_chain_.chain.md#networkid)
 
 ### Methods
 
-* [addListener](_blockchain_chain_.chain.md#addlistener)
-* [close](_blockchain_chain_.chain.md#close)
-* [emit](_blockchain_chain_.chain.md#emit)
-* [eventNames](_blockchain_chain_.chain.md#eventnames)
-* [getBlock](_blockchain_chain_.chain.md#getblock)
-* [getBlocks](_blockchain_chain_.chain.md#getblocks)
-* [getHeaders](_blockchain_chain_.chain.md#getheaders)
-* [getLatestBlock](_blockchain_chain_.chain.md#getlatestblock)
-* [getLatestHeader](_blockchain_chain_.chain.md#getlatestheader)
-* [getMaxListeners](_blockchain_chain_.chain.md#getmaxlisteners)
-* [getTd](_blockchain_chain_.chain.md#gettd)
-* [listenerCount](_blockchain_chain_.chain.md#listenercount)
-* [listeners](_blockchain_chain_.chain.md#listeners)
-* [off](_blockchain_chain_.chain.md#off)
-* [on](_blockchain_chain_.chain.md#on)
-* [once](_blockchain_chain_.chain.md#once)
-* [open](_blockchain_chain_.chain.md#open)
-* [prependListener](_blockchain_chain_.chain.md#prependlistener)
-* [prependOnceListener](_blockchain_chain_.chain.md#prependoncelistener)
-* [putBlocks](_blockchain_chain_.chain.md#putblocks)
-* [putHeaders](_blockchain_chain_.chain.md#putheaders)
-* [rawListeners](_blockchain_chain_.chain.md#rawlisteners)
-* [removeAllListeners](_blockchain_chain_.chain.md#removealllisteners)
-* [removeListener](_blockchain_chain_.chain.md#removelistener)
-* [setMaxListeners](_blockchain_chain_.chain.md#setmaxlisteners)
-* [update](_blockchain_chain_.chain.md#update)
-* [listenerCount](_blockchain_chain_.chain.md#static-listenercount)
+- [addListener](_blockchain_chain_.chain.md#addlistener)
+- [close](_blockchain_chain_.chain.md#close)
+- [emit](_blockchain_chain_.chain.md#emit)
+- [eventNames](_blockchain_chain_.chain.md#eventnames)
+- [getBlock](_blockchain_chain_.chain.md#getblock)
+- [getBlocks](_blockchain_chain_.chain.md#getblocks)
+- [getHeaders](_blockchain_chain_.chain.md#getheaders)
+- [getLatestBlock](_blockchain_chain_.chain.md#getlatestblock)
+- [getLatestHeader](_blockchain_chain_.chain.md#getlatestheader)
+- [getMaxListeners](_blockchain_chain_.chain.md#getmaxlisteners)
+- [getTd](_blockchain_chain_.chain.md#gettd)
+- [listenerCount](_blockchain_chain_.chain.md#listenercount)
+- [listeners](_blockchain_chain_.chain.md#listeners)
+- [off](_blockchain_chain_.chain.md#off)
+- [on](_blockchain_chain_.chain.md#on)
+- [once](_blockchain_chain_.chain.md#once)
+- [open](_blockchain_chain_.chain.md#open)
+- [prependListener](_blockchain_chain_.chain.md#prependlistener)
+- [prependOnceListener](_blockchain_chain_.chain.md#prependoncelistener)
+- [putBlocks](_blockchain_chain_.chain.md#putblocks)
+- [putHeaders](_blockchain_chain_.chain.md#putheaders)
+- [rawListeners](_blockchain_chain_.chain.md#rawlisteners)
+- [removeAllListeners](_blockchain_chain_.chain.md#removealllisteners)
+- [removeListener](_blockchain_chain_.chain.md#removelistener)
+- [setMaxListeners](_blockchain_chain_.chain.md#setmaxlisteners)
+- [update](_blockchain_chain_.chain.md#update)
+- [listenerCount](_blockchain_chain_.chain.md#static-listenercount)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Chain**(`options`: [ChainOptions](../interfaces/_blockchain_chain_.chainoptions.md)): *[Chain](_blockchain_chain_.chain.md)*
+\+ **new Chain**(`options`: [ChainOptions](../interfaces/_blockchain_chain_.chainoptions.md)): _[Chain](_blockchain_chain_.chain.md)_
 
-*Overrides void*
+_Overrides void_
 
-*Defined in [lib/blockchain/chain.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L96)*
+_Defined in [lib/blockchain/chain.ts:96](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L96)_
 
 Create new chain
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`options` | [ChainOptions](../interfaces/_blockchain_chain_.chainoptions.md) |   |
+| Name      | Type                                                             | Description |
+| --------- | ---------------------------------------------------------------- | ----------- |
+| `options` | [ChainOptions](../interfaces/_blockchain_chain_.chainoptions.md) |             |
 
-**Returns:** *[Chain](_blockchain_chain_.chain.md)*
+**Returns:** _[Chain](_blockchain_chain_.chain.md)_
 
 ## Properties
 
-###  blockchain
+### blockchain
 
-• **blockchain**: *Blockchain*
+• **blockchain**: _Blockchain_
 
-*Defined in [lib/blockchain/chain.ts:83](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L83)*
+_Defined in [lib/blockchain/chain.ts:83](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L83)_
 
-___
+---
 
-###  config
+### config
 
-• **config**: *[Config](_config_.config.md)*
+• **config**: _[Config](_config_.config.md)_
 
-*Defined in [lib/blockchain/chain.ts:80](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L80)*
+_Defined in [lib/blockchain/chain.ts:80](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L80)_
 
-___
+---
 
-###  db
+### db
 
-• **db**: *LevelUp*
+• **db**: _LevelUp_
 
-*Defined in [lib/blockchain/chain.ts:82](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L82)*
+_Defined in [lib/blockchain/chain.ts:82](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L82)_
 
-___
+---
 
-###  opened
+### opened
 
-• **opened**: *boolean*
+• **opened**: _boolean_
 
-*Defined in [lib/blockchain/chain.ts:84](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L84)*
+_Defined in [lib/blockchain/chain.ts:84](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L84)_
 
-___
+---
 
 ### `Static` defaultMaxListeners
 
-▪ **defaultMaxListeners**: *number*
+▪ **defaultMaxListeners**: _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[defaultMaxListeners](_net_protocol_sender_.sender.md#static-defaultmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:45
 
-___
+---
 
 ### `Static` errorMonitor
 
-▪ **errorMonitor**: *keyof symbol*
+▪ **errorMonitor**: _keyof symbol_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[errorMonitor](_net_protocol_sender_.sender.md#static-errormonitor)_
 
 Defined in node_modules/@types/node/events.d.ts:55
 
@@ -146,555 +146,555 @@ regular `'error'` listener is installed.
 
 ## Accessors
 
-###  blocks
+### blocks
 
-• **get blocks**(): *[ChainBlocks](../interfaces/_blockchain_chain_.chainblocks.md)*
+• **get blocks**(): _[ChainBlocks](../interfaces/_blockchain_chain_.chainblocks.md)_
 
-*Defined in [lib/blockchain/chain.ts:167](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L167)*
+_Defined in [lib/blockchain/chain.ts:167](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L167)_
 
 Returns properties of the canonical blockchain.
 
-**Returns:** *[ChainBlocks](../interfaces/_blockchain_chain_.chainblocks.md)*
+**Returns:** _[ChainBlocks](../interfaces/_blockchain_chain_.chainblocks.md)_
 
-___
+---
 
-###  genesis
+### genesis
 
-• **get genesis**(): *[GenesisBlockParams](../interfaces/_blockchain_chain_.genesisblockparams.md)*
+• **get genesis**(): _[GenesisBlockParams](../interfaces/_blockchain_chain_.genesisblockparams.md)_
 
-*Defined in [lib/blockchain/chain.ts:147](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L147)*
+_Defined in [lib/blockchain/chain.ts:147](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L147)_
 
 Genesis block parameters
 
-**Returns:** *[GenesisBlockParams](../interfaces/_blockchain_chain_.genesisblockparams.md)*
+**Returns:** _[GenesisBlockParams](../interfaces/_blockchain_chain_.genesisblockparams.md)_
 
-___
+---
 
-###  headers
+### headers
 
-• **get headers**(): *[ChainHeaders](../interfaces/_blockchain_chain_.chainheaders.md)*
+• **get headers**(): _[ChainHeaders](../interfaces/_blockchain_chain_.chainheaders.md)_
 
-*Defined in [lib/blockchain/chain.ts:159](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L159)*
+_Defined in [lib/blockchain/chain.ts:159](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L159)_
 
 Returns properties of the canonical headerchain.
 
-**Returns:** *[ChainHeaders](../interfaces/_blockchain_chain_.chainheaders.md)*
+**Returns:** _[ChainHeaders](../interfaces/_blockchain_chain_.chainheaders.md)_
 
-___
+---
 
-###  networkId
+### networkId
 
-• **get networkId**(): *number*
+• **get networkId**(): _number_
 
-*Defined in [lib/blockchain/chain.ts:140](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L140)*
+_Defined in [lib/blockchain/chain.ts:140](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L140)_
 
 Network ID
 
-**Returns:** *number*
+**Returns:** _number_
 
 ## Methods
 
-###  addListener
+### addListener
 
-▸ **addListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **addListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:62
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  close
+### close
 
-▸ **close**(): *Promise‹boolean | void›*
+▸ **close**(): _Promise‹boolean | void›_
 
-*Defined in [lib/blockchain/chain.ts:189](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L189)*
+_Defined in [lib/blockchain/chain.ts:189](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L189)_
 
 Closes chain
 
-**Returns:** *Promise‹boolean | void›*
+**Returns:** _Promise‹boolean | void›_
 
 Returns false if chain is closed
 
-___
+---
 
-###  emit
+### emit
 
-▸ **emit**(`event`: string | symbol, ...`args`: any[]): *boolean*
+▸ **emit**(`event`: string | symbol, ...`args`: any[]): _boolean_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)_
 
 Defined in node_modules/@types/node/events.d.ts:72
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
-`...args` | any[] |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `event`   | string &#124; symbol |
+| `...args` | any[]                |
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
-###  eventNames
+### eventNames
 
-▸ **eventNames**(): *Array‹string | symbol›*
+▸ **eventNames**(): _Array‹string | symbol›_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)_
 
 Defined in node_modules/@types/node/events.d.ts:77
 
-**Returns:** *Array‹string | symbol›*
+**Returns:** _Array‹string | symbol›_
 
-___
+---
 
-###  getBlock
+### getBlock
 
-▸ **getBlock**(`block`: Buffer | BN): *Promise‹Block›*
+▸ **getBlock**(`block`: Buffer | BN): _Promise‹Block›_
 
-*Defined in [lib/blockchain/chain.ts:255](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L255)*
+_Defined in [lib/blockchain/chain.ts:255](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L255)_
 
 Gets a block by its hash or number
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`block` | Buffer &#124; BN |
+| Name    | Type             |
+| ------- | ---------------- |
+| `block` | Buffer &#124; BN |
 
-**Returns:** *Promise‹Block›*
+**Returns:** _Promise‹Block›_
 
-___
+---
 
-###  getBlocks
+### getBlocks
 
-▸ **getBlocks**(`block`: Buffer | BN, `max`: number, `skip`: number, `reverse`: boolean): *Promise‹Block[]›*
+▸ **getBlocks**(`block`: Buffer | BN, `max`: number, `skip`: number, `reverse`: boolean): _Promise‹Block[]›_
 
-*Defined in [lib/blockchain/chain.ts:240](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L240)*
+_Defined in [lib/blockchain/chain.ts:240](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L240)_
 
 Get blocks from blockchain
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`block` | Buffer &#124; BN | - | hash or number to start from |
-`max` | number | 1 | maximum number of blocks to get |
-`skip` | number | 0 | number of blocks to skip |
-`reverse` | boolean | false | get blocks in reverse |
+| Name      | Type             | Default | Description                     |
+| --------- | ---------------- | ------- | ------------------------------- |
+| `block`   | Buffer &#124; BN | -       | hash or number to start from    |
+| `max`     | number           | 1       | maximum number of blocks to get |
+| `skip`    | number           | 0       | number of blocks to skip        |
+| `reverse` | boolean          | false   | get blocks in reverse           |
 
-**Returns:** *Promise‹Block[]›*
+**Returns:** _Promise‹Block[]›_
 
-___
+---
 
-###  getHeaders
+### getHeaders
 
-▸ **getHeaders**(`block`: Buffer | BN, `max`: number, `skip`: number, `reverse`: boolean): *Promise‹BlockHeader[]›*
+▸ **getHeaders**(`block`: Buffer | BN, `max`: number, `skip`: number, `reverse`: boolean): _Promise‹BlockHeader[]›_
 
-*Defined in [lib/blockchain/chain.ts:284](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L284)*
+_Defined in [lib/blockchain/chain.ts:284](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L284)_
 
 Get headers from blockchain
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`block` | Buffer &#124; BN | block hash or number to start from |
-`max` | number | maximum number of headers to get |
-`skip` | number | number of headers to skip |
-`reverse` | boolean | get headers in reverse |
+| Name      | Type             | Description                        |
+| --------- | ---------------- | ---------------------------------- |
+| `block`   | Buffer &#124; BN | block hash or number to start from |
+| `max`     | number           | maximum number of headers to get   |
+| `skip`    | number           | number of headers to skip          |
+| `reverse` | boolean          | get headers in reverse             |
 
-**Returns:** *Promise‹BlockHeader[]›*
+**Returns:** _Promise‹BlockHeader[]›_
 
-___
+---
 
-###  getLatestBlock
+### getLatestBlock
 
-▸ **getLatestBlock**(): *Promise‹Block›*
+▸ **getLatestBlock**(): _Promise‹Block›_
 
-*Defined in [lib/blockchain/chain.ts:324](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L324)*
+_Defined in [lib/blockchain/chain.ts:324](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L324)_
 
 Gets the latest block in the canonical chain
 
-**Returns:** *Promise‹Block›*
+**Returns:** _Promise‹Block›_
 
-___
+---
 
-###  getLatestHeader
+### getLatestHeader
 
-▸ **getLatestHeader**(): *Promise‹BlockHeader›*
+▸ **getLatestHeader**(): _Promise‹BlockHeader›_
 
-*Defined in [lib/blockchain/chain.ts:315](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L315)*
+_Defined in [lib/blockchain/chain.ts:315](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L315)_
 
 Gets the latest header in the canonical chain
 
-**Returns:** *Promise‹BlockHeader›*
+**Returns:** _Promise‹BlockHeader›_
 
-___
+---
 
-###  getMaxListeners
+### getMaxListeners
 
-▸ **getMaxListeners**(): *number*
+▸ **getMaxListeners**(): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:69
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  getTd
+### getTd
 
-▸ **getTd**(`hash`: Buffer, `num`: BN): *Promise‹BN›*
+▸ **getTd**(`hash`: Buffer, `num`: BN): _Promise‹BN›_
 
-*Defined in [lib/blockchain/chain.ts:335](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L335)*
+_Defined in [lib/blockchain/chain.ts:335](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L335)_
 
 Gets total difficulty for a block
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`hash` | Buffer |
-`num` | BN |
+| Name   | Type   |
+| ------ | ------ |
+| `hash` | Buffer |
+| `num`  | BN     |
 
-**Returns:** *Promise‹BN›*
+**Returns:** _Promise‹BN›_
 
-___
+---
 
-###  listenerCount
+### listenerCount
 
-▸ **listenerCount**(`event`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  listeners
+### listeners
 
-▸ **listeners**(`event`: string | symbol): *Function[]*
+▸ **listeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)_
 
 Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  off
+### off
 
-▸ **off**(`event`: string | symbol, `listener`: function): *this*
+▸ **off**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)_
 
 Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  on
+### on
 
-▸ **on**(`event`: string | symbol, `listener`: function): *this*
+▸ **on**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)_
 
 Defined in node_modules/@types/node/events.d.ts:63
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  once
+### once
 
-▸ **once**(`event`: string | symbol, `listener`: function): *this*
+▸ **once**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)_
 
 Defined in node_modules/@types/node/events.d.ts:64
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  open
+### open
 
-▸ **open**(): *Promise‹boolean | void›*
+▸ **open**(): _Promise‹boolean | void›_
 
-*Defined in [lib/blockchain/chain.ts:175](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L175)*
+_Defined in [lib/blockchain/chain.ts:175](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L175)_
 
 Open blockchain and wait for database to load
 
-**Returns:** *Promise‹boolean | void›*
+**Returns:** _Promise‹boolean | void›_
 
 Returns false if chain is already open
 
-___
+---
 
-###  prependListener
+### prependListener
 
-▸ **prependListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)_
 
 Defined in node_modules/@types/node/events.d.ts:75
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  prependOnceListener
+### prependOnceListener
 
-▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **prependOnceListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:76
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  putBlocks
+### putBlocks
 
-▸ **putBlocks**(`blocks`: Block[]): *Promise‹void›*
+▸ **putBlocks**(`blocks`: Block[]): _Promise‹void›_
 
-*Defined in [lib/blockchain/chain.ts:264](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L264)*
+_Defined in [lib/blockchain/chain.ts:264](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L264)_
 
 Insert new blocks into blockchain
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`blocks` | Block[] | list of blocks to add  |
+| Name     | Type    | Description           |
+| -------- | ------- | --------------------- |
+| `blocks` | Block[] | list of blocks to add |
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  putHeaders
+### putHeaders
 
-▸ **putHeaders**(`headers`: BlockHeader[]): *Promise‹void›*
+▸ **putHeaders**(`headers`: BlockHeader[]): _Promise‹void›_
 
-*Defined in [lib/blockchain/chain.ts:299](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L299)*
+_Defined in [lib/blockchain/chain.ts:299](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L299)_
 
 Insert new headers into blockchain
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`headers` | BlockHeader[] |
+| Name      | Type          |
+| --------- | ------------- |
+| `headers` | BlockHeader[] |
 
-**Returns:** *Promise‹void›*
+**Returns:** _Promise‹void›_
 
-___
+---
 
-###  rawListeners
+### rawListeners
 
-▸ **rawListeners**(`event`: string | symbol): *Function[]*
+▸ **rawListeners**(`event`: string | symbol): _Function[]_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event` | string &#124; symbol |
+| Name    | Type                 |
+| ------- | -------------------- |
+| `event` | string &#124; symbol |
 
-**Returns:** *Function[]*
+**Returns:** _Function[]_
 
-___
+---
 
-###  removeAllListeners
+### removeAllListeners
 
-▸ **removeAllListeners**(`event?`: string | symbol): *this*
+▸ **removeAllListeners**(`event?`: string | symbol): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`event?` | string &#124; symbol |
+| Name     | Type                 |
+| -------- | -------------------- |
+| `event?` | string &#124; symbol |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  removeListener
+### removeListener
 
-▸ **removeListener**(`event`: string | symbol, `listener`: function): *this*
+▸ **removeListener**(`event`: string | symbol, `listener`: function): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)_
 
 Defined in node_modules/@types/node/events.d.ts:65
 
 **Parameters:**
 
-▪ **event**: *string | symbol*
+▪ **event**: _string | symbol_
 
-▪ **listener**: *function*
+▪ **listener**: _function_
 
-▸ (...`args`: any[]): *void*
+▸ (...`args`: any[]): _void_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`...args` | any[] |
+| Name      | Type  |
+| --------- | ----- |
+| `...args` | any[] |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  setMaxListeners
+### setMaxListeners
 
-▸ **setMaxListeners**(`n`: number): *this*
+▸ **setMaxListeners**(`n`: number): _this_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)_
 
 Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`n` | number |
+| Name | Type   |
+| ---- | ------ |
+| `n`  | number |
 
-**Returns:** *this*
+**Returns:** _this_
 
-___
+---
 
-###  update
+### update
 
-▸ **update**(): *Promise‹boolean | void›*
+▸ **update**(): _Promise‹boolean | void›_
 
-*Defined in [lib/blockchain/chain.ts:202](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L202)*
+_Defined in [lib/blockchain/chain.ts:202](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/blockchain/chain.ts#L202)_
 
 Update blockchain properties (latest block, td, height, etc...)
 
-**Returns:** *Promise‹boolean | void›*
+**Returns:** _Promise‹boolean | void›_
 
 Returns false if chain is closed
 
-___
+---
 
 ### `Static` listenerCount
 
-▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): *number*
+▸ **listenerCount**(`emitter`: EventEmitter, `event`: string | symbol): _number_
 
-*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)*
+_Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#static-listenercount)_
 
 Defined in node_modules/@types/node/events.d.ts:44
 
@@ -702,9 +702,9 @@ Defined in node_modules/@types/node/events.d.ts:44
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`emitter` | EventEmitter |
-`event` | string &#124; symbol |
+| Name      | Type                 |
+| --------- | -------------------- |
+| `emitter` | EventEmitter         |
+| `event`   | string &#124; symbol |
 
-**Returns:** *number*
+**Returns:** _number_

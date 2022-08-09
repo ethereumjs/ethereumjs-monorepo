@@ -8,7 +8,7 @@
 
 ### Enumerations
 
-- [MESSAGE\_CODES](../enums/les.les-1.message_codes.md)
+- [MESSAGE_CODES](../enums/les.les-1.message_codes.md)
 
 ### Interfaces
 
