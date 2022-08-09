@@ -1,3 +1,4 @@
+const path = require('path')
 const { resolve } = require('path')
 const { ProvidePlugin } = require('webpack')
 
@@ -45,6 +46,9 @@ module.exports = {
     library: 'ethereumjs',
   },
   resolve: {
+    alias: {
+      util: path.resolve(__dirname, 'node_modules/util/util.js')
+    },
     fallback: {
       async_hooks: false, // used by: raw-body via body-parser
       buffer: require.resolve('buffer'),
@@ -66,5 +70,5 @@ module.exports = {
   performance: {
     hints: false, // suppress maxAssetSize warnings etc..
   },
-  externals: ['dns', 'jayson'],
+  externals: ['dns'],
 }

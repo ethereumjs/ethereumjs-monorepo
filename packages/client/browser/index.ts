@@ -1,9 +1,8 @@
-import { Chain, Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
+import { Chain, Common } from '@ethereumjs/common'
 import { Level } from 'level'
 
 import debug from 'debug'
-import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { EthereumClient } from '../lib/client'
 import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
@@ -55,7 +54,7 @@ export async function createClient(args: any) {
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const common = new Common({ chain: args.network ?? Chain.Mainnet })
   const key = await Config.getClientKey(datadir, common)
-  const bootnodes = isTruthy(args.bootnodes) ? parseMultiaddrs(args.bootnodes) : undefined
+  const bootnodes = (args.bootnodes !== undefined) ? parseMultiaddrs(args.bootnodes) : undefined
   const config = new Config({
     common,
     key,
