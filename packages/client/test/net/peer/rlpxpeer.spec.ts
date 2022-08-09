@@ -32,7 +32,7 @@ tape('[RlpxPeer]', async (t) => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
       { name: 'les', versions: [4] },
-      { name: 'snap', versions: [1]},
+      { name: 'snap', versions: [1] },
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
       name,
@@ -44,7 +44,7 @@ tape('[RlpxPeer]', async (t) => {
       [
         { name: 'eth', version: 66, length: 17 },
         { name: 'les', version: 4, length: 23 },
-        {name: 'snap', version: 1, length: 8}
+        { name: 'snap', version: 1, length: 8 },
       ],
       'correct capabilities'
     )
@@ -121,12 +121,14 @@ tape('[RlpxPeer]', async (t) => {
     const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
     const proto0 = new (class Proto0 extends EventEmitter {})()
 
-    const rlpxPeer = { getProtocols: td.func()} as any
+    const rlpxPeer = { getProtocols: td.func() } as any
     ;(peer as any).bindProtocol = td.func<typeof peer['bindProtocols']>()
-    const bindProtocolThen = td.func();
-    td.when((peer as any).bindProtocol(td.matchers.anything(),td.matchers.anything())).thenReturn({then:bindProtocolThen});
+    const bindProtocolThen = td.func()
+    td.when((peer as any).bindProtocol(td.matchers.anything(), td.matchers.anything())).thenReturn({
+      then: bindProtocolThen,
+    })
     td.when(rlpxPeer.getProtocols()).thenReturn([proto0])
-    
+
     await (peer as any).bindProtocols(rlpxPeer)
     td.verify((peer as any).bindProtocol({ name: 'proto0' } as any, td.matchers.isA(RlpxSender)))
     t.ok(peer.connected, 'connected set to true')
