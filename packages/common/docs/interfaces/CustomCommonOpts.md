@@ -2,7 +2,7 @@
 
 # Interface: CustomCommonOpts
 
-Options to be used with the {@link Common.custom} static constructor.
+Options to be used with the [custom](../classes/Common.md#custom) static constructor.
 
 ## Hierarchy
 
@@ -17,20 +17,19 @@ Options to be used with the {@link Common.custom} static constructor.
 - [baseChain](CustomCommonOpts.md#basechain)
 - [eips](CustomCommonOpts.md#eips)
 - [hardfork](CustomCommonOpts.md#hardfork)
-- [supportedHardforks](CustomCommonOpts.md#supportedhardforks)
 
 ## Properties
 
 ### baseChain
 
-• `Optional` **baseChain**: `string` \| `number` \| `BN`
+• `Optional` **baseChain**: `string` \| `number` \| `bigint`
 
 The name (`mainnet`), id (`1`), or [Chain](../enums/Chain.md) enum of
 a standard chain used to base the custom chain params on.
 
 #### Defined in
 
-[packages/common/src/index.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L181)
+[packages/common/src/types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L114)
 
 ___
 
@@ -51,7 +50,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/index.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L118)
+[packages/common/src/types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L79)
 
 ___
 
@@ -61,7 +60,7 @@ ___
 
 String identifier ('byzantium') for hardfork or [Hardfork](../enums/Hardfork.md) enum.
 
-Default: Hardfork.Istanbul
+Default: Hardfork.London
 
 #### Inherited from
 
@@ -69,20 +68,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/index.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L105)
-
-___
-
-### supportedHardforks
-
-• `Optional` **supportedHardforks**: `string`[]
-
-Limit parameter returns to the given hardforks
-
-#### Inherited from
-
-BaseOpts.supportedHardforks
-
-#### Defined in
-
-[packages/common/src/index.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L109)
+[packages/common/src/types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L70)

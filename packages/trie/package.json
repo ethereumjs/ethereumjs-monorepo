@@ -55,11 +55,11 @@
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
-    "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "@types/node": "^16.11.7",
     "@types/readable-stream": "^2.3.13",
     "@types/tape": "^4.13.2",
+    "0x": "^4.9.1",
     "benchmark": "^2.1.4",
     "eslint": "^8.0.0",
     "karma": "^6.3.2",
@@ -67,11 +67,10 @@
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.3",
+    "lmdb": "^2.5.3",
     "nyc": "^15.1.0",
-    "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
-    "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
   }
 }

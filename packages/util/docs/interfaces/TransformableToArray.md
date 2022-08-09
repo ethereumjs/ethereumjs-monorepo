@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[packages/util/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L38)
+[types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L36)
 
 ___
 
@@ -35,4 +35,4 @@ ___
 
 #### Defined in
 
-[packages/util/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L39)
+[types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L37)

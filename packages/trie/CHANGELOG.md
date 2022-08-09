@@ -38,7 +38,6 @@ So the usage of the following methods change and need to be updated (for all typ
 
 - Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
 
-
 # 5.0.0-beta.1 - 2022-06-30
 
 This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
@@ -79,7 +78,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to _not_ do which you didn't have before).
 
 ### Database Changes
 
@@ -96,8 +95,8 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 The new `DB` interface can be used like this for LevelDB:
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```

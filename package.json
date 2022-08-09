@@ -12,13 +12,10 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
+    "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "postinstall": "npm run build --workspaces",
+    "prepare": "git config --local core.hooksPath .githooks",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
-  },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint:diff --workspaces"
-    }
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
@@ -31,10 +28,12 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-sonarjs": "^0.14.0",
-    "husky": "^4.2.5",
+    "lint-staged": "^13.0.3",
     "nyc-report-lcov-absolute": "^1.0.0",
+    "prettier": "^2.7.1",
     "sort-package-json": "^1.57.0",
-    "typedoc-plugin-markdown": "^3.10.4",
+    "typedoc": "^0.23.10",
+    "typedoc-plugin-markdown": "^3.13.4",
     "verdaccio": "^4.12.2"
   },
   "engines": {
