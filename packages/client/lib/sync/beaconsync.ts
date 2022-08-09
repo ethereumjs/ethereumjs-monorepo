@@ -44,6 +44,17 @@ export class BeaconSynchronizer extends Synchronizer {
     return 'beacon'
   }
 
+  get fetcher(): ReverseBlockFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof ReverseBlockFetcher)){
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: ReverseBlockFetcher | null){
+    this._fetcher = fetcher;
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */

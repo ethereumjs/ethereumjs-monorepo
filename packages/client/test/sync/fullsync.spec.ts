@@ -159,13 +159,14 @@ tape('[FullSynchronizer]', async (t) => {
       txPool,
       execution,
     })
-    ;(sync as any).fetcher = {
+    ;(sync as any)._fetcher = {
       enqueueByNumberList: (blockNumberList: bigint[], min: bigint) => {
         t.equal(blockNumberList[0], BigInt(0), 'enqueueing the correct block in the Fetcher')
         t.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
         t.equal(min, BigInt(0), 'correct start block number in Fetcher')
       },
     }
+    Object.defineProperty(sync, 'fetcher', { get() { return this._fetcher } });
 
     let timesSentToPeer2 = 0
     const peers = [
