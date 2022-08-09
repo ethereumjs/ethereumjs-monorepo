@@ -67,5 +67,4 @@ module.exports = {
     hints: false, // suppress maxAssetSize warnings etc..
   },
   externals: ['dns', 'jayson'],
-  devtool: 'eval-source-map',
 }
