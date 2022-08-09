@@ -16,6 +16,17 @@ export class SnapSynchronizer extends Synchronizer {
     return 'snap'
   }
 
+  get fetcher(): AccountFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof AccountFetcher)){
+      throw Error(`Invalid Fetcher, expected AccountFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: AccountFetcher | null){
+    this._fetcher = fetcher;
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */
