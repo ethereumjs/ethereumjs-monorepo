@@ -53,7 +53,7 @@ export class FullSynchronizer extends Synchronizer {
     return 'full'
   }
 
-  get fetcher():BlockFetcher|null{
+  get fetcher(): BlockFetcher | null {
     if(this._fetcher!==null && !(this._fetcher instanceof BlockFetcher)){
       throw Error(`Invalid Fetcher, expected BlockFetcher`);
     }

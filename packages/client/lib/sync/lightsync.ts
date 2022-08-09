@@ -27,7 +27,7 @@ export class LightSynchronizer extends Synchronizer {
     return 'light'
   }
 
-  get fetcher():HeaderFetcher|null{
+  get fetcher(): HeaderFetcher | null {
     if(this._fetcher!==null && !(this._fetcher instanceof HeaderFetcher)){
       throw Error(`Invalid Fetcher, expected HeaderFetcher`);
     }
