@@ -65,7 +65,7 @@ module.exports = {
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
     'import/no-cycle': 'off', // TODO: set to `warn` for fixing and then `error`
-    'import/no-default-export' : ['error'],
+    'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/no-duplicates': 'error',
     'import/no-dynamic-require': 'off',

@@ -3,7 +3,7 @@
   "include": ["bin", "lib"],
   "compilerOptions": {
     "outDir": "dist",
-    "typeRoots": ["node_modules/@types", "lib/@types"],
+    "typeRoots": ["node_modules/@types", "lib/@types"]
   },
   "references": [
     { "path": "../block/tsconfig.prod.json" },
@@ -14,6 +14,6 @@
     { "path": "../trie/tsconfig.prod.json" },
     { "path": "../tx/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" },
-    { "path": "../vm/tsconfig.prod.json" },
-  ],
+    { "path": "../vm/tsconfig.prod.json" }
+  ]
 }

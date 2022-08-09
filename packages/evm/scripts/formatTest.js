@@ -7,7 +7,7 @@ const formatter = process.argv.find((arg, i, array) => array[i - 1] === '-with')
 
 runTestsWithFormatter(testScript, formatter)
 
-function runTestsWithFormatter (testScript, formatter) {
+function runTestsWithFormatter(testScript, formatter) {
   if (!testScript) {
     console.log('No test script specified!')
     return
@@ -19,7 +19,7 @@ function runTestsWithFormatter (testScript, formatter) {
 
   const withFormatter = formatter ? ` | ${formatter}` : ''
 
-  const commandToRun = npmTestScriptNames.find(name => name === testScript)
+  const commandToRun = npmTestScriptNames.find((name) => name === testScript)
     ? `npm run ${testScript}${withFormatter}`
     : `node ${testScript}${withFormatter}`
 

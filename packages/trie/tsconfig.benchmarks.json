@@ -1,5 +1,4 @@
 {
-    "extends": "../../config/tsconfig.prod.json",
-    "include": ["benchmarks/*.ts"]
+  "extends": "../../config/tsconfig.prod.json",
+  "include": ["benchmarks/*.ts"]
 }
-  

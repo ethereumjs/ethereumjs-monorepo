@@ -23,15 +23,7 @@
       "d": "Gas base cost, used e.g. for ChainID opcode (Istanbul)"
     },
     "tierStep": {
-      "v": [
-        0,
-        2,
-        3,
-        5,
-        8,
-        10,
-        20
-      ],
+      "v": [0, 2, 3, 5, 8, 10, 20],
       "d": "Once per operation, for a selection of them"
     },
     "exp": {
