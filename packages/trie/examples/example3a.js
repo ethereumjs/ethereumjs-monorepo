@@ -3,7 +3,7 @@
 const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
 const rlp = require('@ethereumjs/rlp')
 const { keccak256 } = require('ethereum-cryptography/keccak')
-var trie = new Trie() // We create an empty Patricia Merkle Tree
+var trie = new Trie() // We create an empty Merkle Patricia Tree
 
 async function test() {
   // We populate the tree to create an extension node.

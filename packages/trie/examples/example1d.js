@@ -2,7 +2,7 @@
 
 const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
 
-var trie = new Trie() // We create an empty Patricia Merkle Tree
+var trie = new Trie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root: ', trie.root) // The trie root
 
 async function test() {
