@@ -83,12 +83,12 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
-    return this._fetcher
+  get fetcher(): AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null{
+    return this._fetcher;
   }
 
-  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
-    this._fetcher = fetcher
+  set fetcher(fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null){
+    this._fetcher = fetcher;
   }
 
   /**
