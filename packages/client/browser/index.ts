@@ -2,11 +2,11 @@ import { Chain, Common } from '@ethereumjs/common'
 import { isTruthy } from '@ethereumjs/util'
 import { Level } from 'level'
 
+import debug from 'debug'
 import { EthereumClient } from '../lib/client'
 import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
 import { getLogger } from './logging'
-
 // Blockchain
 export * from '../lib/blockchain/chain'
 
@@ -48,6 +48,8 @@ export * from '../lib/util/parse'
 export * from './logging'
 
 export async function createClient(args: any) {
+  // Turn on `debug` logs, defaults to all client logging
+  debug.enable(args.debugLogs ?? "client:*")
   const logger = getLogger({ loglevel: args.loglevel })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const common = new Common({ chain: args.network ?? Chain.Mainnet })
