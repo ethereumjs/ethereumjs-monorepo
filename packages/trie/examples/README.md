@@ -22,9 +22,10 @@ We'll use nodeJS to run our JavaScript examples and npm to install the necessary
 First, we need to clone the repository from GitHub. We then install the relevant packages with npm install.
 
 ```bash
-git clone https://github.com/gabrocheleau/merkle-patricia-tree-examples.git
-cd merkle-patricia-tree-examples/
+git clone git@github.com:ethereumjs/ethereumjs-monorepo.git
+cd ethereumjs-monorepo/
 npm install
+cd packages/trie
 ```
 
 Installing the packages should take a few minutes. Once installed, you will be able to follow along using the corresponding numbered examples in the /examples folder. To run an example, simply run the command `node example-name.js`
