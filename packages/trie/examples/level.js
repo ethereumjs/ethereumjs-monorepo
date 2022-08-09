@@ -1,5 +1,5 @@
-const { Trie, LevelDB } = require('../dist')
-const { Level } = require('level')
+const { Trie, LevelDB } = require('../dist')
+const { Level } = require('level')
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 

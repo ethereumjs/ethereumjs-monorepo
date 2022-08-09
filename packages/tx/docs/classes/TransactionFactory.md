@@ -9,7 +9,6 @@
 - [fromBlockBodyData](TransactionFactory.md#fromblockbodydata)
 - [fromSerializedData](TransactionFactory.md#fromserializeddata)
 - [fromTxData](TransactionFactory.md#fromtxdata)
-- [getTransactionClass](TransactionFactory.md#gettransactionclass)
 
 ## Methods
 
@@ -24,9 +23,9 @@ This method returns the right transaction.
 
 #### Parameters
 
-| Name        | Type                                      | Description             |
-| :---------- | :---------------------------------------- | :---------------------- |
-| `data`      | `Buffer` \| `Buffer`[]                    | A Buffer or Buffer[]    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `data` | `Buffer` \| `Buffer`[] | A Buffer or Buffer[] |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
@@ -35,9 +34,9 @@ This method returns the right transaction.
 
 #### Defined in
 
-[transactionFactory.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L83)
+[transactionFactory.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L85)
 
----
+___
 
 ### fromSerializedData
 
@@ -47,9 +46,9 @@ This method tries to decode serialized data.
 
 #### Parameters
 
-| Name        | Type                                      | Description             |
-| :---------- | :---------------------------------------- | :---------------------- |
-| `data`      | `Buffer`                                  | The data Buffer         |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `data` | `Buffer` | The data Buffer |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
@@ -58,9 +57,9 @@ This method tries to decode serialized data.
 
 #### Defined in
 
-[transactionFactory.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L49)
+[transactionFactory.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L51)
 
----
+___
 
 ### fromTxData
 
@@ -70,10 +69,10 @@ Create a transaction from a `txData` object
 
 #### Parameters
 
-| Name        | Type                                                                                                                                                                            | Description                                                                                                                           |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------ |
-| `txData`    | [`TxData`](../README.md#txdata) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
-| `txOptions` | [`TxOptions`](../interfaces/TxOptions.md)                                                                                                                                       | Options to pass on to the constructor of the transaction                                                                              |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `txData` | [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
+| `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | Options to pass on to the constructor of the transaction |
 
 #### Returns
 
@@ -81,30 +80,4 @@ Create a transaction from a `txData` object
 
 #### Defined in
 
-[transactionFactory.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L22)
-
----
-
-### getTransactionClass
-
-▸ `Static` **getTransactionClass**(`transactionID?`, `_common?`): typeof [`Transaction`](Transaction.md) \| typeof [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| typeof [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md)
-
-This helper method allows one to retrieve the class which matches the transactionID
-If transactionID is undefined, returns the legacy transaction class.
-
-**`deprecated`** - This method is deprecated and will be removed on the next major release
-
-#### Parameters
-
-| Name            | Type      | Default value | Description             |
-| :-------------- | :-------- | :------------ | :---------------------- |
-| `transactionID` | `number`  | `0`           |                         |
-| `_common?`      | `default` | `undefined`   | This option is not used |
-
-#### Returns
-
-typeof [`Transaction`](Transaction.md) \| typeof [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| typeof [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md)
-
-#### Defined in
-
-[transactionFactory.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L101)
+[transactionFactory.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L24)

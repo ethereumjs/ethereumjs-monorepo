@@ -1,27 +1,13 @@
-[@ethereumjs/devp2p](../README.md) / les
+[@ethereumjs/devp2p](../README.md) / LES
 
-# Module: les
+# Namespace: LES
 
 ## Table of contents
 
-### Namespaces
+### Enumerations
 
-- [LES](les.les-1.md)
+- [MESSAGE\_CODES](../enums/LES.MESSAGE_CODES.md)
 
-### Classes
+### Interfaces
 
-- [LES](../classes/les.les-2.md)
-
-### Variables
-
-- [DEFAULT_ANNOUNCE_TYPE](les.md#default_announce_type)
-
-## Variables
-
-### DEFAULT_ANNOUNCE_TYPE
-
-• `Const` **DEFAULT_ANNOUNCE_TYPE**: `1`
-
-#### Defined in
-
-[packages/devp2p/src/les/index.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/les/index.ts#L11)
+- [Status](../interfaces/LES.Status.md)

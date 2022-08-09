@@ -9,7 +9,6 @@ A block header's data.
 ### Properties
 
 - [baseFeePerGas](HeaderData.md#basefeepergas)
-- [bloom](HeaderData.md#bloom)
 - [coinbase](HeaderData.md#coinbase)
 - [difficulty](HeaderData.md#difficulty)
 - [extraData](HeaderData.md#extradata)
@@ -30,23 +29,13 @@ A block header's data.
 
 ### baseFeePerGas
 
-• `Optional` **baseFeePerGas**: `BNLike`
+• `Optional` **baseFeePerGas**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
+[types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L89)
 
----
-
-### bloom
-
-• `Optional` **bloom**: `BufferLike`
-
-#### Defined in
-
-[types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L109)
-
----
+___
 
 ### coinbase
 
@@ -54,19 +43,19 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L88)
+[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L76)
 
----
+___
 
 ### difficulty
 
-• `Optional` **difficulty**: `BNLike`
+• `Optional` **difficulty**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L93)
+[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
 
----
+___
 
 ### extraData
 
@@ -74,29 +63,29 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L98)
+[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
 
----
+___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: `BNLike`
+• `Optional` **gasLimit**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
+[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L83)
 
----
+___
 
 ### gasUsed
 
-• `Optional` **gasUsed**: `BNLike`
+• `Optional` **gasUsed**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L96)
+[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L84)
 
----
+___
 
 ### logsBloom
 
@@ -104,9 +93,9 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L92)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L80)
 
----
+___
 
 ### mixHash
 
@@ -114,9 +103,9 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L99)
+[types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L87)
 
----
+___
 
 ### nonce
 
@@ -124,19 +113,19 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)
+[types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L88)
 
----
+___
 
 ### number
 
-• `Optional` **number**: `BNLike`
+• `Optional` **number**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L94)
+[types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L82)
 
----
+___
 
 ### parentHash
 
@@ -144,9 +133,9 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
+[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
----
+___
 
 ### receiptTrie
 
@@ -154,9 +143,9 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L91)
+[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
 
----
+___
 
 ### stateRoot
 
@@ -164,19 +153,19 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L89)
+[types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
 
----
+___
 
 ### timestamp
 
-• `Optional` **timestamp**: `BNLike`
+• `Optional` **timestamp**: `BigIntLike`
 
 #### Defined in
 
-[types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L97)
+[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L85)
 
----
+___
 
 ### transactionsTrie
 
@@ -184,9 +173,9 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L90)
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L78)
 
----
+___
 
 ### uncleHash
 
@@ -194,4 +183,4 @@ A block header's data.
 
 #### Defined in
 
-[types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L87)
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L75)

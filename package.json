@@ -32,7 +32,8 @@
     "nyc-report-lcov-absolute": "^1.0.0",
     "prettier": "^2.7.1",
     "sort-package-json": "^1.57.0",
-    "typedoc-plugin-markdown": "^3.10.4",
+    "typedoc": "^0.23.10",
+    "typedoc-plugin-markdown": "^3.13.4",
     "verdaccio": "^4.12.2"
   },
   "engines": {
