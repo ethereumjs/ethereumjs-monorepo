@@ -1,6 +1,7 @@
 import * as test from 'tape'
-import * as util from './util'
+
 import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
+import * as util from './util'
 
 test('RLPX: add working node', (t) => {
   const rlpxs = util.initTwoPeerRLPXSetup()

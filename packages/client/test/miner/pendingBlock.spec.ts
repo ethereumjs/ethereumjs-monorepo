@@ -1,14 +1,15 @@
+import { BlockHeader } from '@ethereumjs/block'
+import { Chain as CommonChain, Common, Hardfork } from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
+import { Account, Address } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { BlockHeader } from '@ethereumjs/block'
-import VM from '@ethereumjs/vm'
-import { Address, Account } from '@ethereumjs/util'
+
 import { Config } from '../../lib/config'
-import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { TxPool } from '../../lib/service/txpool'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -43,7 +44,7 @@ const setup = () => {
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
     execution: {
-      vm: { stateManager, eei: { state: { getAccount: () => stateManager.getAccount() } } },
+      vm: { stateManager, eei: { getAccount: () => stateManager.getAccount() } },
     },
   }
   const txPool = new TxPool({ config, service })
@@ -91,7 +92,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA01)
     await txPool.add(txA02)
     const pendingBlock = new PendingBlock({ config, txPool })
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     await txPool.add(txB01)
@@ -111,7 +112,7 @@ tape('[PendingBlock]', async (t) => {
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
@@ -141,7 +142,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
     await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
@@ -159,7 +160,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)

@@ -6,6 +6,150 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-beta.2 - 2022-07-15
+
+Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)) for the main change set description.
+
+### Removed Default Exports
+
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely dissalows using.
+
+Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
+
+Now every import is a named import and we think the long term benefits will very much outweigh the one-time hassle of some import adoptions.
+
+#### Common Library Import Updates
+
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+
+So Common import and usage is changing from:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+to:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+```
+
+### Removed Default Imports in this Library
+
+The main `Blockchain` class import has been updated, so import changes from:
+
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+```
+
+to:
+
+```typescript
+import { Blockchain } from '@ethereumjs/blockchain'
+```
+
+## Blockchain Consensus Option
+
+The Blockchain library now has a new optional `consensus` constructor options parameter which can be used to pass in a customized or own consensus class respectively implementation, e.g. a modfifed Ethash version or a Clique implementation with adopted parameters or the like, see PR [#2002](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2002) to get a grasp on the integration.
+
+## Other Changes
+
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
+
+## 6.0.0-beta.1 - 2022-06-30
+
+This release is part of a larger breaking release round where all [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries (VM, Tx, Trie, other) get major version upgrades. This round of releases has been prepared for a long time and we are really pleased with and proud of the result, thanks to all team members and contributors who worked so hard and made this possible! 🙂 ❤️
+
+We have gotten rid of a lot of technical debt and inconsistencies and removed unused functionality, renamed methods, improved on the API and on TypeScript typing, to name a few of the more local type of refactoring changes. There are also broader structural changes like a full transition to native JavaScript `BigInt` values as well as various somewhat deep-reaching refactorings, both within a single package as well as some reaching beyond the scope of a single package. Also two completely new packages - `@ethereumjs/evm` (in addition to the existing `@ethereumjs/vm` package) and `@ethereumjs/statemanager` - have been created, leading to a more modular Ethereum JavaScript VM.
+
+We are very much confident that users of the libraries will greatly benefit from the changes being introduced. However - along the upgrade process - these releases require some extra attention and care since the changeset is both so big and deep reaching. We highly recommend to closely read the release notes, we have done our best to create a full picture on the changes with some special emphasis on delicate code and API parts and give some explicit guidance on how to upgrade and where problems might arise!
+
+So, enjoy the releases (this is a first round of Beta releases, with final releases following a couple of weeks after if things go well)! 🎉
+
+The EthereumJS Team
+
+### BigInt Introduction / ES2020 Build Target
+
+With this round of breaking releases the whole EthereumJS library stack removes the [BN.js](https://github.com/indutny/bn.js/) library and switches to use native JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) values for large-number operations and interactions.
+
+This makes the libraries more secure and robust (no more BN.js v4 vs v5 incompatibilities) and generally comes with substantial performance gains for the large-number-arithmetic-intense parts of the libraries (particularly the VM).
+
+To allow for BigInt support our build target has been updated to [ES2020](https://262.ecma-international.org/11.0/). We feel that some still remaining browser compatibility issues on the edges (old Safari versions e.g.) are justified by the substantial gains this step brings along.
+
+See [#1671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1671) and [#1771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1771) for the core `BigInt` transition PRs.
+
+### Disabled esModuleInterop and allowSyntheticDefaultImports TypeScript Compiler Options
+
+The above TypeScript options provide some semantic sugar like allowing to write an import like `import React from "react"` instead of `import * as React from "react"`, see [esModuleInterop](https://www.typescriptlang.org/tsconfig#esModuleInterop) and [allowSyntheticDefaultImports](https://www.typescriptlang.org/tsconfig#allowSyntheticDefaultImports) docs for some details.
+
+While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
+
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
+
+### BigInt-Related and other API Changes
+
+Different methods in the Blockchain library have been renamed for clarity or have a slightly different API due to the BigInt introduction, see PRs [#1822](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1822) and [#1877](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1877):
+
+- `getLatestHeader()` -> `getCanonicalHeadHeader()`
+- `getLatestBlock()` -> `getCanonicalHeadBlock()`
+- `iterator(name: string, onBlock: OnBlock): Promise<void | number>` -> `iterator(name: string, onBlock: OnBlock): Promise<number>`
+
+The following getters and/or methods have been removed:
+
+- `get meta()`
+- `getHead()` (use `getIteratorHead()` instead)
+- `setHead()` (use `setIteratorHead()` instead)
+
+### Consensus Encapsulation
+
+Consensus-related functionality in the `Blockchain` package has been reworked and taken out of the main `Blockchain` class, see PR [#1756](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1756).
+
+There is now a dedicated consensus class for each type of supported consensus, `Ethash`, `Clique` and `Casper` (PoS, this one is rather the do-nothing part of `Casper` and letting the respective consensus/beacon client do the hard work! 🙂). Each consensus class adheres to a common interface `Consensus` implementing the following five methods in a consensus-specific way:
+
+- `genesisInit(genesisBlock: Block): Promise<void>`
+- `setup(): Promise<void>`
+- `validateConsensus(block: Block): Promise<void>`
+- `validateDifficulty(header: BlockHeader): Promise<void>`
+- `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
+
+There is now a new `Blockchain` option `consensus`. This makes it very easy to pass in a modified version of an existing consensus implementation or do something totally different and write an own consensus class with consensus rules to follow.
+
+### Added Genesis Functionality
+
+PRs [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) and - as some follow-up work - [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) rework the genesis code throughout the EthereumJS library stack, with benefits on the bundle size of the lower level libraries (like `Block` or `Transaction`).
+
+In return the `Blockchain` class has gotten new responsibilities on handling genesis state. Genesis state and block functionality previously in the `@ethereumjs/common` class has been integrated here, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916).
+
+A genesis state can now be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data still coming from `@ethereumjs/common`, with genesis state now being integrated into the `Blockchain` library directly.
+
+The genesis block from the initialized `Blockchain` can be retrieved via the new `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the new `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
+
+Note that this is a very large refactoring with mainly the lower-level libraries benefitting. If you miss some functionality here let us know, we are happy to discuss!
+
+### Added Validation Methods
+
+The Blockchain class has also gotten new validation methods previously located in the `Block` library (where they required a `Blockchain` to be passed in as a method parameter), see PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959).
+
+The following methods have been taken out of the `Block` package and moved into `Blockchain`:
+
+- `BlockHeader.validate(blockchain: Blockchain, height?: bigint): Promise<void>` -> `Blockchain.validateHeader(header: BlockHeader, height?: bigint)`
+- `BlockHeader.validateDifficulty()`, `BlockHeader.validateCliqueDifficulty()` -> `Blockchain.consensus.validateDifficulty()`
+- `Block.validateUncles()` -> to `Blockchain`, kept private (let us know if you need to call into the functionality)
+
+### New File Structue
+
+The file structure of the package has been reworked and aligned with other libraries, see PR [#1986](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1986). There is now a dedicated `blockchain.ts` file for the main source code. The `index.ts` is now re-exporting the `Blockchain` class and `Consensus` implementations as well as the `BlockchainInterface` interface, the `BlockchainOptions` dictionary and types from a dedicated `types.ts` file.
+
+### Level DB Upgrade / Browser Compatibility
+
+The internal Level DB code has been reworked to now be based and work with the latest Level [v8.0.0](https://github.com/Level/level/releases/tag/v8.0.0) major Level DB release, see PR [#1949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1949). This allows to use ES6-style `import` syntax to import the `Level` instance and allows for better typing when working with Level DB.
+
+Because the usage of `level` and `memory-level` there are now 3 different possible instances of `abstract-level`, all with a consistent interface due to `abstract-level`. These instances are `classic-level`, `browser-level` and `memory-level`. This now makes it a lot easier to use the package in browsers without polyfills for `level`. For some context it is worth to mention that starting with the v8 release, the `level` package is just a proxy for these other packages and has no functionality itself.
+
 ## 5.5.2 - 2022-03-15
 
 - Fixed a bug where a delete-operation would be performed on DB but not in the cache leading to inconsistent behavior, PR [#1786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1786)
@@ -189,7 +333,7 @@ Constructor options (both for the static and the main constructor) for chain set
 
 Genesis handling has been reworked to now be safer and reduce the risk of wiping a blockchain by setting a new genesis, see PR [#930](https://github.com/ethereumjs/ethereumjs-monorepo/pull/930).
 
-**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB. 
+**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB.
 
 ### Removed deprecated `validate` option
 
@@ -252,7 +396,7 @@ This is the new recommended way to instantiate a `Blockchain` object, see PR [#9
 
 Genesis handling has been reworked to now be safer and reduce the risk of wiping a blockchain by setting a new genesis, see PR [#930](https://github.com/ethereumjs/ethereumjs-monorepo/pull/930).
 
-**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB. 
+**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB.
 
 **Changes and Refactoring**
 
@@ -322,8 +466,8 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` 
+We significantly updated our internal tool and CI setup along the work on
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce

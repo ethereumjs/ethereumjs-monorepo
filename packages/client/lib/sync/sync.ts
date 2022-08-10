@@ -1,12 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
-import { PeerPool } from '../net/peerpool'
-import { Peer } from '../net/peer/peer'
-import { FlowControl } from '../net/protocol'
-import { Config } from '../config'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+
 import { Chain } from '../blockchain'
+import { Config } from '../config'
+import { Peer } from '../net/peer/peer'
+import { PeerPool } from '../net/peerpool'
+import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 import { short } from '../util'
+import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -38,7 +40,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -55,7 +57,7 @@ export abstract class Synchronizer {
 
     this.pool = options.pool
     this.chain = options.chain
-    this.fetcher = null
+    this._fetcher = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.opened = false
@@ -81,6 +83,14 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
+  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null{
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null){
+    this._fetcher = fetcher;
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */
@@ -100,7 +110,7 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       return false
     }
     this.running = true
@@ -113,7 +123,7 @@ export abstract class Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Merge) === false) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -134,7 +144,7 @@ export abstract class Synchronizer {
    * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
-    if (!this.config.syncTargetHeight) {
+    if (isFalsy(this.config.syncTargetHeight)) {
       return
     }
     if (this.chain.headers.height >= this.config.syncTargetHeight) {
@@ -172,20 +182,18 @@ export abstract class Synchronizer {
       const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
-        const heightStr = height ? ` height=${height}` : ''
-        this.config.logger.debug(
-          `Finishing up sync with the current fetcher${heightStr}
-          }`
-        )
+        const heightStr = isTruthy(height) ? ` height=${height}` : ''
+        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
-        if (this.fetcher) {
-          await this.fetcher.fetch()
+        if (this._fetcher) {
+          await this._fetcher.fetch()
         }
+        this.config.logger.debug(`Fetcher finished fetching...`)
         resolveSync()
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger.error(
           `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
         )
         this.clearFetcher()
@@ -198,10 +206,10 @@ export abstract class Synchronizer {
    * Clears and removes the fetcher.
    */
   clearFetcher() {
-    if (this.fetcher) {
-      this.fetcher.clear()
-      this.fetcher.destroy()
-      this.fetcher = null
+    if (this._fetcher) {
+      this._fetcher.clear()
+      this._fetcher.destroy()
+      this._fetcher = null
     }
   }
 
@@ -231,7 +239,7 @@ export abstract class Synchronizer {
    * Reset synced status after a certain time with no chain updates
    */
   _syncedStatusCheck() {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       return
     }
 

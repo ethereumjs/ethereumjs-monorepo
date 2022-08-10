@@ -340,6 +340,12 @@ Send initial status message.
 - `reqId` - Request ID, will be echoed back on response.
 - `payload` - Payload as a list, will be rlp-encoded.
 
+#### BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
+
 ### Events
 
 Events emitted:
@@ -356,9 +362,10 @@ Events emitted:
 ## Browser
 
 While it's possible to bundle this package for the browser, some features do not work:
-+ EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
-module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
-by default).
+
+- EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
+  module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
+  by default).
 
 ## Tests
 
@@ -385,16 +392,16 @@ DEBUG=devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 
 The following loggers are available:
 
-| Logger | Description |
-| - | - |
-| `devp2p:dpt` | General DPT peer discovery logging |
-| `devp2p:dpt:server` | DPT server communication (`ping`, `pong`, `findNeighbour`,... messages) |
-| `devp2p:dpt:ban-list` | DPT ban list |
-| `devp2p:dns:dns` | DNS discovery logging |
-| `devp2p:rlpx` | General RLPx debug logger |
-| `devp2p:rlpx:peer` | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages) |
-| `devp2p:eth` | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
-| `devp2p:les` | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages) |
+| Logger                | Description                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `devp2p:dpt`          | General DPT peer discovery logging                                                       |
+| `devp2p:dpt:server`   | DPT server communication (`ping`, `pong`, `findNeighbour`,... messages)                  |
+| `devp2p:dpt:ban-list` | DPT ban list                                                                             |
+| `devp2p:dns:dns`      | DNS discovery logging                                                                    |
+| `devp2p:rlpx`         | General RLPx debug logger                                                                |
+| `devp2p:rlpx:peer`    | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages)  |
+| `devp2p:eth`          | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
+| `devp2p:les`          | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages)   |
 
 ### Debug Verbosity
 
@@ -418,13 +425,13 @@ Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 
 The following loggers from above support per-message debugging:
 
-| Logger | Usage |
-| - | - |
-| `devp2p:eth` | e.g. `devp2p:eth:GET_BLOCK_HEADERS` |
-| `devp2p:les` | e.g. `devp2p:les:GET_PROOFS` |
-| `devp2p:rlpx:peer` | e.g. `devp2p:rlpx:peer:HELLO` |
+| Logger                        | Usage                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `devp2p:eth`                  | e.g. `devp2p:eth:GET_BLOCK_HEADERS`                                                                  |
+| `devp2p:les`                  | e.g. `devp2p:les:GET_PROOFS`                                                                         |
+| `devp2p:rlpx:peer`            | e.g. `devp2p:rlpx:peer:HELLO`                                                                        |
 | `devp2p:rlpx:peer:DISCONNECT` | e.g. `devp2p:rlpx:peer:DISCONNECT:TOO_MANY_PEERS` (special logger to filter on `DISCONNECT` reasons) |
-| `devp2p:dpt:server` | e.g. `devp2p:dpt:server:findneighbours` |
+| `devp2p:dpt:server`           | e.g. `devp2p:dpt:server:findneighbours`                                                              |
 
 Available messages can be added to the logger base name to filter on a per message basis. See the following example to filter
 on two message names along `ETH` protocol debugging:

@@ -1,11 +1,11 @@
 import { randomBytes } from 'crypto'
-import type VM from '@ethereumjs/vm'
-import type { TxReceipt } from '@ethereumjs/vm'
-import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { TxPool } from '../service/txpool'
+import type { TxReceipt, VM } from '@ethereumjs/vm'
+import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
+
 import type { Config } from '../config'
+import type { TxPool } from '../service/txpool'
 
 interface PendingBlockOpts {
   /* Config */
@@ -39,14 +39,16 @@ export class PendingBlock {
   async start(vm: VM, parentBlock: Block, headerData: Partial<HeaderData> = {}) {
     const number = parentBlock.header.number + BigInt(1)
     const { gasLimit } = parentBlock.header
-    const baseFeePerGas = vm._common.isActivatedEIP(1559)
-      ? parentBlock.header.calcNextBaseFee()
-      : undefined
+    const baseFeePerGas =
+      vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vm.eei.state.setStateRoot(parentBlock.header.stateRoot)
+    await vm.eei.setStateRoot(parentBlock.header.stateRoot)
 
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
 
@@ -126,7 +128,8 @@ export class PendingBlock {
       await this.txPool.txsByPriceAndNonce((builder as any).headerData.baseFeePerGas)
     ).filter(
       (tx) =>
-        !(builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash()))
+        (builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash())) ===
+        false
     )
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0

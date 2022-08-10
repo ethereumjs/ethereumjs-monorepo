@@ -1,15 +1,17 @@
-import { Server as RPCServer } from 'jayson/promise'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { readFileSync, writeFileSync } from 'fs-extra'
-import { RPCManager } from '../lib/rpc'
-import EthereumClient from '../lib/client'
+import { Server as RPCServer } from 'jayson/promise'
+
+import { EthereumClient } from '../lib/client'
+import { Config } from '../lib/config'
+import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
+import * as modules from '../lib/rpc/modules'
 import {
-  MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
+  MethodConfig,
 } from '../lib/util'
-import * as modules from '../lib/rpc/modules'
-import { Config } from '../lib/config'
 
 type RPCArgs = {
   rpc: boolean
@@ -35,11 +37,11 @@ type RPCArgs = {
  */
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret
-  if (jwtFilePath) {
+  if (isTruthy(jwtFilePath)) {
     const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
-    if (!jwtSecretHex || jwtSecretHex.length != 64) {
+    if (isFalsy(jwtSecretHex) || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
     config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)
@@ -82,6 +84,12 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
   let withEngineMethods = false
 
+  if ((rpc || rpcEngine) && !config.saveReceipts) {
+    logger?.warn(
+      `Starting client without --saveReceipts might lead to interop issues with a CL especially if the CL intends to propose blocks, omitting methods=${saveReceiptsMethods}`
+    )
+  }
+
   if (rpc || ws) {
     let rpcHttpServer
     withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
@@ -103,8 +111,8 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
                 jwtSecret,
                 unlessFn: (req: any) =>
                   Array.isArray(req.body)
-                    ? !req.body.some((r: any) => r.method.includes('engine_'))
-                    : !req.body.method.includes('engine_'),
+                    ? req.body.some((r: any) => r.method.includes('engine_')) === false
+                    : req.body.method.includes('engine_') === false,
               }
             : undefined,
       })

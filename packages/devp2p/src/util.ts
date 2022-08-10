@@ -1,11 +1,12 @@
-import { arrToBufArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
+import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
-import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
+
 import { ETH } from './protocol/eth'
 import { LES } from './protocol/les'
-import { debug as createDebugLogger } from 'debug'
 
 export const devp2pDebug = createDebugLogger('devp2p')
 
@@ -75,7 +76,7 @@ export function assertEq(
     if (expected.equals(actual)) return
     fullMsg = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
     const debugMsg = `[ERROR] ${fullMsg}`
-    if (messageName) {
+    if (isTruthy(messageName)) {
       debug(messageName, debugMsg)
     } else {
       debug(debugMsg)
@@ -85,7 +86,7 @@ export function assertEq(
 
   if (expected === actual) return
   fullMsg = `${msg}: ${expected} / ${actual}`
-  if (messageName) {
+  if (isTruthy(messageName)) {
     debug(messageName, fullMsg)
   } else {
     debug(fullMsg)

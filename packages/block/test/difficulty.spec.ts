@@ -1,6 +1,7 @@
-import * as tape from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { bufferToInt } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { Block } from '../src'
 
 function runDifficultyTests(
@@ -37,6 +38,9 @@ const hardforkTestData: TestData = {
   arrowGlacier:
     require('../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json')
       .difficultyArrowGlacier.ArrowGlacier,
+  grayGlacier:
+    require('../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json')
+      .difficultyGrayGlacier.GrayGlacier,
 }
 
 const chainTestData: TestData = {

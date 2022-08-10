@@ -1,6 +1,8 @@
+import { isTruthy } from '@ethereumjs/util'
 import { Multiaddr } from 'multiaddr'
+
 import { Config } from '../../config'
-import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types'
+import { DnsNetwork, KeyLike, MultiaddrLike } from '../../types'
 import { parseKey, parseMultiaddrs } from '../../util/parse'
 import { Protocol } from '../protocol/protocol'
 
@@ -41,8 +43,8 @@ export class Server {
    */
   constructor(options: ServerOptions) {
     this.config = options.config
-    this.key = options.key ? parseKey(options.key) : this.config.key
-    this.bootnodes = options.bootnodes ? parseMultiaddrs(options.bootnodes) : []
+    this.key = isTruthy(options.key) ? parseKey(options.key) : this.config.key
+    this.bootnodes = isTruthy(options.bootnodes) ? parseMultiaddrs(options.bootnodes) : []
     this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000
 

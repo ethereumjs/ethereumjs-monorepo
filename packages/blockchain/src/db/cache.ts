@@ -4,7 +4,7 @@ import * as LRUCache from 'lru-cache'
  * Simple LRU Cache that allows for keys of type Buffer
  * @hidden
  */
-export default class Cache<V> {
+export class Cache<V> {
   _cache: LRUCache<string, V>
 
   constructor(opts: LRUCache.Options<string, V>) {

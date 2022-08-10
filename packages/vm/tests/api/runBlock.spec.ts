@@ -1,22 +1,22 @@
-import * as tape from 'tape'
-import { Account, Address, toBuffer, KECCAK256_RLP } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
+  Capability,
+  FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
-  FeeMarketEIP1559Transaction,
-  Capability,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../src/types'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
-import { setupPreConditions, getDAOCommon } from '../util'
-import { setupVM, createAccount } from './utils'
-import * as testnet from './testdata/testnet.json'
+import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../src/types'
+import { AfterBlockEvent, RunBlockOpts } from '../../src/types'
 import { VM } from '../../src/vm'
-import { setBalance } from './utils'
+import { getDAOCommon, setupPreConditions } from '../util'
+import * as testnet from './testdata/testnet.json'
+import { createAccount, setBalance, setupVM } from './utils'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -30,7 +30,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
-    await setupPreConditions(vm.eei.state, testData)
+    await setupPreConditions(vm.eei, testData)
 
     st.ok(
       //@ts-ignore
@@ -56,7 +56,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
-    await setupPreConditions(vm.eei.state, testData)
+    await setupPreConditions(vm.eei, testData)
 
     const block1Rlp = toBuffer(testData.blocks[0].rlp)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp)
@@ -229,6 +229,22 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       })
   })
 
+  t.test('should fail when no `validateHeader` method exists on blockchain class', async (t) => {
+    const vm = await VM.create({ common })
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    ;(vm.blockchain as any).validateHeader = undefined
+    try {
+      await vm.runBlock({ block })
+    } catch (err: any) {
+      t.equal(
+        err.message,
+        'cannot validate header: blockchain has no `validateHeader` method',
+        'should error'
+      )
+    }
+  })
+
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
     const vm = await VM.create({ common })
 
@@ -263,7 +279,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1, { common })
     // @ts-ignore
-    await setupPreConditions(vm.eei.state, testData)
+    await setupPreConditions(vm.eei, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = BigInt('0x1111')
@@ -404,7 +420,7 @@ async function runWithHf(hardfork: string) {
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
   // @ts-ignore
-  await setupPreConditions(vm.eei.state, testData)
+  await setupPreConditions(vm.eei, testData)
 
   const res = await vm.runBlock({
     block,
@@ -449,7 +465,7 @@ tape('runBlock() -> tx types', async (t) => {
     }
 
     //@ts-ignore
-    await setupPreConditions(vm.eei.state, testData)
+    await setupPreConditions(vm.eei, testData)
 
     const res = await vm.runBlock({
       block,

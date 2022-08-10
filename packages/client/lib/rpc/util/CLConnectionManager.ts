@@ -1,8 +1,10 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { isTruthy } from '@ethereumjs/util'
+
+import type { Config } from '../../config'
 import { Event } from '../../types'
 import { short, timeDiff } from '../../util'
-import type { Config } from '../../config'
 import {
   ExecutionPayloadV1,
   ForkchoiceResponseV1,
@@ -79,11 +81,11 @@ export class CLConnectionManager {
       maximumFractionDigits: 1,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition) === true) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkIdTransition) === true) {
           this.start()
         }
       })
@@ -149,7 +151,7 @@ export class CLConnectionManager {
     if (update.headBlock) {
       msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
     }
-    if (update.error) {
+    if (isTruthy(update.error)) {
       msg += ` error=${update.error}`
     }
     return msg

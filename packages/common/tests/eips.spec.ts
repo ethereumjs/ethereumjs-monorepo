@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '../src/'
+
+import { Chain, Common, Hardfork } from '../src'
 
 tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {
@@ -55,6 +56,18 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.isActivatedEIP(2929), true, 'berlin, eips: [] -> true (EIP-2929)')
     st.equal(c.isActivatedEIP(2315), false, 'berlin, eips: [] -> true (EIP-2315)')
     st.equal(c.isActivatedEIP(2537), false, 'berlin, eips: [] -> false (EIP-2537)')
+
+    st.end()
+  })
+
+  t.test('eipBlock', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Mainnet })
+
+    let msg = 'should return correct value'
+    st.ok(c.eipBlock(1559)! === 12965000n, msg)
+
+    msg = 'should return null for unscheduled eip'
+    st.equal(c.eipBlock(0), null, msg)
 
     st.end()
   })

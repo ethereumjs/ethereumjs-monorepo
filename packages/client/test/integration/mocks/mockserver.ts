@@ -1,13 +1,15 @@
+import { isTruthy } from '@ethereumjs/util'
+
 import { Server, ServerOptions } from '../../../lib/net/server'
 import { Event } from '../../../lib/types'
-import MockPeer from './mockpeer'
-import { RemoteStream, createServer, destroyServer, servers } from './network'
+import { MockPeer } from './mockpeer'
+import { createServer, destroyServer, RemoteStream, servers } from './network'
 
 interface MockServerOptions extends ServerOptions {
   location?: string
 }
 
-export default class MockServer extends Server {
+export class MockServer extends Server {
   public location: string
   public server: Server | null
   public peers: { [key: string]: MockPeer }
@@ -45,7 +47,7 @@ export default class MockServer extends Server {
     // This wait is essential to clear out the pending setTimeout in the
     // createStream in ./network.ts
     await this.wait(20)
-    while (servers[this.location]) {
+    while (isTruthy(servers[this.location])) {
       await destroyServer(this.location)
     }
     await super.stop()
@@ -84,7 +86,7 @@ export default class MockServer extends Server {
 
   disconnect(id: string) {
     const peer = this.peers[id]
-    if (peer) this.config.events.emit(Event.PEER_DISCONNECTED, peer)
+    if (isTruthy(peer)) this.config.events.emit(Event.PEER_DISCONNECTED, peer)
   }
 
   async wait(delay?: number) {

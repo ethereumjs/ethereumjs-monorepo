@@ -1,12 +1,15 @@
-import ms = require('ms')
-import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
-import { devp2pDebug } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import ms = require('ms')
+import { isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger, Debugger } from 'debug'
 
-export enum EthProtocol {
+import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { devp2pDebug } from '../util'
+
+export enum EthProtocol { // What does this represent?
   ETH = 'eth',
   LES = 'les',
+  SNAP = 'snap',
 }
 
 type MessageCodes = { [key: number | string]: number | string }
@@ -17,7 +20,7 @@ export class Protocol extends EventEmitter {
   _version: number
   _peer: Peer
   _send: SendMethod
-  _statusTimeoutId: NodeJS.Timeout
+  _statusTimeoutId?: NodeJS.Timeout
   _messageCodes: MessageCodes
   _debug: Debugger
   _verbose: boolean
@@ -44,9 +47,12 @@ export class Protocol extends EventEmitter {
     this._send = send
     this._version = version
     this._messageCodes = messageCodes
-    this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, ms('5s'))
+    this._statusTimeoutId =
+      protocol !== EthProtocol.SNAP
+        ? setTimeout(() => {
+            this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
+          }, ms('5s'))
+        : undefined
 
     this._debug = devp2pDebug.extend(protocol)
     this._verbose = createDebugLogger('verbose').enabled
@@ -63,7 +69,7 @@ export class Protocol extends EventEmitter {
 
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
-    if (ip) {
+    if (isTruthy(ip)) {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
     }
   }
@@ -76,7 +82,7 @@ export class Protocol extends EventEmitter {
    */
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
-    if (ip) {
+    if (isTruthy(ip)) {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
       this._firstPeer = ip
@@ -91,11 +97,11 @@ export class Protocol extends EventEmitter {
    */
   protected debug(messageName: string, msg: string) {
     this._debug(msg)
-    if (this.msgDebuggers[messageName]) {
+    if (isTruthy(this.msgDebuggers[messageName])) {
       this.msgDebuggers[messageName](msg)
     }
     const ip = this._peer._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
+    if (isTruthy(ip) && isTruthy(this.msgDebuggers[ip])) {
       this.msgDebuggers[ip](msg)
     }
   }

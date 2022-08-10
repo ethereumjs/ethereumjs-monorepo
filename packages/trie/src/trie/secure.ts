@@ -1,6 +1,7 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { isFalsy } from '@ethereumjs/util'
+
+import { Proof, ROOT_DB_KEY } from '../types'
 import { CheckpointTrie } from './checkpoint'
-import { Proof } from '../types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -17,9 +18,7 @@ export class SecureTrie extends CheckpointTrie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    const hash = Buffer.from(keccak256(key))
-    const value = await super.get(hash)
-    return value
+    return super.get(this.hash(key))
   }
 
   /**
@@ -29,11 +28,14 @@ export class SecureTrie extends CheckpointTrie {
    * @param value
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    if (!val || val.toString() === '') {
+    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+      throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
+    }
+
+    if (isFalsy(val) || val.toString() === '') {
       await this.del(key)
     } else {
-      const hash = Buffer.from(keccak256(key))
-      await super.put(hash, val)
+      await super.put(this.hash(key), val)
     }
   }
 
@@ -42,28 +44,24 @@ export class SecureTrie extends CheckpointTrie {
    * @param key
    */
   async del(key: Buffer): Promise<void> {
-    const hash = Buffer.from(keccak256(key))
-    await super.del(hash)
+    await super.del(this.hash(key))
   }
 
   /**
    * prove has been renamed to {@link SecureTrie.createProof}.
    * @deprecated
-   * @param trie
    * @param key
    */
-  static async prove(trie: SecureTrie, key: Buffer): Promise<Proof> {
-    return this.createProof(trie, key)
+  async prove(key: Buffer): Promise<Proof> {
+    return this.createProof(key)
   }
 
   /**
    * Creates a proof that can be verified using {@link SecureTrie.verifyProof}.
-   * @param trie
    * @param key
    */
-  static createProof(trie: SecureTrie, key: Buffer): Promise<Proof> {
-    const hash = Buffer.from(keccak256(key))
-    return super.createProof(trie, hash)
+  async createProof(key: Buffer): Promise<Proof> {
+    return super.createProof(this.hash(key))
   }
 
   /**
@@ -74,15 +72,14 @@ export class SecureTrie extends CheckpointTrie {
    * @throws If proof is found to be invalid.
    * @returns The value from the key.
    */
-  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const hash = Buffer.from(keccak256(key))
-    return super.verifyProof(rootHash, hash, proof)
+  async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
+    return super.verifyProof(rootHash, this.hash(key), proof)
   }
 
   /**
    * Verifies a range proof.
    */
-  static verifyRangeProof(
+  verifyRangeProof(
     rootHash: Buffer,
     firstKey: Buffer | null,
     lastKey: Buffer | null,
@@ -92,9 +89,9 @@ export class SecureTrie extends CheckpointTrie {
   ): Promise<boolean> {
     return super.verifyRangeProof(
       rootHash,
-      firstKey && Buffer.from(keccak256(firstKey)),
-      lastKey && Buffer.from(keccak256(lastKey)),
-      keys.map((k) => Buffer.from(keccak256(k))),
+      firstKey && this.hash(firstKey),
+      lastKey && this.hash(lastKey),
+      keys.map((k) => this.hash(k)),
       values,
       proof
     )
@@ -109,10 +106,21 @@ export class SecureTrie extends CheckpointTrie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
+      persistRoot: this._persistRoot,
+      hash: (this as any)._hash,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       secureTrie.db.checkpoints = [...this.db.checkpoints]
     }
     return secureTrie
+  }
+
+  /**
+   * Persists the root hash in the underlying database
+   */
+  async persistRoot() {
+    if (this._persistRoot !== undefined) {
+      await this.db.put(this.hash(ROOT_DB_KEY), this.root)
+    }
   }
 }

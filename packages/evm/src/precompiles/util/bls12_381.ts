@@ -1,5 +1,6 @@
-import { padToEven, bufferToBigInt } from '@ethereumjs/util'
-import { EvmError, ERROR } from '../../exceptions'
+import { bufferToBigInt, padToEven } from '@ethereumjs/util'
+
+import { ERROR, EvmError } from '../../exceptions'
 
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(
@@ -163,12 +164,12 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   G1.setY(Fp_Y)
   G1.setZ(One)
 
-  if (!G1.isValidOrder()) {
+  if (G1.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   // Check if these coordinates are actually on the curve.
-  if (!G1.isValid()) {
+  if (G1.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
@@ -237,11 +238,11 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
   mclPoint.setY(Fp2Y)
   mclPoint.setZ(Fp2One)
 
-  if (!mclPoint.isValidOrder()) {
+  if (mclPoint.isValidOrder() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
-  if (!mclPoint.isValid()) {
+  if (mclPoint.isValid() === false) {
     throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
@@ -326,11 +327,11 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl:
 }
 
 export {
-  BLS12_381_ToG1Point,
   BLS12_381_FromG1Point,
-  BLS12_381_ToG2Point,
   BLS12_381_FromG2Point,
-  BLS12_381_ToFrPoint,
-  BLS12_381_ToFpPoint,
   BLS12_381_ToFp2Point,
+  BLS12_381_ToFpPoint,
+  BLS12_381_ToFrPoint,
+  BLS12_381_ToG1Point,
+  BLS12_381_ToG2Point,
 }

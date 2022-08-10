@@ -1,12 +1,12 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import * as tape from 'tape'
-import Blockchain from '../src'
-import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import * as blocksData from './testdata/blocks_mainnet.json'
-
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
+import * as tape from 'tape'
+
+import { Blockchain } from '../src'
+import * as blocksData from './testdata/blocks_mainnet.json'
+import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util'
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
@@ -181,7 +181,7 @@ tape('blockchain test', (t) => {
     await blockchain.putBlock(block)
 
     const returnedBlock = await blockchain.getBlock(1)
-    if (returnedBlock) {
+    if (typeof returnedBlock !== 'undefined') {
       st.ok(returnedBlock.hash().equals(blocks[1].hash()))
     } else {
       st.fail('block is not defined!')
@@ -201,7 +201,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    if (block) {
+    if (typeof block !== 'undefined') {
       st.ok(block.hash().equals(genesisBlock.hash()))
     } else {
       st.fail('block is not defined!')
@@ -616,7 +616,7 @@ tape('blockchain test', (t) => {
     const [db, genesis] = await createTestDB()
     const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()
-    if (genesis) {
+    if (typeof genesis !== 'undefined') {
       st.ok(head.hash().equals(genesis.hash()), 'should get head')
       st.equal(
         (blockchain as any)._heads['head0'].toString('hex'),
@@ -665,7 +665,7 @@ tape('blockchain test', (t) => {
 
   t.test('uncached db ops', async (st) => {
     const [db, genesis] = await createTestDB()
-    if (!genesis) {
+    if (typeof genesis === 'undefined') {
       return st.fail('genesis not defined!')
     }
     const blockchain = await Blockchain.create({ db, genesisBlock: genesis })

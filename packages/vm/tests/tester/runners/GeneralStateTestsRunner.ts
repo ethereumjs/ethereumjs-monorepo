@@ -1,8 +1,11 @@
-import * as tape from 'tape'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { toBuffer } from '@ethereumjs/util'
-import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
+import { Block } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { isTruthy, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -13,7 +16,7 @@ function parseTestCases(
 ) {
   let testCases = []
 
-  if (testData['post'][forkConfigTestSuite]) {
+  if (isTruthy(testData['post'][forkConfigTestSuite])) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       const testIndexes = testCase['indexes']
       const tx = { ...testData.transaction }
@@ -33,7 +36,7 @@ function parseTestCases(
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
 
-      if (tx.accessLists) {
+      if (isTruthy(tx.accessLists)) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
         if (tx.chainId == undefined) {
           tx.chainId = 1
@@ -60,18 +63,22 @@ function parseTestCases(
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
-  if (options.dist) {
-    VM = require('../../../dist').default
+  if (isTruthy(options.dist)) {
+    ;({ VM } = require('../../../dist'))
   } else {
-    VM = require('../../../src').default
+    ;({ VM } = require('../../../src'))
   }
   const begin = Date.now()
   const common = options.common
 
+  // Have to create a blockchain with empty block as genesisBlock for Merge
+  // Otherwise mainnet genesis will throw since this has difficulty nonzero
+  const genesisBlock = new Block(undefined, undefined, undefined, { common })
+  const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie()
-  const vm = await VM.create({ state, common })
+  const vm = await VM.create({ state, common, blockchain })
 
-  await setupPreConditions(vm.eei.state, testData)
+  await setupPreConditions(vm.eei, testData)
 
   let execInfo = ''
   let tx
@@ -86,7 +93,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
-      if (options.jsontrace) {
+      if (isTruthy(options.jsontrace)) {
         vm.evm.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
@@ -134,7 +141,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   return parseFloat(timeSpent)
 }
 
-export default async function runStateTest(options: any, testData: any, t: tape.Test) {
+export async function runStateTest(options: any, testData: any, t: tape.Test) {
   try {
     const testCases = parseTestCases(
       options.forkConfigTestSuite,
@@ -148,7 +155,7 @@ export default async function runStateTest(options: any, testData: any, t: tape.
       return
     }
     for (const testCase of testCases) {
-      if (options.reps) {
+      if (isTruthy(options.reps)) {
         let totalTimeSpent = 0
         for (let x = 0; x < options.reps; x++) {
           totalTimeSpent += await runTestCase(options, testCase, t)

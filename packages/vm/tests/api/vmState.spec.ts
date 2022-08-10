@@ -1,10 +1,11 @@
-import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createAccount, isRunningInKarma } from './utils'
+import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VmState } from '../../src/eei/vmState'
+import { createAccount, isRunningInKarma } from './utils'
 
 const StateManager = DefaultStateManager
 
@@ -114,7 +115,7 @@ tape('Original storage cache', async (t) => {
     const res = await vmState.getContractStorage(address, key)
     st.deepEqual(res, Buffer.alloc(0))
 
-    const origRes = await vmState.getOriginalContractStorage(address, key)
+    const origRes = await (<any>vmState).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, Buffer.alloc(0))
 
     await vmState.commit()
@@ -131,7 +132,7 @@ tape('Original storage cache', async (t) => {
   })
 
   t.test('should get original storage value', async (st) => {
-    const res = await vmState.getOriginalContractStorage(address, key)
+    const res = await (<any>vmState).getOriginalContractStorage(address, key)
     st.deepEqual(res, value)
     st.end()
   })
@@ -142,7 +143,7 @@ tape('Original storage cache', async (t) => {
     const res = await vmState.getContractStorage(address, key)
     st.deepEqual(res, newValue)
 
-    const origRes = await vmState.getOriginalContractStorage(address, key)
+    const origRes = await (<any>vmState).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, value)
     st.end()
   })
@@ -158,20 +159,20 @@ tape('Original storage cache', async (t) => {
 
     let res = await vmState.getContractStorage(address, key2)
     st.deepEqual(res, value2)
-    let origRes = await vmState.getOriginalContractStorage(address, key2)
+    let origRes = await (<any>vmState).getOriginalContractStorage(address, key2)
     st.deepEqual(origRes, value2)
 
     await vmState.putContractStorage(address, key2, value3)
 
     res = await vmState.getContractStorage(address, key2)
     st.deepEqual(res, value3)
-    origRes = await vmState.getOriginalContractStorage(address, key2)
+    origRes = await (<any>vmState).getOriginalContractStorage(address, key2)
     st.deepEqual(origRes, value2)
 
     // Check previous key
     res = await vmState.getContractStorage(address, key)
     st.deepEqual(res, Buffer.from('1235', 'hex'))
-    origRes = await vmState.getOriginalContractStorage(address, key)
+    origRes = await (<any>vmState).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, value)
 
     st.end()
@@ -179,7 +180,7 @@ tape('Original storage cache', async (t) => {
 
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
-      await vmState.getOriginalContractStorage(address, Buffer.alloc(12))
+      await (<any>vmState).getOriginalContractStorage(address, Buffer.alloc(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()

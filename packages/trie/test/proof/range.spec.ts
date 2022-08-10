@@ -1,6 +1,7 @@
 import * as crypto from 'crypto'
-import * as tape from 'tape'
 import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { DB, LevelDB, Trie } from '../../src'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
@@ -78,13 +79,13 @@ async function verify(
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return await Trie.verifyRangeProof(
+  return await trie.verifyRangeProof(
     trie.root,
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
     vals ?? targetRange.map(([, val]) => val),
-    [...(await Trie.createProof(trie, startKey)), ...(await Trie.createProof(trie, endKey))]
+    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
   )
 }
 
@@ -195,7 +196,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     const { trie, entries } = await randomTrie(new LevelDB())
 
     t.equal(
-      await Trie.verifyRangeProof(
+      await trie.verifyRangeProof(
         trie.root,
         null,
         null,
@@ -456,7 +457,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     let bloatedProof: Buffer[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await Trie.createProof(trie, entries[i][0]))
+      bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
     }
 
     t.equal(await verify(trie, entries, 0, entries.length - 1), false)

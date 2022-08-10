@@ -3,16 +3,16 @@
 ## Light sync
 
 In this example, we will run two ethereumjs clients. The first will be a full sync client that
-connects to the rinkeby network and starts downloading the blockchain. The second will be a
+connects to the goerli network and starts downloading the blockchain. The second will be a
 light client that connects to the first client and syncs headers as they are downloaded.
 
-The first client will use RLPx to connect to the rinkeby network, but will also provide a libp2p
+The first client will use RLPx to connect to the goerli network, but will also provide a libp2p
 listener. The second client will use libp2p to connect to the first client.
 
 Run the first client and start downloading blocks:
 
 ```
-npm run client:start -- --syncmode full --lightserv true  --datadir first --network rinkeby --transports rlpx libp2p --multiaddrs /ip4/127.0.0.1/tcp/50505/ws
+npm run client:start -- --syncmode full --lightserv true  --datadir first --network goerli --transports rlpx libp2p --multiaddrs /ip4/127.0.0.1/tcp/50505/ws
 ```
 
 Output:
@@ -29,7 +29,7 @@ Copy the libp2p URL from the output. In this example, the url is `/ip4/127.0.0.1
 Wait until a few thousand blocks are downloaded and then run the second client in a new terminal, using the url above to connect to the first client:
 
 <pre>
-npm run client:start -- --syncmode light --network rinkeby --datadir second --transports libp2p --multiaddrs /ip4/0.0.0.0/tcp/50506 --bootnodes=<b>/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa</b>
+npm run client:start -- --syncmode light --network goerli --datadir second --transports libp2p --multiaddrs /ip4/0.0.0.0/tcp/50506 --bootnodes=/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa
 </pre>
 
 Notice that we have to run the second client on port 50506 using the `--multiaddrs /ip4/0.0.0.0/tcp/50506` libp2p option to avoid port conflicts.
@@ -60,7 +60,7 @@ Now, open a new browser window and navigate to `http://localhost:8080`. Open the
 
 ```js
 ethereumjs.run({
-  network: 'rinkeby',
+  network: 'goerli',
   syncmode: 'light',
   bootnodes: '/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa',
 })
@@ -68,4 +68,5 @@ ethereumjs.run({
 
 That's it! Now, you should start seeing headers being downloaded to the local storage of your browser. Since IndexDB is being used, even if you close and re-open the browser window, the headers you've downloaded will be saved.
 
+Note: To enable extra debug logs in the browser, add a parameter `debugLogs: 'client:*'` to see all the synchronizer and fetcher logs as well.
 ![EthereumJS Client Libp2p Browser Syncing](./browser_sync.png?raw=true)

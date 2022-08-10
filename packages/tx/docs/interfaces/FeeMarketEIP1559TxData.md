@@ -43,13 +43,13 @@ The access list which contains the addresses/storage slots which the transaction
 
 #### Defined in
 
-[types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L178)
+[types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
 
 ___
 
 ### chainId
 
-• `Optional` **chainId**: `BNLike`
+• `Optional` **chainId**: `BigIntLike`
 
 The transaction's chain ID
 
@@ -59,7 +59,7 @@ The transaction's chain ID
 
 #### Defined in
 
-[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L173)
+[types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L174)
 
 ___
 
@@ -75,13 +75,13 @@ This will contain the data of the message or the init of a contract.
 
 #### Defined in
 
-[types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L143)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: `BNLike`
+• `Optional` **gasLimit**: `BigIntLike`
 
 The transaction's gas limit.
 
@@ -91,7 +91,7 @@ The transaction's gas limit.
 
 #### Defined in
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L127)
+[types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L128)
 
 ___
 
@@ -108,37 +108,37 @@ transactions and should always be undefined for this specific transaction type.
 
 #### Defined in
 
-[types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L189)
+[types.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L190)
 
 ___
 
 ### maxFeePerGas
 
-• `Optional` **maxFeePerGas**: `BNLike`
+• `Optional` **maxFeePerGas**: `BigIntLike`
 
 The maximum total fee
 
 #### Defined in
 
-[types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L197)
+[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L198)
 
 ___
 
 ### maxPriorityFeePerGas
 
-• `Optional` **maxPriorityFeePerGas**: `BNLike`
+• `Optional` **maxPriorityFeePerGas**: `BigIntLike`
 
 The maximum inclusion fee per gas (this fee is given to the miner)
 
 #### Defined in
 
-[types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L193)
+[types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L194)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: `BNLike`
+• `Optional` **nonce**: `BigIntLike`
 
 The transaction's nonce.
 
@@ -148,13 +148,13 @@ The transaction's nonce.
 
 #### Defined in
 
-[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L117)
+[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L118)
 
 ___
 
 ### r
 
-• `Optional` **r**: `BNLike`
+• `Optional` **r**: `BigIntLike`
 
 EC signature parameter.
 
@@ -164,13 +164,13 @@ EC signature parameter.
 
 #### Defined in
 
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L152)
+[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
 
 ___
 
 ### s
 
-• `Optional` **s**: `BNLike`
+• `Optional` **s**: `BigIntLike`
 
 EC signature parameter.
 
@@ -180,7 +180,7 @@ EC signature parameter.
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
+[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
 
 ___
 
@@ -196,13 +196,13 @@ The transaction's the address is sent to.
 
 #### Defined in
 
-[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
+[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L133)
 
 ___
 
 ### type
 
-• `Optional` **type**: `BNLike`
+• `Optional` **type**: `BigIntLike`
 
 The transaction type
 
@@ -212,13 +212,13 @@ The transaction type
 
 #### Defined in
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+[types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
 
 ___
 
 ### v
 
-• `Optional` **v**: `BNLike`
+• `Optional` **v**: `BigIntLike`
 
 EC recovery ID.
 
@@ -228,13 +228,13 @@ EC recovery ID.
 
 #### Defined in
 
-[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
+[types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L148)
 
 ___
 
 ### value
 
-• `Optional` **value**: `BNLike`
+• `Optional` **value**: `BigIntLike`
 
 The amount of Ether sent.
 
@@ -244,4 +244,4 @@ The amount of Ether sent.
 
 #### Defined in
 
-[types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L137)
+[types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L138)

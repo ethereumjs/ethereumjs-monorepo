@@ -1,11 +1,13 @@
-import { short } from '../util'
-import { Event } from '../types'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { ReverseBlockFetcher } from './fetcher'
 import type { Block } from '@ethereumjs/block'
-import type { Peer } from '../net/peer/peer'
-import { errSyncReorged, Skeleton } from './skeleton'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+
 import type { VMExecution } from '../execution'
+import type { Peer } from '../net/peer/peer'
+import { Event } from '../types'
+import { short } from '../util'
+import { ReverseBlockFetcher } from './fetcher'
+import { errSyncReorged, Skeleton } from './skeleton'
+import { Synchronizer, SynchronizerOptions } from './sync'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -42,6 +44,17 @@ export class BeaconSynchronizer extends Synchronizer {
     return 'beacon'
   }
 
+  get fetcher(): ReverseBlockFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof ReverseBlockFetcher)){
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: ReverseBlockFetcher | null){
+    this._fetcher = fetcher;
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */
@@ -55,7 +68,7 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     const subchain = this.skeleton.bounds()
-    if (subchain) {
+    if (isTruthy(subchain)) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
     }
@@ -114,14 +127,24 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && !this.skeleton.isLinked()) {
-      try {
-        await this.sync()
-      } catch (error: any) {
-        this.config.events.emit(Event.SYNC_ERROR, error)
+    const isLinked = await this.skeleton.isLinked()
+    if (!isLinked) {
+      while (this.running) {
+        try {
+          await this.sync()
+        } catch (error: any) {
+          this.config.events.emit(Event.SYNC_ERROR, error)
+        }
+        await new Promise((resolve) => setTimeout(resolve, this.interval))
       }
-      await new Promise((resolve) => setTimeout(resolve, this.interval))
+    } else {
+      // It could be that the canonical chain fill got stopped midway, ideally CL
+      // would keep extending the skeleton that might trigger fillCanonicalChain
+      // but if we are already linked and CL is down, we don't need to wait
+      // for CL and just fill up the chain in meantime
+      void this.skeleton.fillCanonicalChain()
     }
+
     this.running = false
     clearTimeout(timeout)
   }
@@ -187,29 +210,37 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.isLinked()) {
+    if (!isTruthy(this.skeleton.bounds()) || (await this.skeleton.isLinked())) {
       this.clearFetcher()
-      return true
+      return false
     }
 
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
     const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     const { tail } = this.skeleton.bounds()
     const first = tail - BigInt(1)
-    // Sync from tail to next subchain or chain height
-    const count =
-      first -
-      ((this.skeleton as any).status.progress.subchains[1]?.head
-        ? (this.skeleton as any).status.progress.subchains[1].head - BigInt(1)
-        : this.chain.blocks.height)
-    if (count > BigInt(0) && (!this.fetcher || this.fetcher.errored)) {
+
+    let count
+    if (first <= this.chain.blocks.height) {
+      // skeleton should have linked by now, if not it means skeleton is syncing the reorg
+      // to the current canonical, so we can lower the skeleton target by another 1000 blocks
+      count = BigInt(this.config.skeletonSubchainMergeMinimum)
+    } else {
+      // We sync one less because tail's next should be pointing to the block in chain
+      count = tail - this.chain.blocks.height - BigInt(1)
+    }
+
+    if (count > BigInt(0) && (!isTruthy(this.fetcher) || isTruthy(this.fetcher.errored))) {
+      this.config.logger.debug(
+        `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
+      )
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -246,14 +277,14 @@ export class BeaconSynchronizer extends Synchronizer {
    * Runs vm execution on {@link Event.CHAIN_UPDATED}
    */
   async runExecution(): Promise<void> {
-    // Execute single block when within 50 blocks of head,
+    // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
-    if (
-      (this.skeleton.bounds() &&
-        this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)) ||
-      this.chain.blocks.height % BigInt(50) === BigInt(0)
-    ) {
-      void this.execution.run(false)
+    const shouldRunOnlyBatched = !(
+      isTruthy(this.skeleton.bounds()) &&
+      this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
+    )
+    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
+      void this.execution.run(false, shouldRunOnlyBatched)
     }
   }
 

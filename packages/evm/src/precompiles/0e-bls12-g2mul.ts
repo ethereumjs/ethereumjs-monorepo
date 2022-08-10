@@ -1,14 +1,16 @@
-import { PrecompileInput } from './types'
+import { isFalsy } from '@ethereumjs/util'
+
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
+import { PrecompileInput } from './types'
 const {
   BLS12_381_ToG2Point,
   BLS12_381_FromG2Point,
   BLS12_381_ToFrPoint,
 } = require('./util/bls12_381')
 
-export default async function (opts: PrecompileInput): Promise<ExecResult> {
-  if (!opts.data) throw new Error('opts.data missing but required')
+export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
+  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
 
   const mcl = (<any>opts._EVM)._mcl!
 

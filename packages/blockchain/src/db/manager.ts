@@ -1,10 +1,11 @@
-import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
-import RLP from 'rlp'
-import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import { Block, BlockBodyBuffer, BlockBuffer, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-import Cache from './cache'
-import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+
+import { Cache } from './cache'
+import { DatabaseKey, DBOp, DBOpData, DBTarget } from './operation'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'
@@ -12,7 +13,8 @@ class NotFoundError extends Error {
   constructor(blockNumber: bigint) {
     super(`Key ${blockNumber.toString()} was not found`)
 
-    if (Error.captureStackTrace) {
+    // `Error.captureStackTrace` is not defined in some browser contexts
+    if (typeof Error.captureStackTrace !== 'undefined') {
       Error.captureStackTrace(this, this.constructor)
     }
   }
@@ -114,7 +116,7 @@ export class DBManager {
     if (number === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -137,7 +139,7 @@ export class DBManager {
       opts.hardforkByBlockNumber = true
     } else {
       const parentHash = await this.numberToHash(blockNumber - BigInt(1))
-      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
@@ -181,8 +183,8 @@ export class DBManager {
     const dbKey = dbGetOperation.baseDBOp.key
     const dbOpts = dbGetOperation.baseDBOp
 
-    if (cacheString) {
-      if (!this._cache[cacheString]) {
+    if (isTruthy(cacheString)) {
+      if (isFalsy(this._cache[cacheString])) {
         throw new Error(`Invalid cache: ${cacheString}`)
       }
 

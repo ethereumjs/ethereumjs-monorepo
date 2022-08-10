@@ -1,0 +1,51 @@
+name: E2E Hardhat Tests
+on:
+  push:
+    branches: [master]
+    tags: ['*']
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, synchronize]
+
+env:
+  cwd: ${{github.workspace}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-hardhat:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      # Publish all packages to virtual npm registry
+      # after giving each a minor version bump
+      - name: Publish to virtual registry
+        run: npm run e2e:publish
+
+      # Generate the resolutions file
+      - name: Generate e2e resolutions
+        run: npm run e2e:resolutions
+
+      # Clone hardhat repo, inject proxied dependencies, and run tests
+      - name: Build hardhat and test with new EthereumJS dependencies
+        run: bash ./scripts/e2e-hardhat.sh
+        env:
+          FORCE_COLOR: 3
+
+      - name: Remove hardhat directory to clean working state (for saving dependency cache)
+        run: rm -rf hardhat

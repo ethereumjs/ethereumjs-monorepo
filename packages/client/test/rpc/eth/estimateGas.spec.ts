@@ -1,13 +1,14 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
-import { checkError } from '../util'
 import type { FullEthereumService } from '../../../lib/service'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_estimateGas'
 
@@ -26,7 +27,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.eei.state.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

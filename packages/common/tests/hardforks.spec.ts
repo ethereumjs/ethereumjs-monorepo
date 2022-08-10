@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {
@@ -16,6 +17,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
       Hardfork.Shanghai,
       Hardfork.Merge,
     ]
@@ -41,8 +43,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.getHardforkByBlockNumber(12965000), Hardfork.London, msg)
     st.equal(c.getHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
-    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
-
+    st.equal(c.getHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.GrayGlacier, msg)
     msg = 'should set HF correctly'
 
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.Chainstart, msg)
@@ -52,7 +54,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.setHardforkByBlockNumber(12965000), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
-    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
+    st.equal(c.setHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
+    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.GrayGlacier, msg)
 
     c = new Common({ chain: Chain.Ropsten })
     st.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)
@@ -276,7 +279,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     for (const [chain, genesisHash] of chains) {
       c = new Common({ chain })
       for (const hf of c.hardforks()) {
-        if (hf.forkHash && hf.forkHash !== null) {
+        if (typeof hf.forkHash === 'string') {
           const msg = `Verify forkHash calculation for: ${Chain[chain]} -> ${hf.name}`
           st.equal(c._calcForkHash(hf.name, genesisHash), hf.forkHash, msg)
         }

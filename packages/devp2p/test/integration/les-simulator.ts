@@ -1,5 +1,6 @@
+import { Chain, Common } from '@ethereumjs/common'
 import * as test from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
+
 import * as devp2p from '../../src'
 import * as util from './util'
 

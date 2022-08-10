@@ -1,6 +1,8 @@
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
+
 import { PeerInfo } from '../dpt'
 import { ENR } from './enr'
-import { debug as createDebugLogger } from 'debug'
 
 let dns: any
 try {
@@ -34,7 +36,7 @@ export class DNS {
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
 
-    if (options.dnsServerAddress) {
+    if (isTruthy(options.dnsServerAddress)) {
       dns.setServers([options.dnsServerAddress])
     }
   }
@@ -173,8 +175,9 @@ export class DNS {
 
     const response = await dns.promises.resolve(location, 'TXT')
 
-    if (!response.length) throw new Error('Received empty result array while fetching TXT record')
-    if (!response[0].length) throw new Error('Received empty TXT record')
+    if (response.length === 0)
+      throw new Error('Received empty result array while fetching TXT record')
+    if (response[0].length === 0) throw new Error('Received empty TXT record')
     // Branch entries can be an array of strings of comma delimited subdomains, with
     // some subdomain strings split across the array elements
     // (e.g btw end of arr[0] and beginning of arr[1])
@@ -194,7 +197,7 @@ export class DNS {
    * @return {boolean}
    */
   private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): boolean {
-    if (!peer || !peer!.address) return false
+    if (isFalsy(peer) || isFalsy(peer.address)) return false
 
     for (const existingPeer of peers) {
       if (peer.address === existingPeer.address) {

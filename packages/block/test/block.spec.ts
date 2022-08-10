@@ -1,18 +1,20 @@
-import * as tape from 'tape'
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
+import util from 'util'
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+
+import * as tape from 'tape'
+
 import { Block, BlockBuffer } from '../src'
-import blockFromRpc from '../src/from-rpc'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { blockFromRpc } from '../src/from-rpc'
+import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
-import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
-
-// explicitly import util, needed for karma-typescript bundling
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import util from 'util'
+import * as testnetMerge from './testdata/testnetMerge.json'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -86,12 +88,12 @@ tape('[Block]: block functions', function (t) {
           number: 20, // Future block
         },
       },
-      { common, hardforkByTD: 5001 }
+      { common, hardforkByTTD: 5001 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Merge,
-      'should use hardforkByTD option (td > threshold)'
+      'should use hardforkByTTD option (td > threshold)'
     )
 
     block = Block.fromBlockData(
@@ -101,23 +103,23 @@ tape('[Block]: block functions', function (t) {
           extraData: Buffer.alloc(97),
         },
       },
-      { common, hardforkByTD: 3000 }
+      { common, hardforkByTTD: 3000 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Berlin,
-      'should work with hardforkByTD option (td < threshold)'
+      'should work with hardforkByTTD option (td < threshold)'
     )
 
     try {
-      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )
@@ -193,7 +195,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid transaction trie'))
+      st.ok((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -225,7 +227,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.ok(error.message.includes('invalid uncle hash'))
+      st.ok((error.message as string).includes('invalid uncle hash'))
     }
   })
 

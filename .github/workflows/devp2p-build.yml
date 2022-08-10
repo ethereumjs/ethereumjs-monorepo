@@ -5,6 +5,7 @@ on:
     tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/devp2p
@@ -24,9 +25,7 @@ jobs:
       matrix:
         node-version: [16]
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -37,7 +36,11 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
 
       - uses: codecov/codecov-action@v2
         with:

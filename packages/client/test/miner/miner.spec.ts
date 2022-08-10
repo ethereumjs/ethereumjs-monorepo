@@ -1,21 +1,21 @@
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { CliqueConsensus } from '@ethereumjs/blockchain'
+import { Chain as CommonChain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { Address } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
+import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Address } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { CliqueConsensus } from '@ethereumjs/blockchain'
-import VM from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { Miner } from '../../lib/miner'
+import { FullEthereumService } from '../../lib/service'
+import type { FullSynchronizer } from '../../lib/sync'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
-import type { FullSynchronizer } from '../../lib/sync'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -34,9 +34,9 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.eei.state.checkpoint()
-  await vm.eei.state.modifyAccountFields(address, { balance })
-  await vm.eei.state.commit()
+  await vm.eei.checkpoint()
+  await vm.eei.modifyAccountFields(address, { balance })
+  await vm.eei.commit()
 }
 
 tape('[Miner]', async (t) => {

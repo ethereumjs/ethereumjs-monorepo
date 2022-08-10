@@ -1,4 +1,5 @@
 import { Address } from '@ethereumjs/util'
+
 import { PrecompileFunc } from './precompiles'
 
 const defaults = {
@@ -33,7 +34,7 @@ interface MessageOpts {
   gasRefund?: bigint
 }
 
-export default class Message {
+export class Message {
   to?: Address
   value: bigint
   caller: Address

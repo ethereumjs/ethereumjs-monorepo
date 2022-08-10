@@ -12,7 +12,7 @@ const errorMessage =
   'You can disable EIP-1459 DNS discovery in devp2p by setting the "shouldGetDnsPeers" ' +
   'option to "false" in the DPTOptions object. '
 
-export default class dns {
+export class dns {
   public static promises = {
     resolve: async function (_url: string, _recordType: string): Promise<any[]> {
       throw new Error(errorMessage)

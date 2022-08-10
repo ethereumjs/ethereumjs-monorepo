@@ -1,4 +1,5 @@
 import { Account, Address } from '@ethereumjs/util'
+
 import { Proof } from './stateManager'
 
 /**

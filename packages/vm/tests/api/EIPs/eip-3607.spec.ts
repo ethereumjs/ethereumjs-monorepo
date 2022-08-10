@@ -1,7 +1,8 @@
-import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VM } from '../../../src/vm'
 
 tape('EIP-3607 tests', (t) => {
@@ -18,7 +19,7 @@ tape('EIP-3607 tests', (t) => {
       await vm.runTx({ tx })
       st.fail('runTx should have thrown')
     } catch (error: any) {
-      if (error.message.includes('EIP-3607')) {
+      if ((error.message as string).includes('EIP-3607')) {
         st.pass('threw correct error')
       } else {
         st.fail('did not throw correct error')

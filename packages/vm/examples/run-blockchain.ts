@@ -8,11 +8,10 @@
 
 import { Account, Address, toBuffer, setLengthLeft } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
-import Blockchain, { EthashConsensus } from '@ethereumjs/blockchain'
-import Common, { ConsensusType } from '@ethereumjs/common'
-import VM from '../'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, ConsensusType } from '@ethereumjs/common'
+import { VM } from '../'
 import { testData } from './helpers/blockchain-mock-data'
-import { Level } from 'level'
 
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
@@ -28,14 +27,6 @@ async function main() {
     genesisBlock,
   })
 
-  // When verifying PoW, setting this cache improves the
-  // performance of subsequent runs of this script.
-  // Note that this optimization is a bit hacky and might
-  // not be working in the future though. :-)
-  if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = new Level('./.cachedb')
-  }
-
   const vm = await VM.create({ blockchain, common })
 
   await setupPreConditions(vm, testData)
@@ -49,7 +40,7 @@ async function main() {
     await vm.runBlock({ block, root: parentState })
   })
 
-  const blockchainHead = await vm.blockchain.getIteratorHead()
+  const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))

@@ -1,9 +1,10 @@
+import { BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Config } from '../../lib/config'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-import { BlockHeader } from '@ethereumjs/block'
 
 tape('[LightSynchronizer]', async (t) => {
   class PeerPool {
@@ -119,7 +120,7 @@ tape('[LightSynchronizer]', async (t) => {
       config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
     )
     config.logger.on('data', async (data) => {
-      if (data.message.includes('Imported headers count=1')) {
+      if ((data.message as string).includes('Imported headers count=1')) {
         st.pass('successfully imported new header')
         config.logger.removeAllListeners()
         await sync.stop()
@@ -153,7 +154,7 @@ tape('[LightSynchronizer]', async (t) => {
       config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[])
     )
     config.logger.on('data', async (data) => {
-      if (data.message.includes('No headers fetched are applicable for import')) {
+      if ((data.message as string).includes('No headers fetched are applicable for import')) {
         st.pass('generated correct warning message when no headers received')
         config.logger.removeAllListeners()
         await sync.stop()

@@ -1,34 +1,34 @@
-import Common from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { Common } from '@ethereumjs/common'
 import {
   Address,
-  KECCAK256_NULL,
-  TWO_POW256,
-  MAX_INTEGER_BIGINT,
-  bufferToBigInt,
   bigIntToBuffer,
-  setLengthLeft,
+  bufferToBigInt,
   ecrecover,
+  MAX_INTEGER_BIGINT,
   publicToAddress,
   SECP256K1_ORDER_DIV_2,
+  setLengthLeft,
   setLengthRight,
+  TWO_POW256,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
+import { ERROR } from '../exceptions'
+import { RunState } from '../interpreter'
 import {
   addressToBuffer,
   describeLocation,
+  exponentation,
+  fromTwos,
   getDataSlice,
   jumpIsValid,
   jumpSubIsValid,
+  mod,
+  toTwos,
   trap,
   writeCallOutput,
-  mod,
-  fromTwos,
-  toTwos,
 } from './util'
-import { ERROR } from '../exceptions'
-import { RunState } from './../interpreter'
-import { exponentation } from '.'
 
 const EIP3074MAGIC = Buffer.from('03', 'hex')
 
@@ -485,7 +485,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const size = await runState.eei.getExternalCodeSize(addressBigInt)
+      const size = BigInt(
+        (await runState.eei.getContractCode(new Address(addressToBuffer(addressBigInt)))).length
+      )
       runState.stack.push(size)
     },
   ],
@@ -496,7 +498,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BigInt(0)) {
-        const code = await runState.eei.getExternalCode(addressBigInt)
+        const code = await runState.eei.getContractCode(new Address(addressToBuffer(addressBigInt)))
 
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
@@ -512,19 +514,15 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
-      const empty = await runState.eei.isAccountEmpty(address)
+      const empty = (await runState.eei.getAccount(address)).isEmpty()
       if (empty) {
         runState.stack.push(BigInt(0))
         return
       }
 
-      const code = await runState.eei.getExternalCode(addressBigInt)
-      if (code.length === 0) {
-        runState.stack.push(bufferToBigInt(KECCAK256_NULL))
-        return
-      }
-
-      runState.stack.push(BigInt('0x' + bytesToHex(keccak256(code))))
+      const codeHash = (await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt))))
+        .codeHash
+      runState.stack.push(BigInt('0x' + codeHash.toString('hex')))
     },
   ],
   // 0x3d: RETURNDATASIZE

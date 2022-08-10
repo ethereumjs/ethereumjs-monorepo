@@ -1,10 +1,12 @@
-import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
-import { Event } from '../types'
 import type { BlockHeader } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
+import { isFalsy } from '@ethereumjs/util'
+
+import { Peer } from '../net/peer/peer'
+import { Event } from '../types'
+import { short } from '../util'
+import { HeaderFetcher } from './fetcher'
+import { Synchronizer, SynchronizerOptions } from './sync'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -24,6 +26,18 @@ export class LightSynchronizer extends Synchronizer {
   get type() {
     return 'light'
   }
+
+  get fetcher(): HeaderFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof HeaderFetcher)){
+      throw Error(`Invalid Fetcher, expected HeaderFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: HeaderFetcher | null){
+    this._fetcher = fetcher;
+  }
+
 
   /**
    * Open synchronizer. Must be called before sync() is called
@@ -89,7 +103,7 @@ export class LightSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < height) {
+    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < height) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -133,9 +147,10 @@ export class LightSynchronizer extends Synchronizer {
     }
     const first = headers[0].number
     const hash = short(headers[0].hash())
-    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
-      ? `baseFee=${headers[0].baseFeePerGas} `
-      : ''
+    const baseFeeAdd =
+      this.config.chainCommon.gteHardfork(Hardfork.London) === true
+        ? `baseFee=${headers[0].baseFeePerGas} `
+        : ''
     this.config.logger.info(
       `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
     )

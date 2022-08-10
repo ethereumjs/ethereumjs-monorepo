@@ -1,12 +1,14 @@
-import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Event } from '../types'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { BlockFetcher } from './fetcher'
-import { VMExecution } from '../execution'
 import type { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { VMExecution } from '../execution'
+import { Peer } from '../net/peer/peer'
 import type { TxPool } from '../service/txpool'
+import { Event } from '../types'
+import { short } from '../util'
+import { BlockFetcher } from './fetcher'
+import { Synchronizer, SynchronizerOptions } from './sync'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
@@ -51,6 +53,17 @@ export class FullSynchronizer extends Synchronizer {
     return 'full'
   }
 
+  get fetcher(): BlockFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof BlockFetcher)){
+      throw Error(`Invalid Fetcher, expected BlockFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: BlockFetcher | null){
+    this._fetcher = fetcher;
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */
@@ -87,7 +100,7 @@ export class FullSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      if (peer.eth?.status) {
+      if (typeof peer.eth !== 'undefined' && isTruthy(peer.eth.status)) {
         const td = peer.eth.status.td
         if (
           (!best && td >= this.chain.blocks.td) ||
@@ -115,7 +128,7 @@ export class FullSynchronizer extends Synchronizer {
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
-    if (!this.config.syncTargetHeight || this.txPool.running) {
+    if (isFalsy(this.config.syncTargetHeight) || this.txPool.running) {
       return
     }
     // If height gte target, we are close enough to the
@@ -137,7 +150,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -174,7 +187,7 @@ export class FullSynchronizer extends Synchronizer {
    * Process blocks fetched from the fetcher.
    */
   async processBlocks(blocks: Block[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
         this.config.logger.info('Merge hardfork reached, stopping block fetcher')
@@ -192,9 +205,10 @@ export class FullSynchronizer extends Synchronizer {
     const first = BigInt(blocks[0].header.number)
     const last = BigInt(blocks[blocks.length - 1].header.number)
     const hash = short(blocks[0].hash())
-    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
-      ? `baseFee=${blocks[0].header.baseFeePerGas} `
-      : ''
+    const baseFeeAdd =
+      this.config.chainCommon.gteHardfork(Hardfork.London) === true
+        ? `baseFee=${blocks[0].header.baseFeePerGas} `
+        : ''
 
     let attentionHF: string | null = null
     const nextHFBlockNum = this.config.chainCommon.nextHardforkBlock()
@@ -207,12 +221,12 @@ export class FullSynchronizer extends Synchronizer {
     } else {
       if (
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        !this.config.chainCommon.gteHardfork(Hardfork.Merge)
+        this.config.chainCommon.gteHardfork(Hardfork.Merge) === false
       ) {
-        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
+        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
-        const remaining = mergeTD - td
-        if (remaining <= mergeTD / BigInt(10)) {
+        const remaining = mergeTTD - td
+        if (remaining <= mergeTTD / BigInt(10)) {
           attentionHF = `Merge HF in ${remaining} TD`
         }
       }
@@ -230,7 +244,11 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    await this.execution.run()
+    // Batch the execution if we are not close to the head
+    const shouldRunOnlyBatched =
+      isTruthy(this.config.syncTargetHeight) &&
+      this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
+    await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
     return true
   }
@@ -294,12 +312,12 @@ export class FullSynchronizer extends Synchronizer {
     // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
     const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
     await this.sendNewBlock(block, this.pool.peers.slice(0, numPeersToShareWith))
-    if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
+    if (this.chain.blocks.latest?.hash().equals(block.header.parentHash) === true) {
       // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
       // Check if new sync target height can be set
       const blockNumber = block.header.number
-      if (!this.config.syncTargetHeight || blockNumber > this.config.syncTargetHeight) {
+      if (isFalsy(this.config.syncTargetHeight) || blockNumber > this.config.syncTargetHeight) {
         this.config.syncTargetHeight = blockNumber
       }
     } else {
@@ -332,14 +350,15 @@ export class FullSynchronizer extends Synchronizer {
       }
       // Check if new sync target height can be set
       if (newSyncHeight && blockNumber <= newSyncHeight[1]) continue
-      if (this.config.syncTargetHeight && blockNumber <= this.config.syncTargetHeight) continue
+      if (isTruthy(this.config.syncTargetHeight) && blockNumber <= this.config.syncTargetHeight)
+        continue
       newSyncHeight = value
     }
 
     if (!newSyncHeight) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
-    this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
+    this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)
     // Enqueue if we are close enough to chain head
     if (min < this.chain.headers.height + BigInt(3000)) {
       this.fetcher.enqueueByNumberList(blockNumberList, min, height)

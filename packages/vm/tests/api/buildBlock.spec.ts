@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { Account, Address } from '@ethereumjs/util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import Blockchain from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { Account, Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VM } from '../../src/vm'
 import { setBalance } from './utils'
 
@@ -66,7 +67,11 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.addTransaction(tx)
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('tx has a higher gas limit than the remaining gas in the block')) {
+      if (
+        (error.message as string).includes(
+          'tx has a higher gas limit than the remaining gas in the block'
+        )
+      ) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -89,7 +94,7 @@ tape('BlockBuilder', async (t) => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const root0 = await vm.eei.state.getStateRoot()
+    const root0 = await vm.eei.getStateRoot()
 
     const blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
 
@@ -104,11 +109,11 @@ tape('BlockBuilder', async (t) => {
 
     await blockBuilder.addTransaction(tx)
 
-    const root1 = await vm.eei.state.getStateRoot()
+    const root1 = await vm.eei.getStateRoot()
     st.ok(!root0.equals(root1), 'state root should change after adding a tx')
 
     await blockBuilder.revert()
-    const root2 = await vm.eei.state.getStateRoot()
+    const root2 = await vm.eei.getStateRoot()
 
     st.ok(root2.equals(root0), 'state root should revert to before the tx was run')
     st.end()
@@ -176,7 +181,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
-    await vm.eei.state.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
+    await vm.eei.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -231,7 +236,7 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.revert()
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('Block has already been built')) {
+      if ((error.message as string).includes('Block has already been built')) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -255,7 +260,7 @@ tape('BlockBuilder', async (t) => {
       await blockBuilder.revert()
       st.fail('should throw error')
     } catch (error: any) {
-      if (error.message.includes('State has already been reverted')) {
+      if ((error.message as string).includes('State has already been reverted')) {
         st.pass('correct error thrown')
       } else {
         st.fail('wrong error thrown')
@@ -330,7 +335,7 @@ tape('BlockBuilder', async (t) => {
         st.fail('should throw error')
       } catch (error: any) {
         st.ok(
-          error.message.includes("is less than the block's baseFeePerGas"),
+          (error.message as string).includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error'
         )
       }

@@ -1,7 +1,9 @@
+import { EthereumClient } from '../client'
 import { Config } from '../config'
-import EthereumClient from '../client'
-import * as modules from './modules'
 import { INTERNAL_ERROR } from './error-code'
+import * as modules from './modules'
+
+export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTransactionByHash']
 
 /**
  * @module rpc
@@ -34,12 +36,7 @@ export class RPCManager {
       const mod = new (modules as any)[modName](this._client)
       const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of rpcMethods) {
-        if (
-          !this._config.saveReceipts &&
-          (methodName === 'getLogs' ||
-            methodName === 'getTransactionReceipt' ||
-            methodName === 'getTransactionByHash')
-        ) {
+        if (!this._config.saveReceipts && saveReceiptsMethods.includes(methodName)) {
           continue
         }
         const concatedMethodName = `${modName.toLowerCase()}_${methodName}`

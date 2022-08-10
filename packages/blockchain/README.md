@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | A module to store and interact with blocks. |
-| --- |
+| ------------------------------------------- |
 
 Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-blockchain) for an introduction on the last preceding release.
 
@@ -19,13 +19,21 @@ Note: this `README` reflects the state of the library from `v5.0.0` onwards. See
 
 ## Introduction
 
+The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context the chain is operating in (e.g. the hardfork rules the current head block adheres to).
+
+New blocks can be added to the blockchain. Validation ensures that the block format adheres to the given chain rules (with the `Blockchain.validateBlock()` function) and consensus rules (`Blockchain.consensus.validateConsensus()`).
+
+The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
+
+## Example
+
 The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
 
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
 
 ```typescript
-import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common } from '@ethereumjs/common'
 
 const { Level } = require('level')
 
@@ -45,13 +53,47 @@ blockchain.iterator('i', (block) => {
 
 **WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
 
+## Consensus
+
+Starting with v6 there is a dedicated consensus class for each type of supported consensus, `Ethash`, `Clique` and `Casper` (PoS, this one is rather the do-nothing part of `Casper` and letting the respective consensus/beacon client do the hard work! 🙂). Each consensus class adheres to a common interface `Consensus` implementing the following five methods in a consensus-specific way:
+
+- `genesisInit(genesisBlock: Block): Promise<void>`
+- `setup(): Promise<void>`
+- `validateConsensus(block: Block): Promise<void>`
+- `validateDifficulty(header: BlockHeader): Promise<void>`
+- `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
+
+### Custom Conensus Algorithms
+
+Also part of V6, you can also create a custom consensus class implementing the above interface and pass it into the `Blockchain` constructor using the `consensus` option at instantiation. See [this test script](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/test/customConsensus.spec.ts) for a complete example of how write and use a custom consensus implementation.
+
+Note, if you construct a blockchain with a custom consensus implementation, transition checks for switching from PoW to PoS are disabled so defining a merge hardfork will have no impact on the consensus mechanism defined for the chain.
+
+## Custom Genesis State
+
+Starting with v6 responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
+
+A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
+
+TODO: add code example here!
+
+The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
+
 ## EIP-1559 Support
 
 This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
 
 # API
 
-[Documentation](./docs/README.md)
+## Docs
+
+Generated TypeDoc API [Documentation](./docs/README.md)
+
+## BigInt Support
+
+Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 # DEVELOPER
 
@@ -59,9 +101,9 @@ For debugging blockchain control flows the [debug](https://github.com/visionmedi
 
 The following initial logger is currently available:
 
-| Logger | Description |
-| - | - |
-| `blockchain:clique` | Clique operations like updating the vote and/or signer list  |
+| Logger              | Description                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| `blockchain:clique` | Clique operations like updating the vote and/or signer list |
 
 The following is an example for a logger run:
 

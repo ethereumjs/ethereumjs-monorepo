@@ -1,11 +1,12 @@
 import * as EventEmitter from 'events'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
+
 import { Peer, PeerOptions } from '../../../lib/net/peer'
-import MockServer from './mockserver'
-import MockSender from './mocksender'
-import { RemoteStream, createStream } from './network'
 import { Event } from '../../../lib/types'
+import { MockSender } from './mocksender'
+import { MockServer } from './mockserver'
+import { createStream, RemoteStream } from './network'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
@@ -16,7 +17,7 @@ interface MockPeerOptions extends PeerOptions {
   location: string
 }
 
-export default class MockPeer extends Peer {
+export class MockPeer extends Peer {
   public location: string
   public connected: boolean
 
@@ -63,7 +64,7 @@ export default class MockPeer extends Peer {
     })
     await Promise.all(
       this.protocols.map(async (p) => {
-        if (!stream.protocols.includes(`${p.name}/${p.versions[0]}`)) return
+        if (!(stream.protocols as string[]).includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
         await this.bindProtocol(p, new MockSender(p.name, pushableFn, receiver))
       })

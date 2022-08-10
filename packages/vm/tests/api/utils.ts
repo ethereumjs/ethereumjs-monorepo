@@ -1,12 +1,12 @@
-import { Account, Address } from '@ethereumjs/util'
-import Blockchain from '@ethereumjs/blockchain'
-import { VM } from '../../src/vm'
-import { VMOpts } from '../../src/types'
 import { Block } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import Common from '@ethereumjs/common'
-
+import { Account, Address } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
+
+import { VMOpts } from '../../src/types'
+import { VM } from '../../src/vm'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -14,9 +14,9 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
 
 export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
   const account = createAccount(BigInt(0), balance)
-  await vm.eei.state.checkpoint()
-  await vm.eei.state.putAccount(address, account)
-  await vm.eei.state.commit()
+  await vm.eei.checkpoint()
+  await vm.eei.putAccount(address, account)
+  await vm.eei.commit()
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
@@ -104,7 +104,7 @@ export function getTransaction(
  * Checks if in a karma test runner.
  * @returns boolean whether running in karma
  */
-export function isRunningInKarma(): Boolean {
+export function isRunningInKarma(): boolean {
   // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

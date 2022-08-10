@@ -1,6 +1,7 @@
-import Common from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import { RunState } from './../interpreter'
+
+import { RunState } from '../interpreter'
 
 /**
  * Adds address to accessedAddresses set if not already included.
@@ -19,14 +20,14 @@ export function accessAddressEIP2929(
   chargeGas = true,
   isSelfdestructOrAuthcall = false
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const vmState = runState.vmState
+  const eei = runState.eei
   const addressStr = address.buf
 
   // Cold
-  if (!vmState.isWarmedAddress(addressStr)) {
-    vmState.addWarmedAddress(addressStr)
+  if (!eei.isWarmedAddress(addressStr)) {
+    eei.addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -54,15 +55,15 @@ export function accessStorageEIP2929(
   isSstore: boolean,
   common: Common
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const vmState = runState.vmState
+  const eei = runState.eei
   const address = runState.interpreter.getAddress().buf
-  const slotIsCold = !vmState.isWarmedStorage(address, key)
+  const slotIsCold = !eei.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    vmState.addWarmedStorage(address, key)
+    eei.addWarmedStorage(address, key)
     return common.param('gasPrices', 'coldsload')
   } else if (!isSstore) {
     return common.param('gasPrices', 'warmstorageread')
@@ -87,14 +88,14 @@ export function adjustSstoreGasEIP2929(
   costName: string,
   common: Common
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return defaultCost
+  if (common.isActivatedEIP(2929) === false) return defaultCost
 
-  const vmState = runState.vmState
+  const eei = runState.eei
   const address = runState.interpreter.getAddress().buf
   const warmRead = common.param('gasPrices', 'warmstorageread')
   const coldSload = common.param('gasPrices', 'coldsload')
 
-  if (vmState.isWarmedStorage(address, key)) {
+  if (eei.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead

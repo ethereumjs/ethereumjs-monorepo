@@ -1,6 +1,7 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
-import { toBuffer, setLengthLeft, bufferToHex, bufferToInt, bufferToBigInt } from './bytes'
+import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
+
+import { bufferToBigInt, bufferToHex, bufferToInt, setLengthLeft, toBuffer } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
 

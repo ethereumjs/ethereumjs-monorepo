@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { isTruthy } from '@ethereumjs/util'
 import * as dir from 'node-dir'
+
 import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false
@@ -17,7 +19,7 @@ const falsePredicate = () => false
 export async function getTests(
   onFile: Function,
   fileFilter: RegExp | string[] = /.json$/,
-  skipPredicate: Function = falsePredicate,
+  skipPredicate: (...args: any[]) => boolean = falsePredicate,
   directory: string,
   excludeDir: RegExp | string[] = []
 ): Promise<string[]> {
@@ -134,16 +136,16 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
       return skipTest(name, args.skipVM)
     }
   }
-  if (args.singleSource) {
+  if (isTruthy(args.singleSource)) {
     return getTestFromSource(args.singleSource, onFile)
   }
-  if (args.file) {
+  if (isTruthy(args.file)) {
     fileFilter = new RegExp(args.file)
   }
-  if (args.excludeDir) {
+  if (isTruthy(args.excludeDir)) {
     excludeDir = new RegExp(args.excludeDir)
   }
-  if (args.test) {
+  if (isTruthy(args.test)) {
     skipFn = (testName: string) => {
       return testName !== args.test
     }

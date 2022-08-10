@@ -1,11 +1,11 @@
+import type { Blockchain } from '@ethereumjs/blockchain'
+import { AbstractLevel } from 'abstract-level'
+
 import { version as packageVersion } from '../package.json'
-import { MultiaddrLike } from './types'
+import { Chain } from './blockchain'
 import { Config, SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
-import { Chain } from './blockchain'
-import type Blockchain from '@ethereumjs/blockchain'
-import { AbstractLevel } from 'abstract-level'
+import { Event, MultiaddrLike } from './types'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -53,7 +53,7 @@ export interface EthereumClientOptions {
  * lifecycle of included services.
  * @memberof module:node
  */
-export default class EthereumClient {
+export class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[]

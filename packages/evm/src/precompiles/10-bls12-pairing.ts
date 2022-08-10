@@ -1,14 +1,16 @@
-import { PrecompileInput } from './types'
+import { isFalsy } from '@ethereumjs/util'
+
 import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
+import { PrecompileInput } from './types'
 
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 
 const zeroBuffer = Buffer.alloc(32, 0)
 const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
 
-export default async function (opts: PrecompileInput): Promise<ExecResult> {
-  if (!opts.data) throw new Error('opts.data missing but required')
+export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
+  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
 
   const mcl = (<any>opts._EVM)._mcl!
 
@@ -98,7 +100,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
 
-  if (GT.isOne()) {
+  if (GT.isOne() === true) {
     returnValue = oneBuffer
   } else {
     returnValue = zeroBuffer

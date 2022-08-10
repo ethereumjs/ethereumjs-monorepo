@@ -1,9 +1,10 @@
-import { arrToBufArr, bigIntToBuffer, bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
-import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+
+import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
@@ -91,7 +92,7 @@ export class LES extends Protocol {
 
   _handleStatus() {
     if (this._status === null || this._peerStatus === null) return
-    clearTimeout(this._statusTimeoutId)
+    clearTimeout(this._statusTimeoutId!)
     assertEq(
       this._status['protocolVersion'],
       this._peerStatus['protocolVersion'],
@@ -131,18 +132,20 @@ export class LES extends Protocol {
     )}, `
     sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
     sStr += `GenH:${status['genesisHash'].toString('hex')}`
-    if (status['serveHeaders']) sStr += `, serveHeaders active`
-    if (status['serveChainSince']) sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
-    if (status['serveStateSince']) sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
-    if (status['txRelay']) sStr += `, txRelay active`
-    if (status['flowControl/BL']) sStr += `, flowControl/BL set`
-    if (status['flowControl/MRR']) sStr += `, flowControl/MRR set`
-    if (status['flowControl/MRC']) sStr += `, flowControl/MRC set`
-    if (status['forkID'])
+    if (isTruthy(status['serveHeaders'])) sStr += `, serveHeaders active`
+    if (isTruthy(status['serveChainSince']))
+      sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
+    if (isTruthy(status['serveStateSince']))
+      sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
+    if (isTruthy(status['txRelay'])) sStr += `, txRelay active`
+    if (isTruthy(status['flowControl/BL)'])) sStr += `, flowControl/BL set`
+    if (isTruthy(status['flowControl/MRR)'])) sStr += `, flowControl/MRR set`
+    if (isTruthy(status['flowControl/MRC)'])) sStr += `, flowControl/MRC set`
+    if (isTruthy(status['forkID']))
       sStr += `, forkID: [crc32: ${status['forkID'][0].toString('hex')}, nextFork: ${buffer2int(
         status['forkID'][1]
       )}]`
-    if (status['recentTxLookup'])
+    if (isTruthy(status['recentTxLookup']))
       sStr += `, recentTxLookup: ${buffer2int(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
@@ -151,7 +154,7 @@ export class LES extends Protocol {
   sendStatus(status: LES.Status) {
     if (this._status !== null) return
 
-    if (!status.announceType) {
+    if (isFalsy(status.announceType)) {
       status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = int2buffer(this._version)
@@ -174,7 +177,11 @@ export class LES extends Protocol {
     let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+    if (
+      isTruthy(this._peer._hello) &&
+      isTruthy(this._peer._hello.protocolVersion) &&
+      this._peer._hello?.protocolVersion >= 5
+    ) {
       payload = snappy.compress(payload)
     }
 
@@ -237,7 +244,11 @@ export class LES extends Protocol {
     payload = Buffer.from(RLP.encode(payload))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+    if (
+      isTruthy(this._peer._hello) &&
+      isTruthy(this._peer._hello.protocolVersion) &&
+      this._peer._hello?.protocolVersion >= 5
+    ) {
       payload = snappy.compress(payload)
     }
 

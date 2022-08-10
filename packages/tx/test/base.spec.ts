@@ -1,21 +1,23 @@
-import * as tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
-  Transaction,
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  Capability,
-} from '../src'
-import { TxsJsonEntry } from './types'
-import { BaseTransaction } from '../src/baseTransaction'
-import {
-  privateToPublic,
-  toBuffer,
+  bufferToBigInt,
+  isTruthy,
   MAX_INTEGER,
   MAX_UINT64,
+  privateToPublic,
   SECP256K1_ORDER,
-  bufferToBigInt,
+  toBuffer,
 } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import {
+  AccessListEIP2930Transaction,
+  Capability,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+} from '../src'
+import { BaseTransaction } from '../src/baseTransaction'
+import { TxsJsonEntry } from './types'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -274,7 +276,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
         const { privateKey } = txType.fixtures[i]
-        if (privateKey) {
+        if (isTruthy(privateKey)) {
           st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
         }
 
@@ -316,7 +318,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
-        if (privateKey) {
+        if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           st.equal(
             signedTx.getSenderAddress().toString(),
@@ -333,7 +335,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
         const { privateKey } = txType.fixtures[i]
-        if (privateKey) {
+        if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           const txPubKey = signedTx.getSenderPublicKey()
           const pubKeyFromPriv = privateToPublic(Buffer.from(privateKey, 'hex'))
@@ -355,7 +357,7 @@ tape('[BaseTransaction]', function (t) {
       for (const txType of txTypes) {
         txType.txs.forEach(function (tx: any, i: number) {
           const { privateKey } = txType.fixtures[i]
-          if (privateKey) {
+          if (isTruthy(privateKey)) {
             let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
             signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
             ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
@@ -373,7 +375,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
         const { privateKey } = txType.fixtures[i]
-        if (privateKey) {
+        if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           st.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }

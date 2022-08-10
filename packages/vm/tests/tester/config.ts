@@ -1,5 +1,6 @@
 import * as path from 'path'
-import Common, { Chain } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -9,7 +10,7 @@ export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 /**
  * Default hardfork rules to run tests against
  */
-export const DEFAULT_FORK_CONFIG = 'London'
+export const DEFAULT_FORK_CONFIG = 'Merge'
 
 /**
  * Tests which should be fixed
@@ -168,6 +169,8 @@ const normalHardforks = [
   'muirGlacier',
   'berlin',
   'london',
+  'merge',
+  'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
 
 const transitionNetworks: any = {
@@ -226,6 +229,8 @@ const testLegacy: any = {
   istanbul: false,
   muirGlacier: false,
   berlin: false,
+  london: false,
+  merge: false,
   ByzantiumToConstantinopleFixAt5: false,
   EIP158ToByzantiumAt5: false,
   FrontierToHomesteadAt5: false,
@@ -242,7 +247,7 @@ const testLegacy: any = {
 export function getTestDirs(network: string, testType: string) {
   const testDirs = [testType]
   for (const key in testLegacy) {
-    if (key.toLowerCase() == network.toLowerCase() && testLegacy[key]) {
+    if (key.toLowerCase() === network.toLowerCase() && isTruthy(testLegacy[key])) {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
       testDirs.push('LegacyTests/Constantinople/' + testType)
@@ -250,6 +255,64 @@ export function getTestDirs(network: string, testType: string) {
     }
   }
   return testDirs
+}
+/**
+ * Setups the common with networks
+ * @param targetNetwork Network target
+ * @param ttd If set: total terminal difficulty to switch to merge
+ * @returns
+ */
+function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
+  const networkLowercase = targetNetwork.toLowerCase()
+  // normal hard fork, return the common with this hard fork
+  // find the right upper/lowercased version
+  const hfName = normalHardforks.reduce((previousValue, currentValue) =>
+    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
+  )
+  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const hardforks = mainnetCommon.hardforks()
+  const testHardforks = []
+  for (const hf of hardforks) {
+    // check if we enable this hf
+    // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+    if (mainnetCommon.gteHardfork(hf.name) === true && hf.name !== Hardfork.Dao) {
+      // this hardfork should be activated at block 0
+      testHardforks.push({
+        name: hf.name,
+        // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
+        // forkHash: hf.forkHash,
+        block: 0,
+      })
+    } else {
+      // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+      if (ttd === undefined) {
+        testHardforks.push({
+          name: hf.name,
+          //forkHash: hf.forkHash,
+          block: null,
+        })
+      } else if (hf.name === 'merge') {
+        // merge will currently always be after a hardfork, so add it here
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          ttd: BigInt(ttd),
+        })
+      }
+    }
+  }
+  const common = Common.custom(
+    {
+      hardforks: testHardforks,
+      defaultHardfork: hfName,
+    },
+    { eips: [3607] }
+  )
+  const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+  if (eips) {
+    common.setEIPs(eips.map((e: string) => parseInt(e)))
+  }
+  return common
 }
 
 /**
@@ -263,58 +326,26 @@ export function getTestDirs(network: string, testType: string) {
  */
 export function getCommon(targetNetwork: string) {
   let network = targetNetwork
+  const networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
     network = network.slice(0, index)
   }
-  const networkLowercase = network.toLowerCase()
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
-    // normal hard fork, return the common with this hard fork
-    // find the right upper/lowercased version
-    const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-      currentValue.toLowerCase() == networkLowercase ? currentValue : previousValue
-    )
-    const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
-    const hardforks = mainnetCommon.hardforks()
-    const testHardforks = []
-    for (const hf of hardforks) {
-      // check if we enable this hf
-      // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-      if (mainnetCommon.gteHardfork(hf.name) && hf.name != 'dao') {
-        // this hardfork should be activated at block 0
-        testHardforks.push({
-          name: hf.name,
-          // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
-          // forkHash: hf.forkHash,
-          block: 0,
-        })
-      } else {
-        // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-        testHardforks.push({
-          name: hf.name,
-          //forkHash: hf.forkHash,
-          block: null,
-        })
-      }
-    }
-    const common = Common.custom(
-      {
-        hardforks: testHardforks,
-        defaultHardfork: hfName,
-      },
-      { eips: [3607] }
-    )
-    const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
-    if (eips) {
-      common.setEIPs(eips.map((e: string) => parseInt(e)))
-    }
-    return common
+    return setupCommonWithNetworks(targetNetwork)
+  } else if (networkLowercase.match('tomergeatdiff')) {
+    // This is a HF -> Merge transition
+    const start = networkLowercase.match('tomergeatdiff')!.index!
+    const end = start + 'tomergeatdiff'.length
+    const startNetwork = network.substring(0, start) // HF before the merge
+    const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
+    return setupCommonWithNetworks(startNetwork, TTD)
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
-    const transitionForks =
-      transitionNetworks[network] ||
-      transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
-    if (!transitionForks) {
+    const transitionForks = isTruthy(transitionNetworks[network])
+      ? transitionNetworks[network]
+      : transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
+    if (isFalsy(transitionForks)) {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
@@ -324,13 +355,13 @@ export function getCommon(targetNetwork: string) {
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
-      if (mainnetCommon.gteHardfork(hf.name)) {
+      if (mainnetCommon.gteHardfork(hf.name) === true) {
         // this hardfork should be activated at block 0
         const forkBlockNumber = transitionForks[hf.name]
         testHardforks.push({
           name: hf.name,
           // forkHash: hf.forkHash,
-          block: forkBlockNumber === null ? null : forkBlockNumber || 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+          block: forkBlockNumber === null || isTruthy(forkBlockNumber) ? forkBlockNumber : 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
         })
       } else {
         // disable the hardfork
@@ -355,36 +386,40 @@ export function getCommon(targetNetwork: string) {
 
 const expectedTestsFull: any = {
   BlockchainTests: {
-    Chainstart: 4385,
-    Homestead: 7001,
+    Chainstart: 4496,
+    Homestead: 7321,
     Dao: 0,
-    TangerineWhistle: 4255,
-    SpuriousDragon: 4305,
-    Byzantium: 15379,
-    Constantinople: 32750,
-    Petersburg: 32735,
-    Istanbul: 35378,
-    MuirGlacier: 35378,
-    Berlin: 33,
+    TangerineWhistle: 4609,
+    SpuriousDragon: 4632,
+    Byzantium: 15703,
+    Constantinople: 33146,
+    Petersburg: 33128,
+    Istanbul: 38773,
+    MuirGlacier: 38773,
+    Berlin: 41872,
+    London: 61547,
+    ArrowGlacier: 0,
+    Merge: 60373,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
-    FrontierToHomesteadAt5: 12,
-    HomesteadToDaoAt5: 18,
+    FrontierToHomesteadAt5: 13,
+    HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
-    BerlinToLondonAt5: 0,
+    BerlinToLondonAt5: 24,
   },
   GeneralStateTests: {
-    Chainstart: 896,
-    Homestead: 1847,
+    Chainstart: 1045,
+    Homestead: 2078,
     Dao: 0,
-    TangerineWhistle: 969,
-    SpuriousDragon: 1094,
-    Byzantium: 4626,
-    Constantinople: 10402,
-    Petersburg: 10397,
-    Istanbul: 10715,
-    MuirGlacier: 10715,
-    Berlin: 13065,
+    TangerineWhistle: 1200,
+    SpuriousDragon: 1325,
+    Byzantium: 4857,
+    Constantinople: 10648,
+    Petersburg: 10642,
+    Istanbul: 12439,
+    MuirGlacier: 12439,
+    Berlin: 13214,
+    London: 19449,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,
@@ -398,11 +433,11 @@ const expectedTestsFull: any = {
  * Returns the amount of expected tests for a given fork, assuming all tests are ran
  */
 export function getExpectedTests(fork: string, name: string) {
-  if (expectedTestsFull[name] == undefined) {
+  if (expectedTestsFull[name] === undefined) {
     return
   }
   for (const key in expectedTestsFull[name]) {
-    if (fork.toLowerCase() == key.toLowerCase()) {
+    if (fork.toLowerCase() === key.toLowerCase()) {
       return expectedTestsFull[name][key]
     }
   }

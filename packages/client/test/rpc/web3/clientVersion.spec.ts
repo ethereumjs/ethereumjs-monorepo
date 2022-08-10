@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { platform } from 'os'
-import { baseSetup, params, baseRequest } from '../helpers'
+import * as tape from 'tape'
+
+import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'web3_clientVersion'
 

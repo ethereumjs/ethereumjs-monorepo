@@ -1,4 +1,4 @@
-# rlp
+# @ethereumjs/rlp
 
 [![NPM Package][rlp-npm-badge]][rlp-npm-link]
 [![GitHub Issues][rlp-issues-badge]][rlp-issues-link]
@@ -10,7 +10,7 @@
 
 ## INSTALL
 
-`npm install rlp`
+`npm install @ethereumjs/rlp`
 
 install with `-g` if you want to use the CLI.
 
@@ -18,7 +18,7 @@ install with `-g` if you want to use the CLI.
 
 ```typescript
 import assert from 'assert'
-import RLP from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
@@ -39,7 +39,7 @@ If you would like to continue using Buffers like in rlp v2, you can use:
 ```typescript
 import assert from 'assert'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 
 const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = RLP.encode(bufArrToArr(bufferList))
@@ -48,6 +48,12 @@ const decoded = RLP.decode(Uint8Array.from(encodedAsBuffer)) // or RLP.decode(en
 const decodedAsBuffers = arrToBufArr(decoded)
 assert.deepEqual(bufferList, decodedAsBuffers)
 ```
+
+### BigInt Support
+
+Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+
+Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ## CLI
 
@@ -85,8 +91,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[rlp-npm-badge]: https://img.shields.io/npm/v/rlp.svg
-[rlp-npm-link]: https://www.npmjs.com/package/rlp
+[rlp-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/rlp.svg
+[rlp-npm-link]: https://www.npmjs.com/package/@ethereumjs/rlp
 [rlp-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20rlp?label=issues
 [rlp-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+rlp"
 [rlp-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/rlp/badge.svg

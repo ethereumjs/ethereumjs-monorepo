@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { BatchDBOp, CheckpointTrie, LevelDB } from '../src'
 
 tape('kv stream test', function (tester) {

@@ -1,7 +1,8 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
-import Common, { Hardfork } from '@ethereumjs/common'
-import Blockchain from '../src'
+import { Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
+import { Blockchain } from '../src'
 import * as testnet from './testdata/testnet.json'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
@@ -29,7 +30,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        hardforkByTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
+        hardforkByTTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
       }
     )
     blocks.push(block)
@@ -41,7 +42,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
     name: 'merge',
-    td: 1313600,
+    ttd: BigInt(1313600),
     block: null,
   }
   const scenarios = [

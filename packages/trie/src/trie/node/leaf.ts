@@ -1,9 +1,9 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
-import RLP from 'rlp'
-import { nibblesToBuffer } from '../../util/nibbles'
-import { addHexPrefix, removeHexPrefix } from '../../util/hex'
+
 import { Nibbles } from '../../types'
+import { addHexPrefix, removeHexPrefix } from '../../util/hex'
+import { nibblesToBuffer } from '../../util/nibbles'
 
 export class LeafNode {
   _nibbles: Nibbles
@@ -52,9 +52,5 @@ export class LeafNode {
 
   serialize(): Buffer {
     return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
-  }
-
-  hash(): Buffer {
-    return Buffer.from(keccak256(this.serialize()))
   }
 }

@@ -1,5 +1,7 @@
+import { Chain, Common } from '@ethereumjs/common'
+import { isTruthy } from '@ethereumjs/util'
 import chalk from 'chalk'
-import Common, { Chain } from '@ethereumjs/common'
+
 import { DPT } from '../src/index'
 
 const PRIVATE_KEY = 'd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
@@ -23,7 +25,7 @@ const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
 })
 
 /* eslint-disable no-console */
-dpt.on('error', (err) => console.error(chalk.red(err.stack || err)))
+dpt.on('error', (err) => console.error(chalk.red(isTruthy(err.stack) ? err.stack : err)))
 
 dpt.on('peer:added', (peer) => {
   const info = `(${peer.id.toString('hex')},${peer.address},${peer.udpPort},${peer.tcpPort})`
@@ -40,5 +42,7 @@ dpt.on('peer:removed', (peer) => {
 // dpt.bind(30303, '0.0.0.0')
 
 for (const bootnode of BOOTNODES) {
-  dpt.bootstrap(bootnode).catch((err) => console.error(chalk.bold.red(err.stack || err)))
+  dpt
+    .bootstrap(bootnode)
+    .catch((err) => console.error(chalk.bold.red(isTruthy(err.stack) ? err.stack : err)))
 }

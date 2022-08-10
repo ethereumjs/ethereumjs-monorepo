@@ -1,3 +1,4 @@
+import type { Block } from '@ethereumjs/block'
 import {
   AccessListEIP2930Transaction,
   Capability,
@@ -5,14 +6,14 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Address, bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
+
+import Heap = require('qheap')
 import { Config } from '../config'
 import { Peer } from '../net/peer'
-import type VM from '@ethereumjs/vm'
-import type { FullEthereumService } from './fullethereumservice'
 import type { PeerPool } from '../net/peerpool'
-import type { Block } from '@ethereumjs/block'
-import Heap = require('qheap')
+import type { FullEthereumService } from './fullethereumservice'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -193,7 +194,7 @@ export class TxPool {
    * Checks if tx pool should be started
    */
   checkRunState() {
-    if (this.running || !this.config.syncTargetHeight) return
+    if (this.running || isFalsy(this.config.syncTargetHeight)) return
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
@@ -264,7 +265,7 @@ export class TxPool {
       }
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
-    if (block.baseFeePerGas) {
+    if (isTruthy(block.baseFeePerGas)) {
       if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
@@ -502,7 +503,9 @@ export class TxPool {
     // Remove from pending list regardless if tx is in result
     this.pending = this.pending.filter((hash) => !reqHashesStr.includes(hash))
 
-    if (!getPooledTxs) return
+    if (isFalsy(getPooledTxs)) {
+      return
+    }
     const [_, txs] = getPooledTxs
     this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
@@ -573,7 +576,7 @@ export class TxPool {
    */
   private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
-    if (baseFee) {
+    if (isTruthy(baseFee)) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
@@ -639,13 +642,13 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await this.vm.eei.state.getAccount(new Address(Buffer.from(address, 'hex')))
+      const { nonce } = await this.vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
         continue
       }
-      if (baseFee) {
+      if (isTruthy(baseFee)) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)

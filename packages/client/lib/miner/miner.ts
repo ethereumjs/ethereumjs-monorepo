@@ -1,14 +1,15 @@
-import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { CliqueConsensus } from '@ethereumjs/blockchain'
-import { ConsensusType, Hardfork, CliqueConfig } from '@ethereumjs/common'
-import { Event } from '../types'
-import { Config } from '../config'
-import { FullEthereumService } from '../service'
-import { VMExecution } from '../execution'
-import type { FullSynchronizer } from '../sync'
-
+import { CliqueConfig, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Ethash, Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
+
+import { Config } from '../config'
+import { VMExecution } from '../execution'
+import { FullEthereumService } from '../service'
+import type { FullSynchronizer } from '../sync'
+import { Event } from '../types'
 
 export interface MinerOptions {
   /* Config */
@@ -75,7 +76,7 @@ export class Miner {
     if (!this.running) {
       return
     }
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
       this.config.logger.info('Miner: reached merge hardfork - stopping')
       this.stop()
       return
@@ -91,7 +92,7 @@ export class Miner {
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress
       )
-      if (!inTurn) {
+      if (isFalsy(inTurn)) {
         const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
@@ -109,7 +110,7 @@ export class Miner {
    * Finds the next PoW solution.
    */
   private async findNextSolution() {
-    if (!this.ethash) {
+    if (typeof this.ethash === 'undefined') {
       return
     }
     this.config.logger.info('Miner: Finding next PoW solution 🔨')
@@ -190,7 +191,9 @@ export class Miner {
         { number },
         { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header)) {
+      if (
+        (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
+      ) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
@@ -198,7 +201,7 @@ export class Miner {
     }
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
-      while (!this.nextSolution) {
+      while (isFalsy(this.nextSolution)) {
         this.config.logger.info(`Miner: Waiting to find next PoW solution 🔨`)
         await new Promise((r) => setTimeout(r, 1000))
       }
@@ -211,7 +214,7 @@ export class Miner {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vmCopy.eei.state.setStateRoot(parentBlock.header.stateRoot)
+    await vmCopy.eei.setStateRoot(parentBlock.header.stateRoot)
 
     let difficulty
     let cliqueSigner
@@ -223,19 +226,18 @@ export class Miner {
       inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress
       )
-      difficulty = inTurn ? 2 : 1
+      difficulty = isTruthy(inTurn) ? 2 : 1
     }
 
     let baseFeePerGas
     const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
-    const isInitialEIP1559Block = londonHardforkBlock && number === londonHardforkBlock
-    if (isInitialEIP1559Block) {
+    if (isTruthy(londonHardforkBlock) && number === londonHardforkBlock) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
       baseFeePerGas =
         this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559) ?? BigInt(0)
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
       gasLimit = gasLimit * BigInt(2)
-    } else if (this.config.chainCommon.isActivatedEIP(1559)) {
+    } else if (this.config.chainCommon.isActivatedEIP(1559) === true) {
       baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
 
@@ -266,7 +268,7 @@ export class Miner {
     const txs = await this.service.txPool.txsByPriceAndNonce(baseFeePerGas)
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
-        baseFeePerGas ? `(baseFee: ${baseFeePerGas})` : ''
+        isTruthy(baseFeePerGas) ? `(baseFee: ${baseFeePerGas})` : ''
       }`
     )
     let index = 0
@@ -300,7 +302,7 @@ export class Miner {
       `Miner: Sealed block with ${block.transactions.length} txs ${
         this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
           ? `(difficulty: ${block.header.difficulty})`
-          : `(${inTurn ? 'in turn' : 'not in turn'})`
+          : `(${isTruthy(inTurn) ? 'in turn' : 'not in turn'})`
       }`
     )
     this.assembling = false

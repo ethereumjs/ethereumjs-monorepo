@@ -1,18 +1,20 @@
-import * as tape from 'tape'
-import Blockchain, { CliqueConsensus } from '@ethereumjs/blockchain'
-import Common, {
+import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
+import {
   Chain as ChainCommon,
-  ConsensusType,
+  Common,
   ConsensusAlgorithm,
+  ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
-import { setup, destroy } from './util'
+import { MockServer } from './mocks/mockserver'
+import { destroy, setup } from './util'
 
 tape('[Integration:Miner]', async (t) => {
   const hardforks = new Common({ chain: ChainCommon.Goerli })
@@ -30,7 +32,7 @@ tape('[Integration:Miner]', async (t) => {
         },
       },
     },
-    { baseChain: ChainCommon.Goerli }
+    { baseChain: ChainCommon.Goerli, hardfork: Hardfork.London }
   )
   const accounts: [Address, Buffer][] = [
     [

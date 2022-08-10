@@ -1,5 +1,6 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 
@@ -35,7 +36,7 @@ tape('[EthereumClient]', async (t) => {
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()
 
-  const { default: EthereumClient } = await import('../lib/client')
+  const { EthereumClient } = await import('../lib/client')
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })

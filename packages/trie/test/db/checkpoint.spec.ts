@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { BatchDBOp, CheckpointDB, LevelDB } from '../../src'
 
 tape('DB tests', (t) => {

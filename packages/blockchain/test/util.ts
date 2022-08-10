@@ -1,11 +1,12 @@
-import { bufArrToArr, toBuffer } from '@ethereumjs/util'
-import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import Blockchain from '../src'
-import { MemoryLevel } from 'memory-level'
-import { Level } from 'level'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { bufArrToArr, isTruthy, toBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Level } from 'level'
+import { MemoryLevel } from 'memory-level'
+
+import { Blockchain } from '../src'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -207,7 +208,9 @@ function createBlock(
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
-    londonHfBlock && number > londonHfBlock ? parentBlock.header.calcNextBaseFee() : undefined
+    isTruthy(londonHfBlock) && number > londonHfBlock
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
 
   return Block.fromBlockData(
     {

@@ -1,24 +1,22 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { AccessList, AccessListItem } from '@ethereumjs/tx'
-import { Account, Address, toBuffer } from '@ethereumjs/util'
-const Set = require('core-js-pure/es/set')
-
-import { StateManager, AccountFields } from '@ethereumjs/statemanager'
-
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
+import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
+import { AccountFields, StateManager } from '@ethereumjs/statemanager'
+import { AccessList, AccessListItem } from '@ethereumjs/tx'
+import { Account, Address, isTruthy, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { VmStateAccess } from '@ethereumjs/evm/dist/types'
+const Set = require('core-js-pure/es/set')
 
 type AddressHex = string
 
-export class VmState implements VmStateAccess {
-  _common: Common
-  _debug: Debugger
+export class VmState implements EVMStateAccess {
+  protected _common: Common
+  protected _debug: Debugger
 
-  _checkpointCount: number
-  _stateManager: StateManager
-  _touched: Set<AddressHex>
-  _touchedStack: Set<AddressHex>[]
+  protected _checkpointCount: number
+  protected _stateManager: StateManager
+  protected _touched: Set<AddressHex>
+  protected _touchedStack: Set<AddressHex>[]
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -28,13 +26,13 @@ export class VmState implements VmStateAccess {
   // Each call level tracks their access themselves.
   // In case of a commit, copy everything if the value does not exist, to the level above
   // In case of a revert, discard any warm slots.
-  _accessedStorage: Map<string, Set<string>>[]
+  protected _accessedStorage: Map<string, Set<string>>[]
 
   // Backup structure for address/storage tracker frames on reverts
   // to also include on access list generation
-  _accessedStorageReverted: Map<string, Set<string>>[]
+  protected _accessedStorageReverted: Map<string, Set<string>>[]
 
-  _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
+  protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
   protected readonly DEBUG: boolean = false
 
@@ -49,7 +47,7 @@ export class VmState implements VmStateAccess {
     this._accessedStorageReverted = [new Map()]
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('vm:state')
@@ -203,7 +201,7 @@ export class VmState implements VmStateAccess {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  touchAccount(address: Address): void {
+  protected touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
   }
 
@@ -216,9 +214,9 @@ export class VmState implements VmStateAccess {
   ) {
     const mapTarget = storageList[storageList.length - 1]
 
-    if (mapTarget) {
+    if (isTruthy(mapTarget)) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
+      storageMap.forEach((slotSet: Set<string>, addressString: string) => {
         const addressExists = mapTarget.get(addressString)
         if (!addressExists) {
           mapTarget.set(addressString, new Set())
@@ -256,10 +254,10 @@ export class VmState implements VmStateAccess {
         const [balance, code, storage] = state
         const account = Account.fromAccountData({ balance })
         await this.putAccount(addr, account)
-        if (code) {
+        if (isTruthy(code)) {
           await this.putContractCode(addr, toBuffer(code))
         }
-        if (storage) {
+        if (isTruthy(storage)) {
           for (const [key, value] of storage) {
             await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
           }
@@ -274,7 +272,7 @@ export class VmState implements VmStateAccess {
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    */
   async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork('spuriousDragon')) {
+    if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       const touchedArray = Array.from(this._touched)
       for (const addressHex of touchedArray) {
         const address = new Address(Buffer.from(addressHex, 'hex'))
@@ -298,7 +296,7 @@ export class VmState implements VmStateAccess {
    * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    */
-  async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  protected async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }

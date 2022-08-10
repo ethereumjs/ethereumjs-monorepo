@@ -1,10 +1,11 @@
+import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { EventEmitter } from 'events'
+
 import { Config } from '../../lib/config'
 import { RlpxServer } from '../../lib/net/server'
 import { Event } from '../../lib/types'
-import MockPeer from '../integration/mocks/mockpeer'
+import { MockPeer } from '../integration/mocks/mockpeer'
 
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {

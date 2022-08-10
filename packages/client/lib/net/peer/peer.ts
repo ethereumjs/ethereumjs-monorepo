@@ -1,13 +1,15 @@
 import * as events from 'events'
+
+import { Config } from '../../config'
 import {
-  Protocol,
   BoundProtocol,
   EthProtocolMethods,
+  SnapProtocolMethods,
   LesProtocolMethods,
+  Protocol,
   Sender,
 } from '../protocol'
 import { Server } from '../server'
-import { Config } from '../../config'
 
 export interface PeerOptions {
   /* Config */
@@ -57,6 +59,7 @@ export class Peer extends events.EventEmitter {
 
   // Dynamically bound protocol properties
   public eth: (BoundProtocol & EthProtocolMethods) | undefined
+  public snap: (BoundProtocol & SnapProtocolMethods) | undefined
   public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**

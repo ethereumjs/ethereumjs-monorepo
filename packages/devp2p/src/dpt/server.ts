@@ -1,12 +1,14 @@
-import { EventEmitter } from 'events'
 import * as dgram from 'dgram'
+import { RemoteInfo, Socket as DgramSocket } from 'dgram'
+import { EventEmitter } from 'events'
 import ms = require('ms')
 import { debug as createDebugLogger, Debugger } from 'debug'
 import LRUCache = require('lru-cache')
-import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
+import { isTruthy } from '@ethereumjs/util'
+
+import { createDeferred, devp2pDebug, formatLogId, keccak256, pk2id } from '../util'
 import { DPT, PeerInfo } from './dpt'
-import { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import { decode, encode } from './message'
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -159,7 +161,7 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    if (this._socket && peer.udpPort)
+    if (this._socket && isTruthy(peer.udpPort))
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
@@ -199,12 +201,12 @@ export class Server extends EventEmitter {
       case 'pong': {
         let rkey = info.data.hash.toString('hex')
         const rkeyParity = this._parityRequestMap.get(rkey)
-        if (rkeyParity) {
+        if (isTruthy(rkeyParity)) {
           rkey = rkeyParity
           this._parityRequestMap.delete(rkeyParity)
         }
         const request = this._requests.get(rkey)
-        if (request) {
+        if (isTruthy(request)) {
           this._requests.delete(rkey)
           request.deferred.resolve({
             id: peerId,

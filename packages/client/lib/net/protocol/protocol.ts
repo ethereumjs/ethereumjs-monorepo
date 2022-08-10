@@ -1,3 +1,5 @@
+import { isTruthy } from '@ethereumjs/util'
+
 import { Config } from '../../config'
 import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
@@ -71,12 +73,12 @@ export class Protocol {
         reject(new Error(`Handshake timed out after ${this.timeout}ms`))
       }, this.timeout)
       const handleStatus = (status: any) => {
-        if (timeout) {
+        if (isTruthy(timeout)) {
           clearTimeout(timeout)
           resolve(this.decodeStatus(status))
         }
       }
-      if (sender.status) {
+      if (isTruthy(sender.status)) {
         handleStatus(sender.status)
       } else {
         sender.once('status', handleStatus)
@@ -159,7 +161,12 @@ export class Protocol {
       peer: peer,
       sender: sender,
     })
-    await bound.handshake(sender)
+    // Handshake only when snap, else
+    if (this.name !== 'snap') {
+      await bound.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
     //@ts-ignore TODO: evaluate this line
     peer[this.name] = bound
     return bound

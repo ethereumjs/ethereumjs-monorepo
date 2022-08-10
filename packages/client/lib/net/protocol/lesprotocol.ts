@@ -1,8 +1,15 @@
-import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from '@ethereumjs/util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
+import {
+  bigIntToBuffer,
+  bufferToBigInt,
+  bufferToInt,
+  intToBuffer,
+  isTruthy,
+} from '@ethereumjs/util'
+
+import { Chain } from '../../blockchain'
 import { FlowControl } from './flowcontrol'
+import { Message, Protocol, ProtocolOptions } from './protocol'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -162,7 +169,7 @@ export class LesProtocol extends Protocol {
         'flowControl/MRR': intToBuffer(this.flow.mrr),
         'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
           const { code } = this.messages.find((m) => m.name === name)!
-          return [code, base, req]
+          return [intToBuffer(code), intToBuffer(base), intToBuffer(req)]
         }),
       }
     }
@@ -174,7 +181,7 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
     const forkID = [
       Buffer.from(forkHash.slice(2), 'hex'),
-      nextFork ? bigIntToBuffer(nextFork) : Buffer.from([]),
+      isTruthy(nextFork) ? bigIntToBuffer(nextFork) : Buffer.from([]),
     ]
 
     return {
@@ -194,9 +201,9 @@ export class LesProtocol extends Protocol {
    * @param status status message payload
    */
   decodeStatus(status: any): any {
-    this.isServer = !!status.serveHeaders
+    this.isServer = isTruthy(status.serveHeaders)
     const mrc: any = {}
-    if (status['flowControl/MRC']) {
+    if (isTruthy(status['flowControl/MRC'])) {
       for (let entry of status['flowControl/MRC']) {
         entry = entry.map((e: any) => bufferToInt(e))
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
@@ -217,9 +224,9 @@ export class LesProtocol extends Protocol {
       serveHeaders: this.isServer,
       serveChainSince: status.serveChainSince ?? 0,
       serveStateSince: status.serveStateSince ?? 0,
-      txRelay: !!status.txRelay,
-      bl: status['flowControl/BL'] ? bufferToInt(status['flowControl/BL']) : undefined,
-      mrr: status['flowControl/MRR'] ? bufferToInt(status['flowControl/MRR']) : undefined,
+      txRelay: isTruthy(status.txRelay),
+      bl: isTruthy(status['flowControl/BL']) ? bufferToInt(status['flowControl/BL']) : undefined,
+      mrr: isTruthy(status['flowControl/MRR']) ? bufferToInt(status['flowControl/MRR']) : undefined,
       mrc: mrc,
     }
   }

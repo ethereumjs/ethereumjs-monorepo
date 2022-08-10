@@ -1,12 +1,14 @@
 import { createServer } from 'http'
-import { Server as RPCServer, HttpServer } from 'jayson/promise'
-import { json as jsonParser } from 'body-parser'
-import { decode, TAlgorithm } from 'jwt-simple'
-import * as Connect from 'connect'
-import cors from 'cors'
 import { inspect } from 'util'
-import { RPCManager } from '../rpc'
+import { isTruthy } from '@ethereumjs/util'
+import { json as jsonParser } from 'body-parser'
+import * as Connect from 'connect'
+import * as cors from 'cors'
+import { HttpServer, Server as RPCServer } from 'jayson/promise'
+import { decode, TAlgorithm } from 'jwt-simple'
+
 import { Logger } from '../logging'
+import { RPCManager } from '../rpc'
 
 type IncomingMessage = Connect.IncomingMessage
 const algorithm: TAlgorithm = 'HS256'
@@ -43,7 +45,7 @@ export function inspectParams(params: any, shorten?: number) {
     colors: true,
     maxStringLength: 100,
   } as any)
-  if (shorten) {
+  if (isTruthy(shorten)) {
     inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
     if (inspected.length > shorten) {
       inspected = inspected.slice(0, shorten) + '...'
@@ -74,10 +76,10 @@ export function createRPCServer(
       msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
     } else {
       msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result) {
+      if (isTruthy(response.result)) {
         msg += inspectParams(response, 125)
       }
-      if (response.error) {
+      if (isTruthy(response.error)) {
         msg += `error: ${response.error.message}`
       }
     }
@@ -127,7 +129,7 @@ export function createRPCServer(
       ]
       const ethEngineSubsetMethods: { [key: string]: Function } = {}
       for (const method of ethMethodsToBeIncluded) {
-        if (ethMethods[method]) ethEngineSubsetMethods[method] = ethMethods[method]
+        if (isTruthy(ethMethods[method])) ethEngineSubsetMethods[method] = ethMethods[method]
       }
       methods = { ...ethEngineSubsetMethods, ...manager.getMethods(true) }
       break
@@ -157,7 +159,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   const { server, withEngineMiddleware, rpcCors } = opts
 
   const app = Connect()
-  if (rpcCors) app.use(cors({ origin: rpcCors }))
+  if (isTruthy(rpcCors)) app.use(cors({ origin: rpcCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(jsonParser({ limit: '11mb' }))
 
@@ -193,7 +195,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     const app = Connect()
     // In case browser pre-flights the upgrade request with an options request
     // more likely in case of wss connection
-    if (rpcCors) app.use(cors({ origin: rpcCors }))
+    if (isTruthy(rpcCors)) app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
 

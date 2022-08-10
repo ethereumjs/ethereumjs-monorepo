@@ -1,14 +1,15 @@
-import {
-  HEADS_KEY,
-  HEAD_HEADER_KEY,
-  HEAD_BLOCK_KEY,
-  tdKey,
-  headerKey,
-  bodyKey,
-  numberToHashKey,
-  hashToNumberKey,
-} from './constants'
+import { isTruthy } from '@ethereumjs/util'
 
+import {
+  bodyKey,
+  hashToNumberKey,
+  HEAD_BLOCK_KEY,
+  HEAD_HEADER_KEY,
+  headerKey,
+  HEADS_KEY,
+  numberToHashKey,
+  tdKey,
+} from './constants'
 import { CacheMap } from './manager'
 
 export enum DBTarget {
@@ -128,7 +129,7 @@ export class DBOp {
   }
 
   public updateCache(cacheMap: CacheMap) {
-    if (this.cacheString && cacheMap[this.cacheString]) {
+    if (isTruthy(this.cacheString) && isTruthy(cacheMap[this.cacheString])) {
       if (this.baseDBOp.type == 'put') {
         Buffer.isBuffer(this.baseDBOp.value) &&
           cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)

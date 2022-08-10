@@ -1,18 +1,19 @@
+import { Common, ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex } from '@ethereumjs/util'
-import RLP from 'rlp'
-import Common, { ConsensusType } from '@ethereumjs/common'
 import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
+  Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capability,
+  TransactionFactory,
+  TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
+import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
+import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
 
 /**
  * An object that represents the block.
@@ -54,8 +55,8 @@ export class Block {
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // Uncles are obsolete post-merge (no use for hardforkByTD)
-      hardforkByTD: undefined,
+      // Uncles are obsolete post-merge (no use for hardforkByTTD)
+      hardforkByTTD: undefined,
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -98,7 +99,7 @@ export class Block {
 
     // parse transactions
     const transactions = []
-    for (const txData of txsData || []) {
+    for (const txData of isTruthy(txsData) ? txsData : []) {
       transactions.push(
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
@@ -118,10 +119,10 @@ export class Block {
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
     }
-    if (uncleOpts.hardforkByTD) {
+    if (isTruthy(uncleOpts.hardforkByTTD)) {
       delete uncleOpts.hardforkByBlockNumber
     }
-    for (const uncleHeaderData of uhsData || []) {
+    for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
@@ -241,7 +242,7 @@ export class Block {
     const errors: string[] = []
     this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
-      if (this._common.isActivatedEIP(1559)) {
+      if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {

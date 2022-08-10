@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { VM } from '../../../src/vm'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import EVM from '@ethereumjs/evm'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -17,7 +18,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
     ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
-      if (stack) {
+      if (typeof stack !== 'undefined') {
         st.fail('should only do PUSH0 once')
       }
       stack = e.stack

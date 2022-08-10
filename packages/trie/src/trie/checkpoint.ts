@@ -1,6 +1,6 @@
-import { Trie } from './trie'
 import { CheckpointDB, LevelDB } from '../db'
 import { DB, TrieOpts } from '../types'
+import { Trie } from './trie'
 
 /**
  * Adds checkpointing to the {@link Trie}
@@ -42,6 +42,7 @@ export class CheckpointTrie extends Trie {
 
     await this.lock.wait()
     await this.db.commit()
+    await this.persistRoot()
     this.lock.signal()
   }
 
@@ -57,6 +58,7 @@ export class CheckpointTrie extends Trie {
 
     await this.lock.wait()
     this.root = await this.db.revert()
+    await this.persistRoot()
     this.lock.signal()
   }
 
@@ -69,6 +71,8 @@ export class CheckpointTrie extends Trie {
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: (this as any)._deleteFromDB,
+      persistRoot: this._persistRoot,
+      hash: (this as any)._hash,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       trie.db.checkpoints = [...this.db.checkpoints]

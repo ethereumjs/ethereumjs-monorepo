@@ -1,15 +1,17 @@
 import {
+  bufferToBigInt,
+  ecrecover,
+  isFalsy,
+  publicToAddress,
   setLengthLeft,
   setLengthRight,
-  ecrecover,
-  publicToAddress,
-  bufferToBigInt,
 } from '@ethereumjs/util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
 
-export default function (opts: PrecompileInput): ExecResult {
-  if (!opts.data) throw new Error('opts.data missing but required')
+import { ExecResult, OOGResult } from '../evm'
+import { PrecompileInput } from './types'
+
+export function precompile01(opts: PrecompileInput): ExecResult {
+  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
 
   const gasUsed = opts._common.param('gasPrices', 'ecRecover')
 

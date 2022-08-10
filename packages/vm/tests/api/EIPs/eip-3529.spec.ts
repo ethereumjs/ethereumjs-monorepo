@@ -1,10 +1,11 @@
-import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
-import { VM } from '../../../src/vm'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import EVM from '@ethereumjs/evm'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
 import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import { Transaction } from '@ethereumjs/tx'
+import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')
@@ -136,7 +137,7 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      vm.eei.state.addWarmedStorage(address.toBuffer(), key)
+      vm.eei.addWarmedStorage(address.toBuffer(), key)
 
       await vm.evm.runCode!({
         code,
@@ -150,7 +151,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.eei.state.clearOriginalStorageCache()
+      vm.eei.clearOriginalStorageCache()
     }
 
     st.end()
