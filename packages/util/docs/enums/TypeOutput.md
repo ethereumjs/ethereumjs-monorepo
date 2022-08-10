@@ -8,36 +8,47 @@ Type output options
 
 ### Enumeration Members
 
+- [BigInt](TypeOutput.md#bigint)
 - [Buffer](TypeOutput.md#buffer)
 - [Number](TypeOutput.md#number)
 - [PrefixedHexString](TypeOutput.md#prefixedhexstring)
 
 ## Enumeration Members
 
-### Buffer
+### BigInt
 
-• **Buffer**
+• **BigInt** = ``1``
 
 #### Defined in
 
-[packages/util/src/types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L85)
+[types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L56)
+
+___
+
+### Buffer
+
+• **Buffer** = ``2``
+
+#### Defined in
+
+[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L57)
 
 ___
 
 ### Number
 
-• **Number**
+• **Number** = ``0``
 
 #### Defined in
 
-[packages/util/src/types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L83)
+[types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L55)
 
 ___
 
 ### PrefixedHexString
 
-• **PrefixedHexString**
+• **PrefixedHexString** = ``3``
 
 #### Defined in
 
-[packages/util/src/types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L86)
+[types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L58)

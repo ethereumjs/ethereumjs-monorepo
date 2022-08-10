@@ -60,7 +60,7 @@ Other updates:
 
 ## Other Changes
 
-- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
 - Aligned EVM debug logger names, e.g. `vm:ops` -> `evm:ops`, PR [#2029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2029)
 - Fixed EVM precompile loading on hardfork change, PR [#2040](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2040)
 
@@ -88,11 +88,11 @@ npm i @ethereumjs/evm
 
 The new EVM package extracts the bytecode execution logic and leaves the handling of the outer environment like setting up some pre-state, processing txs and blocks, generating receipts and paying miners (on a PoW chain) to the outer package.
 
-This makes for a cleaner separation of concerns and generally brings the the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before.  This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
+This makes for a cleaner separation of concerns and generally brings the the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before. This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
 
 ### EVM, EEI and State
 
-The EVM now provides interfaces for the `EVM` itself and for the `EEI`, the environmental interface which allows for the EVM to request external data like a blockhash for the respective `BLOCKHASH` opcode. The EEI is intended as "bridge" between the EVM, the VM, and the StateManager. It is now possible to import a new EVM and EEI into the VM, as long as these implement the provided interfaces. 
+The EVM now provides interfaces for the `EVM` itself and for the `EEI`, the environmental interface which allows for the EVM to request external data like a blockhash for the respective `BLOCKHASH` opcode. The EEI is intended as "bridge" between the EVM, the VM, and the StateManager. It is now possible to import a new EVM and EEI into the VM, as long as these implement the provided interfaces.
 
 Almost all environment related variables are extracted from EEI and are now in EVM. The environment provides information to the EVM about the code, the remaining gas left, etc. The only environment-related variables left in EEI are the warmed addresses and storage slots, and also keeps track of which accounts are touched (to cleanup later if these are "empty" after running a transaction).
 
@@ -140,7 +140,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
 
 ### Other Changes
 
@@ -228,7 +228,7 @@ vm._common.isActivatedEIP(4399) // true
 ```
 
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO, PR [#1565](https://
-github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+  github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 
 ### EIP-3540: EVM Object Format (EOF) v1 / EIP-3670: EOF - Code Validation
 
@@ -239,7 +239,7 @@ Note that this EIP is not part of a specific hardfork yet and is considered `EXP
 For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3540, 3670 ] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3540, 3670] })
 ```
 
 ### EIP-3860 Support: Limit and Meter Initcode
@@ -249,7 +249,7 @@ Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added t
 Also here, implementation still `EXPERIMENTAL` and needs to be manually activated:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3860 ] })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3860] })
 ```
 
 ### L2 Support: Genesis State with Code and Storage
@@ -420,7 +420,7 @@ Source files from the `src` folder are now included in the distribution build, s
 
 This release comes with some additional `EIP-1559` checks and functionality:
 
-- Additional 1559 check in `VM.runTx()` that the tx sender balance must be >= gas_limit * max_fee_per_gas, PR [#1272](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1272)
+- Additional 1559 check in `VM.runTx()` that the tx sender balance must be >= gas_limit \* max_fee_per_gas, PR [#1272](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1272)
 - Additional 1559 check in `VM.runTx()` to ensure that the user was willing to at least pay the base fee (`transaction.max_fee_per_gas >= block.base_fee_per_gas`), PR [#1276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1276)
 - 1559 support for the BlockBuilder (`VM.buildBlock()`) by setting the new block's `baseFeePerGas` to `parentBlock.header.calcNextBaseFee()`, PR [#1280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1280)
 
@@ -447,7 +447,7 @@ Support for the following EIPs has been added:
 It is also possible to run these EIPs in isolation by instantiating a `berlin` common and activate selected EIPs with the `eips` option:
 
 ```typescript
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [ 3529 ] })
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3529] })
 ```
 
 #### EIP-1559: Gas Fee Market
@@ -460,11 +460,11 @@ There is a new opcode `BASEFEE` added to the VM, see PR [#1148](https://github.c
 
 #### EIP-3529: Reduction in Refunds
 
-`EIP-3529` removes gas refunds for `SELFDESTRUCT`, and reduces gas refunds for `SSTORE`, an implementation has been done in PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239). 
+`EIP-3529` removes gas refunds for `SELFDESTRUCT`, and reduces gas refunds for `SSTORE`, an implementation has been done in PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239).
 
 #### EIP-3541: Reject new Contracts with the 0xEF Byte
 
-There is a new EVM Object Format (EOF) in preparation which will allow to validate contracts at deploy time. This EIP is a preparation for the introduction of this format and disallows contracts which start with the `0xEF` byte. Contracts created in the VM via create transaction, `CREATE` or `CREATE2` starting with this byte are now rejected when the EIP is activated and an `INVALID_BYTECODE_RESULT` is returned as an EVM error with the result, see PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240). 
+There is a new EVM Object Format (EOF) in preparation which will allow to validate contracts at deploy time. This EIP is a preparation for the introduction of this format and disallows contracts which start with the `0xEF` byte. Contracts created in the VM via create transaction, `CREATE` or `CREATE2` starting with this byte are now rejected when the EIP is activated and an `INVALID_BYTECODE_RESULT` is returned as an EVM error with the result, see PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240).
 
 ### StateManager: Preserve State History
 
@@ -474,7 +474,7 @@ See PR [#1262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1262)
 
 ### Error Handling: Correct Non-VM Error Propagation
 
-In former versions of the VM non-VM errors happing inside the VM have been (unintentionally) shielded by a `try / catch` clause in the VM `Interpreter` class. This lead to existing bugs being hidden and channeled through as VM errors, which made it extremely difficult to trace such bugs down to the root cause. These kind of errors are now properly propagated and therefore lead to a break of the VM control flow. Please note that this might lead to your code breaking *if* you have got an error in your implementation (this should be a good this though since now this bug can finally be fixed 😀 ).
+In former versions of the VM non-VM errors happing inside the VM have been (unintentionally) shielded by a `try / catch` clause in the VM `Interpreter` class. This lead to existing bugs being hidden and channeled through as VM errors, which made it extremely difficult to trace such bugs down to the root cause. These kind of errors are now properly propagated and therefore lead to a break of the VM control flow. Please note that this might lead to your code breaking _if_ you have got an error in your implementation (this should be a good this though since now this bug can finally be fixed 😀 ).
 
 See PR [#1168](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1168)
 
@@ -497,7 +497,7 @@ See PR [#1198](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1198).
 
 **Features**
 
-- Added `receipt` to `RunTxResult`, moved the tx receipt generation logic from `VM.runBlock()` to `VM.runTx()` (`generateTxReceipt()` and receipt exports in `runBlock` are now marked as *deprecated*), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- Added `receipt` to `RunTxResult`, moved the tx receipt generation logic from `VM.runBlock()` to `VM.runTx()` (`generateTxReceipt()` and receipt exports in `runBlock` are now marked as _deprecated_), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
 
 **Bug Fixes**
 
@@ -631,7 +631,7 @@ const hardforkByBlockNumber = true
 const vm = new VM({ common, hardforkByBlockNumber })
 
 const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
-const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
+const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
 const result = await vm.runBlock(block)
 ```
 
@@ -777,7 +777,7 @@ The integration of this new interface is highly encouraged since this release al
 [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account) package (this package will be retired) has been replaced by the new
 [Account class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md) from the `ethereumjs-util` package. This affects all `Account` related `StateManager` methods, see PR [#911](https://github.com/ethereumjs/ethereumjs-monorepo/pull/911).
 
-The Util package also introduces a new  [Address class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_address_.md). This class replaces all current `Buffer` inputs on `StateManager` methods representing an address.
+The Util package also introduces a new [Address class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_address_.md). This class replaces all current `Buffer` inputs on `StateManager` methods representing an address.
 
 ### Dual ES5 and ES2017 Builds
 
@@ -793,7 +793,7 @@ Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `pac
 - Split opcodes logic into codes, fns, and utils files, PR [#896](https://github.com/ethereumjs/ethereumjs-monorepo/pull/896)
 - Group precompiles based upon hardfork, PR [#783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/783)
 - **Breaking:** the `step` event now emits an `ethereumjs-util` [Account](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md) object instead of an [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account)
-(package retired) object
+  (package retired) object
 - **Breaking:** `NewContractEvent` now emits an `address` of type `Address` (see `ethereumjs-util`) instead of a `Buffer`, PR [#919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/919)
 - **Breaking:** `EVMResult` now returns a `createdAddress` of type `Address` (see `ethereumjs-util`) instead of a `Buffer`, PR [#919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/919)
 - **Breaking:** `RunTxResult` now returns a `createdAddress` of type `Address` (see `ethereumjs-util`) instead of a `Buffer`, PR [#919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/919)
@@ -814,7 +814,7 @@ Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `pac
 - Various updates, fixes and refactoring work on the test runner, PR [#752](https://github.com/ethereumjs/ethereumjs-monorepo/pull/752) and PR [#849](https://github.com/ethereumjs/ethereumjs-monorepo/pull/849)
 - Integrated `ethereumjs-testing` code logic into VM for more flexible future test load optimizations, PR [#808](https://github.com/ethereumjs/ethereumjs-monorepo/pull/808)
 - Transition VM tests to TypeScript, PR [#881](https://github.com/ethereumjs/ethereumjs-monorepo/pull/881) and PR [#882](https://github.com/ethereumjs/ethereumjs-monorepo/pull/882)
-- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/951) 
+- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/951)
 - Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/953)
 
 **Bug Fixes**
@@ -829,7 +829,7 @@ Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `pac
 This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
 - Security fixes by `mcl-wasm` package dependency update, PR [#955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/955)
-- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/951) 
+- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/951)
 - Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/953)
 
 ## 5.0.0-beta.2 - 2020-11-12
@@ -960,14 +960,14 @@ also comes with `StateManager` API changes. Usage of the old
 from the `ethereumjs-util` package. This affects all `Account` related
 `StateManager` methods, see PR [#911](https://github.com/ethereumjs/ethereumjs-monorepo/pull/911).
 
-The Util package also introduces a new 
+The Util package also introduces a new
 [Address class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_address_.md).
 This class replaces all current `Buffer` inputs on `StateManager` methods representing an address.
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` 
+We significantly updated our internal tool and CI setup along the work on
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
@@ -986,10 +986,10 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 - Group precompiles based upon hardfork,
   PR [#783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/783)
 - **Breaking:** the `step` event now emits an `ethereumjs-util`
-[Account](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
-object instead of an [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account)
-(package retired) object
-- **Breaking:** `NewContractEvent` now emits an `address` of 
+  [Account](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
+  object instead of an [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account)
+  (package retired) object
+- **Breaking:** `NewContractEvent` now emits an `address` of
   type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
   PR [#919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/919)
 - **Breaking:** `EVMResult` now returns a `createdAddress` of
@@ -1422,7 +1422,7 @@ vm.runTx(
       // Handle errors appropriately
     }
     // Do something with the result
-  },
+  }
 )
 ```
 

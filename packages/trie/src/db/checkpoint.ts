@@ -71,7 +71,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
@@ -93,7 +93,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.isCheckpoint) {
@@ -105,7 +105,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async del(key: Buffer): Promise<void> {
     if (this.isCheckpoint) {
@@ -118,7 +118,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     if (this.isCheckpoint) {
@@ -135,7 +135,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   copy(): CheckpointDB {
     return new CheckpointDB(this.db)

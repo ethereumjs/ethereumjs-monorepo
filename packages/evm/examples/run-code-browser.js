@@ -6,7 +6,7 @@
  * with browserify using `browserify index.js -o bundle.js`
  * and then load this folder onto a HTTP WebServer (e.g.
  * using node-static or `python -mSimpleHTTPServer`).
- * 
+ *
  * NOTE: THIS EXAMPLE IS CURRENTLY OUTDATED AND DOESN'T WORK WITH EVM v1.
  */
 const BN = require('bn.js')

@@ -4,10 +4,10 @@
  */
 
 import { NOISE } from '@chainsafe/libp2p-noise'
-import LibP2p from 'libp2p'
-import Bootstrap from 'libp2p-bootstrap'
-import { Multiaddr } from 'multiaddr'
+import * as Libp2p from 'libp2p'
 import PeerId from 'peer-id'
+import { Multiaddr } from 'multiaddr'
+import * as Bootstrap from 'libp2p-bootstrap'
 const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const MPLEX = require('libp2p-mplex')
@@ -27,10 +27,11 @@ export interface Libp2pNodeOptions {
   bootnodes?: Multiaddr[]
 }
 
-export class Libp2pNode extends LibP2p {
+export class Libp2pNode extends Libp2p {
   constructor(options: Libp2pNodeOptions) {
     const wsTransportKey = Websockets.prototype[Symbol.toStringTag]
     options.bootnodes = options.bootnodes ?? []
+
     super({
       peerId: options.peerId,
       addresses: options.addresses,

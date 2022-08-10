@@ -80,11 +80,9 @@
     "chalk": "^2.4.2",
     "eslint": "^8.0.0",
     "nyc": "^15.1.0",
-    "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "testdouble": "^3.8.2",
     "ts-node": "^10.2.1",
-    "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
   },
   "engines": {

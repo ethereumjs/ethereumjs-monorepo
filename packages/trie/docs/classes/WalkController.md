@@ -23,31 +23,31 @@ WalkController is an interface to control how the trie is being traversed.
 
 ### onNode
 
-• `Readonly` **onNode**: `FoundNodeFunction`
+• `Readonly` **onNode**: [`FoundNodeFunction`](../README.md#foundnodefunction)
 
 #### Defined in
 
-[util/walkController.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L10)
+[packages/trie/src/util/walkController.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L10)
 
 ___
 
 ### taskExecutor
 
-• `Readonly` **taskExecutor**: `PrioritizedTaskExecutor`
+• `Readonly` **taskExecutor**: [`PrioritizedTaskExecutor`](PrioritizedTaskExecutor.md)
 
 #### Defined in
 
-[util/walkController.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L11)
+[packages/trie/src/util/walkController.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L11)
 
 ___
 
 ### trie
 
-• `Readonly` **trie**: [`BaseTrie`](BaseTrie.md)
+• `Readonly` **trie**: [`Trie`](Trie.md)
 
 #### Defined in
 
-[util/walkController.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L12)
+[packages/trie/src/util/walkController.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L12)
 
 ## Methods
 
@@ -61,8 +61,8 @@ Run all children of a node. Priority of these nodes are the key length of the ch
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `node` | `TrieNode` | `undefined` | Node to get all children of and call onNode on. |
-| `key` | `Nibbles` | `[]` | The current `key` which would yield the `node` when trying to get this node with a `get` operation. |
+| `node` | [`TrieNode`](../README.md#trienode) | `undefined` | Node to get all children of and call onNode on. |
+| `key` | [`Nibbles`](../README.md#nibbles) | `[]` | The current `key` which would yield the `node` when trying to get this node with a `get` operation. |
 
 #### Returns
 
@@ -70,7 +70,7 @@ Run all children of a node. Priority of these nodes are the key length of the ch
 
 #### Defined in
 
-[util/walkController.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L67)
+[packages/trie/src/util/walkController.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L67)
 
 ___
 
@@ -84,8 +84,8 @@ Push a branch of a certain BranchNode to the event queue.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `node` | `BranchNode` | `undefined` | The node to select a branch on. Should be a BranchNode. |
-| `key` | `Nibbles` | `[]` | The current key which leads to the corresponding node. |
+| `node` | [`BranchNode`](BranchNode.md) | `undefined` | The node to select a branch on. Should be a BranchNode. |
+| `key` | [`Nibbles`](../README.md#nibbles) | `[]` | The current key which leads to the corresponding node. |
 | `childIndex` | `number` | `undefined` | The child index to add to the event queue. |
 | `priority?` | `number` | `undefined` | Optional priority of the event, defaults to the total key length. |
 
@@ -95,7 +95,7 @@ Push a branch of a certain BranchNode to the event queue.
 
 #### Defined in
 
-[util/walkController.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L118)
+[packages/trie/src/util/walkController.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L118)
 
 ___
 
@@ -110,7 +110,7 @@ Push a node to the queue. If the queue has places left for tasks, the node is ex
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
 | `nodeRef` | `Buffer` | `undefined` | Push a node reference to the event queue. This reference is a 32-byte keccak hash of the value corresponding to the `key`. |
-| `key` | `Nibbles` | `[]` | The current key. |
+| `key` | [`Nibbles`](../README.md#nibbles) | `[]` | The current key. |
 | `priority?` | `number` | `undefined` | Optional priority, defaults to key length |
 
 #### Returns
@@ -119,7 +119,7 @@ Push a node to the queue. If the queue has places left for tasks, the node is ex
 
 #### Defined in
 
-[util/walkController.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L95)
+[packages/trie/src/util/walkController.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L95)
 
 ___
 
@@ -133,8 +133,8 @@ Async function to create and start a new walk over a trie.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `onNode` | `FoundNodeFunction` | The `FoundNodeFunction to call if a node is found. |
-| `trie` | [`BaseTrie`](BaseTrie.md) | The trie to walk on. |
+| `onNode` | [`FoundNodeFunction`](../README.md#foundnodefunction) | The `FoundNodeFunction to call if a node is found. |
+| `trie` | [`Trie`](Trie.md) | The trie to walk on. |
 | `root` | `Buffer` | The root key to walk on. |
 | `poolSize?` | `number` | Task execution pool size to prevent OOM errors. Defaults to 500. |
 
@@ -144,4 +144,4 @@ Async function to create and start a new walk over a trie.
 
 #### Defined in
 
-[util/walkController.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L37)
+[packages/trie/src/util/walkController.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L37)

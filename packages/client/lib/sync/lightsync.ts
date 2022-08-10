@@ -27,6 +27,18 @@ export class LightSynchronizer extends Synchronizer {
     return 'light'
   }
 
+  get fetcher(): HeaderFetcher | null {
+    if(this._fetcher!==null && !(this._fetcher instanceof HeaderFetcher)){
+      throw Error(`Invalid Fetcher, expected HeaderFetcher`);
+    }
+    return this._fetcher;
+  }
+
+  set fetcher(fetcher: HeaderFetcher | null){
+    this._fetcher = fetcher;
+  }
+
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */

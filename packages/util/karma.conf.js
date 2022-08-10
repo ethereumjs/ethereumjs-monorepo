@@ -1,15 +1,15 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['tap', 'karma-typescript'],
     files: ['src/**/*.ts', 'test/**/*.ts'],
     preprocessors: {
-      '**/*.ts': ['karma-typescript']
+      '**/*.ts': ['karma-typescript'],
     },
     karmaTypescriptConfig: {
       bundlerOptions: {
-        entrypoints: /\.spec\.ts$/
+        entrypoints: /\.spec\.ts$/,
       },
-      tsconfig: './tsconfig.json'
+      tsconfig: './tsconfig.json',
     },
     colors: true,
     reporters: ['progress', 'karma-typescript'],
@@ -18,6 +18,6 @@ module.exports = function(config) {
     concurrency: 1,
     // Fail after timeout
     browserDisconnectTimeout: 100000,
-    browserNoActivityTimeout: 100000
+    browserNoActivityTimeout: 100000,
   })
 }

@@ -46,10 +46,12 @@ jobs:
 
       - uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 15
+          timeout_minutes: 10
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
+      - run: npm run test:browser
+      
       - run: npm run lint
   test-client-cli:
     runs-on: ubuntu-latest
@@ -71,6 +73,6 @@ jobs:
 
       - uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 15
+          timeout_minutes: 10
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx

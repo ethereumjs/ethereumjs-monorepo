@@ -24,8 +24,8 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11
-        }
+          ecmaVersion: 11,
+        },
       },
     },
 

@@ -68,10 +68,8 @@
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16",
     "nyc": "^15.1.0",
-    "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
-    "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
   }
 }
