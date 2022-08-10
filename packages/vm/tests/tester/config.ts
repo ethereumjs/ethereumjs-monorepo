@@ -258,20 +258,17 @@ export function getTestDirs(network: string, testType: string) {
 }
 /**
  * Setups the common with networks
- * @param targetNetwork Network target
+ * @param targetNetwork Network target (this can include EIPs, such as Byzantium+2537+2929)
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
 function setupCommonWithNetworks(network: string, ttd?: number) {
-  let networkLowercase: string
-  let targetNetwork: string
+  let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
     networkLowercase = network.slice(0, index).toLowerCase()
-    targetNetwork = network
   } else {
     networkLowercase = network.toLowerCase()
-    targetNetwork = network
   }
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
@@ -317,7 +314,8 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
     },
     { eips: [3607] }
   )
-  const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+  // Activate EIPs
+  const eips = network.match(/(?<=\+)(.\d+)/g)
   if (eips) {
     common.setEIPs(eips.map((e: string) => parseInt(e)))
   }
@@ -340,8 +338,10 @@ export function getCommon(network: string) {
     networkLowercase = network.slice(0, index).toLowerCase()
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
+    // Case 1: normal network, such as "London" or "Byzantium" (without any EIPs enabled, and it is not a transition network)
     return setupCommonWithNetworks(network)
   } else if (networkLowercase.match('tomergeatdiff')) {
+    // Case 2: special case of a transition network, this setups the right common with the right Merge properties (TTD)
     // This is a HF -> Merge transition
     const start = networkLowercase.match('tomergeatdiff')!.index!
     const end = start + 'tomergeatdiff'.length
@@ -349,7 +349,7 @@ export function getCommon(network: string) {
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
   } else {
-    // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
+    // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks = isTruthy(transitionNetworks[network])
       ? transitionNetworks[network]
       : transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
