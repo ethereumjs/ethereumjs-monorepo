@@ -28,6 +28,7 @@ tape('bloom', (t: tape.Test) => {
         let common = getCommon('byzantium+2537')
         st.ok(common.isActivatedEIP(2537))
         common = getCommon('byzantium+2537+2929')
+        st.ok(common.isActivatedEIP(2537))
         st.ok(common.isActivatedEIP(2929))
         st.end()
     })
