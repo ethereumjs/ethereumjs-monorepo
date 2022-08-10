@@ -2,7 +2,7 @@
 
 const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
 
-var trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new Trie() // We create an empty Merkle Patricia Tree
 
 async function test() {
   // Notice how similar the following keys are
@@ -15,7 +15,7 @@ async function test() {
   await trie.put(Buffer.from('testKey0'), Buffer.from('testValue0'))
   await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
 
-  var node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
+  const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
   console.log('Node 1: ', node1.node) // A branch node! We can see that it contains 16 branches and a value.
 
   console.log('Node 1 value: ', node1.node._value) // The branch node's value
@@ -24,7 +24,7 @@ async function test() {
   console.log('Value of branch at index 3: ', node1.node._branches[3][1].toString())
   console.log('Value of branch at index 4: ', node1.node._branches[4][1].toString())
 
-  var node2 = await trie.findPath(Buffer.from('testKe')) // We retrieve the node at the "branching" off of the keys
+  const node2 = await trie.findPath(Buffer.from('testKe')) // We retrieve the node at the "branching" off of the keys
   console.log('Node 2: ', node2.node)
 }
 
