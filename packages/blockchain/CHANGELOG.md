@@ -25,6 +25,10 @@ The following methods are added, but are optional to implement:
 - `genesisState?(): GenesisState` method
 - `getCanonicalHeadBlock?(): Promise<Block>` method
 
+## Other Changes
+
+- Update to renamed `hardforkByTTD` (before: `hardforkByTD`) option for Block instantiations, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+
 ## 6.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)) for the main change set description.

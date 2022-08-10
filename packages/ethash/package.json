@@ -46,7 +46,7 @@
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/common": "5.0.0-beta.3",
     "@types/tape": "^4.13.2",
     "eslint": "^8.0.0",
     "memory-level": "^1.0.0",

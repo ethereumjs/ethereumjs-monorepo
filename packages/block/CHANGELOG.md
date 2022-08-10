@@ -32,6 +32,7 @@ const block = Block.fromBlockData(
 
 ## Other Changes
 
+- **Breaking**: rename `hardforkByTD` option to `hardforkByTTD`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
 - Set `hardforkByBlockNumber` to `true` on RLP block constructor, PR [#2081](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2081)
 
 ## 4.0.0-beta.2 - 2022-07-15
