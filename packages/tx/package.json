@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "5.0.0-beta.3",
-    "@ethereumjs/rlp": "4.0.0-beta.2",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
     "@ethereumjs/util": "8.0.0-beta.2",
     "ethereum-cryptography": "^1.1.2"
   },
