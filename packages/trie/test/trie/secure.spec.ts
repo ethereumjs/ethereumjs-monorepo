@@ -16,17 +16,6 @@ tape('SecureTrie', function (t) {
     st.end()
   })
 
-  t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-    try {
-      await trie.put(ROOT_DB_KEY, v)
-      st.fail("Attempting to set '__root__' should fail but it did not.")
-    } catch ({ message }) {
-      st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
-    }
-
-    st.end()
-  })
-
   t.test('copy trie', async function (st) {
     const t = trie.copy()
     const res = await t.get(k)
@@ -82,7 +71,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new SecureTrie({ db: new LevelDB() })
+      const trie = new SecureTrie({ db: new LevelDB() , persistRoot: true })
 
       try {
         await trie.put(ROOT_DB_KEY, Buffer.from('bar'))
