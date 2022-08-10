@@ -1,5 +1,4 @@
 import * as tape from 'tape'
-
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
@@ -80,7 +79,9 @@ tape('[LesProtocol]', (t) => {
         //status.txRelay === 1 && TODO: uncomment with client tx pool functionality
         status['flowControl/BL'].toString('hex') === '03e8' &&
         status['flowControl/MRR'].toString('hex') === '0a' &&
-        status['flowControl/MRC'][0].toString() === '2,10,10',
+        status['flowControl/MRC'][0][0].toString('hex') === '02' &&
+        status['flowControl/MRC'][0][1].toString('hex') === '0a' &&
+        status['flowControl/MRC'][0][2].toString('hex') === '0a',
       'encode status'
     )
     status = { ...status, networkId: [0x01] }
