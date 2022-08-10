@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660045164888,
+  "lastUpdate": 1660124265126,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5c313c74a7be329dc38b1e22bfe6bb0c0f98769",
-          "message": "Update ethereum tests v11 (#2052)\n\n* ethereum-tests: update to v11\r\n\r\n* block: point gray glacier tests to ethereum-tests and delete local reference\r\n\r\n* Update .gitmodules\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2022-07-23T18:53:47-04:00",
-          "tree_id": "4af97ef5a51155972db2e9b8cae479f0654e924c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5c313c74a7be329dc38b1e22bfe6bb0c0f98769"
-        },
-        "date": 1658617041545,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 22917,
-            "range": "±3.02%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 21488,
-            "range": "±7.67%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 21544,
-            "range": "±11.54%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 22321,
-            "range": "±2.25%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 29765,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 773,
-            "range": "±6.73%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 121,
-            "range": "±44.71%",
-            "unit": "ops/sec",
-            "extra": "52 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 82.05,
-            "range": "±5.37%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 10.21,
-            "range": "±61.23%",
-            "unit": "ops/sec",
-            "extra": "29 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±59.64%",
             "unit": "ops/sec",
             "extra": "36 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1ee333c6c8b9a420a77cd2c1e921eff6c037abc",
+          "message": "Make the client browser implementation work again... (#2091)\n\n* Initial work on client browser build\r\n\r\n* Browser tests work again\r\n\r\n* fix libp2p spelling bug\r\n\r\n* Fix import\r\n\r\n* replace util so jayson is excluded\r\n\r\n* Fix import\r\n\r\n* Add util polyfill\r\n\r\n* update readme, turn off source maps\r\n\r\n* Fix encoding error\r\n\r\n* Turn on debug logs in browser\r\n\r\n* instantiate blockchain in browser\r\n\r\n* remove sourcemaps, remove isTruthy\r\n\r\n* cleanup readme\r\n\r\n* fix test\r\n\r\n* remove unused import",
+          "timestamp": "2022-08-10T11:34:00+02:00",
+          "tree_id": "f0502ec89fef0b6e2911d1c08a2b12e610537eb6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1ee333c6c8b9a420a77cd2c1e921eff6c037abc"
+        },
+        "date": 1660124264520,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 19477,
+            "range": "±4.79%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 19701,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 17277,
+            "range": "±9.98%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 19189,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 26057,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 697,
+            "range": "±8.38%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 103,
+            "range": "±55.79%",
+            "unit": "ops/sec",
+            "extra": "51 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 63.16,
+            "range": "±17.65%",
+            "unit": "ops/sec",
+            "extra": "51 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 14.31,
+            "range": "±8.47%",
+            "unit": "ops/sec",
+            "extra": "29 samples"
           }
         ]
       }
