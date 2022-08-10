@@ -114,6 +114,7 @@
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.3",
+    "karma-typescript-es6-transform": "^5.5.3",
     "node-fetch": "^2.6.1",
     "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
@@ -129,6 +130,7 @@
     "testdouble-timers": "^0.1.1",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2",
+    "util": "^0.12.4",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0"
   },
