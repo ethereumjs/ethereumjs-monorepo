@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660132108076,
+  "lastUpdate": 1660139065482,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c1a319fe92035ddf950278e89bf224005192682f",
-          "message": "client: Make beacon sync more robust (#1968)\n\n* Make beacon sync more robust\r\n\r\n* fix skeleton spec with the backstep usage\r\n\r\n* skeleton spec add for backstep\r\n\r\n* fix the validations\r\n\r\n* fix multiple skeleton and execution issues\r\n\r\n* beacon spec fixes\r\n\r\n* some logging improvs\r\n\r\n* fix fetcher spec\r\n\r\n* fix reverse fetcher\r\n\r\n* fix response when nothing to fetch\r\n\r\n* fix beaconsync spec\r\n\r\n* Update packages/client/lib/sync/skeleton.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix randon curly brace in log\r\n\r\n* do not start fetcher when no skeleton to sync\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-07-25T11:28:32-04:00",
-          "tree_id": "af7cf18ea70381f17191d39023661010a83418f7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1a319fe92035ddf950278e89bf224005192682f"
-        },
-        "date": 1658763106113,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20837,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20044,
-            "range": "±5.63%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20284,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20070,
-            "range": "±2.23%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18250,
-            "range": "±9.21%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 19611,
             "range": "±9.25%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f9b314a335b5bff51329cfc9bbf78fc07906a7f6",
+          "message": "refactor(trie): default to `false` for `persistRoot` option (#2123)",
+          "timestamp": "2022-08-10T09:41:39-04:00",
+          "tree_id": "ed4c2c27ae92d3c1ee6735b565b400185e1aa3e2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f9b314a335b5bff51329cfc9bbf78fc07906a7f6"
+        },
+        "date": 1660139064098,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23180,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22228,
+            "range": "±4.51%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22575,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22300,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20853,
+            "range": "±7.95%",
             "unit": "ops/sec",
             "extra": "79 samples"
           }
