@@ -169,7 +169,7 @@ export class LesProtocol extends Protocol {
         'flowControl/MRR': intToBuffer(this.flow.mrr),
         'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
           const { code } = this.messages.find((m) => m.name === name)!
-          return [code, base, req]
+          return [intToBuffer(code), intToBuffer(base), intToBuffer(req)]
         }),
       }
     }

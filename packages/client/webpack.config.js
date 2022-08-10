@@ -1,3 +1,4 @@
+const path = require('path')
 const { resolve } = require('path')
 const { ProvidePlugin } = require('webpack')
 
@@ -27,6 +28,7 @@ module.exports = {
               [resolve('./dist.browser/lib/net/peer/libp2pnode.js')]: resolve(
                 './dist.browser/browser/libp2pnode.js'
               ),
+              [resolve('./dist.browser/lib/util/index.js')]: resolve('./dist.browser/browser/util/index.js')
             }
             return mapping[resourcePath]
           },
@@ -44,6 +46,9 @@ module.exports = {
     library: 'ethereumjs',
   },
   resolve: {
+    alias: {
+      util: path.resolve(__dirname, 'node_modules/util/util.js')
+    },
     fallback: {
       async_hooks: false, // used by: raw-body via body-parser
       buffer: require.resolve('buffer'),
@@ -57,7 +62,8 @@ module.exports = {
       os: require.resolve('os-browserify/browser'), // used by: bin/cli.ts, web3_clientVersion rpc
       path: false, // used by: bin/cli.ts
       stream: require.resolve('stream-browserify'), // used by: fetcher
-      tls: false, // used by: jayson
+      tls: false, // used by: jayson,
+      util: require.resolve('util/'), // used by: evm
       zlib: false, // used by: body-parser
     },
   },
