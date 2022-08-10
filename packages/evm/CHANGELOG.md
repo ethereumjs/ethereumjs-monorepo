@@ -29,6 +29,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 - Ensure EVM runs when nonce is 0, PR [#2054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2054)
 - EVM/VM instantiation fixes, PR [#2078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2078)
 - Moved `@types/async-eventemitter` from devDependencis to dependencies, PR [#2077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2077)
+- Added additional exports `EvmErrorMessage`, `ExecResult`, `InterpreterStep`, `Message`, PR [#2063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2063)
 
 ## 1.0.0-beta.2 - 2022-07-15
 
