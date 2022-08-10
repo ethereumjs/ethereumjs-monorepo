@@ -60,7 +60,6 @@ With this release our tx pool grows into a still simple but full-grown and base-
 
 - Execution API: Added missing tx fields to `getBlockByHash` RPC method, PR [#1881](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1881)
 
-
 ## 0.4.1 - 2022-04-14
 
 - Allow `forkchoiceUpdated` method to properly work on a reorg if a previous block was sent as `headBlockHash`, PR [#1820](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1820)

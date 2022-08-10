@@ -19,7 +19,7 @@ Here are some use cases:
 - Set up your own local development networks (PoA Clique or PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
-- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues** 
+- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues**
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
@@ -108,7 +108,7 @@ Currently the following sync scenarios are **supported**:
 - **EL and CL Live Transition**: both clients follow the head of the respective chains pre Merge and go through the Merge transition live and in sync
 - **EL synced to Merge block, CL Merge transition**: the EL client has been synced to the Merge transitition block and is waiting for CL requests, the CL is syncing through the transition and starts EL requests along
 - **Resume syncing with equally synced clients / CL client behind**: sync can be resumed with EL client and CL client synced to the respective counterparts of the beacon and embedded execution chain, CL client can also be somewhat behind the EL client
-- **CL client ahead of EL client**: if the CL client has been synced without the EL client syncing in *lockstep* on/after merge (e.g. using weak subjectivity sync) and is therefore *ahead* of the EL client post-merge, the EL backfills blocks and brings the chain up-to-date with the head fcUs being issued by the CL via [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (beacon) sync (since `v0.5.0`)
+- **CL client ahead of EL client**: if the CL client has been synced without the EL client syncing in _lockstep_ on/after merge (e.g. using weak subjectivity sync) and is therefore _ahead_ of the EL client post-merge, the EL backfills blocks and brings the chain up-to-date with the head fcUs being issued by the CL via [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (beacon) sync (since `v0.5.0`)
 
 ### Custom Chains
 

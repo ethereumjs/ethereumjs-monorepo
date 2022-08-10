@@ -26,7 +26,7 @@ export class LevelDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     let value = null
@@ -43,28 +43,28 @@ export class LevelDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async del(key: Buffer): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     await this._leveldb.batch(opStack, ENCODING_OPTS)
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   copy(): DB {
     return new LevelDB(this._leveldb)

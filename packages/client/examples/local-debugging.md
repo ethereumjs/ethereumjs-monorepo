@@ -40,6 +40,7 @@ Start your Geth instance:
 ```shell
 geth [--syncmode=full] [--verbosity=5]
 ```
+
 Then connect with your EthereumJS instance via:
 
 ```shell

@@ -13,12 +13,11 @@
 
 - [BlockData](interfaces/BlockData.md)
 - [BlockOptions](interfaces/BlockOptions.md)
-- [Blockchain](interfaces/Blockchain.md)
 - [HeaderData](interfaces/HeaderData.md)
 - [JsonBlock](interfaces/JsonBlock.md)
 - [JsonHeader](interfaces/JsonHeader.md)
 
-### Type aliases
+### Type Aliases
 
 - [BlockBodyBuffer](README.md#blockbodybuffer)
 - [BlockBuffer](README.md#blockbuffer)
@@ -26,7 +25,7 @@
 - [TransactionsBuffer](README.md#transactionsbuffer)
 - [UncleHeadersBuffer](README.md#uncleheadersbuffer)
 
-## Type aliases
+## Type Aliases
 
 ### BlockBodyBuffer
 
@@ -34,7 +33,7 @@
 
 #### Defined in
 
-[types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
+[types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
 
 ___
 
@@ -44,7 +43,7 @@ ___
 
 #### Defined in
 
-[types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
+[types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L104)
 
 ___
 
@@ -54,7 +53,7 @@ ___
 
 #### Defined in
 
-[types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L125)
+[types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L105)
 
 ___
 
@@ -66,7 +65,7 @@ TransactionsBuffer can be an array of serialized txs for Typed Transactions or a
 
 #### Defined in
 
-[types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
+[types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L110)
 
 ___
 
@@ -76,4 +75,4 @@ ___
 
 #### Defined in
 
-[types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
+[types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L111)

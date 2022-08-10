@@ -660,6 +660,7 @@ async function run() {
     saveReceipts: args.saveReceipts,
     syncmode: args.syncmode,
     disableBeaconSync: args.disableBeaconSync,
+    forceSnapSync: args.forceSnapSync,
     transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })

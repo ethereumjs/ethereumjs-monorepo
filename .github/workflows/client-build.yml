@@ -50,6 +50,8 @@ jobs:
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
+      - run: npm run test:browser
+      
       - run: npm run lint
   test-client-cli:
     runs-on: ubuntu-latest

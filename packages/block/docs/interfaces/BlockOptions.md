@@ -3,7 +3,7 @@
 # Interface: BlockOptions
 
 An object to set to which blockchain the blocks and their headers belong. This could be specified
-using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
 hardfork.
 
 ## Table of contents
@@ -15,8 +15,7 @@ hardfork.
 - [common](BlockOptions.md#common)
 - [freeze](BlockOptions.md#freeze)
 - [hardforkByBlockNumber](BlockOptions.md#hardforkbyblocknumber)
-- [hardforkByTD](BlockOptions.md#hardforkbytd)
-- [initWithGenesisHeader](BlockOptions.md#initwithgenesisheader)
+- [hardforkByTTD](BlockOptions.md#hardforkbyttd)
 
 ## Properties
 
@@ -33,7 +32,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 #### Defined in
 
-[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
+[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L50)
 
 ___
 
@@ -46,23 +45,23 @@ Will throw if provided on a non-PoA chain.
 
 #### Defined in
 
-[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
+[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L67)
 
 ___
 
 ### common
 
-• `Optional` **common**: `default`
+• `Optional` **common**: `Common`
 
-A {@link Common} object defining the chain and the hardfork a block/block header belongs to.
+A Common object defining the chain and the hardfork a block/block header belongs to.
 
 Object will be internally copied so that tx behavior don't incidentally
 change on future HF changes.
 
-Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
-hardfork in the {@link Common} class.
+Default: Common object set to `mainnet` and the HF currently defined as the default
+hardfork in the Common class.
 
-Current default hardfork: `istanbul`
+Current default hardfork: `merge`
 
 #### Defined in
 
@@ -86,7 +85,7 @@ Default: true
 
 #### Defined in
 
-[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
+[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
 
 ___
 
@@ -96,7 +95,7 @@ ___
 
 Determine the HF by the block number
 
-Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+Default: `false` (HF is set to whatever default HF is set by the Common instance)
 
 #### Defined in
 
@@ -104,38 +103,19 @@ Default: `false` (HF is set to whatever default HF is set by the {@link Common} 
 
 ___
 
-### hardforkByTD
+### hardforkByTTD
 
-• `Optional` **hardforkByTD**: `BNLike`
+• `Optional` **hardforkByTTD**: `BigIntLike`
 
 Determine the HF by total difficulty (Merge HF)
 
 This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
 and determines the HF by both the block number and the TD.
 
-Since the TD is only a threshold the block number will in doubt take precedence (imagine
+Since the TTD is only a threshold the block number will in doubt take precedence (imagine
 e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
 pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
 
 #### Defined in
 
 [types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)
-
-___
-
-### initWithGenesisHeader
-
-• `Optional` **initWithGenesisHeader**: `boolean`
-
-Turns the block header into the canonical genesis block header
-
-If set to `true` all other header data is ignored.
-
-If a {@link Common} instance is passed the instance need to be set to `chainstart` as a HF,
-otherwise usage of this option will throw
-
-Default: `false`
-
-#### Defined in
-
-[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L52)
