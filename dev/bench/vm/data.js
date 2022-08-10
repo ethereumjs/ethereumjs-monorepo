@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660045150396,
+  "lastUpdate": 1660124205136,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5c313c74a7be329dc38b1e22bfe6bb0c0f98769",
-          "message": "Update ethereum tests v11 (#2052)\n\n* ethereum-tests: update to v11\r\n\r\n* block: point gray glacier tests to ethereum-tests and delete local reference\r\n\r\n* Update .gitmodules\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2022-07-23T18:53:47-04:00",
-          "tree_id": "4af97ef5a51155972db2e9b8cae479f0654e924c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5c313c74a7be329dc38b1e22bfe6bb0c0f98769"
-        },
-        "date": 1658617019830,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21034,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19979,
-            "range": "±6.03%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20768,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20380,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18477,
-            "range": "±9.45%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.20%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1ee333c6c8b9a420a77cd2c1e921eff6c037abc",
+          "message": "Make the client browser implementation work again... (#2091)\n\n* Initial work on client browser build\r\n\r\n* Browser tests work again\r\n\r\n* fix libp2p spelling bug\r\n\r\n* Fix import\r\n\r\n* replace util so jayson is excluded\r\n\r\n* Fix import\r\n\r\n* Add util polyfill\r\n\r\n* update readme, turn off source maps\r\n\r\n* Fix encoding error\r\n\r\n* Turn on debug logs in browser\r\n\r\n* instantiate blockchain in browser\r\n\r\n* remove sourcemaps, remove isTruthy\r\n\r\n* cleanup readme\r\n\r\n* fix test\r\n\r\n* remove unused import",
+          "timestamp": "2022-08-10T11:34:00+02:00",
+          "tree_id": "f0502ec89fef0b6e2911d1c08a2b12e610537eb6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1ee333c6c8b9a420a77cd2c1e921eff6c037abc"
+        },
+        "date": 1660124204208,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23244,
+            "range": "±2.82%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22208,
+            "range": "±5.07%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22511,
+            "range": "±1.92%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20930,
+            "range": "±7.91%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22826,
+            "range": "±5.06%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
