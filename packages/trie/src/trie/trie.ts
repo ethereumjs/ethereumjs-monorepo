@@ -58,12 +58,7 @@ export class Trie {
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
-
-    if (opts?.db !== undefined) {
-      this._persistRoot = opts.persistRoot ?? true
-    } else {
-      this._persistRoot = false
-    }
+    this._persistRoot = opts?.persistRoot ?? false
 
     if (opts?.root) {
       this.root = opts.root
@@ -71,15 +66,11 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    if (opts?.db !== undefined) {
-      opts.persistRoot = opts?.persistRoot ?? true
-
-      if (opts?.persistRoot) {
-        if (opts?.root === undefined) {
-          opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
-        } else {
-          await opts?.db.put(ROOT_DB_KEY, opts.root)
-        }
+    if (opts?.db !== undefined && opts?.persistRoot === true) {
+      if (opts?.root === undefined) {
+        opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
+      } else {
+        await opts?.db.put(ROOT_DB_KEY, opts.root)
       }
     }
 
