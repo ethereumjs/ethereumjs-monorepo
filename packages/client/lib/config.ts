@@ -223,10 +223,12 @@ export interface ConfigOptions {
    */
   minerCoinbase?: Address
 
+  disableMinerHardforkByBlockNumber?: boolean
   /**
    * If there is a reorg, this is a safe distance from which
    * to try to refetch and refeed the blocks.
    */
+  
   safeReorgDistance?: number
 
   /**
@@ -291,6 +293,7 @@ export class Config {
   public readonly mine: boolean
   public readonly accounts: [address: Address, privKey: Buffer][]
   public readonly minerCoinbase?: Address
+  public readonly disableMinerHardforkByBlockNumber: boolean
 
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
@@ -341,7 +344,7 @@ export class Config {
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
-
+    this.disableMinerHardforkByBlockNumber = options.disableMinerHardforkByBlockNumber ?? false
     this.synchronized = false
     this.lastSyncDate = 0
 
