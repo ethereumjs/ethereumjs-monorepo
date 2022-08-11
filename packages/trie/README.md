@@ -189,7 +189,7 @@ async function test() {
 test()
 ```
 
-Additional examples with detailed explanations are available [here](https://github.com/gabrocheleau/merkle-patricia-trees-examples) (might be incompatible with v5+).
+Additional examples with detailed explanations are available [here](./examples/README.md).
 
 # API
 
