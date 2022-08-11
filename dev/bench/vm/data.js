@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660208280224,
+  "lastUpdate": 1660230704822,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "98c44a8eaba3b89c5b479cc542358398057f2ef2",
-          "message": "common: Change td(total difficulty) config to be of bigint (#2075)\n\n* common: Change td(total difficulty) config to be of bigint\r\n\r\n* simplify hardfork ts type\r\n\r\n* fix test data\r\n\r\n* fix vm tests\r\n\r\n* fix merge spec\r\n\r\n* rename td to ttd wherever appropriate\r\n\r\n* missing td to ttd conversions\r\n\r\n* fix merge spec",
-          "timestamp": "2022-07-27T19:08:10+05:30",
-          "tree_id": "4466ffd5ff3c421454810fc09a736efdbbab4191",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/98c44a8eaba3b89c5b479cc542358398057f2ef2"
-        },
-        "date": 1658929274644,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21713,
-            "range": "±2.98%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20541,
-            "range": "±7.12%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21463,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21360,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18888,
-            "range": "±10.59%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.76%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8c1d34d43119819fcd4da4c44e07b7c2ca1f807b",
+          "message": "Monorepo Beta 3 Releases (#2122)\n\n* Bumped version, added CHANGELOG, updated upstream library versions (Block v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (Blockchain v6.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (Common v3.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (devp2p v5.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (ethash v2.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (evm v1.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (rlp v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (statemanager v1.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (trie v5.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (tx v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (util v8.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (vm v6.0.0-beta.3)\r\n\r\n* Common version correction\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Client: bumped version to v0.6.1, added CHANGELOG\r\n\r\n* Updated/regenerated package-lock.json\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-08-11T17:08:54+02:00",
+          "tree_id": "37df7cfeb4ea55497af14868772db895a43dcd98",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8c1d34d43119819fcd4da4c44e07b7c2ca1f807b"
+        },
+        "date": 1660230703705,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22022,
+            "range": "±2.24%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21036,
+            "range": "±4.98%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21558,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21397,
+            "range": "±2.11%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19363,
+            "range": "±8.98%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
