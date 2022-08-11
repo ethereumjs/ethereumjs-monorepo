@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660139065482,
+  "lastUpdate": 1660208280224,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b7436b27d7d65993bb671121cdcd6936ca44f80d",
-          "message": "Move @types/async-eventemitter from devDependencis to dependencies (#2077)\n\n* evm: move packages to dependencies\r\n\r\n* vm: move package from devDependencies to dependencies",
-          "timestamp": "2022-07-26T21:24:46+02:00",
-          "tree_id": "1f963df497d46647746ea1ac0eb9283ddf87f852",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b7436b27d7d65993bb671121cdcd6936ca44f80d"
-        },
-        "date": 1658864044304,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22957,
-            "range": "±2.69%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22362,
-            "range": "±4.37%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22823,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20409,
-            "range": "±8.02%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22919,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.95%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "33e0c22dcd8c69849dd2438c197b713fb38fa3cb",
+          "message": "chore(trie): add `gabrocheleau/merkle-patricia-trees-examples` with 5.0.0 compatibility (#2110)\n\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* Update packages/trie/examples/README.md\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-11T10:53:55+02:00",
+          "tree_id": "853fc05fa8e3ec248b7228a004dcfcf1e3e69b76",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/33e0c22dcd8c69849dd2438c197b713fb38fa3cb"
+        },
+        "date": 1660208279076,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 12684,
+            "range": "±3.92%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 12775,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 12490,
+            "range": "±6.34%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 12815,
+            "range": "±2.69%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12220,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
