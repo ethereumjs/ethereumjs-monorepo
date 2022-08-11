@@ -34,7 +34,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
-const config = new Config({ transports: [], common })
+const config = new Config({ transports: [], common, disableMinerHardforkByBlockNumber: true })
 
 const setup = () => {
   const stateManager = { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) }

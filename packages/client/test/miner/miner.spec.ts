@@ -85,7 +85,7 @@ tape('[Miner]', async (t) => {
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
   const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
-  const config = new Config({ transports: [], accounts, mine: true, common })
+  const config = new Config({ transports: [], accounts, mine: true, common, disableMinerHardforkByBlockNumber: true })
   config.events.setMaxListeners(50)
 
   const createTx = (
@@ -156,7 +156,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
-    
+
     txPool.start()
     miner.start()
 
@@ -380,7 +380,7 @@ tape('[Miner]', async (t) => {
     }
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby, eips: [1559] })
     common.setHardforkByBlockNumber(0)
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common, disableMinerHardforkByBlockNumber: true })
     const chain = new Chain({ config })
     await chain.open()
     const service = new FullEthereumService({
