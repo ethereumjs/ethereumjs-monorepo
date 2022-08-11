@@ -259,7 +259,6 @@ export class Miner {
       },
       blockOpts: {
         cliqueSigner,
-        hardforkByBlockNumber: true,
         calcDifficultyFromHeader,
         putBlockIntoBlockchain: false,
       },
