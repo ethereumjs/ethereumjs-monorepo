@@ -49,8 +49,6 @@ export class PendingBlock {
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
 
     const builder = await vm.buildBlock({
       parentBlock,
