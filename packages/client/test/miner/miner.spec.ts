@@ -152,11 +152,11 @@ tape('[Miner]', async (t) => {
     const service = new FullEthereumService({
       config,
       chain,
-    })
+    })    
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
-
+    
     txPool.start()
     miner.start()
 
@@ -378,7 +378,7 @@ tape('[Miner]', async (t) => {
         { name: 'london', block: 3 },
       ],
     }
-    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
+    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby, eips: [1559] })
     common.setHardforkByBlockNumber(0)
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
