@@ -18,7 +18,7 @@ This change should not directly affect this library but might be relevant since 
 
 ### Other Changes
 
-- Upgrades the `@ethereumjs/trie` library to Beta 3 which allows to pass in a custom hash function/library (performance), PR [#2043](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2043)
+- Upgrades the `@ethereumjs/trie` library to Beta 3 which allows to pass in a custom hash function/library (for performance), PR [#2043](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2043)
 
 ## 1.0.0-beta.2 - 2022-07-15
 

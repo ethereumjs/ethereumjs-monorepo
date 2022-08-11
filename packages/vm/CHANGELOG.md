@@ -26,14 +26,14 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
 ### Easier Blockchain Customization
 
-The VM now aligns with the updated `Blockchain` interface from PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069) and now takes in any blockchain implementations adhering with the interface for the `blockchain` option. This makes it easier to do customizations on the Blockchain class or pass in an alternative own implementation.
+The VM now aligns with the updated `Blockchain` interface from PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069) and now takes in any blockchain implementations adhering to the interface for the `blockchain` option. This makes it easier to do customization on the Blockchain class or pass in an alternative implementation.
 
 ## Other Changes
 
 - **Breaking:** Renamed `hardforkByTD` option for the constructor and `VM.runBlock()` to `hardforkByTTD`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
 - Fixed a bug in the underlying EVM when nonce is 0, PR [#2054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2054)
 - EVM/VM instantiation fixes, PR [#2078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2078)
-- Moved `@types/async-eventemitter` from devDependencis to dependencies, PR [#2077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2077)
+- Moved `@types/async-eventemitter` from devDependencies to dependencies, PR [#2077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2077)
 - Added additional exports for the underlying EVM `EvmErrorMessage`, `ExecResult`, `InterpreterStep`, `Message`, PR [#2063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2063)
 
 ## 6.0.0-beta.2 - 2022-07-15

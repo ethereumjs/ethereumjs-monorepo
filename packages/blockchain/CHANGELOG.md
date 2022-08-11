@@ -12,7 +12,7 @@ Beta 3 release for the upcoming breaking release round on the [EthereumJS monore
 
 ## Blockchain Interface Changes
 
-The Blockchain interface has been expanded by a few methods and is now guaranteed to work with the VM, following properties and methods have been added, see PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069):
+The Blockchain interface has been expanded by a few methods and is now guaranteed to work with the VM. The following properties and methods have been added, see PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069):
 
 - `consensus: Consensus` property (for the consensus implementation)
 - `copy(): BlockchainInterface` method
