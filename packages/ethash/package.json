@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "An ethash implementation in JavaScript",
   "keywords": [
     "ethash",
@@ -36,9 +36,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "4.0.0-beta.2",
-    "@ethereumjs/rlp": "4.0.0-beta.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
+    "@ethereumjs/block": "4.0.0-beta.3",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
+    "@ethereumjs/util": "8.0.0-beta.3",
     "abstract-level": "^1.0.3",
     "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
@@ -46,7 +46,7 @@
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "3.0.0-beta.2",
+    "@ethereumjs/common": "3.0.0-beta.3",
     "@types/tape": "^4.13.2",
     "eslint": "^8.0.0",
     "memory-level": "^1.0.0",
