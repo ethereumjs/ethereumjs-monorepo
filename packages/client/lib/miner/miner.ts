@@ -247,7 +247,7 @@ export class Miner {
       calcDifficultyFromHeader = parentBlock.header
       coinbase = this.config.minerCoinbase ?? this.config.accounts[0][0]
     }
-
+    
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,
       headerData: {
@@ -260,6 +260,7 @@ export class Miner {
       blockOpts: {
         cliqueSigner,
         calcDifficultyFromHeader,
+        hardforkByBlockNumber: !this.config.disableMinerHardforkByBlockNumber,
         putBlockIntoBlockchain: false,
       },
     })
