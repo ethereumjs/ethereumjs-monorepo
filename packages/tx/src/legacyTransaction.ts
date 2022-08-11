@@ -372,25 +372,24 @@ export class Transaction extends BaseTransaction<Transaction> {
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
       v !== undefined &&
-      v !== 0 &&
-      (!common || common.gteHardfork('spuriousDragon')) &&
-      v !== 27 &&
-      v !== 28
+      v !== 28 &&
+      v !== 27
     ) {
       if (common) {
-        if (!meetsEIP155(BigInt(v), common.chainId())) {
+
+        if (!meetsEIP155(BigInt(v), common.chainId()) || !common.gteHardfork('spuriousDragon')) {
           throw new Error(
             `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
-          )
-        }
-      } else {
-        // Derive the original chain ID
-        let numSub
-        if ((v - 35) % 2 === 0) {
-          numSub = 35
+            )
+          } 
         } else {
-          numSub = 36
-        }
+          // Derive the original chain ID
+          let numSub
+          if ((v - 35) % 2 === 0) {
+            numSub = 35
+          } else {
+            numSub = 36
+          }
         // Use derived chain ID to create a proper Common
         chainIdBigInt = BigInt(v - numSub) / BigInt(2)
       }
