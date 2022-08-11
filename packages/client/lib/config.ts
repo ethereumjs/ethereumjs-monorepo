@@ -223,6 +223,10 @@ export interface ConfigOptions {
    */
   minerCoinbase?: Address
 
+  /**
+   * Option to disable hardForkByBlockNumber during 
+   * Miner block building
+   */
   disableMinerHardforkByBlockNumber?: boolean
   /**
    * If there is a reorg, this is a safe distance from which
