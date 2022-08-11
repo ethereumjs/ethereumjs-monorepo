@@ -302,7 +302,6 @@ export class Transaction extends BaseTransaction<Transaction> {
         v!,
         bigIntToUnpaddedBuffer(r!),
         bigIntToUnpaddedBuffer(s!),
-        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
