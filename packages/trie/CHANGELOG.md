@@ -20,7 +20,7 @@ To switch back to the old behavior you can pass in the option set to `false` on 
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION'), persistRoot: false) })
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')), persistRoot: false })
 ```
 
 ### Other Changes
