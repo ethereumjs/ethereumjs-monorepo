@@ -14,7 +14,7 @@ export interface AccountFetcherOptions extends FetcherOptions {
 	/** Account hash after which to stop serving data */
 	limit: Buffer
 
-	/** Soft limit at which to stop returning data */
+	/** Per task limit of bytes to request from peer */
 	bytes: bigint
 
 	/** Destroy fetcher once all tasks are done */
