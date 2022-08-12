@@ -23,10 +23,8 @@ export interface AccountFetcherOptions extends FetcherOptions {
 
 // root comes from block?
 export type JobTask = {
-	root: Buffer
 	origin: Buffer
 	limit: Buffer
-	bytes: bigint
 }
 
 export class AccountFetcher extends Fetcher<
@@ -73,8 +71,34 @@ export class AccountFetcher extends Fetcher<
 	 * @param job
 	 * @param peer
 	 */
-	async request(job: Job<JobTask, Account[], Account>, peer: Peer): Promise<Account[] | undefined> {
-		return
+	async request(job: Job<JobTask, Account[], Account>): Promise<Account[] | undefined> {
+		console.log('inside accountfetcher.request')
+		const { task, peer, partialResult } = job
+		let { origin, limit } = task
+
+		const rangeResult = await peer!.snap!.getAccountRange({
+			root: this.root,
+			origin: origin,
+			limit: limit,
+			bytes: this.bytes,
+		})
+
+		let accounts: Account[] = []
+		for (let i = 0; i < rangeResult?.accounts.length; i++) {
+			accounts.push(Account.fromAccountData({
+				stateRoot: this.root,
+				codeHash: rangeResult?.accounts[i].hash,
+			}))
+		}
+
+		console.log(accounts)
+
+		// for data capture
+		// if (rangeResult) {
+		// 	process.exit()
+		// }
+
+		return accounts
 	}
 
 	/**
@@ -93,6 +117,34 @@ export class AccountFetcher extends Fetcher<
 	* @param result fetch result
 	*/
 	async store(result: Account[]): Promise<void> {
+		console.log('inside accountfetcher.store')
+		return
+	}
+
+	/**
+	 * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
+	 * remaining items apart from the tasks it pushes in the queue
+	 */
+	tasks(origin = this.origin, limit = this.limit, maxTasks = this.config.maxFetcherJobs): JobTask[] {
+		const max = this.config.maxPerRequest
+		const tasks: JobTask[] = []
+		tasks.push({ origin: origin, limit: limit })
+
+		console.log(`Created new tasks num=${tasks.length} tasks=${tasks}`)
+		return tasks
+	}
+
+	nextTasks(): void {
+		const tasks = this.tasks(this.origin, this.limit)
+		for (const task of tasks) {
+			this.enqueueTask(task)
+		}
+	}
+
+	/**
+	 * Clears all outstanding tasks from the fetcher
+	 */
+	clear() {
 		return
 	}
 }
