@@ -3,6 +3,8 @@ import { Fetcher, FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
 
+import { CheckpointTrie, LevelDB } from '@ethereumjs/trie'
+
 export interface AccountFetcherOptions extends FetcherOptions {
 	/** Root hash of the account trie to serve */
 	root: Buffer
@@ -49,10 +51,18 @@ export class AccountFetcher extends Fetcher<
 	bytes: bigint
 
 	/**
+	 * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
+	 */
+	accountTrie: CheckpointTrie
+
+	/**
 	 * Create new block fetcher
 	 */
 	constructor(options: AccountFetcherOptions) {
 		super(options)
+
+		// this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
+		this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
 
 		this.root = options.root
 		this.origin = options.origin
@@ -89,14 +99,23 @@ export class AccountFetcher extends Fetcher<
 				stateRoot: this.root,
 				codeHash: rangeResult?.accounts[i].hash,
 			}))
+
+			// store account data
+			const { hash, body } = rangeResult?.accounts[i]
+			this.accountTrie.put(hash, body as Buffer)
+
+			console.log('dbg0')
+			// verify account data using proof and state root
+			const valid = await this.accountTrie.verifyProof(this.root, hash, rangeResult?.proof[i])
+			console.log('Proof found to be valid: ' + valid)
 		}
 
-		console.log(accounts)
+		// console.log(accounts)
 
 		// for data capture
-		// if (rangeResult) {
-		// 	process.exit()
-		// }
+		if (rangeResult) {
+			process.exit()
+		}
 
 		return accounts
 	}
