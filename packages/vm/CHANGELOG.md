@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This means that if this library is instantiated without providing an explicit `Common`, the `Merge` HF will be set as the default hardfork and the behavior of the library changes according to up-to-`Merge` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+```
+
+### Easier Blockchain Customization
+
+The VM now aligns with the updated `Blockchain` interface from PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069) and now takes in any blockchain implementations adhering to the interface for the `blockchain` option. This makes it easier to do customization on the Blockchain class or pass in an alternative implementation.
+
+## Other Changes
+
+- **Breaking:** Renamed `hardforkByTD` option for the constructor and `VM.runBlock()` to `hardforkByTTD`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- Fixed a bug in the underlying EVM when nonce is 0, PR [#2054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2054)
+- EVM/VM instantiation fixes, PR [#2078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2078)
+- Moved `@types/async-eventemitter` from devDependencies to dependencies, PR [#2077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2077)
+- Added additional exports for the underlying EVM `EvmErrorMessage`, `ExecResult`, `InterpreterStep`, `Message`, PR [#2063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2063)
+
 ## 6.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/CHANGELOG.md)) for the main change set description.

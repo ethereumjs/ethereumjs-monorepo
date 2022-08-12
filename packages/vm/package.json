@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "6.0.0-beta.2",
+  "version": "6.0.0-beta.3",
   "description": "An Ethereum VM implementation",
   "keywords": [
     "ethereum",
@@ -56,15 +56,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "4.0.0-beta.2",
-    "@ethereumjs/blockchain": "6.0.0-beta.2",
-    "@ethereumjs/common": "3.0.0-beta.2",
-    "@ethereumjs/evm": "1.0.0-beta.2",
-    "@ethereumjs/rlp": "4.0.0-beta.2",
-    "@ethereumjs/statemanager": "1.0.0-beta.2",
-    "@ethereumjs/trie": "5.0.0-beta.2",
-    "@ethereumjs/tx": "4.0.0-beta.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
+    "@ethereumjs/block": "4.0.0-beta.3",
+    "@ethereumjs/blockchain": "6.0.0-beta.3",
+    "@ethereumjs/common": "3.0.0-beta.3",
+    "@ethereumjs/evm": "1.0.0-beta.3",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
+    "@ethereumjs/statemanager": "1.0.0-beta.3",
+    "@ethereumjs/trie": "5.0.0-beta.3",
+    "@ethereumjs/tx": "4.0.0-beta.3",
+    "@ethereumjs/util": "8.0.0-beta.3",
     "@types/async-eventemitter": "^0.2.1",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
