@@ -110,6 +110,7 @@ export class AccountFetcher extends Fetcher<
 	 * @param result result data
 	 */
 	process(job: Job<JobTask, Account[], Account>, result: Account[]): Account[] | undefined {
+		console.log('inside accountfetcher.process')
 		return
 	}
 
