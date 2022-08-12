@@ -1,5 +1,4 @@
 import { Account } from '@ethereumjs/util'
-import { Peer } from '../../net/peer'
 import { Fetcher, FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
@@ -75,7 +74,7 @@ export class AccountFetcher extends Fetcher<
 	async request(job: Job<JobTask, Account[], Account>): Promise<Account[] | undefined> {
 		console.log('inside accountfetcher.request')
 		const { task, peer, partialResult } = job
-		let { origin, limit } = task
+		const { origin, limit } = task
 
 		const rangeResult = await peer!.snap!.getAccountRange({
 			root: this.root,
@@ -84,7 +83,7 @@ export class AccountFetcher extends Fetcher<
 			bytes: this.bytes,
 		})
 
-		let accounts: Account[] = []
+		const accounts: Account[] = []
 		for (let i = 0; i < rangeResult?.accounts.length; i++) {
 			accounts.push(Account.fromAccountData({
 				stateRoot: this.root,
