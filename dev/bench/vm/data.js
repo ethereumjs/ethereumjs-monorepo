@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660230704822,
+  "lastUpdate": 1660326287956,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "03ada864eae71882f344e28c7a000bdef27065d4",
-          "message": "common: Set goerli merge ttd to 10790000 (#2079)",
-          "timestamp": "2022-07-27T19:33:23+05:30",
-          "tree_id": "04d823d44929234e23c16369829e13da9a21554b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/03ada864eae71882f344e28c7a000bdef27065d4"
-        },
-        "date": 1658930790767,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23147,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22389,
-            "range": "±3.98%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22724,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22600,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20949,
-            "range": "±7.35%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.98%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "06dc4d92e71579c7fc15994cff4c8e6b298117da",
+          "message": "Upgrade jayson to v4.0 (#2129)",
+          "timestamp": "2022-08-12T13:42:03-04:00",
+          "tree_id": "aade061b3664db0ff1db1b6b1b799dc183438ceb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/06dc4d92e71579c7fc15994cff4c8e6b298117da"
+        },
+        "date": 1660326287331,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 11962,
+            "range": "±4.93%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 12059,
+            "range": "±2.96%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 11139,
+            "range": "±6.00%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 12013,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 11507,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
