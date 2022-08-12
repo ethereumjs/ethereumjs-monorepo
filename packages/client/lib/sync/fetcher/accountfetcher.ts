@@ -59,8 +59,9 @@ export class AccountFetcher extends Fetcher<
 		this.origin = options.origin
 		this.limit = options.limit
 		this.bytes = options.bytes
+
 		this.debug(
-			`Block fetcher instantiated root=${this.root} origin=${this.origin} limit=${this.limit} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
+			`Account fetcher instantiated root=${this.root} origin=${this.origin} limit=${this.limit} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
 		)
 	}
 
