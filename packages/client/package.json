@@ -78,7 +78,7 @@
     "fs-extra": "^10.0.0",
     "it-pipe": "^1.1.0",
     "it-pushable": "^1.4.2",
-    "jayson": "^3.4.4",
+    "jayson": "^4.0.0",
     "jwt-simple": "^0.5.6",
     "level": "^8.0.0",
     "libp2p": "^0.30.7",
