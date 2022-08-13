@@ -3,7 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { run, mark, logMem } from 'micro-bmark'
 
 import { CheckpointTrie, LevelDB, Trie } from '../dist'
-import { keys, vals } from './checkpointing'
+import { keys } from './keys'
 
 const db = new LevelDB()
 const trie = new Trie({ db })
@@ -48,7 +48,7 @@ run(async () => {
   for (const samples of [100, 500, 1000, 5000]) {
     await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
       checkpointTrie.checkpoint()
-      await checkpointTrie.put(keys[i], vals[i])
+      await checkpointTrie.put(keys[i], keys[i])
       await checkpointTrie.commit()
     })
   }
