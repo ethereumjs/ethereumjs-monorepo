@@ -14,14 +14,14 @@ export const runTrie = async (db: DB, eraSize = 9, symmetric = false) => {
   const trie = new Trie({ db })
   let key = Buffer.alloc(KEY_SIZE)
 
+  const keys = []
   for (let i = 0; i <= ROUNDS; i++) {
     key = Buffer.from(keccak256(key))
 
     if (symmetric) {
       await trie.put(key, key)
     } else {
-      const val = Buffer.from(keccak256(key))
-      await trie.put(key, val)
+      await trie.put(key, Buffer.from(key))
     }
 
     if (i % eraSize === 0) {
