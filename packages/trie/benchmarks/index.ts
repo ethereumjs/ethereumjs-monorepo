@@ -1,12 +1,16 @@
+import { keccak256 } from 'ethereum-cryptography/keccak'
 // @ts-ignore - package has no types...
 import { run, mark, logMem, getTime } from './micro-bmark'
-import { runTrie } from './random'
 
-import { CheckpointTrie, LevelDB } from '../dist'
+import { CheckpointTrie, LevelDB, Trie } from '../dist'
+import { keys, vals } from './checkpointing'
 
 const db = new LevelDB()
-const trie = new CheckpointTrie({ db })
-import { keys, vals } from './checkpointing'
+const trie = new Trie({ db })
+const checkpointTrie = new CheckpointTrie({ db })
+
+const ROUNDS = 1000
+const KEY_SIZE = 32
 
 run(async () => {
   // random.ts
@@ -15,31 +19,37 @@ run(async () => {
   // The standard secure-trie test is `1k-9-32-ran`
   // https://eth.wiki/en/fundamentals/benchmarks#results-1
 
-  //   await mark(`1k-3-32-ran`, async () => {
-  //     await runTrie(db, 3, false)
-  //   })
+  for (const [title, eraSize, symmetric] of [
+    ['1k-3-32-ran', 3, false],
+    ['1k-5-32-ran', 5, false],
+    ['1k-9-32-ran', 9, false],
+    ['1k-1k-32-ran', 1000, false],
+    ['1k-1k-32-mir', 1000, true],
+  ]) {
+    await mark(title, async () => {
+      let key = Buffer.alloc(KEY_SIZE)
 
-  //   await mark(`1k-5-32-ran`, async () => {
-  //     await runTrie(db, 5, false)
-  //   })
+      for (let i = 0; i <= ROUNDS; i++) {
+        key = Buffer.from(keccak256(key))
 
-  //   await mark(`1k-9-32-ran`, async () => {
-  //     await runTrie(db, 9, false)
-  //   })
+        if (symmetric) {
+          await trie.put(key, key)
+        } else {
+          await trie.put(key, Buffer.from(key))
+        }
 
-  //   await mark(`1k-1k-32-ran`, async () => {
-  //     await runTrie(db, 1000, false)
-  //   })
-
-  //   await mark(`1k-1k-32-mir`, async () => {
-  //     await runTrie(db, 1000, true)
-  //   })
+        if (i % (eraSize as number) === 0) {
+          key = trie.root
+        }
+      }
+    })
+  }
 
   for (const samples of [100, 500, 1000, 5000]) {
     await mark(`Checkpointing: ${samples} iterations`, samples, async ({ i }: { i: number }) => {
-      trie.checkpoint()
-      await trie.put(keys[i], vals[i])
-      await trie.commit()
+      checkpointTrie.checkpoint()
+      await checkpointTrie.put(keys[i], vals[i])
+      await checkpointTrie.commit()
     })
   }
 
