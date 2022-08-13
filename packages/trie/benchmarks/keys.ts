@@ -4,6 +4,6 @@ let curr = keccak256(new Uint8Array(32));
 
 export const keys: Buffer[] = [];
 
-for (let i = 0; i < 10000; curr = keccak256(curr), i++) {
+for (let i = 0; i < 5000; curr = keccak256(curr), i++) {
   keys.push(Buffer.from(curr));
 }
