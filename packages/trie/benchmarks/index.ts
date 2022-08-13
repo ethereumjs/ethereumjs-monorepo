@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 // @ts-ignore - package has no types...
-import { run, mark, logMem, getTime } from './micro-bmark'
+import { run, mark, logMem } from 'micro-bmark'
 
 import { CheckpointTrie, LevelDB, Trie } from '../dist'
 import { keys, vals } from './checkpointing'
@@ -46,7 +46,7 @@ run(async () => {
   }
 
   for (const samples of [100, 500, 1000, 5000]) {
-    await mark(`Checkpointing: ${samples} iterations`, samples, async ({ i }: { i: number }) => {
+    await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
       checkpointTrie.checkpoint()
       await checkpointTrie.put(keys[i], vals[i])
       await checkpointTrie.commit()
@@ -54,6 +54,4 @@ run(async () => {
   }
 
   logMem()
-
-  getTime()
 })
