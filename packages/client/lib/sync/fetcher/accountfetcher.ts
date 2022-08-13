@@ -62,7 +62,7 @@ export class AccountFetcher extends Fetcher<
 		super(options)
 
 		// this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
-		this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
+		this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
 
 		this.root = options.root
 		this.origin = options.origin
