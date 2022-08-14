@@ -132,7 +132,7 @@ export class AccountFetcher extends Fetcher<
 			this.debug('dbg0')
 
 			// verify account data for first account returned using proof and state root
-			const checkFirst = await trie.verifyProof(trie.root, accounts[0].hash, proof[0])
+			const checkFirst = await trie.verifyProof(trie.root, accounts[0].hash, proof)
 			this.debug('Proof for first account found to be valid: ' + checkFirst)
 			if (!checkFirst) {
 				this.debug(`Proof-based verification failed`)
@@ -142,12 +142,12 @@ export class AccountFetcher extends Fetcher<
 			// TODO should we check intermediary proofs?
 
 			// verify account data for last account returned using proof and state root
-			const checkLast = await trie.verifyProof(trie.root, accounts[accounts.length - 1].hash, proof[proof.length - 1])
+			/*const checkLast = await trie.verifyProof(trie.root, accounts[accounts.length - 1].hash, proof)
 			this.debug('Proof for last account found to be valid: ' + checkLast)
 			if (!checkLast) {
 				this.debug(`Proof-based verification failed`)
 				return undefined
-			}
+			}*/
 		} catch (err) {
 			console.log(err)
 			this.debug(`Proof-based verification failed`)
