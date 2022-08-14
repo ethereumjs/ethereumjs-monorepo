@@ -1,10 +1,29 @@
-import { isFalsy, Account } from '@ethereumjs/util'
+import { isFalsy, Account, arrToBufArr, KECCAK256_NULL, KECCAK256_RLP } from '@ethereumjs/util'
 import { Peer } from '../../net/peer'
 import { Fetcher, FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
 
 import { Trie, CheckpointTrie, LevelDB } from '@ethereumjs/trie'
+import { RLP } from '@ethereumjs/rlp'
+
+/**
+ * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
+ * @param body Array of 4 Buffer-like items to represent the account
+ * @returns RLP encoded version of the account
+ */
+function convertSlimAccount(body: any) {
+	const cpy = [body[0], body[1], body[2], body[3]]
+	if (arrToBufArr(body[2]).length === 0) {
+		// StorageRoot
+		cpy[2] = KECCAK256_RLP
+	}
+	if (arrToBufArr(body[3]).length === 0) {
+		// CodeHash
+		cpy[3] = KECCAK256_NULL
+	}
+	return arrToBufArr(RLP.encode(cpy))
+}
 
 
 type AccountData = {
