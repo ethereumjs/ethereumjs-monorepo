@@ -36,8 +36,6 @@ import {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
-import { EEIInterface } from './types'
-import TransientStorage from './transientStorage'
 import { EEIDummy } from './eei/eeiDummy'
 
 const debug = createDebugLogger('evm')

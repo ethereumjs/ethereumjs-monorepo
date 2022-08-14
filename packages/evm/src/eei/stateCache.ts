@@ -43,7 +43,7 @@ export class StateCache {
     let i = this._storage.length - 1
     const key = address.toString()
     const slotKey = slot.toString('hex')
-    while (i !== 0) {
+    while (i >= 0) {
       const storageMap = this._storage[i].get(key)
       if (storageMap) {
         if (storageMap.has(slotKey)) {
@@ -58,7 +58,7 @@ export class StateCache {
   getAccount(address: Address, reportUndefined = false): Account | undefined {
     let i = this._warmAddresses.length - 1
     const key = address.toString()
-    while (i !== 0) {
+    while (i >= 0) {
       const cSlot = this._accounts[i]
       if (cSlot.has(key)) {
         return cSlot.get(key)
@@ -74,7 +74,7 @@ export class StateCache {
   isWarmedAddress(address: Address): boolean {
     let i = this._warmAddresses.length - 1
     const key = address.toString()
-    while (i !== 0) {
+    while (i >= 0) {
       const cSlot = this._warmAddresses[i]
       if (cSlot.has(key)) {
         return true
@@ -88,7 +88,7 @@ export class StateCache {
     let i = this._warmSlots.length - 1
     const key = address.toString()
     const slotKey = slot.toString('hex')
-    while (i !== 0) {
+    while (i >= 0) {
       const storageMap = this._warmSlots[i].get(key)
       if (storageMap) {
         if (storageMap.has(slotKey)) {

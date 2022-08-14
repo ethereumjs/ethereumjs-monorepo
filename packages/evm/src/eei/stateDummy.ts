@@ -1,9 +1,9 @@
 import { Address, Account } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { VmStateAccess } from '../types'
+import { EVMStateAccess } from '../types'
 import { StateCache } from './stateCache'
 
-export class StateDummy implements VmStateAccess {
+export class StateDummy implements EVMStateAccess {
   stateCache: StateCache
 
   constructor() {
