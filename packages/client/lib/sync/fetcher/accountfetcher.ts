@@ -1,10 +1,21 @@
-import { Account } from '@ethereumjs/util'
+import { isFalsy, Account } from '@ethereumjs/util'
+import { Peer } from '../../net/peer'
 import { Fetcher, FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import { Job } from './types'
 
-import { CheckpointTrie, LevelDB } from '@ethereumjs/trie'
+import { Trie, CheckpointTrie, LevelDB } from '@ethereumjs/trie'
 
+
+type AccountData = {
+	hash: Buffer
+	body: any
+}
+
+/**
+ * Implements an snap1 based account fetcher
+ * @memberof module:sync/fetcher
+ */
 export interface AccountFetcherOptions extends FetcherOptions {
 	/** Root hash of the account trie to serve */
 	root: Buffer
@@ -30,7 +41,7 @@ export type JobTask = {
 
 export class AccountFetcher extends Fetcher<
 	JobTask,
-	Account[],
+	AccountData[],
 	Account
 > {
 	/**
@@ -62,7 +73,7 @@ export class AccountFetcher extends Fetcher<
 		super(options)
 
 		// this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
-		this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
+		this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
 
 		this.root = options.root
 		this.origin = options.origin
@@ -81,8 +92,7 @@ export class AccountFetcher extends Fetcher<
 	 * @param job
 	 * @param peer
 	 */
-	async request(job: Job<JobTask, Account[], Account>): Promise<Account[] | undefined> {
-		console.log('inside accountfetcher.request')
+	async request(job: Job<JobTask, AccountData[], Account>): Promise<AccountData[] | undefined> {
 		const { task, peer, partialResult } = job
 		const { origin, limit } = task
 
@@ -93,24 +103,56 @@ export class AccountFetcher extends Fetcher<
 			bytes: this.bytes,
 		})
 
-		const accounts: Account[] = []
-		for (let i = 0; i < rangeResult?.accounts.length; i++) {
-			accounts.push(Account.fromAccountData({
-				stateRoot: this.root,
-				codeHash: rangeResult?.accounts[i].hash,
-			}))
+		const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
-			// store account data
-			const { hash, body } = rangeResult?.accounts[i]
-			this.accountTrie.put(hash, body as Buffer)
-
-			console.log('dbg0')
-			// verify account data using proof and state root
-			const valid = await this.accountTrie.verifyProof(this.root, hash, rangeResult?.proof[i])
-			console.log('Proof found to be valid: ' + valid)
+		if (!rangeResult
+			|| !rangeResult.accounts
+			|| !rangeResult.proof
+		) {
+			// catch occasional null, empty, or incomplete responses
+			this.debug(`Peer ${peerInfo} returned incomplete account range response for origin=${origin} and limit=${limit}`)
+			return undefined
 		}
 
-		// console.log(accounts)
+		const trie = new Trie()
+		const { accounts, proof } = rangeResult
+		for (let i = 0; i < accounts.length - 1; i++) {
+			// ensure the range is monotonically increasing
+			if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+				this.debug(`Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${accounts[i + 1].hash}`)
+			}
+
+			// put account data into trie
+			const { hash, body } = accounts[i]
+			await trie.put(hash, body as Buffer)
+		}
+
+		// Validate data using proofs
+		try {
+			this.debug('dbg0')
+
+			// verify account data for first account returned using proof and state root
+			const checkFirst = await trie.verifyProof(trie.root, accounts[0].hash, proof[0])
+			this.debug('Proof for first account found to be valid: ' + checkFirst)
+			if (!checkFirst) {
+				this.debug(`Proof-based verification failed`)
+				return undefined
+			}
+
+			// TODO should we check intermediary proofs?
+
+			// verify account data for last account returned using proof and state root
+			const checkLast = await trie.verifyProof(trie.root, accounts[accounts.length - 1].hash, proof[proof.length - 1])
+			this.debug('Proof for last account found to be valid: ' + checkLast)
+			if (!checkLast) {
+				this.debug(`Proof-based verification failed`)
+				return undefined
+			}
+		} catch (err) {
+			console.log(err)
+			this.debug(`Proof-based verification failed`)
+			return undefined
+		}
 
 		// for data capture
 		if (rangeResult) {
@@ -127,7 +169,7 @@ export class AccountFetcher extends Fetcher<
 	 * @param job fetch job
 	 * @param result result data
 	 */
-	process(job: Job<JobTask, Account[], Account>, result: Account[]): Account[] | undefined {
+	process(job: Job<JobTask, AccountData[], Account>, result: AccountData[]): Account[] | undefined {
 		console.log('inside accountfetcher.process')
 		return
 	}
@@ -166,5 +208,12 @@ export class AccountFetcher extends Fetcher<
 	 */
 	clear() {
 		return
+	}
+
+	/**
+ * Returns an idle peer that can process a next job.
+ */
+	peer(): Peer | undefined {
+		return this.pool.idle((peer) => 'snap' in peer)
 	}
 }
