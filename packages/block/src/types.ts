@@ -69,6 +69,10 @@ export interface BlockOptions {
    * Will throw if provided on a non-PoA chain.
    */
   cliqueSigner?: Buffer
+  /**
+   * Perform consensus validation checks on header if set.  Defaults to true.
+   */
+  consensusFormatValidation?: boolean
 }
 
 /**

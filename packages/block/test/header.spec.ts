@@ -290,6 +290,22 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
+
+  t.test('should skip consensusFormatValidation if flag is set to false', (st) => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const extraData = Buffer.concat([
+      Buffer.alloc(1),
+    ])
+
+    try {
+      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false})
+      st.pass('should instantiate header with invalid extraData when consensusFormatValidation === false')
+    } catch (error: any) {
+      st.fail('should not throw')
+    }
+
+    st.end()
+  })
   /*
   TODO: Decide if we need to move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
