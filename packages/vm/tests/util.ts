@@ -414,7 +414,7 @@ export function getDAOCommon(activationBlock: number) {
   const editedForks = []
   // explicitly edit the "dao" block number:
   for (const fork of forks) {
-    if (fork.name == Hardfork.Dao) {
+    if (fork.name === Hardfork.Dao) {
       editedForks.push({
         name: Hardfork.Dao,
         forkHash: fork.forkHash,

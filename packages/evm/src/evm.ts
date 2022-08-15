@@ -767,7 +767,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       result.execResult.gasRefund = BigInt(0)
     }
     if (err) {
-      if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (this._common.gteHardfork(Hardfork.Homestead) || err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
         await this.eei.revert()
         this._transientStorage.revert()

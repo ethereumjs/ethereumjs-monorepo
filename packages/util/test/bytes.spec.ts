@@ -376,8 +376,8 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(<any>[]), 'throws on arrays')
   st.throws(() => intToHex(<any>(() => {})), 'throws on arrays')
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
-  st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
-  st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.ok(intToHex(0) === '0x0', 'correctly converts 0 to a hex string')
+  st.ok(intToHex(1) === '0x1', 'correctly converts 1 to a hex string')
   st.end()
 })
 

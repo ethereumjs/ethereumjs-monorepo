@@ -53,6 +53,7 @@ module.exports = {
     '@typescript-eslint/prefer-nullish-coalescing': 'error',
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/strict-boolean-expressions': ['error'],
+    eqeqeq: 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
     'import/default': 'error',
     'import/export': 'error',
