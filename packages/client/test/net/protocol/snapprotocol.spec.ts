@@ -55,11 +55,11 @@ tape('[SnapProtocol]', (t) => {
       bytes,
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], {
-      reqId: reqId,
-      root: root,
-      origin: origin,
-      limit: limit,
-      bytes: bytes,
+      reqId,
+      root,
+      origin,
+      limit,
+      bytes,
     })
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -113,12 +113,12 @@ tape('[SnapProtocol]', (t) => {
       bytes,
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetStorageRanges')[0], {
-      reqId: reqId,
-      root: root,
-      accounts: accounts,
-      origin: origin,
-      limit: limit,
-      bytes: bytes,
+      reqId,
+      root,
+      accounts,
+      origin,
+      limit,
+      bytes,
     })
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
@@ -156,9 +156,9 @@ tape('[SnapProtocol]', (t) => {
       bytes,
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetByteCodes')[0], {
-      reqId: reqId,
-      hashes: hashes,
-      bytes: bytes,
+      reqId,
+      hashes,
+      bytes,
     })
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')

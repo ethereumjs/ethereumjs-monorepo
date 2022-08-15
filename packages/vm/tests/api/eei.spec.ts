@@ -65,7 +65,7 @@ tape('EEI', (t) => {
       new Common({ chain: 'mainnet' }),
       await Blockchain.create()
     )
-    const evm = new EVM({ eei: eei })
+    const evm = new EVM({ eei })
     try {
       await VM.create({ eei, evm })
       st.fail('should have thrown')

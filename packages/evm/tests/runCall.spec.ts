@@ -66,7 +66,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address
       value: BigInt(value), // call with this value (the value is used in the contract as an argument, see above's code)
@@ -126,7 +126,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   await eeiConstantinople.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address
   }
@@ -186,7 +186,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -214,7 +214,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -242,7 +242,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -275,7 +275,7 @@ tape(
 
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(200),
     }
@@ -307,7 +307,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff),
   }
@@ -374,7 +374,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   for (const callData of data) {
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(0xffffffffff),
       value: BigInt(callData.value),
@@ -421,7 +421,7 @@ tape(
 
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     }
@@ -464,7 +464,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     gasLimit: BigInt(150000),
     data: Buffer.from(code, 'hex'),
     gasPrice: BigInt(70000000000),

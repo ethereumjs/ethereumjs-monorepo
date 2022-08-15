@@ -199,7 +199,7 @@ export class RLPx extends EventEmitter {
     this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
     const peer: Peer = new Peer({
-      socket: socket,
+      socket,
       remoteId: peerId,
       privateKey: this._privateKey,
       id: this._id,

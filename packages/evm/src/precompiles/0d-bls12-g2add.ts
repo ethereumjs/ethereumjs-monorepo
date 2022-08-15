@@ -62,6 +62,6 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: returnValue,
+    returnValue,
   }
 }

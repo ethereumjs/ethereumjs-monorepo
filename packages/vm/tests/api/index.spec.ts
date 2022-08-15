@@ -264,7 +264,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
     await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

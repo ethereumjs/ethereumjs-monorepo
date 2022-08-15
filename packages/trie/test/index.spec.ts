@@ -356,7 +356,7 @@ tape('dummy hash', async (t) => {
   const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
   const expectedRoot = Buffer.from(hash(new LeafNode(bufferToNibbles(k), v).serialize()))
 
-  const trie = new Trie({ hash: hash })
+  const trie = new Trie({ hash })
   await trie.put(k, v)
   t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
 
