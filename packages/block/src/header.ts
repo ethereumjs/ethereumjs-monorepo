@@ -21,10 +21,10 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { CliqueConfig } from '@ethereumjs/common'
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 
 interface HeaderCache {
