@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660326287956,
+  "lastUpdate": 1660554132103,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a5273af40974ab66066c69c3fabbb7d9bd954c16",
-          "message": "feat(trie): implement root hash persistence (#2071)\n\n* feat(trie): implement root hash persistence\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2022-07-28T10:13:39-04:00",
-          "tree_id": "ccf2c5c94f694337cbc7875e31643811af117d16",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a5273af40974ab66066c69c3fabbb7d9bd954c16"
-        },
-        "date": 1659017828064,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23145,
-            "range": "±1.55%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22340,
-            "range": "±3.56%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22584,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22443,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20928,
-            "range": "±8.26%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.88%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b102f67c30f27963bbb20afc9ae3438bff95c940",
+          "message": "chore: wip (#2127)\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-15T11:00:04+02:00",
+          "tree_id": "95e57b0a81afe068be552a627778ceefb688acb3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b102f67c30f27963bbb20afc9ae3438bff95c940"
+        },
+        "date": 1660554131455,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21967,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21229,
+            "range": "±5.31%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21567,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19192,
+            "range": "±9.29%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 21758,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
