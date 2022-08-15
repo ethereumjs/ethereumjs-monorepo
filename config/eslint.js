@@ -86,6 +86,7 @@ module.exports = {
     'no-redeclare': 'off',
     'no-unused-vars': 'off',
     'no-var': 'error',
+    'object-shorthand': 'error',
     'prefer-const': 'error',
     // TypeError: Error while loading rule 'prettier/prettier': context.getPhysicalFilename is not a function
     'prettier/prettier': 'off',

@@ -229,12 +229,12 @@ tape('[Miner]', async (t) => {
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
-      get: function () {
+      get () {
         return { latest: block.header }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get: function () {
+      get () {
         return { latest: block }
       },
     })
@@ -278,12 +278,12 @@ tape('[Miner]', async (t) => {
     const gasLimit = 100000
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
-      get: function () {
+      get () {
         return { latest: block.header, height: BigInt(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get: function () {
+      get () {
         return { latest: block, height: BigInt(0) }
       },
     })
