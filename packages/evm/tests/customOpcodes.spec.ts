@@ -15,10 +15,10 @@ tape('VM: custom opcodes', (t) => {
     opcode: 0x21,
     opcodeName: 'TEST',
     baseFee: fee,
-    gasFunction: function (runState: RunState, gas: bigint) {
+    gasFunction (runState: RunState, gas: bigint) {
       return gas + logicFee
     },
-    logicFunction: function (runState: RunState) {
+    logicFunction (runState: RunState) {
       runState.stack.push(BigInt(stackPush))
     },
   }
@@ -112,7 +112,7 @@ tape('VM: custom opcodes', (t) => {
       opcode: 0x21,
       opcodeName: 'TEST',
       baseFee: fee,
-      logicFunction: function (runState: RunState) {
+      logicFunction (runState: RunState) {
         runState.stack.push(BigInt(stackPush))
       },
     }

@@ -114,7 +114,7 @@ export class BoundProtocol {
       } else {
         this.config.events.emit(
           Event.PROTOCOL_MESSAGE,
-          { name: message.name, data: data },
+          { name: message.name, data },
           this.protocol.name,
           this.peer
         )

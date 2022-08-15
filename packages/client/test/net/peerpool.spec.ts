@@ -29,7 +29,7 @@ tape('[PeerPool]', async (t) => {
     const peer = new MockPeer({
       id: 'peer',
       location: 'abc',
-      config: config,
+      config,
       address: '0.0.0.0',
       transport: 'udp',
     })

@@ -527,7 +527,7 @@ export async function generateTxReceipt(
       // Pre-Byzantium
       const stateRoot = await this.stateManager.getStateRoot()
       receipt = {
-        stateRoot: stateRoot,
+        stateRoot,
         ...baseReceipt,
       } as PreByzantiumTxReceipt
     }

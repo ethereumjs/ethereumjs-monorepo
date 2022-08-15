@@ -158,8 +158,8 @@ export class Protocol {
     const bound = new BoundProtocol({
       config: this.config,
       protocol: this,
-      peer: peer,
-      sender: sender,
+      peer,
+      sender,
     })
     // Handshake only when snap, else
     if (this.name !== 'snap') {

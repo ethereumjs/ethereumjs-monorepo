@@ -494,7 +494,7 @@ tape('[Transaction]', function (t) {
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
-      get: function () {
+      get () {
         return newCommon
       },
     })
