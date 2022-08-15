@@ -29,7 +29,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10),
     })
 
-    st.ok(stack!.length == 1)
+    st.ok(stack!.length === 1)
     st.equal(stack![0], BigInt(0))
     st.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
     st.end()
@@ -50,7 +50,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.ok(stack.length == depth)
+    st.ok(stack.length === depth)
     stack.forEach((elem: bigint) => {
       if (elem !== BigInt(0)) {
         st.fail('stack element is not 0')

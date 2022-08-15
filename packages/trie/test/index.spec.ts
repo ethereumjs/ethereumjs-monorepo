@@ -247,7 +247,7 @@ tape('shall handle the case of node not found correctly', async (t) => {
 
   let path = await trie.findPath(Buffer.from('aaa'))
 
-  t.ok(path.node != null, 'findPath should find a node')
+  t.ok(path.node !== null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
   await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
@@ -256,7 +256,7 @@ tape('shall handle the case of node not found correctly', async (t) => {
 
   t.ok(path.node === null, 'findPath should not return a node now')
   t.ok(
-    path.stack.length == 1,
+    path.stack.length === 1,
     'findPath should find the first extension node which is still in the DB'
   )
 

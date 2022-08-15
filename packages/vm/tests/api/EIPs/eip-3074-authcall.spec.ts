@@ -224,7 +224,7 @@ function flipSignature(signature: any) {
   const s = bufferToBigInt(signature.s)
   const flipped = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n - s
 
-  if (signature.v == 27) {
+  if (signature.v === 27) {
     signature.v = 28
   } else {
     signature.v = 27

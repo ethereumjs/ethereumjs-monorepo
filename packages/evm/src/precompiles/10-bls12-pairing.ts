@@ -18,7 +18,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
-  if (inputData.length == 0) {
+  if (inputData.length === 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
@@ -27,7 +27,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
 
-  if (inputData.length % 384 != 0) {
+  if (inputData.length % 384 !== 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -89,7 +89,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     const G1 = pair[0]
     const G2 = pair[1]
 
-    if (index == 0) {
+    if (index === 0) {
       GT = mcl.millerLoop(G1, G2)
     } else {
       GT = mcl.mul(GT, mcl.millerLoop(G1, G2))

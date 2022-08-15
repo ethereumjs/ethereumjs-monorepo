@@ -338,8 +338,8 @@ tape('StateManager', (t) => {
     let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
     let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
-    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+    st.ok(codeSlot1.length === 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
     const code = await codeStateManager.getContractCode(address1)
     st.ok(code.length > 0, 'code deposited correctly')
@@ -351,7 +351,7 @@ tape('StateManager', (t) => {
     st.ok(slot2.length > 0, 'storage key1 deposited correctly')
 
     let slotCode = await stateManager.getContractCode(address1)
-    st.ok(slotCode.length == 0, 'code cannot be loaded')
+    st.ok(slotCode.length === 0, 'code cannot be loaded')
 
     // Checks by either setting state root to codeHash, or codeHash to stateRoot
     // The knowledge of the tries should not change
@@ -361,7 +361,7 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(address1, account)
 
     slotCode = await stateManager.getContractCode(address1)
-    st.ok(slotCode.length == 0, 'code cannot be loaded') // This test fails if no code prefix is used
+    st.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
     account = await codeStateManager.getAccount(address1)
     account.stateRoot = root
@@ -371,8 +371,8 @@ tape('StateManager', (t) => {
     codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
     codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
-    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+    st.ok(codeSlot1.length === 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
     st.end()
   })

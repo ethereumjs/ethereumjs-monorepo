@@ -29,7 +29,7 @@ tape('Create where FROM account nonce is 0', async (t) => {
 
 /*
     This test:
-        Setups a contract at address 0x00..ff 
+        Setups a contract at address 0x00..ff
         Instantiates the EVM at the Constantinople fork
         Calls the address with various arguments (callvalue is used as argument). VMs `runCall` is used.
         The CREATE2 address which the contract creates is checked against the expected CREATE2 value.
@@ -116,7 +116,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   const code = '600160011B00'
   /*
       code:             remarks: (top of the stack is at the zero index)
-        PUSH1 0x01  
+        PUSH1 0x01
         PUSH1 0x01
         SHL
         STOP
@@ -158,19 +158,19 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const code = '61000260005561000160005500'
   /*
       idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
-      code:             
+      code:
         PUSH2 0x0002
         PUSH1 0x00
         SSTORE              -> make storage slot 0 "dirty"
         PUSH2 0x0001
-        PUSH1 0x00          
+        PUSH1 0x00
         SSTORE              -> -> restore it to the original storage value (refund sstoreCleanRefundEIP2200)
         STOP
-      gas cost: 
+      gas cost:
         4x PUSH                                         12
         2x SSTORE (slot is nonzero, so charge 5000): 10000
         net                                          10012
-      gas refund 
+      gas refund
         sstoreCleanRefundEIP2200                      4200
       gas used
                                                      10012 - 4200 = 5812
@@ -284,7 +284,7 @@ tape(
 
     t.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
     t.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    t.ok(result.execResult.exceptionError!.error == ERROR.OUT_OF_GAS, 'call went out of gas')
+    t.ok(result.execResult.exceptionError!.error === ERROR.OUT_OF_GAS, 'call went out of gas')
 
     t.end()
   }
@@ -404,7 +404,7 @@ tape(
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
         CODE:
-          PUSH 0 
+          PUSH 0
           DUP1
           DUP1
           CREATE -> Stack is now [0,0,0] ([value, offset, length])

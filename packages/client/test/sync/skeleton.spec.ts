@@ -511,7 +511,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.setHead(block5, false)
       } catch (error: any) {
-        if (error != errReorgDenied) {
+        if (error !== errReorgDenied) {
           t.fail(error)
         }
       }
@@ -526,7 +526,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block3PoS])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }
@@ -680,7 +680,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block2])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }
