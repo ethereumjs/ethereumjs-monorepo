@@ -11,13 +11,17 @@
 
 Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceding release.
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/ethash`
+To obtain the latest version, simply require the project using `npm`:
 
-# USAGE
+```shell
+npm install @ethereumjs/ethash
+```
 
-## PoW Validation
+## Usage
+
+### PoW Validation
 
 ```typescript
 import { Ethash } from '@ethereumjs/ethash'
@@ -62,22 +66,25 @@ const miner = e.getMiner(block.header)
 const solution = await miner.iterate(-1) // iterate until solution is found
 ```
 
-# API
+## API
 
-## Docs
+### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
-## BigInt Support
+### BigInt Support
 
 Starting with v2 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
+## EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+
 # LICENSE
 
-[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
-
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
 [ethash-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/ethash.svg
