@@ -2,7 +2,6 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
-  Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
