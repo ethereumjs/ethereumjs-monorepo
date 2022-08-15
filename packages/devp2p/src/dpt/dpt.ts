@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import { EventEmitter } from 'events'
 import ms = require('ms')
-import { Debugger } from 'debug'
+import type { Debugger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 
 import { DNS } from '../dns'

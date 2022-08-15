@@ -1,9 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import { Chain as CommonChain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import type { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -229,12 +229,12 @@ tape('[Miner]', async (t) => {
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
-      get () {
+      get() {
         return { latest: block.header }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get () {
+      get() {
         return { latest: block }
       },
     })
@@ -278,12 +278,12 @@ tape('[Miner]', async (t) => {
     const gasLimit = 100000
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
-      get () {
+      get() {
         return { latest: block.header, height: BigInt(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get () {
+      get() {
         return { latest: block, height: BigInt(0) }
       },
     })

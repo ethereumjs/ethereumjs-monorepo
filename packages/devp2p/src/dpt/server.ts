@@ -1,13 +1,14 @@
 import * as dgram from 'dgram'
-import { RemoteInfo, Socket as DgramSocket } from 'dgram'
+import type { RemoteInfo, Socket as DgramSocket } from 'dgram'
 import { EventEmitter } from 'events'
 import ms = require('ms')
-import { debug as createDebugLogger, Debugger } from 'debug'
+import type { Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 import LRUCache = require('lru-cache')
 import { isTruthy } from '@ethereumjs/util'
 
 import { createDeferred, devp2pDebug, formatLogId, keccak256, pk2id } from '../util'
-import { DPT, PeerInfo } from './dpt'
+import type { DPT, PeerInfo } from './dpt'
 import { decode, encode } from './message'
 
 const DEBUG_BASE_NAME = 'dpt:server'

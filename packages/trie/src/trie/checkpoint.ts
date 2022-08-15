@@ -1,5 +1,5 @@
 import { CheckpointDB, LevelDB } from '../db'
-import { DB, TrieOpts } from '../types'
+import type { DB, TrieOpts } from '../types'
 import { Trie } from './trie'
 
 /**

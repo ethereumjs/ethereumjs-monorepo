@@ -5,7 +5,7 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import * as ip from 'ip'
 
 import { assertEq, buffer2int, int2buffer, keccak256, unstrictDecode } from '../util'
-import { PeerInfo } from './dpt'
+import type { PeerInfo } from './dpt'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 
@@ -14,12 +14,12 @@ function getTimestamp() {
 }
 
 const timestamp = {
-  encode (value = getTimestamp() + 60) {
+  encode(value = getTimestamp() + 60) {
     const buffer = Buffer.allocUnsafe(4)
     buffer.writeUInt32BE(value, 0)
     return buffer
   },
-  decode (buffer: Buffer) {
+  decode(buffer: Buffer) {
     if (buffer.length !== 4)
       throw new RangeError(`Invalid timestamp buffer :${buffer.toString('hex')}`)
     return buffer.readUInt32BE(0)
@@ -27,12 +27,12 @@ const timestamp = {
 }
 
 const address = {
-  encode (value: string) {
+  encode(value: string) {
     if (ip.isV4Format(value)) return ip.toBuffer(value)
     if (ip.isV6Format(value)) return ip.toBuffer(value)
     throw new Error(`Invalid address: ${value}`)
   },
-  decode (buffer: Buffer) {
+  decode(buffer: Buffer) {
     if (buffer.length === 4) return ip.toString(buffer)
     if (buffer.length === 16) return ip.toString(buffer)
 
@@ -45,12 +45,12 @@ const address = {
 }
 
 const port = {
-  encode (value: number | null): Buffer {
+  encode(value: number | null): Buffer {
     if (value === null) return Buffer.allocUnsafe(0)
     if (value >>> 16 > 0) throw new RangeError(`Invalid port: ${value}`)
     return Buffer.from([(value >>> 8) & 0xff, (value >>> 0) & 0xff])
   },
-  decode (buffer: Buffer): number | null {
+  decode(buffer: Buffer): number | null {
     if (buffer.length === 0) return null
     // if (buffer.length !== 2) throw new RangeError(`Invalid port buffer: ${buffer.toString('hex')}`)
     return buffer2int(buffer)
@@ -58,14 +58,14 @@ const port = {
 }
 
 const endpoint = {
-  encode (obj: PeerInfo): Buffer[] {
+  encode(obj: PeerInfo): Buffer[] {
     return [
       address.encode(obj.address!),
       port.encode(obj.udpPort ?? null),
       port.encode(obj.tcpPort ?? null),
     ]
   },
-  decode (payload: Buffer[]): PeerInfo {
+  decode(payload: Buffer[]): PeerInfo {
     return {
       address: address.decode(payload[0]),
       udpPort: port.decode(payload[1]),
@@ -77,7 +77,7 @@ const endpoint = {
 type InPing = { [0]: Buffer; [1]: Buffer[]; [2]: Buffer[]; [3]: Buffer }
 type OutPing = { version: number; from: PeerInfo; to: PeerInfo; timestamp: number }
 const ping = {
-  encode (obj: OutPing): InPing {
+  encode(obj: OutPing): InPing {
     return [
       int2buffer(obj.version),
       endpoint.encode(obj.from),
@@ -85,7 +85,7 @@ const ping = {
       timestamp.encode(obj.timestamp),
     ]
   },
-  decode (payload: InPing): OutPing {
+  decode(payload: InPing): OutPing {
     return {
       version: buffer2int(payload[0]),
       from: endpoint.decode(payload[1]),
@@ -98,10 +98,10 @@ const ping = {
 type OutPong = { to: PeerInfo; hash: Buffer; timestamp: number }
 type InPong = { [0]: Buffer[]; [1]: Buffer[]; [2]: Buffer }
 const pong = {
-  encode (obj: OutPong) {
+  encode(obj: OutPong) {
     return [endpoint.encode(obj.to), obj.hash, timestamp.encode(obj.timestamp)]
   },
-  decode (payload: InPong) {
+  decode(payload: InPong) {
     return {
       to: endpoint.decode(payload[0]),
       hash: payload[1],
@@ -113,10 +113,10 @@ const pong = {
 type OutFindMsg = { id: string; timestamp: number }
 type InFindMsg = { [0]: string; [1]: Buffer }
 const findneighbours = {
-  encode (obj: OutFindMsg): InFindMsg {
+  encode(obj: OutFindMsg): InFindMsg {
     return [obj.id, timestamp.encode(obj.timestamp)]
   },
-  decode (payload: InFindMsg): OutFindMsg {
+  decode(payload: InFindMsg): OutFindMsg {
     return {
       id: payload[0],
       timestamp: timestamp.decode(payload[1]),
@@ -127,13 +127,13 @@ const findneighbours = {
 type InNeighborMsg = { peers: PeerInfo[]; timestamp: number }
 type OutNeighborMsg = { [0]: Buffer[][]; [1]: Buffer }
 const neighbours = {
-  encode (obj: InNeighborMsg): OutNeighborMsg {
+  encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
       obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Buffer)),
       timestamp.encode(obj.timestamp),
     ]
   },
-  decode (payload: OutNeighborMsg): InNeighborMsg {
+  decode(payload: OutNeighborMsg): InNeighborMsg {
     return {
       peers: payload[0].map((data) => {
         return { endpoint: endpoint.decode(data), id: data[3] } // hack for id

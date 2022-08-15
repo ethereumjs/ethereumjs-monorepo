@@ -166,7 +166,11 @@ tape('[FullSynchronizer]', async (t) => {
         t.equal(min, BigInt(0), 'correct start block number in Fetcher')
       },
     }
-    Object.defineProperty(sync, 'fetcher', { get() { return this._fetcher } });
+    Object.defineProperty(sync, 'fetcher', {
+      get() {
+        return this._fetcher
+      },
+    })
 
     let timesSentToPeer2 = 0
     const peers = [

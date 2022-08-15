@@ -3,11 +3,11 @@
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { VMOpts } from '../../src'
+import type { VMOpts } from '../../src'
 import { VM } from '../../src/vm'
 import { isRunningInKarma } from '../util'
 import * as testnet from './testdata/testnet.json'

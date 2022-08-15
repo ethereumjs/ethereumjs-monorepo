@@ -1,4 +1,5 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
+import { Hardfork } from '@ethereumjs/common'
 import { Address, isTruthy } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover'

@@ -4,7 +4,8 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
-import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique'
+import type { CliqueConsensus } from '../src/consensus/clique'
+import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
 import { generateConsecutiveBlock } from './util'
 
 tape('reorg tests', (t) => {

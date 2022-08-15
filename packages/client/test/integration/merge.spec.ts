@@ -1,5 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,

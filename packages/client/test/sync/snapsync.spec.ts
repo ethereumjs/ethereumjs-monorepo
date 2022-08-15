@@ -12,7 +12,7 @@ tape('[SnapSynchronizer]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  
+
   const { SnapSynchronizer } = await import('../../lib/sync/snapsync')
 
   t.test('should initialize correctly', async (t) => {

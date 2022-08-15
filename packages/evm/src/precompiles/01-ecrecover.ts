@@ -7,8 +7,9 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import { ExecResult, OOGResult } from '../evm'
-import { PrecompileInput } from './types'
+import type { ExecResult } from '../evm'
+import { OOGResult } from '../evm'
+import type { PrecompileInput } from './types'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
   if (isFalsy(opts.data)) throw new Error('opts.data missing but required')

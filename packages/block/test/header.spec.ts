@@ -1,4 +1,5 @@
-import { Chain, CliqueConfig, Common, Hardfork } from '@ethereumjs/common'
+import type { CliqueConfig } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'

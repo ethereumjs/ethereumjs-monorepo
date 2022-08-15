@@ -3,8 +3,8 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Config } from '../../../lib/config'
-import { Libp2pPeer } from '../../../lib/net/peer'
-import { Protocol } from '../../../lib/net/protocol'
+import type { Libp2pPeer } from '../../../lib/net/peer'
+import type { Protocol } from '../../../lib/net/protocol'
 import { Event } from '../../../lib/types'
 
 tape('[Libp2pPeer]', async (t) => {

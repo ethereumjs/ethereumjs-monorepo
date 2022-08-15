@@ -1,7 +1,8 @@
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
-import { BatchDBOp, CheckpointTrie, LevelDB } from '../../src'
+import type { BatchDBOp } from '../../src'
+import { CheckpointTrie, LevelDB } from '../../src'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test

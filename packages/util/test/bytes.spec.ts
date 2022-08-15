@@ -293,7 +293,7 @@ tape('toBuffer', function (t) {
     // 'toArray'
     st.ok(
       toBuffer({
-        toArray (): any {
+        toArray(): any {
           return [1]
         },
       }).equals(Buffer.from([1]))

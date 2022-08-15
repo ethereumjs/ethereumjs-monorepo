@@ -28,7 +28,9 @@ module.exports = {
               [resolve('./dist.browser/lib/net/peer/libp2pnode.js')]: resolve(
                 './dist.browser/browser/libp2pnode.js'
               ),
-              [resolve('./dist.browser/lib/util/index.js')]: resolve('./dist.browser/browser/util/index.js')
+              [resolve('./dist.browser/lib/util/index.js')]: resolve(
+                './dist.browser/browser/util/index.js'
+              ),
             }
             return mapping[resourcePath]
           },
@@ -47,7 +49,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      util: path.resolve(__dirname, 'node_modules/util/util.js')
+      util: path.resolve(__dirname, 'node_modules/util/util.js'),
     },
     fallback: {
       async_hooks: false, // used by: raw-body via body-parser

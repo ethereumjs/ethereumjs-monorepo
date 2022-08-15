@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import type { Transaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
 import { blockFromRpc } from '../src/from-rpc'

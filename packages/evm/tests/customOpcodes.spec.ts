@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-import { InterpreterStep, RunState } from '../src/interpreter'
-import { AddOpcode } from '../src/types'
+import type { InterpreterStep, RunState } from '../src/interpreter'
+import type { AddOpcode } from '../src/types'
 import { getEEI } from './utils'
 
 tape('VM: custom opcodes', (t) => {
@@ -15,10 +15,10 @@ tape('VM: custom opcodes', (t) => {
     opcode: 0x21,
     opcodeName: 'TEST',
     baseFee: fee,
-    gasFunction (runState: RunState, gas: bigint) {
+    gasFunction(runState: RunState, gas: bigint) {
       return gas + logicFee
     },
-    logicFunction (runState: RunState) {
+    logicFunction(runState: RunState) {
       runState.stack.push(BigInt(stackPush))
     },
   }
@@ -112,7 +112,7 @@ tape('VM: custom opcodes', (t) => {
       opcode: 0x21,
       opcodeName: 'TEST',
       baseFee: fee,
-      logicFunction (runState: RunState) {
+      logicFunction(runState: RunState) {
         runState.stack.push(BigInt(stackPush))
       },
     }

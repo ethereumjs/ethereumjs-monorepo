@@ -2,11 +2,12 @@ import type { BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy } from '@ethereumjs/util'
 
-import { Peer } from '../net/peer/peer'
+import type { Peer } from '../net/peer/peer'
 import { Event } from '../types'
 import { short } from '../util'
 import { HeaderFetcher } from './fetcher'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { SynchronizerOptions } from './sync'
+import { Synchronizer } from './sync'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -28,16 +29,15 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   get fetcher(): HeaderFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof HeaderFetcher)){
-      throw Error(`Invalid Fetcher, expected HeaderFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof HeaderFetcher)) {
+      throw Error(`Invalid Fetcher, expected HeaderFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: HeaderFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: HeaderFetcher | null) {
+    this._fetcher = fetcher
   }
-
 
   /**
    * Open synchronizer. Must be called before sync() is called

@@ -1,7 +1,7 @@
 import * as events from 'events'
 
-import { Config } from '../../config'
-import {
+import type { Config } from '../../config'
+import type {
   BoundProtocol,
   EthProtocolMethods,
   SnapProtocolMethods,
@@ -9,7 +9,7 @@ import {
   Protocol,
   Sender,
 } from '../protocol'
-import { Server } from '../server'
+import type { Server } from '../server'
 
 export interface PeerOptions {
   /* Config */

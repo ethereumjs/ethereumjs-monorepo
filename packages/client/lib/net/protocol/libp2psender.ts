@@ -3,7 +3,7 @@ import { arrToBufArr, bufArrToArr, bufferToInt, intToBuffer } from '@ethereumjs/
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
-import { Libp2pMuxedStream as MuxedStream } from '../../types'
+import type { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Sender } from './sender'
 
 // TypeScript doesn't have support yet for ReturnType

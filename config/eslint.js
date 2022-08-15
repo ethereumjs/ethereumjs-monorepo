@@ -32,6 +32,7 @@ module.exports = {
     'prettier',
   ],
   rules: {
+    '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-use-before-define': 'error',
     '@typescript-eslint/naming-convention': [
       'error',

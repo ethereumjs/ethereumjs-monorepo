@@ -1,9 +1,10 @@
-import { AbstractLevel } from 'abstract-level'
+import type { AbstractLevel } from 'abstract-level'
 
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol/flowcontrol'
-import { Synchronizer } from '../sync'
-import { Service, ServiceOptions } from './service'
+import type { Synchronizer } from '../sync'
+import type { ServiceOptions } from './service'
+import { Service } from './service'
 
 export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain */

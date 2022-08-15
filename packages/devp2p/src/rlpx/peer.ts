@@ -1,14 +1,15 @@
 import { EventEmitter } from 'events'
-import { Socket } from 'net'
+import type { Socket } from 'net'
 import BufferList = require('bl')
 import ms = require('ms')
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import type { Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 import * as snappy from 'snappyjs'
 
-import { ETH, LES } from '..'
+import type { ETH, LES } from '..'
 import { buffer2int, devp2pDebug, formatLogData, int2buffer } from '../util'
 import { ECIES } from './ecies'
 

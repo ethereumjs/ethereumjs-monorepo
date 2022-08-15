@@ -1,6 +1,7 @@
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as chalk from 'chalk'
-import { createLogger, format, Logger as WinstonLogger, transports as wTransports } from 'winston'
+import type { Logger as WinstonLogger } from 'winston'
+import { createLogger, format, transports as wTransports } from 'winston'
 const DailyRotateFile = require('winston-daily-rotate-file')
 
 export type Logger = WinstonLogger

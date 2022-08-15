@@ -15,7 +15,8 @@ import { VM } from '@ethereumjs/vm'
 import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
-import { Execution, ExecutionOptions } from './execution'
+import type { ExecutionOptions } from './execution'
+import { Execution } from './execution'
 import { ReceiptsManager } from './receipt'
 
 export class VMExecution extends Execution {

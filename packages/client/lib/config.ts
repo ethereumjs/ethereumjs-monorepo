@@ -1,13 +1,15 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
-import { Address } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import type { Address } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 import { Level } from 'level'
-import { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from 'multiaddr'
 
-import { getLogger, Logger } from './logging'
+import type { Logger } from './logging'
+import { getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
-import { EventBus, EventBusType } from './types'
+import type { EventBusType } from './types'
+import { EventBus } from './types'
 import { parseTransports } from './util'
 
 export enum DataDirectory {

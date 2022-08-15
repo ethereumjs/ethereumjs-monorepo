@@ -1,7 +1,7 @@
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
+import type { Account, Address } from '@ethereumjs/util'
 import {
-  Account,
-  Address,
   bigIntToHex,
   bufferToBigInt,
   intToHex,
@@ -12,13 +12,14 @@ import {
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
-import { EVM, EVMResult } from './evm'
+import type { EVM, EVMResult } from './evm'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Message } from './message'
-import { AsyncOpHandler, Opcode, OpHandler, trap } from './opcodes'
+import type { AsyncOpHandler, Opcode, OpHandler } from './opcodes'
+import { trap } from './opcodes'
 import { Stack } from './stack'
-import { Block, EEIInterface, Log } from './types'
+import type { Block, EEIInterface, Log } from './types'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 

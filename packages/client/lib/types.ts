@@ -3,8 +3,8 @@ import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Multiaddr } from 'multiaddr'
 import type Connection = require('../../../node_modules/libp2p-interfaces/dist/src/connection/connection')
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
-import { Peer } from './net/peer'
-import { Server } from './net/server'
+import type { Peer } from './net/peer'
+import type { Server } from './net/server'
 
 /**
  * Types for the central event bus, emitted

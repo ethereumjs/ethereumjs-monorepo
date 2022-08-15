@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
-import { EmbeddedNode } from '../../types'
+import type { EmbeddedNode } from '../../types'
 
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
