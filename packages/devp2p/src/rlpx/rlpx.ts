@@ -2,15 +2,17 @@ import { EventEmitter } from 'events'
 import * as net from 'net'
 import * as os from 'os'
 import ms = require('ms')
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import type { Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import * as LRUCache from 'lru-cache'
 
-import { DPT, PeerInfo } from '../dpt'
+import type { DPT, PeerInfo } from '../dpt'
 import { buffer2int, createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
-import { Capabilities, DISCONNECT_REASONS, Peer } from './peer'
+import type { Capabilities } from './peer'
+import { DISCONNECT_REASONS, Peer } from './peer'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
 

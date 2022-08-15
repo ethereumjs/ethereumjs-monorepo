@@ -1,4 +1,4 @@
-import { Nibbles } from '../types'
+import type { Nibbles } from '../types'
 
 /**
  * Prepends hex prefix to an array of nibbles.

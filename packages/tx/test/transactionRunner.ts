@@ -5,7 +5,7 @@ import * as tape from 'tape'
 
 import { TransactionFactory } from '../src'
 import { getTests } from './testLoader'
-import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

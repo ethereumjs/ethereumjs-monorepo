@@ -4,7 +4,7 @@ import Semaphore from 'semaphore-async-await'
 
 import { LevelDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
-import {
+import type {
   BatchDBOp,
   DB,
   EmbeddedNode,
@@ -13,10 +13,10 @@ import {
   Nibbles,
   Proof,
   PutBatch,
-  ROOT_DB_KEY,
   TrieNode,
   TrieOpts,
 } from '../types'
+import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'

@@ -7,7 +7,8 @@ import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'
+import type { HashFunc } from '../src'
+import { CheckpointTrie, LeafNode, LevelDB, Trie } from '../src'
 import { bufferToNibbles } from '../src/util/nibbles'
 
 tape('simple save and retrieve', function (tester) {

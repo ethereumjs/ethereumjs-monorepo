@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { ETH as Devp2pETH } from '@ethereumjs/devp2p'
+import type { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 

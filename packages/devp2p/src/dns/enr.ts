@@ -5,7 +5,7 @@ import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
 import { Multiaddr } from 'multiaddr'
 import { sscanf } from 'scanf'
 
-import { PeerInfo } from '../dpt'
+import type { PeerInfo } from '../dpt'
 import { keccak256, toNewUint8Array } from '../util'
 
 const Convert = require('multiaddr/src/convert')

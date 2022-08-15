@@ -1,14 +1,14 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import type { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { Transaction } from '@ethereumjs/tx'
+import type { ECDSASignature } from '@ethereumjs/util'
 import {
   Address,
   bigIntToBuffer,
   bufferToBigInt,
-  ECDSASignature,
   ecsign,
   isTruthy,
   privateToAddress,

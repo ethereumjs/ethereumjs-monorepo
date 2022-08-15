@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { EVM } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { bufferToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 

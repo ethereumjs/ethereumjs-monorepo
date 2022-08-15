@@ -1,10 +1,12 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
+import { Hardfork } from '@ethereumjs/common'
 import { bigIntToBuffer, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { ERROR, EvmError } from '../exceptions'
-import { RunState } from '../interpreter'
+import type { ERROR } from '../exceptions'
+import { EvmError } from '../exceptions'
+import type { RunState } from '../interpreter'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 

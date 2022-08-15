@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import {
   Address,
   bigIntToBuffer,
@@ -15,7 +15,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
 import { ERROR } from '../exceptions'
-import { RunState } from '../interpreter'
+import type { RunState } from '../interpreter'
 import {
   addressToBuffer,
   describeLocation,

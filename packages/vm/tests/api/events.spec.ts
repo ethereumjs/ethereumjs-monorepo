@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { EVM } from '@ethereumjs/evm'
+import type { EVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bufferToHex, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'

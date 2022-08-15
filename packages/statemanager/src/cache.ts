@@ -1,4 +1,5 @@
-import { Account, Address, isFalsy, isTruthy } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
+import { Account, isFalsy, isTruthy } from '@ethereumjs/util'
 const Tree = require('functional-red-black-tree')
 
 export type getCb = (address: Address) => Promise<Account | undefined>

@@ -1,5 +1,6 @@
 import { isFalsy } from '@ethereumjs/util'
-import { encode, TAlgorithm } from 'jwt-simple'
+import type { TAlgorithm } from 'jwt-simple'
+import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'

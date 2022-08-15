@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import type { EVM } from '@ethereumjs/evm'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address, bufferToInt, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'

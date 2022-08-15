@@ -11,8 +11,9 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Transaction, TxData } from '../src'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import type { TxData } from '../src'
+import { Transaction } from '../src'
+import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')

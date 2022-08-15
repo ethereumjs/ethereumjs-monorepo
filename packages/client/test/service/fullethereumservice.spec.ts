@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { Log } from '@ethereumjs/evm/dist/types'
+import type { Log } from '@ethereumjs/evm/dist/types'
 
 import * as tape from 'tape'
 import * as td from 'testdouble'

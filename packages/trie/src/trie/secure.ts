@@ -1,6 +1,7 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import { Proof, ROOT_DB_KEY } from '../types'
+import type { Proof } from '../types'
+import { ROOT_DB_KEY } from '../types'
 import { CheckpointTrie } from './checkpoint'
 
 /**

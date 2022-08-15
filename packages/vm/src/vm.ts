@@ -1,17 +1,21 @@
 import { promisify } from 'util'
-import { Blockchain, BlockchainInterface } from '@ethereumjs/blockchain'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { DefaultStateManager, StateManager } from '@ethereumjs/statemanager'
+import type { StateManager } from '@ethereumjs/statemanager'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 
 import AsyncEventEmitter = require('async-eventemitter')
-import { EEIInterface, EVM, EVMInterface, getActivePrecompiles } from '@ethereumjs/evm'
+import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 
-import { BlockBuilder, buildBlock } from './buildBlock'
+import type { BlockBuilder } from './buildBlock'
+import { buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
 import { runBlock } from './runBlock'
 import { runTx } from './runTx'
-import {
+import type {
   BuildBlockOpts,
   RunBlockOpts,
   RunBlockResult,

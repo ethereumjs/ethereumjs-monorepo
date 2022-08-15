@@ -10,12 +10,8 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import {
-  AccessList,
-  AccessListBufferItem,
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-} from '../src'
+import type { AccessList, AccessListBufferItem } from '../src'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)

@@ -2,7 +2,8 @@
 // needed for karma-typescript bundling
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Block, BlockData, HeaderData } from '@ethereumjs/block'
+import type { BlockData, HeaderData } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import * as tape from 'tape'
 

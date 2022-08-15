@@ -1,8 +1,9 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import { ExecResult, OOGResult } from '../evm'
+import type { ExecResult } from '../evm'
+import { OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
-import { PrecompileInput } from './types'
+import type { PrecompileInput } from './types'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js

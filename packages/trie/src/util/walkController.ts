@@ -1,6 +1,6 @@
-import { Trie } from '../trie'
+import type { Trie } from '../trie'
 import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
-import { FoundNodeFunction, Nibbles, TrieNode } from '../types'
+import type { FoundNodeFunction, Nibbles, TrieNode } from '../types'
 import { PrioritizedTaskExecutor } from './tasks'
 
 /**

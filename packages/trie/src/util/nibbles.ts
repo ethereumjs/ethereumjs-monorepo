@@ -1,4 +1,4 @@
-import { Nibbles } from '../types'
+import type { Nibbles } from '../types'
 
 /**
  * Converts a buffer to a nibble array.

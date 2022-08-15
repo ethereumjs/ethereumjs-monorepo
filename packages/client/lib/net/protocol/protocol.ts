@@ -1,9 +1,9 @@
 import { isTruthy } from '@ethereumjs/util'
 
-import { Config } from '../../config'
-import { Peer } from '../peer/peer'
+import type { Config } from '../../config'
+import type { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
-import { Sender } from './sender'
+import type { Sender } from './sender'
 
 export interface ProtocolOptions {
   config: Config

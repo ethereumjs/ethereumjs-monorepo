@@ -1,9 +1,11 @@
 import { isTruthy } from '@ethereumjs/util'
 
-import { Server, ServerOptions } from '../../../lib/net/server'
+import type { ServerOptions } from '../../../lib/net/server'
+import { Server } from '../../../lib/net/server'
 import { Event } from '../../../lib/types'
 import { MockPeer } from './mockpeer'
-import { createServer, destroyServer, RemoteStream, servers } from './network'
+import type { RemoteStream } from './network'
+import { createServer, destroyServer, servers } from './network'
 
 interface MockServerOptions extends ServerOptions {
   location?: string

@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bufferToHex, zeros } from '@ethereumjs/util'
-import { HttpServer } from 'jayson'
+import type { HttpServer } from 'jayson'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 

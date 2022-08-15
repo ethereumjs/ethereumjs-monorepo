@@ -1,14 +1,15 @@
 import { Readable, Writable } from 'stream'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import type { Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 import Heap = require('qheap')
 import { isTruthy } from '@ethereumjs/util'
 
-import { Config } from '../../config'
-import { Peer } from '../../net/peer'
-import { PeerPool } from '../../net/peerpool'
+import type { Config } from '../../config'
+import type { Peer } from '../../net/peer'
+import type { PeerPool } from '../../net/peerpool'
 import { Event } from '../../types'
-import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
-import { Job } from './types'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
+import type { Job } from './types'
 
 export interface FetcherOptions {
   /* Common chain config*/

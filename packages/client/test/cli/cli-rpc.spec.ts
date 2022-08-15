@@ -1,4 +1,5 @@
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
+import type { ChildProcessWithoutNullStreams } from 'child_process'
+import { spawn } from 'child_process'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 

@@ -2,11 +2,13 @@ import * as EventEmitter from 'events'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
-import { Peer, PeerOptions } from '../../../lib/net/peer'
+import type { PeerOptions } from '../../../lib/net/peer'
+import { Peer } from '../../../lib/net/peer'
 import { Event } from '../../../lib/types'
 import { MockSender } from './mocksender'
-import { MockServer } from './mockserver'
-import { createStream, RemoteStream } from './network'
+import type { MockServer } from './mockserver'
+import type { RemoteStream } from './network'
+import { createStream } from './network'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.

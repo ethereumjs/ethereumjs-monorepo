@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-import { InterpreterStep, RunState } from '../src/interpreter'
-import { AddOpcode } from '../src/types'
+import type { InterpreterStep, RunState } from '../src/interpreter'
+import type { AddOpcode } from '../src/types'
 import { getEEI } from './utils'
 
 tape('VM: custom opcodes', (t) => {

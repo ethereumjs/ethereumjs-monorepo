@@ -1,5 +1,5 @@
 import { isFalsy, isTruthy } from '@ethereumjs/util'
-import * as tape from 'tape'
+import type * as tape from 'tape'
 
 export function checkError(t: tape.Test, expectedCode: number, expectedMessage?: string) {
   return (res: any) => {

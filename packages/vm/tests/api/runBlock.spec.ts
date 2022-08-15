@@ -1,18 +1,22 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import type { TypedTransaction } from '@ethereumjs/tx'
 import {
   AccessListEIP2930Transaction,
   Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
-  TypedTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../src/types'
-import { AfterBlockEvent, RunBlockOpts } from '../../src/types'
+import type {
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  AfterBlockEvent,
+  RunBlockOpts,
+} from '../../src/types'
 import { VM } from '../../src/vm'
 import { getDAOCommon, setupPreConditions } from '../util'
 import * as testnet from './testdata/testnet.json'

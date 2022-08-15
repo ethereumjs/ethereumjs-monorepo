@@ -1,11 +1,13 @@
-import { Block, BlockBodyBuffer, BlockBuffer, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import type { BlockBodyBuffer, BlockBuffer, BlockOptions } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
+import type { AbstractLevel } from 'abstract-level'
 
 import { Cache } from './cache'
-import { DatabaseKey, DBOp, DBOpData, DBTarget } from './operation'
+import type { DatabaseKey, DBOpData } from './operation'
+import { DBOp, DBTarget } from './operation'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'

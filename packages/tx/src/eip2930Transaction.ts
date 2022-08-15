@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
@@ -14,7 +14,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import {
+import type {
   AccessList,
   AccessListBuffer,
   AccessListEIP2930TxData,
