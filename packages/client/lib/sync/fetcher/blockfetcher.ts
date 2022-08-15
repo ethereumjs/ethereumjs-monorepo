@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { isFalsy, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, isFalsy } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 

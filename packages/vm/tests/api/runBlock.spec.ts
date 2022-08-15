@@ -17,9 +17,9 @@ import * as testnet from './testdata/testnet.json'
 import { createAccount, setBalance, setupVM } from './utils'
 
 import type {
+  AfterBlockEvent,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
-  AfterBlockEvent,
   RunBlockOpts,
 } from '../../src/types'
 import type { TypedTransaction } from '@ethereumjs/tx'

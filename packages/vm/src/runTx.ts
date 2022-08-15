@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Capability } from '@ethereumjs/tx'
-import { Address, isFalsy, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, isFalsy, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'

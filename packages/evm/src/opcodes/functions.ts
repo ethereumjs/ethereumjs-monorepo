@@ -1,14 +1,14 @@
 import {
   Address,
+  MAX_INTEGER_BIGINT,
+  SECP256K1_ORDER_DIV_2,
+  TWO_POW256,
   bigIntToBuffer,
   bufferToBigInt,
   ecrecover,
-  MAX_INTEGER_BIGINT,
   publicToAddress,
-  SECP256K1_ORDER_DIV_2,
   setLengthLeft,
   setLengthRight,
-  TWO_POW256,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'

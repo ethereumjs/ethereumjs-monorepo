@@ -11,7 +11,7 @@ import { decode, encode } from './message'
 
 import type { DPT, PeerInfo } from './dpt'
 import type { Debugger } from 'debug'
-import type { RemoteInfo, Socket as DgramSocket } from 'dgram'
+import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled

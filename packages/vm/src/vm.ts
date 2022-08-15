@@ -2,7 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
+import { Account, Address, TypeOutput, isTruthy, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 

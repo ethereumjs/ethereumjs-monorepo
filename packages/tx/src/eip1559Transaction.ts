@@ -1,12 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  MAX_INTEGER,
   arrToBufArr,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
   bufferToBigInt,
   ecrecover,
-  MAX_INTEGER,
   toBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'

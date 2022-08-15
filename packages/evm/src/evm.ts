@@ -1,13 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  KECCAK256_NULL,
+  MAX_INTEGER,
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
   isFalsy,
   isTruthy,
-  KECCAK256_NULL,
-  MAX_INTEGER,
   short,
   zeros,
 } from '@ethereumjs/util'
@@ -25,7 +25,7 @@ import { TransientStorage } from './transientStorage'
 
 import type { InterpreterOpts, RunState } from './interpreter'
 import type { MessageWithTo } from './message'
-import type { OpcodeList, OpHandler } from './opcodes'
+import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles'
 import type {

@@ -3,6 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Capability, Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
+  TypeOutput,
   bigIntToHex,
   bufferToHex,
   intToHex,
@@ -11,7 +12,6 @@ import {
   setLengthLeft,
   toBuffer,
   toType,
-  TypeOutput,
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'

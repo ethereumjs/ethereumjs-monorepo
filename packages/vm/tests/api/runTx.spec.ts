@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, isTruthy, MAX_INTEGER } from '@ethereumjs/util'
+import { Account, Address, MAX_INTEGER, isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'

@@ -1,8 +1,8 @@
 import {
   ETH as Devp2pETH,
-  SNAP as Devp2pSNAP,
   LES as Devp2pLES,
   RLPx as Devp2pRLPx,
+  SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
 import { isTruthy } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'

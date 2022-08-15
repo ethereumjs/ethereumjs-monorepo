@@ -5,7 +5,7 @@ import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
 
-import type { DatabaseKey, DBOpData } from './operation'
+import type { DBOpData, DatabaseKey } from './operation'
 import type { BlockBodyBuffer, BlockBuffer, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { AbstractLevel } from 'abstract-level'

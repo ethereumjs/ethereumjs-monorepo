@@ -2,6 +2,9 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  TypeOutput,
   arrToBufArr,
   bigIntToBuffer,
   bigIntToHex,
@@ -13,10 +16,7 @@ import {
   ecsign,
   isFalsy,
   isTruthy,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
   toType,
-  TypeOutput,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'

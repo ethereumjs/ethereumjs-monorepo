@@ -1,13 +1,13 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  TWO_POW256,
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
   isFalsy,
   isTruthy,
   setLengthLeft,
-  TWO_POW256,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'

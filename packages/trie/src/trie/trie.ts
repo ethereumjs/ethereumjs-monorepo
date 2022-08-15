@@ -1,4 +1,4 @@
-import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import Semaphore from 'semaphore-async-await'
 
@@ -9,7 +9,7 @@ import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibb
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
-import { BranchNode, decodeNode, decodeRawNode, ExtensionNode, isRawNode, LeafNode } from './node'
+import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
 
 import type {
   BatchDBOp,

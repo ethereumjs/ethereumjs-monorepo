@@ -1,14 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  MAX_INTEGER,
+  MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
   bufferToBigInt,
   bufferToHex,
   ecsign,
   isTruthy,
-  MAX_INTEGER,
-  MAX_UINT64,
   publicToAddress,
-  SECP256K1_ORDER_DIV_2,
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'

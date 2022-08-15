@@ -1,12 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
-  bufferToBigInt,
-  bufferToHex,
   MAX_INTEGER,
   MAX_UINT64,
-  privateToAddress,
   SECP256K1_ORDER_DIV_2,
+  bufferToBigInt,
+  bufferToHex,
+  privateToAddress,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 

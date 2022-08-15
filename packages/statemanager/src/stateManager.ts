@@ -2,12 +2,12 @@ import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
   bigIntToHex,
   bufferToHex,
   isFalsy,
   isTruthy,
-  KECCAK256_NULL,
-  KECCAK256_RLP,
   setLengthLeft,
   short,
   toBuffer,

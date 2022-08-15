@@ -1,4 +1,4 @@
-import { intToBuffer, isFalsy, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
+import { TypeOutput, intToBuffer, isFalsy, isTruthy, toType } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 

@@ -1,11 +1,11 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
+  MAX_UINT64,
   bigIntToHex,
   bufferToBigInt,
   intToHex,
   isFalsy,
   isTruthy,
-  MAX_UINT64,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
@@ -17,7 +17,7 @@ import { trap } from './opcodes'
 import { Stack } from './stack'
 
 import type { EVM, EVMResult } from './evm'
-import type { AsyncOpHandler, Opcode, OpHandler } from './opcodes'
+import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, EEIInterface, Log } from './types'
 import type { Common } from '@ethereumjs/common'
 import type { Account, Address } from '@ethereumjs/util'
