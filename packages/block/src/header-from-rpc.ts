@@ -2,6 +2,7 @@ import { isTruthy } from '@ethereumjs/util'
 
 import { BlockHeader } from './header'
 import { numberToHex } from './helpers'
+
 import type { BlockOptions } from './types'
 
 /**

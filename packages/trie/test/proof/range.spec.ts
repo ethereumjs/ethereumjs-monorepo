@@ -1,9 +1,10 @@
-import * as crypto from 'crypto'
 import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import type { DB } from '../../src'
 import { LevelDB, Trie } from '../../src'
+
+import type { DB } from '../../src'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 

@@ -1,8 +1,7 @@
-import * as path from 'path'
-import * as process from 'process'
-import type { Common } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as minimist from 'minimist'
+import * as path from 'path'
+import * as process from 'process'
 import * as tape from 'tape'
 
 import {
@@ -17,6 +16,8 @@ import {
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
 import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
+
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Test runner

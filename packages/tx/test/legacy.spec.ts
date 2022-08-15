@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -9,14 +8,16 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
 import * as tape from 'tape'
 
-import type { TxData } from '../src'
 import { Transaction } from '../src'
+
+import type { TxData } from '../src'
 import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
-const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
+const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []

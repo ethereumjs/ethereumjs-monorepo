@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { Account, Address } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
 import type { AccountFields } from './interface'
 import type { DefaultStateManagerOpts } from './stateManager'
+import type { Account, Address } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 /**
  * Abstract BaseStateManager class for the non-storage-backend

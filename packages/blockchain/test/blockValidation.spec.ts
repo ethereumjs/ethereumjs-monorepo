@@ -7,6 +7,7 @@ import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
+
 import { createBlock } from './util'
 
 tape('[Blockchain]: Block validation tests', (t) => {

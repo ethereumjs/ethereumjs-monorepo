@@ -1,4 +1,3 @@
-import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import { Blockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
@@ -14,8 +13,11 @@ import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
+
 import { MockServer } from './mocks/mockserver'
 import { destroy, setup } from './util'
+
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
 tape('[Integration:Miner]', async (t) => {
   const hardforks = new Common({ chain: ChainCommon.Goerli })

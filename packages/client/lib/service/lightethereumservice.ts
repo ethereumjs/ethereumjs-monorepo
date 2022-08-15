@@ -1,8 +1,10 @@
-import type { Peer } from '../net/peer/peer'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { LightSynchronizer } from '../sync/lightsync'
-import type { EthereumServiceOptions } from './ethereumservice'
+
 import { EthereumService } from './ethereumservice'
+
+import type { Peer } from '../net/peer/peer'
+import type { EthereumServiceOptions } from './ethereumservice'
 
 /**
  * Light Ethereum service

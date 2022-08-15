@@ -16,6 +16,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '../src'
+
 import type { BaseTransaction } from '../src/baseTransaction'
 import type { TxsJsonEntry } from './types'
 

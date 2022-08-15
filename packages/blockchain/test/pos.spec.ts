@@ -3,6 +3,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
+
 import * as testnet from './testdata/testnet.json'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {

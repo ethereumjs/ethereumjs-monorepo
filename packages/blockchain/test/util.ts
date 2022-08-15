@@ -3,10 +3,11 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr, isTruthy, toBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import type { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
 import { Blockchain } from '../src'
+
+import type { Level } from 'level'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []

@@ -1,16 +1,16 @@
-import { createServer } from 'http'
-import { inspect } from 'util'
 import { isTruthy } from '@ethereumjs/util'
 import { json as jsonParser } from 'body-parser'
 import * as Connect from 'connect'
 import * as cors from 'cors'
-import type { HttpServer } from 'jayson/promise'
+import { createServer } from 'http'
 import { Server as RPCServer } from 'jayson/promise'
-import type { TAlgorithm } from 'jwt-simple'
 import { decode } from 'jwt-simple'
+import { inspect } from 'util'
 
 import type { Logger } from '../logging'
 import type { RPCManager } from '../rpc'
+import type { HttpServer } from 'jayson/promise'
+import type { TAlgorithm } from 'jwt-simple'
 
 type IncomingMessage = Connect.IncomingMessage
 const algorithm: TAlgorithm = 'HS256'

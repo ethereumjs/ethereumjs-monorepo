@@ -1,11 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { Transaction } from '@ethereumjs/tx'
-import type { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { Address } from '@ethereumjs/util'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 

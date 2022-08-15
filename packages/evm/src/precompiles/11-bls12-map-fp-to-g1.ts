@@ -1,9 +1,11 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import type { ExecResult } from '../evm'
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
+
+import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
+
 const { BLS12_381_ToFpPoint, BLS12_381_FromG1Point } = require('./util/bls12_381')
 
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {

@@ -7,9 +7,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import type { FullEthereumService } from '../../../lib/service'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getStorageAt'
 

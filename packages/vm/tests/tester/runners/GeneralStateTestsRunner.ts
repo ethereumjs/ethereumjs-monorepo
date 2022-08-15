@@ -1,11 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { isTruthy, toBuffer } from '@ethereumjs/util'
-import type * as tape from 'tape'
 
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type * as tape from 'tape'
 
 function parseTestCases(
   forkConfigTestSuite: string,

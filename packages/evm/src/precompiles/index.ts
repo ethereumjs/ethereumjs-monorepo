@@ -1,4 +1,3 @@
-import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import { Address, isTruthy } from '@ethereumjs/util'
 
@@ -21,6 +20,8 @@ import { precompile10 } from './10-bls12-pairing'
 import { precompile11 } from './11-bls12-map-fp-to-g1'
 import { precompile12 } from './12-bls12-map-fp2-to-g2'
 import { PrecompileFunc, PrecompileInput } from './types'
+
+import type { Common } from '@ethereumjs/common'
 
 interface Precompiles {
   [key: string]: PrecompileFunc

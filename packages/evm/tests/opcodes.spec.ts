@@ -2,6 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
+
 import { getEEI } from './utils'
 
 tape('EVM -> getActiveOpcodes()', (t) => {

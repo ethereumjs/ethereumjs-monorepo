@@ -15,8 +15,9 @@ import {
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
 import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
 import { stripHexPrefix } from './internal'
-import type { BigIntLike, BufferLike } from './types'
 import { isTruthy } from './types'
+
+import type { BigIntLike, BufferLike } from './types'
 
 const _0n = BigInt(0)
 

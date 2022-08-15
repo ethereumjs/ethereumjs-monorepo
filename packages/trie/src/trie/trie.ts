@@ -4,6 +4,13 @@ import Semaphore from 'semaphore-async-await'
 
 import { LevelDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
+import { ROOT_DB_KEY } from '../types'
+import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import { TrieReadStream as ReadStream } from '../util/readStream'
+import { WalkController } from '../util/walkController'
+
+import { BranchNode, decodeNode, decodeRawNode, ExtensionNode, isRawNode, LeafNode } from './node'
+
 import type {
   BatchDBOp,
   DB,
@@ -16,11 +23,6 @@ import type {
   TrieNode,
   TrieOpts,
 } from '../types'
-import { ROOT_DB_KEY } from '../types'
-import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
-import { TrieReadStream as ReadStream } from '../util/readStream'
-import { WalkController } from '../util/walkController'
-import { BranchNode, decodeNode, decodeRawNode, ExtensionNode, isRawNode, LeafNode } from './node'
 
 interface Path {
   node: TrieNode | null

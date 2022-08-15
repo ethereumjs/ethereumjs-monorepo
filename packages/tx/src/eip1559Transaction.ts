@@ -1,4 +1,3 @@
-import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
@@ -14,6 +13,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
+import { AccessLists, checkMaxInitCodeSize } from './util'
+
 import type {
   AccessList,
   AccessListBuffer,
@@ -22,7 +23,7 @@ import type {
   JsonTx,
   TxOptions,
 } from './types'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')

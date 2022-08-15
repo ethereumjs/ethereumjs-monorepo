@@ -1,8 +1,9 @@
 import { isFalsy, setLengthLeft, toBuffer } from '@ethereumjs/util'
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 
-import type { ExecResult } from '../evm'
 import { OOGResult } from '../evm'
+
+import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 export function precompile03(opts: PrecompileInput): ExecResult {

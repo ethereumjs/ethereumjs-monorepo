@@ -1,4 +1,3 @@
-import type { Common } from '@ethereumjs/common'
 import {
   Address,
   bigIntToBuffer,
@@ -15,7 +14,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
 import { ERROR } from '../exceptions'
-import type { RunState } from '../interpreter'
+
 import {
   addressToBuffer,
   describeLocation,
@@ -29,6 +28,9 @@ import {
   trap,
   writeCallOutput,
 } from './util'
+
+import type { RunState } from '../interpreter'
+import type { Common } from '@ethereumjs/common'
 
 const EIP3074MAGIC = Buffer.from('03', 'hex')
 

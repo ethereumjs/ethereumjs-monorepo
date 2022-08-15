@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src'
+
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'

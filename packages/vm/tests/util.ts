@@ -1,8 +1,6 @@
-import type { BlockOptions } from '@ethereumjs/block'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type { TxOptions } from '@ethereumjs/tx'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -23,9 +21,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import type * as tape from 'tape'
 
 import type { VmState } from '../src/eei/vmState'
+import type { BlockOptions } from '@ethereumjs/block'
+import type { TxOptions } from '@ethereumjs/tx'
+import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {

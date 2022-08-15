@@ -1,11 +1,11 @@
-import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
-import type { BigIntLike } from '@ethereumjs/util'
-import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { StateManager } from '@ethereumjs/statemanager'
-import type { Common } from '@ethereumjs/common'
 import type { Bloom } from './bloom'
+import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
+import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
+import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
+import type { BigIntLike } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**

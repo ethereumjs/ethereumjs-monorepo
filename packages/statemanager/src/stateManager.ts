@@ -1,7 +1,5 @@
-import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import {
   Account,
   bigIntToHex,
@@ -18,9 +16,12 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseStateManager } from './baseStateManager'
-import type { getCb, putCb } from './cache'
 import { Cache } from './cache'
+
+import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
+import type { Common } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 type StorageProof = {
   key: PrefixedHexString

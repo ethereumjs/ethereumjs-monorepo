@@ -1,6 +1,3 @@
-import { URL } from 'url'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import {
   addHexPrefix,
@@ -12,8 +9,11 @@ import {
   stripHexPrefix,
 } from '@ethereumjs/util'
 import { Multiaddr, multiaddr } from 'multiaddr'
+import { URL } from 'url'
 
 import type { MultiaddrLike } from '../types'
+import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.

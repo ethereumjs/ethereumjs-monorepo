@@ -1,7 +1,4 @@
-import { promisify } from 'util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import AsyncEventEmitter = require('async-eventemitter')
-import type { Account } from '@ethereumjs/util'
 import {
   Address,
   bigIntToBuffer,
@@ -14,20 +11,23 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
+import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
+import { promisify } from 'util'
 
 import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
-import type { InterpreterOpts, RunState } from './interpreter'
 import { Interpreter } from './interpreter'
-import type { MessageWithTo } from './message'
 import { Message } from './message'
-import type { OpcodeList, OpHandler } from './opcodes'
 import { getOpcodesForHF } from './opcodes'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles'
 import { getActivePrecompiles } from './precompiles'
 import { TransientStorage } from './transientStorage'
+
+import type { InterpreterOpts, RunState } from './interpreter'
+import type { MessageWithTo } from './message'
+import type { OpcodeList, OpHandler } from './opcodes'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles'
 import type {
   Block,
   CustomOpcode,
@@ -40,6 +40,7 @@ import type {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
+import type { Account } from '@ethereumjs/util'
 
 const debug = createDebugLogger('evm')
 const debugGas = createDebugLogger('evm:gas')

@@ -1,10 +1,11 @@
 import { addHexPrefix } from '@ethereumjs/util'
 
+import { middleware } from '../validation'
+
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { PeerPool } from '../../net/peerpool'
 import type { EthereumService } from '../../service/ethereumservice'
-import { middleware } from '../validation'
 
 /**
  * net_* RPC module

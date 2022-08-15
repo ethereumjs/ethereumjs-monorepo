@@ -1,9 +1,10 @@
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+
 import { validPayload } from './forkchoiceUpdatedV1.spec'
 
 const method = 'engine_getPayloadV1'

@@ -1,23 +1,24 @@
-import type { HeaderData } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import type { TypedTransaction } from '@ethereumjs/tx'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
+
+import { PendingBlock } from '../../miner'
+import { short } from '../../util'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { CLConnectionManager } from '../util/CLConnectionManager'
+import { middleware, validators } from '../validation'
 
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
-import { PendingBlock } from '../../miner'
 import type { FullEthereumService } from '../../service'
-import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { CLConnectionManager } from '../util/CLConnectionManager'
-import { middleware, validators } from '../validation'
+import type { HeaderData } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',

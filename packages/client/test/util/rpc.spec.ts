@@ -11,6 +11,7 @@ import {
   createWsRPCServerListener,
   MethodConfig,
 } from '../../lib/util/rpc'
+
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {

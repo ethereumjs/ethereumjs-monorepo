@@ -6,8 +6,9 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import type { ExecResult } from '../evm'
 import { OOGResult } from '../evm'
+
+import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 function multComplexity(x: bigint): bigint {

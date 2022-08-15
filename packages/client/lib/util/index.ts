@@ -1,8 +1,8 @@
 /**
  * @module util
  */
-import { platform } from 'os'
 import { isFalsy } from '@ethereumjs/util'
+import { platform } from 'os'
 
 import { version as packageVersion } from '../../package.json'
 
