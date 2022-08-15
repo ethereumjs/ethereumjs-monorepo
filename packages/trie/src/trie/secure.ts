@@ -120,7 +120,7 @@ export class SecureTrie extends CheckpointTrie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot !== undefined) {
+    if (this._persistRoot === true) {
       await this.db.put(this.hash(ROOT_DB_KEY), this.root)
     }
   }
