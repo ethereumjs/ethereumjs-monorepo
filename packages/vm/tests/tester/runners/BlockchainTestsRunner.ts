@@ -28,7 +28,7 @@ function formatBlockHeader(data: any) {
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
-  if (testData.network != options.forkConfigTestSuite) {
+  if (testData.network !== options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
@@ -112,7 +112,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     const paramAll2 = 'expectException'
     const expectException =
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      raw[paramFork] || raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
+      raw[paramFork] || raw[paramAll1] || raw[paramAll2] || raw.blockHeader === undefined
 
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
@@ -147,7 +147,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
         for (const txData of raw.transactionSequence) {
-          const shouldFail = txData.valid == 'false'
+          const shouldFail = txData.valid === 'false'
           try {
             const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })

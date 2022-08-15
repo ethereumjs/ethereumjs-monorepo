@@ -23,7 +23,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length != 160) {
+  if (inputData.length !== 160) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -58,6 +58,6 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: returnValue,
+    returnValue,
   }
 }

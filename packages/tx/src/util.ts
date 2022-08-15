@@ -69,11 +69,11 @@ export class AccessLists {
           'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
         )
       }
-      if (address.length != 20) {
+      if (address.length !== 20) {
         throw new Error('Invalid EIP-2930 transaction: address length should be 20 bytes')
       }
       for (let storageSlot = 0; storageSlot < storageSlots.length; storageSlot++) {
-        if (storageSlots[storageSlot].length != 32) {
+        if (storageSlots[storageSlot].length !== 32) {
           throw new Error('Invalid EIP-2930 transaction: storage slot length should be 32 bytes')
         }
       }

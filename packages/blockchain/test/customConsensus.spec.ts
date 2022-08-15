@@ -27,7 +27,7 @@ class fibonacciConsensus implements Consensus {
     if (_header.number === 1n && _header.difficulty === 1n) {
       return new Promise<void>((resolve) => resolve())
     }
-    if (_header.difficulty != _header.number - 1n + _header.number - 2n) {
+    if (_header.difficulty !== _header.number - 1n + _header.number - 2n) {
       throw new Error('invalid difficulty - must be sum of previous two block numbers')
     }
     return new Promise<void>((resolve) => resolve())

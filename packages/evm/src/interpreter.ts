@@ -137,7 +137,7 @@ export class Interpreter {
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,
-      env: env,
+      env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,

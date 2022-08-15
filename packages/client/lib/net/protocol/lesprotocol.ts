@@ -227,7 +227,7 @@ export class LesProtocol extends Protocol {
       txRelay: isTruthy(status.txRelay),
       bl: isTruthy(status['flowControl/BL']) ? bufferToInt(status['flowControl/BL']) : undefined,
       mrr: isTruthy(status['flowControl/MRR']) ? bufferToInt(status['flowControl/MRR']) : undefined,
-      mrc: mrc,
+      mrc,
     }
   }
 }

@@ -623,7 +623,7 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _validateUncleHeaders(block: Block) {
     const uncleHeaders = block.uncleHeaders
-    if (uncleHeaders.length == 0) {
+    if (uncleHeaders.length === 0) {
       return
     }
 

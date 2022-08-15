@@ -98,7 +98,7 @@ export class RlpxServer extends Server {
     const id = this.rlpx._id.toString('hex')
     return {
       enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
-      id: id,
+      id,
       ip: this.ip,
       listenAddr: `[${this.ip}]:${this.config.port}`,
       ports: { discovery: this.config.port, listener: this.config.port },

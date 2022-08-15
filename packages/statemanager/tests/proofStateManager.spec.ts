@@ -170,8 +170,8 @@ tape('ProofStateManager', (t) => {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
         await stateManager.verifyProof(testdata)
-        // note: this implicitly means that newField != original,
-        // if newField == original then the proof would be valid and test would fail
+        // note: this implicitly means that newField !== original,
+        // if newField === original then the proof would be valid and test would fail
         t.fail('should throw')
       } catch (e) {
         t.pass('threw on invalid proof')
@@ -229,8 +229,8 @@ tape('ProofStateManager', (t) => {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
         await stateManager.verifyProof(testdata)
-        // note: this implicitly means that newField != original,
-        // if newField == original then the proof would be valid and test would fail
+        // note: this implicitly means that newField !== original,
+        // if newField === original then the proof would be valid and test would fail
         st.fail('should throw')
       } catch (e) {
         st.pass('threw on invalid proof')

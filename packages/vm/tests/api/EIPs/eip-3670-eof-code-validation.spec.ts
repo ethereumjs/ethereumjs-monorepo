@@ -74,7 +74,7 @@ tape('EIP 3670 tests', (t) => {
   })
 
   t.test('invalid contract code transactions', async (st) => {
-    const vm = await VM.create({ common: common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
