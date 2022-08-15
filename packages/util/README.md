@@ -88,7 +88,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 ## License
 
-MPL-2.0
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [util-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/util.svg
 [util-npm-link]: https://www.npmjs.org/package/@ethereumjs/util

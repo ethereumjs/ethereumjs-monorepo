@@ -500,7 +500,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 ## License
 
-MIT
+[MIT](https://opensource.org/licenses/MIT)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
