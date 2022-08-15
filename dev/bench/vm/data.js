@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660564952914,
+  "lastUpdate": 1660566515697,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0b166bef0ff863d918e9f1e2a32e996edeb61d09",
-          "message": "Optimize the github workflow checkouts (#2082)\n\n* Optimize the github workflow checkouts\r\n\r\n* revert recursive checkout as block and tx use eth tests\r\n\r\n* revert recursive checkout for vm state tests as they use eth tests\r\n\r\n* revert recursive vm blockchain tests as they use eth tests\r\n\r\n* revert recursive for vm covergae tests it has state tests which uses eth tests\r\n\r\n* move recurive from vm build to vm pr\r\n\r\n* enable recursive for vm build workflow for coverage state and blockchain tests\r\n\r\n* add recusive checkout in vm nightly slow tests",
-          "timestamp": "2022-07-30T17:44:02+05:30",
-          "tree_id": "a93a2273b961a4fdcc151e15cbff24185eda4b98",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0b166bef0ff863d918e9f1e2a32e996edeb61d09"
-        },
-        "date": 1659183395104,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 11911,
-            "range": "±4.80%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12670,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 11141,
-            "range": "±6.23%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 11812,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 11868,
-            "range": "±3.17%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.11%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "da581e81829e1d67f4b01e77fa416f0d37120f4f",
+          "message": "refactor(trie): use `micro-bmark` for benchmarks (#2128)\n\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* Update package.json\r\n\r\n* chore: more realistic `checkpointing` benchmark\r\n\r\n* chore: more realistic `random` benchmark\r\n\r\n* chore: update to `micro-bmark@0.2.0`\r\n\r\n* refactor(trie): generate benchmark keys at runtime\r\n\r\n* chore(trie): generate 5000 keys\r\n\r\n* ci: disable `trie-benchmarks` job\r\n\r\n* Update index.ts\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-15T14:25:10+02:00",
+          "tree_id": "dd605d0d0de1be26f58533b5a6c18b28e2543c9d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da581e81829e1d67f4b01e77fa416f0d37120f4f"
+        },
+        "date": 1660566513564,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18894,
+            "range": "±3.33%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18063,
+            "range": "±6.08%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18431,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18342,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15710,
+            "range": "±11.69%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
