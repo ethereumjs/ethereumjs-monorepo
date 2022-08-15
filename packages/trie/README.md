@@ -6,23 +6,27 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This is an implementation of the modified merkle patricia tree as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
+This is an implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
 
-> The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.
+> The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification, is to provide a single 32-byte value that identifies a given set of key-value pairs.
 
-The only backing store supported is LevelDB through the `levelup` module.
+## Installation
 
-# INSTALL
+To obtain the latest version, simply require the project using `npm`:
 
-`npm install @ethereumjs/trie`
+```shell
+npm install @ethereumjs/trie
+```
 
-# USAGE
+## Usage
 
-There are 3 variants of the tree implemented in this library, namely: `BaseTrie`, `CheckpointTrie` and `SecureTrie`. `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` with the methods `checkpoint`, `commit` and `revert`. `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys.
+You will find three variants of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) implemented in this library, namely `BaseTrie`, `CheckpointTrie` and `SecureTrie`:
+- `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` through the methods `checkpoint`, `commit` and `revert`
+- `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys
 
-By default, trie nodes are not deleted from the underlying DB to not corrupt older trie states (as of `v4.2.0`). If you are only interested in the latest state of a trie, you can switch to a delete behavior (e.g. if you want to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for more details).
+It is best to select the variant that is most appropriate for your unique use case.
 
-## Initialization and Basic Usage
+### Initialization and Basic Usage
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -39,15 +43,15 @@ async function test() {
 test()
 ```
 
-## DB Support
+You can also review our [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is the default implementation while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
 
-Starting with v5 Trie usage has been decoupled from the previously tight integration with `LevelDB`.
+### Database
 
-In addition to an existing wrapper `LevelDB` which can be directly used, there is now a generic `DB` interface defining five methods `get`, `put`, `del`, `batch` and `copy` which a specific `DB` wrapper needs to implement.
+> By default the only supported database is LevelDB via the `level` module.
 
-The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) are accepting any `DB` interface-compatible wrapper implementations as a datastore `db` option input. This allows to easily switch on the underlying backend.
+The 5.0.0 release introduced the `DB` interface to allow for the decoupling of the database layer from the previously tightly-coupled `LevelDB` integration. The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement. The default implementation of the `DB` interface is still `LevelDB` and functions identically to pre-5.0.0 releases.
 
-The new `DB` interface can be used like this for LevelDB:
+The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) accept any database implementation that adheres to the `DB` interface as the `db` option. It is possible to use the `LevelDB` implementation as follows:
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -56,17 +60,39 @@ import { Level } from 'level'
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
-If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations such as proof trie creation for range proofs will always use the internal `level` based data storage, so there will be some continued `level` DB usage even when you switch to an alternative data store for permanent trie storage).
+If no `db` option is provided, an in-memory database powered by [memory-level](https://github.com/Level/memory-level) will fulfill this role. Note that some internal non-persistent operations (such as tries for range proofs) will always use the internal `LevelDB` implementation, so some continued `LevelDB` usage is inevitable even when you switch to an alternative database.
+
+#### Node Deletion
+
+By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for further details).
+
+#### Persistence
+
+Please note that if you manually provide a database, we will automatically assume that it supports persistence. This means that, by default, the root hash will persist to said database unless you explicitly disable it via the `persistRoot` option.
+
+##### Disabling Persistence
+
+You can disable persistence by setting the `persistRoot` option to false when constructing a trie. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+
+```typescript
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+const trie = new Trie({
+  db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
+  persistRoot: false,
+})
+```
 
 ## Proofs
 
 ### Merkle Proofs
 
-The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle-Patricia trie with a given root.
+The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle Patricia Tree with a given root.
 
-#### Proof of existence
+#### Proof-of-Inclusion
 
-The below code demonstrates how to construct and then verify a proof that proves that the key `test` that corresponds to the value `one` does exist in the given trie, so a proof of existence.
+The following code demonstrates how to construct and subsequently verify a proof that confirms the existence of the key `test` (which corresponds with the value `one`) within the given trie. This is also known as inclusion, hence the name 'Proof-of-Inclusion.'
 
 ```typescript
 const trie = new Trie()
@@ -81,9 +107,9 @@ async function test() {
 test()
 ```
 
-#### Proof of non-existence
+#### Proof-of-Exclusion
 
-The below code demonstrates how to construct and then verify a proof that proves that the key `test3` does not exist in the given trie, so a proof of non-existence.
+The following code demonstrates how to construct and subsequently verify a proof that confirms that the key `test3` does not exist within the given trie. This is also known as exclusion, hence the name 'Proof-of-Exclusion.'
 
 ```typescript
 const trie = new Trie()
@@ -99,9 +125,9 @@ async function test() {
 test()
 ```
 
-#### Invalid proofs
+#### Invalid Proofs
 
-Note, if `verifyProof` detects an invalid proof, it throws an error. While contrived, the below example demonstrates the error condition that would result if a prover tampers with the data in a merkle proof.
+If `verifyProof` detects an invalid proof, it will throw an error. While contrived, the below example illustrates the resulting error condition in the event a prover tampers with the data in a merkle proof.
 
 ```typescript
 const trie = new Trie()
@@ -124,40 +150,41 @@ test()
 
 ### Range Proofs
 
-The `Trie.verifyRangeProof()` function can be used to check whether the given leaf nodes and edge proof can prove the given trie leaves range is matched with the specific root (useful e.g. for snapsync).
+You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
 
-## Read stream on Geth DB
+## Read Stream on Geth DB
 
 ```typescript
-import { Level } from 'level'
-import { SecureTrie as Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+import { SecureTrie, LevelDB } from '@ethereumjs/trie'
 
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
 // Convert the state root to a Buffer (strip the 0x prefix)
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
-const trie = new Trie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB'), root: stateRootBuffer) })
+const trie = new SecureTrie({
+  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
+  root: stateRootBuffer,
+})
 
 trie
   .createReadStream()
   .on('data', console.log)
-  .on('end', () => {
-    console.log('End.')
-  })
+  .on('end', () => console.log('End.'))
 ```
 
-## Read Account State including Storage from Geth DB
+## Read Account State Including Storage From Geth DB
 
 ```typescript
-import { Level } from 'level'
-import { SecureTrie as Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+import { SecureTrie, LevelDB } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
-const trie = new Trie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER', root: stateRoot })
+const trie = new SecureTrie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER', root: stateRoot })
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
@@ -181,48 +208,64 @@ async function test() {
       console.log(`key: ${bufferToHex(data.key)}`)
       console.log(`Value: ${bufferToHex(Buffer.from(RLP.decode(data.value)))}`)
     })
-    .on('end', () => {
-      console.log('Finished reading storage.')
-    })
+    .on('end', () => console.log('Finished reading storage.'))
 }
 
 test()
 ```
 
-Additional examples with detailed explanations are available [here](./examples/README.md).
+You can find additional examples complete with detailed explanations [here](./examples/README.md).
 
-# API
+## API
 
-## Docs
+### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
-## BigInt Support
+### BigInt Support
 
-Starting with v5 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+With the 5.0.0 release, [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) takes the place of [BN.js](https://github.com/indutny/bn.js/).
 
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
+BigInt is a primitive that is used to represent and manipulate primitive `bigint` values that the number primitive is incapable of representing as a result of their magnitude. `ES2020` saw the introduction of this particular feature. Note that this version update resulted in the altering of number-related API signatures and that the minimal build target is now set to `ES2020`.
 
-# TESTING
+## Testing
 
-`npm test`
+You may run tests for browsers and node.js using:
 
-# BENCHMARKS
+```shell
+npm run test
+```
 
-There are two simple **benchmarks** in the `benchmarks` folder:
+You may run tests for browsers using:
 
-- `random.ts` runs random `PUT` operations on the tree.
-- `checkpointing.ts` runs checkpoints and commits between `PUT` operations.
+```shell
+npm run test:browser
+```
 
-A third benchmark using mainnet data to simulate real load is also under consideration.
+> Note that this requires an installation of [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/), otherwise the tests will fail.
 
-Benchmarks can be run with:
+You may run tests for node.js using:
+
+```shell
+npm run test:node
+```
+
+## Benchmarking
+
+You will find two simple **benchmarks** in the `benchmarks` folder:
+
+- `random.ts` runs random `PUT` operations on the tree, and
+- `checkpointing.ts` runs checkpoints and commits between `PUT` operations
+
+A third benchmark using mainnet data to simulate real load is also being considered.
+
+You may run benchmarks using:
 
 ```shell
 npm run benchmarks
 ```
 
-To run a **profiler** on the `random.ts` benchmark and generate a flamegraph with [0x](https://github.com/davidmarkclements/0x) you can use:
+To run a **profiler** on the `random.ts` benchmark and generate a flamegraph with [0x](https://github.com/davidmarkclements/0x), you may use:
 
 ```shell
 npm run profiling
@@ -230,24 +273,22 @@ npm run profiling
 
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
 
-# REFERENCES
+## References
 
 - Wiki
   - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
 - Blog posts
   - [Ethereum's Merkle Patricia Trees - An Interactive JavaScript Tutorial](https://rockwaterweb.com/ethereum-merkle-patricia-trees-javascript-tutorial/)
   - [Merkling in Ethereum](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
-  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/). Worth a read, but the Python libraries are outdated.
+  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/) (This is worth reading, but mind the outdated Python libraries)
 - Videos
   - [Trie and Patricia Trie Overview](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
-
-# LICENSE
+## License
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

@@ -9,15 +9,19 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/evm`
+To obtain the latest version, simply require the project using `npm`:
+
+```shell
+npm install @ethereumjs/evm
+```
 
 This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
 
 Note that this package atm cannot be run in a standalone mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
-# USAGE
+## Usage
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -63,7 +67,7 @@ evm
   .catch(console.error)
 ```
 
-## Example
+### Example
 
 This projects contain the following examples:
 
@@ -72,21 +76,21 @@ This projects contain the following examples:
 
 All of the examples have their own `README.md` explaining how to run them.
 
-# API
+## API
 
-## Docs
+### Docs
 
 For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## BigInt Support
+### BigInt Support
 
 Starting with v1 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# Architecture
+## Architecture
 
-## VM/EVM Relation
+### VM/EVM Relation
 
 This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
 
@@ -94,7 +98,7 @@ This will make it easier to customize the inner EVM, which can now be passed as 
 
 At the moment the `EVM` package can not be run standalone and it is therefore recommended for most use cases to rather use the `VM` package and access `EVM` functionality through the `vm.evm` property.
 
-## Execution Environment (EEI) and State
+### Execution Environment (EEI) and State
 
 For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
 
@@ -102,13 +106,13 @@ To ensure a unified interface the `EVM` provides a TypeScript `EEI` interface pr
 
 The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) provides a concrete implementation of this interface which can be used to instantiate the `EVM` within an Ethereum `mainnet` compatible execution context.
 
-# BROWSER
+## Browser
 
 To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).
 
-# SETUP
+## Setup
 
-## Hardfork Support
+### Hardfork Support
 
 The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
 
@@ -133,7 +137,7 @@ Default: `merge` (taken from `Common.DEFAULT_HARDFORK`)
 A specific hardfork EVM ruleset can be activated by passing in the hardfork
 along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
-## EIP Support
+### EIP Support
 
 It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the outer VM with the respective EIPs, e.g.:
 
@@ -163,7 +167,7 @@ Currently supported EIPs:
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
 
-## Tracing Events
+### Tracing Events
 
 Our `TypeScript` EVM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
 
@@ -176,7 +180,7 @@ You can subscribe to the following events:
 
 An example for the `step` event can be found in the initial usage example in this `README`.
 
-### Asynchronous event handlers
+#### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
 and prevent the EVM to keep running until they finish.
@@ -190,7 +194,7 @@ handler or a function called by it, the exception will bubble into the
 EVM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
-### Synchronous event handlers
+#### Synchronous event handlers
 
 If you want to perform synchronous operations, you don't need
 to receive a function as the handler's second argument, nor call it.
@@ -203,7 +207,7 @@ by it, the exception will bubble into the EVM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
-# Understanding the EVM
+## Understanding the EVM
 
 If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
@@ -251,7 +255,7 @@ Run some specific loggers including a logger specifically logging the `SSTORE` e
 DEBUG=evm,evm:ops:sstore,evm:*:gas ts-node test.ts
 ```
 
-# Internal Structure
+### Internal Structure
 
 The EVM processes state changes at many levels.
 
@@ -276,19 +280,17 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 TODO: this section likely needs an update.
 
-# DEVELOPMENT
+## Development
 
 See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) README.
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+## License
 
-# LICENSE
-
-[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR

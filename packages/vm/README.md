@@ -15,11 +15,15 @@ EVM implementation.
 
 Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/vm`
+To obtain the latest version, simply require the project using `npm`:
 
-# USAGE
+```shell
+npm install @ethereumjs/vm
+```
+
+## Usage
 
 ```typescript
 import { Address } from '@ethereumjs/util'
@@ -52,19 +56,19 @@ All of the examples have their own `README.md` explaining how to run them.
 
 # API
 
-## Docs
+### Docs
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## BigInt Support
+### BigInt Support
 
 Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# Architecture
+## Architecture
 
-## VM/EVM Relation
+### VM/EVM Relation
 
 Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previously included in this library has been extracted to an own package [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
 
@@ -79,15 +83,15 @@ vm.evm.on('step', function (data) {
 
 Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
-## Execution Environment (EEI) and State
+### Execution Environment (EEI) and State
 
 This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
 
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanger). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
-# SETUP
+## Setup
 
-## Chain Support
+### Chain Support
 
 Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA` blocks and transactions. Clique support has been added along the work on PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) and follow-up PRs and (block) validation checks and the switch of the execution context now happens correctly.
 
@@ -112,7 +116,7 @@ const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber }
 const result = await vm.runBlock(block)
 ```
 
-## Hardfork Support
+### Hardfork Support
 
 For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
 
@@ -126,7 +130,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
-## Custom genesis state support
+### Custom genesis state support
 
 Genesis state code logic has been reworked substantially along the v6 breaking releases and a lot of the genesis state code moved from both the `@ethereumjs/common` and `@ethereumjs/block` libraries to the `@ethereumjs/blockchain` library, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) for an overview on the broad set of changes.
 
@@ -151,7 +155,7 @@ const vm = await VM.create({ common, activateGenesisState: true })
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
 
-## EIP Support
+### EIP Support
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
@@ -166,7 +170,7 @@ const vm = new VM({ common })
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
 
-## Tracing Events
+### Tracing Events
 
 Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
 
@@ -179,7 +183,7 @@ You can subscribe to the following events:
 
 Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
-### Asynchronous event handlers
+#### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
 and prevent the VM to keep running until they finish.
@@ -193,7 +197,7 @@ handler or a function called by it, the exception will bubble into the
 VM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
-### Synchronous event handlers
+#### Synchronous event handlers
 
 If you want to perform synchronous operations, you don't need
 to receive a function as the handler's second argument, nor call it.
@@ -206,7 +210,7 @@ by it, the exception will bubble into the VM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
-# Understanding the VM
+## Understanding the VM
 
 If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
@@ -255,7 +259,7 @@ Run some specific loggers including a logger specifically logging the `SSTORE` e
 DEBUG=vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
 ```
 
-# Internal Structure
+## Internal Structure
 
 The VM processes state changes at many levels.
 
@@ -272,19 +276,17 @@ The VM processes state changes at many levels.
 
 TODO: this section likely needs an update.
 
-# DEVELOPMENT
+## Development
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+## License
 
-# LICENSE
-
-[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR

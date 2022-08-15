@@ -11,21 +11,29 @@
 
 Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceding release.
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/common`
+To obtain the latest version, simply require the project using `npm`:
 
-# USAGE
+```shell
+npm install @ethereumjs/common
+```
 
-## import / require
+## Usage
+
+### import / require
 
 import (ESM, TypeScript):
 
-`import { Chain, Common, Hardfork } from '@ethereumjs/common`
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common
+```
 
 require (CommonJS, Node.js):
 
-`const { Common, Chain, Hardfork } = require('@ethereumjs/common')`
+```typescript
+const { Common, Chain, Hardfork } = require('@ethereumjs/common')
+```
 
 ## Parameters
 
@@ -63,7 +71,7 @@ c = new Common({ chain: Chain.Mainnet, eips: [2537] })
 
 # API
 
-## Docs
+### Docs
 
 See the API documentation for a full list of functions for accessing specific chain and
 depending hardfork parameters. There are also additional helper functions like
@@ -72,13 +80,13 @@ to ease `blockNumber` based access to parameters.
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
-## BigInt Support
+### BigInt Support
 
 Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# EVENTS
+## Events
 
 The `Common` class is implemented as an `EventEmitter` and is emitting the following events
 on which you can react within your code:
@@ -87,9 +95,9 @@ on which you can react within your code:
 | ----------------- | ---------------------------------------------------------- |
 | `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
 
-# SETUP
+## Setup
 
-## Chains
+### Chains
 
 The `chain` can be set in the constructor like this:
 
@@ -188,7 +196,7 @@ const common1 = new Common({
 
 Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
-## Hardforks
+### Hardforks
 
 The `hardfork` can be set in constructor like this:
 
@@ -238,7 +246,7 @@ hardfork.
 The hardfork-specific json files only contain the deltas from `chainstart` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-## EIPs
+### EIPs
 
 Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
 and can be activated like this:
@@ -269,17 +277,15 @@ The following EIPs are currently supported:
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
 
-## Bootstrap Nodes
+### Bootstrap Nodes
 
 You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
-
-# LICENSE
+## License
 
 [MIT](https://opensource.org/licenses/MIT)
 

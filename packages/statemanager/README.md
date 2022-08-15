@@ -9,21 +9,25 @@
 | TypeScript implementation of the Ethereum StateManager. |
 | ------------------------------------------------------- |
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/statemanager`
+To obtain the latest version, simply require the project using `npm`:
+
+```shell
+npm install @ethereumjs/statemanager
+```
 
 Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `v5`.
 
-# USAGE
+## Usage
 
-## Introduction
+### Introduction
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
 The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager`.
 
-## Example
+### Example
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
@@ -38,31 +42,29 @@ await stateManager.commit()
 await stateManager.flush()
 ```
 
-# API
+## API
 
-## Docs
+### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
-## BigInt Support
+### BigInt Support
 
 Starting with v1 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# DEVELOPMENT
+## Development
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+## License
 
-# LICENSE
-
-[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
