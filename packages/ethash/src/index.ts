@@ -77,8 +77,8 @@ export class Miner {
   async mine(iterations: number = 0): Promise<undefined | BlockHeader | Block> {
     const solution = await this.iterate(iterations)
 
-    if (solution) {
-      if (this.block) {
+    if (solution !== null) {
+      if (this.block !== null) {
         const data = <BlockData>this.block.toJSON()
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
@@ -98,10 +98,10 @@ export class Miner {
    * @returns - `undefined` if no solution was found, or otherwise a `Solution` object
    */
   async iterate(iterations: number = 0): Promise<undefined | Solution> {
-    if (this.solution) {
+    if (this.solution !== null) {
       return this.solution
     }
-    if (!this.headerHash) {
+    if (this.headerHash == null) {
       this.headerHash = this.ethash.headerHash(this.blockHeader.raw())
     }
     const headerHash = this.headerHash
@@ -264,7 +264,7 @@ export class Ethash {
 
     this.epoc = epoc
 
-    if (!this.cacheDB) {
+    if (this.cacheDB == null) {
       throw new Error('cacheDB needed')
     }
 
@@ -281,7 +281,7 @@ export class Ethash {
           throw error
         }
       }
-      if (data) {
+      if (data !== null) {
         return [data.seed, epoc]
       } else {
         return findLastSeed(epoc - 1)
@@ -297,7 +297,7 @@ export class Ethash {
       }
     }
 
-    if (!data) {
+    if (data == null) {
       this.cacheSize = await getCacheSize(epoc)
       this.fullSize = await getFullSize(epoc)
 

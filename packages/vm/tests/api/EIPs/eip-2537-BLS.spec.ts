@@ -38,7 +38,7 @@ tape('EIP-2537 BLS tests', (t) => {
         st.fail('BLS precompiles should not use any gas if EIP not activated')
       }
 
-      if (result.execResult.exceptionError) {
+      if (result.execResult.exceptionError !== null) {
         st.fail('BLS precompiles should not throw if EIP not activated')
       }
     }
@@ -69,7 +69,7 @@ tape('EIP-2537 BLS tests', (t) => {
         st.fail('BLS precompiles should use all gas on empty inputs')
       }
 
-      if (!result.execResult.exceptionError) {
+      if (result.execResult.exceptionError == null) {
         st.fail('BLS precompiles should throw on empty inputs')
       }
     }
@@ -78,7 +78,7 @@ tape('EIP-2537 BLS tests', (t) => {
     st.end()
   })
 
-  /* 
+  /*
     The following tests validate that the various precompiles associated with EIP2537 produce expected results against test vectors
     pulled from this collection of test data provided by Matter Labs here -
     https://github.com/matter-labs/eip1962/tree/master/src/test/test_vectors/eip2537

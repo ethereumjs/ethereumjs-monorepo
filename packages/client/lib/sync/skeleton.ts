@@ -232,7 +232,7 @@ export class Skeleton extends MetaDBManager {
       return true
     }
     const parent = await this.getBlock(number - BigInt(1))
-    if (parent && !parent.hash().equals(head.header.parentHash)) {
+    if ((parent !== null) && !parent.hash().equals(head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
           `Beacon chain forked ancestor=${parent.header.number} hash=${short(
@@ -422,13 +422,13 @@ export class Skeleton extends MetaDBManager {
     do {
       newTail = newTail + BigInt(this.config.skeletonFillCanonicalBackStep)
       tailBlock = await this.getBlock(newTail, true)
-    } while (!tailBlock && newTail <= head)
+    } while ((tailBlock == null) && newTail <= head)
     if (newTail > head) {
       newTail = head
       tailBlock = await this.getBlock(newTail, true)
     }
 
-    if (tailBlock && newTail) {
+    if ((tailBlock !== null) && newTail) {
       this.config.logger.info(`Backstepped skeleton head=${head} tail=${newTail}`)
       this.status.progress.subchains[0].tail = newTail
       this.status.progress.subchains[0].next = tailBlock.header.parentHash
@@ -462,7 +462,7 @@ export class Skeleton extends MetaDBManager {
       // Get next block
       const number = canonicalHead + BigInt(1)
       const block = await this.getBlock(number)
-      if (!block) {
+      if (block == null) {
         // This shouldn't happen, but if it does because of some issues, we should back step
         // and fetch again
         this.config.logger.debug(
@@ -535,7 +535,7 @@ export class Skeleton extends MetaDBManager {
    */
   async getBlockByHash(hash: Buffer): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
-    if (!number) return undefined
+    if (number == null) return undefined
     return this.getBlock(bufferToBigInt(number))
   }
 
@@ -571,7 +571,7 @@ export class Skeleton extends MetaDBManager {
    */
   private async getSyncStatus(): Promise<SkeletonStatus | undefined> {
     const rawStatus = await this.get(DBKey.SkeletonStatus, Buffer.alloc(0))
-    if (!rawStatus) return
+    if (rawStatus == null) return
     const status = this.statusRLPtoObject(rawStatus)
     this.status = status
     return status

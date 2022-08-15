@@ -163,11 +163,11 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(jsonParser({ limit: '11mb' }))
 
-  if (withEngineMiddleware) {
+  if (withEngineMiddleware !== null) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
     app.use((req, res, next) => {
       try {
-        if (unlessFn && unlessFn(req)) return next()
+        if ((unlessFn !== null) && unlessFn(req)) return next()
         checkHeaderAuth(req, jwtSecret)
         return next()
       } catch (error) {
@@ -191,7 +191,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
 
   // Get the server to hookup upgrade request on
   let httpServer = opts.httpServer
-  if (!httpServer) {
+  if (httpServer == null) {
     const app = Connect()
     // In case browser pre-flights the upgrade request with an options request
     // more likely in case of wss connection
@@ -202,7 +202,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {
-    if (withEngineMiddleware) {
+    if (withEngineMiddleware !== null) {
       const { jwtSecret } = withEngineMiddleware
       try {
         checkHeaderAuth(req, jwtSecret)
@@ -216,5 +216,5 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     })
   })
   // Only return something if a new server was created
-  return !opts.httpServer ? httpServer : undefined
+  return (opts.httpServer == null) ? httpServer : undefined
 }

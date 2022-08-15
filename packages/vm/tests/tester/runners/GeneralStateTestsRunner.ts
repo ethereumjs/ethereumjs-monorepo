@@ -55,7 +55,7 @@ function parseTestCases(
   }
 
   testCases = testCases.filter((testCase: any) => {
-    return testCase != null
+    return testCase !== null
   })
 
   return testCases
@@ -89,7 +89,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     execInfo = 'tx instantiation exception'
   }
 
-  if (tx) {
+  if (tx !== null) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 

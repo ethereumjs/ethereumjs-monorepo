@@ -25,7 +25,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer, partialResult } = job
     let { first, count } = task
-    if (partialResult) {
+    if (partialResult !== null) {
       first = !this.reverse
         ? first + BigInt(partialResult.length)
         : first - BigInt(partialResult.length)

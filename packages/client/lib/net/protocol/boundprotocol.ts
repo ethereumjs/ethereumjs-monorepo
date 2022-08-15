@@ -88,7 +88,7 @@ export class BoundProtocol {
   private handle(incoming: Message) {
     const messages = this.protocol.messages
     const message = messages.find((m) => m.code === incoming.code)
-    if (!message) {
+    if (message == null) {
       return
     }
 
@@ -103,13 +103,13 @@ export class BoundProtocol {
     if (isTruthy(resolver)) {
       clearTimeout(resolver.timeout)
       this.resolvers.delete(incoming.code)
-      if (error) {
+      if (error !== null) {
         resolver.reject(error)
       } else {
         resolver.resolve(data)
       }
     } else {
-      if (error) {
+      if (error !== null) {
         this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       } else {
         this.config.events.emit(
@@ -139,7 +139,7 @@ export class BoundProtocol {
   send(name: string, args?: any) {
     const messages = this.protocol.messages
     const message = messages.find((m) => m.name === name)
-    if (message) {
+    if (message !== null) {
       const encoded = this.protocol.encode(message, args)
       this.sender.sendMessage(message.code, encoded)
     } else {

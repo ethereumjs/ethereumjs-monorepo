@@ -196,10 +196,10 @@ export abstract class BaseTransaction<TransactionObject> {
   getBaseFee(): bigint {
     const txFee = this.common.param('gasPrices', 'tx')
     let fee = this.getDataFee()
-    if (txFee) fee += txFee
+    if (txFee !== undefined) fee += txFee
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
       const txCreationFee = this.common.param('gasPrices', 'txCreation')
-      if (txCreationFee) fee += txCreationFee
+      if (txCreationFee !== undefined) fee += txCreationFee
     }
     return fee
   }
@@ -363,7 +363,7 @@ export abstract class BaseTransaction<TransactionObject> {
     // Chain ID provided
     if (isTruthy(chainId)) {
       const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
-      if (common) {
+      if (common !== null) {
         if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)

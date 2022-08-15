@@ -30,7 +30,7 @@ export async function getTests(
   }
   return new Promise((resolve, reject) => {
     const finishedCallback = (err: Error | undefined, files: string[]) => {
-      if (err) {
+      if (err !== null) {
         reject(err)
         return
       }
@@ -42,7 +42,7 @@ export async function getTests(
       fileName: string,
       next: Function
     ) => {
-      if (err) {
+      if (err !== null) {
         reject(err)
         return
       }

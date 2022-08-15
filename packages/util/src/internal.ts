@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
 
+import { isFalsy } from "./types"
+
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
  * @param str the string input value
@@ -60,7 +62,7 @@ export function padToEven(value: string): string {
     throw new Error(`[padToEven] value must be type 'string', received ${typeof a}`)
   }
 
-  if (a.length % 2) a = `0${a}`
+  if (a.length % 2 === 1) a = `0${a}`
 
   return a
 }
@@ -182,7 +184,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
 
   for (let i = 0; i < params.length; i++) {
     let value = params[i][key]
-    if (allowEmpty === true && !value) {
+    if (allowEmpty === true && isFalsy(value)) {
       value = ''
     } else if (typeof value !== 'string') {
       throw new Error(`invalid abi - expected type 'string', received ${typeof value}`)
@@ -201,7 +203,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
  * @returns  output the string is a hex string
  */
 export function isHexString(value: string, length?: number): boolean {
-  if (typeof value !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) return false
+  if (typeof value !== 'string' || (value.match(/^0x[0-9A-Fa-f]*$/) == null)) return false
 
   if (typeof length !== 'undefined' && length > 0 && value.length !== 2 + 2 * length) return false
 

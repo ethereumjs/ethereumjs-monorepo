@@ -177,7 +177,7 @@ function getActivePrecompiles(
   customPrecompiles?: CustomPrecompile[]
 ): Map<string, PrecompileFunc> {
   const precompileMap = new Map()
-  if (customPrecompiles) {
+  if (customPrecompiles !== null) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
         precompile.address.buf.toString('hex'),

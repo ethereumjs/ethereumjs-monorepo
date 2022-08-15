@@ -70,7 +70,7 @@ export class Miner {
    * Sets the timeout for the next block assembly
    */
   private async queueNextAssembly(timeout?: number) {
-    if (this._nextAssemblyTimeoutId) {
+    if (this._nextAssemblyTimeoutId !== null) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
     if (!this.running) {
@@ -322,7 +322,7 @@ export class Miner {
       return false
     }
     this.config.events.removeListener(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler!)
-    if (this._nextAssemblyTimeoutId) {
+    if (this._nextAssemblyTimeoutId !== null) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
     this.running = false

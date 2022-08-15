@@ -64,7 +64,7 @@ export class PeerPool {
       this.disconnected(peer)
     })
     this.config.events.on(Event.PEER_ERROR, (error, peer) => {
-      if (this.pool.get(peer.id)) {
+      if (this.pool.get(peer.id) !== null) {
         this.config.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)
       }
@@ -136,7 +136,7 @@ export class PeerPool {
     if (typeof peer !== 'string') {
       peer = peer.id
     }
-    return !!this.pool.get(peer)
+    return !(this.pool.get(peer) == null)
   }
 
   /**
@@ -177,7 +177,7 @@ export class PeerPool {
    * @emits {@link Event.POOL_PEER_BANNED}
    */
   ban(peer: Peer, maxAge: number = 60000) {
-    if (!peer.server) {
+    if (peer.server == null) {
       return
     }
     peer.server.ban(peer.id, maxAge)
@@ -199,7 +199,7 @@ export class PeerPool {
    * @emits {@link Event.POOL_PEER_ADDED}
    */
   add(peer?: Peer) {
-    if (peer && peer.id && !this.pool.get(peer.id)) {
+    if ((peer !== null) && peer.id && (this.pool.get(peer.id) == null)) {
       this.pool.set(peer.id, peer)
       peer.pooled = true
       this.config.events.emit(Event.POOL_PEER_ADDED, peer)
@@ -212,7 +212,7 @@ export class PeerPool {
    * @emits {@link Event.POOL_PEER_REMOVED}
    */
   remove(peer?: Peer) {
-    if (peer && peer.id) {
+    if ((peer !== null) && peer.id) {
       if (this.pool.delete(peer.id)) {
         peer.pooled = false
         this.config.events.emit(Event.POOL_PEER_REMOVED, peer)

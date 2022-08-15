@@ -249,7 +249,7 @@ export class TxPool {
     const senderAddress = tx.getSenderAddress()
     const sender: UnprefixedAddress = senderAddress.toString().slice(2)
     const inPool = this.pool.get(sender)
-    if (inPool) {
+    if (inPool !== null) {
       if (!isLocalTransaction && inPool.length >= MAX_TXS_PER_ACCOUNT) {
         throw new Error(
           `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`
@@ -257,7 +257,7 @@ export class TxPool {
       }
       // Replace pooled txs with the same nonce
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce === tx.nonce)
-      if (existingTxn) {
+      if (existingTxn !== null) {
         if (existingTxn.tx.hash().equals(tx.hash())) {
           throw new Error(`${bufferToHex(tx.hash())}: this transaction is already in the TxPool`)
         }
@@ -305,7 +305,7 @@ export class TxPool {
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     let add: TxPoolObject[] = this.pool.get(address) ?? []
     const inPool = this.pool.get(address)
-    if (inPool) {
+    if (inPool !== null) {
       // Replace pooled txs with the same nonce
       add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
     }
@@ -327,9 +327,9 @@ export class TxPool {
     for (const txHash of txHashes) {
       const txHashStr = txHash.toString('hex')
       const handled = this.handled.get(txHashStr)
-      if (!handled) continue
+      if (handled == null) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
-      if (inPool && inPool.length === 1) {
+      if ((inPool !== null) && inPool.length === 1) {
         found.push(inPool[0].tx)
       }
     }
@@ -342,10 +342,10 @@ export class TxPool {
    */
   removeByHash(txHash: UnprefixedHash) {
     const handled = this.handled.get(txHash)
-    if (!handled) return
+    if (handled == null) return
     const { address } = handled
     const poolObjects = this.pool.get(address)
-    if (!poolObjects) return
+    if (poolObjects == null) return
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
     this.txsInPool--
     if (newPoolObjects.length === 0) {
@@ -671,7 +671,7 @@ export class TxPool {
     while (byPrice.length > 0) {
       // Retrieve the next best transaction by price
       const best = byPrice.remove()
-      if (!best) break
+      if (best == null) break
       // Push in its place the next transaction from the same account
       const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!

@@ -77,7 +77,7 @@ export class VmState implements EVMStateAccess {
     this._touchedStack.pop()
     // Copy the contents of the map of the current level to a map higher.
     const storageMap = this._accessedStorage.pop()
-    if (storageMap) {
+    if (storageMap !== null) {
       this._accessedStorageMerge(this._accessedStorage, storageMap)
     }
     await this._stateManager.commit()
@@ -102,11 +102,11 @@ export class VmState implements EVMStateAccess {
   async revert(): Promise<void> {
     // setup cache checkpointing
     const lastItem = this._accessedStorage.pop()
-    if (lastItem) {
+    if (lastItem !== null) {
       this._accessedStorageReverted.push(lastItem)
     }
     const touched = this._touchedStack.pop()
-    if (!touched) {
+    if (touched == null) {
       throw new Error('Reverting to invalid state checkpoint failed')
     }
     // Exceptional case due to consensus issue in Geth and Parity.
@@ -218,7 +218,7 @@ export class VmState implements EVMStateAccess {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
       storageMap.forEach((slotSet: Set<string>, addressString: string) => {
         const addressExists = mapTarget.get(addressString)
-        if (!addressExists) {
+        if (addressExists == null) {
           mapTarget.set(addressString, new Set())
         }
         const storageSet = mapTarget.get(addressString)
@@ -362,7 +362,7 @@ export class VmState implements EVMStateAccess {
   addWarmedAddress(address: Buffer): void {
     const key = address.toString('hex')
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
-    if (!storageSet) {
+    if (storageSet == null) {
       const emptyStorage = new Set()
       this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
     }
@@ -395,7 +395,7 @@ export class VmState implements EVMStateAccess {
   addWarmedStorage(address: Buffer, slot: Buffer): void {
     const addressKey = address.toString('hex')
     let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
-    if (!storageSet) {
+    if (storageSet == null) {
       storageSet = new Set()
       this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
     }
@@ -437,7 +437,7 @@ export class VmState implements EVMStateAccess {
     // Fold merged storage array into one Map
     while (mergedStorage.length >= 2) {
       const storageMap = mergedStorage.pop()
-      if (storageMap) {
+      if (storageMap !== null) {
         this._accessedStorageMerge(mergedStorage, storageMap)
       }
     }
@@ -451,7 +451,7 @@ export class VmState implements EVMStateAccess {
       const check2 =
         addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
 
-      if (!check1 && !check2) {
+      if ((check1 == null) && !check2) {
         const storageSlots = Array.from(slots)
           .map((s) => `0x${s}`)
           .sort()

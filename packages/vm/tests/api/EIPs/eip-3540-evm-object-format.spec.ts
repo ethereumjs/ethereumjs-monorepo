@@ -47,13 +47,13 @@ tape('EIP 3540 tests', (t) => {
       'valid data section'
     )
     st.ok(
-      !EOF.codeAnalysis(
+      EOF.codeAnalysis(
         Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00])])
-      ),
+      ) == null,
       'invalid container length (too long)'
     )
     st.ok(
-      !EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])),
+      EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])) == null,
       'invalid container length (too short)'
     )
     st.end()

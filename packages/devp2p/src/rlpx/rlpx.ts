@@ -61,7 +61,7 @@ export class RLPx extends EventEmitter {
     this._timeout = options.timeout ?? ms('10s')
     this._maxPeers = options.maxPeers ?? 10
 
-    this._clientId = options.clientId
+    this._clientId = (options.clientId !== null)
       ? Buffer.from(options.clientId)
       : Buffer.from(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
 
@@ -118,7 +118,7 @@ export class RLPx extends EventEmitter {
     this._isAliveCheck()
     this._debug('call .listen')
 
-    if (this._server) this._server.listen(...args)
+    if (this._server !== null) this._server.listen(...args)
   }
 
   destroy(...args: any[]) {
@@ -127,7 +127,7 @@ export class RLPx extends EventEmitter {
 
     clearInterval(this._refillIntervalId)
 
-    if (this._server) this._server.close(...args)
+    if (this._server !== null) this._server.close(...args)
     this._server = null
 
     for (const peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
@@ -229,13 +229,13 @@ export class RLPx extends EventEmitter {
       }
       this._debug(msg)
       const id = peer.getId()
-      if (id && id.equals(this._id)) {
+      if ((id !== null) && id.equals(this._id)) {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
       const peerKey = id!.toString('hex')
       const item = this._peers.get(peerKey)
-      if (item && item instanceof Peer) {
+      if ((item !== null) && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
       }
 
@@ -266,7 +266,7 @@ export class RLPx extends EventEmitter {
       }
 
       const id = peer.getId()
-      if (id) {
+      if (id !== null) {
         const peerKey = id.toString('hex')
         this._peers.delete(peerKey)
         this.emit('peer:removed', peer, reason, disconnectWe)

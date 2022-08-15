@@ -86,7 +86,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
 
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
-    if (a.length % 2) a = '0' + a
+    if (a.length % 2 === 1) a = '0' + a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
     try {
@@ -95,7 +95,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
       // pass
     }
   } else {
-    if (a.length % 2) a = '0' + a
+    if (a.length % 2 === 1) a = '0' + a
     a = Buffer.from(a, 'hex')
   }
 
@@ -311,10 +311,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
   }
-  if (opts?.common && opts.common.gteHardfork('london')) {
+  if (((opts?.common) !== null) && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
   }
-  if (opts?.common && opts.common.gteHardfork('merge')) {
+  if (((opts?.common) !== null) && opts.common.gteHardfork('merge')) {
     headerData['mixHash'] = currentRandom
     headerData['difficulty'] = 0
   }
@@ -384,11 +384,11 @@ export async function setupPreConditions(state: VmState, testData: any) {
  */
 export function getRequiredForkConfigAlias(forkConfig: string): string {
   // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
-  if (String(forkConfig).match(/^muirGlacier/i)) {
+  if (String(forkConfig).match(/^muirGlacier/i) !== null) {
     return 'Istanbul'
   }
   // Petersburg is named ConstantinopleFix in the client-independent consensus test suite
-  if (String(forkConfig).match(/^petersburg$/i)) {
+  if (String(forkConfig).match(/^petersburg$/i) !== null) {
     return 'ConstantinopleFix'
   }
   return forkConfig

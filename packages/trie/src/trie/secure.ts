@@ -89,8 +89,8 @@ export class SecureTrie extends CheckpointTrie {
   ): Promise<boolean> {
     return super.verifyRangeProof(
       rootHash,
-      firstKey && this.hash(firstKey),
-      lastKey && this.hash(lastKey),
+      (firstKey !== null) && this.hash(firstKey),
+      (lastKey !== null) && this.hash(lastKey),
       keys.map((k) => this.hash(k)),
       values,
       proof

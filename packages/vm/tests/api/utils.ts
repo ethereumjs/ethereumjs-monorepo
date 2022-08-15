@@ -22,7 +22,7 @@ export async function setBalance(vm: VM, address: Address, balance = BigInt(1000
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
   const db: any = new MemoryLevel()
   const { common, genesisBlock } = opts
-  if (!opts.blockchain) {
+  if (opts.blockchain == null) {
     opts.blockchain = await Blockchain.create({
       db,
       validateBlocks: false,

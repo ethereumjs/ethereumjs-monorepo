@@ -192,7 +192,7 @@ export class Common extends EventEmitter {
     if (isTruthy(opts.hardfork)) {
       this.setHardfork(opts.hardfork)
     }
-    if (opts.eips) {
+    if (opts.eips !== null) {
       this.setEIPs(opts.eips)
     }
   }
@@ -676,7 +676,7 @@ export class Common extends EventEmitter {
     if (data?.forkHash !== null && data?.forkHash !== undefined) {
       return data.forkHash
     }
-    if (!genesisHash) throw new Error('genesisHash required for forkHash calculation')
+    if (genesisHash == null) throw new Error('genesisHash required for forkHash calculation')
     return this._calcForkHash(hardfork, genesisHash)
   }
 
@@ -852,7 +852,7 @@ export class Common extends EventEmitter {
       names[id] = name.toLowerCase()
     }
     const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
-    if (customChains) {
+    if (customChains !== null) {
       for (const chain of customChains) {
         const { name } = chain
         names[chain.chainId.toString()] = name

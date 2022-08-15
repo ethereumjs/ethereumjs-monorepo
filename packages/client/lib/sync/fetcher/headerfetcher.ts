@@ -40,7 +40,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
       return
     }
     let { first, count } = task
-    if (partialResult) {
+    if (partialResult !== null) {
       first = first + BigInt(partialResult.length)
       count -= partialResult.length
     }
@@ -100,6 +100,6 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * Returns an idle peer that can process a next job.
    */
   peer(): Peer | undefined {
-    return this.pool.idle((peer) => peer.les && peer.les.status.serveHeaders)
+    return this.pool.idle((peer) => (peer.les !== null) && peer.les.status.serveHeaders)
   }
 }

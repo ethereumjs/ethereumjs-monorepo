@@ -74,7 +74,7 @@ export class WalkController {
     } else if (node instanceof BranchNode) {
       children = node.getChildren().map((b) => [[b[0]], b[1]])
     }
-    if (!children) {
+    if (children == null) {
       return
     }
     for (const child of children) {
@@ -120,7 +120,7 @@ export class WalkController {
       throw new Error('Expected branch node')
     }
     const childRef = node.getBranch(childIndex)
-    if (!childRef) {
+    if (childRef == null) {
       throw new Error('Could not get branch of childIndex')
     }
     const childKey = key.slice() // This copies the key to a new array.

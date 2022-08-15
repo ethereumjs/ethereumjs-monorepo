@@ -53,7 +53,7 @@ export class VMExecution extends Execution {
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB && this.config.saveReceipts) {
+    if ((this.metaDB !== null) && this.config.saveReceipts) {
       this.receiptsManager = new ReceiptsManager({
         chain: this.chain,
         config: this.config,
@@ -142,7 +142,7 @@ export class VMExecution extends Execution {
     await this.chain.putBlocks(blocks, true)
     for (const block of blocks) {
       const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
-      if (receipts) {
+      if (receipts !== null) {
         void this.receiptsManager?.saveReceipts(block, receipts)
         this.pendingReceipts?.delete(block.hash().toString('hex'))
       }
@@ -192,10 +192,10 @@ export class VMExecution extends Execution {
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
-          if (errorBlock) return
+          if (errorBlock !== null) return
           // determine starting state for block run
           // if we are just starting or if a chain reorg has happened
-          if (!headBlock || reorg) {
+          if ((headBlock == null) || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
             if (headBlock === null) throw new Error('No parent block found')
             parentState = parentBlock!.header.stateRoot
@@ -341,7 +341,7 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    if (this.vmPromise) {
+    if (this.vmPromise !== null) {
       // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
       await this.vmPromise
     }

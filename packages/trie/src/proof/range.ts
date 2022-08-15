@@ -44,7 +44,7 @@ async function unset(
 
     // continue to the next node
     const next = child.getBranch(key[pos])
-    const _child = next && (await trie.lookupNode(next))
+    const _child = (next !== null) && (await trie.lookupNode(next))
     return await unset(trie, child, _child, key, pos + 1, removeLeft, stack)
   } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
     /**
@@ -74,7 +74,7 @@ async function unset(
       return pos - 1
     } else {
       const _child = await trie.lookupNode(child.value)
-      if (_child && _child instanceof LeafNode) {
+      if ((_child !== null) && _child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).setBranch(key[pos - 1], null)
         return pos - 1
@@ -243,7 +243,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if ((child !== null) && child instanceof LeafNode) {
         return await removeSelfFromParentAndSaveStack(left)
       }
 
@@ -260,7 +260,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if ((child !== null) && child instanceof LeafNode) {
         return await removeSelfFromParentAndSaveStack(right)
       }
 
@@ -285,7 +285,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
        */
       const _stack = [...stack]
       const next = node.getBranch(left[pos])
-      const child = next && (await trie.lookupNode(next))
+      const child = (next !== null) && (await trie.lookupNode(next))
       const endPos = await unset(trie, node, child, left.slice(pos), 1, false, _stack)
       await saveStack(left.slice(0, pos + endPos), _stack)
     }
@@ -293,7 +293,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
     {
       const _stack = [...stack]
       const next = node.getBranch(right[pos])
-      const child = next && (await trie.lookupNode(next))
+      const child = (next !== null) && (await trie.lookupNode(next))
       const endPos = await unset(trie, node, child, right.slice(pos), 1, true, _stack)
       await saveStack(right.slice(0, pos + endPos), _stack)
     }
@@ -357,7 +357,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       }
 
       const next = node.getBranch(key[pos])
-      node = next && (await trie.lookupNode(next))
+      node = (next !== null) && (await trie.lookupNode(next))
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (

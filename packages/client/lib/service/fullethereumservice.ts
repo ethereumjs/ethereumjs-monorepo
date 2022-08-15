@@ -277,7 +277,7 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'GetReceipts') {
       const [reqId, hashes] = message.data
       const { receiptsManager } = this.execution
-      if (!receiptsManager) return
+      if (receiptsManager == null) return
       const receipts = []
       let receiptsSize = 0
       for (const hash of hashes) {

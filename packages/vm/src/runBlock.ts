@@ -71,7 +71,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   // Set state root if provided
-  if (root) {
+  if (root !== null) {
     if (this.DEBUG) {
       debug(`Set provided state root ${root.toString('hex')}`)
     }

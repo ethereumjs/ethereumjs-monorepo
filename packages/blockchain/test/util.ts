@@ -9,7 +9,7 @@ import { MemoryLevel } from 'memory-level'
 import { Blockchain } from '../src'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
-  const blocks = existingBlocks ? existingBlocks : []
+  const blocks = (existingBlocks !== null) ? existingBlocks : []
 
   const gasLimit = 8000000
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
@@ -41,7 +41,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
 }
 
 export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
-  const existingBlocks: Block[] = genesis ? [genesis] : []
+  const existingBlocks: Block[] = (genesis !== null) ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
   const blockchain = await Blockchain.create({

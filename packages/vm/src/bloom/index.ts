@@ -10,7 +10,7 @@ export class Bloom {
    * Represents a Bloom filter.
    */
   constructor(bitvector?: Buffer) {
-    if (!bitvector) {
+    if (bitvector == null) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
       if (bitvector.length !== BYTE_SIZE) throw new Error('bitvectors must be 2048 bits long')

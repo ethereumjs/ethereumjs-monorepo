@@ -315,9 +315,9 @@ async function executeBlocks(client: EthereumClient) {
   try {
     const blockRange = (args.executeBlocks as string).split('-').map((val) => {
       const reNum = /([0-9]+)/.exec(val)
-      const num = reNum ? parseInt(reNum[1]) : 0
+      const num = (reNum !== null) ? parseInt(reNum[1]) : 0
       const reTxs = /[0-9]+\[(.*)\]/.exec(val)
-      const txs = reTxs ? reTxs[1].split(',') : []
+      const txs = (reTxs !== null) ? reTxs[1].split(',') : []
       return [num, txs]
     })
     first = blockRange[0][0] as number

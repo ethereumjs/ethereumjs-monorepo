@@ -60,7 +60,7 @@ export class Trie {
     this._deleteFromDB = opts?.deleteFromDB ?? false
     this._persistRoot = opts?.persistRoot ?? false
 
-    if (opts?.root) {
+    if ((opts?.root) !== null) {
       this.root = opts.root
     }
   }
@@ -128,7 +128,7 @@ export class Trie {
   async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
     const { node, remaining } = await this.findPath(key, throwIfMissing)
     let value = null
-    if (node && remaining.length === 0) {
+    if ((node !== null) && remaining.length === 0) {
       value = node.value
     }
     return value
@@ -174,7 +174,7 @@ export class Trie {
   async del(key: Buffer): Promise<void> {
     await this.lock.wait()
     const { node, stack } = await this.findPath(key)
-    if (node) {
+    if (node !== null) {
       await this._deleteNode(key, stack)
     }
     await this.persistRoot()
@@ -207,7 +207,7 @@ export class Trie {
           } else {
             const branchIndex = keyRemainder[0]
             const branchNode = node.getBranch(branchIndex)
-            if (!branchNode) {
+            if (branchNode == null) {
               // there are no more nodes to find and we didn't find the key
               resolve({ node: null, remaining: keyRemainder, stack })
             } else {
@@ -285,7 +285,7 @@ export class Trie {
     let value = null
     let foundNode = null
     value = await this.db.get(node as Buffer)
-    if (value) {
+    if (value !== null) {
       foundNode = decodeNode(value)
     } else {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
@@ -310,7 +310,7 @@ export class Trie {
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
-    if (!lastNode) {
+    if (lastNode == null) {
       throw new Error('Stack underflow')
     }
 
@@ -470,7 +470,7 @@ export class Trie {
 
     let key = bufferToNibbles(k)
 
-    if (!parentNode) {
+    if (parentNode == null) {
       // the root here has to be a leaf.
       this.root = this.EMPTY_TRIE_ROOT
       return
@@ -505,7 +505,7 @@ export class Trie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      if (foundNode) {
+      if (foundNode !== null) {
         key = processBranchNode(
           key,
           branchNodeKey,
@@ -517,7 +517,7 @@ export class Trie {
       }
     } else {
       // simple removing a leaf and recaluclation the stack
-      if (parentNode) {
+      if (parentNode !== null) {
         stack.push(parentNode)
       }
 
@@ -537,17 +537,17 @@ export class Trie {
     let lastRoot
 
     // update nodes
-    while (stack.length) {
+    while (stack.length > 0) {
       const node = stack.pop() as TrieNode
       if (node instanceof LeafNode) {
         key.splice(key.length - node.key.length)
       } else if (node instanceof ExtensionNode) {
         key.splice(key.length - node.key.length)
-        if (lastRoot) {
+        if (lastRoot !== null) {
           node.value = lastRoot
         }
       } else if (node instanceof BranchNode) {
-        if (lastRoot) {
+        if (lastRoot !== null) {
           const branchKey = key.pop()
           node.setBranch(branchKey!, lastRoot)
         }
@@ -555,7 +555,7 @@ export class Trie {
       lastRoot = this._formatNode(node, stack.length === 0, opStack) as Buffer
     }
 
-    if (lastRoot) {
+    if (lastRoot !== null) {
       this.root = lastRoot
     }
 
@@ -715,8 +715,8 @@ export class Trie {
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bufferToNibbles(firstKey),
-      lastKey && bufferToNibbles(lastKey),
+      (firstKey !== null) && bufferToNibbles(firstKey),
+      (lastKey !== null) && bufferToNibbles(lastKey),
       keys.map(bufferToNibbles),
       values,
       proof,
@@ -786,7 +786,7 @@ export class Trie {
         fullKey = key.concat(node.key)
         // found leaf node!
         onFound(nodeRef, node, fullKey, walkController)
-      } else if (node instanceof BranchNode && node.value) {
+      } else if (node instanceof BranchNode && (node.value !== null)) {
         // found branch with value
         onFound(nodeRef, node, fullKey, walkController)
       } else {

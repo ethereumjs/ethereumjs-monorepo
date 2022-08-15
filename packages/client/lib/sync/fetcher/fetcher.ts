@@ -162,7 +162,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Dequeue all done tasks that completed in order
    */
   dequeue() {
-    for (let f = this.out.peek(); f && f.index <= this.processed; ) {
+    for (let f = this.out.peek(); (f !== null) && f.index <= this.processed; ) {
       this.processed++
       const job = this.out.remove()
       if (!this.push(job)) {
@@ -178,7 +178,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param autoRestart
    */
   enqueueTask(task: JobTask, autoRestart = false) {
-    if (this.errored || (!this.running && !autoRestart)) {
+    if ((this.errored !== null) || (!this.running && !autoRestart)) {
       return
     }
     const job: Job<JobTask, JobResult, StorageItem> = {
@@ -235,7 +235,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       job.peer!.idle = true
       job.result = this.process(job, result)
       jobStr = this.jobStr(job, true)
-      if (job.result) {
+      if (job.result !== null) {
         this.out.insert(job)
         this.dequeue()
       } else {
@@ -286,7 +286,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.next()
     }
 
-    if (error) {
+    if (error !== null) {
       this.error(error, jobItems[0], irrecoverable)
     }
   }
@@ -297,7 +297,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   next() {
     this.nextTasks()
     const job = this.in.peek()
-    if (!job) {
+    if (job == null) {
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
@@ -327,7 +327,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const peer = this.peer()
-    if (peer) {
+    if (peer !== null) {
       peer.idle = false
       this.in.remove()
       job.peer = peer
@@ -473,7 +473,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.destroyWhenDone) {
       this.destroy()
     }
-    if (this.errored) throw this.errored
+    if (this.errored !== null) throw this.errored
   }
 
   /**
@@ -516,7 +516,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.isBlockFetcherJobTask(job.task)) {
       let { first, count } = job.task
       let partialResult = ''
-      if (job.partialResult) {
+      if (job.partialResult !== null) {
         first = first + BigInt(job.partialResult.length)
         count -= job.partialResult.length
         partialResult = ` partialResults=${job.partialResult.length}`

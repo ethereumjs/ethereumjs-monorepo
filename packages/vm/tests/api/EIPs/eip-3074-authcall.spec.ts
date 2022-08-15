@@ -564,7 +564,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       let gas: bigint
       let gasAfterCall: bigint
       ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
-        if (gas && gasAfterCall === undefined) {
+        if (gas !== undefined && gasAfterCall === undefined) {
           gasAfterCall = e.gasLeft
         }
         if (e.opcode.name === 'AUTHCALL') {

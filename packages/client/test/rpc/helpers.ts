@@ -43,7 +43,7 @@ export function startRPC(
   const httpServer = isTruthy(wsServer)
     ? createWsRPCServerListener({ server, withEngineMiddleware })
     : createRPCServerListener({ server, withEngineMiddleware })
-  if (!httpServer) throw Error('Could not create server')
+  if (httpServer == null) throw Error('Could not create server')
   if (isTruthy(port)) httpServer.listen(port)
   return httpServer
 }

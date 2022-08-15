@@ -86,7 +86,7 @@ export class Message {
    */
   get codeAddress(): Address {
     const codeAddress = this._codeAddress ?? this.to
-    if (!codeAddress) {
+    if (codeAddress == null) {
       throw new Error('Missing codeAddress')
     }
     return codeAddress

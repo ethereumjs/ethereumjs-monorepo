@@ -75,7 +75,7 @@ export function getTestRLPXs(
   if (typeof capabilities === 'undefined') {
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
-  if (!common) {
+  if (common == null) {
     common = new Common({ chain: Chain.Mainnet })
   }
   const dpts = getTestDPTs(numRLPXs)

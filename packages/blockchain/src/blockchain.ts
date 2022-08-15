@@ -99,7 +99,7 @@ export class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   protected constructor(opts: BlockchainOptions = {}) {
-    if (opts.common) {
+    if (opts.common !== null) {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
@@ -115,10 +115,10 @@ export class Blockchain implements BlockchainInterface {
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db ? opts.db : new MemoryLevel()
+    this.db = (opts.db !== null) ? opts.db : new MemoryLevel()
     this.dbManager = new DBManager(this.db, this._common)
 
-    if (opts.consensus) {
+    if (opts.consensus !== null) {
       this.consensus = opts.consensus
     } else {
       switch (this._common.consensusAlgorithm()) {
@@ -155,7 +155,7 @@ export class Blockchain implements BlockchainInterface {
 
     this._lock = new Semaphore(1)
 
-    if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
+    if ((opts.genesisBlock !== null) && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
     }
   }
@@ -201,7 +201,7 @@ export class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (!genesisBlock) {
+    if (genesisBlock == null) {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
@@ -217,7 +217,7 @@ export class Blockchain implements BlockchainInterface {
 
     // If the DB has a genesis block, then verify that the genesis block in the
     // DB is indeed the Genesis block generated or assigned.
-    if (dbGenesisBlock && !genesisBlock.hash().equals(dbGenesisBlock.hash())) {
+    if ((dbGenesisBlock !== null) && !genesisBlock.hash().equals(dbGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
       )
@@ -225,7 +225,7 @@ export class Blockchain implements BlockchainInterface {
 
     const genesisHash = genesisBlock.hash()
 
-    if (!dbGenesisBlock) {
+    if (dbGenesisBlock == null) {
       // If there is no genesis block put the genesis block in the DB.
       // For that TD, the BlockOrHeader, and the Lookups have to be saved.
       const dbOps: DBOp[] = []
@@ -345,7 +345,7 @@ export class Blockchain implements BlockchainInterface {
    */
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return await this.runWithLock<BlockHeader>(async () => {
-      if (!this._headHeaderHash) throw new Error('No head header set')
+      if (this._headHeaderHash == null) throw new Error('No head header set')
       const block = await this._getBlock(this._headHeaderHash)
       return block.header
     })
@@ -356,7 +356,7 @@ export class Blockchain implements BlockchainInterface {
    */
   async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
-      if (!this._headBlockHash) throw new Error('No head block set')
+      if (this._headBlockHash == null) throw new Error('No head block set')
       const block = this._getBlock(this._headBlockHash)
       return block
     })
@@ -464,10 +464,10 @@ export class Blockchain implements BlockchainInterface {
       }
 
       // set total difficulty in the current context scope
-      if (this._headHeaderHash) {
+      if (this._headHeaderHash !== null) {
         currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
       }
-      if (this._headBlockHash) {
+      if (this._headBlockHash !== null) {
         currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
       }
 
@@ -759,7 +759,7 @@ export class Blockchain implements BlockchainInterface {
         }
         i++
         const nextBlockNumber = block.header.number + BigInt(reverse ? -1 : 1)
-        if (i !== 0 && skip && i % (skip + 1) !== 0) {
+        if (i !== 0 && skip > 0 && i % (skip + 1) !== 0) {
           return await nextBlock(nextBlockNumber)
         }
         blocks.push(block)
@@ -884,7 +884,7 @@ export class Blockchain implements BlockchainInterface {
     ops.push(DBOp.del(DBTarget.HashToNumber, { blockHash }))
     ops.push(DBOp.del(DBTarget.TotalDifficulty, { blockHash, blockNumber }))
 
-    if (!headHash) {
+    if (headHash == null) {
       return
     }
 
@@ -940,7 +940,7 @@ export class Blockchain implements BlockchainInterface {
         try {
           const nextBlock = await this._getBlock(nextBlockNumber)
           this._heads[name] = nextBlock.hash()
-          const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          const reorg = (lastBlock !== null) ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
           lastBlock = nextBlock
           await onBlock(nextBlock, reorg)
           nextBlockNumber++
@@ -979,7 +979,7 @@ export class Blockchain implements BlockchainInterface {
    * @param newHeader - the new block header
    */
   private async findCommonAncestor(newHeader: BlockHeader) {
-    if (!this._headHeaderHash) throw new Error('No head header set')
+    if (this._headHeaderHash == null) throw new Error('No head header set')
     const ancestorHeaders = new Set<BlockHeader>()
 
     let { header } = await this._getBlock(this._headHeaderHash)
@@ -1229,7 +1229,7 @@ export class Blockchain implements BlockchainInterface {
    * The genesis {@link Block} for the blockchain.
    */
   get genesisBlock(): Block {
-    if (!this._genesisBlock) throw new Error('genesis block not set (init may not be finished)')
+    if (this._genesisBlock == null) throw new Error('genesis block not set (init may not be finished)')
     return this._genesisBlock
   }
 
@@ -1247,7 +1247,7 @@ export class Blockchain implements BlockchainInterface {
       stateRoot,
     }
     if (common.consensusType() === 'poa') {
-      if (common.genesis().extraData && common.chainName() !== 'kovan') {
+      if (common.genesis().extraData !== undefined && common.chainName() !== 'kovan') {
         // Ensure exta data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
@@ -1263,7 +1263,7 @@ export class Blockchain implements BlockchainInterface {
    * All values are provided as hex-prefixed strings.
    */
   genesisState(): GenesisState {
-    if (this._customGenesisState) {
+    if (this._customGenesisState !== null) {
       return this._customGenesisState
     }
     // Use require statements here in favor of import statements

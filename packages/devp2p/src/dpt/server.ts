@@ -64,7 +64,7 @@ export class Server extends EventEmitter {
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
-    if (this._socket) {
+    if (this._socket !== null) {
       this._socket.once('listening', () => this.emit('listening'))
       this._socket.once('close', () => this.emit('close'))
       this._socket.on('error', (err) => this.emit('error', err))
@@ -82,14 +82,14 @@ export class Server extends EventEmitter {
     this._isAliveCheck()
     this._debug('call .bind')
 
-    if (this._socket) this._socket.bind(...args)
+    if (this._socket !== null) this._socket.bind(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
     this._debug('call .destroy')
 
-    if (this._socket) {
+    if (this._socket !== null) {
       this._socket.close(...args)
       this._socket = null
     }
@@ -117,7 +117,7 @@ export class Server extends EventEmitter {
         if (this._requests.get(rkey) !== undefined) {
           this._debug(
             `ping timeout: ${peer.address}:${peer.udpPort} ${
-              peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+              (peer.id !== null) ? formatLogId(peer.id.toString('hex'), verbose) : '-'
             }`
           )
           this._requests.delete(rkey)
@@ -142,7 +142,7 @@ export class Server extends EventEmitter {
 
   _send(peer: PeerInfo, typename: string, data: any) {
     const debugMsg = `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-      peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+      (peer.id !== null) ? formatLogId(peer.id.toString('hex'), verbose) : '-'
     })`
     this.debug(typename, debugMsg)
 
@@ -161,7 +161,7 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    if (this._socket && isTruthy(peer.udpPort))
+    if ((this._socket !== null) && isTruthy(peer.udpPort))
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }

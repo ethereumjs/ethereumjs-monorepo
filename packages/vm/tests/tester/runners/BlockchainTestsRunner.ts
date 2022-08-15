@@ -96,7 +96,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
   async function handleError(error: string | undefined, expectException: string) {
-    if (expectException) {
+    if (expectException !== undefined) {
       t.pass(`Expected exception ${expectException}`)
     } else {
       t.fail(error)

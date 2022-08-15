@@ -20,7 +20,7 @@ export class BranchNode {
   }
 
   get value(): Buffer | null {
-    return this._value && this._value.length > 0 ? this._value : null
+    return (this._value !== null) && this._value.length > 0 ? this._value : null
   }
 
   set value(v: Buffer | null) {

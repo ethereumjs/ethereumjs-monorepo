@@ -178,7 +178,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+    if ((this.cache.dataFee !== null) && this.cache.dataFee.hardfork === this.common.hardfork()) {
       return this.cache.dataFee.value
     }
 
@@ -288,7 +288,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     }
 
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
+      if (this.cache.hash == null) {
         this.cache.hash = Buffer.from(keccak256(this.serialize()))
       }
       return this.cache.hash

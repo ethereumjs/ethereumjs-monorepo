@@ -114,12 +114,12 @@ tape('simple merkle range proofs generation and verification', function (tester)
       const end = getRandomIntInclusive(start, entries.length - 1)
 
       const startKey = decreaseKey(entries[start][0])
-      if (!startKey || (start > 0 && entries[start - 1][0].compare(startKey) >= 0)) {
+      if ((startKey == null) || (start > 0 && entries[start - 1][0].compare(startKey) >= 0)) {
         continue
       }
 
       const endKey = increaseKey(entries[end][0])
-      if (!endKey || (end < entries.length - 1 && endKey.compare(entries[end + 1][0]) >= 0)) {
+      if ((endKey == null) || (end < entries.length - 1 && endKey.compare(entries[end + 1][0]) >= 0)) {
         continue
       }
 

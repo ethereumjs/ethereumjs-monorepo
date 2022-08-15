@@ -34,7 +34,7 @@ tape('Istanbul: EIP-1884', async (t) => {
 
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
-        if (testCase.err) {
+        if (testCase.err !== undefined) {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {
           st.assert(res.exceptionError === undefined)
