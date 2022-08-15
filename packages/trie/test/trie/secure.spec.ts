@@ -71,7 +71,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new SecureTrie({ db: new LevelDB() , persistRoot: true })
+      const trie = new SecureTrie({ db: new LevelDB(), persistRoot: true })
 
       try {
         await trie.put(ROOT_DB_KEY, Buffer.from('bar'))
