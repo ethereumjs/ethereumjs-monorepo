@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { StateManager } from '@ethereumjs/statemanager'
+import type { StateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, isFalsy, isTruthy, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'

@@ -16,8 +16,8 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 11,
         },
-      //  sourceMap: true,
-        exclude:['async_hooks'],
+        //  sourceMap: true,
+        exclude: ['async_hooks'],
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12
@@ -29,11 +29,13 @@ module.exports = function (config) {
           },
         },
         transforms: [
-          require("karma-typescript-es6-transform")({
-            presets:[
-              ["@babel/preset-env", {"exclude": ["@babel/plugin-transform-exponentiation-operator"]}
-              ]
-            ]
+          require('karma-typescript-es6-transform')({
+            presets: [
+              [
+                '@babel/preset-env',
+                { exclude: ['@babel/plugin-transform-exponentiation-operator'] },
+              ],
+            ],
           }),
           function (context, callback) {
             // you may ask why on earth do we need this...,
@@ -51,7 +53,7 @@ module.exports = function (config) {
       tsconfig: './tsconfig.karma.json',
     },
 
-    browsers: ['FirefoxHeadless','ChromeHeadless'],
+    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
 
     colors: true,
 

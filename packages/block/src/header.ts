@@ -1,11 +1,5 @@
-import {
-  Chain,
-  CliqueConfig,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-} from '@ethereumjs/common'
+import type { CliqueConfig } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -29,7 +23,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 
 interface HeaderCache {
   hash: Buffer | undefined

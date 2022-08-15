@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
+import type { EVM } from '@ethereumjs/evm'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'

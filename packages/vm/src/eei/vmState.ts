@@ -1,10 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
-import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
-import { AccountFields, StateManager } from '@ethereumjs/statemanager'
-import { AccessList, AccessListItem } from '@ethereumjs/tx'
+import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
+import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
+import type { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, isTruthy, toBuffer } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import type { Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 const Set = require('core-js-pure/es/set')
 
 type AddressHex = string

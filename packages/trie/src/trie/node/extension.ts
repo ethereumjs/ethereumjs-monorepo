@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
-import { Nibbles } from '../../types'
+import type { Nibbles } from '../../types'
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
 import { nibblesToBuffer } from '../../util/nibbles'
 

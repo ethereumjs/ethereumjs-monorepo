@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 
-import { Chain } from '../blockchain'
-import { Config } from '../config'
-import { Peer } from '../net/peer/peer'
-import { PeerPool } from '../net/peerpool'
+import type { Chain } from '../blockchain'
+import type { Config } from '../config'
+import type { Peer } from '../net/peer/peer'
+import type { PeerPool } from '../net/peerpool'
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
 import { short } from '../util'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+import type { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -83,12 +83,12 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null{
-    return this._fetcher;
+  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+    return this._fetcher
   }
 
-  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**

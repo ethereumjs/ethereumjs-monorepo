@@ -5,8 +5,8 @@
 
 import { NOISE } from '@chainsafe/libp2p-noise'
 import * as Libp2p from 'libp2p'
-import PeerId from 'peer-id'
-import { Multiaddr } from 'multiaddr'
+import type PeerId from 'peer-id'
+import type { Multiaddr } from 'multiaddr'
 import * as Bootstrap from 'libp2p-bootstrap'
 const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')

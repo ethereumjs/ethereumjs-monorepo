@@ -4,8 +4,9 @@ import { Account, bigIntToBuffer } from '@ethereumjs/util'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
-
-(BigInt.prototype as any).toJSON = function () {return this.toString();};
+;(BigInt.prototype as any).toJSON = function () {
+  return this.toString()
+}
 
 tape('[SnapProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -69,7 +70,10 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
     t.ok(res)
 
-    t.ok(JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))), 'correctly encoded reqId')
+    t.ok(
+      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
     t.ok(JSON.stringify(res2[1]) === JSON.stringify(root), 'correctly encoded root')
     t.ok(JSON.stringify(res2[2]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(res2[3]) === JSON.stringify(limit), 'correctly encoded limit')
@@ -129,12 +133,18 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
     t.ok(res)
 
-    t.ok(JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))), 'correctly encoded reqId')
+    t.ok(
+      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
     t.ok(JSON.stringify(res2[1]) === JSON.stringify(root), 'correctly encoded root')
     t.ok(JSON.stringify(res2[2]) === JSON.stringify(accounts), 'correctly encoded accounts')
     t.ok(JSON.stringify(res2[3]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(res2[4]) === JSON.stringify(limit), 'correctly encoded limit')
-    t.ok(JSON.stringify(res2[5]) === JSON.stringify(bigIntToBuffer(bytes)), 'correctly encoded bytes')
+    t.ok(
+      JSON.stringify(res2[5]) === JSON.stringify(bigIntToBuffer(bytes)),
+      'correctly encoded bytes'
+    )
     t.ok(res2)
     t.end()
   })
@@ -166,9 +176,15 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
     t.ok(res)
 
-    t.ok(JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))), 'correctly encoded reqId')
+    t.ok(
+      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
     t.ok(JSON.stringify(res2[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
-    t.ok(JSON.stringify(res2[2]) === JSON.stringify(bigIntToBuffer(bytes)), 'correctly encoded bytes')
+    t.ok(
+      JSON.stringify(res2[2]) === JSON.stringify(bigIntToBuffer(bytes)),
+      'correctly encoded bytes'
+    )
     t.ok(res2)
     t.end()
   })

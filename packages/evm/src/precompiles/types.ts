@@ -1,7 +1,7 @@
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 
-import { ExecResult } from '../evm'
-import { EVMInterface } from '../types'
+import type { ExecResult } from '../evm'
+import type { EVMInterface } from '../types'
 
 export interface PrecompileFunc {
   (input: PrecompileInput): Promise<ExecResult> | ExecResult

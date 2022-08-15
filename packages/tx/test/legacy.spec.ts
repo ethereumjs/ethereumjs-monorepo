@@ -11,8 +11,9 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Transaction, TxData } from '../src'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import type { TxData } from '../src'
+import { Transaction } from '../src'
+import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
@@ -421,7 +422,8 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' ||
+          signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn't be EIP155 encoded"
       )
 
@@ -431,7 +433,8 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' ||
+          signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn' be EIP155 encoded"
       )
 
@@ -493,7 +496,7 @@ tape('[Transaction]', function (t) {
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
-      get () {
+      get() {
         return newCommon
       },
     })

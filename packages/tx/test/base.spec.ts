@@ -16,8 +16,8 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '../src'
-import { BaseTransaction } from '../src/baseTransaction'
-import { TxsJsonEntry } from './types'
+import type { BaseTransaction } from '../src/baseTransaction'
+import type { TxsJsonEntry } from './types'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)

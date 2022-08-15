@@ -2,7 +2,8 @@ import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Cache, getCb, putCb } from '../src/cache'
+import type { getCb, putCb } from '../src/cache'
+import { Cache } from '../src/cache'
 import { createAccount } from './util'
 
 tape('cache initialization', (t) => {

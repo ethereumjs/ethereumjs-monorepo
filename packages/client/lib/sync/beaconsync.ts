@@ -6,8 +6,10 @@ import type { Peer } from '../net/peer/peer'
 import { Event } from '../types'
 import { short } from '../util'
 import { ReverseBlockFetcher } from './fetcher'
-import { errSyncReorged, Skeleton } from './skeleton'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { Skeleton } from './skeleton'
+import { errSyncReorged } from './skeleton'
+import type { SynchronizerOptions } from './sync'
+import { Synchronizer } from './sync'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -45,14 +47,14 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   get fetcher(): ReverseBlockFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof ReverseBlockFetcher)){
-      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: ReverseBlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**

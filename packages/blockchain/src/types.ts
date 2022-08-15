@@ -1,9 +1,9 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { AbstractLevel } from 'abstract-level'
 
-import { Consensus } from './consensus'
-import { GenesisState } from './genesisStates'
+import type { Consensus } from './consensus'
+import type { GenesisState } from './genesisStates'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -44,7 +44,7 @@ export interface BlockchainInterface {
    * Returns a copy of the blockchain
    */
   copy(): BlockchainInterface
-  
+
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
    * @param header - header to be validated

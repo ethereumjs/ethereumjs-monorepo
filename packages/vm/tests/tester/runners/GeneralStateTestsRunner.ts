@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { isTruthy, toBuffer } from '@ethereumjs/util'
-import * as tape from 'tape'
+import type * as tape from 'tape'
 
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 

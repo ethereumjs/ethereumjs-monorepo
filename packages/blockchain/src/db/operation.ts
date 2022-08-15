@@ -10,7 +10,7 @@ import {
   numberToHashKey,
   tdKey,
 } from './constants'
-import { CacheMap } from './manager'
+import type { CacheMap } from './manager'
 
 export enum DBTarget {
   Heads,

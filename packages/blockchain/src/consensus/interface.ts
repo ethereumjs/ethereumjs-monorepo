@@ -1,7 +1,7 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { ConsensusAlgorithm } from '@ethereumjs/common'
 
-import { Blockchain } from '..'
+import type { Blockchain } from '..'
 
 /**
  * Interface that a consensus class needs to implement.

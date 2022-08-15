@@ -10,12 +10,8 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import {
-  AccessList,
-  AccessListBufferItem,
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-} from '../src'
+import type { AccessList, AccessListBufferItem } from '../src'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
@@ -593,7 +589,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
-      get () {
+      get() {
         return newCommon
       },
     })

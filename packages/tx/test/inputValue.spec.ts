@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, AddressLike, BigIntLike, BufferLike, toBuffer } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
+import { Address, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Transaction } from '../src'

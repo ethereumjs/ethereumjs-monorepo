@@ -1,8 +1,9 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
+import type { ExecResult } from '../evm'
+import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
-import { PrecompileInput } from './types'
+import type { PrecompileInput } from './types'
 import { gasDiscountPairs } from './util/bls12_381'
 const {
   BLS12_381_ToG2Point,

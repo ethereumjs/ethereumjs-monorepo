@@ -2,13 +2,14 @@ import type { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 
-import { VMExecution } from '../execution'
-import { Peer } from '../net/peer/peer'
+import type { VMExecution } from '../execution'
+import type { Peer } from '../net/peer/peer'
 import type { TxPool } from '../service/txpool'
 import { Event } from '../types'
 import { short } from '../util'
 import { BlockFetcher } from './fetcher'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { SynchronizerOptions } from './sync'
+import { Synchronizer } from './sync'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
@@ -54,14 +55,14 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   get fetcher(): BlockFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof BlockFetcher)){
-      throw Error(`Invalid Fetcher, expected BlockFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof BlockFetcher)) {
+      throw Error(`Invalid Fetcher, expected BlockFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: BlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: BlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**

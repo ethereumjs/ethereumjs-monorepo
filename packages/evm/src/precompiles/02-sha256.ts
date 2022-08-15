@@ -1,8 +1,9 @@
 import { isFalsy, toBuffer } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
-import { ExecResult, OOGResult } from '../evm'
-import { PrecompileInput } from './types'
+import type { ExecResult } from '../evm'
+import { OOGResult } from '../evm'
+import type { PrecompileInput } from './types'
 
 export function precompile02(opts: PrecompileInput): ExecResult {
   if (isFalsy(opts.data)) throw new Error('opts.data missing but required')

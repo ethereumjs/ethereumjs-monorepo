@@ -1,4 +1,5 @@
-import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import type { BlockOptions } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'

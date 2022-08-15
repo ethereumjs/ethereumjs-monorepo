@@ -1,4 +1,4 @@
-import { BatchDBOp, Checkpoint, DB } from '../types'
+import type { BatchDBOp, Checkpoint, DB } from '../types'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,

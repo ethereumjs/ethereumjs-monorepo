@@ -3,12 +3,14 @@
 import util from 'util'
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
+import type { NestedUint8Array } from '@ethereumjs/util'
+import { toBuffer, zeros } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 
 import * as tape from 'tape'
 
-import { Block, BlockBuffer } from '../src'
+import type { BlockBuffer } from '../src'
+import { Block } from '../src'
 import { blockFromRpc } from '../src/from-rpc'
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'

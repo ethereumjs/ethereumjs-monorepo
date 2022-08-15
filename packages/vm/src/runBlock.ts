@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { EVMStateAccess } from '@ethereumjs/evm'
+import type { EVMStateAccess } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
@@ -24,7 +24,7 @@ import type {
   RunBlockResult,
   TxReceipt,
 } from './types'
-import { VM } from './vm'
+import type { VM } from './vm'
 
 const debug = createDebugLogger('vm:block')
 

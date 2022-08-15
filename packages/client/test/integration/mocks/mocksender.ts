@@ -1,7 +1,7 @@
-import EventEmitter from 'events'
+import type EventEmitter from 'events'
 
 import { Sender } from '../../../lib/net/protocol'
-import { Pushable } from './mockpeer'
+import type { Pushable } from './mockpeer'
 
 export class MockSender extends Sender {
   public protocol: string

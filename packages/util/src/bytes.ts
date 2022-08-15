@@ -1,6 +1,6 @@
 import { assertIsArray, assertIsBuffer, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
-import {
+import type {
   NestedBufferArray,
   NestedUint8Array,
   PrefixedHexString,

@@ -1,4 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import type { BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 

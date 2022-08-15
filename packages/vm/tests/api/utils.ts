@@ -1,11 +1,12 @@
-import { Block } from '@ethereumjs/block'
+import type { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
+import { Account } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { VMOpts } from '../../src/types'
+import type { VMOpts } from '../../src/types'
 import { VM } from '../../src/vm'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {

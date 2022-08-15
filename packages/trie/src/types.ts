@@ -1,5 +1,5 @@
-import { BranchNode, ExtensionNode, LeafNode } from './trie'
-import { WalkController } from './util/walkController'
+import type { BranchNode, ExtensionNode, LeafNode } from './trie'
+import type { WalkController } from './util/walkController'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 

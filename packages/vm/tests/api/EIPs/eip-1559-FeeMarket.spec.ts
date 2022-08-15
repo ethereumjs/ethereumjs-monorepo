@@ -1,10 +1,10 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import type { TypedTransaction } from '@ethereumjs/tx'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
-  TypedTransaction,
 } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import * as tape from 'tape'
