@@ -113,7 +113,7 @@ export class DBOp {
     dbOperation.baseDBOp.value = value
     dbOperation.baseDBOp.type = 'put'
 
-    if (operationTarget == DBTarget.Heads) {
+    if (operationTarget === DBTarget.Heads) {
       dbOperation.baseDBOp.valueEncoding = 'json'
     } else {
       dbOperation.baseDBOp.valueEncoding = 'binary'
@@ -130,10 +130,10 @@ export class DBOp {
 
   public updateCache(cacheMap: CacheMap) {
     if (isTruthy(this.cacheString) && isTruthy(cacheMap[this.cacheString])) {
-      if (this.baseDBOp.type == 'put') {
+      if (this.baseDBOp.type === 'put') {
         Buffer.isBuffer(this.baseDBOp.value) &&
           cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
-      } else if (this.baseDBOp.type == 'del') {
+      } else if (this.baseDBOp.type === 'del') {
         cacheMap[this.cacheString].del(this.baseDBOp.key)
       } else {
         throw new Error('unsupported db operation on cache')

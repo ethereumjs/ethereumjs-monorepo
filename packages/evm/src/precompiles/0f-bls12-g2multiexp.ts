@@ -18,7 +18,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  if (inputData.length == 0) {
+  if (inputData.length === 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
 
@@ -30,7 +30,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   let gasDiscountMultiplier
 
   if (numPairs <= gasDiscountArray.length) {
-    if (numPairs == 0) {
+    if (numPairs === 0) {
       gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
     } else {
       gasDiscountMultiplier = gasDiscountArray[numPairs - 1][1]
@@ -45,7 +45,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length % 288 != 0) {
+  if (inputData.length % 288 !== 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 

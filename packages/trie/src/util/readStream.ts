@@ -30,7 +30,7 @@ export class TrieReadStream extends Readable {
         }
       })
     } catch (error: any) {
-      if (error.message == 'Missing node in DB') {
+      if (error.message === 'Missing node in DB') {
         // pass
       } else {
         throw error

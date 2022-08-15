@@ -44,19 +44,19 @@ export interface BlockchainInterface {
    * Returns a copy of the blockchain
    */
   copy(): BlockchainInterface
-
-  /**
-   * Returns the specified iterator head.
-   *
-   * @param name - Optional name of the iterator head (default: 'vm')
-   */
-
+  
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
    * @param header - header to be validated
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   validateHeader(header: BlockHeader, height?: bigint): Promise<void>
+
+  /**
+   * Returns the specified iterator head.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
   getIteratorHead?(name?: string): Promise<Block>
 
   /**

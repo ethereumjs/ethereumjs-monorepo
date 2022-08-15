@@ -146,7 +146,7 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   const p_y = input.slice(80, 128).toString('hex')
 
   const ZeroString48Bytes = '0'.repeat(96)
-  if (p_x == p_y && p_x == ZeroString48Bytes) {
+  if (p_x === p_y && p_x === ZeroString48Bytes) {
     return new mcl.G1()
   }
 
@@ -183,11 +183,11 @@ function BLS12_381_FromG1Point(input: any): Buffer {
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
-  if (decodeStr == '0') {
+  if (decodeStr === '0') {
     return Buffer.alloc(128, 0)
   }
 
-  // note: decoded[0] == 1
+  // note: decoded[0] === 1
   const xval = padToEven(decoded[1])
   const yval = padToEven(decoded[2])
 
@@ -254,12 +254,12 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
 function BLS12_381_FromG2Point(input: any): Buffer {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
-  if (decodeStr == '0') {
+  if (decodeStr === '0') {
     return Buffer.alloc(256, 0)
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
-  // note: decoded[0] == 1
+  // note: decoded[0] === 1
   const x_1 = padToEven(decoded[1])
   const x_2 = padToEven(decoded[2])
   const y_1 = padToEven(decoded[3])

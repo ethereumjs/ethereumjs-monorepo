@@ -422,7 +422,7 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn't be EIP155 encoded"
       )
 
@@ -432,7 +432,7 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' || signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn' be EIP155 encoded"
       )
 
@@ -441,7 +441,7 @@ tape('[Transaction]', function (t) {
   )
 
   t.test(
-    'constructor: throw on legacy transactions which have v != 27 and v != 28 and v < 37',
+    'constructor: throw on legacy transactions which have v !== 27 and v !== 28 and v < 37',
     function (st) {
       function getTxData(v: number) {
         return {

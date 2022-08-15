@@ -190,7 +190,7 @@ export class BeaconSynchronizer extends Synchronizer {
       )
       return true
     } catch (error) {
-      if (error == errSyncReorged) {
+      if (error === errSyncReorged) {
         this.config.logger.debug(
           `Beacon sync reorged, new head number=${block.header.number} hash=${short(
             block.header.hash()

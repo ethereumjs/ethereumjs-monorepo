@@ -35,7 +35,7 @@ export function nibblesToBuffer(arr: Nibbles): Buffer {
 
 /**
  * Compare two nibble array.
- * * `0` is returned if `n2` == `n1`.
+ * * `0` is returned if `n2` === `n1`.
  * * `1` is returned if `n2` > `n1`.
  * * `-1` is returned if `n2` < `n1`.
  * @param n1 - Nibble array

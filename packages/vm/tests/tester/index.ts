@@ -102,7 +102,7 @@ async function runTests() {
     let str = testGetterArgs.forkConfig
     const indicies = []
     for (let i = 0; i < str.length; i++) {
-      if (str[i] == '+') {
+      if (str[i] === '+') {
         indicies.push(i)
       }
     }
@@ -149,7 +149,7 @@ async function runTests() {
   console.log(delimiter)
   console.log(`| RunnerArgs`.padEnd(fillWidth) + ' |')
   for (const [key, value] of Object.entries(formattedRunnerArgs)) {
-    if (key == 'common') {
+    if (key === 'common') {
       const hf = (value as Common).hardfork()
       console.log(`| ${key.padEnd(fillParam)}: ${hf}`.padEnd(fillWidth) + ' |')
     } else {

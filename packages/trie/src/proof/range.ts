@@ -331,7 +331,7 @@ async function verifyProof(
       value,
     }
   } catch (err: any) {
-    if (err.message == 'Missing node in DB') {
+    if (err.message === 'Missing node in DB') {
       throw new Error('Invalid proof provided')
     } else {
       throw err
