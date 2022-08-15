@@ -306,6 +306,18 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
+
+  t.test('should validate nonce length', (st) => {
+    const nonce = Buffer.alloc(5)
+    try {
+      BlockHeader.fromHeaderData({ nonce })
+      st.fail('should throw on invalid nonce length')
+    }
+    catch (err:any) {
+      st.ok(err.message.includes('nonce must be 8 bytes'), 'contans nonce length error message')
+    }
+    st.end()
+  })
   /*
   TODO: Decide if we need to move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
