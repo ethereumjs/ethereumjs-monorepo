@@ -6,13 +6,15 @@
 import { NOISE } from '@chainsafe/libp2p-noise'
 import * as LibP2P from 'libp2p'
 import * as Bootstrap from 'libp2p-bootstrap'
+
 import type { Multiaddr } from 'multiaddr'
 import type * as PeerId from 'peer-id'
+
+const KadDht = require('libp2p-kad-dht')
+const MPLEX = require('libp2p-mplex')
 const TCP = require('libp2p-tcp')
 const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
-const KadDht = require('libp2p-kad-dht')
-const MPLEX = require('libp2p-mplex')
 
 export interface Libp2pNodeOptions {
   /* Peer id */

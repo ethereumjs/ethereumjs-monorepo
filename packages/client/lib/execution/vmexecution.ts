@@ -1,4 +1,3 @@
-import type { Block } from '@ethereumjs/block'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -9,15 +8,18 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
 import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
-import type { ExecutionOptions } from './execution'
+
 import { Execution } from './execution'
 import { ReceiptsManager } from './receipt'
+
+import type { ExecutionOptions } from './execution'
+import type { Block } from '@ethereumjs/block'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM

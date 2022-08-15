@@ -1,14 +1,16 @@
 import { randomBytes } from 'crypto'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import ms = require('ms')
-import type { Debugger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 
 import { DNS } from '../dns'
 import { buffer2int, devp2pDebug, pk2id } from '../util'
+
 import { BanList } from './ban-list'
 import { KBucket } from './kbucket'
 import { Server as DPTServer } from './server'
+
+import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 

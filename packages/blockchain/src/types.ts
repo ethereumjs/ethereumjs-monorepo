@@ -1,9 +1,8 @@
+import type { Consensus } from './consensus'
+import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { AbstractLevel } from 'abstract-level'
-
-import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 

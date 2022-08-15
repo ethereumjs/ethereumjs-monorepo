@@ -1,13 +1,15 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import type { Common } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 
-import type { SyncMode } from '../../lib/config'
 import { Config } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
+
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
+
+import type { SyncMode } from '../../lib/config'
+import type { Common } from '@ethereumjs/common'
 
 interface SetupOptions {
   location?: string

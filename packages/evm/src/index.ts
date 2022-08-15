@@ -1,5 +1,5 @@
 import { EVM, EVMResult, ExecResult } from './evm'
-import { ERROR as EvmErrorMessage, EvmError } from './exceptions'
+import { EvmError, ERROR as EvmErrorMessage } from './exceptions'
 import { InterpreterStep } from './interpreter'
 import { Message } from './message'
 import { getActivePrecompiles } from './precompiles'

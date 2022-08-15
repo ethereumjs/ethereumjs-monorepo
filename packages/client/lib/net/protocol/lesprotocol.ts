@@ -1,4 +1,3 @@
-import type { BlockHeaderBuffer } from '@ethereumjs/block'
 import { BlockHeader } from '@ethereumjs/block'
 import {
   bigIntToBuffer,
@@ -8,10 +7,12 @@ import {
   isTruthy,
 } from '@ethereumjs/util'
 
+import { Protocol } from './protocol'
+
 import type { Chain } from '../../blockchain'
 import type { FlowControl } from './flowcontrol'
 import type { Message, ProtocolOptions } from './protocol'
-import { Protocol } from './protocol'
+import type { BlockHeaderBuffer } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */

@@ -6,6 +6,7 @@ import * as td from 'testdouble'
 import { Event } from '../../lib/types'
 import { parseCustomParams } from '../../lib/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+
 import { destroy, setup, wait } from './util'
 
 const originalValidate = BlockHeader.prototype._consensusFormatValidation

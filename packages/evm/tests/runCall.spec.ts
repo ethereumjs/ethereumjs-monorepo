@@ -5,6 +5,7 @@ import * as tape from 'tape'
 
 import { EVM } from '../src'
 import { ERROR } from '../src/exceptions'
+
 import { getEEI } from './utils'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.

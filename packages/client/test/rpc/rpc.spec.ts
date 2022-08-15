@@ -1,10 +1,13 @@
 import { isFalsy } from '@ethereumjs/util'
-import type { TAlgorithm } from 'jwt-simple'
 import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+
 import { closeRPC, startRPC } from './helpers'
+
+import type { TAlgorithm } from 'jwt-simple'
+
 const request = require('supertest')
 
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))

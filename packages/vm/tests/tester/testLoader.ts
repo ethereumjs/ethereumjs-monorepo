@@ -1,7 +1,7 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import { isTruthy } from '@ethereumjs/util'
+import * as fs from 'fs'
 import * as dir from 'node-dir'
+import * as path from 'path'
 
 import { DEFAULT_TESTS_PATH } from './config'
 

@@ -1,6 +1,7 @@
 import * as test from 'tape'
 
 import * as devp2p from '../../src'
+
 import * as util from './util'
 
 const capabilities = [devp2p.SNAP.snap]

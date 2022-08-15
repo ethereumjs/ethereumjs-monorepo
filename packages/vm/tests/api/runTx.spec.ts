@@ -1,13 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, isTruthy, MAX_INTEGER } from '@ethereumjs/util'
+import { Account, Address, MAX_INTEGER, isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
+
 import { createAccount, getTransaction, setBalance } from './utils'
+
+import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {

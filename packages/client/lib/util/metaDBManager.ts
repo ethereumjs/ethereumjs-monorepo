@@ -1,8 +1,8 @@
 import { intToBuffer } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
+import type { AbstractLevel } from 'abstract-level'
 
 const encodingOpts = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
 

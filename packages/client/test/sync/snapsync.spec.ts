@@ -1,9 +1,9 @@
-import * as tape from 'tape'
-
-import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 
 tape('[SnapSynchronizer]', async (t) => {
   class PeerPool {

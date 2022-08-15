@@ -5,6 +5,7 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VmState } from '../../src/eei/vmState'
+
 import { createAccount, isRunningInKarma } from './utils'
 
 const StateManager = DefaultStateManager

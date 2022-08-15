@@ -1,6 +1,3 @@
-// explicitly import `inherits` to fix karma-typescript issue
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { inherits } from 'util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
@@ -14,8 +11,12 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
+// explicitly import `inherits` to fix karma-typescript issue
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { inherits } from 'util'
 
 import { DefaultStateManager } from '../src'
+
 import { createAccount } from './util'
 
 tape('StateManager', (t) => {

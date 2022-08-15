@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
-  bufferToBigInt,
-  isTruthy,
   MAX_INTEGER,
   MAX_UINT64,
-  privateToPublic,
   SECP256K1_ORDER,
+  bufferToBigInt,
+  isTruthy,
+  privateToPublic,
   toBuffer,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -16,6 +16,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '../src'
+
 import type { BaseTransaction } from '../src/baseTransaction'
 import type { TxsJsonEntry } from './types'
 

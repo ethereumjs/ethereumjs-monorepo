@@ -1,13 +1,14 @@
-import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import { isTruthy } from '@ethereumjs/util'
 
-import type { CustomOpcode } from '../types'
-import type { OpHandler } from './functions'
 import { handlers } from './functions'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas'
 import { dynamicGasHandlers } from './gas'
 import { getFullname } from './util'
+
+import type { CustomOpcode } from '../types'
+import type { OpHandler } from './functions'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas'
+import type { Common } from '@ethereumjs/common'
 
 export class Opcode {
   readonly code: number

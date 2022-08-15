@@ -4,7 +4,9 @@ import * as minimist from 'minimist'
 import * as tape from 'tape'
 
 import { TransactionFactory } from '../src'
+
 import { getTests } from './testLoader'
+
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
 const argv = minimist(process.argv.slice(2))

@@ -1,10 +1,11 @@
 import { Block } from '@ethereumjs/block'
-import type { EVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bufferToHex, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
 
 tape('VM events', (t) => {
   const privKey = toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')

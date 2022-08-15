@@ -1,19 +1,21 @@
-import { randomBytes } from 'crypto'
-import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 import {
   ETH as Devp2pETH,
-  SNAP as Devp2pSNAP,
   LES as Devp2pLES,
   RLPx as Devp2pRLPx,
+  SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
 import { isTruthy } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 
 import { Event } from '../../types'
-import type { Protocol } from '../protocol'
 import { RlpxSender } from '../protocol'
+
+import { Peer } from './peer'
+
+import type { Protocol } from '../protocol'
 import type { RlpxServer } from '../server'
 import type { PeerOptions } from './peer'
-import { Peer } from './peer'
+import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities: any = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,

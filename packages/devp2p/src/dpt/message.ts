@@ -5,6 +5,7 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import * as ip from 'ip'
 
 import { assertEq, buffer2int, int2buffer, keccak256, unstrictDecode } from '../util'
+
 import type { PeerInfo } from './dpt'
 
 const debug = createDebugLogger('devp2p:dpt:server')

@@ -1,10 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { Transaction } from '@ethereumjs/tx'
-import type { ECDSASignature } from '@ethereumjs/util'
 import {
   Address,
   bigIntToBuffer,
@@ -20,6 +17,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { ECDSASignature } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,

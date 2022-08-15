@@ -1,13 +1,14 @@
-import type { Blockchain } from '@ethereumjs/blockchain'
-import type { AbstractLevel } from 'abstract-level'
-
 import { version as packageVersion } from '../package.json'
+
 import { Chain } from './blockchain'
-import type { Config } from './config'
 import { SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
-import type { MultiaddrLike } from './types'
 import { Event } from './types'
+
+import type { Config } from './config'
+import type { MultiaddrLike } from './types'
+import type { Blockchain } from '@ethereumjs/blockchain'
+import type { AbstractLevel } from 'abstract-level'
 
 export interface EthereumClientOptions {
   /** Client configuration */

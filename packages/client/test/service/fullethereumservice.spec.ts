@@ -1,6 +1,4 @@
 import { Common } from '@ethereumjs/common'
-import type { Log } from '@ethereumjs/evm/dist/types'
-
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -9,6 +7,8 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { parseCustomParams } from '../../lib/util'
 import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
+
+import type { Log } from '@ethereumjs/evm/dist/types'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {

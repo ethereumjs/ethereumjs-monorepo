@@ -1,17 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import type {
-  AccessListEIP2930Transaction,
-  AccessListItem,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
 import { Capability } from '@ethereumjs/tx'
-import { Address, isFalsy, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, isFalsy, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
+
 import type {
   AfterTxEvent,
   BaseTxReceipt,
@@ -22,6 +16,13 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
+import type {
+  AccessListEIP2930Transaction,
+  AccessListItem,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')

@@ -1,11 +1,12 @@
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
+import debug from 'debug'
 import { Level } from 'level'
 
-import debug from 'debug'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { EthereumClient } from '../lib/client'
-import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
+import { parseMultiaddrs } from '../lib/util'
+
 import { getLogger } from './logging'
 // Blockchain
 export * from '../lib/blockchain/chain'

@@ -1,8 +1,9 @@
-import type { Common } from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
 
-import type { AccessList, AccessListBuffer, AccessListItem } from './types'
 import { isAccessList } from './types'
+
+import type { AccessList, AccessListBuffer, AccessListItem } from './types'
+import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')

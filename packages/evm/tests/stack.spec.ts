@@ -3,6 +3,7 @@ import * as tape from 'tape'
 
 import { EVM } from '../src'
 import { Stack } from '../src/stack'
+
 import { createAccount, getEEI } from './utils'
 
 tape('Stack', (t) => {
