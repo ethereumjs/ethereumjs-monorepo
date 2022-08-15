@@ -1,95 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660326271906,
+  "lastUpdate": 1660554151426,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a5273af40974ab66066c69c3fabbb7d9bd954c16",
-          "message": "feat(trie): implement root hash persistence (#2071)\n\n* feat(trie): implement root hash persistence\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2022-07-28T10:13:39-04:00",
-          "tree_id": "ccf2c5c94f694337cbc7875e31643811af117d16",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a5273af40974ab66066c69c3fabbb7d9bd954c16"
-        },
-        "date": 1659017833122,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "1k-3-32-ran",
-            "value": 23536,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "1k-5-32-ran",
-            "value": 22092,
-            "range": "±5.64%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "1k-9-32-ran",
-            "value": 23227,
-            "range": "±1.37%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "1k-1k-32-ran",
-            "value": 22914,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "1k-1k-32-mir",
-            "value": 32185,
-            "range": "±0.92%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Checkpointing: 100 iterations",
-            "value": 834,
-            "range": "±34.92%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Checkpointing: 500 iterations",
-            "value": 201,
-            "range": "±8.95%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Checkpointing: 1000 iterations",
-            "value": 104,
-            "range": "±3.98%",
-            "unit": "ops/sec",
-            "extra": "63 samples"
-          },
-          {
-            "name": "Checkpointing: 5000 iterations",
-            "value": 18.46,
-            "range": "±18.26%",
-            "unit": "ops/sec",
-            "extra": "39 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2610,6 +2523,93 @@ window.BENCHMARK_DATA = {
             "range": "±6.59%",
             "unit": "ops/sec",
             "extra": "38 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b102f67c30f27963bbb20afc9ae3438bff95c940",
+          "message": "chore: wip (#2127)\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-15T11:00:04+02:00",
+          "tree_id": "95e57b0a81afe068be552a627778ceefb688acb3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b102f67c30f27963bbb20afc9ae3438bff95c940"
+        },
+        "date": 1660554150430,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "1k-3-32-ran",
+            "value": 23776,
+            "range": "±2.75%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "1k-5-32-ran",
+            "value": 22209,
+            "range": "±7.53%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-9-32-ran",
+            "value": 23354,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "1k-1k-32-ran",
+            "value": 23191,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "1k-1k-32-mir",
+            "value": 31913,
+            "range": "±0.96%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Checkpointing: 100 iterations",
+            "value": 945,
+            "range": "±6.59%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Checkpointing: 500 iterations",
+            "value": 152,
+            "range": "±42.47%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
+          },
+          {
+            "name": "Checkpointing: 1000 iterations",
+            "value": 91.21,
+            "range": "±18.31%",
+            "unit": "ops/sec",
+            "extra": "59 samples"
+          },
+          {
+            "name": "Checkpointing: 5000 iterations",
+            "value": 12.15,
+            "range": "±78.79%",
+            "unit": "ops/sec",
+            "extra": "26 samples"
           }
         ]
       }
