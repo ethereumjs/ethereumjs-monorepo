@@ -22,7 +22,7 @@ tape('invalid RLPs', (t) => {
       msg: 'invalid RLP (safeSlice): end slice of Uint8Array out-of-bounds',
     },
   ]
-  errCases.forEach(({ input, msg }, index) => {
+  for (const [index, { input, msg }] of errCases.entries()) {
     t.test(`should not crash on an invalid rlp - ${index}`, async (st) => {
       try {
         RLP.decode(input)
@@ -36,7 +36,7 @@ tape('invalid RLPs', (t) => {
         }
       }
     })
-  })
+  }
 })
 
 tape('RLP encoding (string)', (t) => {

@@ -134,9 +134,9 @@ export class Peer extends events.EventEmitter {
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    this.bound.forEach(async (bound) => {
+    for (const bound of this.bound.values()) {
       bound.handleMessageQueue()
-    })
+    }
   }
 
   toString(withFullId = false): string {

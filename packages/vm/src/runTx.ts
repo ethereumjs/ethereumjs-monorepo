@@ -2,7 +2,6 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
-  AccessListItem,
   Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
@@ -108,13 +107,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
-    castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
+    for(const accessListItem of castedTx.AccessListJSON) {
       const address = toBuffer(accessListItem.address)
       state.addWarmedAddress(address)
-      accessListItem.storageKeys.forEach((storageKey: string) => {
+      for (const storageKey of accessListItem.storageKeys) {
         state.addWarmedStorage(address, toBuffer(storageKey))
-      })
-    })
+      }
+    }
   }
 
   try {

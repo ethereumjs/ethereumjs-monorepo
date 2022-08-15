@@ -9,6 +9,7 @@ tape('[Libp2pSender]', (t) => {
     const sender = new Libp2pSender(conn[0])
     const receiver = new Libp2pSender(conn[1])
     receiver.on('status', (status: any) => {
+        console.log({status})
       t.equal(status.id.toString('hex'), '05', 'status received')
       t.equal(receiver.status.id.toString('hex'), '05', 'status getter')
       t.end()

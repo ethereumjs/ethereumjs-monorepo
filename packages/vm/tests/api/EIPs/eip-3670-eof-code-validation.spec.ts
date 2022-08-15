@@ -34,12 +34,12 @@ tape('EIP 3670 tests', (t) => {
     st.ok(EOF.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
     st.ok(EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
 
-    Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
+    for (const opcode of [0x00, 0xf3, 0xfd, 0xfe, 0xff]) {
       st.ok(
         EOF.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
         `code ends with valid terminating instruction 0x${opcode.toString(16)}`
       )
-    })
+    }
 
     st.notOk(EOF.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
     st.notOk(
