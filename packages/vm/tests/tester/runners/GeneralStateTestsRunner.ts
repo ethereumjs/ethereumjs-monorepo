@@ -38,7 +38,7 @@ function parseTestCases(
 
       if (isTruthy(tx.accessLists)) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
-        if (tx.chainId == undefined) {
+        if (tx.chainId === undefined) {
           tx.chainId = 1
         }
       }
@@ -55,7 +55,7 @@ function parseTestCases(
   }
 
   testCases = testCases.filter((testCase: any) => {
-    return testCase != null
+    return testCase !== null
   })
 
   return testCases

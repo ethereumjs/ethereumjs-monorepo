@@ -47,7 +47,7 @@ tape('Check if miner works as expected', async function (t) {
 
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'succesfully mined block')
-  t.ok((miner as any).solution != undefined, 'cached the solution')
+  t.ok((miner as any).solution !== undefined, 'cached the solution')
 
   t.end()
 })

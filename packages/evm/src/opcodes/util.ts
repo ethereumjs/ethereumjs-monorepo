@@ -251,7 +251,7 @@ const N = BigInt(115792089237316195423570985008687907853269984665640564039457584
 export function exponentation(bas: bigint, exp: bigint) {
   let t = BigInt(1)
   while (exp > BigInt(0)) {
-    if (exp % BigInt(2) != BigInt(0)) {
+    if (exp % BigInt(2) !== BigInt(0)) {
       t = (t * bas) % N
     }
     bas = (bas * bas) % N
