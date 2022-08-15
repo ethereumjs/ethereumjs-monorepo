@@ -21,6 +21,7 @@ npm install @ethereumjs/trie
 ## Usage
 
 You will find three variants of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) implemented in this library, namely `BaseTrie`, `CheckpointTrie` and `SecureTrie`:
+
 - `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` through the methods `checkpoint`, `commit` and `revert`
 - `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys
 

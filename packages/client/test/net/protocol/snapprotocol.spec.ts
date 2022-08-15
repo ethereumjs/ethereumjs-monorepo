@@ -4,7 +4,6 @@ import { Account, bigIntToBuffer } from '@ethereumjs/util'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
-
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }

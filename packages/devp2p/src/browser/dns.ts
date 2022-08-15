@@ -14,7 +14,7 @@ const errorMessage =
 
 export class dns {
   public static promises = {
-    async resolve (_url: string, _recordType: string): Promise<any[]> {
+    async resolve(_url: string, _recordType: string): Promise<any[]> {
       throw new Error(errorMessage)
     },
   }
