@@ -166,7 +166,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from state trie
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
-    storageTrie.root = account.stateRoot
+    storageTrie.root = account.storageRoot
     storageTrie.db.checkpoints = []
     return storageTrie
   }
@@ -226,9 +226,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         const addressHex = address.buf.toString('hex')
         this._storageTries[addressHex] = storageTrie
 
-        // update contract stateRoot
+        // update contract storageRoot
         const contract = this._cache.get(address)
-        contract.stateRoot = storageTrie.root
+        contract.storageRoot = storageTrie.root
 
         await this.putAccount(address, contract)
         resolve()
@@ -347,7 +347,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       balance: bigIntToHex(account.balance),
       codeHash: bufferToHex(account.codeHash),
       nonce: bigIntToHex(account.nonce),
-      storageHash: bufferToHex(account.stateRoot),
+      storageHash: bufferToHex(account.storageRoot),
       accountProof,
       storageProof,
     }
@@ -391,7 +391,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       }
     } else {
       const account = Account.fromRlpSerializedAccount(value)
-      const { nonce, balance, stateRoot, codeHash } = account
+      const { nonce, balance, storageRoot, codeHash } = account
       const invalidErrorMsg = 'Invalid proof provided:'
       if (nonce !== BigInt(proof.nonce)) {
         throw new Error(`${invalidErrorMsg} nonce does not match`)
@@ -399,7 +399,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       if (balance !== BigInt(proof.balance)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      if (!stateRoot.equals(toBuffer(proof.storageHash))) {
+      if (!storageRoot.equals(toBuffer(proof.storageHash))) {
         throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
       if (!codeHash.equals(toBuffer(proof.codeHash))) {
