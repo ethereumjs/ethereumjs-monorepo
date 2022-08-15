@@ -3,10 +3,8 @@
 # For more details, please check https://github.com/evertonfraga/testable-node-versions
 name: Node versions
 on:
-#  schedule:
-#    - cron: 0 0 * * *
-  pull_request:
-    types: [opened, reopened, synchronize]
+  schedule:
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:
