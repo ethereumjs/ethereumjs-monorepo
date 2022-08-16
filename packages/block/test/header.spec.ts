@@ -8,7 +8,6 @@ import { BlockHeader } from '../src/header'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 
-
 const blocksGoerli = require('./testdata/blocks_goerli.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 
@@ -294,13 +293,13 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should skip consensusFormatValidation if flag is set to false', (st) => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const extraData = Buffer.concat([
-      Buffer.alloc(1),
-    ])
+    const extraData = Buffer.concat([Buffer.alloc(1)])
 
     try {
-      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false})
-      st.pass('should instantiate header with invalid extraData when consensusFormatValidation === false')
+      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false })
+      st.pass(
+        'should instantiate header with invalid extraData when consensusFormatValidation === false'
+      )
     } catch (error: any) {
       st.fail('should not throw')
     }
@@ -308,31 +307,47 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should validate nonce length', (st) => {
-    const nonce = Buffer.alloc(5)
-    try {
-      BlockHeader.fromHeaderData({ nonce })
-      st.fail('should throw on invalid nonce length')
-    }
-    catch (err:any) {
-      st.ok(err.message.includes('nonce must be 8 bytes'), 'contans nonce length error message')
-    }
-    const kovanCommon = new Common({chain: Chain.Kovan})
-    try {
-      BlockHeader.fromHeaderData({ nonce}, {common: kovanCommon})
-      st.fail('should throw on invalid nonce length')
-    }
-    catch (err: any) {
-      st.ok(err.message.includes('nonce must be 65 bytes on kovan'), 'contains kovan nonce error message')
-    }
-    try {
-      const nonce = Buffer.alloc(65)
-      BlockHeader.fromHeaderData( { nonce }, { common: kovanCommon, consensusFormatValidation: false})
-      st.pass('was able to create Kovan block with nonce 65 bytes long')
-    }
-    catch {
-      st.fail('should have instantiated block with 65 byte length nonce')
-    }
+  t.test('_genericFormatValidation checks', (st) => {
+    const badHash = Buffer.alloc(31)
+
+    st.throws(
+      () => BlockHeader.fromHeaderData({ parentHash: badHash }),
+      (err: any) => err.message.includes('parentHash must be 32 bytes'),
+      'throws on invalid parent hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ stateRoot: badHash }),
+      (err: any) => err.message.includes('stateRoot must be 32 bytes'),
+      'throws on invalid state root hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ transactionsTrie: badHash }),
+      (err: any) => err.message.includes('transactionsTrie must be 32 bytes'),
+      'throws on invalid transactionsTrie root hash length'
+    )
+    let nonce = Buffer.alloc(5)
+    st.throws(
+      () => BlockHeader.fromHeaderData({ nonce }),
+      (err: any) => err.message.includes('nonce must be 8 bytes'),
+      'contains nonce length error message'
+    )
+
+    const kovanCommon = new Common({ chain: Chain.Kovan })
+    st.throws(
+      () => BlockHeader.fromHeaderData({ nonce }, { common: kovanCommon }),
+      (err: any) => err.message.includes('nonce must be 65 bytes on kovan'),
+      'contains kovan nonce error message'
+    )
+
+    nonce = Buffer.alloc(65)
+    st.doesNotThrow(
+      () =>
+        BlockHeader.fromHeaderData(
+          { nonce },
+          { common: kovanCommon, consensusFormatValidation: false }
+        ),
+      'was able to create Kovan block with nonce 65 bytes long'
+    )
     st.end()
   })
   /*
