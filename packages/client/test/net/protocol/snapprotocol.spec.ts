@@ -85,7 +85,24 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('AccountRange should decode and verify real sample',async(t)=>{
+  t.test('AccountRange should encode/decode correctly',(t)=>{
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const p = new SnapProtocol({ config, chain })
+    /* eslint-disable @typescript-eslint/no-use-before-define */
+    const data=RLP.decode(Buffer.from(accountRangeRLP,'hex')) as unknown
+    const {
+          reqId,
+          accounts,
+          proof
+        } = p.decode(p.messages.filter((message) => message.name === 'AccountRange')[0], data);
+    const payload = RLP.encode(p.encode(p.messages.filter((message) => message.name === 'AccountRange')[0], {reqId,accounts,proof}));
+    t.ok(accountRangeRLP===Buffer.from(payload).toString("hex"),"Re-encoded payload should match with original")
+    t.end()
+
+  })
+
+  t.test('GetAccountRange/AccountRange should verify real sample',async(t)=>{
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
@@ -103,8 +120,8 @@ tape('[SnapProtocol]', (t) => {
           proof
         } = p.decode(p.messages.filter((message) => message.name === 'AccountRange')[0], resData);
 
-   t.ok(sendId===BigInt(1),'sendId should be 5');
-   t.ok(recevId===BigInt(1),'recevId should be 0');
+   t.ok(sendId===BigInt(1),'sendId should be 1');
+   t.ok(recevId===BigInt(1),'recevId should be 1');
    const trie = new CheckpointTrie({ db: new LevelDB() })
    try{
     const checkFirst = await trie.verifyProof(stateRoot, accounts[accounts.length-1].hash, proof)
