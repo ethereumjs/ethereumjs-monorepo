@@ -179,7 +179,7 @@ export class BlockHeader {
    *
    */
   constructor(headerData: HeaderData, options: BlockOptions = {}) {
-    if (options.common) {
+    if (options.common !== undefined) {
       this._common = options.common.copy()
     } else {
       this._common = new Common({
@@ -249,7 +249,7 @@ export class BlockHeader {
         }
       }
     } else {
-      if (baseFeePerGas) {
+      if (typeof baseFeePerGas === 'bigint') {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
       }
     }
@@ -278,14 +278,14 @@ export class BlockHeader {
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
     // block option parameter, we instead set difficulty to this value.
     if (
-      options.calcDifficultyFromHeader &&
+      options.calcDifficultyFromHeader !== undefined &&
       this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
       this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
-    if (options.cliqueSigner) {
+    if (options.cliqueSigner !== undefined) {
       // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (this.extraData.length < minExtraDataLength) {
@@ -576,7 +576,7 @@ export class BlockHeader {
    */
   hash(): Buffer {
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
+      if (this.cache.hash === undefined) {
         this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
       }
       return this.cache.hash
@@ -775,7 +775,7 @@ export class BlockHeader {
     const signerFound = signerList.find((signer) => {
       return signer.equals(signerAddress)
     })
-    return !!signerFound
+    return signerFound !== undefined
   }
 
   /**
