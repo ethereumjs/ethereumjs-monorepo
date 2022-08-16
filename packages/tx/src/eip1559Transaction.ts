@@ -203,7 +203,10 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+    if (
+      this.cache.dataFee !== undefined &&
+      this.cache.dataFee.hardfork === this.common.hardfork()
+    ) {
       return this.cache.dataFee.value
     }
 
@@ -319,7 +322,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     }
 
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
+      if (this.cache.hash === undefined) {
         this.cache.hash = Buffer.from(keccak256(this.serialize()))
       }
       return this.cache.hash
