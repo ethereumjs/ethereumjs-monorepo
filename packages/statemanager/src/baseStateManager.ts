@@ -39,7 +39,7 @@ export abstract class BaseStateManager {
    */
   constructor(opts: DefaultStateManagerOpts) {
     let common = opts.common
-    if (!common) {
+    if (common === undefined) {
       common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     }
     this._common = common

@@ -89,9 +89,9 @@ export class Cache {
   async getOrLoad(address: Address): Promise<Account> {
     let account = this.lookup(address)
 
-    if (!account) {
+    if (account === undefined) {
       account = await this._getCb(address)
-      if (account) {
+      if (account !== undefined) {
         this._update(address, account, false, false, false)
       } else {
         account = new Account()

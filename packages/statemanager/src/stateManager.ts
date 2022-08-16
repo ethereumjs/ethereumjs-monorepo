@@ -94,7 +94,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
      */
     const getCb: getCb = async (address) => {
       const rlp = await this._trie.get(address.buf)
-      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+      return rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
       const trie = this._trie
@@ -255,7 +255,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (isTruthy(value) && value.length) {
+      if (isTruthy(value) && value.length > 0) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
@@ -500,10 +500,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && isFalsy((account as any).virtual) && !this._cache.keyIsDeleted(address)) {
+    if (
+      account !== undefined &&
+      isFalsy((account as any).virtual) &&
+      !this._cache.keyIsDeleted(address)
+    ) {
       return true
     }
-    if (await this._trie.get(address.buf)) {
+    if ((await this._trie.get(address.buf)) !== null) {
       return true
     }
     return false
