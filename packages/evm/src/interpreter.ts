@@ -175,7 +175,7 @@ export class Interpreter {
       }
       // Code is EOF1 format
       const codeSections = EOF.codeAnalysis(code)
-      if (!codeSections) {
+      if (codeSections === undefined) {
         // Code is invalid EOF1 format if `codeSections` is falsy
         return {
           runState: this._runState,
@@ -183,7 +183,7 @@ export class Interpreter {
         }
       }
 
-      if (codeSections.data) {
+      if (typeof codeSections.data === 'number') {
         // Set code to EOF container code section which starts at byte position 10 if data section is present
         this._runState.code = code.slice(10, 10 + codeSections!.code)
       } else {
@@ -825,7 +825,7 @@ export class Interpreter {
 
     const results = await this._evm.runCall({ message: msg })
 
-    if (results.execResult.logs) {
+    if (results.execResult.logs !== undefined) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
@@ -835,13 +835,13 @@ export class Interpreter {
     // Set return value
     if (
       isTruthy(results.execResult.returnValue) &&
-      (!results.execResult.exceptionError ||
+      (results.execResult.exceptionError === undefined ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
       this._runState.returnBuffer = results.execResult.returnValue
     }
 
-    if (!results.execResult.exceptionError) {
+    if (results.execResult.exceptionError === undefined) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._eei.getAccount(this._env.address)
@@ -898,7 +898,7 @@ export class Interpreter {
 
     const results = await this._evm.runCall({ message })
 
-    if (results.execResult.logs) {
+    if (results.execResult.logs !== undefined) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
@@ -907,14 +907,14 @@ export class Interpreter {
 
     // Set return buffer in case revert happened
     if (
-      results.execResult.exceptionError &&
+      results.execResult.exceptionError !== undefined &&
       results.execResult.exceptionError.error === ERROR.REVERT
     ) {
       this._runState.returnBuffer = results.execResult.returnValue
     }
 
     if (
-      !results.execResult.exceptionError ||
+      results.execResult.exceptionError === undefined ||
       results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
     ) {
       Object.assign(this._result.selfdestruct, selfdestruct)
@@ -922,7 +922,7 @@ export class Interpreter {
       const account = await this._eei.getAccount(this._env.address)
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
-      if (results.createdAddress) {
+      if (results.createdAddress !== undefined) {
         // push the created address to the stack
         return bufferToBigInt(results.createdAddress.buf)
       }
@@ -989,7 +989,7 @@ export class Interpreter {
   private _getReturnCode(results: EVMResult) {
     // This preserves the previous logic, but seems to contradict the EEI spec
     // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
-    if (results.execResult.exceptionError) {
+    if (results.execResult.exceptionError !== undefined) {
       return BigInt(0)
     } else {
       return BigInt(1)

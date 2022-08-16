@@ -356,7 +356,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
     opcodeBuilder[key].fee = baseFee
   }
 
-  if (customOpcodes) {
+  if (customOpcodes !== undefined) {
     for (const _code of customOpcodes) {
       const code = <any>_code
       if (code.logicFunction === undefined) {

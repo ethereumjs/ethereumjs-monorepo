@@ -136,12 +136,12 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   const constantinopleResult = await evmConstantinople.runCall(runCallArgs)
 
   t.assert(
-    byzantiumResult.execResult.exceptionError &&
+    byzantiumResult.execResult.exceptionError !== undefined &&
       byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
     'byzantium cannot accept constantinople opcodes (SHL)'
   )
   t.assert(
-    !constantinopleResult.execResult.exceptionError,
+    constantinopleResult.execResult.exceptionError === undefined,
     'constantinople can access the SHL opcode'
   )
 

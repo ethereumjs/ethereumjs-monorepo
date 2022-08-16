@@ -16,7 +16,7 @@ tape('Precompiles: hardfork availability', (t) => {
 
     let ECPAIRING = getActivePrecompiles(commonByzantium).get(ECPAIR_AddressStr)
 
-    if (!ECPAIRING) {
+    if (ECPAIRING === undefined) {
       st.fail('ECPAIRING is not available in petersburg while it should be available')
     } else {
       st.pass('ECPAIRING available in petersburg')

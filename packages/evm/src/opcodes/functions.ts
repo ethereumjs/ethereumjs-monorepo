@@ -191,7 +191,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (k < BigInt(31)) {
         const signBit = k * BigInt(8) + BigInt(7)
         const mask = (BigInt(1) << signBit) - BigInt(1)
-        if ((val >> signBit) & BigInt(1)) {
+        if (((val >> signBit) & BigInt(1)) > 0) {
           val = val | BigInt.asUintN(256, ~mask)
         } else {
           val = val & mask
@@ -429,7 +429,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const i = Number(pos)
       let loaded = runState.interpreter.getCallData().slice(i, i + 32)
-      loaded = loaded.length ? loaded : Buffer.from([0])
+      loaded = loaded.length > 0 ? loaded : Buffer.from([0])
       let r = bufferToBigInt(loaded)
       if (loaded.length < 32) {
         r = r << (BigInt(8) * BigInt(32 - loaded.length))
@@ -685,7 +685,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       const value = await runState.interpreter.storageLoad(keyBuf)
-      const valueBigInt = value.length ? bufferToBigInt(value) : BigInt(0)
+      const valueBigInt = value.length > 0 ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBigInt)
     },
   ],
@@ -878,7 +878,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       const value = runState.interpreter.transientStorageLoad(keyBuf)
-      const valueBN = value.length ? bufferToBigInt(value) : BigInt(0)
+      const valueBN = value.length > 0 ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBN)
     },
   ],

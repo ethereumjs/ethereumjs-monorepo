@@ -32,11 +32,11 @@ export class TransientStorage implements TransientStorageInterface {
    */
   public get(addr: Address, key: Buffer): Buffer {
     const map = this._storage.get(addr.toString())
-    if (!map) {
+    if (map === undefined) {
       return Buffer.alloc(32)
     }
     const value = map.get(key.toString('hex'))
-    if (!value) {
+    if (value === undefined) {
       return Buffer.alloc(32)
     }
     return value

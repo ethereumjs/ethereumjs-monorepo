@@ -231,7 +231,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     this._transientStorage = new TransientStorage()
 
-    if (opts.common) {
+    if (opts.common !== undefined) {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
@@ -362,7 +362,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     // Load code
     await this._loadCode(message)
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
@@ -440,7 +440,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     // Check for collision
     if (
-      (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
+      (typeof toAccount.nonce === 'bigint' && toAccount.nonce > BigInt(0)) ||
       !toAccount.codeHash.equals(KECCAK256_NULL)
     ) {
       if (this.DEBUG) {
@@ -512,7 +512,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BigInt(0)
-    if (!result.exceptionError) {
+    if (result.exceptionError === undefined) {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
@@ -524,7 +524,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     // Check for SpuriousDragon EIP-170 code size limit
     let allowedCodeSize = true
     if (
-      !result.exceptionError &&
+      result.exceptionError === undefined &&
       this._common.gteHardfork(Hardfork.SpuriousDragon) &&
       result.returnValue.length > Number(this._common.param('vm', 'maxCodeSize'))
     ) {
@@ -591,7 +591,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     // Save code if a new contract was created
     if (
-      !result.exceptionError &&
+      result.exceptionError === undefined &&
       isTruthy(result.returnValue) &&
       result.returnValue.toString() !== ''
     ) {
@@ -643,7 +643,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
-    if (message.selfdestruct) {
+    if (message.selfdestruct !== undefined) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
 
@@ -651,7 +651,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
-    if (interpreterRes.exceptionError) {
+    if (interpreterRes.exceptionError !== undefined) {
       if (
         interpreterRes.exceptionError.error !== ERROR.REVERT &&
         interpreterRes.exceptionError.error !== ERROR.INVALID_EOF_FORMAT
@@ -678,7 +678,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: result.returnValue !== undefined ? result.returnValue : Buffer.alloc(0),
     }
   }
 
@@ -689,7 +689,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
-    if (!message) {
+    if (message === undefined) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BigInt(0),
@@ -724,7 +724,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this._common.isActivatedEIP(2929) === true) {
+    if (message.to === undefined && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
       this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
     }
@@ -745,7 +745,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
       )
     }
-    if (message.to) {
+    if (message.to !== undefined) {
       if (this.DEBUG) {
         debug(`Message CALL execution (to: ${message.to})`)
       }
@@ -760,18 +760,18 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       const { executionGasUsed, exceptionError, returnValue } = result.execResult
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
-          exceptionError ? `'${exceptionError.error}'` : 'none'
+          exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
         } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then all refunds are forfeited
-    if (err) {
+    if (err !== undefined) {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
+    if (err !== undefined) {
       if (
         this._common.gteHardfork(Hardfork.Homestead) ||
         err.error !== ERROR.CODESTORE_OUT_OF_GAS
@@ -861,9 +861,9 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   }
 
   protected async _loadCode(message: Message): Promise<void> {
-    if (!message.code) {
+    if (message.code === undefined) {
       const precompile = this.getPrecompile(message.codeAddress)
-      if (precompile) {
+      if (precompile !== undefined) {
         message.code = precompile
         message.isCompiled = true
       } else {
@@ -875,7 +875,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
   protected async _generateAddress(message: Message): Promise<Address> {
     let addr
-    if (message.salt) {
+    if (message.salt !== undefined) {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
