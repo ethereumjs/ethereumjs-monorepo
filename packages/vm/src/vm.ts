@@ -97,14 +97,14 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     this._opts = opts
 
-    if (opts.common) {
+    if (opts.common !== undefined) {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
 
-    if (opts.stateManager) {
+    if (opts.stateManager !== undefined) {
       this.stateManager = opts.stateManager
     } else {
       this.stateManager = new DefaultStateManager({
@@ -115,13 +115,13 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     // TODO tests
-    if (opts.eei) {
-      if (opts.evm) {
+    if (opts.eei !== undefined) {
+      if (opts.evm !== undefined) {
         throw new Error('cannot specify EEI if EVM opt provided')
       }
       this.eei = opts.eei
     } else {
-      if (opts.evm) {
+      if (opts.evm !== undefined) {
         this.eei = opts.evm.eei
       } else {
         this.eei = new EEI(this.stateManager, this._common, this.blockchain)
@@ -129,7 +129,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     }
 
     // TODO tests
-    if (opts.evm) {
+    if (opts.evm !== undefined) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({
@@ -163,7 +163,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       await (this.blockchain as any)._init()
     }
 
-    if (!this._opts.stateManager) {
+    if (this._opts.stateManager === undefined) {
       if (this._opts.activateGenesisState === true) {
         if (typeof (<any>this.blockchain).genesisState === 'function') {
           await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())

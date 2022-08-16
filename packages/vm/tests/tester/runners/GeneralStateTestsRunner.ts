@@ -90,7 +90,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     execInfo = 'tx instantiation exception'
   }
 
-  if (tx) {
+  if (tx !== undefined) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 

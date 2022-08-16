@@ -131,26 +131,26 @@ export const SKIP_SLOW = [
  */
 export function getRequiredForkConfigAlias(forkConfig: string) {
   // Chainstart is also called Frontier and is called as such in the tests
-  if (String(forkConfig).match(/^chainstart$/i)) {
+  if (String(forkConfig).match(/^chainstart$/i) !== null) {
     return 'Frontier'
   }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
-  if (String(forkConfig).match(/^tangerineWhistle$/i)) {
+  if (String(forkConfig).match(/^tangerineWhistle$/i) !== null) {
     return 'EIP150'
   }
   // SpuriousDragon is named EIP158 (attention: misleading name)
   // in the client-independent consensus test suite
-  if (String(forkConfig).match(/^spuriousDragon$/i)) {
+  if (String(forkConfig).match(/^spuriousDragon$/i) !== null) {
     return 'EIP158'
   }
   // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
-  if (String(forkConfig).match(/^muirGlacier/i)) {
+  if (String(forkConfig).match(/^muirGlacier/i) !== null) {
     return 'Istanbul'
   }
   // Petersburg is named ConstantinopleFix
   // in the client-independent consensus test suite
-  if (String(forkConfig).match(/^petersburg$/i)) {
+  if (String(forkConfig).match(/^petersburg$/i) !== null) {
     return 'ConstantinopleFix'
   }
   return forkConfig
@@ -309,7 +309,7 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
     { eips: [3607] }
   )
   const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
-  if (eips) {
+  if (eips !== null) {
     common.setEIPs(eips.map((e: string) => parseInt(e)))
   }
   return common
@@ -333,7 +333,7 @@ export function getCommon(targetNetwork: string) {
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     return setupCommonWithNetworks(targetNetwork)
-  } else if (networkLowercase.match('tomergeatdiff')) {
+  } else if (networkLowercase.match('tomergeatdiff') !== null) {
     // This is a HF -> Merge transition
     const start = networkLowercase.match('tomergeatdiff')!.index!
     const end = start + 'tomergeatdiff'.length
@@ -451,7 +451,7 @@ export function getExpectedTests(fork: string, name: string) {
  */
 export function getSkipTests(choices: string, defaultChoice: string): string[] {
   let skipTests: string[] = []
-  if (!choices) {
+  if (Boolean(choices) === false) {
     choices = defaultChoice
   }
   choices = choices.toLowerCase()

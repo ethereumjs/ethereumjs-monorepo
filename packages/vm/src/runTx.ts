@@ -135,7 +135,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         removed.push(Address.fromString('0x' + key))
       }
       // Only include to address on present storage slot accesses
-      const onlyStorage = tx.to ? [tx.to] : []
+      const onlyStorage = tx.to !== undefined ? [tx.to] : []
       result.accessList = state.generateAccessList!(removed, onlyStorage)
     }
     return result
@@ -157,7 +157,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const { tx, block } = opts
 
-  if (!block) {
+  if (block === undefined) {
     throw new Error('block required')
   }
 
@@ -186,7 +186,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
     }
     state.addWarmedAddress(caller.buf)
-    if (tx.to) {
+    if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       state.addWarmedAddress(tx.to.buf)
     }
@@ -349,7 +349,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug('-'.repeat(100))
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
-        exceptionError ? `'${exceptionError.error}'` : 'none'
+        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
       } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
@@ -426,7 +426,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Cleanup accounts
    */
-  if (results.execResult.selfdestruct) {
+  if (results.execResult.selfdestruct !== undefined) {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
       const address = new Address(Buffer.from(k, 'hex'))
@@ -471,7 +471,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
  */
 function txLogsBloom(logs?: any[]): Bloom {
   const bloom = new Bloom()
-  if (logs) {
+  if (logs !== undefined) {
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
       // add the address
@@ -521,7 +521,7 @@ export async function generateTxReceipt(
     if (this._common.gteHardfork(Hardfork.Byzantium) === true) {
       // Post-Byzantium
       receipt = {
-        status: txResult.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        status: txResult.execResult.exceptionError !== undefined ? 0 : 1, // Receipts have a 0 as status on error
         ...baseReceipt,
       } as PostByzantiumTxReceipt
     } else {
@@ -535,7 +535,7 @@ export async function generateTxReceipt(
   } else {
     // Typed EIP-2718 Transaction
     receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
+      status: txResult.execResult.exceptionError !== undefined ? 0 : 1,
       ...baseReceipt,
     } as PostByzantiumTxReceipt
   }

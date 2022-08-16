@@ -30,7 +30,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
         continue
       }
 
-      if (result.execResult.exceptionError) {
+      if (result.execResult.exceptionError !== undefined) {
         st.fail(`[${testName}]: Call should not fail`)
         continue
       }
