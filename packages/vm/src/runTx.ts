@@ -18,7 +18,6 @@ import type {
 import type { VM } from './vm'
 import type {
   AccessListEIP2930Transaction,
-  AccessListItem,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
