@@ -7,7 +7,7 @@ import type { Nibbles } from '../types'
  **/
 export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
   // odd
-  if (key.length % 2 === 1) {
+  if (key.length % 2) {
     key.unshift(1)
   } else {
     // even
@@ -28,7 +28,7 @@ export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
  * @private
  */
 export function removeHexPrefix(val: Nibbles): Nibbles {
-  if (val[0] % 2 === 1) {
+  if (val[0] % 2) {
     val = val.slice(1)
   } else {
     val = val.slice(2)
