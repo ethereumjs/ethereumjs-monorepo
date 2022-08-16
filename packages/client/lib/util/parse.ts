@@ -249,8 +249,8 @@ export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
   for (const hf of (common as any)._chainParams.hardforks) {
     if (
       isFalsy(hf.forkHash) &&
-      typeof hf.block !== 'undefined' &&
-      (hf.block !== null || typeof hf.td !== 'undefined')
+      hf.block !== undefined &&
+      (hf.block !== null || hf.td !== undefined)
     ) {
       hf.forkHash = common.forkHash(hf.name, genesisHash)
     }

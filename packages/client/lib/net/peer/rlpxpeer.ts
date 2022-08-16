@@ -166,7 +166,7 @@ export class RlpxPeer extends Peer {
         const protocol = this.protocols.find((p) => p.name === name)
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
-        if (protocol !== null && name !== 'snap') {
+        if (protocol !== undefined && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol)
           return this.bindProtocol(protocol, sender).then(() => {
             if (name === 'eth') {

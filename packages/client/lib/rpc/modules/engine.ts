@@ -360,9 +360,9 @@ export class Engine {
     const { parentHash, blockHash } = payload
 
     const { block, error } = await assembleBlock(payload, this.chain)
-    if (block === null || error !== null) {
+    if (block === undefined || error !== undefined) {
       let response = error
-      if (response === null) {
+      if (response === undefined) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(toBuffer(payload.parentHash), this.chain)
@@ -628,7 +628,7 @@ export class Engine {
     /*
      * If payloadAttributes is present, start building block and return payloadId
      */
-    if (payloadAttributes !== null) {
+    if (payloadAttributes !== undefined) {
       const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
@@ -671,7 +671,7 @@ export class Engine {
     const payloadId = toBuffer(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
-      if (built === null) {
+      if (built === undefined) {
         throw EngineError.UnknownPayload
       }
       const [block, receipts] = built

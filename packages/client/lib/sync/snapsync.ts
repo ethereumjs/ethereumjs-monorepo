@@ -42,17 +42,17 @@ export class SnapSynchronizer extends Synchronizer {
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
-      if (latest !== null) {
+      if (latest !== undefined) {
         const { number } = latest
         if (
-          (best === null && number >= this.chain.blocks.height) ||
-          (best !== null && best[1] < number)
+          (best === undefined && number >= this.chain.blocks.height) ||
+          (best !== undefined && best[1] < number)
         ) {
           best = [peer, number]
         }
       }
     }
-    return best !== null ? best[0] : undefined
+    return best !== undefined ? best[0] : undefined
   }
 
   /**
@@ -63,7 +63,7 @@ export class SnapSynchronizer extends Synchronizer {
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return result !== null ? result[1][0] : undefined
+    return result !== undefined ? result[1][0] : undefined
   }
 
   /**
@@ -72,7 +72,7 @@ export class SnapSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer !== null ? await this.latest(peer) : undefined
+    const latest = peer !== undefined ? await this.latest(peer) : undefined
     if (latest === null) return false
 
     // Just a small snippet to test out the methods manually

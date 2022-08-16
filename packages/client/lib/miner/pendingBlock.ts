@@ -106,7 +106,7 @@ export class PendingBlock {
    */
   stop(payloadId: Buffer) {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
-    if (payload === null) return
+    if (payload === undefined) return
     // Revert blockBuilder
     void payload[1].revert()
     // Remove from pendingPayloads
@@ -118,7 +118,7 @@ export class PendingBlock {
    */
   async build(payloadId: Buffer): Promise<void | [block: Block, receipts: TxReceipt[]]> {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
-    if (payload === null) {
+    if (payload === undefined) {
       return
     }
     const builder = payload[1]

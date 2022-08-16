@@ -116,15 +116,15 @@ export class CLConnectionManager {
   }
 
   stop() {
-    if (this._connectionCheckInterval !== null) {
+    if (this._connectionCheckInterval !== undefined) {
       clearInterval(this._connectionCheckInterval)
       this._connectionCheckInterval = undefined
     }
-    if (this._payloadLogInterval !== null) {
+    if (this._payloadLogInterval !== undefined) {
       clearInterval(this._payloadLogInterval)
       this._payloadLogInterval = undefined
     }
-    if (this._forkchoiceLogInterval !== null) {
+    if (this._forkchoiceLogInterval !== undefined) {
       clearInterval(this._forkchoiceLogInterval)
       this._forkchoiceLogInterval = undefined
     }
@@ -134,7 +134,7 @@ export class CLConnectionManager {
     const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
       payload.payload.blockHash
     )} parentHash=${short(payload.payload.parentHash)}  status=${
-      payload.response !== null ? payload.response.status : '-'
+      payload.response !== undefined ? payload.response.status : '-'
     } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
       payload.payload.baseFeePerGas
     )} txs=${payload.payload.transactions.length}`
@@ -143,13 +143,13 @@ export class CLConnectionManager {
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
     let msg = ''
-    if (update.headBlock !== null) {
+    if (update.headBlock !== undefined) {
       msg += `number=${Number(update.headBlock.header.number)} `
     }
     msg += `head=${short(update.state.headBlockHash)} finalized=${short(
       update.state.finalizedBlockHash
-    )} response=${update.response !== null ? update.response.payloadStatus.status : '-'}`
-    if (update.headBlock !== null) {
+    )} response=${update.response !== undefined ? update.response.payloadStatus.status : '-'}`
+    if (update.headBlock !== undefined) {
       msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
     }
     if (isTruthy(update.error)) {
@@ -254,7 +254,7 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (this._lastPayload === null) {
+    if (this._lastPayload === undefined) {
       this.config.logger.info('No consensus payload received yet')
     } else {
       this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
@@ -271,7 +271,7 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (this._lastForkchoiceUpdate === null) {
+    if (this._lastForkchoiceUpdate === undefined) {
       this.config.logger.info('No consensus forkchoice update received yet')
     } else {
       this.config.logger.info(

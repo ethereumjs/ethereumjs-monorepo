@@ -162,7 +162,7 @@ export class LesProtocol extends Protocol {
   encodeStatus(): any {
     let serveOptions = {}
 
-    if (this.flow !== null) {
+    if (this.flow !== undefined) {
       serveOptions = {
         serveHeaders: 1,
         serveChainSince: 0,
@@ -211,7 +211,7 @@ export class LesProtocol extends Protocol {
         entry = entry.map((e: any) => bufferToInt(e))
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
         const message = this.messages.find((m) => m.code === entry[0])
-        if (message !== null) {
+        if (message !== undefined) {
           mrc[message.name] = mrc[entry[0]]
         }
       }

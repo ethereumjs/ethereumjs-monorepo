@@ -191,7 +191,7 @@ export class ReceiptsManager extends MetaDBManager {
           }))
         )
       }
-      if (addresses !== null && addresses.length > 0) {
+      if (addresses !== undefined && addresses.length > 0) {
         logs = logs.filter((l) => addresses.some((a) => a.equals(l.log[0])))
       }
       if (topics.length > 0) {

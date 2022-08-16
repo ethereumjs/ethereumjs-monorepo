@@ -130,7 +130,7 @@ export class Protocol {
    * @param args message arguments
    */
   encode(message: Message, args: any): any {
-    if (message.encode !== null) {
+    if (message.encode !== undefined) {
       return message.encode(args)
     }
     return args
@@ -143,7 +143,7 @@ export class Protocol {
    * @param bound reference to bound protocol
    */
   decode(message: Message, payload: any): any {
-    if (message.decode !== null) {
+    if (message.decode !== undefined) {
       return message.decode(payload)
     }
     return payload

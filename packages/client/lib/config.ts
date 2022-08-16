@@ -358,8 +358,8 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    if (options.servers !== null) {
-      if (options.transports !== null) {
+    if (options.servers !== undefined) {
+      if (options.transports !== undefined) {
         throw new Error(
           'Config initialization with both servers and transports options not allowed'
         )

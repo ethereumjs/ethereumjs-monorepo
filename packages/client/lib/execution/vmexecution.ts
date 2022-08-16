@@ -195,12 +195,12 @@ export class VMExecution extends Execution {
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
-          if (errorBlock !== null) return
+          if (errorBlock !== undefined) return
           // determine starting state for block run
           // if we are just starting or if a chain reorg has happened
-          if (headBlock === null || reorg) {
+          if (headBlock === undefined || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
-            if (headBlock === null) throw new Error('No parent block found')
+            if (headBlock === undefined) throw new Error('No parent block found')
             parentState = parentBlock!.header.stateRoot
           }
           // run block, update head if valid
@@ -344,7 +344,7 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    if (this.vmPromise !== null) {
+    if (this.vmPromise !== undefined) {
       // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
       await this.vmPromise
     }

@@ -71,11 +71,11 @@ export class LightSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      if (peer.les !== null) {
+      if (peer.les !== undefined) {
         const td = peer.les.status.headTd
         if (
-          (best === null && td >= this.chain.headers.td) ||
-          (best !== null && best.les !== null && best.les.status.headTd < td)
+          (best === undefined && td >= this.chain.headers.td) ||
+          (best !== undefined && best.les !== undefined && best.les.status.headTd < td)
         ) {
           best = peer
         }
@@ -101,8 +101,8 @@ export class LightSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer !== null ? await this.latest(peer) : undefined
-    if (latest === null) return false
+    const latest = peer !== undefined ? await this.latest(peer) : undefined
+    if (latest === undefined) return false
 
     const height = peer!.les!.status.headNum
     if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < height) {
@@ -118,7 +118,7 @@ export class LightSynchronizer extends Synchronizer {
         : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
-    if (this.fetcher === null || this.fetcher.errored !== null) {
+    if (this.fetcher === null || this.fetcher.errored !== undefined) {
       this.fetcher = new HeaderFetcher({
         config: this.config,
         pool: this.pool,

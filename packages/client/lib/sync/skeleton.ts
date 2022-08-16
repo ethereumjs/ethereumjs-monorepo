@@ -430,7 +430,7 @@ export class Skeleton extends MetaDBManager {
       tailBlock = await this.getBlock(newTail, true)
     }
 
-    if (tailBlock !== undefined && newTail !== null) {
+    if (tailBlock !== undefined && newTail !== undefined) {
       this.config.logger.info(`Backstepped skeleton head=${head} tail=${newTail}`)
       this.status.progress.subchains[0].tail = newTail
       this.status.progress.subchains[0].next = tailBlock.header.parentHash

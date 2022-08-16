@@ -71,7 +71,7 @@ export class Libp2pServer extends Server {
         this.node!.handle(protocol, async ({ connection, stream }) => {
           const [peerId] = this.getPeerInfo(connection)
           const peer = this.peers.get(peerId.toB58String())
-          if (peer !== null) {
+          if (peer !== undefined) {
             await peer.accept(p, stream, this)
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
@@ -80,7 +80,7 @@ export class Libp2pServer extends Server {
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
       const id = peerId.toB58String()
-      if (this.peers.get(id) !== null || this.isBanned(id)) {
+      if (this.peers.get(id) !== undefined || this.isBanned(id)) {
         return
       }
       const peer = this.createPeer(peerId)

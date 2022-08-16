@@ -106,8 +106,8 @@ export class FullSynchronizer extends Synchronizer {
       if (typeof peer.eth !== 'undefined' && isTruthy(peer.eth.status)) {
         const td = peer.eth.status.td
         if (
-          (best === null && td >= this.chain.blocks.td) ||
-          (best !== null && best.eth !== null && best.eth.status.td < td)
+          (best === undefined && td >= this.chain.blocks.td) ||
+          (best !== undefined && best.eth !== undefined && best.eth.status.td < td)
         ) {
           best = peer
         }
@@ -124,7 +124,7 @@ export class FullSynchronizer extends Synchronizer {
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return result !== null ? result[1][0] : undefined
+    return result !== undefined ? result[1][0] : undefined
   }
 
   /**
@@ -149,8 +149,8 @@ export class FullSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer !== null ? await this.latest(peer) : undefined
-    if (latest === null) return false
+    const latest = peer !== undefined ? await this.latest(peer) : undefined
+    if (latest === undefined) return false
 
     const height = latest.number
     if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
@@ -166,7 +166,7 @@ export class FullSynchronizer extends Synchronizer {
         : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
-    if (this.fetcher === null || this.fetcher.errored !== null) {
+    if (this.fetcher === null || this.fetcher.errored !== undefined) {
       this.fetcher = new BlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -264,7 +264,7 @@ export class FullSynchronizer extends Synchronizer {
    */
   private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-    if (knownBlocks.find((knownBlock) => knownBlock.hash.equals(blockHash)) !== null) {
+    if (knownBlocks.find((knownBlock) => knownBlock.hash.equals(blockHash)) !== undefined) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })
@@ -292,7 +292,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer `Peer` that sent `NEW_BLOCK` announcement
    */
   async handleNewBlock(block: Block, peer?: Peer) {
-    if (peer !== null) {
+    if (peer !== undefined) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       this.addToKnownByPeer(block.hash(), peer)
     }
@@ -305,7 +305,7 @@ export class FullSynchronizer extends Synchronizer {
     } catch (err) {
       this.config.logger.debug(
         `Error processing new block from peer ${
-          peer !== null ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
+          peer !== undefined ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
         } hash=${short(block.hash())}`
       )
       this.config.logger.debug(err)
@@ -352,13 +352,13 @@ export class FullSynchronizer extends Synchronizer {
         min = blockNumber
       }
       // Check if new sync target height can be set
-      if (newSyncHeight !== null && blockNumber <= newSyncHeight[1]) continue
+      if (newSyncHeight !== undefined && blockNumber <= newSyncHeight[1]) continue
       if (isTruthy(this.config.syncTargetHeight) && blockNumber <= this.config.syncTargetHeight)
         continue
       newSyncHeight = value
     }
 
-    if (newSyncHeight === null) return
+    if (newSyncHeight === undefined) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
     this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)

@@ -49,7 +49,7 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   get fetcher(): ReverseBlockFetcher | null {
-    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+    if (this._fetcher !== undefined && !(this._fetcher instanceof ReverseBlockFetcher)) {
       throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
     return this._fetcher
@@ -95,17 +95,17 @@ export class BeaconSynchronizer extends Synchronizer {
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
-      if (latest !== null) {
+      if (latest !== undefined) {
         const { number } = latest
         if (
-          (best === null && number >= this.chain.blocks.height) ||
-          (best !== null && best[1] < number)
+          (best === undefined && number >= this.chain.blocks.height) ||
+          (best !== undefined && best[1] < number)
         ) {
           best = [peer, number]
         }
       }
     }
-    return best !== null ? best[0] : undefined
+    return best !== undefined ? best[0] : undefined
   }
 
   /**
@@ -116,7 +116,7 @@ export class BeaconSynchronizer extends Synchronizer {
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return result !== null ? result[1][0] : undefined
+    return result !== undefined ? result[1][0] : undefined
   }
 
   /**
@@ -127,7 +127,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (this.running) return
     this.running = true
 
-    if (block !== null) {
+    if (block !== undefined) {
       await this.skeleton.initSync(block)
     }
 
@@ -222,8 +222,8 @@ export class BeaconSynchronizer extends Synchronizer {
       return false
     }
 
-    const latest = peer !== null ? await this.latest(peer) : undefined
-    if (latest === null) return false
+    const latest = peer !== undefined ? await this.latest(peer) : undefined
+    if (latest === undefined) return false
 
     const height = latest.number
     if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
