@@ -317,6 +317,22 @@ tape('[Block]: Header functions', function (t) {
     catch (err:any) {
       st.ok(err.message.includes('nonce must be 8 bytes'), 'contans nonce length error message')
     }
+    const kovanCommon = new Common({chain: Chain.Kovan})
+    try {
+      BlockHeader.fromHeaderData({ nonce}, {common: kovanCommon})
+      st.fail('should throw on invalid nonce length')
+    }
+    catch (err: any) {
+      st.ok(err.message.includes('nonce must be 65 bytes on kovan'), 'contains kovan nonce error message')
+    }
+    try {
+      const nonce = Buffer.alloc(65)
+      BlockHeader.fromHeaderData( { nonce }, { common: kovanCommon, consensusFormatValidation: false})
+      st.pass('was able to create Kovan block with nonce 65 bytes long')
+    }
+    catch {
+      st.fail('should have instantiated block with 65 byte length nonce')
+    }
     st.end()
   })
   /*
