@@ -169,7 +169,7 @@ export abstract class Synchronizer {
   async sync(): Promise<boolean> {
     let peer = await this.best()
     let numAttempts = 1
-    while (!peer && this.opened) {
+    while ((peer == null) && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await new Promise((resolve) => setTimeout(resolve, 5000))
       peer = await this.best()
@@ -188,7 +188,7 @@ export abstract class Synchronizer {
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
-        if (this._fetcher) {
+        if (this._fetcher != null) {
           await this._fetcher.fetch()
         }
         this.config.logger.debug(`Fetcher finished fetching...`)
@@ -207,7 +207,7 @@ export abstract class Synchronizer {
    * Clears and removes the fetcher.
    */
   clearFetcher() {
-    if (this._fetcher) {
+    if (this._fetcher != null) {
       this._fetcher.clear()
       this._fetcher.destroy()
       this._fetcher = null

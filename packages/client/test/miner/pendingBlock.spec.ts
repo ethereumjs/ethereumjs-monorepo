@@ -97,7 +97,7 @@ tape('[PendingBlock]', async (t) => {
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     await txPool.add(txB01)
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (built == null) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 3, 'should include txs from pool')
@@ -146,7 +146,7 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (built == null) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
@@ -164,7 +164,7 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (built == null) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(

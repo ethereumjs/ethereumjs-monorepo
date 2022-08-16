@@ -52,7 +52,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       }
       // parse as ip:port
       const match = s.match(/^(\d+\.\d+\.\d+\.\d+):([0-9]+)$/)
-      if (match) {
+      if (match != null) {
         const [_, ip, port] = match
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
@@ -72,7 +72,7 @@ export function parseTransports(transports: string[]) {
   return transports.map((t) => {
     const options: { [key: string]: string } = {}
     const [name, ...pairs] = t.split(':')
-    if (pairs.length) {
+    if (pairs.length > 0) {
       pairs
         .join(':')
         .split(',')

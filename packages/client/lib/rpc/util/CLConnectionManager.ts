@@ -72,7 +72,7 @@ export class CLConnectionManager {
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
 
   get running() {
-    return !!this._connectionCheckInterval
+    return !(this._connectionCheckInterval == null)
   }
 
   constructor(opts: CLConnectionManagerOpts) {
@@ -116,15 +116,15 @@ export class CLConnectionManager {
   }
 
   stop() {
-    if (this._connectionCheckInterval) {
+    if (this._connectionCheckInterval != null) {
       clearInterval(this._connectionCheckInterval)
       this._connectionCheckInterval = undefined
     }
-    if (this._payloadLogInterval) {
+    if (this._payloadLogInterval != null) {
       clearInterval(this._payloadLogInterval)
       this._payloadLogInterval = undefined
     }
-    if (this._forkchoiceLogInterval) {
+    if (this._forkchoiceLogInterval != null) {
       clearInterval(this._forkchoiceLogInterval)
       this._forkchoiceLogInterval = undefined
     }
@@ -134,7 +134,7 @@ export class CLConnectionManager {
     const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
       payload.payload.blockHash
     )} parentHash=${short(payload.payload.parentHash)}  status=${
-      payload.response ? payload.response.status : '-'
+      (payload.response != null) ? payload.response.status : '-'
     } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
       payload.payload.baseFeePerGas
     )} txs=${payload.payload.transactions.length}`
@@ -143,13 +143,13 @@ export class CLConnectionManager {
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
     let msg = ''
-    if (update.headBlock) {
+    if (update.headBlock != null) {
       msg += `number=${Number(update.headBlock.header.number)} `
     }
     msg += `head=${short(update.state.headBlockHash)} finalized=${short(
       update.state.finalizedBlockHash
-    )} response=${update.response ? update.response.payloadStatus.status : '-'}`
-    if (update.headBlock) {
+    )} response=${(update.response != null) ? update.response.payloadStatus.status : '-'}`
+    if (update.headBlock != null) {
       msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
     }
     if (isTruthy(update.error)) {
@@ -169,7 +169,7 @@ export class CLConnectionManager {
 
   lastForkchoiceUpdate(update: ForkchoiceUpdate) {
     this.updateStatus()
-    if (!this._initialForkchoiceUpdate) {
+    if (this._initialForkchoiceUpdate == null) {
       this._initialForkchoiceUpdate = update
       this.config.logger.info(
         `Initial consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(update)}`
@@ -180,7 +180,7 @@ export class CLConnectionManager {
 
   lastNewPayload(payload: NewPayload) {
     this.updateStatus()
-    if (!this._initialPayload) {
+    if (this._initialPayload == null) {
       this._initialPayload = payload
       this.config.logger.info(
         `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`
@@ -254,7 +254,7 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastPayload) {
+    if (this._lastPayload == null) {
       this.config.logger.info('No consensus payload received yet')
     } else {
       this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
@@ -271,7 +271,7 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastForkchoiceUpdate) {
+    if (this._lastForkchoiceUpdate == null) {
       this.config.logger.info('No consensus forkchoice update received yet')
     } else {
       this.config.logger.info(

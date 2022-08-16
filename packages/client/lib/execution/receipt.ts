@@ -128,7 +128,7 @@ export class ReceiptsManager extends MetaDBManager {
     includeTxType = false
   ): Promise<TxReceipt[] | TxReceiptWithType[]> {
     const encoded = await this.get(DBKey.Receipts, blockHash)
-    if (!encoded) return []
+    if (encoded == null) return []
     let receipts = this.rlp(RlpConvert.Decode, RlpType.Receipts, encoded)
     if (calcBloom) {
       receipts = receipts.map((r) => {
@@ -152,7 +152,7 @@ export class ReceiptsManager extends MetaDBManager {
    */
   async getReceiptByTxHash(txHash: Buffer): Promise<GetReceiptByTxHashReturn | null> {
     const txHashIndex = await this.getIndex(IndexType.TxHash, txHash)
-    if (!txHashIndex) return null
+    if (txHashIndex == null) return null
     const [blockHash, txIndex] = txHashIndex
     const receipts = await this.getReceipts(blockHash)
     if (receipts.length === 0) return null
@@ -191,7 +191,7 @@ export class ReceiptsManager extends MetaDBManager {
           }))
         )
       }
-      if (addresses && addresses.length > 0) {
+      if ((addresses != null) && addresses.length > 0) {
         logs = logs.filter((l) => addresses.some((a) => a.equals(l.log[0])))
       }
       if (topics.length > 0) {
@@ -207,8 +207,8 @@ export class ReceiptsManager extends MetaDBManager {
           for (const [i, topic] of topics.entries()) {
             if (Array.isArray(topic)) {
               // Can match any items in this array
-              if (!topic.find((t) => t.equals(l.log[1][i]))) return false
-            } else if (!topic) {
+              if (topic.find((t) => t.equals(l.log[1][i])) == null) return false
+            } else if (topic == null) {
               // If null then can match any
             } else {
               // If a value is specified then it must match
@@ -285,7 +285,7 @@ export class ReceiptsManager extends MetaDBManager {
     switch (type) {
       case IndexType.TxHash: {
         const encoded = await this.get(DBKey.TxHash, value)
-        if (!encoded) return null
+        if (encoded == null) return null
         return this.rlp(RlpConvert.Decode, RlpType.TxHash, encoded)
       }
       default:

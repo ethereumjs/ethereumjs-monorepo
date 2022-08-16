@@ -127,7 +127,7 @@ export class Peer extends events.EventEmitter {
    * @param protocolName
    */
   understands(protocolName: string): boolean {
-    return !!this.bound.get(protocolName)
+    return !(this.bound.get(protocolName) == null)
   }
 
   /**

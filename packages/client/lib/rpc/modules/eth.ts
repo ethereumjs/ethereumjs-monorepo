@@ -127,8 +127,8 @@ type JsonRpcLog = {
 const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
   const txJSON = tx.toJSON()
   return {
-    blockHash: block ? bufferToHex(block.hash()) : null,
-    blockNumber: block ? bigIntToHex(block.header.number) : null,
+    blockHash: (block != null) ? bufferToHex(block.hash()) : null,
+    blockNumber: (block != null) ? bigIntToHex(block.header.number) : null,
     from: tx.getSenderAddress().toString(),
     gas: txJSON.gasLimit!,
     gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
@@ -201,9 +201,9 @@ const jsonRpcLog = async (
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-  transactionHash: tx ? bufferToHex(tx.hash()) : null,
-  blockHash: block ? bufferToHex(block.hash()) : null,
-  blockNumber: block ? bigIntToHex(block.header.number) : null,
+  transactionHash: (tx != null) ? bufferToHex(tx.hash()) : null,
+  blockHash: (block != null) ? bufferToHex(block.hash()) : null,
+  blockNumber: (block != null) ? bigIntToHex(block.header.number) : null,
   address: bufferToHex(log[0]),
   topics: log[1].map((t) => bufferToHex(t as Buffer)),
   data: bufferToHex(log[2]),
@@ -656,9 +656,9 @@ export class Eth {
     const [txHash] = params
 
     try {
-      if (!this.receiptsManager) throw new Error('missing receiptsManager')
+      if (this.receiptsManager == null) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
-      if (!result) return null
+      if (result == null) return null
       const [_receipt, blockHash, txIndex] = result
       const block = await this._chain.getBlock(blockHash)
       const tx = block.transactions[txIndex]
@@ -736,9 +736,9 @@ export class Eth {
     const [txHash] = params
 
     try {
-      if (!this.receiptsManager) throw new Error('missing receiptsManager')
+      if (this.receiptsManager == null) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
-      if (!result) return null
+      if (result == null) return null
       const [receipt, blockHash, txIndex, logIndex] = result
       const block = await this._chain.getBlock(blockHash)
       const parentBlock = await this._chain.getBlock(block.header.parentHash)
@@ -786,7 +786,7 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (this.receiptsManager == null) throw new Error('missing receiptsManager')
     if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
       throw {
         code: INVALID_PARAMS,
@@ -997,14 +997,14 @@ export class Eth {
       highestBlock = bigIntToHex(syncTargetHeight)
     } else {
       const bestPeer = await synchronizer.best()
-      if (!bestPeer) {
+      if (bestPeer == null) {
         throw {
           code: INTERNAL_ERROR,
           message: `no peer available for synchronization`,
         }
       }
       const highestBlockHeader = await synchronizer.latest(bestPeer)
-      if (!highestBlockHeader) {
+      if (highestBlockHeader == null) {
         throw {
           code: INTERNAL_ERROR,
           message: `highest block header unavailable`,

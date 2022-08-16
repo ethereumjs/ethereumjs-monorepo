@@ -3,6 +3,17 @@ module.exports = {
   parserOptions: {
     project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json'],
   },
+  rules: {
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+        allowAny: false,
+      },
+    ],
+  },
   overrides: [
     {
       files: ['test/**/*.ts'],

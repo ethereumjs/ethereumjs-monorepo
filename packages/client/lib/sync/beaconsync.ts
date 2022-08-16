@@ -95,14 +95,14 @@ export class BeaconSynchronizer extends Synchronizer {
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
-      if (latest) {
+      if (latest != null) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        if (((best == null) && number >= this.chain.blocks.height) || ((best != null) && best[1] < number)) {
           best = [peer, number]
         }
       }
     }
-    return best ? best[0] : undefined
+    return (best != null) ? best[0] : undefined
   }
 
   /**
@@ -113,7 +113,7 @@ export class BeaconSynchronizer extends Synchronizer {
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return result ? result[1][0] : undefined
+    return (result != null) ? result[1][0] : undefined
   }
 
   /**
@@ -124,7 +124,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (this.running) return
     this.running = true
 
-    if (block) {
+    if (block != null) {
       await this.skeleton.initSync(block)
     }
 
@@ -219,8 +219,8 @@ export class BeaconSynchronizer extends Synchronizer {
       return false
     }
 
-    const latest = peer ? await this.latest(peer) : undefined
-    if (!latest) return false
+    const latest = (peer != null) ? await this.latest(peer) : undefined
+    if (latest == null) return false
 
     const height = latest.number
     if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {

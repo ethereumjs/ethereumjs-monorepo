@@ -58,7 +58,7 @@ export class Libp2pServer extends Server {
     }
     let peerId: PeerId
     await super.start()
-    if (!this.node) {
+    if (this.node == null) {
       peerId = await this.getPeerId()
       const addresses = { listen: this.multiaddrs.map((ma) => ma.toString()) }
       this.node = new Libp2pNode({
@@ -71,7 +71,7 @@ export class Libp2pServer extends Server {
         this.node!.handle(protocol, async ({ connection, stream }) => {
           const [peerId] = this.getPeerInfo(connection)
           const peer = this.peers.get(peerId.toB58String())
-          if (peer) {
+          if (peer != null) {
             await peer.accept(p, stream, this)
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
@@ -80,7 +80,7 @@ export class Libp2pServer extends Server {
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
       const id = peerId.toB58String()
-      if (this.peers.get(id) || this.isBanned(id)) {
+      if ((this.peers.get(id) != null) || this.isBanned(id)) {
         return
       }
       const peer = this.createPeer(peerId)
