@@ -87,7 +87,7 @@ export class ECIES {
 
   _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
     const privateKey = genPrivateKey()
-    if (!this._remotePublicKey) return
+    if (this._remotePublicKey === null) return
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.slice(0, 16) // encryption key
@@ -100,7 +100,7 @@ export class ECIES {
     const dataIV = Buffer.concat([IV, encryptedData])
 
     // create tag
-    if (!sharedMacData) {
+    if (sharedMacData === null) {
       sharedMacData = Buffer.from([])
     }
     const tag = crypto
@@ -131,7 +131,7 @@ export class ECIES {
     const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
 
     // check the tag
-    if (!sharedMacData) {
+    if (sharedMacData === null) {
       sharedMacData = Buffer.from([])
     }
     const _tag = crypto
@@ -148,13 +148,13 @@ export class ECIES {
   }
 
   _setupFrame(remoteData: Buffer, incoming: boolean): void {
-    if (!this._remoteNonce) return
+    if (this._remoteNonce === null) return
     const nonceMaterial = incoming
       ? Buffer.concat([this._nonce, this._remoteNonce])
       : Buffer.concat([this._remoteNonce, this._nonce])
     const hNonce = keccak256(nonceMaterial)
 
-    if (!this._ephemeralSharedSecret) return
+    if (this._ephemeralSharedSecret === null) return
     const IV = Buffer.allocUnsafe(16).fill(0x00)
     const sharedSecret = keccak256(this._ephemeralSharedSecret, hNonce)
 
@@ -172,7 +172,7 @@ export class ECIES {
   }
 
   createAuthEIP8() {
-    if (!this._remotePublicKey) return
+    if (this._remotePublicKey === null) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
@@ -189,13 +189,13 @@ export class ECIES {
     const overheadLength = 113
     const sharedMacData = int2buffer(authMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(authMsg, sharedMacData)
-    if (!encryptedMsg) return
+    if (encryptedMsg === undefined) return
     this._initMsg = Buffer.concat([sharedMacData, encryptedMsg])
     return this._initMsg
   }
 
   createAuthNonEIP8(): Buffer | undefined {
-    if (!this._remotePublicKey) return
+    if (this._remotePublicKey === null) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = Buffer.concat([
@@ -280,10 +280,10 @@ export class ECIES {
     const overheadLength = 113
     const sharedMacData = int2buffer(ackMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(ackMsg, sharedMacData)
-    if (!encryptedMsg) return
+    if (encryptedMsg === undefined) return
     this._initMsg = Buffer.concat([sharedMacData, encryptedMsg])
 
-    if (!this._remoteInitMsg) return
+    if (this._remoteInitMsg === null) return
     this._setupFrame(this._remoteInitMsg, true)
     return this._initMsg
   }
@@ -293,7 +293,7 @@ export class ECIES {
 
     this._initMsg = this._encryptMessage(data)
 
-    if (!this._remoteInitMsg) return
+    if (this._remoteInitMsg === null) return
     this._setupFrame(this._remoteInitMsg, true)
     return this._initMsg
   }
@@ -322,7 +322,7 @@ export class ECIES {
     this._remoteNonce = remoteNonce
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    if (!sharedMacData) {
+    if (sharedMacData === null) {
       sharedMacData = Buffer.from([])
     }
     this._setupFrame(Buffer.concat([sharedMacData, data]), false)
@@ -339,10 +339,10 @@ export class ECIES {
     const headerData = Buffer.from(RLP.encode([0, 0])) // [capability-id, context-id] (currently unused in spec)
     let header = Buffer.concat([bufSize, headerData])
     header = zfill(header, 16, false)
-    if (!this._egressAes) return
+    if (this._egressAes === null) return
     header = this._egressAes.update(header)
 
-    if (!this._egressMac) return
+    if (this._egressMac === null) return
     this._egressMac.updateHeader(header)
     const tag = this._egressMac.digest()
 
@@ -354,12 +354,12 @@ export class ECIES {
     let header = data.slice(0, 16)
     const mac = data.slice(16, 32)
 
-    if (!this._ingressMac) return
+    if (this._ingressMac === null) return
     this._ingressMac.updateHeader(header)
     const _mac = this._ingressMac.digest()
     assertEq(_mac, mac, 'Invalid MAC', debug)
 
-    if (!this._ingressAes) return
+    if (this._ingressAes === null) return
     header = this._ingressAes.update(header)
     this._bodySize = buffer2int(header.slice(0, 3))
     return this._bodySize
@@ -367,10 +367,10 @@ export class ECIES {
 
   createBody(data: Buffer): Buffer | undefined {
     data = zfill(data, Math.ceil(data.length / 16) * 16, false)
-    if (!this._egressAes) return
+    if (this._egressAes === null) return
     const encryptedData = this._egressAes.update(data)
 
-    if (!this._egressMac) return
+    if (this._egressMac === null) return
     this._egressMac.updateBody(encryptedData)
     const tag = this._egressMac.digest()
     return Buffer.concat([encryptedData, tag])
@@ -382,7 +382,7 @@ export class ECIES {
     const body = data.slice(0, -16)
     const mac = data.slice(-16)
 
-    if (!this._ingressMac) return
+    if (this._ingressMac === null) return
     this._ingressMac.updateBody(body)
     const _mac = this._ingressMac.digest()
     assertEq(_mac, mac, 'Invalid MAC', debug)
@@ -390,7 +390,7 @@ export class ECIES {
     const size = this._bodySize
     this._bodySize = null
 
-    if (!this._ingressAes) return
+    if (this._ingressAes === null) return
     return this._ingressAes.update(body).slice(0, size)
   }
 }

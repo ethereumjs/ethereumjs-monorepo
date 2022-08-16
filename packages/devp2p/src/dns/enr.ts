@@ -105,10 +105,14 @@ export class ENR {
       'signature'
     ) as ENRRootValues
 
-    if (!rootVals.eRoot) throw new Error("Could not parse 'e' value from ENR root entry")
-    if (!rootVals.lRoot) throw new Error("Could not parse 'l' value from ENR root entry")
-    if (!rootVals.seq) throw new Error("Could not parse 'seq' value from ENR root entry")
-    if (!rootVals.signature) throw new Error("Could not parse 'sig' value from ENR root entry")
+    if (rootVals.eRoot === undefined)
+      throw new Error("Could not parse 'e' value from ENR root entry")
+    if (rootVals.lRoot === undefined)
+      throw new Error("Could not parse 'l' value from ENR root entry")
+    if (rootVals.seq === undefined)
+      throw new Error("Could not parse 'seq' value from ENR root entry")
+    if (rootVals.signature === undefined)
+      throw new Error("Could not parse 'sig' value from ENR root entry")
 
     const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
@@ -149,8 +153,9 @@ export class ENR {
       'domain'
     ) as ENRTreeValues
 
-    if (!treeVals.publicKey) throw new Error('Could not parse public key from ENR tree entry')
-    if (!treeVals.domain) throw new Error('Could not parse domain from ENR tree entry')
+    if (treeVals.publicKey === undefined)
+      throw new Error('Could not parse public key from ENR tree entry')
+    if (treeVals.domain === undefined) throw new Error('Could not parse domain from ENR tree entry')
 
     return treeVals
   }

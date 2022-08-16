@@ -239,7 +239,7 @@ export class ETH extends Protocol {
       status.genesisHash,
     ]
     if (this._version >= 64) {
-      if (status.latestBlock) {
+      if (status.latestBlock !== undefined) {
         const latestBlock = bufferToBigInt(status.latestBlock)
         if (latestBlock < this._latestBlock) {
           throw new Error(

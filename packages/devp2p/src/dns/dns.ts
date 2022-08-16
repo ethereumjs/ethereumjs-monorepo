@@ -166,7 +166,7 @@ export class DNS {
    * @return {string}
    */
   private async _getTXTRecord(subdomain: string, context: SearchContext): Promise<string> {
-    if (this._DNSTreeCache[subdomain]) {
+    if (this._DNSTreeCache[subdomain] !== undefined) {
       return this._DNSTreeCache[subdomain]
     }
 

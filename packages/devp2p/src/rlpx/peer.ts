@@ -168,11 +168,11 @@ export class Peer extends EventEmitter {
     )
     if (isTruthy(this._EIP8)) {
       const authEIP8 = this._eciesSession.createAuthEIP8()
-      if (!authEIP8) return
+      if (authEIP8 === undefined) return
       this._socket.write(authEIP8)
     } else {
       const authNonEIP8 = this._eciesSession.createAuthNonEIP8()
-      if (!authNonEIP8) return
+      if (authNonEIP8 === undefined) return
       this._socket.write(authNonEIP8)
     }
     this._state = 'Ack'
@@ -189,11 +189,11 @@ export class Peer extends EventEmitter {
     )
     if (this._eciesSession._gotEIP8Auth) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
-      if (!ackEIP8) return
+      if (ackEIP8 === undefined) return
       this._socket.write(ackEIP8)
     } else {
       const ackOld = this._eciesSession.createAckOld()
-      if (!ackOld) return
+      if (ackOld === undefined) return
       this._socket.write(ackOld)
     }
     this._state = 'Header'
@@ -212,14 +212,14 @@ export class Peer extends EventEmitter {
 
     const msg = Buffer.concat([Buffer.from(RLP.encode(code)), data])
     const header = this._eciesSession.createHeader(msg.length)
-    if (!header || this._socket.destroyed) return
+    if (header === undefined || this._socket.destroyed) return
     this._socket.write(header)
 
     const body = this._eciesSession.createBody(msg)
     // this._socket.destroyed added here and above to safeguard against
     // occasional "Cannot call write after a stream was destroyed" errors.
     // Eventually this can be caught earlier down the line.
-    if (!body || this._socket.destroyed) return
+    if (body === undefined || this._socket.destroyed) return
     this._socket.write(body)
     return true
   }
@@ -254,7 +254,7 @@ export class Peer extends EventEmitter {
       ) {
         this._weHello = payload
       }
-      if (this._hello) {
+      if (this._hello !== null) {
         this.emit('connect')
       }
     }
@@ -443,7 +443,7 @@ export class Peer extends EventEmitter {
 
     this._connected = true
     this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
-    if (this._weHello) {
+    if (this._weHello !== null) {
       this.emit('connect')
     }
   }
@@ -527,7 +527,7 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.slice(0, bytesCount)
     const body = this._eciesSession.parseBody(parseData)
-    if (!body) {
+    if (body === undefined) {
       this._logger('empty body!')
       return
     }

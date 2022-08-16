@@ -52,7 +52,9 @@ export class LES extends Protocol {
           statusArray[value[0].toString()] = value[1]
         })
         this._peerStatus = statusArray
-        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
+        const peerStatusMsg = `${
+          this._peerStatus !== null ? this._getStatusString(this._peerStatus) : ''
+        }`
         this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         this._handleStatus()
         break

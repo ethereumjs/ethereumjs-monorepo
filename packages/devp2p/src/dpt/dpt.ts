@@ -194,7 +194,7 @@ export class DPT extends EventEmitter {
       this.emit('error', error)
       return
     }
-    if (!this._id) return
+    if (this._id === undefined) return
     if (this._shouldFindNeighbours) {
       this._server.findneighbours(peer, this._id)
     }
