@@ -159,36 +159,38 @@ tape('reorg tests', (t) => {
 
       let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
       t.ok(
-        !signerStates.find(
+        signerStates.find(
           (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
-        ),
+        ) === undefined,
         'should not find reorged signer state'
       )
 
       let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
       t.ok(
-        !signerVotes.find(
+        signerVotes.find(
           (v: any) =>
             v[0] === BigInt(2) &&
             v[1][0].equals(block1_low.header.cliqueSigner()) &&
             v[1][1].equals(beneficiary1) &&
             v[1][2].equals(CLIQUE_NONCE_AUTH)
-        ),
+        ) === undefined,
         'should not find reorged clique vote'
       )
 
       let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
       t.ok(
-        !blockSigners.find(
+        blockSigners.find(
           (s: any) => s[0] === BigInt(1) && s[1].equals(block1_low.header.cliqueSigner())
-        ),
+        ) === undefined,
         'should not find reorged block signer'
       )
 
       signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
       t.ok(
-        !!signerStates.find(
-          (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2))
+        !(
+          signerStates.find(
+            (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2))
+          ) === undefined
         ),
         'should find reorged signer state'
       )
@@ -198,8 +200,10 @@ tape('reorg tests', (t) => {
 
       blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
       t.ok(
-        !!blockSigners.find(
-          (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner())
+        !(
+          blockSigners.find(
+            (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner())
+          ) === undefined
         ),
         'should find reorged block signer'
       )

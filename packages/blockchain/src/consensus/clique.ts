@@ -120,7 +120,7 @@ export class CliqueConsensus implements Consensus {
   }
 
   async validateConsensus(block: Block): Promise<void> {
-    if (!this.blockchain) {
+    if (this.blockchain === undefined) {
       throw new Error('blockchain not provided')
     }
 
@@ -151,7 +151,7 @@ export class CliqueConsensus implements Consensus {
   }
 
   async validateDifficulty(header: BlockHeader): Promise<void> {
-    if (!this.blockchain) {
+    if (this.blockchain === undefined) {
       throw new Error('blockchain not provided')
     }
 
@@ -213,7 +213,7 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
-    if (signerState) {
+    if (signerState !== undefined) {
       this._cliqueLatestSignerStates.push(signerState)
     }
 
@@ -221,7 +221,7 @@ export class CliqueConsensus implements Consensus {
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
-    if (lastBlockNumber) {
+    if (typeof lastBlockNumber === 'bigint') {
       const blockLimit = lastBlockNumber - BigInt(limit)
       const states = this._cliqueLatestSignerStates
       const lastItem = states[states.length - 1]
@@ -257,7 +257,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
-    if (header && !header.coinbase.isZero()) {
+    if (header !== undefined && !header.coinbase.isZero()) {
       const signer = header.cliqueSigner()
       const beneficiary = header.coinbase
       const nonce = header.nonce
@@ -377,7 +377,7 @@ export class CliqueConsensus implements Consensus {
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
-    if (lastBlockNumber) {
+    if (typeof lastBlockNumber === 'bigint') {
       const lastEpochBlockNumber =
         lastBlockNumber -
         (lastBlockNumber %
@@ -475,7 +475,7 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async cliqueUpdateLatestBlockSigners(header?: BlockHeader) {
-    if (header) {
+    if (header !== undefined) {
       if (header.isGenesis()) {
         return
       }

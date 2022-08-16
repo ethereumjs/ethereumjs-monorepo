@@ -192,10 +192,10 @@ export class DBManager {
       }
 
       let value = this._cache[cacheString].get(dbKey)
-      if (!value) {
+      if (value === undefined) {
         value = await this._db.get(dbKey, dbOpts)
 
-        if (value) {
+        if (value !== undefined) {
           this._cache[cacheString].set(dbKey, value)
         }
       }

@@ -19,7 +19,7 @@ export class EthashConsensus implements Consensus {
   }
 
   async validateConsensus(block: Block): Promise<void> {
-    if (!this._ethash) {
+    if (this._ethash === undefined) {
       throw new Error('blockchain not provided')
     }
     const valid = await this._ethash.verifyPOW(block)
@@ -33,7 +33,7 @@ export class EthashConsensus implements Consensus {
    * @param header - header of block to be checked
    */
   async validateDifficulty(header: BlockHeader) {
-    if (!this.blockchain) {
+    if (this.blockchain === undefined) {
       throw new Error('blockchain not provided')
     }
     const parentHeader = (await this.blockchain.getBlock(header.parentHash)).header

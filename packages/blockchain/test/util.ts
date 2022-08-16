@@ -10,7 +10,7 @@ import { Blockchain } from '../src'
 import type { Level } from 'level'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
-  const blocks = existingBlocks ? existingBlocks : []
+  const blocks = existingBlocks !== undefined ? existingBlocks : []
 
   const gasLimit = 8000000
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
@@ -42,7 +42,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
 }
 
 export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
-  const existingBlocks: Block[] = genesis ? [genesis] : []
+  const existingBlocks: Block[] = genesis !== undefined ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
   const blockchain = await Blockchain.create({

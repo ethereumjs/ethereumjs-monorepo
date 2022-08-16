@@ -146,12 +146,12 @@ tape('Clique: Initialization', (t) => {
     let coinbase = Address.zero()
     let nonce = CLIQUE_NONCE_DROP
     let extraData = EXTRA_DATA
-    if (beneficiary) {
+    if (beneficiary !== undefined) {
       coinbase = beneficiary[0].address
       if (beneficiary[1]) {
         nonce = CLIQUE_NONCE_AUTH
       }
-    } else if (checkpointSigners) {
+    } else if (checkpointSigners !== undefined) {
       extraData = Buffer.concat([
         Buffer.alloc(32),
         ...checkpointSigners.map((s) => s.address.toBuffer()),
