@@ -1,19 +1,20 @@
-import type { Common } from '@ethereumjs/common'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex, isTruthy } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import { BlockHeader } from './header'
+
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
   Transaction,
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
-import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-
-import { BlockHeader } from './header'
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
 
 /**
  * An object that represents the block.

@@ -1,19 +1,22 @@
-import type { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
-import type { Peer } from '../net/peer/peer'
-import type { Protocol } from '../net/protocol'
-import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
+import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
-import type { EthereumServiceOptions } from './ethereumservice'
+
 import { EthereumService } from './ethereumservice'
 import { TxPool } from './txpool'
+
+import type { Peer } from '../net/peer/peer'
+import type { Protocol } from '../net/protocol'
+import type { EthereumServiceOptions } from './ethereumservice'
+import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */

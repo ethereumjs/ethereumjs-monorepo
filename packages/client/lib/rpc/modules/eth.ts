@@ -1,13 +1,9 @@
-import type { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
-import type { Log } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
-import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, JsonTx, TypedTransaction } from '@ethereumjs/tx'
 import { Capability, Transaction, TransactionFactory } from '@ethereumjs/tx'
-import type { Account } from '@ethereumjs/util'
 import {
   Address,
+  TypeOutput,
   bigIntToHex,
   bufferToHex,
   intToHex,
@@ -16,18 +12,23 @@ import {
   setLengthLeft,
   toBuffer,
   toType,
-  TypeOutput,
 } from '@ethereumjs/util'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
+
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { ReceiptsManager } from '../../execution/receipt'
 import type { EthProtocol } from '../../net/protocol'
 import type { EthereumService, FullEthereumService } from '../../service'
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import type { RpcTx } from '../types'
-import { middleware, validators } from '../validation'
+import type { Block } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
+import type { Proof } from '@ethereumjs/statemanager'
+import type { FeeMarketEIP1559Transaction, JsonTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Account } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")

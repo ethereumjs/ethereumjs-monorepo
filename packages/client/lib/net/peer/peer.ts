@@ -4,10 +4,10 @@ import type { Config } from '../../config'
 import type {
   BoundProtocol,
   EthProtocolMethods,
-  SnapProtocolMethods,
   LesProtocolMethods,
   Protocol,
   Sender,
+  SnapProtocolMethods,
 } from '../protocol'
 import type { Server } from '../server'
 

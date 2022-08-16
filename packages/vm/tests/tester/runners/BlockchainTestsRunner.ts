@@ -1,7 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import type { EthashConsensus } from '@ethereumjs/blockchain'
 import { Blockchain } from '@ethereumjs/blockchain'
-import type { Common } from '@ethereumjs/common'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
@@ -16,9 +14,12 @@ import {
 } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
-import type * as tape from 'tape'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
+
+import type { EthashConsensus } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
+import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

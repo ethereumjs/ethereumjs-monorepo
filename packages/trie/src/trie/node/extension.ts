@@ -1,9 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
-import type { Nibbles } from '../../types'
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
 import { nibblesToBuffer } from '../../util/nibbles'
+
+import type { Nibbles } from '../../types'
 
 export class ExtensionNode {
   _nibbles: Nibbles

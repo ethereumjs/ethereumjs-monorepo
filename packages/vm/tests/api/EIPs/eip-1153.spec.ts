@@ -1,10 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address, bufferToInt, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
 
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]

@@ -1,9 +1,8 @@
-import type { Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
-
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { Transaction } from './legacyTransaction'
+import type { Common } from '@ethereumjs/common'
+import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Can be used in conjunction with {@link Transaction.supports}

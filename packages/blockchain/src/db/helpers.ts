@@ -1,10 +1,11 @@
-import type { BlockHeader } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
 import { bufBE8 } from './constants'
 import { DBOp, DBTarget } from './operation'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 /*
  * This extra helper file serves as an interface between the blockchain API functionality

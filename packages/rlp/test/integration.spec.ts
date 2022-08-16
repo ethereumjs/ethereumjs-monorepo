@@ -1,9 +1,10 @@
 import { exec } from 'child_process'
+import * as tape from 'tape'
 import { promisify } from 'util'
 import * as vm from 'vm'
-import * as tape from 'tape'
 
 import { RLP } from '../src'
+
 import * as official from './fixture/rlptest.json'
 import { bytesToUtf8 } from './utils'
 

@@ -17,6 +17,7 @@ import {
   toBuffer,
   toChecksumAddress,
 } from '../src'
+
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
 const _0n = BigInt(0)

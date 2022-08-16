@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { RLP, utils } from '../src'
+
 import * as official from './fixture/rlptest.json'
 import { numberToBytes } from './utils'
 

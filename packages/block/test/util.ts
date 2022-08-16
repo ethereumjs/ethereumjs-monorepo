@@ -3,8 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { BlockHeader } from '../src'
 import { Block } from '../src'
+
+import type { BlockHeader } from '../src'
 
 /**
  * This helper function creates a valid block (except the PoW) with the ability to add uncles. Returns a Block.

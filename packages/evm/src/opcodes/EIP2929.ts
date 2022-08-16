@@ -1,7 +1,6 @@
+import type { RunState } from '../interpreter'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-
-import type { RunState } from '../interpreter'
 
 /**
  * Adds address to accessedAddresses set if not already included.

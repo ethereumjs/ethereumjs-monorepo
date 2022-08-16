@@ -3,6 +3,7 @@ import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
 import { Transaction } from './legacyTransaction'
+
 import type {
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,

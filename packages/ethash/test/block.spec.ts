@@ -1,4 +1,3 @@
-import type { BlockBuffer } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -7,6 +6,8 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
+
+import type { BlockBuffer } from '@ethereumjs/block'
 
 const cacheDB = new MemoryLevel()
 

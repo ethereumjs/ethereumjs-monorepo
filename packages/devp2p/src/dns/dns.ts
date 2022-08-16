@@ -1,8 +1,9 @@
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import type { PeerInfo } from '../dpt'
 import { ENR } from './enr'
+
+import type { PeerInfo } from '../dpt'
 
 let dns: any
 try {

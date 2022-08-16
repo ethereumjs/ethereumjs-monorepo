@@ -1,12 +1,14 @@
-import type { BlockBuffer } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
-import { isFalsy, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, isFalsy } from '@ethereumjs/util'
+
+import { Event } from '../../types'
+
+import { BlockFetcherBase } from './blockfetcherbase'
 
 import type { Peer } from '../../net/peer'
-import { Event } from '../../types'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import { BlockFetcherBase } from './blockfetcherbase'
 import type { Job } from './types'
+import type { BlockBuffer } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher

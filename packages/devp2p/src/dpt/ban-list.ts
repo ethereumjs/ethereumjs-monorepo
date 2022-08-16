@@ -2,8 +2,10 @@ import { debug as createDebugLogger } from 'debug'
 import * as LRUCache from 'lru-cache'
 
 import { formatLogId } from '../util'
-import type { PeerInfo } from './dpt'
+
 import { KBucket } from './kbucket'
+
+import type { PeerInfo } from './dpt'
 
 const debug = createDebugLogger('devp2p:dpt:ban-list')
 const verbose = createDebugLogger('verbose').enabled

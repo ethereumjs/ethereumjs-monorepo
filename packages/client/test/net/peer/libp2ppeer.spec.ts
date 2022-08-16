@@ -3,9 +3,10 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Config } from '../../../lib/config'
+import { Event } from '../../../lib/types'
+
 import type { Libp2pPeer } from '../../../lib/net/peer'
 import type { Protocol } from '../../../lib/net/protocol'
-import { Event } from '../../../lib/types'
 
 tape('[Libp2pPeer]', async (t) => {
   const _PeerId = td.replace('peer-id')

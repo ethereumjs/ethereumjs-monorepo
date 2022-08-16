@@ -6,7 +6,7 @@ import * as td from 'testdouble'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
-import { errReorgDenied, errSyncMerged, Skeleton } from '../../lib/sync/skeleton'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { parseCustomParams } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'

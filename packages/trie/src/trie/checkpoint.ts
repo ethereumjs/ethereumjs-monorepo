@@ -1,6 +1,8 @@
 import { CheckpointDB, LevelDB } from '../db'
-import type { DB, TrieOpts } from '../types'
+
 import { Trie } from './trie'
+
+import type { DB, TrieOpts } from '../types'
 
 /**
  * Adds checkpointing to the {@link Trie}

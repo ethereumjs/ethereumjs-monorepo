@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import {
+  TypeOutput,
   bigIntToBuffer,
   bigIntToHex,
   bufferToBigInt,
@@ -11,7 +12,6 @@ import {
   isTruthy,
   toBuffer,
   toType,
-  TypeOutput,
 } from '../src'
 
 tape('toType', function (t) {

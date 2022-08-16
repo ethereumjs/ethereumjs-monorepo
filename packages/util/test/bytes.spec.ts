@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 
 import {
-  addHexPrefix,
   Address,
+  addHexPrefix,
   arrToBufArr,
   baToJSON,
   bigIntToBuffer,

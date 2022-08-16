@@ -4,9 +4,10 @@ import { toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
-import type { FullEthereumService } from '../../../lib/service'
 import { baseRequest, baseSetup, params } from '../helpers'
 import { checkError } from '../util'
+
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_sendRawTransaction'
 

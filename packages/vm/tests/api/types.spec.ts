@@ -1,9 +1,10 @@
-import type { BlockData } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { AccessListEIP2930TxData, TxData } from '@ethereumjs/tx'
 import { AccessListEIP2930Transaction, Transaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
+
+import type { BlockData } from '@ethereumjs/block'
+import type { AccessListEIP2930TxData, TxData } from '@ethereumjs/tx'
 
 tape('[Types]', function (t) {
   t.test('should ensure that the actual objects can be safely used as their data types', (st) => {

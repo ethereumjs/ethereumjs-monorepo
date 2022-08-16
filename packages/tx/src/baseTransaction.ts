@@ -1,18 +1,19 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { BigIntLike } from '@ethereumjs/util'
 import {
   Address,
+  MAX_INTEGER,
+  MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
   bufferToBigInt,
   bufferToHex,
   ecsign,
   isTruthy,
-  MAX_INTEGER,
-  MAX_UINT64,
   publicToAddress,
-  SECP256K1_ORDER_DIV_2,
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
+
+import { Capability } from './types'
 
 import type {
   AccessListEIP2930TxData,
@@ -24,7 +25,7 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types'
-import { Capability } from './types'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
   hash: Buffer | undefined

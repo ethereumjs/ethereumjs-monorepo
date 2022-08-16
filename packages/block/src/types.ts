@@ -1,3 +1,4 @@
+import type { BlockHeader } from './header'
 import type { Common } from '@ethereumjs/common'
 import type {
   AccessListEIP2930TxData,
@@ -6,8 +7,6 @@ import type {
   TxData,
 } from '@ethereumjs/tx'
 import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
-
-import type { BlockHeader } from './header'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified

@@ -1,5 +1,3 @@
-import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { CliqueConfig } from '@ethereumjs/common'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, arrToBufArr, bigIntToBuffer, bufArrToArr, bufferToBigInt } from '@ethereumjs/util'
@@ -7,6 +5,8 @@ import { debug as createDebugLogger } from 'debug'
 
 import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 const debug = createDebugLogger('blockchain:clique')
 

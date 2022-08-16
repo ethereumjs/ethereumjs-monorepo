@@ -81,7 +81,16 @@ module.exports = {
     'import/no-unused-modules': 'error',
     'import/no-useless-path-segments': 'error',
     'import/no-webpack-loader-syntax': 'error',
-    'import/order': 'error',
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc',
+        },
+        groups: ['object', ['builtin', 'external'], 'parent', 'sibling', 'index', 'type'],
+        'newlines-between': 'always',
+      },
+    ],
     'no-console': 'warn',
     'no-debugger': 'error',
     'no-dupe-class-members': 'off',
@@ -94,6 +103,7 @@ module.exports = {
     // TypeError: Error while loading rule 'prettier/prettier': context.getPhysicalFilename is not a function
     'prettier/prettier': 'off',
     'simple-import-sort/exports': 'error',
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
   },
   parserOptions: {
     extraFileExtensions: ['.json'],

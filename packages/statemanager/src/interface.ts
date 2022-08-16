@@ -1,6 +1,5 @@
-import type { Account, Address } from '@ethereumjs/util'
-
 import type { Proof } from './stateManager'
+import type { Account, Address } from '@ethereumjs/util'
 
 /**
  * Storage values of an account

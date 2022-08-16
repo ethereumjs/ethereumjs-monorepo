@@ -1,13 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 
+import { FlowControl } from '../net/protocol'
+import { Event } from '../types'
+import { short } from '../util'
+
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
 import type { PeerPool } from '../net/peerpool'
-import { FlowControl } from '../net/protocol'
-import { Event } from '../types'
-import { short } from '../util'
 import type { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {

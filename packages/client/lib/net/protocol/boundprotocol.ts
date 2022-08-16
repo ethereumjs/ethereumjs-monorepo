@@ -1,7 +1,8 @@
 import { isTruthy } from '@ethereumjs/util'
 
-import type { Config } from '../../config'
 import { Event } from '../../types'
+
+import type { Config } from '../../config'
 import type { Peer } from '../peer/peer'
 import type { Message, Protocol } from './protocol'
 import type { Sender } from './sender'

@@ -1,6 +1,5 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import type { TypedTransaction } from '@ethereumjs/tx'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -10,6 +9,8 @@ import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ether
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 

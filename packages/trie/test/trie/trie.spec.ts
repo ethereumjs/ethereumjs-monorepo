@@ -1,12 +1,12 @@
-import { tmpdir } from 'os'
-import { mkdtempSync } from 'fs'
-import { join } from 'path'
 import { KECCAK256_RLP } from '@ethereumjs/util'
+import { mkdtempSync } from 'fs'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import * as tape from 'tape'
 
-import { CheckpointTrie, SecureTrie, Trie, LevelDB, ROOT_DB_KEY } from '../../src'
+import { CheckpointTrie, LevelDB, ROOT_DB_KEY, SecureTrie, Trie } from '../../src'
 
 function bytesToHex(bytes: Buffer | null) {
   return bytes?.toString('hex')

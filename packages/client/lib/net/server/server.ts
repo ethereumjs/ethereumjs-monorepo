@@ -1,10 +1,11 @@
 import { isTruthy } from '@ethereumjs/util'
-import type { Multiaddr } from 'multiaddr'
+
+import { parseKey, parseMultiaddrs } from '../../util/parse'
 
 import type { Config } from '../../config'
 import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types'
-import { parseKey, parseMultiaddrs } from '../../util/parse'
 import type { Protocol } from '../protocol/protocol'
+import type { Multiaddr } from 'multiaddr'
 
 export interface ServerOptions {
   /* Config */

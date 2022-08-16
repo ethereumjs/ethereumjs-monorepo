@@ -3,11 +3,13 @@ import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@et
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import type { Peer } from '../rlpx/peer'
 import { DISCONNECT_REASONS } from '../rlpx/peer'
 import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
-import type { SendMethod } from './protocol'
+
 import { EthProtocol, Protocol } from './protocol'
+
+import type { Peer } from '../rlpx/peer'
+import type { SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 

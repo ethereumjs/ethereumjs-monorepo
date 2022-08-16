@@ -1,7 +1,7 @@
-import path from 'path'
 import { Chain, Common } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, isTruthy } from '@ethereumjs/util'
+import path from 'path'
 
 import { Blockchain } from '../../blockchain/src'
 import { EEI } from '../../vm/src/eei/eei'

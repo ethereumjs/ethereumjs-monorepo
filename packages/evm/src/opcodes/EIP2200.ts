@@ -1,9 +1,10 @@
-import type { Common } from '@ethereumjs/common'
-
 import { ERROR } from '../exceptions'
-import type { RunState } from '../interpreter'
+
 import { adjustSstoreGasEIP2929 } from './EIP2929'
 import { trap } from './util'
+
+import type { RunState } from '../interpreter'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-2200 (Istanbul)

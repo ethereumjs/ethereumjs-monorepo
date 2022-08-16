@@ -1,6 +1,7 @@
+import { Fetcher } from './fetcher'
+
 import type { Chain } from '../../blockchain'
 import type { FetcherOptions } from './fetcher'
-import { Fetcher } from './fetcher'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /** Blockchain */

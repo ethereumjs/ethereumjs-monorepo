@@ -1,14 +1,15 @@
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
-import type { BlockData, HeaderData } from '@ethereumjs/block'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as tape from 'tape'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
+
+import type { BlockData, HeaderData } from '@ethereumjs/block'
 
 const config = new Config()
 

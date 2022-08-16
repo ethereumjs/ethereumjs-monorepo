@@ -1,7 +1,9 @@
-import type { Config } from '../config'
 import { Event } from '../types'
-import type { Peer } from './peer'
+
 import { RlpxServer } from './server'
+
+import type { Config } from '../config'
+import type { Peer } from './peer'
 
 export interface PeerPoolOptions {
   /* Config */

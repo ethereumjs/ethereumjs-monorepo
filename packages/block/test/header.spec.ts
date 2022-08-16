@@ -1,4 +1,3 @@
-import type { CliqueConfig } from '@ethereumjs/common'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
@@ -6,8 +5,11 @@ import * as tape from 'tape'
 
 import { Block } from '../src'
 import { BlockHeader } from '../src/header'
-const blocksMainnet = require('./testdata/blocks_mainnet.json')
+
+import type { CliqueConfig } from '@ethereumjs/common'
+
 const blocksGoerli = require('./testdata/blocks_goerli.json')
+const blocksMainnet = require('./testdata/blocks_mainnet.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
