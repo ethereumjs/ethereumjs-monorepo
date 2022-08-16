@@ -171,7 +171,7 @@ export class Common extends EventEmitter {
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
-      if ((initializedChains['names'] as ChainName)[chain]) {
+      if ((initializedChains['names'] as ChainName)[chain] !== undefined) {
         const name: string = (initializedChains['names'] as ChainName)[chain]
         return initializedChains[name] as ChainConfig
       }
@@ -195,7 +195,7 @@ export class Common extends EventEmitter {
     if (isTruthy(opts.hardfork)) {
       this.setHardfork(opts.hardfork)
     }
-    if (opts.eips) {
+    if (opts.eips !== undefined) {
       this.setEIPs(opts.eips)
     }
   }
@@ -281,7 +281,7 @@ export class Common extends EventEmitter {
       if (blockNumber >= BigInt(hf.block)) {
         hardfork = hf.name as Hardfork
       }
-      if (td && isTruthy(hf.ttd)) {
+      if (td !== undefined && isTruthy(hf.ttd)) {
         if (td >= BigInt(hf.ttd)) {
           minTdHF = hf.name
         } else {
@@ -290,7 +290,7 @@ export class Common extends EventEmitter {
       }
       previousHF = hf.name
     }
-    if (td) {
+    if (td !== undefined) {
       let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
       if (isTruthy(minTdHF)) {
         if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
@@ -679,7 +679,7 @@ export class Common extends EventEmitter {
     if (data?.forkHash !== null && data?.forkHash !== undefined) {
       return data.forkHash
     }
-    if (!genesisHash) throw new Error('genesisHash required for forkHash calculation')
+    if (genesisHash === undefined) throw new Error('genesisHash required for forkHash calculation')
     return this._calcForkHash(hardfork, genesisHash)
   }
 
@@ -855,7 +855,7 @@ export class Common extends EventEmitter {
       names[id] = name.toLowerCase()
     }
     const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
-    if (customChains) {
+    if (customChains !== undefined) {
       for (const chain of customChains) {
         const { name } = chain
         names[chain.chainId.toString()] = name
