@@ -182,16 +182,16 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
       throw new Error(`Cannot convert negative bigint to buffer. Given: ${v}`)
     }
     let n = v.toString(16)
-    if (n.length % 2) n = '0' + n
+    if (n.length % 2 === 1) n = '0' + n
     return Buffer.from(n, 'hex')
   }
 
-  if (v.toArray) {
+  if (v.toArray !== undefined) {
     // converts a BN to a Buffer
     return Buffer.from(v.toArray())
   }
 
-  if (v.toBuffer) {
+  if (v.toBuffer !== undefined) {
     return Buffer.from(v.toBuffer())
   }
 
