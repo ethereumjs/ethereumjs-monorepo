@@ -58,7 +58,7 @@ type GetTrieNodesOpts = {
 export interface SnapProtocolMethods {
   getAccountRange: (
     opts: GetAccountRangeOpts
-  ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[][] }>
+  ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[] }>
 }
 
 /**
