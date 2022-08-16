@@ -86,11 +86,13 @@ export class TransactionFactory {
   public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {}) {
     if (Buffer.isBuffer(data)) {
       return this.fromSerializedData(data, txOptions)
-    } else if (Array.isArray(data)) {
+    }
+
+    if (Array.isArray(data)) {
       // It is a legacy transaction
       return Transaction.fromValuesArray(data, txOptions)
-    } else {
-      throw new Error('Cannot decode transaction: unknown type input')
     }
+
+    throw new Error('Cannot decode transaction: unknown type input')
   }
 }

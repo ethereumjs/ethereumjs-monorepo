@@ -29,20 +29,20 @@ export async function getTests(
     excludeDir,
   }
   return new Promise((resolve, reject) => {
-    const finishedCallback = (err: Error | undefined, files: string[]) => {
-      if (err) {
+    const finishedCallback = (err: Error | null, files: string[]) => {
+      if (err !== null) {
         reject(err)
         return
       }
       resolve(files)
     }
     const fileCallback = async (
-      err: Error | undefined,
+      err: Error | null,
       content: string | Buffer,
       fileName: string,
       next: Function
     ) => {
-      if (err) {
+      if (err !== null) {
         reject(err)
         return
       }

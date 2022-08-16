@@ -233,7 +233,10 @@ export class Transaction extends BaseTransaction<Transaction> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+    if (
+      this.cache.dataFee !== undefined &&
+      this.cache.dataFee.hardfork === this.common.hardfork()
+    ) {
       return this.cache.dataFee.value
     }
 
@@ -267,7 +270,7 @@ export class Transaction extends BaseTransaction<Transaction> {
     }
 
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
+      if (this.cache.hash === undefined) {
         this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
       }
       return this.cache.hash
@@ -376,11 +379,11 @@ export class Transaction extends BaseTransaction<Transaction> {
     if (
       v !== undefined &&
       v !== 0 &&
-      (!common || common.gteHardfork('spuriousDragon')) &&
+      (common === undefined || common.gteHardfork('spuriousDragon')) &&
       v !== 27 &&
       v !== 28
     ) {
-      if (common) {
+      if (common !== undefined) {
         if (!meetsEIP155(BigInt(v), common.chainId())) {
           throw new Error(
             `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
