@@ -360,9 +360,9 @@ export class Engine {
     const { parentHash, blockHash } = payload
 
     const { block, error } = await assembleBlock(payload, this.chain)
-    if ((block == null) || (error != null)) {
+    if (block === null || error !== null) {
       let response = error
-      if (response == null) {
+      if (response === null) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(toBuffer(payload.parentHash), this.chain)
@@ -373,7 +373,7 @@ export class Engine {
     }
 
     const blockExists = await validBlock(toBuffer(blockHash), this.chain)
-    if (blockExists != null) {
+    if (blockExists !== null) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
       if (isTruthy(isBlockExecuted)) {
         const response = {
@@ -406,7 +406,7 @@ export class Engine {
         }
       }
     } catch (error: any) {
-      if ((this.service.beaconSync == null) && !this.config.disableBeaconSync) {
+      if (this.service.beaconSync === null && !this.config.disableBeaconSync) {
         await this.service.switchToBeaconSync()
       }
       const status =
@@ -544,7 +544,10 @@ export class Engine {
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
-      if ((this.chain.headers.latest != null) && this.chain.headers.latest.number < headBlock.header.number) {
+      if (
+        this.chain.headers.latest !== null &&
+        this.chain.headers.latest.number < headBlock.header.number
+      ) {
         try {
           const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
           const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
@@ -625,7 +628,7 @@ export class Engine {
     /*
      * If payloadAttributes is present, start building block and return payloadId
      */
-    if (payloadAttributes != null) {
+    if (payloadAttributes !== null) {
       const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
@@ -668,7 +671,7 @@ export class Engine {
     const payloadId = toBuffer(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
-      if (built == null) {
+      if (built === null) {
         throw EngineError.UnknownPayload
       }
       const [block, receipts] = built

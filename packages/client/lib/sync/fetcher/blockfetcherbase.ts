@@ -118,7 +118,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     // the first and last by examining each job.
     while (this.in.length > 0) {
       const job = this.in.remove()
-      if (job == null) break
+      if (job === null) break
       if (job.task.first < first) {
         first = job.task.first
       }

@@ -52,13 +52,13 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       }
       // parse as ip:port
       const match = s.match(/^(\d+\.\d+\.\d+\.\d+):([0-9]+)$/)
-      if (match != null) {
+      if (match !== null) {
         const [_, ip, port] = match
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
       // parse using WHATWG URL API
       const { hostname: ip, port } = new URL(s)
-      if (ip && port) {
+      if (ip !== undefined && port !== undefined) {
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
       throw new Error(`Unable to parse bootnode URL: ${s}`)
@@ -91,7 +91,7 @@ export function parseTransports(transports: string[]) {
  * @returns nonce as a 0x-prefixed 8 byte string
  */
 function formatNonce(nonce: string): string {
-  if (!nonce || nonce === '0x0') {
+  if (nonce === undefined || nonce === '0x0') {
     return '0x0000000000000000'
   }
   if (isHexPrefixed(nonce)) {

@@ -64,15 +64,15 @@ const args = yargs(hideBin(process.argv))
   })
   .option('customChain', {
     describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    coerce: (arg: string) => (arg !== undefined ? path.resolve(arg) : undefined),
   })
   .option('customGenesisState', {
     describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    coerce: (arg: string) => (arg !== undefined ? path.resolve(arg) : undefined),
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    coerce: (arg: string) => (arg !== undefined ? path.resolve(arg) : undefined),
   })
   .option('transports', {
     describe: 'Network transports',
@@ -150,7 +150,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('jwt-secret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    coerce: (arg: string) => (arg !== undefined ? path.resolve(arg) : undefined),
   })
   .option('helprpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
@@ -319,9 +319,9 @@ async function executeBlocks(client: EthereumClient) {
   try {
     const blockRange = (args.executeBlocks as string).split('-').map((val) => {
       const reNum = /([0-9]+)/.exec(val)
-      const num = (reNum != null) ? parseInt(reNum[1]) : 0
+      const num = reNum !== null ? parseInt(reNum[1]) : 0
       const reTxs = /[0-9]+\[(.*)\]/.exec(val)
-      const txs = (reTxs != null) ? reTxs[1].split(',') : []
+      const txs = reTxs !== null ? reTxs[1].split(',') : []
       return [num, txs]
     })
     first = blockRange[0][0] as number

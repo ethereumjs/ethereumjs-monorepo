@@ -167,7 +167,7 @@ tape('[Skeleton]', async (t) => {
         await (skeleton as any).putBlock(block)
       }
 
-      if (testCase.oldState != null) {
+      if (testCase.oldState !== null) {
         ;(skeleton as any).status.progress.subchains = testCase.oldState
       }
 
@@ -264,7 +264,7 @@ tape('[Skeleton]', async (t) => {
 
       try {
         await skeleton.setHead(testCase.extend)
-        if (testCase.err != null) {
+        if (testCase.err !== null) {
           st.fail(`test ${testCaseIndex}: should have failed`)
         } else {
           st.pass(`test ${testCaseIndex}: successfully passed`)

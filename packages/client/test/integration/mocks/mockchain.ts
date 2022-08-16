@@ -34,7 +34,7 @@ export class MockChain extends Chain {
           header: {
             number: number + 1,
             difficulty: common.gteHardfork(Hardfork.Merge) ? 0 : 1,
-            parentHash: number ? blocks[number - 1].hash() : this.genesis.hash(),
+            parentHash: number > 0 ? blocks[number - 1].hash() : this.genesis.hash(),
           },
         },
         { common }

@@ -148,9 +148,9 @@ export function createRPCServer(
 
 function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
   const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
-  if (!header) throw Error(`Missing auth header`)
+  if (header === undefined) throw Error(`Missing auth header`)
   const token = header.trim().split(' ')[1]
-  if (!token) throw Error(`Missing jwt token`)
+  if (token === undefined) throw Error(`Missing jwt token`)
   const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
   if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
     throw Error('Stale jwt token')
@@ -165,11 +165,11 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(jsonParser({ limit: '11mb' }))
 
-  if (withEngineMiddleware != null) {
+  if (withEngineMiddleware !== undefined) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
     app.use((req, res, next) => {
       try {
-        if ((unlessFn != null) && unlessFn(req)) return next()
+        if (unlessFn !== undefined && unlessFn(req)) return next()
         checkHeaderAuth(req, jwtSecret)
         return next()
       } catch (error) {
@@ -193,7 +193,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
 
   // Get the server to hookup upgrade request on
   let httpServer = opts.httpServer
-  if (httpServer == null) {
+  if (httpServer === undefined) {
     const app = Connect()
     // In case browser pre-flights the upgrade request with an options request
     // more likely in case of wss connection
@@ -204,7 +204,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {
-    if (withEngineMiddleware != null) {
+    if (withEngineMiddleware !== undefined) {
       const { jwtSecret } = withEngineMiddleware
       try {
         checkHeaderAuth(req, jwtSecret)
@@ -218,5 +218,5 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     })
   })
   // Only return something if a new server was created
-  return (opts.httpServer == null) ? httpServer : undefined
+  return opts.httpServer === null ? httpServer : undefined
 }

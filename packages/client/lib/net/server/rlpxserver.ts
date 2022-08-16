@@ -266,7 +266,7 @@ export class RlpxServer extends Server {
       this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
         const id = (rlpxPeer.getId() as Buffer).toString('hex')
         const peer = this.peers.get(id)
-        if (peer != null) {
+        if (peer !== null) {
           this.peers.delete(peer.id)
           this.config.logger.debug(
             `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
