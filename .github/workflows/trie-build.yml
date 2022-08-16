@@ -45,40 +45,40 @@ jobs:
           flags: trie
         if: ${{ matrix.node-version == 16 }}
 
-  trie-benchmarks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # trie-benchmarks:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          cache: 'npm'
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 16
+  #         cache: 'npm'
 
-      - run: npm i
-        working-directory: ${{github.workspace}}
+  #     - run: npm i
+  #       working-directory: ${{github.workspace}}
 
-      - run: npm run benchmarks | tee output.txt
-        working-directory: ${{ env.cwd }}
+  #     - run: npm run benchmarks | tee output.txt
+  #       working-directory: ${{ env.cwd }}
 
-      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
-      - run: git stash
+  #     # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
+  #     - run: git stash
 
-      - name: Compare benchmarks
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          tool: 'benchmarkjs'
-          # Where the output from the benchmark tool is stored
-          output-file-path: ${{ env.cwd }}/output.txt
-          # Location of data in gh-pages branch
-          benchmark-data-dir-path: dev/bench/trie
-          # GitHub API token to make a commit comment
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Push and deploy to GitHub pages branch automatically (if on master)
-          auto-push: ${{ github.ref == 'refs/heads/master' }}
-          # Only keep and display the last 30 commits worth of benchmark data
-          max-items-in-chart: 30
+  #     - name: Compare benchmarks
+  #       uses: rhysd/github-action-benchmark@v1
+  #       with:
+  #         tool: 'benchmarkjs'
+  #         # Where the output from the benchmark tool is stored
+  #         output-file-path: ${{ env.cwd }}/output.txt
+  #         # Location of data in gh-pages branch
+  #         benchmark-data-dir-path: dev/bench/trie
+  #         # GitHub API token to make a commit comment
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         # Push and deploy to GitHub pages branch automatically (if on master)
+  #         auto-push: ${{ github.ref == 'refs/heads/master' }}
+  #         # Only keep and display the last 30 commits worth of benchmark data
+  #         max-items-in-chart: 30
 
-      # Re-apply git stash to prepare for saving back to cache.
-      # Avoids exit code 1 by checking if there are changes to be stashed first
-      - run: STASH_LIST=`git stash list` && [ ! -z $STASH_LIST ] && git stash apply || echo "No files to stash-apply. Skipping…"
+  #     # Re-apply git stash to prepare for saving back to cache.
+  #     # Avoids exit code 1 by checking if there are changes to be stashed first
+  #     - run: STASH_LIST=`git stash list` && [ ! -z $STASH_LIST ] && git stash apply || echo "No files to stash-apply. Skipping…"

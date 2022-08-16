@@ -1,6 +1,8 @@
 import * as tape from 'tape'
 
-import { BatchDBOp, CheckpointDB, LevelDB } from '../../src'
+import { CheckpointDB, LevelDB } from '../../src'
+
+import type { BatchDBOp } from '../../src'
 
 tape('DB tests', (t) => {
   const k = Buffer.from('k1')

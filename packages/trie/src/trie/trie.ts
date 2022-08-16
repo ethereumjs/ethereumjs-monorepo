@@ -1,10 +1,17 @@
-import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import Semaphore from 'semaphore-async-await'
 
 import { LevelDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
-import {
+import { ROOT_DB_KEY } from '../types'
+import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import { TrieReadStream as ReadStream } from '../util/readStream'
+import { WalkController } from '../util/walkController'
+
+import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
+
+import type {
   BatchDBOp,
   DB,
   EmbeddedNode,
@@ -13,14 +20,9 @@ import {
   Nibbles,
   Proof,
   PutBatch,
-  ROOT_DB_KEY,
   TrieNode,
   TrieOpts,
 } from '../types'
-import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
-import { TrieReadStream as ReadStream } from '../util/readStream'
-import { WalkController } from '../util/walkController'
-import { BranchNode, decodeNode, decodeRawNode, ExtensionNode, isRawNode, LeafNode } from './node'
 
 interface Path {
   node: TrieNode | null
@@ -104,7 +106,7 @@ export class Trie {
       const value = await this.lookupNode(root)
       return value !== null
     } catch (error: any) {
-      if (error.message == 'Missing node in DB') {
+      if (error.message === 'Missing node in DB') {
         return false
       } else {
         throw error
@@ -240,7 +242,7 @@ export class Trie {
       try {
         await this.walkTrie(this.root, onFound)
       } catch (error: any) {
-        if (error.message == 'Missing node in DB' && !throwIfMissing) {
+        if (error.message === 'Missing node in DB' && !throwIfMissing) {
           // pass
         } else {
           reject(error)
@@ -694,7 +696,7 @@ export class Trie {
       const value = await proofTrie.get(key, true)
       return value
     } catch (err: any) {
-      if (err.message == 'Missing node in DB') {
+      if (err.message === 'Missing node in DB') {
         throw new Error('Invalid proof provided')
       } else {
         throw err

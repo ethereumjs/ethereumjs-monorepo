@@ -1,5 +1,7 @@
-import { Chain } from '../../blockchain'
-import { Fetcher, FetcherOptions } from './fetcher'
+import { Fetcher } from './fetcher'
+
+import type { Chain } from '../../blockchain'
+import type { FetcherOptions } from './fetcher'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /** Blockchain */
@@ -67,13 +69,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const startedWith = first
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
-      tasks.push({ first: first, count: max })
+      tasks.push({ first, count: max })
       !this.reverse ? (first += BigInt(max)) : (first -= BigInt(max))
       count -= BigInt(max)
       pushedCount += BigInt(max)
     }
     if (count > BigInt(0) && tasks.length < maxTasks) {
-      tasks.push({ first: first, count: Number(count) })
+      tasks.push({ first, count: Number(count) })
       !this.reverse ? (first += BigInt(count)) : (first -= BigInt(count))
       pushedCount += count
       count = BigInt(0)

@@ -4,10 +4,10 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import blocks = require('../../testdata/blocks/beacon.json')
+import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
-import blocks = require('../../testdata/blocks/beacon.json')
 
 import { batchBlocks } from './newPayloadV1.spec'
 

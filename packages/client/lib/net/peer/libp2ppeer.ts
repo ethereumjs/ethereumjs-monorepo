@@ -1,12 +1,17 @@
-import { Multiaddr, multiaddr } from 'multiaddr'
+import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 
-import { Event, Libp2pMuxedStream as MuxedStream } from '../../types'
-import { Protocol } from '../protocol'
+import { Event } from '../../types'
 import { Libp2pSender } from '../protocol/libp2psender'
-import { Libp2pServer } from '../server'
+
 import { Libp2pNode } from './libp2pnode'
-import { Peer, PeerOptions } from './peer'
+import { Peer } from './peer'
+
+import type { Libp2pMuxedStream as MuxedStream } from '../../types'
+import type { Protocol } from '../protocol'
+import type { Libp2pServer } from '../server'
+import type { PeerOptions } from './peer'
+import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
   /* Multiaddrs to listen on */

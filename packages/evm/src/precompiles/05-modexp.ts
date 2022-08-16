@@ -6,8 +6,10 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import { ExecResult, OOGResult } from '../evm'
-import { PrecompileInput } from './types'
+import { OOGResult } from '../evm'
+
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
 
 function multComplexity(x: bigint): bigint {
   let fac1

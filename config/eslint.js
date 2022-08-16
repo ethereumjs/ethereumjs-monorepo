@@ -32,6 +32,7 @@ module.exports = {
     'prettier',
   ],
   rules: {
+    '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-use-before-define': 'error',
     '@typescript-eslint/naming-convention': [
       'error',
@@ -53,6 +54,7 @@ module.exports = {
     '@typescript-eslint/prefer-nullish-coalescing': 'error',
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/strict-boolean-expressions': ['error'],
+    eqeqeq: 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
     'import/default': 'error',
     'import/export': 'error',
@@ -77,7 +79,16 @@ module.exports = {
     'import/no-unused-modules': 'error',
     'import/no-useless-path-segments': 'error',
     'import/no-webpack-loader-syntax': 'error',
-    'import/order': 'error',
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc',
+        },
+        groups: ['object', ['builtin', 'external'], 'parent', 'sibling', 'index', 'type'],
+        'newlines-between': 'always',
+      },
+    ],
     'no-console': 'warn',
     'no-debugger': 'error',
     'no-dupe-class-members': 'off',
@@ -85,10 +96,12 @@ module.exports = {
     'no-redeclare': 'off',
     'no-unused-vars': 'off',
     'no-var': 'error',
+    'object-shorthand': 'error',
     'prefer-const': 'error',
     // TypeError: Error while loading rule 'prettier/prettier': context.getPhysicalFilename is not a function
     'prettier/prettier': 'off',
     'simple-import-sort/exports': 'error',
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
   },
   parserOptions: {
     extraFileExtensions: ['.json'],

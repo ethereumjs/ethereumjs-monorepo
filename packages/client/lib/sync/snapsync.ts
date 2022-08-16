@@ -1,5 +1,7 @@
+import { Synchronizer } from './sync'
+
 import type { Peer } from '../net/peer/peer'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { SynchronizerOptions } from './sync'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {}
 

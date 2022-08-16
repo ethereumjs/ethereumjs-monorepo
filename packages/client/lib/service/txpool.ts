@@ -1,19 +1,19 @@
+import { Capability } from '@ethereumjs/tx'
+import { Address, bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import Heap = require('qheap')
+
+import type { Config } from '../config'
+import type { Peer } from '../net/peer'
+import type { PeerPool } from '../net/peerpool'
+import type { FullEthereumService } from './fullethereumservice'
 import type { Block } from '@ethereumjs/block'
-import {
+import type {
   AccessListEIP2930Transaction,
-  Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Address, bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
-
-import Heap = require('qheap')
-import { Config } from '../config'
-import { Peer } from '../net/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { FullEthereumService } from './fullethereumservice'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

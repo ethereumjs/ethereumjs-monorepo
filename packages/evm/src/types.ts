@@ -1,10 +1,9 @@
-import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-
-import { EVM, EVMResult, ExecResult } from './evm'
-import { InterpreterStep } from './interpreter'
-import { Message } from './message'
-import { OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { EVM, EVMResult, ExecResult } from './evm'
+import type { InterpreterStep } from './interpreter'
+import type { Message } from './message'
+import type { OpHandler } from './opcodes'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * API of the EVM

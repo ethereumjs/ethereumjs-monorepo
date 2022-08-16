@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "4.0.0-beta.2",
+  "version": "4.0.0-beta.3",
   "description": "Provides Block serialization and help functions",
   "keywords": [
     "ethereum",
@@ -38,11 +38,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.2",
-    "@ethereumjs/rlp": "4.0.0-beta.2",
-    "@ethereumjs/trie": "5.0.0-beta.2",
-    "@ethereumjs/tx": "4.0.0-beta.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
+    "@ethereumjs/common": "3.0.0-beta.3",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
+    "@ethereumjs/trie": "5.0.0-beta.3",
+    "@ethereumjs/tx": "4.0.0-beta.3",
+    "@ethereumjs/util": "8.0.0-beta.3",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {

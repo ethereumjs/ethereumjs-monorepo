@@ -1,7 +1,8 @@
 import { Readable } from 'readable-stream'
 
-import { Trie } from '../trie'
 import { nibblesToBuffer } from './nibbles'
+
+import type { Trie } from '../trie'
 
 export class TrieReadStream extends Readable {
   private trie: Trie
@@ -30,7 +31,7 @@ export class TrieReadStream extends Readable {
         }
       })
     } catch (error: any) {
-      if (error.message == 'Missing node in DB') {
+      if (error.message === 'Missing node in DB') {
         // pass
       } else {
         throw error

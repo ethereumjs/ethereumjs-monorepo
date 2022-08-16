@@ -1,14 +1,16 @@
 // explicitly import buffer,
 // needed for karma-typescript bundling
-import { Buffer } from 'buffer'
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr, KECCAK256_NULL, KECCAK256_RLP_S } from '@ethereumjs/util'
+import { KECCAK256_NULL, KECCAK256_RLP_S, bufArrToArr } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
 import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { CheckpointTrie, HashFunc, LeafNode, LevelDB, Trie } from '../src'
+import { CheckpointTrie, LeafNode, LevelDB, Trie } from '../src'
 import { bufferToNibbles } from '../src/util/nibbles'
+
+import type { HashFunc } from '../src'
 
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
@@ -247,7 +249,7 @@ tape('shall handle the case of node not found correctly', async (t) => {
 
   let path = await trie.findPath(Buffer.from('aaa'))
 
-  t.ok(path.node != null, 'findPath should find a node')
+  t.ok(path.node !== null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
   await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
@@ -256,7 +258,7 @@ tape('shall handle the case of node not found correctly', async (t) => {
 
   t.ok(path.node === null, 'findPath should not return a node now')
   t.ok(
-    path.stack.length == 1,
+    path.stack.length === 1,
     'findPath should find the first extension node which is still in the DB'
   )
 
@@ -356,7 +358,7 @@ tape('dummy hash', async (t) => {
   const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
   const expectedRoot = Buffer.from(hash(new LeafNode(bufferToNibbles(k), v).serialize()))
 
-  const trie = new Trie({ hash: hash })
+  const trie = new Trie({ hash })
   await trie.put(k, v)
   t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
 

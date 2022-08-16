@@ -6,17 +6,23 @@ import {
   Capability,
   FeeMarketEIP1559Transaction,
   Transaction,
-  TypedTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../src/types'
-import { AfterBlockEvent, RunBlockOpts } from '../../src/types'
 import { VM } from '../../src/vm'
 import { getDAOCommon, setupPreConditions } from '../util'
+
 import * as testnet from './testdata/testnet.json'
 import { createAccount, setBalance, setupVM } from './utils'
+
+import type {
+  AfterBlockEvent,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  RunBlockOpts,
+} from '../../src/types'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })

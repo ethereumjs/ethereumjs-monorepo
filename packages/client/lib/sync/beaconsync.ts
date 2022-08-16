@@ -1,13 +1,17 @@
-import type { Block } from '@ethereumjs/block'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { Event } from '../types'
+import { short } from '../util'
+
+import { ReverseBlockFetcher } from './fetcher'
+import { errSyncReorged } from './skeleton'
+import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
-import { Event } from '../types'
-import { short } from '../util'
-import { ReverseBlockFetcher } from './fetcher'
-import { errSyncReorged, Skeleton } from './skeleton'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { Skeleton } from './skeleton'
+import type { SynchronizerOptions } from './sync'
+import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -45,14 +49,14 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   get fetcher(): ReverseBlockFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof ReverseBlockFetcher)){
-      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: ReverseBlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -188,7 +192,7 @@ export class BeaconSynchronizer extends Synchronizer {
       )
       return true
     } catch (error) {
-      if (error == errSyncReorged) {
+      if (error === errSyncReorged) {
         this.config.logger.debug(
           `Beacon sync reorged, new head number=${block.header.number} hash=${short(
             block.header.hash()

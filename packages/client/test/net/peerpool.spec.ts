@@ -3,9 +3,10 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Config } from '../../lib/config'
-import { RlpxServer } from '../../lib/net/server'
 import { Event } from '../../lib/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
+
+import type { RlpxServer } from '../../lib/net/server'
 
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
@@ -29,7 +30,7 @@ tape('[PeerPool]', async (t) => {
     const peer = new MockPeer({
       id: 'peer',
       location: 'abc',
-      config: config,
+      config,
       address: '0.0.0.0',
       transport: 'udp',
     })

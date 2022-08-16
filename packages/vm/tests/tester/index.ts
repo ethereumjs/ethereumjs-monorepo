@@ -1,8 +1,7 @@
-import * as path from 'path'
-import * as process from 'process'
-import { Common } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as minimist from 'minimist'
+import * as path from 'path'
+import * as process from 'process'
 import * as tape from 'tape'
 
 import {
@@ -17,6 +16,8 @@ import {
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
 import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
+
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Test runner
@@ -102,7 +103,7 @@ async function runTests() {
     let str = testGetterArgs.forkConfig
     const indicies = []
     for (let i = 0; i < str.length; i++) {
-      if (str[i] == '+') {
+      if (str[i] === '+') {
         indicies.push(i)
       }
     }
@@ -149,7 +150,7 @@ async function runTests() {
   console.log(delimiter)
   console.log(`| RunnerArgs`.padEnd(fillWidth) + ' |')
   for (const [key, value] of Object.entries(formattedRunnerArgs)) {
-    if (key == 'common') {
+    if (key === 'common') {
       const hf = (value as Common).hardfork()
       console.log(`| ${key.padEnd(fillParam)}: ${hf}`.padEnd(fillWidth) + ' |')
     } else {

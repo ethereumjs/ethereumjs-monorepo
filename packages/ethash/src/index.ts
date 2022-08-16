@@ -1,16 +1,15 @@
-import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  TWO_POW256,
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
   isFalsy,
   isTruthy,
   setLengthLeft,
-  TWO_POW256,
   zeros,
 } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 
 import {
@@ -23,6 +22,10 @@ import {
   getSeed,
   params,
 } from './util'
+
+import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { AbstractLevel } from 'abstract-level'
+
 const xor = require('buffer-xor')
 
 export type Solution = {
@@ -311,7 +314,7 @@ export class Ethash {
           cacheSize: this.cacheSize,
           fullSize: this.fullSize,
           seed: this.seed,
-          cache: cache,
+          cache,
         },
         this.dbOpts
       )

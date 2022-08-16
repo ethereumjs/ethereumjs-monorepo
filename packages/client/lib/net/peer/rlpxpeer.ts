@@ -1,18 +1,21 @@
-import { randomBytes } from 'crypto'
 import {
-  Capabilities as Devp2pCapabilities,
   ETH as Devp2pETH,
-  SNAP as Devp2pSNAP,
   LES as Devp2pLES,
-  Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
+  SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
 import { isTruthy } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 
 import { Event } from '../../types'
-import { Protocol, RlpxSender } from '../protocol'
-import { RlpxServer } from '../server'
-import { Peer, PeerOptions } from './peer'
+import { RlpxSender } from '../protocol'
+
+import { Peer } from './peer'
+
+import type { Protocol } from '../protocol'
+import type { RlpxServer } from '../server'
+import type { PeerOptions } from './peer'
+import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities: any = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
@@ -163,7 +166,7 @@ export class RlpxPeer extends Peer {
         const protocol = this.protocols.find((p) => p.name === name)
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
-        if (protocol && name != 'snap') {
+        if (protocol && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol)
           return this.bindProtocol(protocol, sender).then(() => {
             if (name === 'eth') {

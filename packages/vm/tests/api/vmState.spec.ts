@@ -5,6 +5,7 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VmState } from '../../src/eei/vmState'
+
 import { createAccount, isRunningInKarma } from './utils'
 
 const StateManager = DefaultStateManager
@@ -82,7 +83,7 @@ tape('vmState', (t) => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
+      const common = new Common({ chain, hardfork: Hardfork.Chainstart })
       const stateManager = new DefaultStateManager({ common })
       const vmState = new VmState({ stateManager, common })
 

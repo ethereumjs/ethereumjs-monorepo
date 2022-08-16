@@ -1,8 +1,9 @@
-import { Config } from '../config'
-import { Peer } from '../net/peer/peer'
 import { PeerPool } from '../net/peerpool'
-import { Protocol } from '../net/protocol'
 import { Event } from '../types'
+
+import type { Config } from '../config'
+import type { Peer } from '../net/peer/peer'
+import type { Protocol } from '../net/protocol'
 
 export interface ServiceOptions {
   /* Config */

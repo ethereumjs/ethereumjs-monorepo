@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.1 - 2022-08-11
+
+This release updates the underlying EthereumJS libraries to the newly released Beta 3 versions.
+
+### Other Changes
+
+- More robust beacon sync (additional recovery and reorg scenarios handled), PR [#1968](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1968)
+- Allow `eth_call` RPC call without providing the `to` parameter, PR [#2084](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2084)
+- Bring back client browser support from a non-working to an experimental state, PR [#2091](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2091)
+- Set `goerli` Merge TTD to 10790000 (underlying `@ethereumjs/common library), PR [#2079](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2079)
+- Update `sepolia` `mergeForkIdTransition` Merge transition HF (separate "artificial" HF construct only for networking layer) (underlying `@ethereumjs/common library), PR [#2098](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2098)
+
 ## 0.6.0 - 2022-07-15
 
 ### Sepolia Merge Support

@@ -2,6 +2,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import * as test from 'tape'
 
 import * as devp2p from '../../src'
+
 import * as util from './util'
 
 const GENESIS_TD = 17179869184

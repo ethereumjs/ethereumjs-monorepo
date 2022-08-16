@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -9,13 +8,16 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
 import * as tape from 'tape'
 
-import { Transaction, TxData } from '../src'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import { Transaction } from '../src'
 
-const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
+import type { TxData } from '../src'
+import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
+const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []
@@ -421,7 +423,8 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' ||
+          signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn't be EIP155 encoded"
       )
 
@@ -431,7 +434,8 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) === '1c' ||
+          signedWithoutEIP155.v?.toString(16) === '1b',
         "v shouldn' be EIP155 encoded"
       )
 
@@ -440,7 +444,7 @@ tape('[Transaction]', function (t) {
   )
 
   t.test(
-    'constructor: throw on legacy transactions which have v != 27 and v != 28 and v < 37',
+    'constructor: throw on legacy transactions which have v !== 27 and v !== 28 and v < 37',
     function (st) {
       function getTxData(v: number) {
         return {
@@ -493,7 +497,7 @@ tape('[Transaction]', function (t) {
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
-      get: function () {
+      get() {
         return newCommon
       },
     })

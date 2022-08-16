@@ -11,13 +11,15 @@
 
 Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceding release.
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/tx`
+To obtain the latest version, simply require the project using `npm`:
 
-# USAGE
+```shell
+npm install @ethereumjs/tx
+```
 
-## Setup
+## Usage
 
 ### Static Constructor Methods
 
@@ -59,7 +61,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eip
 
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
 
-## Transaction Types
+### Transaction Types
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
@@ -204,9 +206,9 @@ The correct tx type class for instantiation will then be chosen on runtime based
 - `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
 
-## Sending a Transaction
+### Sending a Transaction
 
-### L2 Support
+#### L2 Support
 
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
@@ -326,25 +328,23 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 }
 ```
 
-# API
+## API
 
-## Docs
+### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
-## BigInt Support
+### BigInt Support
 
 Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
-
-# LICENSE
+## License
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

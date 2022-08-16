@@ -1,12 +1,12 @@
-import { tmpdir } from 'os'
-import { mkdtempSync } from 'fs'
-import { join } from 'path'
 import { KECCAK256_RLP } from '@ethereumjs/util'
+import { mkdtempSync } from 'fs'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import * as tape from 'tape'
 
-import { CheckpointTrie, SecureTrie, Trie, LevelDB, ROOT_DB_KEY } from '../../src'
+import { CheckpointTrie, LevelDB, ROOT_DB_KEY, SecureTrie, Trie } from '../../src'
 
 function bytesToHex(bytes: Buffer | null) {
   return bytes?.toString('hex')
@@ -83,7 +83,10 @@ for (const { constructor, title } of [
     )
 
     t.test('persist the root if the `persistRoot` option is `true`', async function (st) {
-      const trie = await constructor.create({ db: new LevelDB(new MemoryLevel()), persistRoot: true })
+      const trie = await constructor.create({
+        db: new LevelDB(new MemoryLevel()),
+        persistRoot: true,
+      })
 
       st.equal(await trie.db.get(ROOT_DB_KEY), null)
 
@@ -159,7 +162,10 @@ for (const { constructor, title } of [
       )
 
       // New trie with a new database so we shouldn't find a root to restore
-      const empty = await constructor.create({ db: new LevelDB(new MemoryLevel()), persistRoot: true })
+      const empty = await constructor.create({
+        db: new LevelDB(new MemoryLevel()),
+        persistRoot: true,
+      })
       st.equal(await empty.db.get(ROOT_DB_KEY), null)
 
       st.end()

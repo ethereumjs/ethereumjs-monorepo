@@ -1,6 +1,8 @@
-import { Address } from './address'
-import { bufferToBigInt, bufferToHex, toBuffer, ToBufferInputTypes } from './bytes'
+import { bufferToBigInt, bufferToHex, toBuffer } from './bytes'
 import { isHexString } from './internal'
+
+import type { Address } from './address'
+import type { ToBufferInputTypes } from './bytes'
 
 /*
  * A type that represents an input that can be converted to a BigInt.

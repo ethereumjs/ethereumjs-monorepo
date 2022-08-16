@@ -1,17 +1,18 @@
-import { promisify } from 'util'
-import { Blockchain, BlockchainInterface } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { DefaultStateManager, StateManager } from '@ethereumjs/statemanager'
-import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
-
+import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, TypeOutput, isTruthy, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
-import { EEIInterface, EVM, EVMInterface, getActivePrecompiles } from '@ethereumjs/evm'
+import { promisify } from 'util'
 
-import { BlockBuilder, buildBlock } from './buildBlock'
+import { buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
 import { runBlock } from './runBlock'
 import { runTx } from './runTx'
-import {
+
+import type { BlockBuilder } from './buildBlock'
+import type {
   BuildBlockOpts,
   RunBlockOpts,
   RunBlockResult,
@@ -20,6 +21,9 @@ import {
   VMEvents,
   VMOpts,
 } from './types'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
 
 /**
  * Execution engine which can be used to run a blockchain, individual

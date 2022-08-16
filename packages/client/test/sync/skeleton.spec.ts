@@ -6,7 +6,7 @@ import * as td from 'testdouble'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
-import { errReorgDenied, errSyncMerged, Skeleton } from '../../lib/sync/skeleton'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { parseCustomParams } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
@@ -511,7 +511,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.setHead(block5, false)
       } catch (error: any) {
-        if (error != errReorgDenied) {
+        if (error !== errReorgDenied) {
           t.fail(error)
         }
       }
@@ -526,7 +526,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block3PoS])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }
@@ -680,7 +680,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block2])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }

@@ -1,9 +1,11 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 const cacheDB = new MemoryLevel()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
@@ -47,7 +49,7 @@ tape('Check if miner works as expected', async function (t) {
 
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'succesfully mined block')
-  t.ok((miner as any).solution != undefined, 'cached the solution')
+  t.ok((miner as any).solution !== undefined, 'cached the solution')
 
   t.end()
 })

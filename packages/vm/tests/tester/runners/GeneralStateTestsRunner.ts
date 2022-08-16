@@ -1,11 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { isTruthy, toBuffer } from '@ethereumjs/util'
-import * as tape from 'tape'
 
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type * as tape from 'tape'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -38,7 +39,7 @@ function parseTestCases(
 
       if (isTruthy(tx.accessLists)) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
-        if (tx.chainId == undefined) {
+        if (tx.chainId === undefined) {
           tx.chainId = 1
         }
       }
@@ -55,7 +56,7 @@ function parseTestCases(
   }
 
   testCases = testCases.filter((testCase: any) => {
-    return testCase != null
+    return testCase !== null
   })
 
   return testCases

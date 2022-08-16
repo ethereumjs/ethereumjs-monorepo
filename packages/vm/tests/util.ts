@@ -1,11 +1,10 @@
-import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
-  TxOptions,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -22,9 +21,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
 
-import { VmState } from '../src/eei/vmState'
+import type { VmState } from '../src/eei/vmState'
+import type { BlockOptions } from '@ethereumjs/block'
+import type { TxOptions } from '@ethereumjs/tx'
+import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -414,7 +415,7 @@ export function getDAOCommon(activationBlock: number) {
   const editedForks = []
   // explicitly edit the "dao" block number:
   for (const fork of forks) {
-    if (fork.name == Hardfork.Dao) {
+    if (fork.name === Hardfork.Dao) {
       editedForks.push({
         name: Hardfork.Dao,
         forkHash: fork.forkHash,

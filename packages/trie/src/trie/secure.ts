@@ -1,7 +1,10 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import { Proof, ROOT_DB_KEY } from '../types'
+import { ROOT_DB_KEY } from '../types'
+
 import { CheckpointTrie } from './checkpoint'
+
+import type { Proof } from '../types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -119,7 +122,7 @@ export class SecureTrie extends CheckpointTrie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot !== undefined) {
+    if (this._persistRoot === true) {
       await this.db.put(this.hash(ROOT_DB_KEY), this.root)
     }
   }

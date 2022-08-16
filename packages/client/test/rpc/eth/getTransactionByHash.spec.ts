@@ -10,6 +10,7 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
+
 import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionByHash'

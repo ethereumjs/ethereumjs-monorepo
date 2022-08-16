@@ -1,6 +1,6 @@
-import * as path from 'path'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+import * as path from 'path'
 
 /**
  * Default tests path (git submodule: ethereum-tests)

@@ -1,9 +1,8 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
-
-import { Consensus } from './consensus'
-import { GenesisState } from './genesisStates'
+import type { Consensus } from './consensus'
+import type { GenesisState } from './genesisStates'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { AbstractLevel } from 'abstract-level'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -46,17 +45,17 @@ export interface BlockchainInterface {
   copy(): BlockchainInterface
 
   /**
-   * Returns the specified iterator head.
-   *
-   * @param name - Optional name of the iterator head (default: 'vm')
-   */
-
-  /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
    * @param header - header to be validated
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   validateHeader(header: BlockHeader, height?: bigint): Promise<void>
+
+  /**
+   * Returns the specified iterator head.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
   getIteratorHead?(name?: string): Promise<Block>
 
   /**

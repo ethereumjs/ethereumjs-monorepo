@@ -1,9 +1,9 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { isTruthy } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
 import { MemoryLevel } from 'memory-level'
 
-import { BatchDBOp, DB } from '../types'
+import type { BatchDBOp, DB } from '../types'
+import type { AbstractLevel } from 'abstract-level'
 
 export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
 

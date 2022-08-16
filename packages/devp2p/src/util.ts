@@ -5,8 +5,8 @@ import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
 
-import { ETH } from './protocol/eth'
-import { LES } from './protocol/les'
+import type { ETH } from './protocol/eth'
+import type { LES } from './protocol/les'
 
 export const devp2pDebug = createDebugLogger('devp2p')
 
