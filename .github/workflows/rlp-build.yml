@@ -1,12 +1,10 @@
-name: rlp
+name: RLP
 on:
   push:
     branches: [master, develop]
     tags: ['*']
-    paths: ['packages/rlp/**']
   pull_request:
     types: [opened, reopened, synchronize]
-    paths: ['packages/rlp/**']
   workflow_dispatch:
 
 env:
@@ -38,6 +36,7 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      - run: npm run lint
       - run: npm run coverage
 
       - uses: codecov/codecov-action@v2
@@ -45,5 +44,3 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: rlp
         if: ${{ matrix.node-version == 16 }}
-
-      - run: npm run lint
