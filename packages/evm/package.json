@@ -30,7 +30,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "nyc npm run coverage:test",
+    "coverage": "c8 --all --reporter=html --reporter=lcov --reporter=text npm run coverage:test",
     "coverage:test": "npm run test",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
@@ -62,25 +62,12 @@
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
     "@types/minimist": "^1.2.2",
-    "@types/node": "^16.11.7",
     "@types/node-dir": "^0.0.34",
-    "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
-    "eslint": "^8.0.0",
-    "karma": "^6.3.2",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.0",
-    "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.3",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
-    "nyc": "^15.1.0",
-    "solc": "^0.8.1",
-    "standard": "^10.0.0",
-    "tape": "^5.3.1",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "solc": "^0.8.1"
   }
 }

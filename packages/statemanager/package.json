@@ -48,20 +48,5 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "functional-red-black-tree": "^1.0.1"
-  },
-  "devDependencies": {
-    "@types/node": "^16.11.7",
-    "@types/tape": "^4.13.2",
-    "eslint": "^8.0.0",
-    "karma": "^6.3.2",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.0",
-    "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.3",
-    "nyc": "^15.1.0",
-    "standard": "^10.0.0",
-    "tape": "^5.3.1",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
   }
 }
