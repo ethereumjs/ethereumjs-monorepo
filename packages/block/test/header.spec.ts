@@ -408,13 +408,13 @@ tape('[Block]: Header functions', function (t) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
-    Object.keys(bcBlockGasLimitTestData).forEach((key) => {
+    for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
       const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp)
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
-    })
+    }
 
     st.end()
   })

@@ -48,9 +48,9 @@ export class LES extends Protocol {
           'STATUS'
         )
         const statusArray: any = {}
-        payload.forEach(function (value: any) {
+        for (const value of payload as any) {
           statusArray[value[0].toString()] = value[1]
-        })
+        }
         this._peerStatus = statusArray
         const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
         this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
@@ -167,9 +167,9 @@ export class LES extends Protocol {
     this._status = status
 
     const statusList: any[][] = []
-    Object.keys(status).forEach((key) => {
+    for (const key of Object.keys(status)) {
       statusList.push([Buffer.from(key), status[key]])
-    })
+    }
 
     this.debug(
       'STATUS',

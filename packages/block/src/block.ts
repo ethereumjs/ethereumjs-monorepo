@@ -241,7 +241,8 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    this.transactions.forEach((tx, i) => {
+    // eslint-disable-next-line prefer-const
+    for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -259,7 +260,7 @@ export class Block {
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
-    })
+    }
 
     return stringError ? errors : errors.length === 0
   }

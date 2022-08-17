@@ -52,11 +52,11 @@ tape('EIP 3541 tests', (t) => {
     })
 
     st.ok(stack.length === depth)
-    stack.forEach((elem: bigint) => {
+    for (const elem of stack) {
       if (elem !== BigInt(0)) {
         st.fail('stack element is not 0')
       }
-    })
+    }
     st.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
     st.end()
   })
