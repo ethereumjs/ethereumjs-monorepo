@@ -47,18 +47,5 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
-  },
-  "devDependencies": {
-    "@types/node": "^16.11.7",
-    "@types/tape": "^4.13.2",
-    "karma": "^6.3.4",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.1",
-    "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.3",
-    "nyc": "^15.1.0",
-    "tape": "^5.3.1",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
   }
 }
