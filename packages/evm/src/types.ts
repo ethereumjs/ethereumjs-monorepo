@@ -244,7 +244,7 @@ declare type Proof = {
   storageProof: StorageProof[]
 }
 
-type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
 
 interface StateAccess {
   accountExists(address: Address): Promise<boolean>
