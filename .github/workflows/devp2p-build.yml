@@ -42,7 +42,7 @@ jobs:
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: devp2p
