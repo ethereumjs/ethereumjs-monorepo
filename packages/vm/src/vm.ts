@@ -184,7 +184,10 @@ export class VM extends AsyncEventEmitter<VMEvents> {
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
-          const newAccount = Account.fromAccountData({ balance: 1, storageRoot: account.storageRoot })
+          const newAccount = Account.fromAccountData({
+            balance: 1,
+            storageRoot: account.storageRoot,
+          })
           await this.eei.putAccount(address, newAccount)
         }
       }
