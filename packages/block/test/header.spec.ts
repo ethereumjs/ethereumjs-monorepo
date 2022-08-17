@@ -325,25 +325,24 @@ tape('[Block]: Header functions', function (t) {
       (err: any) => err.message.includes('transactionsTrie must be 32 bytes'),
       'throws on invalid transactionsTrie root hash length'
     )
-    let nonce = Buffer.alloc(5)
+
     st.throws(
-      () => BlockHeader.fromHeaderData({ nonce }),
+      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }),
       (err: any) => err.message.includes('nonce must be 8 bytes'),
       'contains nonce length error message'
     )
 
     const kovanCommon = new Common({ chain: Chain.Kovan })
     st.throws(
-      () => BlockHeader.fromHeaderData({ nonce }, { common: kovanCommon }),
+      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }, { common: kovanCommon }),
       (err: any) => err.message.includes('nonce must be 65 bytes on kovan'),
       'contains kovan nonce error message'
     )
 
-    nonce = Buffer.alloc(65)
     st.doesNotThrow(
       () =>
         BlockHeader.fromHeaderData(
-          { nonce },
+          { nonce: Buffer.alloc(65) },
           { common: kovanCommon, consensusFormatValidation: false }
         ),
       'was able to create Kovan block with nonce 65 bytes long'

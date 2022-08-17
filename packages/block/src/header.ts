@@ -26,7 +26,6 @@ import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-
 interface HeaderCache {
   hash: Buffer | undefined
 }

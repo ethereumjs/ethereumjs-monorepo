@@ -1,4 +1,3 @@
-
 import type { BlockHeader } from './header'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -70,7 +69,7 @@ export interface BlockOptions {
    */
   cliqueSigner?: Buffer
   /**
-   * Perform consensus validation checks on header if set.  Defaults to true.
+   * Perform consensus validation checks on header if set. Defaults to true.
    */
   consensusFormatValidation?: boolean
 }
