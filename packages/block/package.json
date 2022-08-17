@@ -47,5 +47,8 @@
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
