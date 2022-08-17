@@ -2,10 +2,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark'
 
-import { CheckpointTrie, LevelDB, Trie } from '../dist'
+import { CheckpointTrie, MapDB, Trie } from '../dist'
 import { keys } from './keys'
 
-const db = new LevelDB()
+const db = new MapDB()
 const trie = new Trie({ db })
 const checkpointTrie = new CheckpointTrie({ db })
 

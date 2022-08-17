@@ -2,7 +2,7 @@
 import { isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB } from '../types'
+import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
 
 export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
@@ -20,7 +20,7 @@ export class LevelDB implements DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer> | null
+    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
