@@ -79,7 +79,7 @@ export abstract class BaseStateManager {
   /**
    * Gets the account associated with `address`, modifies the given account
    * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
@@ -87,7 +87,7 @@ export abstract class BaseStateManager {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
     account.codeHash = accountFields.codeHash ?? account.codeHash
     await this.putAccount(address, account)
   }
