@@ -357,11 +357,11 @@ export class Common extends EventEmitter {
         )
       }
       if (isTruthy(EIPs[eip].requiredEIPs)) {
-        ;(EIPs[eip].requiredEIPs as number[]).forEach((elem) => {
+        for (const elem of EIPs[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
-        })
+        }
       }
     }
     this._eips = eips

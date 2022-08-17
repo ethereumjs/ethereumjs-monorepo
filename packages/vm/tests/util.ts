@@ -275,24 +275,6 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   }
 }
 
-/**
- * verifyLogs
- * @param logs to verify
- * @param testData from tests repo
- */
-export function verifyLogs(logs: any, testData: any, t: tape.Test) {
-  if (isTruthy(testData.logs)) {
-    testData.logs.forEach(function (log: any, i: number) {
-      const rlog = logs[i]
-      t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
-      t.equal(bufferToHex(rlog[2]), log.data, 'log: valid data')
-      log.topics.forEach(function (topic: string, i: number) {
-        t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
-      })
-    })
-  }
-}
-
 export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const {
     currentTimestamp,
