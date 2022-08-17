@@ -20,6 +20,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
+    "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-typestrict": "1.0.5",
     "eslint-formatter-codeframe": "^7.32.1",
