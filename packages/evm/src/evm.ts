@@ -700,10 +700,12 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
-        callerAccount.balance += value
-        await this.eei.putAccount(caller, callerAccount)
+        if (callerAccount.balance < value) {
+          // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
+          callerAccount.balance = value
+          await this.eei.putAccount(caller, callerAccount)
+        }
       }
 
       message = new Message({
