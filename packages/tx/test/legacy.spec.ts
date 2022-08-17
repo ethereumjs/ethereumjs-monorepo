@@ -96,7 +96,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('Initialization -> decode with fromValuesArray()', function (st) {
-    for ( const tx of txFixtures.slice(0, 4)) {
+    for (const tx of txFixtures.slice(0, 4)) {
       const txData = tx.raw.map(toBuffer)
       const pt = Transaction.fromValuesArray(txData)
 

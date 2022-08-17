@@ -677,7 +677,7 @@ async function run() {
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
     for (const s of servers) {
-        s.http().close()
+      s.http().close()
     }
     await client.stop()
     config.logger.info('Exiting.')
