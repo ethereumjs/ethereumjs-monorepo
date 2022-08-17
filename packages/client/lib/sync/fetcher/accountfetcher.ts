@@ -5,6 +5,7 @@ import { Fetcher, FetcherOptions } from './fetcher'
 import { Job } from './types'
 
 import { Trie, CheckpointTrie, LevelDB } from '@ethereumjs/trie'
+import { keccak256 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 
 /**
@@ -135,18 +136,8 @@ export class AccountFetcher extends Fetcher<
 
 		const trie = new Trie()
 		const { accounts, proof } = rangeResult
-		for (let i = 0; i < accounts.length - 1; i++) {
-			// ensure the range is monotonically increasing
-			if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
-				this.debug(`Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${accounts[i + 1].hash}`)
-			}
 
-			// put account data into trie
-			const { hash, body } = accounts[i]
-			await trie.put(hash, body as Buffer)
-		}
-
-		// Validate data using proofs
+		// Step 1: validate the proof
 		try {
 			this.debug('dbg0')
 
@@ -161,6 +152,51 @@ export class AccountFetcher extends Fetcher<
 			console.log(err)
 			this.debug(`Proof-based verification failed`)
 			return undefined
+		}
+
+		// Step 2: put all accounts into the Trie
+
+		for (let i = 0; i < accounts.length; i++) {
+			// ensure the range is monotonically increasing
+			if (i != accounts.length - 1) {
+				if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+					this.debug(`Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${accounts[i + 1].hash}`)
+				}
+			}
+
+			// put account data into trie
+			const { hash, body } = accounts[i]
+			const value = convertSlimAccount(body)
+			await trie.put(hash, value)
+		}
+
+		// At this point, the trie is filled, but the trie only has the items "left" of the proof
+		// The items "right" of the proof are thought to be empty by the trie (which is usually not the case)
+		// Therefore, the trie root does not match the expected root
+
+		// However, since we now have all the items "left" of the root, we can get these items
+		// if the proof items are now dumped in raw into the DB
+
+		// Step 3: put raw proof items in DB
+		for (let item of proof) {
+			await trie.db.put(keccak256(item), item)
+		}
+
+		// If the trie root is now set to the expected root, it should be possible to get the expected account items
+
+		// Step 4: set trie root to expected root
+		trie.root = this.root 
+
+		// Step 5: verify that it is possible to get the accounts, and that the values are correct
+		for (let i = 0; i <= accounts.length - 1; i++) {
+			const account = accounts[i]
+			const key = account.hash
+			const expect = convertSlimAccount(account.body)
+			const value = await trie.get(key)
+			if (value === undefined || !value?.equals(expect)) {
+				this.debug('Key/value pair does match expected value')
+				return undefined
+			}
 		}
 
 		// for data capture
