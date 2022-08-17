@@ -2,6 +2,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: [
     '@typescript-eslint',
+    'github',
     'implicit-dependencies',
     'import',
     'prettier',
@@ -55,6 +56,7 @@ module.exports = {
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/strict-boolean-expressions': ['error'],
     eqeqeq: 'error',
+    'github/array-foreach': 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
     'import/default': 'error',
     'import/export': 'error',

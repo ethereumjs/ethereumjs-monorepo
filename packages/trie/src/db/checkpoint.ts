@@ -40,7 +40,7 @@ export class CheckpointDB implements DB {
     if (!this.isCheckpoint) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      keyValueMap.forEach(function (value, key) {
+      for (const [key, value] of keyValueMap.entries()) {
         if (value === null) {
           batchOp.push({
             type: 'del',
@@ -53,12 +53,14 @@ export class CheckpointDB implements DB {
             value,
           })
         }
-      })
+      }
       await this.batch(batchOp)
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      keyValueMap.forEach((value, key) => currentKeyValueMap.set(key, value))
+      for (const [key, value] of keyValueMap.entries()) {
+          currentKeyValueMap.set(key, value)
+      }
     }
   }
 
