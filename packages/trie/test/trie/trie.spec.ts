@@ -25,9 +25,7 @@ for (const { constructor, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and defaults to `false` with a database',
       async function (st) {
-        st.false(
-          ((await constructor.create({ db: new MapDB() })) as any)._persistRoot
-        )
+        st.false(((await constructor.create({ db: new MapDB() })) as any)._persistRoot)
 
         st.end()
       }
@@ -36,10 +34,7 @@ for (const { constructor, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
       async function (st) {
-        st.false(
-          ((await Trie.create({ db: new MapDB(), persistRoot: false })) as any)
-            ._persistRoot
-        )
+        st.false(((await Trie.create({ db: new MapDB(), persistRoot: false })) as any)._persistRoot)
 
         st.end()
       }
