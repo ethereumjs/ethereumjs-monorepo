@@ -81,7 +81,7 @@ tape('[PeerPool]', async (t) => {
     const pool = new PeerPool({ config })
     peers[1].idle = true
     for (const p of peers) {
-        pool.add(p)
+      pool.add(p)
     }
     t.equals(pool.idle(), peers[1], 'correct idle peer')
     t.equals(
@@ -97,8 +97,8 @@ tape('[PeerPool]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
     for (const p of peers as any) {
-        pool.add(p)
-        pool.ban(p, 1000)
+      pool.add(p)
+      pool.ban(p, 1000)
     }
     pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => t.equals(peer, peers[1], 'banned peer'))
     pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>

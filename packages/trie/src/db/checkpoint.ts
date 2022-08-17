@@ -59,7 +59,7 @@ export class CheckpointDB implements DB {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
       for (const [key, value] of keyValueMap.entries()) {
-          currentKeyValueMap.set(key, value)
+        currentKeyValueMap.set(key, value)
       }
     }
   }

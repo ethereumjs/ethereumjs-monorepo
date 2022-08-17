@@ -108,7 +108,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
-    for(const accessListItem of castedTx.AccessListJSON) {
+    for (const accessListItem of castedTx.AccessListJSON) {
       const address = toBuffer(accessListItem.address)
       state.addWarmedAddress(address)
       for (const storageKey of accessListItem.storageKeys) {
