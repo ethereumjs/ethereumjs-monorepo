@@ -73,10 +73,10 @@ export function parseTransports(transports: string[]) {
     const options: { [key: string]: string } = {}
     const [name, ...pairs] = t.split(':')
     if (pairs.length) {
-        for (const p of pairs.join(':').split(',')) {
-            const [key, value] = p.split('=')
-            options[key] = value
-        }
+      for (const p of pairs.join(':').split(',')) {
+        const [key, value] = p.split('=')
+        options[key] = value
+      }
     }
     return { name, options }
   })
