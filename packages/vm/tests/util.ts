@@ -47,7 +47,7 @@ export function dumpState(state: any, cb: Function) {
     return new Promise((resolve) => {
       const storage: any = {}
       const storageTrie = state.copy(false)
-      storageTrie.root = account.stateRoot
+      storageTrie.root = account.storageRoot
       const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
@@ -68,7 +68,7 @@ export function dumpState(state: any, cb: Function) {
     }
     for (let i = 0; i < results.length; i++) {
       console.log("SHA3'd address: " + bufferToHex(results[i].address))
-      console.log('\tstate root: ' + bufferToHex(results[i].stateRoot))
+      console.log('\tstorage root: ' + bufferToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
         console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
@@ -215,7 +215,7 @@ export function verifyAccountPostConditions(
         acctData.storage[key]
     }
 
-    state.root = account.stateRoot
+    state.root = account.storageRoot
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = data.key.toString('hex')
@@ -344,14 +344,14 @@ export async function setupPreConditions(state: VmState, testData: any) {
     // Put contract code
     await state.putContractCode(address, codeBuf)
 
-    const stateRoot = (await state.getAccount(address)).stateRoot
+    const storageRoot = (await state.getAccount(address)).storageRoot
 
     if (testData.exec?.address === addressStr) {
-      testData.root = stateRoot
+      testData.root = storageRoot
     }
 
     // Put account data
-    const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })
+    const account = Account.fromAccountData({ nonce, balance, codeHash, storageRoot })
     await state.putAccount(address, account)
   }
   await state.commit()
