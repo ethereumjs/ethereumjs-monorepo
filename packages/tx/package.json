@@ -59,5 +59,8 @@
     "@types/minimist": "^1.2.0",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }

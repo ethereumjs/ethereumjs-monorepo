@@ -56,5 +56,8 @@
     "@types/async": "^2.4.1",
     "@types/level-errors": "^3.0.0",
     "@types/lru-cache": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
