@@ -5,6 +5,7 @@ name: Node versions
 on:
   schedule:
     - cron: 0 0 * * *
+  workflow_dispatch:
 
 jobs:
   get-node-versions:
@@ -28,6 +29,8 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
