@@ -232,7 +232,8 @@ export interface RunBlockOpts {
    */
   skipNonce?: boolean
   /**
-   * If true, skips the balance check
+   * If true, checks the balance of the `from` account for the transaction and sets its
+   * balance equal equal to the upfront cost (gas limit * gas price + transaction value)
    */
   skipBalance?: boolean
   /**

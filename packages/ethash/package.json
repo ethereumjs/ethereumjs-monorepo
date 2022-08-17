@@ -48,5 +48,8 @@
   "devDependencies": {
     "@ethereumjs/common": "3.0.0-beta.3",
     "memory-level": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }

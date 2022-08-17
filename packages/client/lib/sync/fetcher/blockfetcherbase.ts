@@ -175,7 +175,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         true
       )
     } else {
-      numberList.forEach((first) => {
+      for (const first of numberList) {
         this.enqueueTask(
           {
             first,
@@ -183,7 +183,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
           },
           true
         )
-      })
+      }
     }
     this.debug(
       `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`

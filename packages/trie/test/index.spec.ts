@@ -274,14 +274,14 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   const v = Buffer.from('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df', 'hex')
   const a = Buffer.from('1a26338f0d905e295fccb71fa9ea849ffa12aaf4', 'hex')
 
-  const stateRoot = Buffer.alloc(32)
-  stateRoot.fill(0)
+  const storageRoot = Buffer.alloc(32)
+  storageRoot.fill(0)
 
   const startAmount = Buffer.alloc(26)
   startAmount.fill(0)
   startAmount[0] = 1
 
-  const account = [startAmount, 0, stateRoot, KECCAK256_NULL]
+  const account = [startAmount, 0, storageRoot, KECCAK256_NULL]
   const rlpAccount = Buffer.from(RLP.encode(bufArrToArr(account as Buffer[])))
   const cppRlp =
     'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
