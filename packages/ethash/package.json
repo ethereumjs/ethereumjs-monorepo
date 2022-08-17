@@ -48,7 +48,6 @@
   "devDependencies": {
     "@ethereumjs/common": "3.0.0-beta.3",
     "@types/tape": "^4.13.2",
-    "eslint": "^8.0.0",
     "memory-level": "^1.0.0",
     "nyc": "^15.1.0",
     "tape": "^5.3.1",
