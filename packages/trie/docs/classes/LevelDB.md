@@ -34,7 +34,7 @@ which validates inputs and sets encoding type.
 • **new LevelDB**(`leveldb?`)
 
 Initialize a DB instance. If `leveldb` is not provided, DB
-defaults to an [in-memory store](https://github.com/Level/memdown).
+defaults to an [in-memory store](https://github.com/Level/memory-level).
 
 #### Parameters
 
