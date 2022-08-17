@@ -105,7 +105,9 @@ export class Server {
       this.config.logger.error('Cannot require protocols after server has been started')
       return false
     }
-    protocols.forEach((p) => this.protocols.add(p))
+    for (const p of protocols) {
+        this.protocols.add(p)
+    }
     return true
   }
 

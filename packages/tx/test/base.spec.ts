@@ -26,21 +26,21 @@ tape('[BaseTransaction]', function (t) {
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
-  legacyFixtures.slice(0, 4).forEach(function (tx: TxsJsonEntry) {
+  for (const tx of legacyFixtures.slice(0, 4)) {
     legacyTxs.push(Transaction.fromTxData(tx.data, { common }))
-  })
+  }
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
   const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
-  eip2930Fixtures.forEach(function (tx: any) {
+  for (const tx of eip2930Fixtures) {
     eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
-  })
+  }
 
   const eip1559Fixtures = require('./json/eip1559txs.json')
   const eip1559Txs: BaseTransaction<FeeMarketEIP1559Transaction>[] = []
-  eip1559Fixtures.forEach(function (tx: any) {
+  for (const tx of eip1559Fixtures) {
     eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
-  })
+  }
 
   const zero = Buffer.alloc(0)
   const txTypes = [
@@ -201,7 +201,7 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('serialize()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any) {
+      for (const tx of txType.txs) {
         st.ok(
           txType.class.fromSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
@@ -210,14 +210,14 @@ tape('[BaseTransaction]', function (t) {
           txType.class.fromSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
-      })
+      }
     }
     st.end()
   })
 
   t.test('supports()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any) {
+      for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
           st.ok(
             tx.supports(activeCapability),
@@ -230,35 +230,35 @@ tape('[BaseTransaction]', function (t) {
             `${txType.name}: should reject non-active existing and not existing capabilities`
           )
         }
-      })
+      }
     }
     st.end()
   })
 
   t.test('raw()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any) {
+      for (const tx of txType.txs) {
         st.ok(
-          txType.class.fromValuesArray(tx.raw(), { common }),
+          txType.class.fromValuesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
-      })
+      }
     }
     st.end()
   })
 
   t.test('verifySignature()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any) {
+      for (const tx of txType.txs) {
         st.equal(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
-      })
+      }
     }
     st.end()
   })
 
   t.test('verifySignature() -> invalid', function (st) {
     for (const txType of txTypes) {
-      txType.fixtures.slice(0, 4).forEach(function (txFixture: any) {
+      for(const txFixture of txType.fixtures.slice(0, 4)) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
         const tx = txType.class.fromTxData(txFixture.data, { common })
@@ -268,14 +268,14 @@ tape('[BaseTransaction]', function (t) {
           `${txType.name}: should return an error string about not verifying signatures`
         )
         st.notOk(tx.validate(), `${txType.name}: should not validate correctly`)
-      })
+      }
     }
     st.end()
   })
 
   t.test('sign()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any, i: number) {
+      for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (isTruthy(privateKey)) {
           st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
@@ -285,7 +285,7 @@ tape('[BaseTransaction]', function (t) {
           () => tx.sign(Buffer.from('invalid')),
           `${txType.name}: should fail with invalid PK`
         )
-      })
+      }
     }
     st.end()
   })
@@ -317,7 +317,7 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('getSenderAddress()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any, i: number) {
+      for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
@@ -327,14 +327,14 @@ tape('[BaseTransaction]', function (t) {
             `${txType.name}: should get sender's address after signing it`
           )
         }
-      })
+      }
     }
     st.end()
   })
 
   t.test('getSenderPublicKey()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any, i: number) {
+      for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
@@ -345,7 +345,7 @@ tape('[BaseTransaction]', function (t) {
             `${txType.name}: should get sender's public key after signing it`
           )
         }
-      })
+      }
     }
     st.end()
   })
@@ -356,7 +356,7 @@ tape('[BaseTransaction]', function (t) {
       // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
       // Reasoning: https://ethereum.stackexchange.com/a/55728
       for (const txType of txTypes) {
-        txType.txs.forEach(function (tx: any, i: number) {
+        for (const [i, tx] of txType.txs.entries()) {
           const { privateKey } = txType.fixtures[i]
           if (isTruthy(privateKey)) {
             let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
@@ -366,7 +366,7 @@ tape('[BaseTransaction]', function (t) {
               signedTx.getSenderPublicKey()
             }, 'should throw when s-value is greater than secp256k1n/2')
           }
-        })
+        }
       }
       st.end()
     }
@@ -374,13 +374,13 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('verifySignature()', function (st) {
     for (const txType of txTypes) {
-      txType.txs.forEach(function (tx: any, i: number) {
+      for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (isTruthy(privateKey)) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           st.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
-      })
+      }
     }
     st.end()
   })
