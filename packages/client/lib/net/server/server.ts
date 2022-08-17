@@ -106,7 +106,7 @@ export class Server {
       return false
     }
     for (const p of protocols) {
-        this.protocols.add(p)
+      this.protocols.add(p)
     }
     return true
   }
