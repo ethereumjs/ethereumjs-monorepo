@@ -80,7 +80,9 @@ tape('[PeerPool]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
     peers[1].idle = true
-    peers.forEach((p) => pool.add(p))
+    for (const p of peers) {
+        pool.add(p)
+    }
     t.equals(pool.idle(), peers[1], 'correct idle peer')
     t.equals(
       pool.idle((p: any) => p.id > 1),
@@ -94,8 +96,10 @@ tape('[PeerPool]', async (t) => {
     const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
     const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
-    peers.forEach((p: any) => pool.add(p))
-    peers.forEach((p: any) => pool.ban(p, 1000))
+    for (const p of peers as any) {
+        pool.add(p)
+        pool.ban(p, 1000)
+    }
     pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => t.equals(peer, peers[1], 'banned peer'))
     pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       t.equals(peer, peers[1], 'removed peer')
