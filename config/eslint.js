@@ -108,4 +108,13 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
   },
+  overrides: [
+    {
+      files: ['test/**/*.ts', 'tests/**/*.ts'],
+      rules: {
+        'implicit-dependencies/no-implicit': 'off',
+        'import/no-extraneous-dependencies': 'off',
+      },
+    },
+  ],
 }
