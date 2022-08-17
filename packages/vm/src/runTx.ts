@@ -18,7 +18,6 @@ import type {
 import type { VM } from './vm'
 import type {
   AccessListEIP2930Transaction,
-  AccessListItem,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
@@ -109,13 +108,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
-    castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
+    for(const accessListItem of castedTx.AccessListJSON) {
       const address = toBuffer(accessListItem.address)
       state.addWarmedAddress(address)
-      accessListItem.storageKeys.forEach((storageKey: string) => {
+      for (const storageKey of accessListItem.storageKeys) {
         state.addWarmedStorage(address, toBuffer(storageKey))
-      })
-    })
+      }
+    }
   }
 
   try {
