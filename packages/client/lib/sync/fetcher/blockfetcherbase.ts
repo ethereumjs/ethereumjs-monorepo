@@ -175,15 +175,15 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         true
       )
     } else {
-        for (const first of numberList) {
-            this.enqueueTask(
-                {
-                  first,
-                  count: 1,
-                },
-                true
-              )
-        }
+      for (const first of numberList) {
+        this.enqueueTask(
+          {
+            first,
+            count: 1,
+          },
+          true
+        )
+      }
     }
     this.debug(
       `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`

@@ -100,8 +100,7 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-const': 'error',
-    // TypeError: Error while loading rule 'prettier/prettier': context.getPhysicalFilename is not a function
-    'prettier/prettier': 'off',
+    'prettier/prettier': 'error',
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
   },

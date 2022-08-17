@@ -125,7 +125,8 @@ export interface EVMRunCallOpts {
    */
   selfdestruct?: { [k: string]: boolean }
   /**
-   * Skip balance checks if true. Adds transaction value to balance to ensure execution doesn't fail.
+   * Skip balance checks if true. If caller balance is less than message value,
+   * sets balance to message value to ensure execution doesn't fail.
    */
   skipBalance?: boolean
   /**
