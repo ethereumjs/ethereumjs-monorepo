@@ -84,7 +84,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 
-  _prefixCodeHashes: boolean
+  private readonly _prefixCodeHashes: boolean
 
   /**
    * Instantiate the StateManager interface.
