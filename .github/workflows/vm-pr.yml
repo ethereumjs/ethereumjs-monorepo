@@ -28,7 +28,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
@@ -56,7 +56,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
@@ -90,7 +90,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
@@ -126,7 +126,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
@@ -167,7 +167,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
@@ -182,7 +182,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run build:benchmarks
