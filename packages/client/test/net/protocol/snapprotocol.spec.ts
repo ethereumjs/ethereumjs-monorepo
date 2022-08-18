@@ -267,7 +267,7 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('StorageRanges should verify a real sample', (t) => {
+  t.test('StorageRanges should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
@@ -282,13 +282,29 @@ tape('[SnapProtocol]', (t) => {
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
     const data = RLP.decode(Buffer.from(storageRangesRLP, 'hex')) as unknown
-    const { proof } = p.decode(
+    const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
     )
+    // storageRangesRLP response is to the lastAccount's slots so slots[0] are the slots of
+    // lastAccount
+    const lastAccountSlots = slots[0]
+    const lastAccountStorageRoot = (lastAccount.body as any)[2]
+    const trie = new CheckpointTrie({ db: new LevelDB() })
+    try {
+      const slotRLP = await trie.verifyProof(
+        lastAccountStorageRoot,
+        lastAccountSlots[lastAccountSlots.length - 1].hash,
+        proof
+      )
+      if (slotRLP === null) {
+        throw Error('Slot should have existed in the verification trie')
+      }
+    } catch (e) {
+      t.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
+    }
     t.ok(
-      Buffer.from(keccak256(proof[0])).toString('hex') ===
-        (lastAccount.body as any)[2].toString('hex'),
+      Buffer.from(keccak256(proof[0])).toString('hex') === lastAccountStorageRoot.toString('hex'),
       'Proof should link to the accounts storageRoot'
     )
     t.end()
