@@ -64,6 +64,7 @@ export interface SnapProtocolMethods {
     slots: StorageData[]
     proof: Buffer[]
   }>
+  getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
 }
 
 /**
