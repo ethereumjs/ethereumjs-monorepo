@@ -25,7 +25,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
-import type { EVMStateAccess } from '@ethereumjs/evm'
+import type { EVMInterface, EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 
@@ -36,7 +36,10 @@ const DAORefundContract = DAOConfig.DAORefundContract
 /**
  * @ignore
  */
-export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+export async function runBlock(
+  this: VM<EVMInterface>,
+  opts: RunBlockOpts
+): Promise<RunBlockResult> {
   const state = this.eei
   const { root } = opts
   let { block } = opts
@@ -219,7 +222,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
+async function applyBlock(this: VM<EVMInterface>, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
@@ -259,7 +262,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+async function applyTransactions(this: VM<EVMInterface>, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BigInt(0)
@@ -328,7 +331,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
  * Calculates block rewards for miner and ommers and puts
  * the updated balances of their accounts to state.
  */
-async function assignBlockRewards(this: VM, block: Block): Promise<void> {
+async function assignBlockRewards(this: VM<EVMInterface>, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
@@ -448,7 +451,7 @@ async function _genTxTrie(block: Block) {
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block) {
+function _errorMsg(msg: string, vm: VM<EVMInterface>, block: Block) {
   const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
 
   const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr})`

@@ -58,7 +58,7 @@ export type VMEvents = {
 /**
  * Options for instantiating a {@link VM}.
  */
-export interface VMOpts {
+export interface VMOpts<EVMType extends EVMInterface> {
   /**
    * Use a {@link Common} instance
    * if you want to change the chain setup.
@@ -138,7 +138,7 @@ export interface VMOpts {
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVMInterface
+  evm?: EVMType
 }
 
 /**
