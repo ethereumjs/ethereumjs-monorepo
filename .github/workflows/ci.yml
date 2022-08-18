@@ -10,7 +10,6 @@ on:
 
 jobs:
   test-block:
-    needs: build
     concurrency:
       group: ${{ github.head_ref }}-test-block
       cancel-in-progress: true
@@ -42,7 +41,6 @@ jobs:
         if: ${{ matrix.node-version == 16 }}
 
   test-trie:
-    needs: build
     concurrency:
       group: ${{ github.head_ref }}-test-trie
       cancel-in-progress: true
