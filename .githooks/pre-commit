@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-node ./node_modules/lint-staged/bin/lint-staged.js

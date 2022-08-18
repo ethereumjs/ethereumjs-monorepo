@@ -39,7 +39,6 @@
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.3",
     "karma-typescript-es6-transform": "^5.5.3",
-    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "sort-package-json": "^1.57.0",
     "standard": "^10.0.0",
