@@ -69,21 +69,19 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Persistence
 
-Please note that if you manually provide a database, we will automatically assume that it supports persistence. This means that, by default, the root hash will persist to said database unless you explicitly disable it via the `persistRoot` option.
-
-##### Disabling Persistence
-
-You can disable persistence by setting the `persistRoot` option to false when constructing a trie. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `persistRoot` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({
+const trie = await Trie.create({
   db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
-  persistRoot: false,
+  persistRoot: true,
 })
 ```
+
+The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you don't have the need for automatic restoration of the root then you can use the `new Trie` constructor with the same options and get persistence without the automatic restoration.
 
 ## Proofs
 
