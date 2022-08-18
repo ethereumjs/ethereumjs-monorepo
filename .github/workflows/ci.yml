@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  test-block:
+    needs: build
+    concurrency:
+      group: ${{ github.head_ref }}-test-block
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/packages/block
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - run: npm ci
+      - run: npm run coverage
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{github.workspace}}/packages/block/coverage/lcov.info
+          flags: block
+        if: ${{ matrix.node-version == 16 }}
+
+  test-trie:
+    needs: build
+    concurrency:
+      group: ${{ github.head_ref }}-test-trie
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/packages/trie
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - run: npm ci
+      - run: npm run coverage
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{github.workspace}}/packages/trie/coverage/lcov.info
+          flags: block
+        if: ${{ matrix.node-version == 16 }}
