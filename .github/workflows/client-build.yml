@@ -33,7 +33,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
@@ -68,7 +68,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - uses: nick-fields/retry@v2
