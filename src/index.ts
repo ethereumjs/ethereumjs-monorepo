@@ -71,6 +71,11 @@ interface V3ParamsStrict {
   p: number
 }
 
+// helpers
+function keyExists(k: Buffer | undefined | null): k is Buffer {
+  return k !== undefined && k !== null
+}
+
 function validateHexString(paramName: string, str: string, length?: number) {
   if (str.toLowerCase().startsWith('0x')) {
     str = str.slice(2)
@@ -288,7 +293,7 @@ export default class Wallet {
   public static generate(icapDirect: boolean = false): Wallet {
     if (icapDirect) {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
-      while (true) {
+      for (;;) {
         const privateKey = randomBytes(32) as Buffer
         const hex = privateToAddress(privateKey).toString('hex')
         if (BigInt('0x' + hex) <= max) {
@@ -308,7 +313,7 @@ export default class Wallet {
       pattern = new RegExp(pattern)
     }
 
-    while (true) {
+    for (;;) {
       const privateKey = randomBytes(32) as Buffer
       const address = privateToAddress(privateKey)
 
@@ -664,9 +669,4 @@ export default class Wallet {
   public verifyPublicKey(publicKey: Buffer): boolean {
     return privateToPublic(this.privateKey as Buffer).equals(publicKey)
   }
-}
-
-// helpers
-function keyExists(k: Buffer | undefined | null): k is Buffer {
-  return k !== undefined && k !== null
 }
