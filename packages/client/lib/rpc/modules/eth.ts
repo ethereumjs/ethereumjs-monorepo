@@ -579,6 +579,17 @@ export class Eth {
     return await jsonRpcBlock(block, this._chain, includeTransactions)
   }
 
+  // GetBlockTransactionCountByNumber returns the number of transactions in the block with the given block number.
+  // func (s *TransactionAPI) GetBlockTransactionCountByNumber(ctx context.Context, blockNr rpc.BlockNumber) *hexutil.Uint {
+  //   if block, _ := s.b.BlockByNumber(ctx, blockNr); block != nil {
+  // 	  n := hexutil.Uint(len(block.Transactions()))
+  // 	  return &n
+  //   }
+  //   return nil
+  // }
+
+  // TODO
+
   /**
    * Returns the transaction count for a block given by the block hash.
    * @param params An array of one parameter: A block hash
