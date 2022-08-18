@@ -82,7 +82,7 @@ VmState.constructor
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L29)
+[packages/vm/src/eei/eei.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L31)
 
 ## Methods
 
@@ -103,7 +103,7 @@ VmState.\_clearOriginalStorageCache
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L328)
+[packages/vm/src/eei/vmState.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L331)
 
 ___
 
@@ -131,7 +131,7 @@ VmState.accountExists
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L178)
+[packages/vm/src/eei/vmState.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L181)
 
 ___
 
@@ -163,7 +163,7 @@ VmState.accountIsEmpty
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:475](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L475)
+[packages/vm/src/eei/vmState.ts:478](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L478)
 
 ___
 
@@ -193,7 +193,7 @@ VmState.addWarmedAddress
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L362)
+[packages/vm/src/eei/vmState.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L365)
 
 ___
 
@@ -224,7 +224,7 @@ VmState.addWarmedStorage
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L395)
+[packages/vm/src/eei/vmState.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L398)
 
 ___
 
@@ -252,7 +252,7 @@ VmState.checkpoint
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L63)
+[packages/vm/src/eei/vmState.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L66)
 
 ___
 
@@ -277,7 +277,7 @@ VmState.cleanupTouchedAccounts
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L274)
+[packages/vm/src/eei/vmState.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L277)
 
 ___
 
@@ -305,7 +305,7 @@ VmState.clearContractStorage
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L173)
+[packages/vm/src/eei/vmState.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L176)
 
 ___
 
@@ -330,7 +330,7 @@ VmState.clearOriginalStorageCache
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L336)
+[packages/vm/src/eei/vmState.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L339)
 
 ___
 
@@ -354,7 +354,7 @@ VmState.clearWarmedAccounts
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L408)
+[packages/vm/src/eei/vmState.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L411)
 
 ___
 
@@ -376,7 +376,7 @@ VmState.commit
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L75)
+[packages/vm/src/eei/vmState.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L78)
 
 ___
 
@@ -394,7 +394,7 @@ EEIInterface.copy
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L94)
+[packages/vm/src/eei/eei.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L96)
 
 ___
 
@@ -424,7 +424,7 @@ VmState.deleteAccount
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L151)
+[packages/vm/src/eei/vmState.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L154)
 
 ___
 
@@ -466,7 +466,7 @@ VmState.generateAccessList
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L430)
+[packages/vm/src/eei/vmState.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L433)
 
 ___
 
@@ -497,7 +497,7 @@ VmState.generateCanonicalGenesis
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L237)
+[packages/vm/src/eei/vmState.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L240)
 
 ___
 
@@ -525,7 +525,7 @@ VmState.getAccount
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L134)
+[packages/vm/src/eei/vmState.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L137)
 
 ___
 
@@ -551,7 +551,7 @@ EEIInterface.getBlockHash
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L65)
+[packages/vm/src/eei/eei.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L67)
 
 ___
 
@@ -579,7 +579,7 @@ VmState.getContractCode
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L156)
+[packages/vm/src/eei/vmState.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L159)
 
 ___
 
@@ -608,7 +608,7 @@ VmState.getContractStorage
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L164)
+[packages/vm/src/eei/vmState.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L167)
 
 ___
 
@@ -630,7 +630,7 @@ Returns balance of the given account.
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L39)
+[packages/vm/src/eei/eei.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L41)
 
 ___
 
@@ -652,7 +652,7 @@ Returns code of an account.
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L57)
+[packages/vm/src/eei/eei.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L59)
 
 ___
 
@@ -674,7 +674,7 @@ Get size of an account’s code.
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L48)
+[packages/vm/src/eei/eei.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L50)
 
 ___
 
@@ -696,7 +696,7 @@ VmState.getStateRoot
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L189)
+[packages/vm/src/eei/vmState.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L192)
 
 ___
 
@@ -724,7 +724,7 @@ VmState.hasStateRoot
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L193)
+[packages/vm/src/eei/vmState.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L196)
 
 ___
 
@@ -754,7 +754,7 @@ VmState.isWarmedAddress
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L348)
+[packages/vm/src/eei/vmState.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L351)
 
 ___
 
@@ -785,7 +785,7 @@ VmState.isWarmedStorage
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L376)
+[packages/vm/src/eei/vmState.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L379)
 
 ___
 
@@ -798,7 +798,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `address` | `Address` |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"stateRoot"`` \| ``"codeHash"``\>\> |
+| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\> |
 
 #### Returns
 
@@ -814,7 +814,7 @@ VmState.modifyAccountFields
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L143)
+[packages/vm/src/eei/vmState.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L146)
 
 ___
 
@@ -843,7 +843,7 @@ VmState.putAccount
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L138)
+[packages/vm/src/eei/vmState.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L141)
 
 ___
 
@@ -872,7 +872,7 @@ VmState.putContractCode
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L160)
+[packages/vm/src/eei/vmState.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L163)
 
 ___
 
@@ -902,7 +902,7 @@ VmState.putContractStorage
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L168)
+[packages/vm/src/eei/vmState.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L171)
 
 ___
 
@@ -929,7 +929,7 @@ VmState.revert
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L102)
+[packages/vm/src/eei/vmState.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L105)
 
 ___
 
@@ -957,7 +957,7 @@ VmState.setStateRoot
 
 #### Defined in
 
-[packages/vm/src/eei/vmState.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L182)
+[packages/vm/src/eei/vmState.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L185)
 
 ___
 
@@ -985,7 +985,7 @@ EEIInterface.storageLoad
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L86)
+[packages/vm/src/eei/eei.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L88)
 
 ___
 
@@ -1013,4 +1013,4 @@ EEIInterface.storageStore
 
 #### Defined in
 
-[packages/vm/src/eei/eei.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L76)
+[packages/vm/src/eei/eei.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L78)
