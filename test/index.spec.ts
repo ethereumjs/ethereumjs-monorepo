@@ -763,7 +763,7 @@ describe('.fromEthSale()', function () {
   })
 })
 
-describe.only('.fromEtherWallet()', function () {
+describe('.fromEtherWallet()', function () {
   // it('should work with unencrypted input', function () {
   //   const etherWalletUnencrypted = '{"address":"0x9d6abd11d36cc20d4836c25967f1d9efe6b1a27c","encrypted":true,"locked":false,"hash":"b7a6621e8b125a17234d3e5c35522696a84134d98d07eab2479d020a8613c4bd","private":"a2c6222146ca2269086351fda9f8d2dfc8a50331e8a05f0f400c13653a521862","public":"2ed129b50b1a4dbbc53346bf711df6893265ad0c700fd11431b0bc3a66bd383a87b10ad835804a6cbe092e0375a0cc3524acf06b1ec7bb978bf25d2d6c35d120"}'
   //   const wallet = Thirdparty.fromEtherWallet(etherWalletUnencrypted)

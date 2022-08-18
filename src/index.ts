@@ -608,11 +608,6 @@ export default class Wallet {
       v3Params.iv,
       v3Params.cipher
     )
-    // if (!cipher) {
-    //   throw new Error('Unsupported cipher')
-    // }
-
-    // const ciphertext = runCipherBuffer(cipher, this.privKey)
     const mac = keccak256(
       Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)])
     )

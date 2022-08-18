@@ -28,7 +28,6 @@ export default class EthereumHDKey {
     if (!this._hdkey.privateExtendedKey) {
       throw new Error('This is a public key only wallet')
     }
-    // return Buffer.from(this._hdkey.privateExtendedKey, 'hex')
     return this._hdkey.privateExtendedKey
   }
 
@@ -36,7 +35,6 @@ export default class EthereumHDKey {
    * Return a BIP32 extended public key (xpub)
    */
   public publicExtendedKey(): string {
-    // return Buffer.from(this._hdkey.publicExtendedKey, 'hex')
     return this._hdkey.publicExtendedKey
   }
 
