@@ -387,7 +387,7 @@ export function getCommon(network: string) {
       {
         baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
-        eips: [3607]
+        eips: [3607],
       }
     )
   }
