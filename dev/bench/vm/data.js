@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660915843020,
+  "lastUpdate": 1660940013096,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "06dc4d92e71579c7fc15994cff4c8e6b298117da",
-          "message": "Upgrade jayson to v4.0 (#2129)",
-          "timestamp": "2022-08-12T13:42:03-04:00",
-          "tree_id": "aade061b3664db0ff1db1b6b1b799dc183438ceb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/06dc4d92e71579c7fc15994cff4c8e6b298117da"
-        },
-        "date": 1660326287331,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 11962,
-            "range": "±4.93%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12059,
-            "range": "±2.96%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 11139,
-            "range": "±6.00%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12013,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 11507,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.10%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6d1f544bed7df729aa9517510b2424ca7cd11639",
+          "message": "client: Enhance snap protocol spec tests (#2157)\n\n* client: Enhance snap protocol spec tests\r\n\r\n* add AccountRange encode/decode test\r\n\r\n* add getStorageRanges and its corresponding tests with a real sample\r\n\r\n* chore: run `prettier` and `eslint` fixes\r\n\r\n* verify the storagerange slot proof\r\n\r\n* add verify getByteCodes and its response\r\n\r\n* replace verify proof with verify range proof\r\n\r\n* update leveldb import\r\n\r\nCo-authored-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-19T22:10:40+02:00",
+          "tree_id": "7c94590972a3b452366384edc24a2c52b94bd8e1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6d1f544bed7df729aa9517510b2424ca7cd11639"
+        },
+        "date": 1660940011475,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23277,
+            "range": "±2.73%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22149,
+            "range": "±5.44%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 23029,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22654,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22391,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
