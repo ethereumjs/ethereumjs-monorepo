@@ -37,7 +37,7 @@ The following are our currently active branches:
 | [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | v6             | `Beta`   | Main working branch, current v6 work merged in (2022-06-08) |
 | [v5-maintenance](https://github.com/ethereumjs/ethereumjs-monorepo/tree/v5-maintenance) | v5             | `Active` | Maintenance for v5 releases                                 |
 
-Please open PRs towards one of the active branches.
+Breaking releases are in sync for all libraries, a release cycle is named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch.
 
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
