@@ -35,8 +35,9 @@ type Account = [address: Address, privateKey: Buffer]
 const networks = Object.entries(Common._getInitializedChains().names)
 
 function ensureDirSync(dir: string) {
-  if (existsSync(dir)) return
-  if (!statSync(dir).isDirectory()) throw new Error(dir + ' must be directory, not file')
+  if (existsSync(dir)) {
+    if (!statSync(dir).isDirectory()) throw new Error(dir + ' must be directory, not file')
+  }
   mkdirSync(dir, { recursive: true })
 }
 
