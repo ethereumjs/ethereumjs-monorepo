@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660913070008,
+  "lastUpdate": 1660915843020,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8c1d34d43119819fcd4da4c44e07b7c2ca1f807b",
-          "message": "Monorepo Beta 3 Releases (#2122)\n\n* Bumped version, added CHANGELOG, updated upstream library versions (Block v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (Blockchain v6.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (Common v3.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (devp2p v5.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (ethash v2.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (evm v1.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (rlp v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (statemanager v1.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (trie v5.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (tx v4.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (util v8.0.0-beta.3)\r\n\r\n* Bumped version, added CHANGELOG, updated upstream library versions (vm v6.0.0-beta.3)\r\n\r\n* Common version correction\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Client: bumped version to v0.6.1, added CHANGELOG\r\n\r\n* Updated/regenerated package-lock.json\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-08-11T17:08:54+02:00",
-          "tree_id": "37df7cfeb4ea55497af14868772db895a43dcd98",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8c1d34d43119819fcd4da4c44e07b7c2ca1f807b"
-        },
-        "date": 1660230703705,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22022,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21036,
-            "range": "±4.98%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21558,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21397,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19363,
-            "range": "±8.98%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 13835,
             "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e16b893616bc0261f7e761379592df5e41bf9b95",
+          "message": "chore: replace `nyc` configurations with `c8` configurations (#2192)",
+          "timestamp": "2022-08-19T15:26:42+02:00",
+          "tree_id": "0cb7158f6b6232c650dc5de829a1515fbe830d0a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e16b893616bc0261f7e761379592df5e41bf9b95"
+        },
+        "date": 1660915842336,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15250,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15151,
+            "range": "±6.00%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15400,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15302,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13848,
+            "range": "±8.10%",
             "unit": "ops/sec",
             "extra": "76 samples"
           }
