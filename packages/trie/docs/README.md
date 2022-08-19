@@ -11,7 +11,7 @@
 - [CheckpointTrie](classes/CheckpointTrie.md)
 - [ExtensionNode](classes/ExtensionNode.md)
 - [LeafNode](classes/LeafNode.md)
-- [LevelDB](classes/LevelDB.md)
+- [MapDB](classes/MapDB.md)
 - [PrioritizedTaskExecutor](classes/PrioritizedTaskExecutor.md)
 - [SecureTrie](classes/SecureTrie.md)
 - [Trie](classes/Trie.md)
@@ -38,7 +38,6 @@
 
 ### Variables
 
-- [ENCODING\_OPTS](README.md#encoding_opts)
 - [ROOT\_DB\_KEY](README.md#root_db_key)
 
 ### Functions
@@ -167,23 +166,6 @@ ___
 [packages/trie/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L4)
 
 ## Variables
-
-### ENCODING\_OPTS
-
-• `Const` **ENCODING\_OPTS**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `keyEncoding` | `string` |
-| `valueEncoding` | `string` |
-
-#### Defined in
-
-[packages/trie/src/db/level.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L8)
-
-___
 
 ### ROOT\_DB\_KEY
 
