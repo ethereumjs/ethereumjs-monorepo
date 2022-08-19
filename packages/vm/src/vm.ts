@@ -31,7 +31,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM<EVMType extends EVMInterface> extends AsyncEventEmitter<VMEvents> {
+export class VM<EVMType extends EVMInterface = EVMInterface> extends AsyncEventEmitter<VMEvents> {
   /**
    * The StateManager used by the VM
    */
@@ -253,7 +253,7 @@ export class VM<EVMType extends EVMInterface> extends AsyncEventEmitter<VMEvents
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
-      evm: <any>evmCopy,
+      evm: <EVMType>evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })
