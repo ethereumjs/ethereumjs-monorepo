@@ -1,11 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { CheckpointTrie, LevelDB } from '@ethereumjs/trie'
+import { CheckpointTrie } from '@ethereumjs/trie'
 import { Account, bigIntToBuffer, convertSlimAccount } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
+import { LevelDB } from '../../../lib/execution/level'
 import { SnapProtocol } from '../../../lib/net/protocol'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
