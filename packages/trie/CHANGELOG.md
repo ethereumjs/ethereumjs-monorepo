@@ -12,15 +12,15 @@ Beta 3 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Root Hash Persistance
 
-The trie library now comes with a new constructor option `persistRoot` which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071), thanks to @faustbrian for the contribution! ❤️
+The trie library now comes with a new constructor option `persistRoot` which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071) and PR [#2123](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2123), thanks to @faustbrian for the contribution! ❤️
 
-To switch back to the old behavior you can pass in the option set to `false` on instantiation:
+To activate root hash persistance you can set the `persistRoot` option on instantiation:
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')), persistRoot: false })
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')), persistRoot: true })
 ```
 
 ### Other Changes
