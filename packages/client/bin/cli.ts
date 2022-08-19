@@ -4,7 +4,8 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, isFalsy, isTruthy, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from 'fs'
+import { existsSync } from 'fs'
+import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
@@ -33,13 +34,6 @@ const yargs = require('yargs/yargs')
 type Account = [address: Address, privateKey: Buffer]
 
 const networks = Object.entries(Common._getInitializedChains().names)
-
-function ensureDirSync(dir: string) {
-  if (existsSync(dir)) {
-    if (!statSync(dir).isDirectory()) throw new Error(dir + ' must be directory, not file')
-  }
-  mkdirSync(dir, { recursive: true })
-}
 
 let logger: Logger
 
@@ -584,11 +578,7 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      try {
-        rmSync(`${args.datadir}/devnet`)
-      } catch (error: any) {
-        // ignore
-      }
+      removeSync(`${args.datadir}/devnet`)
       // Create new account
       accounts.push(generateAccount())
     }
