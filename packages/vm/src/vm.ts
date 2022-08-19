@@ -128,7 +128,7 @@ export class VM<
       this.eei = opts.eei
     } else {
       if (opts.evm) {
-        this.eei = <any>opts.evm.eei
+        this.eei = <EEIType>opts.evm.eei
       } else {
         this.eei = <any>new EEI(this.stateManager, this._common, this.blockchain)
       }
