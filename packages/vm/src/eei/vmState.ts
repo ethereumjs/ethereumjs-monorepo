@@ -204,7 +204,7 @@ export class VmState implements EVMStateAccess {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  protected touchAccount(address: Address): void {
+  touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
   }
 
