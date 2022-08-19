@@ -775,32 +775,6 @@ export class Trie {
     await this.walkTrie(this.root, outerOnFound)
   }
 
-  /**
-   * Finds all nodes that store k,v values
-   * called by {@link TrieReadStream}
-   * @private
-   */
-  async _findValueNodes(onFound: FoundNodeFunction): Promise<void> {
-    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
-      let fullKey = key
-
-      if (node instanceof LeafNode) {
-        fullKey = key.concat(node.key)
-        // found leaf node!
-        onFound(nodeRef, node, fullKey, walkController)
-      } else if (node instanceof BranchNode && node.value) {
-        // found branch with value
-        onFound(nodeRef, node, fullKey, walkController)
-      } else {
-        // keep looking for value nodes
-        if (node !== null) {
-          walkController.allChildren(node, key)
-        }
-      }
-    }
-    await this.walkTrie(this.root, outerOnFound)
-  }
-
   protected hash(msg: Uint8Array): Buffer {
     return Buffer.from(this._hash(msg))
   }
