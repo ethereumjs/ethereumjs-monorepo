@@ -61,6 +61,7 @@ and to-be-selfdestructed addresses.
 - [setStateRoot](EEI.md#setstateroot)
 - [storageLoad](EEI.md#storageload)
 - [storageStore](EEI.md#storagestore)
+- [touchAccount](EEI.md#touchaccount)
 
 ## Constructors
 
@@ -1014,3 +1015,33 @@ EEIInterface.storageStore
 #### Defined in
 
 [packages/vm/src/eei/eei.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/eei.ts#L78)
+
+___
+
+### touchAccount
+
+▸ **touchAccount**(`address`): `void`
+
+Marks an account as touched, according to the definition
+in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
+This happens when the account is triggered for a state-changing
+event. Touched accounts that are empty will be cleared
+at the end of the tx.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `Address` |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+VmState.touchAccount
+
+#### Defined in
+
+[packages/vm/src/eei/vmState.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/eei/vmState.ts#L207)

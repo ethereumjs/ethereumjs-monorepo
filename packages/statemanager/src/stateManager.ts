@@ -61,6 +61,13 @@ export interface DefaultStateManagerOpts {
    * A {@link SecureTrie} instance
    */
   trie?: Trie
+  /**
+   * Option to prefix codehashes in the database. This defaults to `true`.
+   * If this is disabled, note that it is possible to corrupt the trie, by deploying code
+   * which code is equal to the preimage of a trie-node.
+   * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
+   */
+  prefixCodeHashes?: boolean
 }
 
 /**
@@ -77,6 +84,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 
+  private readonly _prefixCodeHashes: boolean
+
   /**
    * Instantiate the StateManager interface.
    */
@@ -85,6 +94,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
+
+    this._prefixCodeHashes = opts.prefixCodeHashes ?? true
 
     /*
      * For a custom StateManager implementation adopt these
@@ -132,7 +143,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       return
     }
 
-    const key = Buffer.concat([CODEHASH_PREFIX, codeHash])
+    const key = this._prefixCodeHashes ? Buffer.concat([CODEHASH_PREFIX, codeHash]) : codeHash
     await this._trie.db.put(key, value)
 
     if (this.DEBUG) {
@@ -152,7 +163,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
-    const key = Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+    const key = this._prefixCodeHashes
+      ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+      : account.codeHash
     const code = await this._trie.db.get(key)
     return code ?? Buffer.alloc(0)
   }

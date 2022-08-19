@@ -80,7 +80,7 @@ Instantiate the StateManager interface.
 
 #### Defined in
 
-[stateManager.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L83)
+[stateManager.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L92)
 
 ## Properties
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[stateManager.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L78)
+[stateManager.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L85)
 
 ___
 
@@ -146,7 +146,7 @@ ___
 
 #### Defined in
 
-[stateManager.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L77)
+[stateManager.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L84)
 
 ## Methods
 
@@ -173,7 +173,7 @@ exists
 
 #### Defined in
 
-[stateManager.ts:501](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L501)
+[stateManager.ts:514](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L514)
 
 ___
 
@@ -227,7 +227,7 @@ State changes that follow can then be committed by calling
 
 #### Defined in
 
-[stateManager.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L292)
+[stateManager.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L305)
 
 ___
 
@@ -253,7 +253,7 @@ Clears all storage entries for the account corresponding to `address`.
 
 #### Defined in
 
-[stateManager.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L280)
+[stateManager.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L293)
 
 ___
 
@@ -278,7 +278,7 @@ last call to checkpoint.
 
 #### Defined in
 
-[stateManager.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L301)
+[stateManager.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L314)
 
 ___
 
@@ -300,7 +300,7 @@ checkpoints were reverted.
 
 #### Defined in
 
-[stateManager.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L115)
+[stateManager.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L126)
 
 ___
 
@@ -360,7 +360,7 @@ Both are represented as hex strings without the `0x` prefix.
 
 #### Defined in
 
-[stateManager.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L469)
+[stateManager.ts:482](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L482)
 
 ___
 
@@ -441,7 +441,7 @@ Returns an empty `Buffer` if the account has no associated code.
 
 #### Defined in
 
-[stateManager.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L150)
+[stateManager.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L161)
 
 ___
 
@@ -477,7 +477,7 @@ If this does not exist an empty `Buffer` is returned.
 
 #### Defined in
 
-[stateManager.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L199)
+[stateManager.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L212)
 
 ___
 
@@ -504,7 +504,7 @@ Get an EIP-1186 proof
 
 #### Defined in
 
-[stateManager.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L323)
+[stateManager.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L336)
 
 ___
 
@@ -528,7 +528,7 @@ checkpoints on the instance.
 
 #### Defined in
 
-[stateManager.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L434)
+[stateManager.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L447)
 
 ___
 
@@ -554,7 +554,7 @@ Checks whether there is a state corresponding to a stateRoot
 
 #### Defined in
 
-[stateManager.ts:492](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L492)
+[stateManager.ts:505](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L505)
 
 ___
 
@@ -650,7 +650,7 @@ corresponding to `address` to reference this.
 
 #### Defined in
 
-[stateManager.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L128)
+[stateManager.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L139)
 
 ___
 
@@ -683,7 +683,7 @@ corresponding to `address` at the provided `key`.
 
 #### Defined in
 
-[stateManager.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L246)
+[stateManager.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L259)
 
 ___
 
@@ -708,7 +708,7 @@ last call to checkpoint.
 
 #### Defined in
 
-[stateManager.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L311)
+[stateManager.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L324)
 
 ___
 
@@ -737,7 +737,7 @@ the state trie.
 
 #### Defined in
 
-[stateManager.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L447)
+[stateManager.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L460)
 
 ___
 
@@ -763,4 +763,4 @@ Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
 
 #### Defined in
 
-[stateManager.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L361)
+[stateManager.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L374)

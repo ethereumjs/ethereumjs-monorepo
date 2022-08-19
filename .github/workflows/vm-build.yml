@@ -28,7 +28,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
@@ -52,7 +52,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:selectedForks
@@ -69,7 +69,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
@@ -84,7 +84,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run build:benchmarks

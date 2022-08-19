@@ -49,10 +49,10 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 }
 
 export type VMEvents = {
-  beforeBlock: (data: Block, resolve?: (result: any) => void) => void
-  afterBlock: (data: AfterBlockEvent, resolve?: (result: any) => void) => void
-  beforeTx: (data: TypedTransaction, resolve?: (result: any) => void) => void
-  afterTx: (data: AfterTxEvent, resolve?: (result: any) => void) => void
+  beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
+  afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
+  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
+  afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
 }
 
 /**
