@@ -1,8 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { SecureTrie } from '@ethereumjs/trie'
 import { isTruthy, toBuffer } from '@ethereumjs/util'
 
+import { EVM } from '../../../../evm/src'
+import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
@@ -76,8 +79,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie()
-  const vm = await VM.create({ state, common, blockchain })
+  const state = new SecureTrie()
+  const stateManager = new DefaultStateManager({
+    trie: state,
+  })
+  const eei = new EEI(stateManager, common, blockchain)
+  const evm = new EVM({ common, eei })
+  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
   await setupPreConditions(vm.eei, testData)
 
