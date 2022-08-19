@@ -211,7 +211,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L24)
+[packages/trie/src/trie/node/util.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L25)
 
 ___
 
@@ -231,7 +231,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L10)
+[packages/trie/src/trie/node/util.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L11)
 
 ___
 
@@ -251,7 +251,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L32)
+[packages/trie/src/trie/node/util.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L33)
 
 ___
 
@@ -298,4 +298,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L409)
+[packages/trie/src/proof/range.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L410)

@@ -1,8 +1,11 @@
 import { Readable } from 'readable-stream'
 
+import { BranchNode, LeafNode } from '../trie'
+
 import { nibblesToBuffer } from './nibbles'
 
 import type { Trie } from '../trie'
+import type { FoundNodeFunction } from '../types'
 
 export class TrieReadStream extends Readable {
   private trie: Trie
@@ -21,7 +24,7 @@ export class TrieReadStream extends Readable {
     }
     this._started = true
     try {
-      await this.trie._findValueNodes(async (nodeRef, node, key, walkController) => {
+      await this._findValueNodes(async (_, node, key, walkController) => {
         if (node !== null) {
           this.push({
             key: nibblesToBuffer(key),
@@ -38,5 +41,31 @@ export class TrieReadStream extends Readable {
       }
     }
     this.push(null)
+  }
+
+  /**
+   * Finds all nodes that store k,v values
+   * called by {@link TrieReadStream}
+   * @private
+   */
+  async _findValueNodes(onFound: FoundNodeFunction): Promise<void> {
+    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
+      let fullKey = key
+
+      if (node instanceof LeafNode) {
+        fullKey = key.concat(node.key)
+        // found leaf node!
+        onFound(nodeRef, node, fullKey, walkController)
+      } else if (node instanceof BranchNode && node.value) {
+        // found branch with value
+        onFound(nodeRef, node, fullKey, walkController)
+      } else {
+        // keep looking for value nodes
+        if (node !== null) {
+          walkController.allChildren(node, key)
+        }
+      }
+    }
+    await this.trie.walkTrie(this.trie.root, outerOnFound)
   }
 }
