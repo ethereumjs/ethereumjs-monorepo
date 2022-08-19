@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { CheckpointTrie, LevelDB } from '@ethereumjs/trie'
-import { Account, bigIntToBuffer } from '@ethereumjs/util'
+import { Account, bigIntToBuffer, convertSlimAccount } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -148,14 +148,16 @@ tape('[SnapProtocol]', (t) => {
 
     const trie = new CheckpointTrie({ db: new LevelDB() })
     try {
-      const accountRLP = await trie.verifyProof(
+      const keys = accounts.map((acc: any) => acc.hash)
+      const values = accounts.map((acc: any) => convertSlimAccount(acc.body))
+      await trie.verifyRangeProof(
         stateRoot,
-        accounts[accounts.length - 1].hash,
-        proof
+        keys[0],
+        keys[keys.length - 1],
+        keys,
+        values,
+        <any>proof
       )
-      if (accountRLP === null) {
-        throw Error('Account should have existed in the verification trie')
-      }
     } catch (e) {
       t.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
@@ -292,14 +294,16 @@ tape('[SnapProtocol]', (t) => {
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
     const trie = new CheckpointTrie({ db: new LevelDB() })
     try {
-      const slotRLP = await trie.verifyProof(
+      const keys = lastAccountSlots.map((acc: any) => acc.hash)
+      const values = lastAccountSlots.map((acc: any) => acc.body)
+      await trie.verifyRangeProof(
         lastAccountStorageRoot,
-        lastAccountSlots[lastAccountSlots.length - 1].hash,
-        proof
+        keys[0],
+        keys[keys.length - 1],
+        keys,
+        values,
+        <any>proof
       )
-      if (slotRLP === null) {
-        throw Error('Slot should have existed in the verification trie')
-      }
     } catch (e) {
       t.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
