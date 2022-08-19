@@ -47,17 +47,20 @@
   "dependencies": {
     "@ethereumjs/rlp": "4.0.0-beta.3",
     "@ethereumjs/util": "8.0.0-beta.3",
-    "abstract-level": "^1.0.3",
     "ethereum-cryptography": "^1.1.2",
-    "level": "^8.0.0",
-    "memory-level": "^1.0.0",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "@types/readable-stream": "^2.3.13",
+    "abstract-level": "^1.0.3",
+    "level": "^8.0.0",
+    "level-legacy": "npm:level@^7.0.0",
+    "level-mem": "^6.0.1",
+    "levelup": "^5.1.1",
     "lmdb": "^2.5.3",
+    "memory-level": "^1.0.0",
     "micro-bmark": "0.2.0",
     "web3": "^1.7.5"
   },

@@ -1,12 +1,12 @@
 import * as tape from 'tape'
 
-import { CheckpointTrie, LevelDB } from '../src'
+import { CheckpointTrie, MapDB } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
 
   it('create a merkle proof and verify it', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(Buffer.from('key1aa'), Buffer.from('0123456789012345678901234567890123456789xx'))
     await trie.put(Buffer.from('key2bb'), Buffer.from('aval2'))
@@ -78,7 +78,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
   })
 
   it('create a merkle proof and verify it with a single long key', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(Buffer.from('key1aa'), Buffer.from('0123456789012345678901234567890123456789xx'))
 
@@ -90,7 +90,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
   })
 
   it('create a merkle proof and verify it with a single short key', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
@@ -102,7 +102,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
   })
 
   it('create a merkle proof and verify it whit keys in the middle', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(
       Buffer.from('key1aa'),
@@ -133,7 +133,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
   })
 
   it('should succeed with a simple embedded extension-branch', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(Buffer.from('a'), Buffer.from('a'))
     await trie.put(Buffer.from('b'), Buffer.from('b'))

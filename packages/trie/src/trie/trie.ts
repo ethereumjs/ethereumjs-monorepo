@@ -1,7 +1,7 @@
 import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { LevelDB } from '../db'
+import { MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
@@ -54,7 +54,7 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
-    this.db = opts?.db ?? new LevelDB()
+    this.db = opts?.db ?? new MapDB()
     this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
