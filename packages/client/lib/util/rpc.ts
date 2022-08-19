@@ -125,6 +125,7 @@ export function createRPCServer(
         'eth_getCode',
         'eth_getBlockByHash',
         'eth_getBlockByNumber',
+        'eth_getBlockTransactionCountByNumber',
         'eth_getLogs',
         'eth_sendRawTransaction',
         'eth_syncing',

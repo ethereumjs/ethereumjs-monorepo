@@ -324,6 +324,12 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getBlockTransactionCountByNumber = middleware(
+      this.getBlockTransactionCountByNumber.bind(this),
+      1,
+      [[validators.blockOption]]
+    )
+
     this.getBlockByNumber = middleware(this.getBlockByNumber.bind(this), 2, [
       [validators.blockOption],
       [validators.bool],
@@ -579,16 +585,22 @@ export class Eth {
     return await jsonRpcBlock(block, this._chain, includeTransactions)
   }
 
-  // GetBlockTransactionCountByNumber returns the number of transactions in the block with the given block number.
-  // func (s *TransactionAPI) GetBlockTransactionCountByNumber(ctx context.Context, blockNr rpc.BlockNumber) *hexutil.Uint {
-  //   if block, _ := s.b.BlockByNumber(ctx, blockNr); block != nil {
-  // 	  n := hexutil.Uint(len(block.Transactions()))
-  // 	  return &n
-  //   }
-  //   return nil
-  // }
-
-  // TODO
+  /**
+   * Returns transaction count of a block by block number.
+   * @param params An array of one parameter:
+   *   1. integer of a block number, or the string "latest", "earliest" or "pending"
+   */
+  async getBlockTransactionCountByNumber(params: [string]) {
+    const [blockopt] = params
+    let block = undefined
+    try {
+      block = await this._chain.getBlock(BigInt(blockopt))
+      console.log(block.transactions)
+      return bigIntToHex(BigInt(block.transactions.length))
+    } catch (err) {
+      return err
+    }
+  }
 
   /**
    * Returns the transaction count for a block given by the block hash.
