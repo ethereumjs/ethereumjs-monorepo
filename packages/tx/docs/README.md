@@ -47,7 +47,7 @@
 
 #### Defined in
 
-[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L81)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
+[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L79)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L79)
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
 
 ___
 
@@ -79,7 +79,7 @@ Buffer values array for an [AccessListEIP2930Transaction](classes/AccessListEIP2
 
 #### Defined in
 
-[types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L209)
+[types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L208)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L71)
+[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L70)
 
 ___
 
@@ -108,7 +108,7 @@ Buffer values array for a [FeeMarketEIP1559Transaction](classes/FeeMarketEIP1559
 
 #### Defined in
 
-[types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
+[types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
 ___
 
@@ -135,7 +135,7 @@ Legacy [Transaction](classes/Transaction.md) Data
 
 #### Defined in
 
-[types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L114)
+[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
 
 ___
 
@@ -147,7 +147,7 @@ Buffer values array for a legacy [Transaction](classes/Transaction.md)
 
 #### Defined in
 
-[types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L204)
+[types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L203)
 
 ___
 
@@ -162,7 +162,7 @@ referenced as [Transaction](classes/Transaction.md) for compatibility reasons.
 
 #### Defined in
 
-[types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L106)
+[types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L105)
 
 ## Functions
 
@@ -182,7 +182,7 @@ input is AccessList
 
 #### Defined in
 
-[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L96)
+[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L95)
 
 ___
 
@@ -202,4 +202,4 @@ input is AccessListBuffer
 
 #### Defined in
 
-[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L83)
+[types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L82)

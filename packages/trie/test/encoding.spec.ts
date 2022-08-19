@@ -1,10 +1,10 @@
 import { toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { CheckpointTrie, LevelDB } from '../src'
+import { CheckpointTrie, MapDB } from '../src'
 
-const trie = new CheckpointTrie({ db: new LevelDB() })
-const trie2 = new CheckpointTrie({ db: new LevelDB() })
+const trie = new CheckpointTrie({ db: new MapDB() })
+const trie2 = new CheckpointTrie({ db: new MapDB() })
 const hex = 'FF44A3B3'
 
 tape('encoding hex prefixes', async function (t) {

@@ -17,6 +17,7 @@ Options for the block builder.
 - [calcDifficultyFromHeader](BuilderOpts.md#calcdifficultyfromheader)
 - [cliqueSigner](BuilderOpts.md#cliquesigner)
 - [common](BuilderOpts.md#common)
+- [consensusFormatValidation](BuilderOpts.md#consensusformatvalidation)
 - [freeze](BuilderOpts.md#freeze)
 - [hardforkByBlockNumber](BuilderOpts.md#hardforkbyblocknumber)
 - [hardforkByTTD](BuilderOpts.md#hardforkbyttd)
@@ -83,6 +84,22 @@ BlockOptions.common
 #### Defined in
 
 packages/block/dist/types.d.ts:23
+
+___
+
+### consensusFormatValidation
+
+• `Optional` **consensusFormatValidation**: `boolean`
+
+Perform consensus validation checks on header if set. Defaults to true.
+
+#### Inherited from
+
+BlockOptions.consensusFormatValidation
+
+#### Defined in
+
+packages/block/dist/types.d.ts:70
 
 ___
 

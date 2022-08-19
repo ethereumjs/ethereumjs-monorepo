@@ -17,7 +17,9 @@
 ### Properties
 
 - [\_readableState](TrieReadStream.md#_readablestate)
+- [closed](TrieReadStream.md#closed)
 - [destroyed](TrieReadStream.md#destroyed)
+- [errored](TrieReadStream.md#errored)
 - [readable](TrieReadStream.md#readable)
 - [readableAborted](TrieReadStream.md#readableaborted)
 - [readableDidRead](TrieReadStream.md#readabledidread)
@@ -79,7 +81,7 @@ Readable.constructor
 
 #### Defined in
 
-[packages/trie/src/util/readStream.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L10)
+[packages/trie/src/util/readStream.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L14)
 
 ## Properties
 
@@ -93,7 +95,21 @@ Readable.\_readableState
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:144
+node_modules/@types/readable-stream/index.d.ts:146
+
+___
+
+### closed
+
+• `Readonly` **closed**: `boolean`
+
+#### Inherited from
+
+Readable.closed
+
+#### Defined in
+
+node_modules/@types/readable-stream/index.d.ts:59
 
 ___
 
@@ -107,7 +123,21 @@ Readable.destroyed
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:145
+node_modules/@types/readable-stream/index.d.ts:147
+
+___
+
+### errored
+
+• `Readonly` **errored**: ``null`` \| `Error`
+
+#### Inherited from
+
+Readable.errored
+
+#### Defined in
+
+node_modules/@types/readable-stream/index.d.ts:60
 
 ___
 
@@ -135,7 +165,7 @@ Readable.readableAborted
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:290
+node_modules/@types/readable-stream/index.d.ts:292
 
 ___
 
@@ -149,7 +179,7 @@ Readable.readableDidRead
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:291
+node_modules/@types/readable-stream/index.d.ts:293
 
 ___
 
@@ -163,7 +193,7 @@ Readable.readableEncoding
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:292
+node_modules/@types/readable-stream/index.d.ts:294
 
 ___
 
@@ -177,7 +207,7 @@ Readable.readableEnded
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:293
+node_modules/@types/readable-stream/index.d.ts:295
 
 ___
 
@@ -233,7 +263,7 @@ Readable.readableObjectMode
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:294
+node_modules/@types/readable-stream/index.d.ts:296
 
 ## Methods
 
@@ -247,11 +277,11 @@ node_modules/@types/readable-stream/index.d.ts:294
 
 #### Inherited from
 
-Readable.\_\_@asyncIterator@21364
+Readable.\_\_@asyncIterator@21362
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:141
+node_modules/@types/readable-stream/index.d.ts:143
 
 ___
 
@@ -276,7 +306,7 @@ Readable.\_destroy
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:69
+node_modules/@types/readable-stream/index.d.ts:71
 
 ___
 
@@ -294,7 +324,7 @@ Readable.\_read
 
 #### Defined in
 
-[packages/trie/src/util/readStream.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L17)
+[packages/trie/src/util/readStream.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L21)
 
 ___
 
@@ -312,7 +342,7 @@ Readable.\_undestroy
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:149
+node_modules/@types/readable-stream/index.d.ts:151
 
 ___
 
@@ -345,7 +375,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:81
+node_modules/@types/readable-stream/index.d.ts:83
 
 ▸ **addListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -366,7 +396,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:82
+node_modules/@types/readable-stream/index.d.ts:84
 
 ▸ **addListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -387,7 +417,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:83
+node_modules/@types/readable-stream/index.d.ts:85
 
 ▸ **addListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -408,7 +438,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:84
+node_modules/@types/readable-stream/index.d.ts:86
 
 ▸ **addListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -429,7 +459,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:85
+node_modules/@types/readable-stream/index.d.ts:87
 
 ▸ **addListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -450,7 +480,7 @@ Readable.addListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:86
+node_modules/@types/readable-stream/index.d.ts:88
 
 ___
 
@@ -474,7 +504,7 @@ Readable.destroy
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:70
+node_modules/@types/readable-stream/index.d.ts:72
 
 ___
 
@@ -498,7 +528,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:88
+node_modules/@types/readable-stream/index.d.ts:90
 
 ▸ **emit**(`event`, `chunk`): `boolean`
 
@@ -519,7 +549,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:89
+node_modules/@types/readable-stream/index.d.ts:91
 
 ▸ **emit**(`event`): `boolean`
 
@@ -539,7 +569,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:90
+node_modules/@types/readable-stream/index.d.ts:92
 
 ▸ **emit**(`event`): `boolean`
 
@@ -559,7 +589,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:91
+node_modules/@types/readable-stream/index.d.ts:93
 
 ▸ **emit**(`event`, `err`): `boolean`
 
@@ -580,7 +610,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:92
+node_modules/@types/readable-stream/index.d.ts:94
 
 ▸ **emit**(`event`, ...`args`): `boolean`
 
@@ -601,7 +631,7 @@ Readable.emit
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:93
+node_modules/@types/readable-stream/index.d.ts:95
 
 ___
 
@@ -619,7 +649,7 @@ Readable.eventNames
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:139
+node_modules/@types/readable-stream/index.d.ts:141
 
 ___
 
@@ -637,7 +667,7 @@ Readable.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:133
+node_modules/@types/readable-stream/index.d.ts:135
 
 ___
 
@@ -655,7 +685,7 @@ Readable.isPaused
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:64
+node_modules/@types/readable-stream/index.d.ts:66
 
 ___
 
@@ -679,7 +709,7 @@ Readable.listenerCount
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:138
+node_modules/@types/readable-stream/index.d.ts:140
 
 ___
 
@@ -703,7 +733,7 @@ Readable.listeners
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:135
+node_modules/@types/readable-stream/index.d.ts:137
 
 ___
 
@@ -728,7 +758,7 @@ Readable.off
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:131
+node_modules/@types/readable-stream/index.d.ts:133
 
 ___
 
@@ -753,7 +783,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:95
+node_modules/@types/readable-stream/index.d.ts:97
 
 ▸ **on**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -774,7 +804,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:96
+node_modules/@types/readable-stream/index.d.ts:98
 
 ▸ **on**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -795,7 +825,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:97
+node_modules/@types/readable-stream/index.d.ts:99
 
 ▸ **on**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -816,7 +846,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:98
+node_modules/@types/readable-stream/index.d.ts:100
 
 ▸ **on**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -837,7 +867,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:99
+node_modules/@types/readable-stream/index.d.ts:101
 
 ▸ **on**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -858,7 +888,7 @@ Readable.on
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:100
+node_modules/@types/readable-stream/index.d.ts:102
 
 ___
 
@@ -883,7 +913,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:102
+node_modules/@types/readable-stream/index.d.ts:104
 
 ▸ **once**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -904,7 +934,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:103
+node_modules/@types/readable-stream/index.d.ts:105
 
 ▸ **once**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -925,7 +955,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:104
+node_modules/@types/readable-stream/index.d.ts:106
 
 ▸ **once**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -946,7 +976,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:105
+node_modules/@types/readable-stream/index.d.ts:107
 
 ▸ **once**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -967,7 +997,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:106
+node_modules/@types/readable-stream/index.d.ts:108
 
 ▸ **once**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -988,7 +1018,7 @@ Readable.once
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:107
+node_modules/@types/readable-stream/index.d.ts:109
 
 ___
 
@@ -1006,7 +1036,7 @@ Readable.pause
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:62
+node_modules/@types/readable-stream/index.d.ts:64
 
 ___
 
@@ -1038,7 +1068,7 @@ Readable.pipe
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:297
+node_modules/@types/readable-stream/index.d.ts:299
 
 ___
 
@@ -1063,7 +1093,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:109
+node_modules/@types/readable-stream/index.d.ts:111
 
 ▸ **prependListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1084,7 +1114,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:110
+node_modules/@types/readable-stream/index.d.ts:112
 
 ▸ **prependListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1105,7 +1135,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:111
+node_modules/@types/readable-stream/index.d.ts:113
 
 ▸ **prependListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1126,7 +1156,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:112
+node_modules/@types/readable-stream/index.d.ts:114
 
 ▸ **prependListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1147,7 +1177,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:113
+node_modules/@types/readable-stream/index.d.ts:115
 
 ▸ **prependListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1168,7 +1198,7 @@ Readable.prependListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:114
+node_modules/@types/readable-stream/index.d.ts:116
 
 ___
 
@@ -1193,7 +1223,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:116
+node_modules/@types/readable-stream/index.d.ts:118
 
 ▸ **prependOnceListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1214,7 +1244,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:117
+node_modules/@types/readable-stream/index.d.ts:119
 
 ▸ **prependOnceListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1235,7 +1265,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:118
+node_modules/@types/readable-stream/index.d.ts:120
 
 ▸ **prependOnceListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1256,7 +1286,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:119
+node_modules/@types/readable-stream/index.d.ts:121
 
 ▸ **prependOnceListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1277,7 +1307,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:120
+node_modules/@types/readable-stream/index.d.ts:122
 
 ▸ **prependOnceListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1298,7 +1328,7 @@ Readable.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:121
+node_modules/@types/readable-stream/index.d.ts:123
 
 ___
 
@@ -1323,7 +1353,7 @@ Readable.push
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:68
+node_modules/@types/readable-stream/index.d.ts:70
 
 ___
 
@@ -1347,7 +1377,7 @@ Readable.rawListeners
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:137
+node_modules/@types/readable-stream/index.d.ts:139
 
 ___
 
@@ -1371,7 +1401,7 @@ Readable.read
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:60
+node_modules/@types/readable-stream/index.d.ts:62
 
 ___
 
@@ -1395,7 +1425,7 @@ Readable.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:130
+node_modules/@types/readable-stream/index.d.ts:132
 
 ___
 
@@ -1420,7 +1450,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:123
+node_modules/@types/readable-stream/index.d.ts:125
 
 ▸ **removeListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1441,7 +1471,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:124
+node_modules/@types/readable-stream/index.d.ts:126
 
 ▸ **removeListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1462,7 +1492,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:125
+node_modules/@types/readable-stream/index.d.ts:127
 
 ▸ **removeListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1483,7 +1513,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:126
+node_modules/@types/readable-stream/index.d.ts:128
 
 ▸ **removeListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1504,7 +1534,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:127
+node_modules/@types/readable-stream/index.d.ts:129
 
 ▸ **removeListener**(`event`, `listener`): [`TrieReadStream`](TrieReadStream.md)
 
@@ -1525,7 +1555,7 @@ Readable.removeListener
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:128
+node_modules/@types/readable-stream/index.d.ts:130
 
 ___
 
@@ -1543,7 +1573,7 @@ Readable.resume
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:63
+node_modules/@types/readable-stream/index.d.ts:65
 
 ___
 
@@ -1567,7 +1597,7 @@ Readable.setEncoding
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:61
+node_modules/@types/readable-stream/index.d.ts:63
 
 ___
 
@@ -1591,7 +1621,7 @@ Readable.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:132
+node_modules/@types/readable-stream/index.d.ts:134
 
 ___
 
@@ -1615,7 +1645,7 @@ Readable.unpipe
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:65
+node_modules/@types/readable-stream/index.d.ts:67
 
 ___
 
@@ -1639,7 +1669,7 @@ Readable.unshift
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:66
+node_modules/@types/readable-stream/index.d.ts:68
 
 ___
 
@@ -1663,4 +1693,4 @@ Readable.wrap
 
 #### Defined in
 
-node_modules/@types/readable-stream/index.d.ts:67
+node_modules/@types/readable-stream/index.d.ts:69

@@ -1,12 +1,12 @@
 import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import Semaphore from 'semaphore-async-await'
 
-import { LevelDB } from '../db'
+import { MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
+import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
@@ -54,7 +54,7 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
-    this.db = opts?.db ?? new LevelDB()
+    this.db = opts?.db ?? new MapDB()
     this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -770,32 +770,6 @@ export class Trie {
         }
       } else {
         onFound(nodeRef, node, key, walkController)
-      }
-    }
-    await this.walkTrie(this.root, outerOnFound)
-  }
-
-  /**
-   * Finds all nodes that store k,v values
-   * called by {@link TrieReadStream}
-   * @private
-   */
-  async _findValueNodes(onFound: FoundNodeFunction): Promise<void> {
-    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
-      let fullKey = key
-
-      if (node instanceof LeafNode) {
-        fullKey = key.concat(node.key)
-        // found leaf node!
-        onFound(nodeRef, node, fullKey, walkController)
-      } else if (node instanceof BranchNode && node.value) {
-        // found branch with value
-        onFound(nodeRef, node, fullKey, walkController)
-      } else {
-        // keep looking for value nodes
-        if (node !== null) {
-          walkController.allChildren(node, key)
-        }
       }
     }
     await this.walkTrie(this.root, outerOnFound)

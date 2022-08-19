@@ -11,7 +11,7 @@
 - [CheckpointTrie](classes/CheckpointTrie.md)
 - [ExtensionNode](classes/ExtensionNode.md)
 - [LeafNode](classes/LeafNode.md)
-- [LevelDB](classes/LevelDB.md)
+- [MapDB](classes/MapDB.md)
 - [PrioritizedTaskExecutor](classes/PrioritizedTaskExecutor.md)
 - [SecureTrie](classes/SecureTrie.md)
 - [Trie](classes/Trie.md)
@@ -38,7 +38,6 @@
 
 ### Variables
 
-- [ENCODING\_OPTS](README.md#encoding_opts)
 - [ROOT\_DB\_KEY](README.md#root_db_key)
 
 ### Functions
@@ -168,23 +167,6 @@ ___
 
 ## Variables
 
-### ENCODING\_OPTS
-
-• `Const` **ENCODING\_OPTS**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `keyEncoding` | `string` |
-| `valueEncoding` | `string` |
-
-#### Defined in
-
-[packages/trie/src/db/level.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L8)
-
-___
-
 ### ROOT\_DB\_KEY
 
 • `Const` **ROOT\_DB\_KEY**: `Buffer`
@@ -211,7 +193,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L24)
+[packages/trie/src/trie/node/util.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L25)
 
 ___
 
@@ -231,7 +213,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L10)
+[packages/trie/src/trie/node/util.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L11)
 
 ___
 
@@ -251,7 +233,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L32)
+[packages/trie/src/trie/node/util.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L33)
 
 ___
 
@@ -298,4 +280,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L409)
+[packages/trie/src/proof/range.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L410)

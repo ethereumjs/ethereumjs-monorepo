@@ -1,9 +1,6 @@
-[@ethereumjs/trie](../README.md) / LevelDB
+[@ethereumjs/trie](../README.md) / MapDB
 
-# Class: LevelDB
-
-LevelDB is a thin wrapper around the underlying levelup db,
-which validates inputs and sets encoding type.
+# Class: MapDB
 
 ## Implements
 
@@ -13,48 +10,45 @@ which validates inputs and sets encoding type.
 
 ### Constructors
 
-- [constructor](LevelDB.md#constructor)
+- [constructor](MapDB.md#constructor)
 
 ### Properties
 
-- [\_leveldb](LevelDB.md#_leveldb)
+- [\_database](MapDB.md#_database)
 
 ### Methods
 
-- [batch](LevelDB.md#batch)
-- [copy](LevelDB.md#copy)
-- [del](LevelDB.md#del)
-- [get](LevelDB.md#get)
-- [put](LevelDB.md#put)
+- [batch](MapDB.md#batch)
+- [copy](MapDB.md#copy)
+- [del](MapDB.md#del)
+- [get](MapDB.md#get)
+- [put](MapDB.md#put)
 
 ## Constructors
 
 ### constructor
 
-• **new LevelDB**(`leveldb?`)
-
-Initialize a DB instance. If `leveldb` is not provided, DB
-defaults to an [in-memory store](https://github.com/Level/memdown).
+• **new MapDB**(`database?`)
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `leveldb?` | ``null`` \| `AbstractLevel`<`string` \| `Uint8Array` \| `Buffer`, `string` \| `Buffer`, `string` \| `Buffer`\> | An abstract-leveldown compliant store |
+| Name | Type |
+| :------ | :------ |
+| `database?` | `Map`<`string`, `Buffer`\> |
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L22)
+[packages/trie/src/db/map.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L6)
 
 ## Properties
 
-### \_leveldb
+### \_database
 
-• **\_leveldb**: `AbstractLevel`<`string` \| `Uint8Array` \| `Buffer`, `string` \| `Buffer`, `string` \| `Buffer`\>
+• **\_database**: `Map`<`string`, `Buffer`\>
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L15)
+[packages/trie/src/db/map.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L4)
 
 ## Methods
 
@@ -80,7 +74,7 @@ Performs a batch operation on db.
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L62)
+[packages/trie/src/db/map.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L28)
 
 ___
 
@@ -101,7 +95,7 @@ to the **same** underlying leveldb instance.
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L69)
+[packages/trie/src/db/map.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L40)
 
 ___
 
@@ -127,7 +121,7 @@ Removes a raw value in the underlying leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L55)
+[packages/trie/src/db/map.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L24)
 
 ___
 
@@ -155,7 +149,7 @@ A Promise that resolves to `Buffer` if a value is found or `null` if no value is
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L31)
+[packages/trie/src/db/map.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L10)
 
 ___
 
@@ -182,4 +176,4 @@ Writes a value directly to leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/level.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L48)
+[packages/trie/src/db/map.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/map.ts#L20)

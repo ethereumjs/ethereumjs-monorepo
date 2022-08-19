@@ -25,12 +25,16 @@ export class KBucket extends EventEmitter {
     })
 
     this._kbucket.on('added', (peer: PeerInfo) => {
-      KBucket.getKeys(peer).forEach((key) => this._peers.set(key, peer))
+      for (const key of KBucket.getKeys(peer)) {
+        this._peers.set(key, peer)
+      }
       this.emit('added', peer)
     })
 
     this._kbucket.on('removed', (peer: PeerInfo) => {
-      KBucket.getKeys(peer).forEach((key) => this._peers.delete(key))
+      for (const key of KBucket.getKeys(peer)) {
+        this._peers.delete(key)
+      }
       this.emit('removed', peer)
     })
 

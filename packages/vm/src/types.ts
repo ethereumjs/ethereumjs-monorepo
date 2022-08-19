@@ -49,10 +49,10 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 }
 
 export type VMEvents = {
-  beforeBlock: (data: Block, resolve?: (result: any) => void) => void
-  afterBlock: (data: AfterBlockEvent, resolve?: (result: any) => void) => void
-  beforeTx: (data: TypedTransaction, resolve?: (result: any) => void) => void
-  afterTx: (data: AfterTxEvent, resolve?: (result: any) => void) => void
+  beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
+  afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
+  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
+  afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
 }
 
 /**
@@ -232,7 +232,8 @@ export interface RunBlockOpts {
    */
   skipNonce?: boolean
   /**
-   * If true, skips the balance check
+   * If true, checks the balance of the `from` account for the transaction and sets its
+   * balance equal equal to the upfront cost (gas limit * gas price + transaction value)
    */
   skipBalance?: boolean
   /**

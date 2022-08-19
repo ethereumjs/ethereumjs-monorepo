@@ -193,6 +193,7 @@ export class BlockHeader {
       )
     }
 
+    const validateConsensusFormat = options.consensusFormatValidation ?? true
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -297,7 +298,7 @@ export class BlockHeader {
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
-    this._consensusFormatValidation()
+    if (validateConsensusFormat === true) this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {

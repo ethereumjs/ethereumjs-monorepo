@@ -35,7 +35,7 @@ Create a Miner object
 
 #### Defined in
 
-[index.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L50)
+[index.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L53)
 
 ## Properties
 
@@ -45,7 +45,7 @@ Create a Miner object
 
 #### Defined in
 
-[index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L38)
+[index.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L41)
 
 ## Methods
 
@@ -69,7 +69,7 @@ Iterate `iterations` times over nonces to find a valid PoW. Caches solution if o
 
 #### Defined in
 
-[index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L100)
+[index.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L103)
 
 ___
 
@@ -94,7 +94,7 @@ Iterate `iterations` time over nonces, returns a `BlockHeader` or `Block` if a s
 
 #### Defined in
 
-[index.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L77)
+[index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L80)
 
 ___
 
@@ -110,4 +110,4 @@ Stop the miner on the next iteration
 
 #### Defined in
 
-[index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L67)
+[index.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L70)

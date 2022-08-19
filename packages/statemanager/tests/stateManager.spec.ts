@@ -194,7 +194,7 @@ tape('StateManager', (t) => {
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
         'hex'
       ),
-      stateRoot: Buffer.from(
+      storageRoot: Buffer.from(
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         'hex'
       ),
@@ -207,7 +207,7 @@ tape('StateManager', (t) => {
       'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
     )
     st.equal(
-      res3.stateRoot.toString('hex'),
+      res3.storageRoot.toString('hex'),
       'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
     )
 
@@ -232,18 +232,18 @@ tape('StateManager', (t) => {
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
         'hex'
       )
-      const newStateRoot = Buffer.from(
+      const newStorageRoot = Buffer.from(
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         'hex'
       )
       await stateManager.modifyAccountFields(address, {
         codeHash: newCodeHash,
-        stateRoot: newStateRoot,
+        storageRoot: newStorageRoot,
       })
 
       const res3 = await stateManager.getAccount(address)
       st.ok(res3.codeHash.equals(newCodeHash))
-      st.ok(res3.stateRoot.equals(newStateRoot))
+      st.ok(res3.storageRoot.equals(newStorageRoot))
       st.end()
     }
   )
@@ -365,7 +365,7 @@ tape('StateManager', (t) => {
     st.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
     account = await codeStateManager.getAccount(address1)
-    account.stateRoot = root
+    account.storageRoot = root
 
     await codeStateManager.putAccount(address1, account)
 
@@ -429,6 +429,31 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
     t.ok(codeRetrieved.equals(Buffer.alloc(0)))
+    t.end()
+  })
+
+  it('should prefix codehashes by default', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    await stateManager.putContractCode(address, code)
+    const codeRetrieved = await stateManager.getContractCode(address)
+    t.ok(codeRetrieved.equals(code))
+    t.end()
+  })
+
+  it('should not prefix codehashes if prefixCodeHashes = false', async (t) => {
+    const stateManager = new DefaultStateManager({
+      prefixCodeHashes: false,
+    })
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    try {
+      await stateManager.putContractCode(address, code)
+      t.fail('should throw')
+    } catch (e) {
+      t.pass('succesfully threw')
+    }
     t.end()
   })
 })

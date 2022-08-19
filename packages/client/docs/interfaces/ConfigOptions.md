@@ -52,7 +52,7 @@ Default: []
 
 #### Defined in
 
-[config.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L218)
+[config.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L221)
 
 ___
 
@@ -65,7 +65,7 @@ Network bootnodes
 
 #### Defined in
 
-[config.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L95)
+[config.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L98)
 
 ___
 
@@ -80,7 +80,7 @@ Default: 'mainnet' Common
 
 #### Defined in
 
-[config.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L31)
+[config.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L34)
 
 ___
 
@@ -92,7 +92,7 @@ Root data directory for the blockchain
 
 #### Defined in
 
-[config.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L75)
+[config.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L78)
 
 ___
 
@@ -108,7 +108,7 @@ EthereumJS VM on execution errors
 
 #### Defined in
 
-[config.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L189)
+[config.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L192)
 
 ___
 
@@ -123,7 +123,7 @@ Default: false
 
 #### Defined in
 
-[config.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L46)
+[config.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L49)
 
 ___
 
@@ -137,7 +137,7 @@ Default: `true` for testnets, false for mainnet
 
 #### Defined in
 
-[config.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L196)
+[config.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L199)
 
 ___
 
@@ -151,7 +151,7 @@ Default: `false` for testnets, true for mainnet
 
 #### Defined in
 
-[config.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L203)
+[config.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L206)
 
 ___
 
@@ -165,7 +165,7 @@ Default `8.8.8.8` (Google)
 
 #### Defined in
 
-[config.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L175)
+[config.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L178)
 
 ___
 
@@ -177,7 +177,7 @@ EIP-1459 ENR Tree urls to query via DNS for peer discovery
 
 #### Defined in
 
-[config.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L180)
+[config.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L183)
 
 ___
 
@@ -189,7 +189,7 @@ RLPx external IP
 
 #### Defined in
 
-[config.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L107)
+[config.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L110)
 
 ___
 
@@ -206,7 +206,7 @@ Default: false
 
 #### Defined in
 
-[config.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L56)
+[config.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L59)
 
 ___
 
@@ -220,7 +220,7 @@ If left blank, a random key will be generated and used.
 
 #### Defined in
 
-[config.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L82)
+[config.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L85)
 
 ___
 
@@ -234,7 +234,7 @@ Default: `false`
 
 #### Defined in
 
-[config.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L70)
+[config.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L73)
 
 ___
 
@@ -249,7 +249,7 @@ Default: Logger with loglevel 'info'
 
 #### Defined in
 
-[config.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L140)
+[config.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L143)
 
 ___
 
@@ -263,7 +263,7 @@ Default: `100`
 
 #### Defined in
 
-[config.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L154)
+[config.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L157)
 
 ___
 
@@ -277,7 +277,7 @@ Default: `25`
 
 #### Defined in
 
-[config.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L168)
+[config.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L171)
 
 ___
 
@@ -291,7 +291,7 @@ Default: `50``
 
 #### Defined in
 
-[config.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L147)
+[config.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L150)
 
 ___
 
@@ -305,7 +305,7 @@ Default: `1`
 
 #### Defined in
 
-[config.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L161)
+[config.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L164)
 
 ___
 
@@ -319,7 +319,7 @@ Default: `false`
 
 #### Defined in
 
-[config.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L210)
+[config.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L213)
 
 ___
 
@@ -332,7 +332,7 @@ If not provided, defaults to the primary account.
 
 #### Defined in
 
-[config.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L224)
+[config.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L227)
 
 ___
 
@@ -345,7 +345,7 @@ Network multiaddrs for libp2p
 
 #### Defined in
 
-[config.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L113)
+[config.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L116)
 
 ___
 
@@ -359,7 +359,7 @@ Default: `30303`
 
 #### Defined in
 
-[config.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L102)
+[config.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L105)
 
 ___
 
@@ -372,7 +372,7 @@ to try to refetch and refeed the blocks.
 
 #### Defined in
 
-[config.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L230)
+[config.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L233)
 
 ___
 
@@ -384,7 +384,7 @@ Save tx receipts and logs in the meta db (default: false)
 
 #### Defined in
 
-[config.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L126)
+[config.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L129)
 
 ___
 
@@ -399,7 +399,7 @@ Default: servers created from `transports` option
 
 #### Defined in
 
-[config.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L121)
+[config.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L124)
 
 ___
 
@@ -413,7 +413,7 @@ to backstep and fill again using reverse block fetcher.
 
 #### Defined in
 
-[config.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L237)
+[config.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L240)
 
 ___
 
@@ -427,7 +427,7 @@ reset
 
 #### Defined in
 
-[config.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L244)
+[config.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L247)
 
 ___
 
@@ -441,7 +441,7 @@ Default: 'full'
 
 #### Defined in
 
-[config.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L38)
+[config.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L41)
 
 ___
 
@@ -455,7 +455,7 @@ Default: `['rlpx', 'libp2p']`
 
 #### Defined in
 
-[config.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L89)
+[config.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L92)
 
 ___
 
@@ -468,7 +468,7 @@ Number of recent blocks to maintain transactions index for
 
 #### Defined in
 
-[config.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L132)
+[config.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L135)
 
 ___
 
@@ -482,4 +482,4 @@ Default: VM instance created by client
 
 #### Defined in
 
-[config.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L63)
+[config.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L66)

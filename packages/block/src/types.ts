@@ -7,7 +7,6 @@ import type {
   TxData,
 } from '@ethereumjs/tx'
 import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
-
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -69,6 +68,10 @@ export interface BlockOptions {
    * Will throw if provided on a non-PoA chain.
    */
   cliqueSigner?: Buffer
+  /**
+   * Perform consensus validation checks on header if set. Defaults to true.
+   */
+  consensusFormatValidation?: boolean
 }
 
 /**
