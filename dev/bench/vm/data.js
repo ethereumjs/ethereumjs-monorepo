@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660896410258,
+  "lastUpdate": 1660898709601,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "77ead1b8f1b0661856e9f2fd951e7235d8ef8557",
-          "message": "client: snap protocol tests (#2119)\n\n* Add snapprotocol tests\r\n\r\n* Add snapsync tests",
-          "timestamp": "2022-08-10T17:15:44+05:30",
-          "tree_id": "32c9988ff6bb1565190593758ce50b25ce4c90cb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/77ead1b8f1b0661856e9f2fd951e7235d8ef8557"
-        },
-        "date": 1660132106077,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22127,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21156,
-            "range": "±5.52%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21228,
-            "range": "±1.91%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21130,
-            "range": "±2.41%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19611,
-            "range": "±9.25%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.03%",
             "unit": "ops/sec",
             "extra": "74 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d697a5361e142284af550618b1ed0f911947e76f",
+          "message": "refactor: replace `semaphore-async-await` with simpler implementation (#2187)",
+          "timestamp": "2022-08-19T10:42:02+02:00",
+          "tree_id": "8f68d256691a6a73f58dee4ac63b816f01389152",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d697a5361e142284af550618b1ed0f911947e76f"
+        },
+        "date": 1660898709035,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21738,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20910,
+            "range": "±5.82%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21749,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21425,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20567,
+            "range": "±4.70%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
