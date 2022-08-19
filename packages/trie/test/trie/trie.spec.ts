@@ -1,12 +1,7 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import { mkdtempSync } from 'fs'
-import { Level } from 'level'
-import { MemoryLevel } from 'memory-level'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import * as tape from 'tape'
 
-import { CheckpointTrie, LevelDB, ROOT_DB_KEY, SecureTrie, Trie } from '../../src'
+import { CheckpointTrie, MapDB, ROOT_DB_KEY, SecureTrie, Trie } from '../../src'
 
 function bytesToHex(bytes: Buffer | null) {
   return bytes?.toString('hex')
@@ -26,20 +21,11 @@ for (const { constructor, title } of [
     title: 'SecureTrie',
   },
 ]) {
-  let dbTmpDir: string
-  try {
-    dbTmpDir = mkdtempSync(join(tmpdir(), title))
-  } catch (error) {
-    dbTmpDir = tmpdir()
-  }
-
   tape(`${title} (Persistence)`, function (t) {
     t.test(
       'creates an instance via the static constructor `create` function and defaults to `false` with a database',
       async function (st) {
-        st.false(
-          ((await constructor.create({ db: new LevelDB(new Level(dbTmpDir)) })) as any)._persistRoot
-        )
+        st.false(((await constructor.create({ db: new MapDB() })) as any)._persistRoot)
 
         st.end()
       }
@@ -48,10 +34,7 @@ for (const { constructor, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
       async function (st) {
-        st.false(
-          ((await Trie.create({ db: new LevelDB(new Level(tmpdir())), persistRoot: false })) as any)
-            ._persistRoot
-        )
+        st.false(((await Trie.create({ db: new MapDB(), persistRoot: false })) as any)._persistRoot)
 
         st.end()
       }
@@ -63,7 +46,7 @@ for (const { constructor, title } of [
         st.false(
           (
             (await constructor.create({
-              db: new LevelDB(new Level(dbTmpDir)),
+              db: new MapDB(),
               persistRoot: false,
             })) as any
           )._persistRoot
@@ -84,7 +67,7 @@ for (const { constructor, title } of [
 
     t.test('persist the root if the `persistRoot` option is `true`', async function (st) {
       const trie = await constructor.create({
-        db: new LevelDB(new MemoryLevel()),
+        db: new MapDB(),
         persistRoot: true,
       })
 
@@ -102,7 +85,7 @@ for (const { constructor, title } of [
 
     t.test('persist the root if the `root` option is given', async function (st) {
       const trie = await constructor.create({
-        db: new LevelDB(new MemoryLevel()),
+        db: new MapDB(),
         root: KECCAK256_RLP,
         persistRoot: true,
       })
@@ -118,7 +101,7 @@ for (const { constructor, title } of [
 
     t.test('does not persist the root if the `persistRoot` option is `false`', async function (st) {
       const trie = await constructor.create({
-        db: new LevelDB(new MemoryLevel()),
+        db: new MapDB(),
         persistRoot: false,
       })
 
@@ -144,7 +127,7 @@ for (const { constructor, title } of [
     })
 
     t.test('persist and restore the root', async function (st) {
-      const db = new LevelDB(new MemoryLevel())
+      const db = new MapDB()
 
       const trie = await constructor.create({ db, persistRoot: true })
       st.equal(await trie.db.get(ROOT_DB_KEY), null)
@@ -163,7 +146,7 @@ for (const { constructor, title } of [
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({
-        db: new LevelDB(new MemoryLevel()),
+        db: new MapDB(),
         persistRoot: true,
       })
       st.equal(await empty.db.get(ROOT_DB_KEY), null)
@@ -172,7 +155,7 @@ for (const { constructor, title } of [
     })
 
     t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new constructor({ db: new LevelDB(), persistRoot: true })
+      const trie = new constructor({ db: new MapDB(), persistRoot: true })
 
       try {
         await trie.put(ROOT_DB_KEY, Buffer.from('bar'))

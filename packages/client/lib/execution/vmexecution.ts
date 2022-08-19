@@ -6,7 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie } from '@ethereumjs/trie'
 import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
@@ -15,6 +15,7 @@ import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
+import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -39,7 +40,7 @@ export class VMExecution extends Execution {
     super(options)
 
     if (isFalsy(this.config.vm)) {
-      const trie = new Trie({ db: new LevelDB(this.stateDB) })
+      const trie = new SecureTrie({ db: new LevelDB(this.stateDB) })
 
       const stateManager = new DefaultStateManager({
         common: this.config.execCommon,

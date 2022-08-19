@@ -21,6 +21,7 @@ module.exports = {
     'karma.conf.js',
     'node_modules',
     'prettier.config.js',
+    'recipes',
     'scripts',
     'typedoc.js',
     'webpack.config.js',

@@ -46,22 +46,15 @@ test()
 
 You can also review our [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is the default implementation while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
 
+> If no `db` option is provided, an in-memory database powered by [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role.
+
 ### Database
 
 > By default the only supported database is LevelDB via the `level` module.
 
-The 5.0.0 release introduced the `DB` interface to allow for the decoupling of the database layer from the previously tightly-coupled `LevelDB` integration. The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement. The default implementation of the `DB` interface is still `LevelDB` and functions identically to pre-5.0.0 releases.
+The 5.0.0 release introduced the `DB` interface to allow for the decoupling of the database layer from the previously tightly-coupled `LevelDB` integration. The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement. The default implementation of the `DB` interface is now an in-memory storage based on the native [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) and functions identically to pre-5.0.0 releases.
 
-The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) accept any database implementation that adheres to the `DB` interface as the `db` option. It is possible to use the `LevelDB` implementation as follows:
-
-```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
-
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
-```
-
-If no `db` option is provided, an in-memory database powered by [memory-level](https://github.com/Level/memory-level) will fulfill this role. Note that some internal non-persistent operations (such as tries for range proofs) will always use the internal `LevelDB` implementation, so some continued `LevelDB` usage is inevitable even when you switch to an alternative database.
+The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) accept any database implementation that adheres to the `DB` interface as the `db` option. It is possible to use alternative implementations like [LevelDB](#leveldb) if you wish to.
 
 #### Node Deletion
 
@@ -82,6 +75,19 @@ const trie = await Trie.create({
 ```
 
 The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you don't have the need for automatic restoration of the root then you can use the `new Trie` constructor with the same options and get persistence without the automatic restoration.
+
+#### LevelDB
+
+If you wish to continue to rely on `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. It is then possible to use the `LevelDB` implementation as follows:
+
+```typescript
+import { Trie } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+import { LevelDB } from './your-level-implementation'
+
+const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+```
 
 ## Proofs
 

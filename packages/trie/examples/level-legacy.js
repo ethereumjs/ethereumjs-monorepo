@@ -1,16 +1,17 @@
-const { Level } = require('level')
-const { isTruthy } = require('@ethereumjs/util')
-const { MemoryLevel } = require('memory-level')
+// LevelDB from https://github.com/ethereumjs/ethereumjs-monorepo/blob/ac053e1f9a364f8ae489159fecb79a3d0ddd7053/packages/trie/src/db.ts
+
+// eslint-disable-next-line implicit-dependencies/no-implicit
+const level = require('level-mem')
 
 const { Trie } = require('../dist')
 
-const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
 class LevelDB {
   _leveldb
 
   constructor(leveldb) {
-    this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
+    this._leveldb = leveldb ?? level()
   }
 
   async get(key) {
@@ -18,7 +19,7 @@ class LevelDB {
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error) {
-      if (isTruthy(error.notFound)) {
+      if (error.notFound) {
         // not found, returning null
       } else {
         throw error
@@ -44,7 +45,7 @@ class LevelDB {
   }
 }
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new Trie({ db: new LevelDB(level('MY_TRIE_DB_LOCATION')) })
 
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
