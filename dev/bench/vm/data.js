@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1660902017243,
+  "lastUpdate": 1660913070008,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "33e0c22dcd8c69849dd2438c197b713fb38fa3cb",
-          "message": "chore(trie): add `gabrocheleau/merkle-patricia-trees-examples` with 5.0.0 compatibility (#2110)\n\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* Update packages/trie/examples/README.md\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-11T10:53:55+02:00",
-          "tree_id": "853fc05fa8e3ec248b7228a004dcfcf1e3e69b76",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/33e0c22dcd8c69849dd2438c197b713fb38fa3cb"
-        },
-        "date": 1660208279076,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12684,
-            "range": "±3.92%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12775,
-            "range": "±2.55%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12490,
-            "range": "±6.34%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12815,
-            "range": "±2.69%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12220,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.21%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f0516dea5895cb8c6baf2077b89b66db27e07a9c",
+          "message": "vm/tests: ensure tests run with EIPs activated (#2108)\n\n* vm/tests: ensure tests run with EIPs activated\r\n\r\n* vm/tests: fix common\r\n\r\n* vm: add test runner tests\r\n\r\n* vm: testloader tests; add extra check\r\n\r\n* vm/tests: cleanup\r\n\r\n* vm: lint\r\n\r\nCo-authored-by: Brian Faust <hello@basecode.sh>",
+          "timestamp": "2022-08-19T14:40:59+02:00",
+          "tree_id": "8b67df8b908df838a641496170032df1b371b079",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f0516dea5895cb8c6baf2077b89b66db27e07a9c"
+        },
+        "date": 1660913068970,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 13796,
+            "range": "±5.15%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 13775,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14823,
+            "range": "±5.55%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14647,
+            "range": "±2.67%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13835,
+            "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
