@@ -1,60 +1,55 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "An ethash implementation in JavaScript",
-  "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
   "keywords": [
     "ethash",
     "ethereum",
     "POW"
   ],
-  "files": [
-    "dist",
-    "src"
-  ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "../../config/cli/ts-build.sh",
-    "tsc": "../../config/cli/ts-compile.sh",
-    "prepublishOnly": "../../config/cli/prepublish.sh",
-    "clean": "../../config/cli/clean-package.sh",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "test": "tape -r ts-node/register test/*.spec.ts",
-    "docs:build": "typedoc --options typedoc.js"
-  },
-  "dependencies": {
-    "@ethereumjs/block": "4.0.0-beta.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
-    "abstract-level": "^1.0.3",
-    "bigint-crypto-utils": "^3.0.23",
-    "buffer-xor": "^2.0.1",
-    "ethereum-cryptography": "^1.1.2",
-    "miller-rabin": "^4.0.0",
-    "rlp": "4.0.0-beta.2"
-  },
-  "devDependencies": {
-    "@ethereumjs/common": "3.0.0-beta.2",
-    "@types/tape": "^4.13.2",
-    "eslint": "^6.8.0",
-    "memory-level": "^1.0.0",
-    "nyc": "^15.1.0",
-    "prettier": "^2.0.5",
-    "tape": "^5.3.1",
-    "ts-node": "^10.2.1",
-    "typedoc": "^0.22.4",
-    "typescript": "^4.4.2"
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "docs:build": "typedoc --options typedoc.js",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "tape -r ts-node/register test/*.spec.ts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/block": "4.0.0-beta.3",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
+    "@ethereumjs/util": "8.0.0-beta.3",
+    "abstract-level": "^1.0.3",
+    "bigint-crypto-utils": "^3.0.23",
+    "buffer-xor": "^2.0.1",
+    "ethereum-cryptography": "^1.1.2",
+    "miller-rabin": "^4.0.0"
+  },
+  "devDependencies": {
+    "@ethereumjs/common": "3.0.0-beta.3",
+    "memory-level": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }

@@ -1,28 +1,32 @@
-import { EventEmitter } from 'events'
+import { TypeOutput, intToBuffer, isFalsy, isTruthy, toType } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
-import { BigIntLike, toType, TypeOutput, intToBuffer, isTruthy, isFalsy } from '@ethereumjs/util'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
+import { EventEmitter } from 'events'
+
+import * as goerli from './chains/goerli.json'
+import * as kovan from './chains/kovan.json'
+import * as mainnet from './chains/mainnet.json'
+import * as rinkeby from './chains/rinkeby.json'
+import * as ropsten from './chains/ropsten.json'
+import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips'
-import { Hardfork, Chain, ConsensusAlgorithm, ConsensusType, CustomChain } from './enums'
-import {
+import { Chain, CustomChain, Hardfork } from './enums'
+import { hardforks as HARDFORK_CHANGES } from './hardforks'
+
+import type { ConsensusAlgorithm, ConsensusType } from './enums'
+import type {
   BootstrapNodeConfig,
+  CasperConfig,
   ChainConfig,
-  GenesisBlockConfig,
-  HardforkConfig,
   ChainName,
   ChainsConfig,
   CliqueConfig,
-  EthashConfig,
-  CasperConfig,
   CommonOpts,
   CustomCommonOpts,
+  EthashConfig,
+  GenesisBlockConfig,
+  HardforkConfig,
 } from './types'
-import * as mainnet from './chains/mainnet.json'
-import * as ropsten from './chains/ropsten.json'
-import * as rinkeby from './chains/rinkeby.json'
-import * as kovan from './chains/kovan.json'
-import * as goerli from './chains/goerli.json'
-import * as sepolia from './chains/sepolia.json'
+import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -186,7 +190,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
     this._hardfork = this.DEFAULT_HARDFORK
     if (isTruthy(opts.hardfork)) {
       this.setHardfork(opts.hardfork)
@@ -353,11 +357,11 @@ export class Common extends EventEmitter {
         )
       }
       if (isTruthy(EIPs[eip].requiredEIPs)) {
-        ;(EIPs[eip].requiredEIPs as number[]).forEach((elem) => {
+        for (const elem of EIPs[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
-        })
+        }
       }
     }
     this._eips = eips

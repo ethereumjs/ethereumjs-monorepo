@@ -1,8 +1,12 @@
-import { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
-import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-
+import type { BlockHeader } from './header'
+import type { Common } from '@ethereumjs/common'
+import type {
+  AccessListEIP2930TxData,
+  FeeMarketEIP1559TxData,
+  JsonTx,
+  TxData,
+} from '@ethereumjs/tx'
+import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -18,7 +22,7 @@ export interface BlockOptions {
    * Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
    * hardfork in the {@link Common} class.
    *
-   * Current default hardfork: `london`
+   * Current default hardfork: `merge`
    */
   common?: Common
   /**
@@ -64,6 +68,10 @@ export interface BlockOptions {
    * Will throw if provided on a non-PoA chain.
    */
   cliqueSigner?: Buffer
+  /**
+   * Perform consensus validation checks on header if set. Defaults to true.
+   */
+  consensusFormatValidation?: boolean
 }
 
 /**

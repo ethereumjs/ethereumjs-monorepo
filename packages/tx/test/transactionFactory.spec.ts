@@ -1,10 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
+
 import {
   AccessListEIP2930Transaction,
-  TransactionFactory,
-  Transaction,
   FeeMarketEIP1559Transaction,
+  Transaction,
+  TransactionFactory,
 } from '../src'
 
 const common = new Common({

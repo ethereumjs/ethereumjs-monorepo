@@ -1,12 +1,13 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
+
 import { createBlock } from './util'
 
 tape('[Blockchain]: Block validation tests', (t) => {

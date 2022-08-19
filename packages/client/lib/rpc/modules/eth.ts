@@ -1,39 +1,34 @@
-import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Capability, Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
-  Capability,
-  FeeMarketEIP1559Transaction,
-  JsonTx,
-  Transaction,
-  TransactionFactory,
-  TypedTransaction,
-} from '@ethereumjs/tx'
-import {
-  Account,
   Address,
-  bufferToHex,
-  bigIntToHex,
-  intToHex,
-  toBuffer,
-  setLengthLeft,
-  toType,
   TypeOutput,
+  bigIntToHex,
+  bufferToHex,
+  intToHex,
+  isFalsy,
+  isTruthy,
+  setLengthLeft,
+  toBuffer,
+  toType,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { middleware, validators } from '../validation'
+
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { RpcTx } from '../types'
-import { EthereumService, FullEthereumService } from '../../service'
-import type { VM } from '@ethereumjs/vm'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
-import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
+import { middleware, validators } from '../validation'
+
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
-import type { EthProtocol } from '../../net/protocol'
 import type { ReceiptsManager } from '../../execution/receipt'
-import { isTruthy } from '@ethereumjs/util'
-import { isFalsy } from '@ethereumjs/util'
+import type { EthProtocol } from '../../net/protocol'
+import type { EthereumService, FullEthereumService } from '../../service'
+import type { RpcTx } from '../types'
+import type { Block } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
+import type { Proof } from '@ethereumjs/statemanager'
+import type { FeeMarketEIP1559Transaction, JsonTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Account } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")

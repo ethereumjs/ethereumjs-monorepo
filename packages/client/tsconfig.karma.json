@@ -2,6 +2,6 @@
   "extends": "../../config/tsconfig.prod.json",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "lib/@types"],
-  },
+    "typeRoots": ["node_modules/@types", "lib/@types"]
+  }
 }

@@ -1,4 +1,4 @@
-import { DB, BatchDBOp, Checkpoint } from '../types'
+import type { BatchDBOp, Checkpoint, DB } from '../types'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -40,7 +40,7 @@ export class CheckpointDB implements DB {
     if (!this.isCheckpoint) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      keyValueMap.forEach(function (value, key) {
+      for (const [key, value] of keyValueMap.entries()) {
         if (value === null) {
           batchOp.push({
             type: 'del',
@@ -53,12 +53,14 @@ export class CheckpointDB implements DB {
             value,
           })
         }
-      })
+      }
       await this.batch(batchOp)
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      keyValueMap.forEach((value, key) => currentKeyValueMap.set(key, value))
+      for (const [key, value] of keyValueMap.entries()) {
+        currentKeyValueMap.set(key, value)
+      }
     }
   }
 
@@ -71,7 +73,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
@@ -93,7 +95,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.isCheckpoint) {
@@ -105,7 +107,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async del(key: Buffer): Promise<void> {
     if (this.isCheckpoint) {
@@ -118,7 +120,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     if (this.isCheckpoint) {
@@ -135,7 +137,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   copy(): CheckpointDB {
     return new CheckpointDB(this.db)

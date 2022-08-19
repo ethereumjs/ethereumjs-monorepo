@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
@@ -23,7 +24,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let c
 
     for (const hardfork of supportedHardforks) {
-      c = new Common({ chain: Chain.Mainnet, hardfork: hardfork })
+      c = new Common({ chain: Chain.Mainnet, hardfork })
       st.equal(c.hardfork(), hardfork, hardfork)
     }
 

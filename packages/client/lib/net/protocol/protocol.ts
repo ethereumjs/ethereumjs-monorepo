@@ -1,8 +1,10 @@
 import { isTruthy } from '@ethereumjs/util'
-import { Config } from '../../config'
-import { Peer } from '../peer/peer'
+
 import { BoundProtocol } from './boundprotocol'
-import { Sender } from './sender'
+
+import type { Config } from '../../config'
+import type { Peer } from '../peer/peer'
+import type { Sender } from './sender'
 
 export interface ProtocolOptions {
   config: Config
@@ -157,10 +159,15 @@ export class Protocol {
     const bound = new BoundProtocol({
       config: this.config,
       protocol: this,
-      peer: peer,
-      sender: sender,
+      peer,
+      sender,
     })
-    await bound.handshake(sender)
+    // Handshake only when snap, else
+    if (this.name !== 'snap') {
+      await bound.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
     //@ts-ignore TODO: evaluate this line
     peer[this.name] = bound
     return bound

@@ -1,4 +1,6 @@
-import { debug as createDebugLogger } from 'debug'
+import { Block } from '@ethereumjs/block'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -9,21 +11,21 @@ import {
   isTruthy,
   short,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Block } from '@ethereumjs/block'
-import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { VM } from './vm'
+import { debug as createDebugLogger } from 'debug'
+
 import { Bloom } from './bloom'
+import * as DAOConfig from './config/dao_fork_accounts_config.json'
+
 import type {
-  TxReceipt,
-  PreByzantiumTxReceipt,
+  AfterBlockEvent,
   PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
   RunBlockOpts,
   RunBlockResult,
-  AfterBlockEvent,
+  TxReceipt,
 } from './types'
-import * as DAOConfig from './config/dao_fork_accounts_config.json'
-import { EVMStateAccess } from '@ethereumjs/evm'
+import type { VM } from './vm'
+import type { EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 
@@ -137,7 +139,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
-    if (result.receiptRoot?.equals(block.header.receiptTrie) === false) {
+    if (result.receiptRoot.equals(block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
           `Invalid receiptTrie received=${result.receiptRoot.toString(
@@ -229,7 +231,11 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       }
       // TODO: decide what block validation method is appropriate here
       if (opts.skipHeaderValidation !== true) {
-        await this.blockchain.validateHeader(block.header)
+        if (typeof (<any>this.blockchain).validateHeader === 'function') {
+          await (<any>this.blockchain).validateHeader(block.header)
+        } else {
+          throw new Error('cannot validate header: blockchain has no `validateHeader` method')
+        }
       }
       await block.validateData()
     }

@@ -1,11 +1,11 @@
-import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
-import { BigIntLike } from '@ethereumjs/util'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { StateManager } from '@ethereumjs/statemanager'
-import { Common } from '@ethereumjs/common'
-import { Bloom } from './bloom'
+import type { Bloom } from './bloom'
+import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
+import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
+import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
+import type { BigIntLike } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -49,10 +49,10 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 }
 
 export type VMEvents = {
-  beforeBlock: (data: Block, resolve?: (result: any) => void) => void
-  afterBlock: (data: AfterBlockEvent, resolve?: (result: any) => void) => void
-  beforeTx: (data: TypedTransaction, resolve?: (result: any) => void) => void
-  afterTx: (data: AfterTxEvent, resolve?: (result: any) => void) => void
+  beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
+  afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
+  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
+  afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
 }
 
 /**
@@ -66,7 +66,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `London` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `Merge` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
@@ -77,7 +77,7 @@ export interface VMOpts {
    * Default setup if no `Common` instance is provided:
    *
    * - `chain`: `mainnet`
-   * - `hardfork`: `london`
+   * - `hardfork`: `merge`
    * - `eips`: `[]`
    */
   common?: Common
@@ -88,7 +88,7 @@ export interface VMOpts {
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
-  blockchain?: Blockchain
+  blockchain?: BlockchainInterface
   /**
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
@@ -232,7 +232,8 @@ export interface RunBlockOpts {
    */
   skipNonce?: boolean
   /**
-   * If true, skips the balance check
+   * If true, checks the balance of the `from` account for the transaction and sets its
+   * balance equal equal to the upfront cost (gas limit * gas price + transaction value)
    */
   skipBalance?: boolean
   /**

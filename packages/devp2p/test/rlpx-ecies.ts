@@ -1,8 +1,9 @@
 import { randomBytes } from 'crypto'
 import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat'
 import * as test from 'tape'
-import * as util from '../src/util'
+
 import { ECIES } from '../src/rlpx/ecies'
+import * as util from '../src/util'
 
 import * as testdata from './testdata.json'
 

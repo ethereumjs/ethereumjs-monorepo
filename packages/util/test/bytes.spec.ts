@@ -1,32 +1,33 @@
 import * as tape from 'tape'
+
 import {
-  arrToBufArr,
   Address,
+  addHexPrefix,
+  arrToBufArr,
+  baToJSON,
+  bigIntToBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
   bufArrToArr,
-  zeros,
-  zeroAddress,
-  isZeroAddress,
-  unpadBuffer,
-  unpadArray,
-  unpadHexString,
-  setLengthLeft,
-  setLengthRight,
+  bufferToBigInt,
   bufferToHex,
   bufferToInt,
   fromSigned,
-  toUnsigned,
-  toUtf8,
-  addHexPrefix,
-  short,
-  toBuffer,
-  baToJSON,
   intToBuffer,
   intToHex,
+  isZeroAddress,
+  setLengthLeft,
+  setLengthRight,
+  short,
+  toBuffer,
+  toUnsigned,
+  toUtf8,
+  unpadArray,
+  unpadBuffer,
+  unpadHexString,
   validateNoLeadingZeroes,
-  bufferToBigInt,
-  bigIntToBuffer,
-  bigIntToUnpaddedBuffer,
-  bigIntToHex,
+  zeroAddress,
+  zeros,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -292,7 +293,7 @@ tape('toBuffer', function (t) {
     // 'toArray'
     st.ok(
       toBuffer({
-        toArray: function (): any {
+        toArray(): any {
           return [1]
         },
       }).equals(Buffer.from([1]))
@@ -375,8 +376,8 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(<any>[]), 'throws on arrays')
   st.throws(() => intToHex(<any>(() => {})), 'throws on arrays')
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
-  st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
-  st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.ok(intToHex(0) === '0x0', 'correctly converts 0 to a hex string')
+  st.ok(intToHex(1) === '0x1', 'correctly converts 1 to a hex string')
   st.end()
 })
 

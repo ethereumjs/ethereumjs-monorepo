@@ -1,16 +1,15 @@
-import * as tape from 'tape'
-import { Account, Address, isTruthy, MAX_INTEGER } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {
-  Transaction,
-  TransactionFactory,
-  FeeMarketEIP1559Transaction,
-  FeeMarketEIP1559TxData,
-} from '@ethereumjs/tx'
-import { VM } from '../../src/vm'
-import { createAccount, getTransaction, setBalance } from './utils'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { Account, Address, MAX_INTEGER } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../src/vm'
+
+import { createAccount, getTransaction, setBalance } from './utils'
+
+import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
@@ -661,7 +660,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
   const sender = Address.fromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
-    if (isTruthy(balance)) {
+    if (balance !== undefined) {
       await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     }
     const tx = Transaction.fromTxData({
@@ -675,8 +674,8 @@ tape('runTx() -> skipBalance behavior', async (t) => {
     const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
       afterTxBalance,
-      balance ?? BigInt(0),
-      `sender balance before and after transaction should be equal with skipBalance`
+      balance !== undefined ? balance - 1n : BigInt(0),
+      `sender balance should be >= 0 after transaction with skipBalance`
     )
     t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }

@@ -1,24 +1,22 @@
-import Semaphore from 'semaphore-async-await'
-import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import {
-  Chain,
-  CliqueConfig,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-} from '@ethereumjs/common'
-import { BigIntLike, isFalsy, isTruthy } from '@ethereumjs/util'
-
-import { DBManager } from './db/manager'
-import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
-import { DBTarget } from './db/operation'
-import { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
-import { GenesisState, genesisStateRoot } from './genesisStates'
-
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import { AbstractLevel } from 'abstract-level'
-import { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
+import Semaphore from 'semaphore-async-await'
+
+import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
+import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
+import { DBManager } from './db/manager'
+import { DBTarget } from './db/operation'
+import { genesisStateRoot } from './genesisStates'
+
+import type { Consensus } from './consensus'
+import type { GenesisState } from './genesisStates'
+import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
+import type { BlockData } from '@ethereumjs/block'
+import type { CliqueConfig } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
 
 /**
  * This class stores and interacts with blocks.
@@ -624,7 +622,7 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _validateUncleHeaders(block: Block) {
     const uncleHeaders = block.uncleHeaders
-    if (uncleHeaders.length == 0) {
+    if (uncleHeaders.length === 0) {
       return
     }
 

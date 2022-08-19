@@ -1,10 +1,15 @@
-import * as tape from 'tape'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { isTruthy, toBuffer } from '@ethereumjs/util'
-import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
-import { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { Block } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { SecureTrie } from '@ethereumjs/trie'
+import { isTruthy, toBuffer } from '@ethereumjs/util'
+
+import { EVM } from '../../../../evm/src'
+import { EEI } from '../../../src'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type * as tape from 'tape'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -37,7 +42,7 @@ function parseTestCases(
 
       if (isTruthy(tx.accessLists)) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
-        if (tx.chainId == undefined) {
+        if (tx.chainId === undefined) {
           tx.chainId = 1
         }
       }
@@ -54,7 +59,7 @@ function parseTestCases(
   }
 
   testCases = testCases.filter((testCase: any) => {
-    return testCase != null
+    return testCase !== null
   })
 
   return testCases
@@ -74,8 +79,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie()
-  const vm = await VM.create({ state, common, blockchain })
+  const state = new SecureTrie()
+  const stateManager = new DefaultStateManager({
+    trie: state,
+  })
+  const eei = new EEI(stateManager, common, blockchain)
+  const evm = new EVM({ common, eei })
+  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
   await setupPreConditions(vm.eei, testData)
 

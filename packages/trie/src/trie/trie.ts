@@ -1,23 +1,28 @@
-import Semaphore from 'semaphore-async-await'
+import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { isFalsy, isTruthy, RLP_EMPTY_STRING } from '@ethereumjs/util'
-import {
-  DB,
+
+import { MapDB } from '../db'
+import { verifyRangeProof } from '../proof/range'
+import { ROOT_DB_KEY } from '../types'
+import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import { TrieReadStream as ReadStream } from '../util/readStream'
+import { Semaphore } from '../util/semaphore'
+import { WalkController } from '../util/walkController'
+
+import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
+
+import type {
   BatchDBOp,
+  DB,
+  EmbeddedNode,
+  FoundNodeFunction,
+  HashFunc,
+  Nibbles,
+  Proof,
   PutBatch,
   TrieNode,
-  Nibbles,
-  EmbeddedNode,
-  HashFunc,
-  ROOT_DB_KEY,
+  TrieOpts,
 } from '../types'
-import { LevelDB } from '../db'
-import { TrieReadStream as ReadStream } from '../util/readStream'
-import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from '../util/nibbles'
-import { WalkController } from '../util/walkController'
-import { decodeNode, decodeRawNode, isRawNode, BranchNode, ExtensionNode, LeafNode } from './node'
-import { verifyRangeProof } from '../proof/range'
-import { FoundNodeFunction, Proof, TrieOpts } from '../types'
 
 interface Path {
   node: TrieNode | null
@@ -49,18 +54,13 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
-    this.db = opts?.db ?? new LevelDB()
+    this.db = opts?.db ?? new MapDB()
     this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
-
-    if (opts?.db !== undefined) {
-      this._persistRoot = opts.persistRoot ?? true
-    } else {
-      this._persistRoot = false
-    }
+    this._persistRoot = opts?.persistRoot ?? false
 
     if (opts?.root) {
       this.root = opts.root
@@ -68,15 +68,11 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    if (opts?.db !== undefined) {
-      opts.persistRoot = opts?.persistRoot ?? true
-
-      if (opts?.persistRoot) {
-        if (opts?.root === undefined) {
-          opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
-        } else {
-          await opts?.db.put(ROOT_DB_KEY, opts.root)
-        }
+    if (opts?.db !== undefined && opts?.persistRoot === true) {
+      if (opts?.root === undefined) {
+        opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
+      } else {
+        await opts?.db.put(ROOT_DB_KEY, opts.root)
       }
     }
 
@@ -110,7 +106,7 @@ export class Trie {
       const value = await this.lookupNode(root)
       return value !== null
     } catch (error: any) {
-      if (error.message == 'Missing node in DB') {
+      if (error.message === 'Missing node in DB') {
         return false
       } else {
         throw error
@@ -246,7 +242,7 @@ export class Trie {
       try {
         await this.walkTrie(this.root, onFound)
       } catch (error: any) {
-        if (error.message == 'Missing node in DB' && !throwIfMissing) {
+        if (error.message === 'Missing node in DB' && !throwIfMissing) {
           // pass
         } else {
           reject(error)
@@ -700,7 +696,7 @@ export class Trie {
       const value = await proofTrie.get(key, true)
       return value
     } catch (err: any) {
-      if (err.message == 'Missing node in DB') {
+      if (err.message === 'Missing node in DB') {
         throw new Error('Invalid proof provided')
       } else {
         throw err
@@ -774,32 +770,6 @@ export class Trie {
         }
       } else {
         onFound(nodeRef, node, key, walkController)
-      }
-    }
-    await this.walkTrie(this.root, outerOnFound)
-  }
-
-  /**
-   * Finds all nodes that store k,v values
-   * called by {@link TrieReadStream}
-   * @private
-   */
-  async _findValueNodes(onFound: FoundNodeFunction): Promise<void> {
-    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
-      let fullKey = key
-
-      if (node instanceof LeafNode) {
-        fullKey = key.concat(node.key)
-        // found leaf node!
-        onFound(nodeRef, node, fullKey, walkController)
-      } else if (node instanceof BranchNode && node.value) {
-        // found branch with value
-        onFound(nodeRef, node, fullKey, walkController)
-      } else {
-        // keep looking for value nodes
-        if (node !== null) {
-          walkController.allChildren(node, key)
-        }
       }
     }
     await this.walkTrie(this.root, outerOnFound)

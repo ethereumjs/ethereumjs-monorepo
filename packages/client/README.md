@@ -9,7 +9,7 @@
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | ------------------------------------------------------------------- |
 
-# INTRODUCTION
+## Introduction
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
@@ -19,15 +19,15 @@ Here are some use cases:
 - Set up your own local development networks (PoA Clique or PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
-- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues** 
+- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues**
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
 We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
 
-# SETUP
+## Installation
 
-## INSTALL
+To obtain the latest version, simply require the project using `npm`:
 
 ```shell
 npm install -g @ethereumjs/client
@@ -39,7 +39,7 @@ For development purposes the client can also be set up like this:
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
 3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
 
-## USAGE
+## Usage
 
 ### Introduction
 
@@ -108,7 +108,7 @@ Currently the following sync scenarios are **supported**:
 - **EL and CL Live Transition**: both clients follow the head of the respective chains pre Merge and go through the Merge transition live and in sync
 - **EL synced to Merge block, CL Merge transition**: the EL client has been synced to the Merge transitition block and is waiting for CL requests, the CL is syncing through the transition and starts EL requests along
 - **Resume syncing with equally synced clients / CL client behind**: sync can be resumed with EL client and CL client synced to the respective counterparts of the beacon and embedded execution chain, CL client can also be somewhat behind the EL client
-- **CL client ahead of EL client**: if the CL client has been synced without the EL client syncing in *lockstep* on/after merge (e.g. using weak subjectivity sync) and is therefore *ahead* of the EL client post-merge, the EL backfills blocks and brings the chain up-to-date with the head fcUs being issued by the CL via [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (beacon) sync (since `v0.5.0`)
+- **CL client ahead of EL client**: if the CL client has been synced without the EL client syncing in _lockstep_ on/after merge (e.g. using weak subjectivity sync) and is therefore _ahead_ of the EL client post-merge, the EL backfills blocks and brings the chain up-to-date with the head fcUs being issued by the CL via [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (beacon) sync (since `v0.5.0`)
 
 ### Custom Chains
 
@@ -277,7 +277,7 @@ Output:
 }
 ```
 
-## DEVELOPMENT
+## Development
 
 ### Design
 
@@ -291,7 +291,7 @@ We would love to hear feedback from you on what you are planning and exchange on
 
 ### Debugging
 
-### Local Test Network
+#### Local Test Network
 
 For some guidance on how to setup local testnetworks see the examples on [local debugging](./examples/local-debugging.md) and setting up a [private network with Geth](./examples/private-geth-network.md).
 

@@ -1,4 +1,5 @@
 import * as test from 'tape'
+
 import { MAC } from '../src/rlpx/mac'
 
 const secret = Buffer.from(

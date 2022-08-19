@@ -12,5 +12,5 @@
     { "path": "../trie/tsconfig.prod.json" },
     { "path": "../tx/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
-  ],
+  ]
 }

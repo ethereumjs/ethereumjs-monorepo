@@ -33,18 +33,24 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: client
         if: ${{ matrix.node-version == 16 }}
 
-      - run: npm run test:integration
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd ${{github.workspace}}/packages/client && npm run test:integration
+
+      - run: npm run test:browser
 
       - run: npm run lint
   test-client-cli:
@@ -62,7 +68,11 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx

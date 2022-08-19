@@ -1,8 +1,9 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '../../../src/vm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { precompile09, F } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
+import { F, precompile09 } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go
@@ -79,8 +80,7 @@ const testCases = [
 
 tape('Istanbul: EIP-152', (t) => {
   t.test('Blake2f', async (st) => {
-    // eslint-disable-next-line no-undef
-    if ((globalThis.navigator?.userAgent as string).includes('Firefox')) {
+    if (globalThis.navigator !== undefined && globalThis.navigator.userAgent.includes('Firefox')) {
       // TODO: investigate why this test hangs in karma with firefox
       return st.end()
     }

@@ -3,6 +3,7 @@
  */
 import { isFalsy } from '@ethereumjs/util'
 import { platform } from 'os'
+
 import { version as packageVersion } from '../../package.json'
 
 export * from './parse'

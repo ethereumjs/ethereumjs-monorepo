@@ -1,11 +1,15 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Peer } from '../net/peer/peer'
-import { short } from '../util'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
-import { Event } from '../types'
-import type { BlockHeader } from '@ethereumjs/block'
 import { isFalsy } from '@ethereumjs/util'
+
+import { Event } from '../types'
+import { short } from '../util'
+
+import { HeaderFetcher } from './fetcher'
+import { Synchronizer } from './sync'
+
+import type { Peer } from '../net/peer/peer'
+import type { SynchronizerOptions } from './sync'
+import type { BlockHeader } from '@ethereumjs/block'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -24,6 +28,17 @@ export class LightSynchronizer extends Synchronizer {
    */
   get type() {
     return 'light'
+  }
+
+  get fetcher(): HeaderFetcher | null {
+    if (this._fetcher !== null && !(this._fetcher instanceof HeaderFetcher)) {
+      throw Error(`Invalid Fetcher, expected HeaderFetcher`)
+    }
+    return this._fetcher
+  }
+
+  set fetcher(fetcher: HeaderFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**

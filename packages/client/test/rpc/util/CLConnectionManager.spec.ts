@@ -1,9 +1,10 @@
 import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
+
 import { Config } from '../../../lib'
 import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
-import { parseCustomParams } from '../../../lib/util'
 import { Event } from '../../../lib/types'
+import { parseCustomParams } from '../../../lib/util'
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 
 const payload = {
@@ -74,7 +75,7 @@ tape('[CLConnectionManager]', (t) => {
   t.test('Status updates', async (st) => {
     st.plan(2)
     const config = new Config()
-    const manager = new CLConnectionManager({ config: config })
+    const manager = new CLConnectionManager({ config })
     config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
         st.pass('received last fork choice message')

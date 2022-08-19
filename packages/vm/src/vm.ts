@@ -1,17 +1,29 @@
-import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
-import { runTx } from './runTx'
-import { runBlock } from './runBlock'
-import { buildBlock, BlockBuilder } from './buildBlock'
-import { RunTxOpts, RunTxResult, RunBlockOpts, RunBlockResult } from './types'
+import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, TypeOutput, isTruthy, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VMEvents, VMOpts, BuildBlockOpts } from './types'
 
-import { EVM, getActivePrecompiles, EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import { buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
+import { runBlock } from './runBlock'
+import { runTx } from './runTx'
+
+import type { BlockBuilder } from './buildBlock'
+import type {
+  BuildBlockOpts,
+  RunBlockOpts,
+  RunBlockResult,
+  RunTxOpts,
+  RunTxResult,
+  VMEvents,
+  VMOpts,
+} from './types'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -28,7 +40,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: Blockchain
+  readonly blockchain: BlockchainInterface
 
   readonly _common: Common
 
@@ -136,7 +148,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
@@ -147,11 +159,19 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
   async init(): Promise<void> {
     if (this._isInitialized) return
-    await (this.blockchain as any)._init()
+    if (typeof (<any>this.blockchain)._init === 'function') {
+      await (this.blockchain as any)._init()
+    }
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState === true) {
-        await this.eei.generateCanonicalGenesis(this.blockchain.genesisState())
+        if (typeof (<any>this.blockchain).genesisState === 'function') {
+          await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
+        } else {
+          throw new Error(
+            'cannot activate genesis state: blockchain object has no `genesisState` method'
+          )
+        }
       }
     }
 
@@ -164,7 +184,10 @@ export class VM extends AsyncEventEmitter<VMEvents> {
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
-          const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
+          const newAccount = Account.fromAccountData({
+            balance: 1,
+            storageRoot: account.storageRoot,
+          })
           await this.eei.putAccount(address, newAccount)
         }
       }

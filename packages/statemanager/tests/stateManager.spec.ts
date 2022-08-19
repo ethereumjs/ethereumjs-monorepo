@@ -1,21 +1,23 @@
-import * as tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  toBuffer,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
+  toBuffer,
   unpadBuffer,
   zeros,
 } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '../src'
-import { createAccount } from './util'
-
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
 // explicitly import `inherits` to fix karma-typescript issue
-import { inherits } from 'util' // eslint-disable-line
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { inherits } from 'util'
+
+import { DefaultStateManager } from '../src'
+
+import { createAccount } from './util'
 
 tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {
@@ -192,7 +194,7 @@ tape('StateManager', (t) => {
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
         'hex'
       ),
-      stateRoot: Buffer.from(
+      storageRoot: Buffer.from(
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         'hex'
       ),
@@ -205,7 +207,7 @@ tape('StateManager', (t) => {
       'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
     )
     st.equal(
-      res3.stateRoot.toString('hex'),
+      res3.storageRoot.toString('hex'),
       'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
     )
 
@@ -230,18 +232,18 @@ tape('StateManager', (t) => {
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
         'hex'
       )
-      const newStateRoot = Buffer.from(
+      const newStorageRoot = Buffer.from(
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
         'hex'
       )
       await stateManager.modifyAccountFields(address, {
         codeHash: newCodeHash,
-        stateRoot: newStateRoot,
+        storageRoot: newStorageRoot,
       })
 
       const res3 = await stateManager.getAccount(address)
       st.ok(res3.codeHash.equals(newCodeHash))
-      st.ok(res3.stateRoot.equals(newStateRoot))
+      st.ok(res3.storageRoot.equals(newStorageRoot))
       st.end()
     }
   )
@@ -337,8 +339,8 @@ tape('StateManager', (t) => {
     let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
     let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
-    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+    st.ok(codeSlot1.length === 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
     const code = await codeStateManager.getContractCode(address1)
     st.ok(code.length > 0, 'code deposited correctly')
@@ -350,7 +352,7 @@ tape('StateManager', (t) => {
     st.ok(slot2.length > 0, 'storage key1 deposited correctly')
 
     let slotCode = await stateManager.getContractCode(address1)
-    st.ok(slotCode.length == 0, 'code cannot be loaded')
+    st.ok(slotCode.length === 0, 'code cannot be loaded')
 
     // Checks by either setting state root to codeHash, or codeHash to stateRoot
     // The knowledge of the tries should not change
@@ -360,18 +362,18 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(address1, account)
 
     slotCode = await stateManager.getContractCode(address1)
-    st.ok(slotCode.length == 0, 'code cannot be loaded') // This test fails if no code prefix is used
+    st.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
     account = await codeStateManager.getAccount(address1)
-    account.stateRoot = root
+    account.storageRoot = root
 
     await codeStateManager.putAccount(address1, account)
 
     codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
     codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
-    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+    st.ok(codeSlot1.length === 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
     st.end()
   })
@@ -427,6 +429,31 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
     t.ok(codeRetrieved.equals(Buffer.alloc(0)))
+    t.end()
+  })
+
+  it('should prefix codehashes by default', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    await stateManager.putContractCode(address, code)
+    const codeRetrieved = await stateManager.getContractCode(address)
+    t.ok(codeRetrieved.equals(code))
+    t.end()
+  })
+
+  it('should not prefix codehashes if prefixCodeHashes = false', async (t) => {
+    const stateManager = new DefaultStateManager({
+      prefixCodeHashes: false,
+    })
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    try {
+      await stateManager.putContractCode(address, code)
+      t.fail('should throw')
+    } catch (e) {
+      t.pass('succesfully threw')
+    }
     t.end()
   })
 })

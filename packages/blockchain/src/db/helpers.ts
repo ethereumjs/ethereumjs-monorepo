@@ -1,8 +1,11 @@
-import { DBOp, DBTarget } from './operation'
+import { Block } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Block, BlockHeader } from '@ethereumjs/block'
+
 import { bufBE8 } from './constants'
+import { DBOp, DBTarget } from './operation'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 /*
  * This extra helper file serves as an interface between the blockchain API functionality
@@ -76,4 +79,4 @@ function DBSaveLookups(blockHash: Buffer, blockNumber: bigint): DBOp[] {
   return ops
 }
 
-export { DBOp, DBSetTD, DBSetBlockOrHeader, DBSetHashToNumber, DBSaveLookups }
+export { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD }

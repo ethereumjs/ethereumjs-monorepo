@@ -1,7 +1,9 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
 import { Blockchain } from '../src'
+
 import * as testnet from './testdata/testnet.json'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
@@ -19,7 +21,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
     const block = Block.fromBlockData(
       {
         header: {
-          number: number,
+          number,
           parentHash: blocks[number - 1].hash(),
           timestamp: blocks[number - 1].header.timestamp + BigInt(1),
           gasLimit: number >= londonBlockNumber ? BigInt(10000) : BigInt(5000),

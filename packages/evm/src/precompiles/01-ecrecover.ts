@@ -1,13 +1,16 @@
 import {
+  bufferToBigInt,
+  ecrecover,
+  isFalsy,
+  publicToAddress,
   setLengthLeft,
   setLengthRight,
-  ecrecover,
-  publicToAddress,
-  bufferToBigInt,
-  isFalsy,
 } from '@ethereumjs/util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+
+import { OOGResult } from '../evm'
+
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
   if (isFalsy(opts.data)) throw new Error('opts.data missing but required')

@@ -120,7 +120,7 @@ function _decode(input: Uint8Array): Decoded {
     }
 
     return {
-      data: data,
+      data,
       remainder: input.slice(length),
     }
   } else if (firstByte <= 0xbf) {
@@ -137,7 +137,7 @@ function _decode(input: Uint8Array): Decoded {
     data = safeSlice(input, llength, length + llength)
 
     return {
-      data: data,
+      data,
       remainder: input.slice(length + llength),
     }
   } else if (firstByte <= 0xf7) {

@@ -1,4 +1,4 @@
-import * as snappy from 'snappyjs'
+import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
   bigIntToBuffer,
@@ -7,10 +7,14 @@ import {
   bufferToHex,
   isTruthy,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
-import { Peer } from '../rlpx/peer'
-import { EthProtocol, Protocol, SendMethod } from './protocol'
+import * as snappy from 'snappyjs'
+
+import { assertEq, buffer2int, formatLogData, formatLogId, int2buffer } from '../util'
+
+import { EthProtocol, Protocol } from './protocol'
+
+import type { Peer } from '../rlpx/peer'
+import type { SendMethod } from './protocol'
 
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null = null
@@ -40,9 +44,9 @@ export class ETH extends Protocol {
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
-  static eth64 = { name: 'eth', version: 64, length: 29, constructor: ETH }
-  static eth65 = { name: 'eth', version: 65, length: 29, constructor: ETH }
-  static eth66 = { name: 'eth', version: 66, length: 29, constructor: ETH }
+  static eth64 = { name: 'eth', version: 64, length: 17, constructor: ETH }
+  static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
+  static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))

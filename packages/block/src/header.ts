@@ -1,14 +1,10 @@
-import {
-  Chain,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-  CliqueConfig,
-} from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  TypeOutput,
   arrToBufArr,
   bigIntToBuffer,
   bigIntToHex,
@@ -18,17 +14,17 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  KECCAK256_RLP_ARRAY,
-  KECCAK256_RLP,
-  toType,
-  TypeOutput,
-  zeros,
-  isTruthy,
   isFalsy,
+  isTruthy,
+  toType,
+  zeros,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
+
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -197,6 +193,7 @@ export class BlockHeader {
       )
     }
 
+    const validateConsensusFormat = options.consensusFormatValidation ?? true
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -301,7 +298,7 @@ export class BlockHeader {
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
-    this._consensusFormatValidation()
+    if (validateConsensusFormat === true) this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {

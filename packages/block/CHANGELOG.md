@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This means that if this library is instantiated without providing an explicit `Common`, the `Merge` HF will be set as the default hardfork and the library will behave according to the HF rules up to the `Merge`.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
+```
+
+## Other Changes
+
+- **Breaking**: rename `hardforkByTD` option to `hardforkByTTD`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- Set `hardforkByBlockNumber` to `true` on RLP block constructor, PR [#2081](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2081)
+
 ## 4.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)) for the main change set description.
@@ -45,7 +74,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 ## Other Changes
 
-- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
 - Validate consensus format after block is sealed (if applicable) so `extraData` checks will pass, PR [#2031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2031)
 
 ## 4.0.0-beta.1 - 2022-06-30
@@ -72,9 +101,12 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
-const block = Block.fromBlockData({
-  // Provide your block data here or use default values
-}, { common })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
 ```
 
 ### BigInt Introduction / ES2020 Build Target
@@ -93,11 +125,11 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
 
 ### BigInt-Related API Changes
 
-The `Block` option `hardforkByTD` (merge-related) is now taking in `BigIntLike` data types instead of `BNLike`. Header data fields internally represented as a number - like `number` or `gasLimit` - now have `BigInt` as their internal data type and are also passed in as `BigIntLike` instead of `BNLike`. 
+The `Block` option `hardforkByTD` (merge-related) is now taking in `BigIntLike` data types instead of `BNLike`. Header data fields internally represented as a number - like `number` or `gasLimit` - now have `BigInt` as their internal data type and are also passed in as `BigIntLike` instead of `BNLike`.
 
 The following method signatures have been changed along the update and need some attention:
 
@@ -105,7 +137,7 @@ The following method signatures have been changed along the update and need some
 - `BlockHeader.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
 - `Block.ethashCanonicalDifficulty(parentBlock: Block): bigint` (method also renamed, see validation-refactor section)
 
-Also worth to note that both the `raw()` and `toJSON()` methods are actually *not* affected, respectively delivering values as `Buffer` and `string`.
+Also worth to note that both the `raw()` and `toJSON()` methods are actually _not_ affected, respectively delivering values as `Buffer` and `string`.
 
 ### API Method/Getter Removals
 
@@ -115,7 +147,6 @@ Additionally the following deprecated methods/getters have been removed from the
 - **Important**: also check for `bloom` usage when passing in `Block` data (also use `logsBloom` instead), this might otherwise auto-fallback to the default value without noticing!
 - `toJSON()` method: `baseFee` property (use `baseFeePerGas` instead)
 - `toJSON()` method: `bloom` property (use `logsBloom` instead)
-
 
 ### Reworked BlockHeader Constructor API
 
@@ -192,9 +223,12 @@ import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
-const block = Block.fromBlockData({
-  // Provide your block data here or use default values
-}, { common })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
 ```
 
 ### Additional Error Context for Error Messages
@@ -243,10 +277,13 @@ You can instantiate a Merge/PoS block like this:
 ```typescript
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
-const block = Block.fromBlockData({
-  // Provide your block data here or use default values
-}, { common })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
 ```
 
 See: PR [#1393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1393) and PR [#1408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1393)
@@ -260,7 +297,6 @@ See. PR [#1473](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1473)
 ### Other Changes
 
 - The hash from the `block.hash()` method now gets cached for blocks created with the `freeze` option (activated by default), PR [#1445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445)
-
 
 ## 3.4.0 - 2021-07-08
 
@@ -289,13 +325,16 @@ import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 
-const block = Block.fromBlockData({
-  header: {
-    baseFeePerGas: new BN(10),
-    gasLimit: new BN(100),
-    gasUsed: new BN(60)
-  }
-}, { common })
+const block = Block.fromBlockData(
+  {
+    header: {
+      baseFeePerGas: new BN(10),
+      gasLimit: new BN(100),
+      gasUsed: new BN(60),
+    },
+  },
+  { common }
+)
 
 // Base fee will increase for next block since the
 // gas used is greater than half the gas limit

@@ -1,10 +1,11 @@
-import * as tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { Transaction } from '@ethereumjs/tx'
 import {
   Address,
   bigIntToBuffer,
   bufferToBigInt,
-  ECDSASignature,
   ecsign,
   isTruthy,
   privateToAddress,
@@ -12,13 +13,14 @@ import {
   toBuffer,
   zeros,
 } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import * as tape from 'tape'
+
 import { VM } from '../../../src/vm'
-import { Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import { EVM } from '@ethereumjs/evm'
+
+import type { EVM } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { ECDSASignature } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -223,7 +225,7 @@ function flipSignature(signature: any) {
   const s = bufferToBigInt(signature.s)
   const flipped = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n - s
 
-  if (signature.v == 27) {
+  if (signature.v === 27) {
     signature.v = 28
   } else {
     signature.v = 27

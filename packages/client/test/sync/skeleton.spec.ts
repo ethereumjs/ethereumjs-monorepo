@@ -1,14 +1,15 @@
-import * as tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import { Config } from '../../lib/config'
+import { MemoryLevel } from 'memory-level'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
 import { Chain } from '../../lib/blockchain'
-import { parseCustomParams } from '../../lib/util'
+import { Config } from '../../lib/config'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
+import { parseCustomParams } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
-import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
 type Subchain = {
   head: bigint
   tail: bigint
@@ -510,7 +511,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.setHead(block5, false)
       } catch (error: any) {
-        if (error != errReorgDenied) {
+        if (error !== errReorgDenied) {
           t.fail(error)
         }
       }
@@ -525,7 +526,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block3PoS])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }
@@ -679,7 +680,7 @@ tape('[Skeleton]', async (t) => {
       try {
         await skeleton.putBlocks([block2])
       } catch (error: any) {
-        if (error != errSyncMerged) {
+        if (error !== errSyncMerged) {
           t.fail(error)
         }
       }

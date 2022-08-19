@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { VM } from '../../../src/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
-import { EOF } from '@ethereumjs/evm/dist/eof'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')

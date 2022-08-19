@@ -3,12 +3,12 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "composite": true,
+    "composite": true
   },
   "include": ["src/**/*.ts"],
   "references": [
     { "path": "../common/tsconfig.prod.json" },
     { "path": "../trie/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
-  ],
+  ]
 }

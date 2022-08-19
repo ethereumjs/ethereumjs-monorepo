@@ -1,9 +1,11 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
-import { Config } from '../config'
+
 import { Event } from '../types'
+
+import type { Config } from '../config'
+import type { AbstractLevel } from 'abstract-level'
 
 /**
  * The options that the Blockchain constructor can receive.

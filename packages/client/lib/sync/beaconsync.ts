@@ -1,12 +1,17 @@
-import { short } from '../util'
-import { Event } from '../types'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { ReverseBlockFetcher } from './fetcher'
-import type { Block } from '@ethereumjs/block'
-import type { Peer } from '../net/peer/peer'
-import { errSyncReorged, Skeleton } from './skeleton'
-import type { VMExecution } from '../execution'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { Event } from '../types'
+import { short } from '../util'
+
+import { ReverseBlockFetcher } from './fetcher'
+import { errSyncReorged } from './skeleton'
+import { Synchronizer } from './sync'
+
+import type { VMExecution } from '../execution'
+import type { Peer } from '../net/peer/peer'
+import type { Skeleton } from './skeleton'
+import type { SynchronizerOptions } from './sync'
+import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -41,6 +46,17 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   get type() {
     return 'beacon'
+  }
+
+  get fetcher(): ReverseBlockFetcher | null {
+    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
+    }
+    return this._fetcher
+  }
+
+  set fetcher(fetcher: ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -176,7 +192,7 @@ export class BeaconSynchronizer extends Synchronizer {
       )
       return true
     } catch (error) {
-      if (error == errSyncReorged) {
+      if (error === errSyncReorged) {
         this.config.logger.debug(
           `Beacon sync reorged, new head number=${block.header.number} hash=${short(
             block.header.hash()
@@ -267,12 +283,12 @@ export class BeaconSynchronizer extends Synchronizer {
   async runExecution(): Promise<void> {
     // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
-    if (
-      (isTruthy(this.skeleton.bounds()) &&
-        this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)) ||
-      this.chain.blocks.height % BigInt(50) === BigInt(0)
-    ) {
-      void this.execution.run(false)
+    const shouldRunOnlyBatched = !(
+      isTruthy(this.skeleton.bounds()) &&
+      this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
+    )
+    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
+      void this.execution.run(false, shouldRunOnlyBatched)
     }
   }
 

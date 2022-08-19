@@ -1,6 +1,9 @@
 import { createHash } from 'crypto'
 import * as tape from 'tape'
-import { BatchDBOp, CheckpointTrie, LevelDB } from '../../src'
+
+import { CheckpointTrie, MapDB } from '../../src'
+
+import type { BatchDBOp } from '../../src'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test
@@ -11,7 +14,7 @@ tape('testing checkpoints', function (tester) {
   let postRoot: string
 
   it('setup', async function (t) {
-    trie = new CheckpointTrie({ db: new LevelDB() })
+    trie = new CheckpointTrie({ db: new MapDB() })
     await trie.put(Buffer.from('do'), Buffer.from('verb'))
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
     preRoot = trie.root.toString('hex')
@@ -65,7 +68,7 @@ tape('testing checkpoints', function (tester) {
 
   it('should copy trie and use the correct hash function', async function (t) {
     const trie = new CheckpointTrie({
-      db: new LevelDB(),
+      db: new MapDB(),
       hash: (value) => createHash('sha256').update(value).digest(),
     })
 
@@ -127,7 +130,7 @@ tape('testing checkpoints', function (tester) {
   const v123 = Buffer.from('v123')
 
   it('revert -> put', async function (t) {
-    trie = new CheckpointTrie({ db: new LevelDB() })
+    trie = new CheckpointTrie({ db: new MapDB() })
 
     trie.checkpoint()
     await trie.put(k1, v1)
@@ -139,7 +142,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('revert -> put (update)', async (t) => {
-    trie = new CheckpointTrie({ db: new LevelDB() })
+    trie = new CheckpointTrie({ db: new MapDB() })
 
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
@@ -152,7 +155,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('revert -> put (update) batched', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
@@ -167,7 +170,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('Checkpointing: revert -> del', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
@@ -179,7 +182,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('Checkpointing: nested checkpoints -> commit -> revert', async (t) => {
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new CheckpointTrie({ db: new MapDB() })
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()

@@ -1,8 +1,11 @@
-import { AddOpcode } from '../src/types'
-import { InterpreterStep, RunState } from '../src/interpreter'
-import { EVM } from '../src/evm'
-import { getEEI } from './utils'
 import * as tape from 'tape'
+
+import { EVM } from '../src/evm'
+
+import { getEEI } from './utils'
+
+import type { InterpreterStep, RunState } from '../src/interpreter'
+import type { AddOpcode } from '../src/types'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
@@ -14,10 +17,10 @@ tape('VM: custom opcodes', (t) => {
     opcode: 0x21,
     opcodeName: 'TEST',
     baseFee: fee,
-    gasFunction: function (runState: RunState, gas: bigint) {
+    gasFunction(runState: RunState, gas: bigint) {
       return gas + logicFee
     },
-    logicFunction: function (runState: RunState) {
+    logicFunction(runState: RunState) {
       runState.stack.push(BigInt(stackPush))
     },
   }
@@ -111,7 +114,7 @@ tape('VM: custom opcodes', (t) => {
       opcode: 0x21,
       opcodeName: 'TEST',
       baseFee: fee,
-      logicFunction: function (runState: RunState) {
+      logicFunction(runState: RunState) {
         runState.stack.push(BigInt(stackPush))
       },
     }

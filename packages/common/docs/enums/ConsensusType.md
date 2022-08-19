@@ -4,38 +4,38 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [ProofOfAuthority](ConsensusType.md#proofofauthority)
 - [ProofOfStake](ConsensusType.md#proofofstake)
 - [ProofOfWork](ConsensusType.md#proofofwork)
 
-## Enumeration members
+## Enumeration Members
 
 ### ProofOfAuthority
 
-• **ProofOfAuthority** = `"poa"`
+• **ProofOfAuthority** = ``"poa"``
 
 #### Defined in
 
-[packages/common/src/index.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L90)
+[packages/common/src/enums.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L33)
 
 ___
 
 ### ProofOfStake
 
-• **ProofOfStake** = `"pos"`
+• **ProofOfStake** = ``"pos"``
 
 #### Defined in
 
-[packages/common/src/index.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L88)
+[packages/common/src/enums.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L31)
 
 ___
 
 ### ProofOfWork
 
-• **ProofOfWork** = `"pow"`
+• **ProofOfWork** = ``"pow"``
 
 #### Defined in
 
-[packages/common/src/index.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L89)
+[packages/common/src/enums.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L32)

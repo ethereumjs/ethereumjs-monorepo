@@ -1,6 +1,7 @@
-import { DataDirectory } from '../'
-import type { Block } from '@ethereumjs/block'
+import { DataDirectory } from '..'
+
 import type { VMExecution } from '../execution'
+import type { Block } from '@ethereumjs/block'
 
 /**
  * Generates a code snippet which can be used to replay an erraneous block

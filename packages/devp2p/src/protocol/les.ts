@@ -1,10 +1,15 @@
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
-import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-import { EthProtocol, Protocol, SendMethod } from './protocol'
+
+import { DISCONNECT_REASONS } from '../rlpx/peer'
+import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
+
+import { EthProtocol, Protocol } from './protocol'
+
+import type { Peer } from '../rlpx/peer'
+import type { SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
@@ -43,9 +48,9 @@ export class LES extends Protocol {
           'STATUS'
         )
         const statusArray: any = {}
-        payload.forEach(function (value: any) {
+        for (const value of payload as any) {
           statusArray[value[0].toString()] = value[1]
-        })
+        }
         this._peerStatus = statusArray
         const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
         this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
@@ -162,9 +167,9 @@ export class LES extends Protocol {
     this._status = status
 
     const statusList: any[][] = []
-    Object.keys(status).forEach((key) => {
+    for (const key of Object.keys(status)) {
       statusList.push([Buffer.from(key), status[key]])
-    })
+    }
 
     this.debug(
       'STATUS',

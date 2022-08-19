@@ -4,20 +4,20 @@
   "date": "2019-01-10",
   "tests": {
     "basic": {
-      "in": [ "cat", "doge", "wallace" ],
+      "in": ["cat", "doge", "wallace"],
       "tests": [
-        [ "", "", "cat" ],
-        [ "bobo", "", "cat" ],
-        [ "c", "", "cat" ],
-        [ "car", "", "cat" ],
-        [ "cat", "", "doge" ],
-        [ "catering", "cat", "doge" ],
-        [ "d", "cat", "doge" ],
-        [ "doge", "cat", "wallace" ],
-        [ "dogerton", "doge", "wallace" ],
-        [ "w", "doge", "wallace" ],
-        [ "wallace", "doge", "" ],
-        [ "wallace123", "wallace", ""]
+        ["", "", "cat"],
+        ["bobo", "", "cat"],
+        ["c", "", "cat"],
+        ["car", "", "cat"],
+        ["cat", "", "doge"],
+        ["catering", "cat", "doge"],
+        ["d", "cat", "doge"],
+        ["doge", "cat", "wallace"],
+        ["dogerton", "doge", "wallace"],
+        ["w", "doge", "wallace"],
+        ["wallace", "doge", ""],
+        ["wallace123", "wallace", ""]
       ]
     }
   }

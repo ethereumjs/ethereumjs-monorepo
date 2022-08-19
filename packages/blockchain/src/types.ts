@@ -1,12 +1,13 @@
-import { Block } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
-import { Consensus } from '.'
-import { GenesisState } from './genesisStates'
+import type { Consensus } from './consensus'
+import type { GenesisState } from './genesisStates'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { AbstractLevel } from 'abstract-level'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export interface BlockchainInterface {
+  consensus: Consensus
   /**
    * Adds a block to the blockchain.
    *
@@ -33,9 +34,45 @@ export interface BlockchainInterface {
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block: Block,
+   * @param maxBlocks - optional maximum number of blocks to iterate through
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock): Promise<number>
+  iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number>
+
+  /**
+   * Returns a copy of the blockchain
+   */
+  copy(): BlockchainInterface
+
+  /**
+   * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * @param header - header to be validated
+   * @param height - If this is an uncle header, this is the height of the block that is including it
+   */
+  validateHeader(header: BlockHeader, height?: bigint): Promise<void>
+
+  /**
+   * Returns the specified iterator head.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
+  getIteratorHead?(name?: string): Promise<Block>
+
+  /**
+   * Gets total difficulty for a block specified by hash and number
+   */
+  getTotalDifficulty?(hash: Buffer, number?: bigint): Promise<bigint>
+
+  /**
+   * Returns the genesis state of the blockchain.
+   * All values are provided as hex-prefixed strings.
+   */
+  genesisState?(): GenesisState
+
+  /**
+   * Returns the latest full block in the canonical chain.
+   */
+  getCanonicalHeadBlock?(): Promise<Block>
 }
 
 /**

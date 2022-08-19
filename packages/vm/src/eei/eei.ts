@@ -1,16 +1,18 @@
-import { Address, bufferToBigInt } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
+import { bufferToBigInt } from '@ethereumjs/util'
 
 import { VmState } from './vmState'
-import { StateManager } from '@ethereumjs/statemanager'
-import { EEIInterface } from '@ethereumjs/evm'
+
+import type { Common } from '@ethereumjs/common'
+import type { EEIInterface } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
+import type { Address } from '@ethereumjs/util'
 
 type Block = {
   hash(): Buffer
 }
 
 type Blockchain = {
-  getBlock(blockId: number): Promise<Block>
+  getBlock(blockId: number): Promise<Block | null>
   copy(): Blockchain
 }
 
@@ -64,7 +66,7 @@ export class EEI extends VmState implements EEIInterface {
    */
   async getBlockHash(num: bigint): Promise<bigint> {
     const block = await this._blockchain.getBlock(Number(num))
-    return bufferToBigInt(block.hash())
+    return bufferToBigInt(block!.hash())
   }
 
   /**

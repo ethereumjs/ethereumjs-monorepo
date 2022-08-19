@@ -1,20 +1,21 @@
-import * as tape from 'tape'
-import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
+// explicitly import util and buffer,
+// needed for karma-typescript bundling
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
+import * as tape from 'tape'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import { VM } from '../../src/vm'
 import { isRunningInKarma } from '../util'
-import { setupVM } from './utils'
+
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
+import { setupVM } from './utils'
 
-// explicitly import util and buffer,
-// needed for karma-typescript bundling
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { VMOpts } from '../../src'
+import type { VMOpts } from '../../src'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
  * Tests for the main constructor API and
@@ -247,7 +248,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
     /*
         idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
               when calling from the activated VM. Explicitly check that the difference in gas cost is equal to the common callNewAccount gas.
-        code:             remarks: (top of the stack is at the zero index)       
+        code:             remarks: (top of the stack is at the zero index)
           PUSH1 0x00
           DUP1
           DUP1
@@ -265,7 +266,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
     await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

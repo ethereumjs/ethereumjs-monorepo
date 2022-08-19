@@ -4,7 +4,7 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [ArbitrumRinkebyTestnet](CustomChain.md#arbitrumrinkebytestnet)
 - [OptimisticEthereum](CustomChain.md#optimisticethereum)
@@ -13,11 +13,11 @@
 - [PolygonMumbai](CustomChain.md#polygonmumbai)
 - [xDaiChain](CustomChain.md#xdaichain)
 
-## Enumeration members
+## Enumeration Members
 
 ### ArbitrumRinkebyTestnet
 
-• **ArbitrumRinkebyTestnet** = `"arbitrum-rinkeby-testnet"`
+• **ArbitrumRinkebyTestnet** = ``"arbitrum-rinkeby-testnet"``
 
 Arbitrum Rinkeby Testnet
 
@@ -25,13 +25,13 @@ Arbitrum Rinkeby Testnet
 
 #### Defined in
 
-[packages/common/src/index.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L35)
+[packages/common/src/enums.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L62)
 
 ___
 
 ### OptimisticEthereum
 
-• **OptimisticEthereum** = `"optimistic-ethereum"`
+• **OptimisticEthereum** = ``"optimistic-ethereum"``
 
 Optimistic Ethereum - mainnet for Optimism roll-up
 
@@ -39,13 +39,13 @@ Optimistic Ethereum - mainnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/index.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L56)
+[packages/common/src/enums.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L83)
 
 ___
 
 ### OptimisticKovan
 
-• **OptimisticKovan** = `"optimistic-kovan"`
+• **OptimisticKovan** = ``"optimistic-kovan"``
 
 Optimistic Kovan - testnet for Optimism roll-up
 
@@ -53,13 +53,13 @@ Optimistic Kovan - testnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/index.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L49)
+[packages/common/src/enums.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L76)
 
 ___
 
 ### PolygonMainnet
 
-• **PolygonMainnet** = `"polygon-mainnet"`
+• **PolygonMainnet** = ``"polygon-mainnet"``
 
 Polygon (Matic) Mainnet
 
@@ -67,13 +67,13 @@ Polygon (Matic) Mainnet
 
 #### Defined in
 
-[packages/common/src/index.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L21)
+[packages/common/src/enums.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L48)
 
 ___
 
 ### PolygonMumbai
 
-• **PolygonMumbai** = `"polygon-mumbai"`
+• **PolygonMumbai** = ``"polygon-mumbai"``
 
 Polygon (Matic) Mumbai Testnet
 
@@ -81,13 +81,13 @@ Polygon (Matic) Mumbai Testnet
 
 #### Defined in
 
-[packages/common/src/index.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L28)
+[packages/common/src/enums.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L55)
 
 ___
 
 ### xDaiChain
 
-• **xDaiChain** = `"x-dai-chain"`
+• **xDaiChain** = ``"x-dai-chain"``
 
 xDai EVM sidechain with a native stable token
 
@@ -95,4 +95,4 @@ xDai EVM sidechain with a native stable token
 
 #### Defined in
 
-[packages/common/src/index.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L42)
+[packages/common/src/enums.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L69)

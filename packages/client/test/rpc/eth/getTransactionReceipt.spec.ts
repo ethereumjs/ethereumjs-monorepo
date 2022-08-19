@@ -1,14 +1,16 @@
-import * as tape from 'tape'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { bufferToHex } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import {
-  params,
   baseRequest,
-  setupChain,
-  runBlockWithTxs,
-  gethGenesisStartLondon,
   dummy,
+  gethGenesisStartLondon,
+  params,
+  runBlockWithTxs,
+  setupChain,
 } from '../helpers'
+
 import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionReceipt'

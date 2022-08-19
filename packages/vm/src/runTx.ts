@@ -1,26 +1,27 @@
-import { debug as createDebugLogger } from 'debug'
-import { Address, KECCAK256_NULL, toBuffer, short, isFalsy } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import {
-  AccessListItem,
+import { Capability } from '@ethereumjs/tx'
+import { Address, KECCAK256_NULL, isFalsy, short, toBuffer } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
+
+import { Bloom } from './bloom'
+
+import type {
+  AfterTxEvent,
+  BaseTxReceipt,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  RunTxOpts,
+  RunTxResult,
+  TxReceipt,
+} from './types'
+import type { VM } from './vm'
+import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
-  Capability,
 } from '@ethereumjs/tx'
-import { VM } from './vm'
-import { Bloom } from './bloom'
-import type {
-  TxReceipt,
-  BaseTxReceipt,
-  PreByzantiumTxReceipt,
-  PostByzantiumTxReceipt,
-  RunTxOpts,
-  RunTxResult,
-  AfterTxEvent,
-} from './types'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -107,13 +108,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
-    castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
+    for (const accessListItem of castedTx.AccessListJSON) {
       const address = toBuffer(accessListItem.address)
       state.addWarmedAddress(address)
-      accessListItem.storageKeys.forEach((storageKey: string) => {
+      for (const storageKey of accessListItem.storageKeys) {
         state.addWarmedStorage(address, toBuffer(storageKey))
-      })
-    })
+      }
+    }
   }
 
   try {
@@ -233,12 +234,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
-  if (opts.skipBalance === true) {
-    // if skipBalance, add tx cost to sender balance to ensure sufficient funds
-    fromAccount.balance += cost
-    await this.stateManager.putAccount(caller, fromAccount)
-  } else {
-    if (balance < cost) {
+  if (balance < cost) {
+    if (opts.skipBalance === true && fromAccount.balance < cost) {
+      if (tx.supports(Capability.EIP1559FeeMarket) === false) {
+        // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
+        fromAccount.balance = cost
+        await this.stateManager.putAccount(caller, fromAccount)
+      }
+    } else {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
         this,
@@ -247,13 +250,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
+  }
 
-    if (tx.supports(Capability.EIP1559FeeMarket)) {
-      // EIP-1559 spec:
-      // The signer must be able to afford the transaction
-      // `assert balance >= gas_limit * max_fee_per_gas`
-      const cost = tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value
-      if (balance < cost) {
+  if (tx.supports(Capability.EIP1559FeeMarket)) {
+    // EIP-1559 spec:
+    // The signer must be able to afford the transaction
+    // `assert balance >= gas_limit * max_fee_per_gas`
+    const cost = tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value
+    if (balance < cost) {
+      if (opts.skipBalance === true && fromAccount.balance < cost) {
+        // if skipBalance, ensure caller balance is enough to run transaction
+        fromAccount.balance = cost
+        await this.stateManager.putAccount(caller, fromAccount)
+      } else {
         const msg = _errorMsg(
           `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
           this,
@@ -526,7 +535,7 @@ export async function generateTxReceipt(
       // Pre-Byzantium
       const stateRoot = await this.stateManager.getStateRoot()
       receipt = {
-        stateRoot: stateRoot,
+        stateRoot,
         ...baseReceipt,
       } as PreByzantiumTxReceipt
     }

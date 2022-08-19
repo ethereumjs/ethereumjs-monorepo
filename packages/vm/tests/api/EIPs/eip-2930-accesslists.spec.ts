@@ -1,9 +1,11 @@
-import * as tape from 'tape'
-import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '../../../src/vm'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { EVM } from '@ethereumjs/evm'
+import { Account, Address, bufferToHex } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -69,13 +71,13 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     })
 
     await vm.runTx({ tx: txnWithAccessList })
-    st.ok(trace[1][0] == 'SLOAD')
+    st.ok(trace[1][0] === 'SLOAD')
     let gasUsed = trace[1][1] - trace[2][1]
     st.equal(gasUsed, BigInt(100), 'charge warm sload gas')
 
     trace = []
     await vm.runTx({ tx: txnWithoutAccessList, skipNonce: true })
-    st.ok(trace[1][0] == 'SLOAD')
+    st.ok(trace[1][0] === 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
     st.equal(gasUsed, BigInt(2100), 'charge cold sload gas')
 

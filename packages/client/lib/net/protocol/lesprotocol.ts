@@ -1,3 +1,4 @@
+import { BlockHeader } from '@ethereumjs/block'
 import {
   bigIntToBuffer,
   bufferToBigInt,
@@ -5,10 +6,13 @@ import {
   intToBuffer,
   isTruthy,
 } from '@ethereumjs/util'
-import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
-import { FlowControl } from './flowcontrol'
+
+import { Protocol } from './protocol'
+
+import type { Chain } from '../../blockchain'
+import type { FlowControl } from './flowcontrol'
+import type { Message, ProtocolOptions } from './protocol'
+import type { BlockHeaderBuffer } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -168,7 +172,7 @@ export class LesProtocol extends Protocol {
         'flowControl/MRR': intToBuffer(this.flow.mrr),
         'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
           const { code } = this.messages.find((m) => m.name === name)!
-          return [code, base, req]
+          return [intToBuffer(code), intToBuffer(base), intToBuffer(req)]
         }),
       }
     }
@@ -226,7 +230,7 @@ export class LesProtocol extends Protocol {
       txRelay: isTruthy(status.txRelay),
       bl: isTruthy(status['flowControl/BL']) ? bufferToInt(status['flowControl/BL']) : undefined,
       mrr: isTruthy(status['flowControl/MRR']) ? bufferToInt(status['flowControl/MRR']) : undefined,
-      mrc: mrc,
+      mrc,
     }
   }
 }

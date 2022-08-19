@@ -1,13 +1,15 @@
 import { Hardfork } from '@ethereumjs/common'
-import { PeerPool } from '../net/peerpool'
-import { Peer } from '../net/peer/peer'
-import { FlowControl } from '../net/protocol'
-import { Config } from '../config'
-import { Chain } from '../blockchain'
-import { Event } from '../types'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
-import { short } from '../util'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { FlowControl } from '../net/protocol'
+import { Event } from '../types'
+import { short } from '../util'
+
+import type { Chain } from '../blockchain'
+import type { Config } from '../config'
+import type { Peer } from '../net/peer/peer'
+import type { PeerPool } from '../net/peerpool'
+import type { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -39,7 +41,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -56,7 +58,7 @@ export abstract class Synchronizer {
 
     this.pool = options.pool
     this.chain = options.chain
-    this.fetcher = null
+    this._fetcher = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.opened = false
@@ -80,6 +82,14 @@ export abstract class Synchronizer {
    */
   get type() {
     return 'sync'
+  }
+
+  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+    return this._fetcher
+  }
+
+  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -178,8 +188,8 @@ export abstract class Synchronizer {
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
-        if (this.fetcher) {
-          await this.fetcher.fetch()
+        if (this._fetcher) {
+          await this._fetcher.fetch()
         }
         this.config.logger.debug(`Fetcher finished fetching...`)
         resolveSync()
@@ -197,10 +207,10 @@ export abstract class Synchronizer {
    * Clears and removes the fetcher.
    */
   clearFetcher() {
-    if (this.fetcher) {
-      this.fetcher.clear()
-      this.fetcher.destroy()
-      this.fetcher = null
+    if (this._fetcher) {
+      this._fetcher.clear()
+      this._fetcher.destroy()
+      this._fetcher = null
     }
   }
 

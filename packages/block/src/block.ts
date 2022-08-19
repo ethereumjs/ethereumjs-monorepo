@@ -1,18 +1,20 @@
+import { ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Common, ConsensusType } from '@ethereumjs/common'
-import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
+
+import { BlockHeader } from './header'
+
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { Common } from '@ethereumjs/common'
+import type {
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capability,
+  TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
 
 /**
  * An object that represents the block.
@@ -239,7 +241,8 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    this.transactions.forEach((tx, i) => {
+    // eslint-disable-next-line prefer-const
+    for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -257,7 +260,7 @@ export class Block {
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
-    })
+    }
 
     return stringError ? errors : errors.length === 0
   }

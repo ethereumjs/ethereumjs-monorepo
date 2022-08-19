@@ -1,9 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { Account, Address } from '@ethereumjs/util'
-import { Cache } from './cache'
-import { AccountFields } from './interface'
-import { DefaultStateManagerOpts } from './stateManager'
+import { debug as createDebugLogger } from 'debug'
+
+import type { Cache } from './cache'
+import type { AccountFields } from './interface'
+import type { DefaultStateManagerOpts } from './stateManager'
+import type { Account, Address } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 /**
  * Abstract BaseStateManager class for the non-storage-backend
@@ -77,7 +79,7 @@ export abstract class BaseStateManager {
   /**
    * Gets the account associated with `address`, modifies the given account
    * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
@@ -85,7 +87,7 @@ export abstract class BaseStateManager {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
     account.codeHash = accountFields.codeHash ?? account.codeHash
     await this.putAccount(address, account)
   }

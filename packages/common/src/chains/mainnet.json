@@ -94,6 +94,7 @@
     },
     {
       "name": "merge",
+      "ttd": "58750000000000000000000",
       "block": null,
       "forkHash": null
     },

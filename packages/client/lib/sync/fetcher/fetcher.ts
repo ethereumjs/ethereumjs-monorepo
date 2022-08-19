@@ -1,13 +1,16 @@
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { Readable, Writable } from 'stream'
-import Heap = require('qheap')
-import { PeerPool } from '../../net/peerpool'
-import { Peer } from '../../net/peer'
-import { Config } from '../../config'
-import { Event } from '../../types'
-import { Job } from './types'
-import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 import { isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
+import Heap = require('qheap')
+import { Readable, Writable } from 'stream'
+
+import { Event } from '../../types'
+
+import type { Config } from '../../config'
+import type { Peer } from '../../net/peer'
+import type { PeerPool } from '../../net/peerpool'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
+import type { Job } from './types'
+import type { Debugger } from 'debug'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -215,7 +218,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       resultSet = 'undefined'
       reenqueue = true
     }
-    if (result && (result as any).length === 0) {
+    if (result !== undefined && (result as any).length === 0) {
       resultSet = 'empty'
       reenqueue = true
     }

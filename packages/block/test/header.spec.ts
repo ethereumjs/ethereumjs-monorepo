@@ -1,11 +1,15 @@
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Chain, Common, CliqueConfig, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+
 import { Block } from '../src'
-const blocksMainnet = require('./testdata/blocks_mainnet.json')
+import { BlockHeader } from '../src/header'
+
+import type { CliqueConfig } from '@ethereumjs/common'
+
 const blocksGoerli = require('./testdata/blocks_goerli.json')
+const blocksMainnet = require('./testdata/blocks_mainnet.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -286,6 +290,65 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
+
+  t.test('should skip consensusFormatValidation if flag is set to false', (st) => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const extraData = Buffer.concat([Buffer.alloc(1)])
+
+    try {
+      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false })
+      st.pass(
+        'should instantiate header with invalid extraData when consensusFormatValidation === false'
+      )
+    } catch (error: any) {
+      st.fail('should not throw')
+    }
+
+    st.end()
+  })
+
+  t.test('_genericFormatValidation checks', (st) => {
+    const badHash = Buffer.alloc(31)
+
+    st.throws(
+      () => BlockHeader.fromHeaderData({ parentHash: badHash }),
+      (err: any) => err.message.includes('parentHash must be 32 bytes'),
+      'throws on invalid parent hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ stateRoot: badHash }),
+      (err: any) => err.message.includes('stateRoot must be 32 bytes'),
+      'throws on invalid state root hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ transactionsTrie: badHash }),
+      (err: any) => err.message.includes('transactionsTrie must be 32 bytes'),
+      'throws on invalid transactionsTrie root hash length'
+    )
+
+    st.throws(
+      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }),
+      (err: any) => err.message.includes('nonce must be 8 bytes'),
+      'contains nonce length error message'
+    )
+
+    const kovanCommon = new Common({ chain: Chain.Kovan })
+    st.throws(
+      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }, { common: kovanCommon }),
+      (err: any) => err.message.includes('nonce must be 65 bytes on kovan'),
+      'contains kovan nonce error message'
+    )
+
+    st.doesNotThrow(
+      () =>
+        BlockHeader.fromHeaderData(
+          { nonce: Buffer.alloc(65) },
+          { common: kovanCommon, consensusFormatValidation: false }
+        ),
+      'was able to create Kovan block with nonce 65 bytes long'
+    )
+    st.end()
+  })
   /*
   TODO: Decide if we need to move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
@@ -404,13 +467,13 @@ tape('[Block]: Header functions', function (t) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
-    Object.keys(bcBlockGasLimitTestData).forEach((key) => {
+    for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
       const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp)
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
-    })
+    }
 
     st.end()
   })

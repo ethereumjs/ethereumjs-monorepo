@@ -1,0 +1,5 @@
+.coverage
+coverage
+dist
+docs
+packages/ethereum-tests

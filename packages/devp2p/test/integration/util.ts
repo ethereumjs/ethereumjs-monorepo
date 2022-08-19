@@ -1,8 +1,11 @@
-import * as test from 'tape'
-import { Capabilities, DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import { Chain, Common } from '@ethereumjs/common'
-import * as testdata from '../testdata.json'
 import { isTruthy } from '@ethereumjs/util'
+
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
+import * as testdata from '../testdata.json'
+
+import type { Capabilities } from '../../src'
+import type * as test from 'tape'
 
 type Test = test.Test
 
@@ -82,8 +85,8 @@ export function getTestRLPXs(
   for (let i = 0; i < numRLPXs; ++i) {
     const rlpx = new RLPx(dpts[i].privateKey, {
       dpt: dpts[i],
-      maxPeers: maxPeers,
-      capabilities: capabilities,
+      maxPeers,
+      capabilities,
       common: common.constructor === Array ? common[i] : (common as Common),
       listenPort: basePort + i,
     })

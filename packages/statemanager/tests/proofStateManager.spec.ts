@@ -1,11 +1,13 @@
-import * as tape from 'tape'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Address, toBuffer, zeros } from '@ethereumjs/util'
 import { SecureTrie } from '@ethereumjs/trie'
+import { Address, toBuffer, zeros } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import * as tape from 'tape'
+
 import { DefaultStateManager } from '../src'
-import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
-import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
+
 import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
+import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
+import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
 
 tape('ProofStateManager', (t) => {
   t.test('should get and verify EIP 1178 proofs', async (st) => {
@@ -169,8 +171,8 @@ tape('ProofStateManager', (t) => {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
         await stateManager.verifyProof(testdata)
-        // note: this implicitly means that newField != original,
-        // if newField == original then the proof would be valid and test would fail
+        // note: this implicitly means that newField !== original,
+        // if newField === original then the proof would be valid and test would fail
         t.fail('should throw')
       } catch (e) {
         t.pass('threw on invalid proof')
@@ -228,8 +230,8 @@ tape('ProofStateManager', (t) => {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
         await stateManager.verifyProof(testdata)
-        // note: this implicitly means that newField != original,
-        // if newField == original then the proof would be valid and test would fail
+        // note: this implicitly means that newField !== original,
+        // if newField === original then the proof would be valid and test would fail
         st.fail('should throw')
       } catch (e) {
         st.pass('threw on invalid proof')

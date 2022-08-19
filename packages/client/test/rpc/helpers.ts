@@ -1,26 +1,35 @@
-import * as tape from 'tape'
-import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common } from '@ethereumjs/common'
 import { Address, isTruthy } from '@ethereumjs/util'
-import { RPCManager as Manager } from '../../lib/rpc'
-import { getLogger } from '../../lib/logging'
-import { Config } from '../../lib/config'
+import { Server as RPCServer } from 'jayson/promise'
+import { MemoryLevel } from 'memory-level'
+
 import { Chain } from '../../lib/blockchain/chain'
-import { parseCustomParams, parseGenesisState } from '../../lib/util'
-import { Event } from '../../lib/types'
-import { TxPool } from '../../lib/service/txpool'
-import { RlpxServer } from '../../lib/net/server/rlpxserver'
+import { Config } from '../../lib/config'
 import { VMExecution } from '../../lib/execution'
-import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
+import { getLogger } from '../../lib/logging'
+import { RlpxServer } from '../../lib/net/server/rlpxserver'
+import { RPCManager as Manager } from '../../lib/rpc'
+import { TxPool } from '../../lib/service/txpool'
+import { Event } from '../../lib/types'
+import {
+  createRPCServerListener,
+  createWsRPCServerListener,
+  parseCustomParams,
+  parseGenesisState,
+} from '../../lib/util'
+
 import { mockBlockchain } from './mockBlockchain'
-import type { IncomingMessage } from 'connect'
-import type { TypedTransaction } from '@ethereumjs/tx'
+
 import type { EthereumClient } from '../../lib/client'
 import type { FullEthereumService } from '../../lib/service'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { IncomingMessage } from 'connect'
+import type { HttpServer } from 'jayson/promise'
+import type * as tape from 'tape'
+
 const request = require('supertest')
-import { MemoryLevel } from 'memory-level'
 
 const config: any = {}
 config.logger = getLogger(config)

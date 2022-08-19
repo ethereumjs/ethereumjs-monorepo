@@ -1,7 +1,11 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
-import { Blockchain, Consensus, EthashConsensus } from '../src'
+import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
+import { Blockchain, EthashConsensus } from '../src'
+
+import type { Consensus } from '../src'
+import type { BlockHeader } from '@ethereumjs/block'
 
 class fibonacciConsensus implements Consensus {
   algorithm: string
@@ -26,7 +30,7 @@ class fibonacciConsensus implements Consensus {
     if (_header.number === 1n && _header.difficulty === 1n) {
       return new Promise<void>((resolve) => resolve())
     }
-    if (_header.difficulty != _header.number - 1n + _header.number - 2n) {
+    if (_header.difficulty !== _header.number - 1n + _header.number - 2n) {
       throw new Error('invalid difficulty - must be sum of previous two block numbers')
     }
     return new Promise<void>((resolve) => resolve())

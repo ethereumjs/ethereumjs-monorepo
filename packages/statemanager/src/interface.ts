@@ -1,5 +1,5 @@
-import { Account, Address } from '@ethereumjs/util'
-import { Proof } from './stateManager'
+import type { Proof } from './stateManager'
+import type { Account, Address } from '@ethereumjs/util'
 
 /**
  * Storage values of an account
@@ -8,7 +8,7 @@ export interface StorageDump {
   [key: string]: string
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
 
 export interface StateAccess {
   accountExists(address: Address): Promise<boolean>

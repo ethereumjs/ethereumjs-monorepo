@@ -1,22 +1,28 @@
-import * as tape from 'tape'
-import { Account, Address, toBuffer, KECCAK256_RLP } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
-  Transaction,
-  TypedTransaction,
-  FeeMarketEIP1559Transaction,
   Capability,
+  FeeMarketEIP1559Transaction,
+  Transaction,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../src/types'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
-import { setupPreConditions, getDAOCommon } from '../util'
-import { setupVM, createAccount } from './utils'
-import * as testnet from './testdata/testnet.json'
+import { Account, Address, KECCAK256_RLP, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VM } from '../../src/vm'
-import { setBalance } from './utils'
+import { getDAOCommon, setupPreConditions } from '../util'
+
+import * as testnet from './testdata/testnet.json'
+import { createAccount, setBalance, setupVM } from './utils'
+
+import type {
+  AfterBlockEvent,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  RunBlockOpts,
+} from '../../src/types'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -227,6 +233,22 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .catch((e) => {
         t.ok(e.code.includes('LEVEL_NOT_FOUND'), 'block failed validation due to no parent header')
       })
+  })
+
+  t.test('should fail when no `validateHeader` method exists on blockchain class', async (t) => {
+    const vm = await VM.create({ common })
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    ;(vm.blockchain as any).validateHeader = undefined
+    try {
+      await vm.runBlock({ block })
+    } catch (err: any) {
+      t.equal(
+        err.message,
+        'cannot validate header: blockchain has no `validateHeader` method',
+        'should error'
+      )
+    }
   })
 
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {

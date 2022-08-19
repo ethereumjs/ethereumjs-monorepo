@@ -1,21 +1,24 @@
-import { Block, HeaderData } from '@ethereumjs/block'
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Trie } from '@ethereumjs/trie'
+import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
 
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { short } from '../../util'
 import { PendingBlock } from '../../miner'
+import { short } from '../../util'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { CLConnectionManager } from '../util/CLConnectionManager'
-import type { VM } from '@ethereumjs/vm'
-import type { EthereumClient } from '../../client'
+import { middleware, validators } from '../validation'
+
 import type { Chain } from '../../blockchain'
-import type { VMExecution } from '../../execution'
+import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
+import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
+import type { HeaderData } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -511,7 +514,7 @@ export class Engine {
             headBlock.hash()
           )}`
         )
-        this.service.beaconSync?.setHead(headBlock)
+        await this.service.beaconSync?.setHead(headBlock)
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }

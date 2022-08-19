@@ -1,13 +1,17 @@
-import { EventEmitter } from 'events'
-import * as dgram from 'dgram'
-import ms = require('ms')
-import { debug as createDebugLogger, Debugger } from 'debug'
-import LRUCache = require('lru-cache')
-import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
-import { DPT, PeerInfo } from './dpt'
-import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import { isTruthy } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
+import * as dgram from 'dgram'
+import { EventEmitter } from 'events'
+import LRUCache = require('lru-cache')
+import ms = require('ms')
+
+import { createDeferred, devp2pDebug, formatLogId, keccak256, pk2id } from '../util'
+
+import { decode, encode } from './message'
+
+import type { DPT, PeerInfo } from './dpt'
+import type { Debugger } from 'debug'
+import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled

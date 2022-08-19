@@ -1,7 +1,10 @@
-import { PrecompileInput } from './types'
-import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
 import { isFalsy } from '@ethereumjs/util'
+
+import { EvmErrorResult, OOGResult } from '../evm'
+import { ERROR, EvmError } from '../exceptions'
+
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
 
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 
@@ -17,7 +20,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
-  if (inputData.length == 0) {
+  if (inputData.length === 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
@@ -26,7 +29,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
 
-  if (inputData.length % 384 != 0) {
+  if (inputData.length % 384 !== 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -88,7 +91,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     const G1 = pair[0]
     const G2 = pair[1]
 
-    if (index == 0) {
+    if (index === 0) {
       GT = mcl.millerLoop(G1, G2)
     } else {
       GT = mcl.mul(GT, mcl.millerLoop(G1, G2))
@@ -107,6 +110,6 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: returnValue,
+    returnValue,
   }
 }
