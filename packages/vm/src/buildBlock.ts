@@ -10,7 +10,6 @@ import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
-import type { EVMInterface } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 export class BlockBuilder {
@@ -19,7 +18,7 @@ export class BlockBuilder {
    */
   gasUsed = BigInt(0)
 
-  private readonly vm: VM<EVMInterface>
+  private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
@@ -32,7 +31,7 @@ export class BlockBuilder {
     return this.transactionResults.map((result) => result.receipt)
   }
 
-  constructor(vm: VM<EVMInterface>, opts: BuildBlockOpts) {
+  constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
     this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
 
@@ -219,9 +218,6 @@ export class BlockBuilder {
   }
 }
 
-export async function buildBlock(
-  this: VM<EVMInterface>,
-  opts: BuildBlockOpts
-): Promise<BlockBuilder> {
+export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
   return new BlockBuilder(this, opts)
 }
