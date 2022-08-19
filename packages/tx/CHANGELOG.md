@@ -147,6 +147,14 @@ Additionally the following deprecated methods/getters have been removed from the
 
 The bundle size of the library has been dramatically reduced going down from MBs to KBs due to a reworked genesis code handling throughout the library stack in PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) allowing the `Common` library to now ship without the bundled (large) genesis state definitions (especially for mainnet).
 
+### RLP Changes
+
+If you are dealing with RLP encoded data and use the EthereumJS RLP library for decoding just to mention here: the RLP library also got a major update and renamed along the way from `rlp` to a namespaced `@ethereumjs/rlp`, see RLP `v4.0.0-beta.1` (and following) release notes in the [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md).
+
+If you are updating from v2 you will likely also stumble upon the fact that with `v3` RLP replaces Buffers as input and output values in favor of using Uint8Arrays for improved performance and greater compatibility with browsers.
+
+There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
+
 ### Other Changes
 
 - The `hash()` function is now throwing when called on an unsigned legacy tx (this aligns the behavior with the other tx types), PR [#1894](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1894)

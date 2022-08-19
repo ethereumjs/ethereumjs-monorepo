@@ -192,6 +192,14 @@ Additionally some methods have been renamed (same PR):
 
 The internal format validation in `BlockHeader` has been reworked a bit as well, `_validateHeaderFields()` (normally private method) has been renamed and split up into `_genericFormatValidation()` as well as `_consensusFormatValidation()` with all consensus-specific validation tasks. This should simplify subclassing use cases if e.g. specific own consensus validation code is needed while the generic validation logic should be preserved.
 
+### RLP Changes
+
+If you are dealing with RLP encoded data and use the EthereumJS RLP library for decoding just to mention here: the RLP library also got a major update and renamed along the way from `rlp` to a namespaced `@ethereumjs/rlp`, see RLP `v4.0.0-beta.1` (and following) release notes in the [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md).
+
+If you are updating from v2 you will likely also stumble upon the fact that with `v3` RLP replaces Buffers as input and output values in favor of using Uint8Arrays for improved performance and greater compatibility with browsers.
+
+There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
+
 ### Other Changes
 
 - `Block.validateGasLimit()` now throws instead of returning a `boolean` value (adapt accordingly), PR [#1959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1959)
