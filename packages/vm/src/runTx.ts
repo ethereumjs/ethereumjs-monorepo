@@ -16,7 +16,6 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
-import type { EVMInterface } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -30,7 +29,7 @@ const debugGas = createDebugLogger('vm:tx:gas')
 /**
  * @ignore
  */
-export async function runTx(this: VM<EVMInterface>, opts: RunTxOpts): Promise<RunTxResult> {
+export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // tx is required
   if (isFalsy(opts.tx)) {
     throw new Error('invalid input, tx is required')
@@ -152,7 +151,7 @@ export async function runTx(this: VM<EVMInterface>, opts: RunTxOpts): Promise<Ru
   }
 }
 
-async function _runTx(this: VM<EVMInterface>, opts: RunTxOpts): Promise<RunTxResult> {
+async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.eei
 
   const { tx, block } = opts
@@ -502,7 +501,7 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param cumulativeGasUsed The gas used in the block including this tx
  */
 export async function generateTxReceipt(
-  this: VM<EVMInterface>,
+  this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint
@@ -557,7 +556,7 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM<EVMInterface>, block: Block, tx: TypedTransaction) {
+function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
   const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 
