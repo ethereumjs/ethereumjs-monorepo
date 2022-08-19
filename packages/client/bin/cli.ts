@@ -584,7 +584,9 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      rmSync(`${args.datadir}/devnet`)
+      try {
+        rmSync(`${args.datadir}/devnet`)
+      } catch (error) {}
       // Create new account
       accounts.push(generateAccount())
     }
