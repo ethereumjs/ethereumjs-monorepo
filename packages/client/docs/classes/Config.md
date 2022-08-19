@@ -86,7 +86,7 @@
 
 #### Defined in
 
-[config.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L313)
+[config.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L316)
 
 ## Properties
 
@@ -96,7 +96,7 @@
 
 #### Defined in
 
-[config.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L292)
+[config.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L295)
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 #### Defined in
 
-[config.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L277)
+[config.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L280)
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[config.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L308)
+[config.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L311)
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 #### Defined in
 
-[config.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L274)
+[config.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L277)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[config.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L288)
+[config.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L291)
 
 ___
 
@@ -146,7 +146,7 @@ ___
 
 #### Defined in
 
-[config.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L298)
+[config.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L301)
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 #### Defined in
 
-[config.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L301)
+[config.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L304)
 
 ___
 
@@ -166,7 +166,7 @@ ___
 
 #### Defined in
 
-[config.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L289)
+[config.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L292)
 
 ___
 
@@ -176,7 +176,7 @@ ___
 
 #### Defined in
 
-[config.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L290)
+[config.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L293)
 
 ___
 
@@ -186,7 +186,7 @@ ___
 
 #### Defined in
 
-[config.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L287)
+[config.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L290)
 
 ___
 
@@ -199,7 +199,7 @@ components of the client
 
 #### Defined in
 
-[config.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L252)
+[config.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L255)
 
 ___
 
@@ -209,7 +209,7 @@ ___
 
 #### Defined in
 
-[config.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L309)
+[config.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L312)
 
 ___
 
@@ -219,7 +219,7 @@ ___
 
 #### Defined in
 
-[config.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L279)
+[config.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L282)
 
 ___
 
@@ -229,7 +229,7 @@ ___
 
 #### Defined in
 
-[config.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L299)
+[config.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L302)
 
 ___
 
@@ -239,7 +239,7 @@ ___
 
 #### Defined in
 
-[config.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L275)
+[config.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L278)
 
 ___
 
@@ -249,7 +249,7 @@ ___
 
 #### Defined in
 
-[config.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L304)
+[config.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L307)
 
 ___
 
@@ -259,7 +259,7 @@ ___
 
 #### Defined in
 
-[config.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L273)
+[config.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L276)
 
 ___
 
@@ -269,7 +269,7 @@ ___
 
 #### Defined in
 
-[config.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L270)
+[config.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L273)
 
 ___
 
@@ -279,7 +279,7 @@ ___
 
 #### Defined in
 
-[config.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L284)
+[config.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L287)
 
 ___
 
@@ -289,7 +289,7 @@ ___
 
 #### Defined in
 
-[config.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L286)
+[config.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L289)
 
 ___
 
@@ -299,7 +299,7 @@ ___
 
 #### Defined in
 
-[config.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L283)
+[config.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L286)
 
 ___
 
@@ -309,7 +309,7 @@ ___
 
 #### Defined in
 
-[config.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L285)
+[config.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L288)
 
 ___
 
@@ -319,7 +319,7 @@ ___
 
 #### Defined in
 
-[config.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L291)
+[config.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L294)
 
 ___
 
@@ -329,7 +329,7 @@ ___
 
 #### Defined in
 
-[config.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L293)
+[config.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L296)
 
 ___
 
@@ -339,7 +339,7 @@ ___
 
 #### Defined in
 
-[config.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L280)
+[config.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L283)
 
 ___
 
@@ -349,7 +349,7 @@ ___
 
 #### Defined in
 
-[config.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L278)
+[config.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L281)
 
 ___
 
@@ -359,7 +359,7 @@ ___
 
 #### Defined in
 
-[config.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L295)
+[config.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L298)
 
 ___
 
@@ -369,7 +369,7 @@ ___
 
 #### Defined in
 
-[config.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L281)
+[config.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L284)
 
 ___
 
@@ -379,7 +379,7 @@ ___
 
 #### Defined in
 
-[config.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L311)
+[config.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L314)
 
 ___
 
@@ -389,7 +389,7 @@ ___
 
 #### Defined in
 
-[config.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L296)
+[config.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L299)
 
 ___
 
@@ -399,7 +399,7 @@ ___
 
 #### Defined in
 
-[config.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L297)
+[config.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L300)
 
 ___
 
@@ -411,7 +411,7 @@ Best known block height
 
 #### Defined in
 
-[config.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L306)
+[config.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L309)
 
 ___
 
@@ -421,7 +421,7 @@ ___
 
 #### Defined in
 
-[config.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L303)
+[config.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L306)
 
 ___
 
@@ -431,7 +431,7 @@ ___
 
 #### Defined in
 
-[config.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L271)
+[config.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L274)
 
 ___
 
@@ -441,7 +441,7 @@ ___
 
 #### Defined in
 
-[config.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L276)
+[config.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L279)
 
 ___
 
@@ -451,7 +451,7 @@ ___
 
 #### Defined in
 
-[config.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L282)
+[config.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L285)
 
 ___
 
@@ -461,7 +461,7 @@ ___
 
 #### Defined in
 
-[config.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L272)
+[config.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L275)
 
 ___
 
@@ -471,7 +471,7 @@ ___
 
 #### Defined in
 
-[config.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L254)
+[config.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L257)
 
 ___
 
@@ -481,7 +481,7 @@ ___
 
 #### Defined in
 
-[config.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L257)
+[config.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L260)
 
 ___
 
@@ -491,7 +491,7 @@ ___
 
 #### Defined in
 
-[config.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L265)
+[config.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L268)
 
 ___
 
@@ -501,7 +501,7 @@ ___
 
 #### Defined in
 
-[config.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L264)
+[config.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L267)
 
 ___
 
@@ -511,7 +511,7 @@ ___
 
 #### Defined in
 
-[config.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L256)
+[config.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L259)
 
 ___
 
@@ -521,7 +521,7 @@ ___
 
 #### Defined in
 
-[config.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L261)
+[config.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L264)
 
 ___
 
@@ -531,7 +531,7 @@ ___
 
 #### Defined in
 
-[config.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L263)
+[config.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L266)
 
 ___
 
@@ -541,7 +541,7 @@ ___
 
 #### Defined in
 
-[config.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L260)
+[config.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L263)
 
 ___
 
@@ -551,7 +551,7 @@ ___
 
 #### Defined in
 
-[config.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L262)
+[config.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L265)
 
 ___
 
@@ -561,7 +561,7 @@ ___
 
 #### Defined in
 
-[config.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L259)
+[config.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L262)
 
 ___
 
@@ -571,7 +571,7 @@ ___
 
 #### Defined in
 
-[config.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L266)
+[config.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L269)
 
 ___
 
@@ -581,7 +581,7 @@ ___
 
 #### Defined in
 
-[config.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L267)
+[config.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L270)
 
 ___
 
@@ -591,7 +591,7 @@ ___
 
 #### Defined in
 
-[config.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L268)
+[config.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L271)
 
 ___
 
@@ -601,7 +601,7 @@ ___
 
 #### Defined in
 
-[config.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L255)
+[config.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L258)
 
 ___
 
@@ -611,7 +611,7 @@ ___
 
 #### Defined in
 
-[config.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L258)
+[config.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L261)
 
 ## Methods
 
@@ -633,7 +633,7 @@ Returns the location for each [DataDirectory](../enums/DataDirectory.md)
 
 #### Defined in
 
-[config.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L395)
+[config.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L398)
 
 ___
 
@@ -656,7 +656,7 @@ is enabled based on chainName. `true` for ropsten, rinkeby, and goerli
 
 #### Defined in
 
-[config.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L441)
+[config.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L444)
 
 ___
 
@@ -672,7 +672,7 @@ Returns the network directory for the chain.
 
 #### Defined in
 
-[config.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L387)
+[config.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L390)
 
 ___
 
@@ -695,7 +695,7 @@ is enabled based on chainName. `true` for `mainnet`
 
 #### Defined in
 
-[config.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L451)
+[config.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L454)
 
 ___
 
@@ -718,7 +718,7 @@ Gets the client private key from the config db.
 
 #### Defined in
 
-[config.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L419)
+[config.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L422)
 
 ___
 
@@ -740,4 +740,4 @@ Returns the config level db.
 
 #### Defined in
 
-[config.ts:412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L412)
+[config.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L415)

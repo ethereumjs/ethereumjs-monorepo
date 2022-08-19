@@ -13,6 +13,7 @@ hardfork.
 - [calcDifficultyFromHeader](BlockOptions.md#calcdifficultyfromheader)
 - [cliqueSigner](BlockOptions.md#cliquesigner)
 - [common](BlockOptions.md#common)
+- [consensusFormatValidation](BlockOptions.md#consensusformatvalidation)
 - [freeze](BlockOptions.md#freeze)
 - [hardforkByBlockNumber](BlockOptions.md#hardforkbyblocknumber)
 - [hardforkByTTD](BlockOptions.md#hardforkbyttd)
@@ -32,7 +33,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 #### Defined in
 
-[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L50)
+[types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L53)
 
 ___
 
@@ -45,7 +46,7 @@ Will throw if provided on a non-PoA chain.
 
 #### Defined in
 
-[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L67)
+[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L70)
 
 ___
 
@@ -65,7 +66,19 @@ Current default hardfork: `merge`
 
 #### Defined in
 
-[types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L24)
+[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L27)
+
+___
+
+### consensusFormatValidation
+
+• `Optional` **consensusFormatValidation**: `boolean`
+
+Perform consensus validation checks on header if set. Defaults to true.
+
+#### Defined in
+
+[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
 ___
 
@@ -85,7 +98,7 @@ Default: true
 
 #### Defined in
 
-[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
+[types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L65)
 
 ___
 
@@ -99,7 +112,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 #### Defined in
 
-[types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L30)
+[types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L33)
 
 ___
 
@@ -118,4 +131,4 @@ pointing to a Shanghai block: this will lead to set the HF as Shanghai and not t
 
 #### Defined in
 
-[types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)
+[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L44)

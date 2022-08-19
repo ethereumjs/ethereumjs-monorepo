@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[index.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L146)
+[index.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L149)
 
 ___
 
@@ -39,4 +39,4 @@ ___
 
 #### Defined in
 
-[index.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L28)
+[index.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L31)
