@@ -107,7 +107,6 @@
     "file-replace-loader": "^1.2.0",
     "it-pair": "^1.0.0",
     "node-fetch": "^2.6.1",
-    "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
