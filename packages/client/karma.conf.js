@@ -29,9 +29,9 @@ module.exports = function (config) {
           },
         },
         transforms: [
-          // require('karma-typescript-es6-transform')({
-          //   presets: [['@babel/preset-env', { targets: { chrome: '74' } }]],
-          // }),
+          require('karma-typescript-es6-transform')({
+            presets: [['@babel/preset-env', { targets: { chrome: '74' } }]],
+          }),
           function (context, callback) {
             // you may ask why on earth do we need this...,
             // so this is to make sure `cjs` extensions are treated as actual scripts and not text files
