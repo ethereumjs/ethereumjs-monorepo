@@ -71,6 +71,7 @@
 - [listenerCount](RLPx.md#listenercount-1)
 - [on](RLPx.md#on-1)
 - [once](RLPx.md#once-1)
+- [setMaxListeners](RLPx.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -91,7 +92,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L54)
+[packages/devp2p/src/rlpx/rlpx.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L59)
 
 ## Properties
 
@@ -101,7 +102,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L41)
+[packages/devp2p/src/rlpx/rlpx.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L46)
 
 ___
 
@@ -111,7 +112,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L39)
+[packages/devp2p/src/rlpx/rlpx.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L44)
 
 ___
 
@@ -121,7 +122,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L42)
+[packages/devp2p/src/rlpx/rlpx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L47)
 
 ___
 
@@ -131,7 +132,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L36)
+[packages/devp2p/src/rlpx/rlpx.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L41)
 
 ___
 
@@ -141,7 +142,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L44)
+[packages/devp2p/src/rlpx/rlpx.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L49)
 
 ___
 
@@ -151,7 +152,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L35)
+[packages/devp2p/src/rlpx/rlpx.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L40)
 
 ___
 
@@ -161,7 +162,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L43)
+[packages/devp2p/src/rlpx/rlpx.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L48)
 
 ___
 
@@ -171,7 +172,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L38)
+[packages/devp2p/src/rlpx/rlpx.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L43)
 
 ___
 
@@ -181,7 +182,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L49)
+[packages/devp2p/src/rlpx/rlpx.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L54)
 
 ___
 
@@ -191,7 +192,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L46)
+[packages/devp2p/src/rlpx/rlpx.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L51)
 
 ___
 
@@ -201,7 +202,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L47)
+[packages/devp2p/src/rlpx/rlpx.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L52)
 
 ___
 
@@ -211,7 +212,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L34)
+[packages/devp2p/src/rlpx/rlpx.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L39)
 
 ___
 
@@ -221,7 +222,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L51)
+[packages/devp2p/src/rlpx/rlpx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L56)
 
 ___
 
@@ -231,7 +232,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L52)
+[packages/devp2p/src/rlpx/rlpx.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L57)
 
 ___
 
@@ -241,7 +242,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L40)
+[packages/devp2p/src/rlpx/rlpx.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L45)
 
 ___
 
@@ -251,7 +252,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L48)
+[packages/devp2p/src/rlpx/rlpx.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L53)
 
 ___
 
@@ -261,7 +262,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L37)
+[packages/devp2p/src/rlpx/rlpx.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L42)
 
 ___
 
@@ -275,7 +276,7 @@ EventEmitter.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -291,7 +292,7 @@ EventEmitter.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -305,7 +306,7 @@ EventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -327,7 +328,7 @@ EventEmitter.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ## Methods
 
@@ -347,7 +348,7 @@ node_modules/@types/node/events.d.ts:272
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L189)
+[packages/devp2p/src/rlpx/rlpx.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L194)
 
 ___
 
@@ -361,7 +362,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L185)
+[packages/devp2p/src/rlpx/rlpx.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L190)
 
 ___
 
@@ -375,7 +376,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L181)
+[packages/devp2p/src/rlpx/rlpx.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L186)
 
 ___
 
@@ -389,7 +390,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L173)
+[packages/devp2p/src/rlpx/rlpx.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L178)
 
 ___
 
@@ -403,7 +404,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L177)
+[packages/devp2p/src/rlpx/rlpx.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L182)
 
 ___
 
@@ -424,7 +425,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L198)
+[packages/devp2p/src/rlpx/rlpx.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L203)
 
 ___
 
@@ -438,7 +439,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L277)
+[packages/devp2p/src/rlpx/rlpx.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L282)
 
 ___
 
@@ -469,7 +470,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -489,7 +490,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L136)
+[packages/devp2p/src/rlpx/rlpx.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L141)
 
 ___
 
@@ -509,7 +510,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L124)
+[packages/devp2p/src/rlpx/rlpx.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L129)
 
 ___
 
@@ -529,7 +530,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L168)
+[packages/devp2p/src/rlpx/rlpx.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L173)
 
 ___
 
@@ -596,7 +597,7 @@ EventEmitter.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -634,7 +635,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -659,7 +660,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -673,7 +674,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L164)
+[packages/devp2p/src/rlpx/rlpx.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L169)
 
 ___
 
@@ -693,7 +694,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/rlpx.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L117)
+[packages/devp2p/src/rlpx/rlpx.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L122)
 
 ___
 
@@ -723,7 +724,7 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -761,7 +762,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -792,7 +793,7 @@ EventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -847,7 +848,7 @@ EventEmitter.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -900,7 +901,7 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -942,7 +943,7 @@ EventEmitter.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -982,7 +983,7 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -1037,7 +1038,7 @@ EventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -1073,7 +1074,7 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -1179,7 +1180,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -1214,7 +1215,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1531,3 +1532,44 @@ EventEmitter.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+EventEmitter.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

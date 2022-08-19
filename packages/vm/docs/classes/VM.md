@@ -59,6 +59,7 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 - [listenerCount](VM.md#listenercount-1)
 - [on](VM.md#on-1)
 - [once](VM.md#once-1)
+- [setMaxListeners](VM.md#setmaxlisteners-1)
 
 ## Properties
 
@@ -68,7 +69,7 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 #### Defined in
 
-[packages/vm/src/vm.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L41)
+[packages/vm/src/vm.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L45)
 
 ___
 
@@ -80,7 +81,7 @@ The blockchain the VM operates on
 
 #### Defined in
 
-[packages/vm/src/vm.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L39)
+[packages/vm/src/vm.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L43)
 
 ___
 
@@ -90,19 +91,19 @@ ___
 
 #### Defined in
 
-[packages/vm/src/vm.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L47)
+[packages/vm/src/vm.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L51)
 
 ___
 
 ### evm
 
-• `Readonly` **evm**: `EVMInterface` \| `EVM`
+• `Readonly` **evm**: `EVM` \| `EVMInterface`
 
 The EVM used for bytecode execution
 
 #### Defined in
 
-[packages/vm/src/vm.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L46)
+[packages/vm/src/vm.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L50)
 
 ___
 
@@ -114,7 +115,7 @@ The StateManager used by the VM
 
 #### Defined in
 
-[packages/vm/src/vm.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L34)
+[packages/vm/src/vm.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L38)
 
 ___
 
@@ -128,7 +129,7 @@ AsyncEventEmitter.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -144,7 +145,7 @@ AsyncEventEmitter.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -158,7 +159,7 @@ AsyncEventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -180,7 +181,7 @@ AsyncEventEmitter.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ## Methods
 
@@ -357,7 +358,7 @@ An instance of BlockBuilder with methods:
 
 #### Defined in
 
-[packages/vm/src/vm.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L233)
+[packages/vm/src/vm.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L240)
 
 ___
 
@@ -373,7 +374,7 @@ Returns a copy of the [VM](VM.md) instance.
 
 #### Defined in
 
-[packages/vm/src/vm.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L240)
+[packages/vm/src/vm.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L247)
 
 ___
 
@@ -427,7 +428,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[packages/vm/src/vm.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L256)
+[packages/vm/src/vm.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L263)
 
 ___
 
@@ -514,7 +515,7 @@ ___
 
 #### Defined in
 
-[packages/vm/src/vm.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L156)
+[packages/vm/src/vm.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L160)
 
 ___
 
@@ -599,7 +600,7 @@ AsyncEventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -778,7 +779,7 @@ AsyncEventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -859,7 +860,7 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 #### Defined in
 
-[packages/vm/src/vm.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L202)
+[packages/vm/src/vm.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L209)
 
 ___
 
@@ -885,7 +886,7 @@ reverted.
 
 #### Defined in
 
-[packages/vm/src/vm.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L215)
+[packages/vm/src/vm.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L222)
 
 ___
 
@@ -931,7 +932,7 @@ VM async constructor. Creates engine instance and initializes it.
 
 #### Defined in
 
-[packages/vm/src/vm.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L77)
+[packages/vm/src/vm.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L81)
 
 ___
 
@@ -1248,3 +1249,44 @@ AsyncEventEmitter.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+AsyncEventEmitter.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280
