@@ -1,12 +1,12 @@
 import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import Semaphore from 'semaphore-async-await'
 
 import { LevelDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
+import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
