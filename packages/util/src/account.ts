@@ -342,3 +342,19 @@ export const isZeroAddress = function (hexAddress: string): boolean {
   const zeroAddr = zeroAddress()
   return zeroAddr === hexAddress
 }
+
+/**
+ * Converts a slim account RLP to a normal account RLP
+ */
+export function convertSlimAccount(body: any) {
+  const cpy = [body[0], body[1], body[2], body[3]]
+  if (arrToBufArr(body[2]).length === 0) {
+    // StorageRoot
+    cpy[2] = KECCAK256_RLP
+  }
+  if (arrToBufArr(body[3]).length === 0) {
+    // CodeHash
+    cpy[3] = KECCAK256_NULL
+  }
+  return arrToBufArr(RLP.encode(cpy))
+}
