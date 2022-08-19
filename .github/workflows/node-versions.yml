@@ -42,7 +42,7 @@ jobs:
         run: npm i -g npm@7
         if: ${{ matrix.node-version < 16 }}
 
-      - run: npm i
+      - run: npm ci
 
       # Added a check to ensure we only run on NodeJS 14 or later to all jobs until the `node-testable-versions` script stops picking up 12.
 
