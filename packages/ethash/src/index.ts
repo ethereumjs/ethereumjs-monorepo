@@ -26,7 +26,14 @@ import {
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { AbstractLevel } from 'abstract-level'
 
-const xor = require('buffer-xor')
+function xor(a: Buffer, b: Buffer) {
+  const len = Math.max(a.length, b.length)
+  const res = Buffer.alloc(len)
+  for (let i = 0; i < len; i++) {
+    res[i] = a[i] ^ b[i]
+  }
+  return res
+}
 
 export type Solution = {
   mixHash: Buffer
