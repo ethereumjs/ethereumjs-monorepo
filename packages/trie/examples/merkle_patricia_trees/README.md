@@ -45,14 +45,16 @@ const trie = new Trie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
 ```
 
-and then store and retrieve a single key-value pair within it:
+and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to buffers, as that is what the Trie methods expect:
 
 ```jsx
 async function test() {
-  await trie.put('testKey', 'testValue') // We update (using "put") the trie with the key-value pair "testKey": "testValue"
-  const value = await trie.get('testKey') // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (Bytes): ', value)
-  console.log('Value (String): ', value.toString())
+  const key = Buffer.from('testKey')
+  const value = Buffer.from('testValue')
+  await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
+  const retrievedValue = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
+  console.log('Value (Bytes): ', retrievedValue)
+  console.log('Value (String): ', retrievedValue.toString())
   console.log('Updated trie root:', trie.root) // The new trie root (32 bytes)
 }
 
@@ -69,16 +71,13 @@ Quite simple. As expected, we can retrieve our value using the key. We can also 
 
 However, the example above does not reflect exactly how key-value pairs are stored and retrieved in Ethereum's Merkle Patricia Trees. Here are some things to keep in mind:
 
-- Keys and values are stored and retrieved as raw bytes. As an example, the "BaseTrie" library automatically converted our "testKey" to bytes (`<74 65 73 74 4b 65 79>`).
-- Values undergo an additional transformation before they are stored. They are encoded using the [Recursive Length Prefix encoding function](https://github.com/ethereum/wiki/wiki/RLP). This allows the serialization of strings and arrays. The "BaseTrie" library also does that automatically.
-- Last but not least: in Ethereum, the keys also undergo another transformation: they are converted using a hash function (keccak256). The BaseTrie library **does not** do this.
+- As mentioned, keys and values are stored and retrieved as raw bytes. We already covered that in the previous example by converting our strings to buffers using `Buffer.from()`.
+- Values undergo an additional transformation before they are stored. They are encoded using the [Recursive Length Prefix encoding function](https://github.com/ethereum/wiki/wiki/RLP). This allows the serialization of strings and arrays. The "Trie" class does that automatically.
+- Last but not least: in Ethereum, the keys also undergo another transformation: they are converted using a hash function (keccak256). The Trie class **does not** do this.
 
 ### Example 1b - Manually Creating and Updating a Secure Trie
 
-Let's retry the example above while respecting the rules we just mentioned. We will therefore:
-
-- Use the keccak256 hash of the key instead of the key itself (using the "@ethereumjs/util" library).
-- As a good practice, we'll also convert our keys and values to Bytes (using "Buffer.from(\_string)").
+Let's retry the example above while respecting the rules we just mentioned. We will therefore use the keccak256 hash of the key instead of the key itself (using the "@ethereumjs/util" package).
 
 Here's what this looks like:
 
@@ -106,14 +105,14 @@ Value (String):  testValue
 Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb>
 ```
 
-Nothing spectacular: only the root hash of the tree has changed, as the key has changed from "testKey" to keccak256("testKey").
+Nothing spectacular: only the root hash of the tree has changed, as the key has changed from Buffer.from("testKey") to keccak256(Buffer.from("testKey")).
 
 ### Example 1c - Automatically Creating and Updating a Secure Trie
 
-Fortunately, we also have a library called "SecureTrie" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
+Fortunately, we also have a class called "SecureTrie" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
-const { SecureTrie } = require('@ethereumjs/trie')// We import the library required to create a secure Merkle Patricia Tree
+const { SecureTrie } = require('@ethereumjs/trie')// We import the class required to create a secure Merkle Patricia Tree
 
 const trie = new SecureTrie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
@@ -135,7 +134,7 @@ Value (String):  testValue
 Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb> // Same hash!
 ```
 
-To make the examples easier to follow, we won't be using the keccak256 of the keys (or the SecureTrie library) in this tutorial. However, keep in mind that inside Ethereum, keys are always encoded.
+To make the examples easier to follow, we won't be using the keccak256 of the keys (or the SecureTrie class) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
 
 ### Example 1d - Deleting a Key-Value Pair from a Trie
 
@@ -143,15 +142,16 @@ In addition to retrieving (using the method `get`) and adding (using the method 
 
 ```jsx
 async function test() {
-  await trie.put('testKey', 'testValue') // We update (using "put") the trie with the key-value pair "testKey": "testValue"
-  const value = await trie.get('testKey') // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (String): ', value.toString()) // We retrieve our value
+  const key = Buffer.from('testKey')
+  const value = Buffer.from('testValue')
+  await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
+  const valuePre = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
+  console.log('Value (String): ', valuePre.toString()) // We retrieve our value
   console.log('Updated trie root:', trie.root) // The new trie root
 
-  await trie.del('testKey')
-  value = await trie.get('testKey') // We try to retrieve the value at (deleted) key "testKey"
-  console.log('Value at key "testKey": ', value) // Key not found. Value is therefore null.
-
+  await trie.del(key)
+  const valuePost = await trie.get(key) // We try to retrieve the value at (deleted) key "testKey"
+  console.log('Value at key "testKey": ', valuePost) // Key not found. Value is therefore null.
   console.log('Trie root after deletion:', trie.root) // Our trie root is back to its initial value
 }
 
@@ -260,7 +260,7 @@ And indeed, the node at path "testKey" is a branch, containing 16 branches and a
 console.log('Node value: ', node1.node._value.toString()) // The branch node's value
 
 // RESULT
-Node value:  testValue
+Node 1 value:  testValue
 ```
 
 Note that it's possible for a branch node to not have a value itself, but only branches. This would simply mean that the keys (i.e. the paths) branch off at a certain point, but that there is no end-value assigned at that specific point. See for example:
@@ -413,7 +413,7 @@ In the last example, we inferred that the two branches of our branch node (at ke
 
 ```jsx
 const node1 = await trie.findPath(Buffer.from('testKey0')) // We retrieve one of the leaf nodes
-console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the encodedPath and the value
+console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the encodedPath (nibbles) and the value
 console.log('Node 1 value: ', node1.node._value.toString()) // The leaf node's value
 
 // RESULT
@@ -583,10 +583,10 @@ console.log(rlp.encode(node2.raw()))
 <Buffer e5 83 10 30 30 a0 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
 ```
 
-A neatly serialized sequence of bytes! Our last step is simply to take the hash of this RLP output:
+A neatly serialized sequence of bytes! Our last step is simply to take the hash of this RLP output (and convert it to bytes):
 
 ```jsx
-console.log('Our computed hash:       ', keccak256(rlp.encode(node2.raw())))
+console.log('Our computed hash:       ', Buffer.from(keccak256(rlp.encode(node2.raw()))))
 console.log('The extension node hash: ', node1.node._branches[3])
 
 // RESULT
@@ -679,16 +679,14 @@ Using our already trusted information, we can be confident that Marie (node 1) i
 Note that we also could have compared the root hashes of the trees and compared them to a trusted tree root. This is possible because each distinct tree will produce a distinct hash!
 
 ```jsx
-root1 = trie1.root
-root2 = trie2.root
-console.log(root1)
-console.log(root2)
+console.log(trie1.root)
+console.log(trie2.root)
 
 <Buffer 46 7a 64 dd e5 de 0a 37 0a 35 75 03 42 a5 2d 80 1f 0b 9b 22 59 03 10 b4 1d 0b ab 7d 3d e0 a3 5e>
 <Buffer 38 b0 a5 74 1a f3 61 14 1e 7a 29 b6 f2 9d ab 22 75 7b 7d 64 73 90 f6 e3 55 e5 2e 2b ea c1 e3 04>
 ```
 
-Ethereum takes advantage of the uniqueness of each hash to efficiently secure the network. Without Merkle Trees, each Ethereum client would need to store the full history of the blockchain to verify transactions. With Merkle Trees, clients can verify that a transaction is valid given that they're provided with the minimal information required to re-compute the trusted root hash.
+Ethereum takes advantage of the uniqueness of each hash to efficiently secure the network. Without Merkle Trees, each Ethereum client would need to store the full history of the blockchain to verify any piece of information, and doing so would be extremely inefficient. With Merkle Trees, clients can verify that a transaction is valid given that they're provided with the minimal information required to re-compute the trusted root hash.
 
 ## 4. Merkle Patricia Trees in Ethereum
 
@@ -703,7 +701,7 @@ In this tutorial, we'll look at the transactions tree. We'll even interact with 
 
 ### Configuring additional tools
 
-To interact with the Ethereum blockchain, we will use a JavaScript library called `web3`. We will also set up an API access to the Ethereum blockchain using a free tool called [Infura](https://infura.io/).
+To interact with the Ethereum blockchain, we will set up an API access to the Ethereum blockchain using a free service called [Infura](https://infura.io/).
 
 If you want to follow along with these examples, you will need to create a free Infura account using this link: [https://infura.io/register](https://infura.io/register). Once you have created your account, create a new project in Infura, and copy the first URL under "Endpoints / Mainnet" (something like https://mainnet.infura.io/v3/YOUR_KEY). Then, replace the string `YOUR_INFURA_MAINNET_ENDPOINT` in `./examples/infura-endpoint.js` with your full copied Infura URL. You should be good to go! If not, refer to [this tutorial](https://coderrocketfuel.com/article/configure-infura-with-web3-js-and-node-js).
 
@@ -730,36 +728,47 @@ A lot of confusion can arise from the fact that various distinct things are labe
 
 ### 4a. Retrieving a Transaction from the Ethereum Blockchain
 
-Let's look at an individual transaction on the Ethereum blockchain. I've chosen a recent transaction from Vitalik that you can look up here: [https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074](https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074). We can retrieve the transaction information with a script:
+Let's look at an individual transaction on the Ethereum blockchain. I've chosen a recent transaction from Vitalik that you can look up here: [https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074](https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074). We can retrieve the transaction information with a eth_getTransactionByHash JSON-RPC API call. The [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) is a standardized way of interacting with an Ethereum node:
 
 ```jsx
-const INFURIA_ENDPOINT = require('./infura_endpoint')
-const Web3 = require('web3')
-const web3 = new Web3(new Web3.providers.HttpProvider(INFURIA_ENDPOINT))
+const INFURA_ENDPOINT = require('./infura_endpoint')
+const request = require('request')
 
 // Looking up an individual transaction
-async function checkTransaction(transactionHash) {
-  let transaction = await web3.eth.getTransaction(transactionHash)
-  console.log('Transaction: ', transaction)
+function lookupTransaction(transactionHash) {
+  request(
+    INFURA_ENDPOINT,
+    {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+    },
+    (error, response) => console.log('Transaction: ', JSON.parse(response.body))
+  )
 }
-checkTransaction('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
+lookupTransaction('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
 
 // RESULT
 Transaction:  {
-  blockHash: '0x5ed2752bb54dc705a8b71f49566ccc4d5aaee1224a83c7938d9545db98dd0beb',
-  blockNumber: 9674439,
-  from: '0xF8db1eE1BE12b28Aa12477fC66B296dccfA66609',
-  gas: 21000,
-  gasPrice: '8000000000',
-  hash: '0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074',
-  input: '0x',
-  nonce: 24,
-  r: '0xe15616dfdf4a2af23f84322387f374db8c3c28656860e28ef66fea8a16980167',
-  s: '0x75efdb2c06664e7a28c49e14ef0797ea964eac07c3e0f72e03e955068a93e79d',
-  to: '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B',
-  transactionIndex: 173,
-  v: '0x26',
-  value: '1000000000000000'
+  jsonrpc: '2.0',
+  id: 1,
+  result: {
+    blockHash: '0x5ed2752bb54dc705a8b71f49566ccc4d5aaee1224a83c7938d9545db98dd0beb',
+    blockNumber: '0x939ec7',
+    from: '0xf8db1ee1be12b28aa12477fc66b296dccfa66609',
+    gas: '0x5208',
+    gasPrice: '0x1dcd65000',
+    hash: '0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074',
+    input: '0x',
+    nonce: '0x18',
+    r: '0xe15616dfdf4a2af23f84322387f374db8c3c28656860e28ef66fea8a16980167',
+    s: '0x75efdb2c06664e7a28c49e14ef0797ea964eac07c3e0f72e03e955068a93e79d',
+    to: '0xab5801a7d398351b8be11c439e05c5b3259aec9b',
+    transactionIndex: '0xad',
+    type: '0x0',
+    v: '0x26',
+    value: '0x38d7ea4c68000'
+  }
 }
 ```
 
@@ -768,30 +777,42 @@ Transaction:  {
 The previous transaction output contains all the information from the transaction node (plus additional information automatically provided by web3, like the blockHash and the blockNumber). As per [Ethereum's yellow paper](https://ethereum.github.io/yellowpaper/paper.pdf), we know that a standard transaction is an array containing the following items (in hex): `[nonce, gasPrice, gasLimit, to, value, input, v, r, s]`. We should therefore extract this data from our previous transaction output to re-create a valid Ethereum transaction:
 
 ```jsx
-async function createTransactionHash(transactionHash) {
-  let transaction = await web3.eth.getTransaction(transactionHash)
-  transactionNode = [
-    web3.utils.toHex(transaction.nonce),
-    web3.utils.toHex(transaction.gasPrice),
-    web3.utils.toHex(transaction.gas),
-    transaction.to,
-    web3.utils.toHex(transaction.value),
-    transaction.input,
-    transaction.v,
-    transaction.r,
-    transaction.s,
-  ]
-  console.log('Transaction data: ', transactionNode)
+function recomputeTransactionHash(transactionHash) {
+  request(
+    INFURA_ENDPOINT,
+    {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+    },
+    (_, response) => {
+      const transaction = JSON.parse(response.body).result
+      const transactionData = [
+        transaction.nonce,
+        transaction.gasPrice,
+        transaction.gas,
+        transaction.to,
+        transaction.value,
+        transaction.input,
+        transaction.v,
+        transaction.r,
+        transaction.s,
+      ]
+      console.log('Transaction data: ', transactionData)
+      console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionData))))
+    }
+  )
 }
 
-createTransactionHash('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
+recomputeTransactionHash('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
+
 
 // RESULT
 Transaction data:  [
   '0x18',
   '0x1dcd65000',
   '0x5208',
-  '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B',
+  '0xab5801a7d398351b8be11c439e05c5b3259aec9b',
   '0x38d7ea4c68000',
   '0x',
   '0x26',
@@ -803,7 +824,7 @@ Transaction data:  [
 We're only one step away from generating the hash:
 
 ```jsx
-console.log('Transaction hash: ', keccak256(rlp.encode(transactionNode)))
+console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionNode))))
 
 // RESULT
 Transaction hash:  <Buffer 2f 81 c5 9f b4 f0 c3 14 64 83 e7 2c 13 15 83 3a f7 9b 6e a9 32 3b 64 71 01 64 5d c7 eb e0 40 74>

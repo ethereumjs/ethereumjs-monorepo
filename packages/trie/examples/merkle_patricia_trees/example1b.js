@@ -1,6 +1,6 @@
 /* Example 1b - Manually Creating and Updating a Secure Trie*/
 
-const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 const { keccak256 } = require('ethereum-cryptography/keccak')
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
