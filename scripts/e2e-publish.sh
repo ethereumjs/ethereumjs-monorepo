@@ -17,6 +17,8 @@ if [ -z "$GITHUB_SHA" ]; then
   exit 1
 fi
 
+npm install --no-save verdaccio
+
 # Launch npm proxy registry
 verdaccio --config verdaccio.yml &
 

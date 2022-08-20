@@ -8,8 +8,6 @@ import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, AccessListItem } from '@ethereumjs/tx'
 import type { Debugger } from 'debug'
 
-const Set = require('core-js-pure/es/set')
-
 type AddressHex = string
 
 export class VmState implements EVMStateAccess {
@@ -366,7 +364,7 @@ export class VmState implements EVMStateAccess {
     const key = address.toString('hex')
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
     if (!storageSet) {
-      const emptyStorage = new Set()
+      const emptyStorage = new Set<string>()
       this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
     }
   }
