@@ -1,12 +1,17 @@
-import { isFalsy, Account, arrToBufArr, KECCAK256_NULL, KECCAK256_RLP } from '@ethereumjs/util'
-import { Peer } from '../../net/peer'
-import { Fetcher, FetcherOptions } from './fetcher'
-// import { Chain } from '../../blockchain'
-import { Job } from './types'
-
-import { Trie, CheckpointTrie, LevelDB } from '@ethereumjs/trie'
 import { keccak256 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
+import { CheckpointTrie, Trie } from '@ethereumjs/trie'
+import { KECCAK256_NULL, KECCAK256_RLP, arrToBufArr, isFalsy } from '@ethereumjs/util'
+
+import { LevelDB } from '../../execution/level'
+
+import { Fetcher } from './fetcher'
+
+import type { Peer } from '../../net/peer'
+import type { FetcherOptions } from './fetcher'
+// import { Chain } from '../../blockchain'
+import type { Job } from './types'
+import type { Account } from '@ethereumjs/util'
 
 /**
  * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
@@ -116,12 +121,12 @@ export class AccountFetcher extends Fetcher<
 		const { task, peer, partialResult } = job
 		const { origin, limit } = task
 
-		const rangeResult = await peer!.snap!.getAccountRange({
-			root: this.root,
-			origin: origin,
-			limit: limit,
-			bytes: this.bytes,
-		})
+    const rangeResult = await peer!.snap!.getAccountRange({
+      root: this.root,
+      origin,
+      limit,
+      bytes: this.bytes,
+    })
 
 		const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
@@ -172,8 +177,7 @@ export class AccountFetcher extends Fetcher<
         return undefined
       }
     } catch (err) {
-      console.log(err)
-      this.debug(`Proof-based verification failed`)
+      this.debug(`Proof-based verification failed: ${err}`)
       return undefined
     }
 
@@ -219,14 +223,18 @@ export class AccountFetcher extends Fetcher<
 		return
 	}
 
-	/**
-	 * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
-	 * remaining items apart from the tasks it pushes in the queue
-	 */
-	tasks(origin = this.origin, limit = this.limit, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-		const max = this.config.maxPerRequest
-		const tasks: JobTask[] = []
-		tasks.push({ origin: origin, limit: limit })
+  /**
+   * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
+   * remaining items apart from the tasks it pushes in the queue
+   */
+  tasks(
+    origin = this.origin,
+    limit = this.limit,
+    maxTasks = this.config.maxFetcherJobs
+  ): JobTask[] {
+    const max = this.config.maxPerRequest
+    const tasks: JobTask[] = []
+    tasks.push({ origin, limit })
 
 		console.log(`Created new tasks num=${tasks.length} tasks=${tasks}`)
 		return tasks
