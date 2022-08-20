@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
+    "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16"
   },
