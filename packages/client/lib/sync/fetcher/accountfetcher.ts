@@ -64,27 +64,23 @@ export type JobTask = {
 	limit: Buffer
 }
 
-export class AccountFetcher extends Fetcher<
-	JobTask,
-	AccountData[],
-	Account
-> {
-	/**
-	 * Where the fetcher starts apart from the tasks already in the `in` queue.
-	 */
-	root: Buffer
-	/**
-	 * Account hash of the first to retrieve
-	 */
-	origin: Buffer
-	/**
-	 * Account hash after which to stop serving data
-	 */
-	limit: Buffer
-	/**
-	 * Soft limit at which to stop returning data
-	 */
-	bytes: bigint
+export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
+  /**
+   * Where the fetcher starts apart from the tasks already in the `in` queue.
+   */
+  root: Buffer
+  /**
+   * Account hash of the first to retrieve
+   */
+  origin: Buffer
+  /**
+   * Account hash after which to stop serving data
+   */
+  limit: Buffer
+  /**
+   * Soft limit at which to stop returning data
+   */
+  bytes: bigint
 
 	/**
 	 * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
@@ -110,16 +106,16 @@ export class AccountFetcher extends Fetcher<
 		)
 	}
 
-	/**
-	 * Request results from peer for the given job.
-	 * Resolves with the raw result
-	 * If `undefined` is returned, re-queue the job.
-	 * @param job
-	 * @param peer
-	 */
-	async request(job: Job<JobTask, AccountData[], Account>): Promise<AccountData[] | undefined> {
-		const { task, peer, partialResult } = job
-		const { origin, limit } = task
+  /**
+   * Request results from peer for the given job.
+   * Resolves with the raw result
+   * If `undefined` is returned, re-queue the job.
+   * @param job
+   * @param peer
+   */
+  async request(job: Job<JobTask, AccountData[], AccountData>): Promise<AccountData[] | undefined> {
+    const { task, peer, partialResult } = job
+    const { origin, limit } = task
 
     const rangeResult = await peer!.snap!.getAccountRange({
       root: this.root,
@@ -194,34 +190,47 @@ export class AccountFetcher extends Fetcher<
 			}
 		}
 
-		// for data capture
-		if (rangeResult) {
-			process.exit()
-		}
+    return accounts
+  }
 
-		return accounts
-	}
+  /**
+   * Process the reply for the given job.
+   * If the reply contains unexpected data, return `undefined`,
+   * this re-queues the job.
+   * @param job fetch job
+   * @param result result data
+   */
+  process(
+    job: Job<JobTask, AccountData[], AccountData>,
+    result: AccountData[]
+  ): AccountData[] | undefined {
+    console.log('inside accountfetcher.process')
+    return result
+  }
 
-	/**
-	 * Process the reply for the given job.
-	 * If the reply contains unexpected data, return `undefined`,
-	 * this re-queues the job.
-	 * @param job fetch job
-	 * @param result result data
-	 */
-	process(job: Job<JobTask, AccountData[], Account>, result: AccountData[]): Account[] | undefined {
-		console.log('inside accountfetcher.process')
-		return
-	}
+  /**
+   * Store fetch result. Resolves once store operation is complete.
+   * @param result fetch result
+   */
+  async store(result: AccountData[]): Promise<void> {
+    this.debug('inside accountfetcher.store')
+    try {
+      for (let i = 0; i < result.length; i++) {
+        const { hash, body } = result[i]
 
-	/**
-	* Store fetch result. Resolves once store operation is complete.
-	* @param result fetch result
-	*/
-	async store(result: Account[]): Promise<void> {
-		console.log('inside accountfetcher.store')
-		return
-	}
+        // TODO can be optimized by converting from slim to full in request phase inside first loop
+        this.accountTrie.put(hash, convertSlimAccount(body))
+      }
+      // TODO add event emission if necessary
+
+      this.debug(`Stored ${result.length} accounts in account trie`)
+    } catch (err) {
+      this.debug(`Failed to store account data: ${err}`)
+    }
+
+    // for data capture
+    // process.exit()
+  }
 
   /**
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
