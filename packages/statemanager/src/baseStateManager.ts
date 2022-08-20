@@ -35,7 +35,7 @@ export abstract class BaseStateManager {
   /**
    * Needs to be called from the subclass constructor
    */
-  constructor(opts: DefaultStateManagerOpts) {
+  constructor() {
     // Safeguard if "process" is not available (browser)
     if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
