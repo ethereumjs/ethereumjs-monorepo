@@ -155,20 +155,27 @@ export class AccountFetcher extends Fetcher<
 			await trie.put(hash, value)
 		}
 
-		// validate the proof
-		try {
-			// verify account data for account range received from peer using proof and state root
-			const checkRangeProof = await trie.verifyRangeProof(this.root, hashes[0], hashes[hashes.length-1], hashes, values, proof)
-			this.debug('Proof for account range found to be valid: ' + checkRangeProof)
-			if (!checkRangeProof) {
-				this.debug(`Proof-based verification failed`)
-				return undefined
-			}
-		} catch (err) {
-			console.log(err)
-			this.debug(`Proof-based verification failed`)
-			return undefined
-		}
+    // validate the proof
+    try {
+      // verify account data for account range received from peer using proof and state root
+      const checkRangeProof = await trie.verifyRangeProof(
+        this.root,
+        this.origin,
+        hashes[hashes.length - 1],
+        hashes,
+        values,
+        proof
+      )
+      this.debug('Proof for account range found to be valid: ' + checkRangeProof)
+      if (!checkRangeProof) {
+        this.debug(`Proof-based verification failed`)
+        return undefined
+      }
+    } catch (err) {
+      console.log(err)
+      this.debug(`Proof-based verification failed`)
+      return undefined
+    }
 
 		// TODO I am not sure if this check is necessary since proof verification should be establishing the correctness of every newly put account data
 		// verify that it is possible to get the accounts, and that the values are correct
