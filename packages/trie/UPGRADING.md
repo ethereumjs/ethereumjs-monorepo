@@ -93,4 +93,4 @@ const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
 #### Alternatives
 
-If you wish to use any other database implementations, you can read and review [our recipes](./recipes//level.ts) which offer various implementations of different database engines.
+If you wish to use any other database implementations, you can read and review [our recipes](./recipes) which offer various implementations of different database engines.
