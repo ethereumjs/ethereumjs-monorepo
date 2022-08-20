@@ -8,7 +8,7 @@ import type { Chain } from '../blockchain'
 import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
 import type { PeerPool } from '../net/peerpool'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher, AccountFetcher } from './fetcher'
+import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */

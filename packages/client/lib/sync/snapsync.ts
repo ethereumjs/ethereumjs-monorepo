@@ -1,6 +1,9 @@
-import type { Peer } from '../net/peer/peer'
-import { Synchronizer, SynchronizerOptions } from './sync'
 import { AccountFetcher } from './fetcher'
+import { Synchronizer } from './sync'
+
+import type { Peer } from '../net/peer/peer'
+import type { SynchronizerOptions } from './sync'
+
 interface SnapSynchronizerOptions extends SynchronizerOptions {}
 
 export class SnapSynchronizer extends Synchronizer {
@@ -17,14 +20,14 @@ export class SnapSynchronizer extends Synchronizer {
   }
 
   get fetcher(): AccountFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof AccountFetcher)){
-      throw Error(`Invalid Fetcher, expected AccountFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof AccountFetcher)) {
+      throw Error(`Invalid Fetcher, expected AccountFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: AccountFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: AccountFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -101,7 +104,7 @@ export class SnapSynchronizer extends Synchronizer {
     // })
 
     // for (let i = 0; i < rangeResult.accounts.length; i++) {
-    //   console.log({ 
+    //   console.log({
     //     account: rangeResult?.accounts[i],
     //     proof: rangeResult?.proof[i]
     //    })
@@ -121,10 +124,7 @@ export class SnapSynchronizer extends Synchronizer {
         '0000000000000000000000000000000000000000000000000000000000000000',
         'hex'
       ),
-      limit: Buffer.from(
-        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-        'hex'
-      ),
+      limit: Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex'),
       bytes: BigInt(50000),
     })
 
