@@ -1,7 +1,15 @@
 const { join } = require('path')
 
 const BASE_PATH = join(__dirname, '..', 'packages')
-const WHITELIST = ['@ethereumjs', '@noble', '@scure', '@types', 'ethereum-cryptography', 'ethereum-tests', 'micro-bmark']
+const WHITELIST = [
+  '@ethereumjs',
+  '@noble',
+  '@scure',
+  '@types',
+  'ethereum-cryptography',
+  'ethereum-tests',
+  'micro-bmark',
+]
 
 const directories = require('fs')
   .readdirSync(BASE_PATH, { withFileTypes: true })
@@ -14,6 +22,9 @@ const directories = require('fs')
     }
   })
   .filter(Boolean)
+
+// Always include the root package.json too
+directories.push(require('../package.json'))
 
 const prod = new Set()
 const devs = new Set()
