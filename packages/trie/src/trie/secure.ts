@@ -1,10 +1,12 @@
 import { isFalsy } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { ROOT_DB_KEY } from '../types'
 
 import { CheckpointTrie } from './checkpoint'
+import { prepareTrieOpts } from './util'
 
-import type { Proof } from '../types'
+import type { Proof, TrieOpts } from '../types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -15,6 +17,11 @@ import type { Proof } from '../types'
  * @public
  */
 export class SecureTrie extends CheckpointTrie {
+  static async create(opts?: TrieOpts) {
+    const hash = opts?.hash ?? keccak256
+    return new SecureTrie(await prepareTrieOpts(hash(ROOT_DB_KEY), opts))
+  }
+
   /**
    * Gets a value given a `key`
    * @param key - the key to search for

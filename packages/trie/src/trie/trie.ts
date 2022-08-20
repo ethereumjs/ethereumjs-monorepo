@@ -10,6 +10,7 @@ import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
+import { prepareTrieOpts } from './util'
 
 import type {
   BatchDBOp,
@@ -68,15 +69,7 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    if (opts?.db !== undefined && opts?.persistRoot === true) {
-      if (opts?.root === undefined) {
-        opts.root = (await opts?.db.get(ROOT_DB_KEY)) ?? undefined
-      } else {
-        await opts?.db.put(ROOT_DB_KEY, opts.root)
-      }
-    }
-
-    return new Trie(opts)
+    return new Trie(await prepareTrieOpts(ROOT_DB_KEY, opts))
   }
 
   /**
