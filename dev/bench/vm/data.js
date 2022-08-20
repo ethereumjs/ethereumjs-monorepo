@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661015719826,
+  "lastUpdate": 1661024972600,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b5bcc79bfe385bff7ded147e0330e6e889091b93",
-          "message": "docs: update README formatting (#2121)\n\n* docs(trie): update README\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-15T11:46:53+02:00",
-          "tree_id": "81f96fd0d0213e60ca2a316054c37551389d4d55",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b5bcc79bfe385bff7ded147e0330e6e889091b93"
-        },
-        "date": 1660556951387,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22270,
-            "range": "±2.42%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21503,
-            "range": "±6.18%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21763,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21528,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19349,
-            "range": "±10.81%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.67%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "31339798aae32daf497c7775ccb5ad515897e19a",
+          "message": "chore: add script to list external dependencies (#2190)\n\n* chore: add script to list external dependencies\r\n\r\n* `ethereum` is too broad: be more specific\r\n\r\n* chore: always include the root package.json too\r\n\r\nCo-authored-by: Paul Miller <paul@paulmillr.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-08-20T15:46:53-04:00",
+          "tree_id": "76a20506e9d9c29b952a4e01ffeaccc2bc91d948",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/31339798aae32daf497c7775ccb5ad515897e19a"
+        },
+        "date": 1661024972029,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21892,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21041,
+            "range": "±5.31%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21673,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21456,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17831,
+            "range": "±11.74%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
           }
         ]
       }
