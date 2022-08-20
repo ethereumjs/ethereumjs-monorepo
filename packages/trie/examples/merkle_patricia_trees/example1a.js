@@ -1,6 +1,6 @@
 /* Example 1a - Creating and Updating a Base Trie*/
 
-const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)

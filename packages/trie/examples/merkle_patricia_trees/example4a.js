@@ -1,8 +1,5 @@
 // Example 4a - Retrieving a Transaction from the Ethereum Blockchain
 
-const rlp = require('@ethereumjs/rlp')
-const { keccak256 } = require('ethereum-cryptography/keccak')
-
 const INFURIA_ENDPOINT = require('./infura_endpoint')
 const Web3 = require('web3')
 const web3 = new Web3(new Web3.providers.HttpProvider(INFURIA_ENDPOINT))
