@@ -2,6 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
 import type { AccountFields } from './interface'
+import type { DefaultStateManagerOpts } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -34,7 +35,7 @@ export abstract class BaseStateManager {
   /**
    * Needs to be called from the subclass constructor
    */
-  constructor() {
+  constructor(_opts: DefaultStateManagerOpts) {
     // Safeguard if "process" is not available (browser)
     if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
