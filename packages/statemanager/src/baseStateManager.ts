@@ -2,7 +2,6 @@ import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
 import type { AccountFields } from './interface'
-import type { DefaultStateManagerOpts } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
