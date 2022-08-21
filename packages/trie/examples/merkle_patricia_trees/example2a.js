@@ -1,6 +1,6 @@
 // Example 2a - Creating and looking up a null node
 
-const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
 
