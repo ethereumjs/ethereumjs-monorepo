@@ -45,14 +45,8 @@ export interface AccountFetcherOptions extends FetcherOptions {
 	/** Root hash of the account trie to serve */
 	root: Buffer
 
-	/** Account hash of the first to retrieve */
-	origin: Buffer
-
-	/** Account hash after which to stop serving data */
-	limit: Buffer
-
-	/** Per task limit of bytes to request from peer */
-	bytes: bigint
+  /** Per task limit of bytes to request from peer */
+  bytes: bigint
 
 	/** Destroy fetcher once all tasks are done */
 	destroyWhenDone?: boolean
@@ -70,17 +64,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   root: Buffer
   /**
-   * Account hash of the first to retrieve
-   */
-  origin: Buffer
-  /**
-   * Account hash after which to stop serving data
-   */
-  limit: Buffer
-  /**
    * Soft limit at which to stop returning data
    */
   bytes: bigint
+  /**
+   * Max concurrency for requesting ranges of data from peers
+   */
+  maxRangeConcurrency: bigint
 
 	/**
 	 * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
@@ -93,18 +83,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 	constructor(options: AccountFetcherOptions) {
 		super(options)
 
-		// this.accountTrie = new CheckpointTrie({ db: new LevelDB(), root: options.root })
-		this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
+    this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
+    this.maxRangeConcurrency = BigInt(12)
 
-		this.root = options.root
-		this.origin = options.origin
-		this.limit = options.limit
-		this.bytes = options.bytes
+    this.root = options.root
 
-		this.debug(
-			`Account fetcher instantiated root=${this.root} origin=${this.origin} limit=${this.limit} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
-		)
-	}
+    this.bytes = options.bytes
+
+    this.debug(
+      `Account fetcher instantiated root=${this.root} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
+    )
+  }
 
   /**
    * Request results from peer for the given job.
@@ -161,7 +150,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // verify account data for account range received from peer using proof and state root
       const checkRangeProof = await trie.verifyRangeProof(
         this.root,
-        this.origin,
+        origin,
         hashes[hashes.length - 1],
         hashes,
         values,
@@ -229,32 +218,63 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     // for data capture
-    // process.exit()
+    process.exit()
   }
 
   /**
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
    * remaining items apart from the tasks it pushes in the queue
+   *
+   * Divides the full 256-bit range of hashes into @maxRangeConcurrency ranges
+   * and turnes each range into a task for the fetcher
    */
   tasks(
-    origin = this.origin,
-    limit = this.limit,
+    origin = BigInt(0),
+    limit = BigInt(2) ** BigInt(256) - BigInt(1),
     maxTasks = this.config.maxFetcherJobs
   ): JobTask[] {
-    const max = this.config.maxPerRequest
+    // const max = this.config.maxPerRequest
+    this.debug(`origin is ${origin.toString(16)}`)
+    this.debug(`limit is ${limit.toString(16)}`)
     const tasks: JobTask[] = []
-    tasks.push({ origin, limit })
 
-		console.log(`Created new tasks num=${tasks.length} tasks=${tasks}`)
-		return tasks
-	}
+    const countPerInterval = (limit - origin) / this.maxRangeConcurrency - BigInt(1)
+    let start = BigInt(0)
+    for (let i = 0; i < this.maxRangeConcurrency; i++) {
+      let end = start + countPerInterval
+      if (BigInt(i) === this.maxRangeConcurrency - BigInt(1)) {
+        // last interval should include hashes up to and including @limit
+        tasks.push({
+          origin: Buffer.from(start.toString(16), 'hex'),
+          limit: Buffer.from(limit.toString(16), 'hex'),
+        })
+        this.debug(
+          `Created new tasks num=${tasks.length} with origin=${start.toString(
+            16
+          )} and limit=${limit.toString(16)}`
+        )
+        break
+      }
+      tasks.push({
+        origin: Buffer.from(start.toString(16), 'hex'),
+        limit: Buffer.from(end.toString(16), 'hex'),
+      })
+      this.debug(
+        `Created new tasks num=${tasks.length} with origin=${start.toString(
+          16
+        )} and limit=${end.toString(16)}`
+      )
+      start = end
+    }
+    return tasks
+  }
 
-	nextTasks(): void {
-		const tasks = this.tasks(this.origin, this.limit)
-		for (const task of tasks) {
-			this.enqueueTask(task)
-		}
-	}
+  nextTasks(): void {
+    const tasks = this.tasks()
+    for (const task of tasks) {
+      this.enqueueTask(task)
+    }
+  }
 
 	/**
 	 * Clears all outstanding tasks from the fetcher

@@ -120,11 +120,6 @@ export class SnapSynchronizer extends Synchronizer {
       config: this.config,
       pool: this.pool,
       root: stateRoot,
-      origin: Buffer.from(
-        '0000000000000000000000000000000000000000000000000000000000000000',
-        'hex'
-      ),
-      limit: Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex'),
       bytes: BigInt(50000),
     })
 
