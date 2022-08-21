@@ -1,7 +1,13 @@
 import { keccak256 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { CheckpointTrie, Trie } from '@ethereumjs/trie'
-import { KECCAK256_NULL, KECCAK256_RLP, arrToBufArr, isFalsy } from '@ethereumjs/util'
+import {
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  arrToBufArr,
+  isFalsy,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 
@@ -152,9 +158,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     try {
       // verify account data for account range received from peer using proof and state root
       const checkRangeProof = await trie.verifyRangeProof(
-        this.root,
-        origin,
-        hashes[hashes.length - 1],
+        setLengthLeft(this.root, 32),
+        setLengthLeft(origin, 32),
+        setLengthLeft(hashes[hashes.length - 1], 32),
         hashes,
         values,
         proof
