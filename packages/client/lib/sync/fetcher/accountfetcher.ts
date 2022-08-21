@@ -129,21 +129,24 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 		const hashes: Buffer[] = []
 		const values: Buffer[] = []
 
-		// put all accounts into the Trie
-		for (let i = 0; i < accounts.length; i++) {
-			// ensure the range is monotonically increasing
-			if (i != accounts.length - 1) {
-				if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
-					this.debug(`Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${accounts[i + 1].hash}`)
-				}
-			}
-			// put account data into trie
-			const { hash, body } = accounts[i]
-			hashes.push(hash)
-			const value = convertSlimAccount(body)
-			values.push(value)
-			await trie.put(hash, value)
-		}
+    // convert the request to the right values
+    for (let i = 0; i < accounts.length; i++) {
+      // ensure the range is monotonically increasing
+      if (i != accounts.length - 1) {
+        if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+          this.debug(
+            `Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${
+              accounts[i].hash
+            } vs ${i + 1} ${accounts[i + 1].hash}`
+          )
+        }
+      }
+      // put account data into trie
+      const { hash, body } = accounts[i]
+      hashes.push(hash)
+      const value = convertSlimAccount(body)
+      values.push(value)
+    }
 
     // validate the proof
     try {
@@ -165,19 +168,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.debug(`Proof-based verification failed: ${err}`)
       return undefined
     }
-
-		// TODO I am not sure if this check is necessary since proof verification should be establishing the correctness of every newly put account data
-		// verify that it is possible to get the accounts, and that the values are correct
-		for (let i = 0; i <= accounts.length - 1; i++) {
-			const account = accounts[i]
-			const key = account.hash
-			const expect = convertSlimAccount(account.body)
-			const value = await trie.get(key)
-			if (value === undefined || !value?.equals(expect)) {
-				this.debug('Key/value pair does not match expected value')
-				return undefined
-			}
-		}
 
     return accounts
   }
