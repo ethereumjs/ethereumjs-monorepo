@@ -1,6 +1,6 @@
 // Example 3b - Verification using a hash
 
-const { Trie } = require('../dist') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 const trie1 = new Trie()
 const trie2 = new Trie()
 
@@ -24,9 +24,7 @@ async function test() {
   console.log('Branch node 1 hash: ', node1._value)
   console.log('Branch node 2 hash: ', node2._value)
 
-  root1 = trie1.root
-  root2 = trie2.root
-  console.log(root1)
-  console.log(root2)
+  console.log('Root of trie 1: ', trie1.root)
+  console.log('Root of trie 2: ', trie2.root)
 }
 test()
