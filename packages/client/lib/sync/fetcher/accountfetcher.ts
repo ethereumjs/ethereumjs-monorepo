@@ -241,7 +241,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const countPerInterval = (limit - origin) / this.maxRangeConcurrency - BigInt(1)
     let start = BigInt(0)
     for (let i = 0; i < this.maxRangeConcurrency; i++) {
-      let end = start + countPerInterval
+      const end = start + countPerInterval
       if (BigInt(i) === this.maxRangeConcurrency - BigInt(1)) {
         // last interval should include hashes up to and including @limit
         tasks.push({
@@ -264,7 +264,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           16
         )} and limit=${end.toString(16)}`
       )
-      start = end
+      start = end + BigInt(1)
     }
     return tasks
   }
