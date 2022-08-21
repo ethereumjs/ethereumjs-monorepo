@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661044462986,
+  "lastUpdate": 1661100853281,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f24eb5da8c3b9f7f3e74f3123bbf4c8bb6203798",
-          "message": "chore: enable `object-shorthand` rule for `eslint` (#2131)",
-          "timestamp": "2022-08-15T13:55:14+02:00",
-          "tree_id": "6754b3c1ace9d99c850ed2aa3022d7a5a346935e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f24eb5da8c3b9f7f3e74f3123bbf4c8bb6203798"
-        },
-        "date": 1660564952294,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21745,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20735,
-            "range": "±5.47%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21074,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20865,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18511,
-            "range": "±10.11%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.51%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e8b9cd8cc3d6bc4aa0e29458cfeeff909cb8382",
+          "message": "Remove common from state manager (#2197)\n\n* Remove common from state manager",
+          "timestamp": "2022-08-21T12:44:24-04:00",
+          "tree_id": "64a72dee20997dc12662a140a25ba51134ea5447",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e8b9cd8cc3d6bc4aa0e29458cfeeff909cb8382"
+        },
+        "date": 1661100850965,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 17863,
+            "range": "±3.33%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17908,
+            "range": "±2.72%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17302,
+            "range": "±6.20%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17226,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17260,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
