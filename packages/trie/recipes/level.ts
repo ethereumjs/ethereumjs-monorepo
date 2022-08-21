@@ -4,7 +4,7 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
 
-export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
 
 export class LevelDB implements DB {
   readonly _leveldb: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
