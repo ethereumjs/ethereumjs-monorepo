@@ -67,7 +67,6 @@
     "@ethereumjs/util": "8.0.0-beta.3",
     "@types/async-eventemitter": "^0.2.1",
     "async-eventemitter": "^0.2.4",
-    "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "functional-red-black-tree": "^1.0.1",

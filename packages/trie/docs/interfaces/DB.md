@@ -5,7 +5,7 @@
 ## Implemented by
 
 - [`CheckpointDB`](../classes/CheckpointDB.md)
-- [`LevelDB`](../classes/LevelDB.md)
+- [`MapDB`](../classes/MapDB.md)
 
 ## Table of contents
 

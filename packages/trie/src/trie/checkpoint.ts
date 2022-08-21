@@ -1,4 +1,4 @@
-import { CheckpointDB, LevelDB } from '../db'
+import { CheckpointDB, MapDB } from '../db'
 
 import { Trie } from './trie'
 
@@ -13,7 +13,7 @@ export class CheckpointTrie extends Trie {
 
   constructor(opts?: TrieOpts) {
     super(opts)
-    this.dbStorage = opts?.db ?? new LevelDB()
+    this.dbStorage = opts?.db ?? new MapDB()
     this.db = new CheckpointDB(this.dbStorage)
   }
 
