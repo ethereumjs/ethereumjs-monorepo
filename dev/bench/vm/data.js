@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661172692770,
+  "lastUpdate": 1661187373576,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4fb289c397e297c991ba160d6545d519b7028e57",
-          "message": "chore: enable `github/array-foreach` rule for `eslint` (#2130)\n\n* chore: enable `github/array-foreach` rule for `eslint`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* Update runTx.ts\r\n\r\n* Update libp2psender.spec.ts\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-17T15:49:38+02:00",
-          "tree_id": "22a62bd19846c529760ca3a47f90145237287a90",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4fb289c397e297c991ba160d6545d519b7028e57"
-        },
-        "date": 1660744355093,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 13421,
-            "range": "±3.72%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12923,
-            "range": "±5.35%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12741,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12572,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12827,
-            "range": "±7.63%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.47%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "17e3dc0a7ff921adf6809ca5bd8d455be1d09524",
+          "message": "Block: do not auto-activate hardforkByBlockNumber in fromRLPSerializedHeader static BlockHeader constructor (#2205)",
+          "timestamp": "2022-08-22T18:52:53+02:00",
+          "tree_id": "75d0258dbb6a151b0c50eebf8dba95061e7a1ec7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/17e3dc0a7ff921adf6809ca5bd8d455be1d09524"
+        },
+        "date": 1661187372510,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 12499,
+            "range": "±2.71%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 12674,
+            "range": "±5.44%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 13139,
+            "range": "±2.48%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 13014,
+            "range": "±2.72%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12933,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
