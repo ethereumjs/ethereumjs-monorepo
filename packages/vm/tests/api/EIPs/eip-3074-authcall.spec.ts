@@ -480,7 +480,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft
       }
@@ -523,7 +523,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-    ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', async (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft // This thus overrides the first time AUTHCALL is used and thus the gas for the second call is stored
       }
@@ -564,7 +564,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
       let gas: bigint
       let gasAfterCall: bigint
-      ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
+      ;(<EVM>vm.evm).events.on('step', async (e: InterpreterStep) => {
         if (gas && gasAfterCall === undefined) {
           gasAfterCall = e.gasLeft
         }
@@ -609,7 +609,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const vm = await setupVM(code)
 
       let gas: bigint
-      ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+      ;(<EVM>vm.evm).events.on('step', (e: InterpreterStep) => {
         if (e.opcode.name === 'AUTHCALL') {
           gas = e.gasLeft
         }

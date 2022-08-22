@@ -83,7 +83,7 @@ tape('EIP3198 tests', (t) => {
     // Track stack
 
     let stack: any = []
-    ;(<EVM>vm.evm).on('step', (istep: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }

@@ -66,7 +66,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
 
     let trace: any = []
 
-    ;(<EVM>vm.evm).on('step', (o: any) => {
+    ;(<EVM>vm.evm).events.on('step', (o: any) => {
       trace.push([o.opcode.name, o.gasLeft])
     })
 

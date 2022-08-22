@@ -73,7 +73,7 @@ tape('EIP 3541 tests', (t) => {
 
     const vm = await VM.create({ common })
     let address: Address
-    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }
@@ -109,7 +109,7 @@ tape('EIP 3541 tests', (t) => {
 
     const vm = await VM.create({ common })
     let address: Address
-    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }
