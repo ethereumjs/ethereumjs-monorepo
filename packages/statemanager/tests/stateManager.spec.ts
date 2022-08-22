@@ -1,4 +1,3 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
@@ -24,7 +23,6 @@ tape('StateManager', (t) => {
     const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
-    st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
     const res = await stateManager.getStateRoot()
     st.deepEqual(res, KECCAK256_RLP, 'it has default root')
     st.end()
@@ -262,21 +260,6 @@ tape('StateManager', (t) => {
     const data = await stateManager.dumpStorage(address)
     const expect = { [bytesToHex(keccak256(key))]: '0a' }
     st.deepEqual(data, expect, 'should dump storage value')
-
-    st.end()
-  })
-
-  t.test('should pass Common object when copying the state manager', (st) => {
-    const stateManager = new DefaultStateManager({
-      common: new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium }),
-    })
-
-    st.equal(stateManager._common.chainName(), 'goerli')
-    st.equal(stateManager._common.hardfork(), 'byzantium')
-
-    const stateManagerCopy = stateManager.copy()
-    st.equal((<any>stateManagerCopy)._common.chainName(), 'goerli')
-    st.equal((<any>stateManagerCopy)._common.hardfork(), 'byzantium')
 
     st.end()
   })

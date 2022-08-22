@@ -20,7 +20,6 @@ import { Cache } from './cache'
 
 import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
-import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 type StorageProof = {
@@ -53,10 +52,6 @@ const CODEHASH_PREFIX = Buffer.from('c')
  * Options for constructing a {@link StateManager}.
  */
 export interface DefaultStateManagerOpts {
-  /**
-   * Parameters of the chain {@link Common}
-   */
-  common?: Common
   /**
    * A {@link SecureTrie} instance
    */
@@ -126,7 +121,6 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   copy(): StateManager {
     return new DefaultStateManager({
       trie: this._trie.copy(false),
-      common: this._common,
     })
   }
 

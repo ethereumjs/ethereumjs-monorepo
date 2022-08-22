@@ -44,7 +44,7 @@ tape('vmState', (t) => {
       'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
       'hex'
     )
-    const stateManager = new StateManager({ common })
+    const stateManager = new StateManager({})
 
     const vmState = new VmState({ stateManager, common })
     const blockchain = await Blockchain.create({ common })
@@ -84,7 +84,7 @@ tape('vmState', (t) => {
 
     for (const [chain, expectedStateRoot] of chains) {
       const common = new Common({ chain, hardfork: Hardfork.Chainstart })
-      const stateManager = new DefaultStateManager({ common })
+      const stateManager = new DefaultStateManager({})
       const vmState = new VmState({ stateManager, common })
 
       const blockchain = await Blockchain.create({ common })

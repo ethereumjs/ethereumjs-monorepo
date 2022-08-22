@@ -107,9 +107,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({
-        common: this._common,
-      })
+      this.stateManager = new DefaultStateManager({})
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
