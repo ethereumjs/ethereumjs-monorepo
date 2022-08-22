@@ -18,6 +18,10 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/trie
 ```
 
+### Upgrading
+
+If you currently use this package in your project and plan to upgrade, please review our [upgrade guide](./UPGRADING.md) first. It will ensure you take all the necessary steps and streamline the upgrade process.
+
 ## Usage
 
 You will find three variants of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) implemented in this library, namely `BaseTrie`, `CheckpointTrie` and `SecureTrie`:
