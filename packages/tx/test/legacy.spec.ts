@@ -124,9 +124,9 @@ tape('[Transaction]', function (t) {
   t.test(
     'Initialization -> throws when creating a a transaction with incompatible chainid and v value',
     function (st) {
-      let common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
+      let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
       let tx = Transaction.fromTxData({}, { common })
-      st.equal(tx.common.chainId(), BigInt(42))
+      st.equal(tx.common.chainId(), BigInt(5))
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
@@ -465,9 +465,9 @@ tape('[Transaction]', function (t) {
   )
 
   t.test('sign(), verifySignature(): sign tx with chainId specified in params', function (st) {
-    const common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
     let tx = Transaction.fromTxData({}, { common })
-    st.equal(tx.common.chainId(), BigInt(42))
+    st.equal(tx.common.chainId(), BigInt(5))
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx = tx.sign(privKey)
@@ -476,7 +476,7 @@ tape('[Transaction]', function (t) {
 
     const reTx = Transaction.fromSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
-    st.equal(reTx.common.chainId(), BigInt(42))
+    st.equal(reTx.common.chainId(), BigInt(5))
 
     st.end()
   })
