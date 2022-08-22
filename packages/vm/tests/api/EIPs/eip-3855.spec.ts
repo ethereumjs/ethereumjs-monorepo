@@ -18,7 +18,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 opcode', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (e: InterpreterStep) => {
       if (typeof stack !== 'undefined') {
         st.fail('should only do PUSH0 once')
       }
@@ -40,7 +40,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[] = []
 
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    ;(<EVM>vm.evm).events.on('step', (e: InterpreterStep) => {
       stack = e.stack
     })
 

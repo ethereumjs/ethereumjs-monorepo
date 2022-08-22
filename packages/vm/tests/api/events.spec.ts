@@ -14,7 +14,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('beforeBlock', (val: any) => {
+    vm.events.on('beforeBlock', (val: any) => {
       emitted = val
     })
 
@@ -35,7 +35,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('afterBlock', (val: any) => {
+    vm.events.on('afterBlock', (val: any) => {
       emitted = val
     })
 
@@ -57,7 +57,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('beforeTx', (val: any) => {
+    vm.events.on('beforeTx', (val: any) => {
       emitted = val
     })
 
@@ -79,7 +79,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.on('afterTx', (val: any) => {
+    vm.events.on('afterTx', (val: any) => {
       emitted = val
     })
 
