@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661100853281,
+  "lastUpdate": 1661139489585,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "da581e81829e1d67f4b01e77fa416f0d37120f4f",
-          "message": "refactor(trie): use `micro-bmark` for benchmarks (#2128)\n\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* Update package.json\r\n\r\n* chore: more realistic `checkpointing` benchmark\r\n\r\n* chore: more realistic `random` benchmark\r\n\r\n* chore: update to `micro-bmark@0.2.0`\r\n\r\n* refactor(trie): generate benchmark keys at runtime\r\n\r\n* chore(trie): generate 5000 keys\r\n\r\n* ci: disable `trie-benchmarks` job\r\n\r\n* Update index.ts\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-15T14:25:10+02:00",
-          "tree_id": "dd605d0d0de1be26f58533b5a6c18b28e2543c9d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da581e81829e1d67f4b01e77fa416f0d37120f4f"
-        },
-        "date": 1660566513564,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18894,
-            "range": "±3.33%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18063,
-            "range": "±6.08%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18431,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18342,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15710,
-            "range": "±11.69%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.89%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f206c9a784733200310df6e69efaac2c4e752d5",
+          "message": "ci: run `lintlock` if any `package-lock.json` file changed (#2201)\n\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2022-08-21T23:27:35-04:00",
+          "tree_id": "841dbf63d6ddac1b5bfe1d090a577c331e50edc9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9f206c9a784733200310df6e69efaac2c4e752d5"
+        },
+        "date": 1661139487539,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 12405,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 11895,
+            "range": "±5.36%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 12162,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 11160,
+            "range": "±8.10%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12221,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
