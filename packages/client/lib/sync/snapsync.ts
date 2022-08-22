@@ -111,7 +111,8 @@ export class SnapSynchronizer extends Synchronizer {
     // }
 
     const height = latest.number
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
+    // eslint-disable-next-line eqeqeq
+    if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${latest.hash()}`)
     }

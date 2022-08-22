@@ -1,13 +1,6 @@
-import { keccak256 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { CheckpointTrie, Trie } from '@ethereumjs/trie'
-import {
-  KECCAK256_NULL,
-  KECCAK256_RLP,
-  arrToBufArr,
-  isFalsy,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { KECCAK256_NULL, KECCAK256_RLP, arrToBufArr, setLengthLeft } from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 
@@ -17,7 +10,6 @@ import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 // import { Chain } from '../../blockchain'
 import type { Job } from './types'
-import type { Account } from '@ethereumjs/util'
 
 /**
  * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
@@ -25,22 +17,21 @@ import type { Account } from '@ethereumjs/util'
  * @returns RLP encoded version of the account
  */
 function convertSlimAccount(body: any) {
-	const cpy = [body[0], body[1], body[2], body[3]]
-	if (arrToBufArr(body[2]).length === 0) {
-		// StorageRoot
-		cpy[2] = KECCAK256_RLP
-	}
-	if (arrToBufArr(body[3]).length === 0) {
-		// CodeHash
-		cpy[3] = KECCAK256_NULL
-	}
-	return arrToBufArr(RLP.encode(cpy))
+  const cpy = [body[0], body[1], body[2], body[3]]
+  if (arrToBufArr(body[2]).length === 0) {
+    // StorageRoot
+    cpy[2] = KECCAK256_RLP
+  }
+  if (arrToBufArr(body[3]).length === 0) {
+    // CodeHash
+    cpy[3] = KECCAK256_NULL
+  }
+  return arrToBufArr(RLP.encode(cpy))
 }
 
-
 type AccountData = {
-	hash: Buffer
-	body: any
+  hash: Buffer
+  body: any
 }
 
 /**
@@ -48,20 +39,20 @@ type AccountData = {
  * @memberof module:sync/fetcher
  */
 export interface AccountFetcherOptions extends FetcherOptions {
-	/** Root hash of the account trie to serve */
-	root: Buffer
+  /** Root hash of the account trie to serve */
+  root: Buffer
 
   /** Per task limit of bytes to request from peer */
   bytes: bigint
 
-	/** Destroy fetcher once all tasks are done */
-	destroyWhenDone?: boolean
+  /** Destroy fetcher once all tasks are done */
+  destroyWhenDone?: boolean
 }
 
 // root comes from block?
 export type JobTask = {
-	origin: Buffer
-	limit: Buffer
+  origin: Buffer
+  limit: Buffer
 }
 
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
@@ -78,16 +69,16 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   maxRangeConcurrency: bigint
 
-	/**
-	 * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
-	 */
-	accountTrie: CheckpointTrie
+  /**
+   * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
+   */
+  accountTrie: CheckpointTrie
 
-	/**
-	 * Create new block fetcher
-	 */
-	constructor(options: AccountFetcherOptions) {
-		super(options)
+  /**
+   * Create new block fetcher
+   */
+  constructor(options: AccountFetcherOptions) {
+    super(options)
 
     this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
     this.maxRangeConcurrency = BigInt(12)
@@ -109,7 +100,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param peer
    */
   async request(job: Job<JobTask, AccountData[], AccountData>): Promise<AccountData[] | undefined> {
-    const { task, peer, partialResult } = job
+    const { task, peer, partialResult: _partialResult } = job
     const { origin, limit } = task
 
     const rangeResult = await peer!.snap!.getAccountRange({
@@ -119,26 +110,25 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       bytes: this.bytes,
     })
 
-		const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+    const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+    // eslint-disable-next-line eqeqeq
+    if (rangeResult == null || rangeResult.accounts == null || rangeResult.proof == null) {
+      // catch occasional null, empty, or incomplete responses
+      this.debug(
+        `Peer ${peerInfo} returned incomplete account range response for origin=${origin} and limit=${limit}`
+      )
+      return undefined
+    }
 
-		if (!rangeResult
-			|| !rangeResult.accounts
-			|| !rangeResult.proof
-		) {
-			// catch occasional null, empty, or incomplete responses
-			this.debug(`Peer ${peerInfo} returned incomplete account range response for origin=${origin} and limit=${limit}`)
-			return undefined
-		}
-
-		const trie = new Trie()
-		const { accounts, proof } = rangeResult
-		const hashes: Buffer[] = []
-		const values: Buffer[] = []
+    const trie = new Trie()
+    const { accounts, proof } = rangeResult
+    const hashes: Buffer[] = []
+    const values: Buffer[] = []
 
     // convert the request to the right values
     for (let i = 0; i < accounts.length; i++) {
       // ensure the range is monotonically increasing
-      if (i != accounts.length - 1) {
+      if (i !== accounts.length - 1) {
         if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
           this.debug(
             `Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${
@@ -189,7 +179,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>,
     result: AccountData[]
   ): AccountData[] | undefined {
-    console.log('inside accountfetcher.process')
     return result
   }
 
@@ -204,7 +193,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         const { hash, body } = result[i]
 
         // TODO can be optimized by converting from slim to full in request phase inside first loop
-        this.accountTrie.put(hash, convertSlimAccount(body))
+        await this.accountTrie.put(hash, convertSlimAccount(body))
       }
       // TODO add event emission if necessary
 
@@ -227,7 +216,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   tasks(
     origin = BigInt(0),
     limit = BigInt(2) ** BigInt(256) - BigInt(1),
-    maxTasks = this.config.maxFetcherJobs
+    _maxTasks = this.config.maxFetcherJobs
   ): JobTask[] {
     // const max = this.config.maxPerRequest
     this.debug(`origin is ${origin.toString(16)}`)
@@ -272,17 +261,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
   }
 
-	/**
-	 * Clears all outstanding tasks from the fetcher
-	 */
-	clear() {
-		return
-	}
+  /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    return
+  }
 
-	/**
- * Returns an idle peer that can process a next job.
- */
-	peer(): Peer | undefined {
-		return this.pool.idle((peer) => 'snap' in peer)
-	}
+  /**
+   * Returns an idle peer that can process a next job.
+   */
+  peer(): Peer | undefined {
+    return this.pool.idle((peer) => 'snap' in peer)
+  }
 }
