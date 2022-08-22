@@ -68,22 +68,17 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromRLPSerializedHeader()', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    let header = BlockHeader.fromHeaderData(
-      {},
-      { common, freeze: false, hardforkByBlockNumber: false }
-    )
+    let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
     header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
       common,
-      hardforkByBlockNumber: false,
     })
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
     header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
       common,
       freeze: false,
-      hardforkByBlockNumber: false,
     })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
 
@@ -92,6 +87,7 @@ tape('[Block]: Header functions', function (t) {
         BlockHeader.fromRLPSerializedHeader(rlpHeader, {
           common,
           freeze: false,
+          hardforkByTTD: 1n, // Added to bypass defaulting hardforkByBlockNumber to true in static constructor
         }),
       (err: any) => err.message.includes('A base fee'),
       'throws when RLP serialized block with no base fee on default hardfork (london) and hardforkByBlockNumber left undefined'
