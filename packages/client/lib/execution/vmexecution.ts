@@ -43,7 +43,6 @@ export class VMExecution extends Execution {
       const trie = new SecureTrie({ db: new LevelDB(this.stateDB) })
 
       const stateManager = new DefaultStateManager({
-        common: this.config.execCommon,
         trie,
       })
 
