@@ -56,10 +56,10 @@ tape('[Block]: block functions', function (t) {
 
     const valuesArray = <BlockBuffer>[headerArray, [], []]
 
-    block = Block.fromValuesArray(valuesArray)
+    block = Block.fromValuesArray(valuesArray, { common })
     st.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = Block.fromValuesArray(valuesArray, { freeze: false })
+    block = Block.fromValuesArray(valuesArray, { common, freeze: false })
     st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
 
     st.end()
@@ -190,7 +190,8 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation', async function (st) {
     const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.header as any).transactionsTrie = Buffer.alloc(32)
     try {
@@ -270,14 +271,20 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should return the same block data from raw()', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
-    const blockFromRaw = Block.fromValuesArray(block.raw())
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+      common,
+    })
+    const blockFromRaw = Block.fromValuesArray(block.raw(), { common })
     st.ok(block.hash().equals(blockFromRaw.hash()))
     st.end()
   })
 
   t.test('should test toJSON', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+      common,
+    })
     st.equal(typeof block.toJSON(), 'object')
     st.end()
   })
@@ -308,7 +315,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
       const genesis = Block.fromBlockData({}, { common })
 
       const nextBlockHeaderData = {
@@ -316,9 +323,13 @@ tape('[Block]: block functions', function (t) {
         timestamp: genesis.header.timestamp + BigInt(10),
       }
 
-      const blockWithoutDifficultyCalculation = Block.fromBlockData({
-        header: nextBlockHeaderData,
-      })
+      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const blockWithoutDifficultyCalculation = Block.fromBlockData(
+        {
+          header: nextBlockHeaderData,
+        },
+        { common }
+      )
 
       // test if difficulty defaults to 0
       st.equal(
@@ -333,6 +344,7 @@ tape('[Block]: block functions', function (t) {
           header: nextBlockHeaderData,
         },
         {
+          common,
           calcDifficultyFromHeader: genesis.header,
         }
       )
@@ -358,6 +370,7 @@ tape('[Block]: block functions', function (t) {
           header: noParentHeaderData,
         },
         {
+          common,
           calcDifficultyFromHeader: genesis.header,
         }
       )

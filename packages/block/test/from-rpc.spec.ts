@@ -40,10 +40,15 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with value parameter as integer string',
     function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const valueAsIntegerString = '1'
       const blockDataTransactionValueAsInteger = blockData
       blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
-      const blockFromTransactionValueAsInteger = blockFromRpc(blockDataTransactionValueAsInteger)
+      const blockFromTransactionValueAsInteger = blockFromRpc(
+        blockDataTransactionValueAsInteger,
+        undefined,
+        { common }
+      )
       st.equal(
         blockFromTransactionValueAsInteger.transactions[0].value.toString(),
         valueAsIntegerString
@@ -56,11 +61,14 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string',
     function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const gasPriceAsIntegerString = '1'
       const blockDataTransactionGasPriceAsInteger = blockData
       blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
       const blockFromTransactionGasPriceAsInteger = blockFromRpc(
-        blockDataTransactionGasPriceAsInteger
+        blockDataTransactionGasPriceAsInteger,
+        undefined,
+        { common }
       )
       st.equal(
         (blockFromTransactionGasPriceAsInteger.transactions[0] as Transaction).gasPrice.toString(),
@@ -74,7 +82,10 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'should create a block given json data that includes a difficulty parameter of type integer string',
     function (st) {
-      const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger)
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger, undefined, {
+        common,
+      })
       st.equal(
         blockDifficultyAsInteger.header.difficulty.toString(),
         blockDataDifficultyAsInteger.difficulty
