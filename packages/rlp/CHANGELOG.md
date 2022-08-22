@@ -82,6 +82,14 @@ While this is convenient, it deviates from the ESM specification and forces down
 
 Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
 
+### Uint8Array / Buffer Removal
+
+This is technically not a change from the v4 version as it was already introduced in v3, but since a lot of people will likely update from a v2 `RLP` version, we will also mention it here:
+
+The v3 release replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers, see `v3.0.0` [release notes](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#300---2022-01-27).
+
+There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
+
 ## 3.0.0 - 2022-01-27
 
 rlp v3 is a breaking release with several important updates. Special thanks to [@paulmillr](https://github.com/paulmillr) for the majority of this work in PR [#90](https://github.com/ethereumjs/rlp/pull/90).

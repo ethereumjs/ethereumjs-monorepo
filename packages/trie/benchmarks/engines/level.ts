@@ -16,7 +16,7 @@ export class LevelDB implements DB {
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
-   * defaults to an [in-memory store](https://github.com/Level/memdown).
+   * defaults to an [in-memory store](https://github.com/Level/memory-level).
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(

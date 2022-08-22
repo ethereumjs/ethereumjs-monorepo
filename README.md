@@ -8,6 +8,14 @@
 [![Discord][discord-badge]][discord-link]
 [![GitPOAP][gitpoap-badge]][gitpoap-link]
 
+This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer and is managed by the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as a [Trie][trie-package] (Merkle Patricia Tree) and [devp2p][devp2p-package] (execution networking layer) implementation.
+
+All libraries are bound together by the core [Common][common-package] library keeping track of chain specifics and hardfork changes. They are complemented by helper packages like [RLP][rlp-package] for data encoding/decoding or [Util][util-package], providing helper functionalities like (byte) conversion, signatures, types and others.
+
+Finally, the [EthereumJS Execution Client][client-package] (EthereumJS) has been in active development for some time now. It already serves a variety of purposes like testing, research (e.g. EIPs) and developer tooling to engage with the protocol.
+
+Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution.
+
 ## Packages
 
 Below you can find a list of the packages included in this repository.
@@ -37,7 +45,7 @@ The following are our currently active branches:
 | [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | v6             | `Beta`   | Main working branch, current v6 work merged in (2022-06-08) |
 | [v5-maintenance](https://github.com/ethereumjs/ethereumjs-monorepo/tree/v5-maintenance) | v5             | `Active` | Maintenance for v5 releases                                 |
 
-Please open PRs towards one of the active branches.
+Breaking releases are in sync for all libraries, and release cycles are named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch.
 
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
