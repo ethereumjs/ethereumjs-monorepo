@@ -19,7 +19,7 @@ This means that if this library is instantiated without providing an explicit `C
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
 ```typescript
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 ```
