@@ -3,7 +3,6 @@ import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
-import * as kovan from './chains/kovan.json'
 import * as mainnet from './chains/mainnet.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
@@ -854,7 +853,7 @@ export class Common extends EventEmitter {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
+    const chains = { mainnet, ropsten, rinkeby, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain
