@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661170557277,
+  "lastUpdate": 1661172692770,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "89549af6dea6c0ac64757cb90ad45679c05ecbb5",
-          "message": "chore: move commonly shared `devDependencies` to root `package.json` (#2166)\n\n* chore: moved commonly shared dependencies to root `package.json`\r\n\r\n* chore: replace `nyc` with `c8`",
-          "timestamp": "2022-08-17T06:00:03-04:00",
-          "tree_id": "14a0a046e8231b430e9f6c5ba853f5369fa72175",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/89549af6dea6c0ac64757cb90ad45679c05ecbb5"
-        },
-        "date": 1660730757062,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19562,
-            "range": "±3.93%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19497,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18034,
-            "range": "±6.72%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18875,
-            "range": "±2.42%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18719,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.30%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c6254cefa513d32cf5cd4d6e8ce91b69d32dd93d",
+          "message": "fix(trie): add static `create` constructor to `CheckpointTrie` and `SecureTrie` (#2195)\n\n* chore: wip\r\n\r\n* fix(trie): assign changes to opts copy\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2022-08-22T14:48:42+02:00",
+          "tree_id": "00844ad90635ed5bf01117414d7c9f95db6a944e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6254cefa513d32cf5cd4d6e8ce91b69d32dd93d"
+        },
+        "date": 1661172691927,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21971,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21242,
+            "range": "±5.01%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21758,
+            "range": "±2.02%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21401,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18992,
+            "range": "±10.47%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
