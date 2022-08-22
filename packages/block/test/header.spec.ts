@@ -294,9 +294,9 @@ tape('[Block]: Header functions', function (t) {
     const extraData = Buffer.concat([Buffer.alloc(1)])
 
     try {
-      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false })
+      BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
       st.pass(
-        'should instantiate header with invalid extraData when consensusFormatValidation === false'
+        'should instantiate header with invalid extraData when skipConsensusFormatValidation === true'
       )
     } catch (error: any) {
       st.fail('should not throw')
@@ -328,22 +328,6 @@ tape('[Block]: Header functions', function (t) {
       () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }),
       (err: any) => err.message.includes('nonce must be 8 bytes'),
       'contains nonce length error message'
-    )
-
-    const kovanCommon = new Common({ chain: Chain.Kovan })
-    st.throws(
-      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }, { common: kovanCommon }),
-      (err: any) => err.message.includes('nonce must be 65 bytes on kovan'),
-      'contains kovan nonce error message'
-    )
-
-    st.doesNotThrow(
-      () =>
-        BlockHeader.fromHeaderData(
-          { nonce: Buffer.alloc(65) },
-          { common: kovanCommon, consensusFormatValidation: false }
-        ),
-      'was able to create Kovan block with nonce 65 bytes long'
     )
     st.end()
   })
