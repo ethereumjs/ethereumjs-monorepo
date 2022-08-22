@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -81,15 +81,19 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())
     t.equal(td, BigInt(1313601), 'should have calculated the correct post-Merge total difficulty')
 
-    const powBlock = Block.fromBlockData({
-      header: {
-        number: 16,
-        difficulty: BigInt(1),
-        parentHash: latestHeader.hash(),
-        timestamp: latestHeader.timestamp + BigInt(1),
-        gasLimit: BigInt(10000),
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const powBlock = Block.fromBlockData(
+      {
+        header: {
+          number: 16,
+          difficulty: BigInt(1),
+          parentHash: latestHeader.hash(),
+          timestamp: latestHeader.timestamp + BigInt(1),
+          gasLimit: BigInt(10000),
+        },
       },
-    })
+      { common }
+    )
     try {
       await blockchain.putBlock(powBlock)
       t.fail('should throw when inserting PoW block')
