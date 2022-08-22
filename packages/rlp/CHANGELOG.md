@@ -84,9 +84,9 @@ Along with the breaking releases we have therefore deactivated both of these opt
 
 ### Uint8Array / Buffer Removal
 
-This is technically not a change from the v4 version but was already introduced in v3, but since a lot of people will likely update from a v2 `RLP` version just to mention here:
+This is technically not a change from the v4 version as it was already introduced in v3, but since a lot of people will likely update from a v2 `RLP` version, we will also mention it here:
 
-The v3 release replaces Buffers as input and output values in favor of using Uint8Arrays for improved performance and greater compatibility with browsers, see `v3.0.0` release notes.
+The v3 release replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers, see `v3.0.0` [release notes](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#300---2022-01-27).
 
 There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
 
