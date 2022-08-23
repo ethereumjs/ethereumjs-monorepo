@@ -1246,11 +1246,11 @@ export class Blockchain implements BlockchainInterface {
       stateRoot,
     }
     if (common.consensusType() === 'poa') {
-      if (common.genesis().extraData && common.chainName() !== 'kovan') {
+      if (common.genesis().extraData) {
         // Ensure exta data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
-        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes (or if chain is Kovan)
+        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
         header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
       }
     }
@@ -1275,8 +1275,6 @@ export class Blockchain implements BlockchainInterface {
         return require('./genesisStates/ropsten.json')
       case 'rinkeby':
         return require('./genesisStates/rinkeby.json')
-      case 'kovan':
-        return require('./genesisStates/kovan.json')
       case 'goerli':
         return require('./genesisStates/goerli.json')
       case 'sepolia':

@@ -45,22 +45,6 @@ tape(`${method}: returns 3 for Ropsten`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: returns 42 for Kovan`, async (t) => {
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const msg = 'should return chainId 42'
-    const chainId = BigInt(42).toString(16)
-    t.equal(res.body.result, `0x${chainId}`, msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
-
 tape(`reset TD`, (t) => {
   BlockHeader.prototype._consensusFormatValidation = originalValidate
   td.reset()

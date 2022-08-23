@@ -3,7 +3,6 @@ import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
-import * as kovan from './chains/kovan.json'
 import * as mainnet from './chains/mainnet.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
@@ -270,7 +269,7 @@ export class Common extends EventEmitter {
     let previousHF
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
-      if (hf.block === null) {
+      if (typeof hf.block !== 'number') {
         if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
           if (td >= BigInt(hf.ttd)) {
             return hf.name
@@ -612,7 +611,7 @@ export class Common extends EventEmitter {
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
     const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkConfig) => {
-      const block = BigInt(hf.block === null ? 0 : hf.block)
+      const block = BigInt(typeof hf.block !== 'number' ? 0 : hf.block)
       return block > hfBlock && acc === null ? block : acc
     }, null)
     return nextHfBlock
@@ -646,13 +645,13 @@ export class Common extends EventEmitter {
 
       // Skip for chainstart (0), not applied HFs (null) and
       // when already applied on same block number HFs
-      if (block !== 0 && block !== null && block !== prevBlock) {
+      if (typeof block === 'number' && block !== 0 && block !== prevBlock) {
         const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
         hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
       }
 
       if (hf.name === hardfork) break
-      if (block !== null) {
+      if (typeof block === 'number') {
         prevBlock = block
       }
     }
@@ -854,7 +853,7 @@ export class Common extends EventEmitter {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = { mainnet, ropsten, rinkeby, kovan, goerli, sepolia } as ChainsConfig
+    const chains = { mainnet, ropsten, rinkeby, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain

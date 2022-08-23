@@ -6,17 +6,41 @@ Due to the high number of breaking changes, upgrading is typically a tedious pro
 
 ## From v4 to v5
 
-Upgrading from v4 to v5 is relatively straightforward. The most significant change is that we dropped support for `LevelDB` out of the box. As a result, you will need to have your own implementation available.
+Upgrading from v4 to v5 is relatively straightforward.
 
-### Motivation
+### SecureTrie as an Option
+
+In v5 the `SecureTrie` class has been removed in favor of a simple constructor option `useHashedKeys` - defaulting to `false` in the base `Trie` implementation. This reduces the level of inheritance dependencies (in the old structure it was e.g. not possible to create a secure trie without the checkpoint functionality, which are logically completely unrelated) and frees things up for future design changes and additions.
+
+Updating is pretty much straight-forward:
+
+```typescript
+const trie = new SecureTrie() // old
+```
+
+```typescript
+const trie = new CheckpointTrie({ useHashedKeys: true }) // new
+```
+
+Note that while upgrading to `CheckpointTrie` gives you guaranteed functional equivalency you might actually want to think if you need the checkpointing functionality or if you otherwise want to upgrade to a simple base trie with:
+
+```typescript
+const trie = new Trie({ useHashedKeys: true }) // new (alternative without checkpointing)
+```
+
+### Database Abstraction
+
+Another significant change is that we dropped support for `LevelDB` out of the box. As a result, you will need to have your own implementation available.
+
+#### Motivation
 
 The primary reason for this change is increase the flexibility of this package by allowing developers to select any type of storage for their unique purposes. In addition, this change renders the project far less susceptible to [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack). We trust that users and developers can appreciate the value of reducing this attack surface in exchange for a little more time spent on their part for the duration of this upgrade.
 
-### LevelDB
+#### LevelDB
 
 Prior to v5, this package shipped with a LevelDB integration out of the box. With this latest version, we have introduced a database abstraction and therefore no longer ship with the aforementioned LevelDB implementation. However, for your convenience, we provide all of the necessary steps so that you can integrate it accordingly.
 
-#### Installation
+##### Installation
 
 Before proceeding with the implementation of `LevelDB`, you will need to install several important dependencies.
 
@@ -26,7 +50,7 @@ npm i @ethereumjs/trie @ethereumjs/util abstract-level level memory-level --save
 
 Note that the `--save-exact` flag will pin these dependencies to exact versions prior to installing them. We recommend carrying out this action in order to safeguard yourself against the aforementioned risk of supply chain attacks.
 
-#### Implementation
+##### Implementation
 
 Fortunately the implementation does not require any input from you other than copying and pasting the below code into a file of your choosing in any given location. You will then import this to any area in which you need to instantiate a trie.
 
@@ -91,6 +115,6 @@ import { LevelDB } from './your-level-implementation'
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
-#### Alternatives
+##### Alternatives
 
 If you wish to use any other database implementations, you can read and review [our recipes](./recipes) which offer various implementations of different database engines.

@@ -10,7 +10,7 @@ import * as tape from 'tape'
 import { CheckpointTrie, LeafNode, MapDB, Trie } from '../src'
 import { bufferToNibbles } from '../src/util/nibbles'
 
-import type { HashFunc } from '../src'
+import type { HashKeysFunction } from '../src'
 
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
@@ -346,7 +346,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 })
 
 tape('dummy hash', async (t) => {
-  const hash: HashFunc = (msg) => {
+  const useHashedKeysFunction: HashKeysFunction = (msg) => {
     const hashLen = 32
     if (msg.length <= hashLen - 5) {
       return Buffer.concat([Buffer.from('hash_'), Buffer.alloc(hashLen - msg.length, 0), msg])
@@ -356,9 +356,11 @@ tape('dummy hash', async (t) => {
   }
 
   const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
-  const expectedRoot = Buffer.from(hash(new LeafNode(bufferToNibbles(k), v).serialize()))
+  const expectedRoot = Buffer.from(
+    useHashedKeysFunction(new LeafNode(bufferToNibbles(k), v).serialize())
+  )
 
-  const trie = new Trie({ hash })
+  const trie = new Trie({ useHashedKeysFunction })
   await trie.put(k, v)
   t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
 
@@ -366,7 +368,7 @@ tape('dummy hash', async (t) => {
 })
 
 tape('blake2b256 trie root', async (t) => {
-  const trie = new Trie({ hash: (msg) => blake2b(msg, 32) })
+  const trie = new Trie({ useHashedKeysFunction: (msg) => blake2b(msg, 32) })
   await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
   t.equal(

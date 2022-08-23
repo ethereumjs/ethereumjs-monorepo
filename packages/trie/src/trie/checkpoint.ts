@@ -1,5 +1,4 @@
 import { CheckpointDB, MapDB } from '../db'
-import { ROOT_DB_KEY } from '../types'
 
 import { Trie } from './trie'
 import { prepareTrieOpts } from './util'
@@ -20,7 +19,7 @@ export class CheckpointTrie extends Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new CheckpointTrie(await prepareTrieOpts(ROOT_DB_KEY, opts))
+    return new CheckpointTrie(await prepareTrieOpts(opts))
   }
 
   /**
@@ -76,11 +75,12 @@ export class CheckpointTrie extends Trie {
    */
   copy(includeCheckpoints = true): CheckpointTrie {
     const trie = new CheckpointTrie({
+      useHashedKeys: this._useHashedKeys,
       db: this.dbStorage.copy(),
       root: this.root,
-      deleteFromDB: (this as any)._deleteFromDB,
+      deleteFromDB: this._deleteFromDB,
       persistRoot: this._persistRoot,
-      hash: (this as any)._hash,
+      useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       trie.db.checkpoints = [...this.db.checkpoints]
