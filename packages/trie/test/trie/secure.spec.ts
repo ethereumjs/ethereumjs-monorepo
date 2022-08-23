@@ -36,7 +36,7 @@ tape('SecureTrie', function (t) {
   })
 
   tape('secure tests', function (it) {
-    const trie = new Trie({ secure: true, db: new MapDB() })
+    let trie = new Trie({ secure: true, db: new MapDB() })
     const jsonTests = require('../fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
@@ -49,7 +49,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('branchingTests', async function (t) {
-      const trie = new Trie({ secure: true, db: new MapDB() })
+      trie = new Trie({ secure: true, db: new MapDB() })
       for (const row of jsonTests.branchingTests.in) {
         const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
