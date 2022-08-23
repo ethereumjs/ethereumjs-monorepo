@@ -588,7 +588,7 @@ export class Trie {
    * @param node - the node to format.
    * @param topLevel - if the node is at the top level.
    * @param opStack - the opStack to push the node's data.
-   * @param remove - whether to remove the node (only used for CheckpointTrie).
+   * @param remove - whether to remove the node (only used for `useCheckpoints`).
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
@@ -746,7 +746,7 @@ export class Trie {
   }
 
   /**
-   * Returns a copy of the underlying trie with the interface of CheckpointTrie.
+   * Returns a copy of the underlying trie.
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   copy(includeCheckpoints = true): Trie {

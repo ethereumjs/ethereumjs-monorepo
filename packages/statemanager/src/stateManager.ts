@@ -54,7 +54,7 @@ const CODEHASH_PREFIX = Buffer.from('c')
  */
 export interface DefaultStateManagerOpts {
   /**
-   * A {@link CheckpointTrie} instance
+   * A {@link Trie} instance
    */
   trie?: Trie
   /**
