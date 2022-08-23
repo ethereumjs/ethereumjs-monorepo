@@ -201,7 +201,6 @@ export class DPT extends EventEmitter {
   }
 
   async addPeer(obj: PeerInfo): Promise<any> {
-    console.log('this socket', this._server._socket)
     if (this.banlist.has(obj)) throw new Error('Peer is banned')
     this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
