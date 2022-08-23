@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
-import { Trie } from '../../src'
+import { MapDB, Trie } from '../../src'
 
 import type { BatchDBOp, CheckpointDB } from '../../src'
 
@@ -68,7 +68,9 @@ tape('testing checkpoints', function (tester) {
 
   it('should copy trie and use the correct hash function', async function (t) {
     const trie = new Trie({
+      db: new MapDB(),
       useCheckpoints: true,
+      useHashedKeys: true,
       useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
     })
 

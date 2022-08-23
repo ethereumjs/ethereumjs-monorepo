@@ -77,7 +77,7 @@ like Ethereum Mainnet.
 
 Note: This functionality has been refactored along the v5 release and was before
 provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
-instantiation with `secure` set to `true`.
+instantiation with `useHashedKeys` set to `true`.
 
 #### Defined in
 

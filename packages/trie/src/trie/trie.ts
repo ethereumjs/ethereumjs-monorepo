@@ -796,7 +796,7 @@ export class Trie {
 
   /**
    * Returns the key practically applied for trie construction
-   * depending on the `secure` option being set or not.
+   * depending on the `useHashedKeys` option being set or not.
    * @param key
    */
   protected appliedKey(key: Buffer) {
