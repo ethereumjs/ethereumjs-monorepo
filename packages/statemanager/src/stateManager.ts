@@ -20,6 +20,7 @@ import { Cache } from './cache'
 
 import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
+import type { CheckpointDB } from '@ethereumjs/trie'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 type StorageProof = {
@@ -174,7 +175,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
     storageTrie.root = account.storageRoot
-    storageTrie.db.checkpoints = []
+    ;(storageTrie.db as CheckpointDB).checkpoints = []
     return storageTrie
   }
 
