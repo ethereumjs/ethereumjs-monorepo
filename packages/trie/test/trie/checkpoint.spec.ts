@@ -69,7 +69,7 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and use the correct hash function', async function (t) {
     const trie = new Trie({
       useCheckpoints: true,
-      hash: (value) => createHash('sha256').update(value).digest(),
+      useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
     })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))

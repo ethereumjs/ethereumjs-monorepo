@@ -17,7 +17,7 @@ import type {
   DB,
   EmbeddedNode,
   FoundNodeFunction,
-  HashFunc,
+  HashKeysFunction,
   Nibbles,
   Proof,
   PutBatch,
@@ -46,7 +46,8 @@ export class Trie {
   dbStorage: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
-  protected _hash: HashFunc
+  protected _useHashedKeys: boolean
+  protected _useHashedKeysFunction: HashKeysFunction
   protected _hashLen: number
   protected _persistRoot: boolean
   protected _useCheckpoints: boolean
@@ -66,7 +67,9 @@ export class Trie {
       this.db = new CheckpointDB(this.dbStorage)
     }
 
-    this._hash = opts?.hash ?? keccak256
+    this.db = opts?.db ?? new MapDB()
+    this._useHashedKeys = opts?.useHashedKeys ?? false
+    this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -79,7 +82,7 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new Trie(await prepareTrieOpts(ROOT_DB_KEY, opts))
+    return new Trie(await prepareTrieOpts(opts))
   }
 
   /**
@@ -124,7 +127,7 @@ export class Trie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
-    const { node, remaining } = await this.findPath(key, throwIfMissing)
+    const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value = null
     if (node && remaining.length === 0) {
       value = node.value
@@ -150,14 +153,15 @@ export class Trie {
     }
 
     await this.lock.wait()
+    const appliedKey = this.appliedKey(key)
     if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
-      await this._createInitialNode(key, value)
+      await this._createInitialNode(appliedKey, value)
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(key)
+      const { remaining, stack } = await this.findPath(appliedKey)
       // then update
-      await this._updateNode(key, value, remaining, stack)
+      await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
     this.lock.signal()
@@ -171,9 +175,10 @@ export class Trie {
    */
   async del(key: Buffer): Promise<void> {
     await this.lock.wait()
-    const { node, stack } = await this.findPath(key)
+    const appliedKey = this.appliedKey(key)
+    const { node, stack } = await this.findPath(appliedKey)
     if (node) {
-      await this._deleteNode(key, stack)
+      await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
     this.lock.signal()
@@ -653,20 +658,11 @@ export class Trie {
   }
 
   /**
-   * prove has been renamed to {@link Trie.createProof}.
-   * @deprecated
-   * @param key
-   */
-  async prove(key: Buffer): Promise<Proof> {
-    return this.createProof(key)
-  }
-
-  /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
    */
   async createProof(key: Buffer): Promise<Proof> {
-    const { stack } = await this.findPath(key)
+    const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
@@ -682,14 +678,17 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const proofTrie = new Trie({ root: rootHash, hash: this._hash })
+    const proofTrie = new Trie({
+      root: rootHash,
+      useHashedKeysFunction: this._useHashedKeysFunction,
+    })
     try {
       await proofTrie.fromProof(proof)
     } catch (e: any) {
       throw new Error('Invalid proof nodes given')
     }
     try {
-      const value = await proofTrie.get(key, true)
+      const value = await proofTrie.get(this.appliedKey(key), true)
       return value
     } catch (err: any) {
       if (err.message === 'Missing node in DB') {
@@ -713,12 +712,12 @@ export class Trie {
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bufferToNibbles(firstKey),
-      lastKey && bufferToNibbles(lastKey),
-      keys.map(bufferToNibbles),
+      firstKey && bufferToNibbles(this.appliedKey(firstKey)),
+      lastKey && bufferToNibbles(this.appliedKey(lastKey)),
+      keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._hash
+      this._useHashedKeysFunction
     )
   }
 
@@ -738,11 +737,12 @@ export class Trie {
     const trie = new Trie({
       db: this.db.copy(),
       dbStorage: this.dbStorage.copy(),
-      deleteFromDB: (this as any)._deleteFromDB,
-      hash: (this as any)._hash,
+      deleteFromDB: this._deleteFromDB,
       persistRoot: this._persistRoot,
       root: this.root,
       useCheckpoints: this._useCheckpoints,
+      useHashedKeys: this._useHashedKeys,
+      useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       ;(trie.db as CheckpointDB).checkpoints = [...(trie.db as CheckpointDB).checkpoints]
@@ -755,7 +755,7 @@ export class Trie {
    */
   async persistRoot() {
     if (this._persistRoot === true) {
-      await this.db.put(ROOT_DB_KEY, this.root)
+      await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
 
@@ -778,8 +778,20 @@ export class Trie {
     await this.walkTrie(this.root, outerOnFound)
   }
 
+  /**
+   * Returns the key practically applied for trie construction
+   * depending on the `secure` option being set or not.
+   * @param key
+   */
+  protected appliedKey(key: Buffer) {
+    if (this._useHashedKeys) {
+      return this.hash(key)
+    }
+    return key
+  }
+
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._hash(msg))
+    return Buffer.from(this._useHashedKeysFunction(msg))
   }
 
   /**

@@ -13,7 +13,6 @@
 - [LeafNode](classes/LeafNode.md)
 - [MapDB](classes/MapDB.md)
 - [PrioritizedTaskExecutor](classes/PrioritizedTaskExecutor.md)
-- [SecureTrie](classes/SecureTrie.md)
 - [Trie](classes/Trie.md)
 - [TrieReadStream](classes/TrieReadStream.md)
 - [WalkController](classes/WalkController.md)
@@ -31,7 +30,7 @@
 - [Checkpoint](README.md#checkpoint)
 - [EmbeddedNode](README.md#embeddednode)
 - [FoundNodeFunction](README.md#foundnodefunction)
-- [HashFunc](README.md#hashfunc)
+- [HashKeysFunction](README.md#hashkeysfunction)
 - [Nibbles](README.md#nibbles)
 - [Proof](README.md#proof)
 - [TrieNode](README.md#trienode)
@@ -55,7 +54,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L49)
+[packages/trie/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L63)
 
 ___
 
@@ -72,7 +71,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L96)
+[packages/trie/src/types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L110)
 
 ___
 
@@ -113,9 +112,9 @@ ___
 
 ___
 
-### HashFunc
+### HashKeysFunction
 
-Ƭ **HashFunc**: (`msg`: `Uint8Array`) => `Uint8Array`
+Ƭ **HashKeysFunction**: (`msg`: `Uint8Array`) => `Uint8Array`
 
 #### Type declaration
 
@@ -173,7 +172,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L103)
+[packages/trie/src/types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L117)
 
 ## Functions
 
@@ -239,7 +238,7 @@ ___
 
 ### verifyRangeProof
 
-▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `hash`): `Promise`<`boolean`\>
+▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `useHashedKeysFunction`): `Promise`<`boolean`\>
 
 verifyRangeProof checks whether the given leaf nodes and edge proof
 can prove the given trie leaves range is matched with the specific root.
@@ -270,7 +269,7 @@ NOTE: Currently only supports verification when the length of firstKey and lastK
 | `keys` | [`Nibbles`](README.md#nibbles)[] | key list. |
 | `values` | `Buffer`[] | value list, one-to-one correspondence with keys. |
 | `proof` | ``null`` \| `Buffer`[] | proof node list, if proof is null, both `firstKey` and `lastKey` must be null |
-| `hash` | [`HashFunc`](README.md#hashfunc) | - |
+| `useHashedKeysFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
 
 #### Returns
 

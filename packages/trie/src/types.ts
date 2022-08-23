@@ -19,7 +19,7 @@ export type FoundNodeFunction = (
   walkController: WalkController
 ) => void
 
-export type HashFunc = (msg: Uint8Array) => Uint8Array
+export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
 export interface TrieOpts {
   /**
@@ -36,6 +36,7 @@ export interface TrieOpts {
    * A `Buffer` for the root of a previously stored trie
    */
   root?: Buffer
+
   /**
    * Delete nodes from DB on delete operations (disallows switching to an older state root)
    * Default: `false`
@@ -43,9 +44,23 @@ export interface TrieOpts {
   deleteFromDB?: boolean
 
   /**
+   * Create as a secure Trie where the keys are automatically hashed using the
+   * **keccak256** hash function or alternatively the custom hash function provided.
+   * Default: `false`
+   *
+   * This is the flavor of the Trie which is used in production Ethereum networks
+   * like Ethereum Mainnet.
+   *
+   * Note: This functionality has been refactored along the v5 release and was before
+   * provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
+   * instantiation with `secure` set to `true`.
+   */
+  useHashedKeys?: boolean
+
+  /**
    * Hash function used for hashing trie node and securing key.
    */
-  hash?: HashFunc
+  useHashedKeysFunction?: HashKeysFunction
 
   /**
    * Store the root inside the database after every `write` operation
