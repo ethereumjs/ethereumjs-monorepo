@@ -317,12 +317,12 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 
   const trieSetups = [
     {
-      trie: new Trie({deleteFromDB: false }),
+      trie: new Trie({ deleteFromDB: false }),
       expected: v1,
       msg: 'should return v1 when setting back the state root when deleteFromDB=false',
     },
     {
-      trie: new Trie({deleteFromDB: true }),
+      trie: new Trie({ deleteFromDB: true }),
       expected: null,
       msg: 'should return null when setting back the state root when deleteFromDB=true',
     },
