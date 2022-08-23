@@ -1,4 +1,4 @@
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { CheckpointTrie as Trie } from '@ethereumjs/trie'
 import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -10,7 +10,7 @@ import type { getCb, putCb } from '../src/cache'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {
-    const trie = new Trie()
+    const trie = new Trie({ useHashedKeys: true })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
       const rlp = await innerTrie.get(address.buf)
@@ -32,7 +32,7 @@ tape('cache initialization', (t) => {
 })
 
 tape('cache put and get account', (t) => {
-  const trie = new Trie()
+  const trie = new Trie({ useHashedKeys: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)
@@ -103,7 +103,7 @@ tape('cache put and get account', (t) => {
 })
 
 tape('cache checkpointing', (t) => {
-  const trie = new Trie()
+  const trie = new Trie({ useHashedKeys: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)
