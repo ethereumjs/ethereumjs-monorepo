@@ -41,13 +41,13 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
 
-  private _secure: boolean
+  protected _secure: boolean
   /** The backend DB */
   db: DB
-  private _root: Buffer
-  private _deleteFromDB: boolean
-  private _hash: HashFunc
-  private _hashLen: number
+  protected _root: Buffer
+  protected _deleteFromDB: boolean
+  protected _hash: HashFunc
+  protected _hashLen: number
   protected _persistRoot: boolean
 
   /**
@@ -735,6 +735,7 @@ export class Trie {
    */
   copy(): Trie {
     return new Trie({
+      secure: this._secure,
       db: this.db.copy(),
       root: this.root,
       deleteFromDB: this._deleteFromDB,
