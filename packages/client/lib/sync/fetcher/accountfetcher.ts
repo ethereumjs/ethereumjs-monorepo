@@ -1,38 +1,14 @@
-import { RLP } from '@ethereumjs/rlp'
 import { CheckpointTrie, Trie } from '@ethereumjs/trie'
-import { KECCAK256_NULL, KECCAK256_RLP, arrToBufArr, setLengthLeft } from '@ethereumjs/util'
+import { convertSlimAccount, setLengthLeft } from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 
 import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
+import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
-// import { Chain } from '../../blockchain'
 import type { Job } from './types'
-
-/**
- * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
- * @param body Array of 4 Buffer-like items to represent the account
- * @returns RLP encoded version of the account
- */
-function convertSlimAccount(body: any) {
-  const cpy = [body[0], body[1], body[2], body[3]]
-  if (arrToBufArr(body[2]).length === 0) {
-    // StorageRoot
-    cpy[2] = KECCAK256_RLP
-  }
-  if (arrToBufArr(body[3]).length === 0) {
-    // CodeHash
-    cpy[3] = KECCAK256_NULL
-  }
-  return arrToBufArr(RLP.encode(cpy))
-}
-
-type AccountData = {
-  hash: Buffer
-  body: any
-}
 
 /**
  * Implements an snap1 based account fetcher

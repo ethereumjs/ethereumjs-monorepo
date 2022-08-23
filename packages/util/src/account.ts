@@ -366,7 +366,9 @@ export function accountBodyToSlim(body: AccountBodyBuffer) {
 }
 
 /**
- * Converts a slim account RLP to a normal account RLP
+ * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
+ * @param body Array of 4 Buffer-like items to represent the account
+ * @returns RLP encoded version of the account
  */
 export function accountBodyToRLP(body: AccountBodyBuffer, couldBeSlim = true) {
   const accountBody = couldBeSlim ? accountBodyFromSlim(body) : body
