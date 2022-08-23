@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661247875651,
+  "lastUpdate": 1661266933378,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b53bdbe7fd078bec374d7c07cd5930e1abe3c774",
-          "message": "adjust skipbalance logic (#2172)\n\n* vm: adjust skipbalance logic, balance = tx cost\r\n* evm: adjust skip balance logic and docs",
-          "timestamp": "2022-08-17T18:00:18-04:00",
-          "tree_id": "95acf10870a9642540d9286c48020bcd6008eb62",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b53bdbe7fd078bec374d7c07cd5930e1abe3c774"
-        },
-        "date": 1660773848568,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12659,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12558,
-            "range": "±2.64%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12123,
-            "range": "±6.18%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12401,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 11745,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.34%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "310b9fa12ede161682a1d8e86520657fccb4fd65",
+          "message": "Fix VM Nightly (#2213)\n\n* Change npm ci to npm i\r\n\r\n* Add workflow dispatch trigger\r\n\r\n* Switch remaning ci to i\r\n\r\n* common: Fix common hardfork check",
+          "timestamp": "2022-08-23T10:54:56-04:00",
+          "tree_id": "85dad3ec0256ced096571ae09d9a8cc1d90570bb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/310b9fa12ede161682a1d8e86520657fccb4fd65"
+        },
+        "date": 1661266932767,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23705,
+            "range": "±3.38%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22334,
+            "range": "±5.07%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22644,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20070,
+            "range": "±9.59%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22863,
+            "range": "±6.26%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
