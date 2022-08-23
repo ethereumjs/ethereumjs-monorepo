@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661214945919,
+  "lastUpdate": 1661244669733,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6c0db16f0a6055467d86972605e969cce14d10e9",
-          "message": "chore: add `engines` property to all `package.json` files (#2164)\n\n* chore: add `engines` property to all `package.json` files\n\n* chore: wip\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\n\n* chore: wip\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\n\nSigned-off-by: Brian Faust <hello@basecode.sh>\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-08-17T13:33:50-04:00",
-          "tree_id": "328dd3e4f06364fbb74237db232c6bf0b7a2ee0c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6c0db16f0a6055467d86972605e969cce14d10e9"
-        },
-        "date": 1660757844943,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19050,
-            "range": "±2.68%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17728,
-            "range": "±7.66%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18614,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18974,
-            "range": "±2.44%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16316,
-            "range": "±9.73%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5dc3fd75632df88890e0f7c67c148ab5c8e60303",
+          "message": "Common, Block, Blockchain, Client: removed Kovan chain support (EOL) (#2206)\n\n* Common, Block, Blockchain, Client: removed Kovan chain support (EOL)\r\n\r\n* Tx: additional Kovan-related test fixes\r\n\r\n* Common: set mainnet HF to merge, fixed common and block tests\r\n\r\n* Blockchain: fixed mainnet London->Merge related tests\r\n\r\n* VM: fixed mainnet London->Merge related tests\r\n\r\n* Client: attempted test fix (still fails)\r\n\r\n* client: fix sendRawTransaction test\r\n\r\n* monorepo: typo succesfully -> successfully\r\n\r\n* ethash: fix block test\r\n\r\n* ethash: fix miner test\r\n\r\n* devp2p: attempt fixing test failures\r\n\r\n* devp2p: remove console log\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2022-08-23T10:48:23+02:00",
+          "tree_id": "cf289e0770717d9cabb61215e0ea704a3bbfc48e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5dc3fd75632df88890e0f7c67c148ab5c8e60303"
+        },
+        "date": 1661244668299,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22780,
+            "range": "±2.82%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21858,
+            "range": "±5.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 23156,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22492,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22419,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
