@@ -87,7 +87,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   constructor(opts: DefaultStateManagerOpts = {}) {
     super(opts)
 
-    this._trie = opts.trie ?? new Trie()
+    this._trie = opts.trie ?? new Trie({ useHashedKeys: true })
     this._storageTries = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
@@ -374,7 +374,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await new Trie().verifyProof(rootHash, key, accountProof)
+    const value = await new Trie({ useHashedKeys: true }).verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -420,7 +420,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const proofValue = await new Trie().verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await new Trie({ useHashedKeys: true }).verifyProof(
+        storageRoot,
+        storageKey,
+        storageProof
+      )
       const reportedValue = setLengthLeft(
         Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
         32
