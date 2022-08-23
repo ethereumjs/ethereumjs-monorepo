@@ -75,12 +75,12 @@ export class CheckpointTrie extends Trie {
    */
   copy(includeCheckpoints = true): CheckpointTrie {
     const trie = new CheckpointTrie({
-      secure: this._hashKeys,
+      useHashedKeys: this._useHashedKeys,
       db: this.dbStorage.copy(),
       root: this.root,
       deleteFromDB: this._deleteFromDB,
       persistRoot: this._persistRoot,
-      hash: this._hashKeysFunction,
+      useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       trie.db.checkpoints = [...this.db.checkpoints]

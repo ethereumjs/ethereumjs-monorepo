@@ -7,10 +7,10 @@ import type { TrieOpts } from '../types'
 export async function prepareTrieOpts(opts?: TrieOpts) {
   const result: TrieOpts = { ...opts }
 
-  const secure = opts?.secure ?? false
+  const secure = opts?.useHashedKeys ?? false
   let key = ROOT_DB_KEY
   if (secure === true) {
-    const hash = opts?.hash ?? keccak256
+    const hash = opts?.useHashedKeysFunction ?? keccak256
     key = hash(ROOT_DB_KEY) as Buffer
   }
 

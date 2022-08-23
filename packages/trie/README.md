@@ -174,7 +174,7 @@ const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
 const trie = new Trie({
-  secure: true,
+  useHashedKeys: true,
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
   root: stateRootBuffer,
 })
@@ -196,7 +196,7 @@ import { RLP } from '@ethereumjs/rlp'
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
 const trie = new Trie({
-  secure: true,
+  useHashedKeys: true,
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER',
   root: stateRoot
 })

@@ -37,7 +37,7 @@ Performs a batch operation on db.
 
 #### Defined in
 
-[packages/trie/src/types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L87)
+[packages/trie/src/types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L101)
 
 ___
 
@@ -54,7 +54,7 @@ to the **same** underlying leveldb instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L93)
+[packages/trie/src/types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L107)
 
 ___
 
@@ -76,7 +76,7 @@ Removes a raw value in the underlying leveldb.
 
 #### Defined in
 
-[packages/trie/src/types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L81)
+[packages/trie/src/types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L95)
 
 ___
 
@@ -100,7 +100,7 @@ A Promise that resolves to `Buffer` if a value is found or `null` if no value is
 
 #### Defined in
 
-[packages/trie/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L68)
+[packages/trie/src/types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L82)
 
 ___
 
@@ -123,4 +123,4 @@ Writes a value directly to leveldb.
 
 #### Defined in
 
-[packages/trie/src/types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L75)
+[packages/trie/src/types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L89)
