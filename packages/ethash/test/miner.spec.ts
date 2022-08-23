@@ -70,7 +70,10 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
   const miner = e.getMiner(block.header)
   const solution = <BlockHeader>await miner.mine(-1)
 
-  t.ok(e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() })), 'successfully mined block')
+  t.ok(
+    e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() }, { common })),
+    'successfully mined block'
+  )
 
   const blockMiner = e.getMiner(block)
   const blockSolution = <Block>await blockMiner.mine(-1)
