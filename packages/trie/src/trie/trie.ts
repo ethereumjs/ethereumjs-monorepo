@@ -41,6 +41,7 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
 
+  private _secure: boolean
   /** The backend DB */
   db: DB
   private _root: Buffer
@@ -55,6 +56,8 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
+
+    this._secure = opts?.secure ?? false
     this.db = opts?.db ?? new MapDB()
     this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -69,7 +72,14 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new Trie(await prepareTrieOpts(ROOT_DB_KEY, opts))
+    const secure = opts?.secure ?? false
+    let key = ROOT_DB_KEY
+    if (secure === true) {
+      const hash = opts?.hash ?? keccak256
+      key = hash(ROOT_DB_KEY) as Buffer
+    }
+
+    return new Trie(await prepareTrieOpts(key, opts))
   }
 
   /**
@@ -121,7 +131,7 @@ export class Trie {
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
-    const { node, remaining } = await this.findPath(key, throwIfMissing)
+    const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value = null
     if (node && remaining.length === 0) {
       value = node.value
@@ -147,14 +157,15 @@ export class Trie {
     }
 
     await this.lock.wait()
+    const appliedKey = this.appliedKey(key)
     if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
-      await this._createInitialNode(key, value)
+      await this._createInitialNode(appliedKey, value)
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(key)
+      const { remaining, stack } = await this.findPath(appliedKey)
       // then update
-      await this._updateNode(key, value, remaining, stack)
+      await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
     this.lock.signal()
@@ -168,9 +179,10 @@ export class Trie {
    */
   async del(key: Buffer): Promise<void> {
     await this.lock.wait()
-    const { node, stack } = await this.findPath(key)
+    const appliedKey = this.appliedKey(key)
+    const { node, stack } = await this.findPath(appliedKey)
     if (node) {
-      await this._deleteNode(key, stack)
+      await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
     this.lock.signal()
@@ -654,7 +666,7 @@ export class Trie {
    * @param key
    */
   async createProof(key: Buffer): Promise<Proof> {
-    const { stack } = await this.findPath(key)
+    const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
@@ -677,7 +689,7 @@ export class Trie {
       throw new Error('Invalid proof nodes given')
     }
     try {
-      const value = await proofTrie.get(key, true)
+      const value = await proofTrie.get(this.appliedKey(key), true)
       return value
     } catch (err: any) {
       if (err.message === 'Missing node in DB') {
@@ -701,9 +713,9 @@ export class Trie {
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bufferToNibbles(firstKey),
-      lastKey && bufferToNibbles(lastKey),
-      keys.map(bufferToNibbles),
+      firstKey && bufferToNibbles(this.appliedKey(firstKey)),
+      lastKey && bufferToNibbles(this.appliedKey(lastKey)),
+      keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
       this._hash
@@ -736,7 +748,7 @@ export class Trie {
    */
   async persistRoot() {
     if (this._persistRoot === true) {
-      await this.db.put(ROOT_DB_KEY, this.root)
+      await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
 
@@ -757,6 +769,18 @@ export class Trie {
       }
     }
     await this.walkTrie(this.root, outerOnFound)
+  }
+
+  /**
+   * Returns the key practically applied for trie construction
+   * depending on the `secure` option being set or not.
+   * @param key
+   */
+  protected appliedKey(key: Buffer) {
+    if (this._secure) {
+      return this.hash(key)
+    }
+    return key
   }
 
   protected hash(msg: Uint8Array): Buffer {

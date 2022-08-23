@@ -22,6 +22,19 @@ export type HashFunc = (msg: Uint8Array) => Uint8Array
 
 export interface TrieOpts {
   /**
+   * Create as a secure Trie where the keys are automatically hashed using the
+   * **keccak256** hash function or alternatively the custom hash function provided.
+   * Default: `false`
+   *
+   * This is the flavor of the Trie which is used in production Ethereum networks
+   * like Ethereum Mainnet.
+   *
+   * Note: This functionality has been refactored along the v5 release and was before
+   * provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
+   * instantiation with `secure` set to `true`.
+   */
+  secure?: boolean
+  /**
    * A database instance.
    */
   db?: DB
