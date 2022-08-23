@@ -375,14 +375,12 @@ export function getCommon(network: string): Common {
           | null
         testHardforks.push({
           name: hf.name,
-          // forkHash: hf.forkHash,
-          block: forkBlockNumber,
+          block: forkBlockNumber ?? 0, // If hardfork isn't in transitionForks, activate at 0
         })
       } else {
         // disable the hardfork
         testHardforks.push({
           name: hf.name,
-          // forkHash: hf.forkHash,
           block: null,
         })
       }
