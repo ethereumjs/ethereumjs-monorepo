@@ -58,15 +58,6 @@ export class SecureTrie extends CheckpointTrie {
   }
 
   /**
-   * prove has been renamed to {@link SecureTrie.createProof}.
-   * @deprecated
-   * @param key
-   */
-  async prove(key: Buffer): Promise<Proof> {
-    return this.createProof(key)
-  }
-
-  /**
    * Creates a proof that can be verified using {@link SecureTrie.verifyProof}.
    * @param key
    */

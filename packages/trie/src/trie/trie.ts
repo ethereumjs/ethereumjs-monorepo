@@ -650,15 +650,6 @@ export class Trie {
   }
 
   /**
-   * prove has been renamed to {@link Trie.createProof}.
-   * @deprecated
-   * @param key
-   */
-  async prove(key: Buffer): Promise<Proof> {
-    return this.createProof(key)
-  }
-
-  /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
    */
