@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { CheckpointTrie as Trie } from '@ethereumjs/trie'
 import { Account, isHexPrefixed, isTruthy, toBuffer, unpadBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -21,7 +21,7 @@ export interface GenesisState {
  * Derives the stateRoot of the genesis block based on genesis allocations
  */
 export async function genesisStateRoot(genesisState: GenesisState) {
-  const trie = new Trie()
+  const trie = new Trie({ useHashedKeys: true })
   for (const [key, value] of Object.entries(genesisState)) {
     const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
     const account = new Account()

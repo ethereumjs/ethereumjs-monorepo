@@ -24,7 +24,7 @@ If you currently use this package in your project and plan to upgrade, please re
 
 ## Usage
 
-This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `secure` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
+This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useHashedKeys` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
 **Note:** Up to v4 of the Trie library the secure trie was implemented as a separate `SecureTrie` class, see the [upgrade guide](./UPGRADING.md) for more infos.
 
@@ -166,7 +166,7 @@ You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf 
 
 ```typescript
 import { Level } from 'level'
-import { SecureTrie, LevelDB } from '@ethereumjs/trie'
+import { LevelDB, Trie } from '@ethereumjs/trie'
 
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
@@ -174,9 +174,9 @@ const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
 const trie = new Trie({
-  secure: true,
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
   root: stateRootBuffer,
+  useHashedKeys: true,
 })
 
 trie
@@ -189,16 +189,16 @@ trie
 
 ```typescript
 import { Level } from 'level'
-import { SecureTrie, LevelDB } from '@ethereumjs/trie'
+import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
 const trie = new Trie({
-  secure: true,
-  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER',
+  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')),
   root: stateRoot
+  useHashedKeys: true,
 })
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'

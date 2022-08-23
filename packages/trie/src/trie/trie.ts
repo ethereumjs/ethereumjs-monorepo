@@ -17,7 +17,7 @@ import type {
   DB,
   EmbeddedNode,
   FoundNodeFunction,
-  HashFunc,
+  HashKeysFunction,
   Nibbles,
   Proof,
   PutBatch,
@@ -41,12 +41,12 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
 
-  protected _hashKeys: boolean
   /** The backend DB */
   db: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
-  protected _hashKeysFunction: HashFunc
+  protected _useHashedKeys: boolean
+  protected _useHashedKeysFunction: HashKeysFunction
   protected _hashLen: number
   protected _persistRoot: boolean
 
@@ -57,9 +57,9 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this._hashKeys = opts?.secure ?? false
     this.db = opts?.db ?? new MapDB()
-    this._hashKeysFunction = opts?.hash ?? keccak256
+    this._useHashedKeys = opts?.useHashedKeys ?? false
+    this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -675,7 +675,10 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const proofTrie = new Trie({ root: rootHash, hash: this._hashKeysFunction })
+    const proofTrie = new Trie({
+      root: rootHash,
+      useHashedKeysFunction: this._useHashedKeysFunction,
+    })
     try {
       await proofTrie.fromProof(proof)
     } catch (e: any) {
@@ -711,7 +714,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._hashKeysFunction
+      this._useHashedKeysFunction
     )
   }
 
@@ -728,12 +731,12 @@ export class Trie {
    */
   copy(): Trie {
     return new Trie({
-      secure: this._hashKeys,
       db: this.db.copy(),
-      root: this.root,
       deleteFromDB: this._deleteFromDB,
+      useHashedKeys: this._useHashedKeys,
+      useHashedKeysFunction: this._useHashedKeysFunction,
       persistRoot: this._persistRoot,
-      hash: this._hashKeysFunction,
+      root: this.root,
     })
   }
 
@@ -767,17 +770,17 @@ export class Trie {
 
   /**
    * Returns the key practically applied for trie construction
-   * depending on the `secure` option being set or not.
+   * depending on the `useHashedKeys` option being set or not.
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._hashKeys) {
+    if (this._useHashedKeys) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._hashKeysFunction(msg))
+    return Buffer.from(this._useHashedKeysFunction(msg))
   }
 }

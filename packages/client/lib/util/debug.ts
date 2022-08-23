@@ -27,7 +27,7 @@ import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM }  from './lib'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { CheckpointTrie as Trie } from '@ethereumjs/trie'
 import { DefaultStateManager } from './lib/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
@@ -40,7 +40,7 @@ const main = async () => {
     .toString('hex')}', 'hex'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
-  const trie = new Trie({ db: stateDB })
+  const trie = new Trie({ db: stateDB, useHashedKeys: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(Buffer.from('${(
