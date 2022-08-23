@@ -41,7 +41,7 @@ export class Trie {
   private lock: Semaphore
 
   /** The backend DB */
-  db: DB | CheckpointDB
+  db: CheckpointDB
   dbStorage: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
@@ -58,13 +58,12 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this.db = opts?.db ?? new MapDB()
-    this.dbStorage = opts?.dbStorage ?? this.db
+    this.dbStorage = opts?.dbStorage ?? opts?.db ?? new MapDB()
 
-    if (opts?.useCheckpoints === true) {
-      if (!(this.db instanceof CheckpointDB)) {
-        this.db = new CheckpointDB(this.dbStorage)
-      }
+    if (opts?.db instanceof CheckpointDB) {
+      this.db = opts.db
+    } else {
+      this.db = new CheckpointDB(this.dbStorage)
     }
 
     this._useCheckpoints = opts?.useCheckpoints ?? false
@@ -761,7 +760,7 @@ export class Trie {
       useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
-      ;(trie.db as CheckpointDB).checkpoints = [...(this.db as CheckpointDB).checkpoints]
+      trie.db.checkpoints = [...this.db.checkpoints]
     }
     return trie
   }
@@ -818,7 +817,7 @@ export class Trie {
       return false
     }
 
-    return (this.db as CheckpointDB).isCheckpoint
+    return this.db.isCheckpoint
   }
 
   /**
@@ -830,7 +829,7 @@ export class Trie {
       throw new Error("Can't use `revert` without `_useCheckpoints`")
     }
 
-    ;(this.db as CheckpointDB).checkpoint(this.root)
+    this.db.checkpoint(this.root)
   }
 
   /**
@@ -848,7 +847,7 @@ export class Trie {
     }
 
     await this.lock.wait()
-    await (this.db as CheckpointDB).commit()
+    await this.db.commit()
     await this.persistRoot()
     this.lock.signal()
   }
@@ -868,7 +867,7 @@ export class Trie {
     }
 
     await this.lock.wait()
-    this.root = await (this.db as CheckpointDB).revert()
+    this.root = await this.db.revert()
     await this.persistRoot()
     this.lock.signal()
   }

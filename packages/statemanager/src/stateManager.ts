@@ -175,7 +175,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
     storageTrie.root = account.storageRoot
-    ;(storageTrie.db as CheckpointDB).checkpoints = []
+    storageTrie.db.checkpoints = []
     return storageTrie
   }
 
