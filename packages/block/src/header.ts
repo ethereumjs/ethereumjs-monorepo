@@ -329,18 +329,8 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(Chain.Kovan)) {
-        if (nonce.length !== 65) {
-          const msg = this._errorMsg(
-            `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
-          )
-          throw new Error(msg)
-        }
-      } else {
-        const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-        throw new Error(msg)
-      }
+      const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      throw new Error(msg)
     }
 
     // check if the block used too much gas

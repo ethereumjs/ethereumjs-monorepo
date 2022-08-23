@@ -67,18 +67,25 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromRLPSerializedHeader()', function (st) {
-    let header = BlockHeader.fromHeaderData({}, { freeze: false })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader)
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+      common,
+    })
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, { freeze: false })
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+      common,
+      freeze: false,
+    })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
 
     st.throws(
       () =>
         BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+          common,
           freeze: false,
           hardforkByTTD: 1n, // Added to bypass defaulting hardforkByBlockNumber to true in static constructor
         }),
@@ -91,21 +98,7 @@ tape('[Block]: Header functions', function (t) {
         'f90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
         'hex'
       ),
-      { hardforkByBlockNumber: true }
-    )
-
-    st.equal(
-      header.hash().toString('hex'),
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'genesis block should produce correct hash'
-    )
-
-    header = BlockHeader.fromRLPSerializedHeader(
-      Buffer.from(
-        'f90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
-        'hex'
-      ),
-      { hardforkByBlockNumber: false }
+      { common, hardforkByBlockNumber: false }
     )
     st.equal(
       header.hash().toString('hex'),
@@ -126,6 +119,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray()', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const zero = Buffer.alloc(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
@@ -141,10 +135,10 @@ tape('[Block]: Header functions', function (t) {
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    let header = BlockHeader.fromValuesArray(headerArray)
+    let header = BlockHeader.fromValuesArray(headerArray, { common })
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
+    header = BlockHeader.fromValuesArray(headerArray, { common, freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
     st.end()
   })
@@ -330,21 +324,6 @@ tape('[Block]: Header functions', function (t) {
       'contains nonce length error message'
     )
 
-    const kovanCommon = new Common({ chain: Chain.Kovan })
-    st.throws(
-      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }, { common: kovanCommon }),
-      (err: any) => err.message.includes('nonce must be 65 bytes on kovan'),
-      'contains kovan nonce error message'
-    )
-
-    st.doesNotThrow(
-      () =>
-        BlockHeader.fromHeaderData(
-          { nonce: Buffer.alloc(65) },
-          { common: kovanCommon, consensusFormatValidation: false }
-        ),
-      'was able to create Kovan block with nonce 65 bytes long'
-    )
     st.end()
   })
   /*
@@ -462,14 +441,15 @@ tape('[Block]: Header functions', function (t) {
   })
 */
   t.test('should test validateGasLimit()', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
-      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
+      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
       const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
-      const block = Block.fromRLPSerializedBlock(blockRlp)
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
 
