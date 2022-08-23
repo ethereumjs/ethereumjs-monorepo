@@ -59,15 +59,16 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this._useCheckpoints = opts?.useCheckpoints ?? false
     this.db = opts?.db ?? new MapDB()
     this.dbStorage = opts?.dbStorage ?? this.db
 
     if (opts?.useCheckpoints === true) {
-      this.db = new CheckpointDB(this.dbStorage)
+      if (!(this.db instanceof CheckpointDB)) {
+        this.db = new CheckpointDB(this.dbStorage)
+      }
     }
 
-    this.db = opts?.db ?? new MapDB()
+    this._useCheckpoints = opts?.useCheckpoints ?? false
     this._useHashedKeys = opts?.useHashedKeys ?? false
     this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -745,7 +746,7 @@ export class Trie {
       useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
-      ;(trie.db as CheckpointDB).checkpoints = [...(trie.db as CheckpointDB).checkpoints]
+      ;(trie.db as CheckpointDB).checkpoints = [...(this.db as CheckpointDB).checkpoints]
     }
     return trie
   }
