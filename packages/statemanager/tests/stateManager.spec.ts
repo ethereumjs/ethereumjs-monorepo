@@ -435,7 +435,7 @@ tape('StateManager - Contract code', (tester) => {
       await stateManager.putContractCode(address, code)
       t.fail('should throw')
     } catch (e) {
-      t.pass('succesfully threw')
+      t.pass('successfully threw')
     }
     t.end()
   })
