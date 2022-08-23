@@ -1,6 +1,8 @@
 import { CheckpointDB, MapDB } from '../db'
+import { ROOT_DB_KEY } from '../types'
 
 import { Trie } from './trie'
+import { prepareTrieOpts } from './util'
 
 import type { DB, TrieOpts } from '../types'
 
@@ -15,6 +17,10 @@ export class CheckpointTrie extends Trie {
     super(opts)
     this.dbStorage = opts?.db ?? new MapDB()
     this.db = new CheckpointDB(this.dbStorage)
+  }
+
+  static async create(opts?: TrieOpts) {
+    return new CheckpointTrie(await prepareTrieOpts(ROOT_DB_KEY, opts))
   }
 
   /**
