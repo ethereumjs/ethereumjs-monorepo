@@ -20,7 +20,7 @@ export class CheckpointTrie extends Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new CheckpointTrie(await prepareTrieOpts(ROOT_DB_KEY, opts))
+    return new CheckpointTrie(await prepareTrieOpts(opts))
   }
 
   /**

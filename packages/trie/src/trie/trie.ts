@@ -72,14 +72,7 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    const secure = opts?.secure ?? false
-    let key = ROOT_DB_KEY
-    if (secure === true) {
-      const hash = opts?.hash ?? keccak256
-      key = hash(ROOT_DB_KEY) as Buffer
-    }
-
-    return new Trie(await prepareTrieOpts(key, opts))
+    return new Trie(await prepareTrieOpts(opts))
   }
 
   /**
