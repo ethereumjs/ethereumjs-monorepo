@@ -83,6 +83,7 @@ for (const { constructor, title } of [
 
     t.test('persist the root if the `root` option is given', async function (st) {
       const trie = await constructor.create({
+        db: new MapDB(),
         root: KECCAK256_RLP,
         persistRoot: true,
       })

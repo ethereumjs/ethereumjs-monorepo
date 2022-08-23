@@ -10,7 +10,6 @@ import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
-import { prepareTrieOpts } from './util'
 
 import type {
   BatchDBOp,
@@ -83,7 +82,23 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new Trie(await prepareTrieOpts(opts))
+    let key = ROOT_DB_KEY
+
+    if (opts?.useHashedKeys === true) {
+      key = (opts?.useHashedKeysFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
+    }
+
+    key = Buffer.from(key)
+
+    if (opts?.db !== undefined && opts?.persistRoot === true) {
+      if (opts?.root === undefined) {
+        opts.root = (await opts?.db.get(key)) ?? undefined
+      } else {
+        await opts?.db.put(key, opts.root)
+      }
+    }
+
+    return new Trie(opts)
   }
 
   /**
