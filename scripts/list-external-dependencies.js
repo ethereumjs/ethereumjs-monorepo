@@ -1,4 +1,29 @@
+const { readFileSync } = require('fs')
 const { join } = require('path')
+
+function countExternalDependencies(dependency) {
+  try {
+    const { dependencies, devDependencies } = JSON.parse(readFileSync(`./node_modules/${dependency}/package.json`).toString())
+
+    return {
+      dependencies: dependencies === undefined ? 0 : new Set(Object.keys(dependencies)).size,
+      devDependencies: devDependencies === undefined ? 0 : new Set(Object.keys(devDependencies)).size,
+    }
+  } catch {
+    return {
+      dependencies: 0,
+      devDependencies: 0,
+    }
+  }
+}
+
+function logDependencies(type, set) {
+  console.log(`>>> ${set.length} ${type}`)
+
+  for (const { dependency, dependencies, devDependencies } of set) {
+    console.log(`${dependency} (${dependencies} dependencies, ${devDependencies} devDependencies)`)
+  }
+}
 
 const BASE_PATH = join(__dirname, '..', 'packages')
 const WHITELIST = [
@@ -26,8 +51,8 @@ const directories = require('fs')
 // Always include the root package.json too
 directories.push(require('../package.json'))
 
-const prod = new Set()
-const devs = new Set()
+let prod = new Set()
+let devs = new Set()
 for (const { dependencies, devDependencies } of directories) {
   if (dependencies) {
     for (const dependency of Object.keys(dependencies)) {
@@ -35,7 +60,7 @@ for (const { dependencies, devDependencies } of directories) {
         continue
       }
 
-      prod.add(dependency)
+      prod.add({ dependency, ...countExternalDependencies(dependency) })
     }
   }
 
@@ -45,12 +70,10 @@ for (const { dependencies, devDependencies } of directories) {
         continue
       }
 
-      devs.add(dependency)
+      devs.add({ dependency, ...countExternalDependencies(dependency) })
     }
   }
 }
 
-console.log({
-  prod: [...prod].sort(),
-  devs: [...devs].sort(),
-})
+logDependencies("dependencies", [...prod].sort())
+logDependencies("devDependencies", [...devs].sort())
