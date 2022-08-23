@@ -76,10 +76,13 @@ export const generateConsecutiveBlock = (
     difficultyChangeFactor = 1
   }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-  const tmpHeader = BlockHeader.fromHeaderData({
-    number: parentBlock.header.number + BigInt(1),
-    timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
-  })
+  const tmpHeader = BlockHeader.fromHeaderData(
+    {
+      number: parentBlock.header.number + BigInt(1),
+      timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
+    },
+    { common }
+  )
   const header = BlockHeader.fromHeaderData(
     {
       number: parentBlock.header.number + BigInt(1),

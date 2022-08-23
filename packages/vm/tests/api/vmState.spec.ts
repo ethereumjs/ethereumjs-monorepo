@@ -69,10 +69,6 @@ tape('vmState', (t) => {
         Buffer.from('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d', 'hex'),
       ],
       [
-        Chain.Kovan,
-        Buffer.from('2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2', 'hex'),
-      ],
-      [
         Chain.Goerli,
         Buffer.from('5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008', 'hex'),
       ],

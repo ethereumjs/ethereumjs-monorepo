@@ -110,7 +110,6 @@ Supported chains:
 - `mainnet` (`Chain.Mainnet`)
 - `ropsten` (`Chain.Ropsten`)
 - `rinkeby` (`Chain.Rinkeby`)
-- `kovan` (`Chain.Kovan`)
 - `goerli` (`Chain.Goerli`)
 - `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
 - Private/custom chain parameters
