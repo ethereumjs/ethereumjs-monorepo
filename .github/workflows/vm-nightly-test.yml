@@ -3,8 +3,6 @@ on:
   schedule:
     - cron: 0 0 * * *
   workflow_dispatch:
-  push:
-    branches: ['fix-vm-nightly-again']
 
 env:
   cwd: ${{github.workspace}}/packages/vm
