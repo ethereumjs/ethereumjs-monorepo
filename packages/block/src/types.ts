@@ -69,9 +69,9 @@ export interface BlockOptions {
    */
   cliqueSigner?: Buffer
   /**
-   * Perform consensus validation checks on header if set. Defaults to true.
+   *  Skip consensus format validation checks on header if set. Defaults to false.
    */
-  consensusFormatValidation?: boolean
+  skipConsensusFormatValidation?: boolean
 }
 
 /**
