@@ -22,7 +22,7 @@ interface SnapProtocolOptions extends ProtocolOptions {
   convertSlimBody?: boolean
 }
 
-type AccountData = {
+export type AccountData = {
   hash: Buffer
   body: AccountBodyBuffer
 }
