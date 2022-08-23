@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { CheckpointTrie as Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
 import { Level } from 'level'
@@ -33,7 +33,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   const cacheDB = new Level('./.cachedb')
-  const state = new Trie()
+  const state = new Trie({ useHashedKeys: true })
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)

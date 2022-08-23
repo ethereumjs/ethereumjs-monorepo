@@ -19,7 +19,7 @@ const trie = new SecureTrie() // old
 ```
 
 ```typescript
-const trie = new CheckpointTrie({ useHashedKeys: true }) // new
+const trie = new Trie({ useCheckpoints: true, useHashedKeys: true }) // new
 ```
 
 Note that while upgrading to `CheckpointTrie` gives you guaranteed functional equivalency you might actually want to think if you need the checkpointing functionality or if you otherwise want to upgrade to a simple base trie with:
