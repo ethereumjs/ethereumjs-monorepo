@@ -288,9 +288,9 @@ tape('[Block]: Header functions', function (t) {
     const extraData = Buffer.concat([Buffer.alloc(1)])
 
     try {
-      BlockHeader.fromHeaderData({ extraData }, { common, consensusFormatValidation: false })
+      BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
       st.pass(
-        'should instantiate header with invalid extraData when consensusFormatValidation === false'
+        'should instantiate header with invalid extraData when skipConsensusFormatValidation === true'
       )
     } catch (error: any) {
       st.fail('should not throw')
@@ -323,7 +323,6 @@ tape('[Block]: Header functions', function (t) {
       (err: any) => err.message.includes('nonce must be 8 bytes'),
       'contains nonce length error message'
     )
-
     st.end()
   })
   /*
