@@ -148,38 +148,36 @@ tape('SecureTrie.copy', function (it) {
     trie.checkpoint()
     await trie.put(Buffer.from('key2'), Buffer.from('value2'))
     const trieCopy = trie.copy()
-    console.log(await trie.get(Buffer.from('key2')))
-    console.log(await trieCopy.get(Buffer.from('key2')))
     const value = await trieCopy.get(Buffer.from('key2'))
     t.equal(value!.toString(), 'value2')
     t.end()
   })
 
-  // it.test('created copy includes values added before checkpoint', async function (t) {
-  //   const trie = new Trie({ useCheckpoints: true, useHashedKeys: true })
+  it.test('created copy includes values added before checkpoint', async function (t) {
+    const trie = new Trie({ useCheckpoints: true, useHashedKeys: true })
 
-  //   await trie.put(Buffer.from('key1'), Buffer.from('value1'))
-  //   trie.checkpoint()
-  //   await trie.put(Buffer.from('key2'), Buffer.from('value2'))
-  //   const trieCopy = trie.copy()
-  //   const value = await trieCopy.get(Buffer.from('key1'))
-  //   t.equal(value!.toString(), 'value1')
-  //   t.end()
-  // })
+    await trie.put(Buffer.from('key1'), Buffer.from('value1'))
+    trie.checkpoint()
+    await trie.put(Buffer.from('key2'), Buffer.from('value2'))
+    const trieCopy = trie.copy()
+    const value = await trieCopy.get(Buffer.from('key1'))
+    t.equal(value!.toString(), 'value1')
+    t.end()
+  })
 
-  // it.test('created copy uses the correct hash function', async function (t) {
-  //   const trie = new Trie({
-  //     useCheckpoints: true,
-  //     useHashedKeys: true,
-  //     useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
-  //   })
+  it.test('created copy uses the correct hash function', async function (t) {
+    const trie = new Trie({
+      useCheckpoints: true,
+      useHashedKeys: true,
+      useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
+    })
 
-  //   await trie.put(Buffer.from('key1'), Buffer.from('value1'))
-  //   trie.checkpoint()
-  //   await trie.put(Buffer.from('key2'), Buffer.from('value2'))
-  //   const trieCopy = trie.copy()
-  //   const value = await trieCopy.get(Buffer.from('key1'))
-  //   t.equal(value!.toString(), 'value1')
-  //   t.end()
-  // })
+    await trie.put(Buffer.from('key1'), Buffer.from('value1'))
+    trie.checkpoint()
+    await trie.put(Buffer.from('key2'), Buffer.from('value2'))
+    const trieCopy = trie.copy()
+    const value = await trieCopy.get(Buffer.from('key1'))
+    t.equal(value!.toString(), 'value1')
+    t.end()
+  })
 })
