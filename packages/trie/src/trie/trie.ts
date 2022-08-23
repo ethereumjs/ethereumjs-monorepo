@@ -41,12 +41,12 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
 
-  protected _secure: boolean
+  protected _hashKeys: boolean
   /** The backend DB */
   db: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
-  protected _hash: HashFunc
+  protected _hashKeysFunction: HashFunc
   protected _hashLen: number
   protected _persistRoot: boolean
 
@@ -57,9 +57,9 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this._secure = opts?.secure ?? false
+    this._hashKeys = opts?.secure ?? false
     this.db = opts?.db ?? new MapDB()
-    this._hash = opts?.hash ?? keccak256
+    this._hashKeysFunction = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -675,7 +675,7 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    const proofTrie = new Trie({ root: rootHash, hash: this._hash })
+    const proofTrie = new Trie({ root: rootHash, hash: this._hashKeysFunction })
     try {
       await proofTrie.fromProof(proof)
     } catch (e: any) {
@@ -711,7 +711,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._hash
+      this._hashKeysFunction
     )
   }
 
@@ -728,12 +728,12 @@ export class Trie {
    */
   copy(): Trie {
     return new Trie({
-      secure: this._secure,
+      secure: this._hashKeys,
       db: this.db.copy(),
       root: this.root,
       deleteFromDB: this._deleteFromDB,
       persistRoot: this._persistRoot,
-      hash: this._hash,
+      hash: this._hashKeysFunction,
     })
   }
 
@@ -771,13 +771,13 @@ export class Trie {
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._secure) {
+    if (this._hashKeys) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._hash(msg))
+    return Buffer.from(this._hashKeysFunction(msg))
   }
 }
