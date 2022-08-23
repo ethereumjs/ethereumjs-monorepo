@@ -1,4 +1,5 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { ROOT_DB_KEY as BASE_DB_KEY, MapDB, Trie } from '../../src'
@@ -28,8 +29,21 @@ for (const { constructor, defaults, title } of [
     },
   },
 ]) {
-  const ROOT_DB_KEY = BASE_DB_KEY
-  const EXPECTED_ROOTS = '99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
+  const IS_SECURE_TRIE = title === 'SecureTrie'
+
+  let ROOT_DB_KEY: Buffer
+  if (IS_SECURE_TRIE) {
+    ROOT_DB_KEY = Buffer.from(keccak256(BASE_DB_KEY))
+  } else {
+    ROOT_DB_KEY = BASE_DB_KEY
+  }
+
+  let EXPECTED_ROOTS: string
+  if (IS_SECURE_TRIE) {
+    EXPECTED_ROOTS = '8204723ce0fb452b130a282ecc727e07295c18cbd2c2eef33ba9eb9c7a9ded9b'
+  } else {
+    EXPECTED_ROOTS = '99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
+  }
 
   tape(`${title} (Persistence)`, function (t) {
     t.test(
@@ -116,7 +130,7 @@ for (const { constructor, defaults, title } of [
     })
 
     t.test('persists the root if the `db` option is not provided', async function (st) {
-      const trie = await constructor.create({ ...defaults, db: new MapDB(), persistRoot: true })
+      const trie = await constructor.create({ ...defaults, persistRoot: true })
 
       st.equal(await trie.db.get(ROOT_DB_KEY), null)
 
