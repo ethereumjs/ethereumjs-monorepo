@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { CheckpointTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
@@ -53,7 +53,7 @@ const CODEHASH_PREFIX = Buffer.from('c')
  */
 export interface DefaultStateManagerOpts {
   /**
-   * A {@link SecureTrie} instance
+   * A {@link CheckpointTrie} instance
    */
   trie?: Trie
   /**

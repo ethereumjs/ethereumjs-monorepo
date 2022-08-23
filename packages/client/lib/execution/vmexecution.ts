@@ -6,7 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { SecureTrie } from '@ethereumjs/trie'
+import { CheckpointTrie } from '@ethereumjs/trie'
 import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
@@ -40,7 +40,7 @@ export class VMExecution extends Execution {
     super(options)
 
     if (isFalsy(this.config.vm)) {
-      const trie = new SecureTrie({ db: new LevelDB(this.stateDB) })
+      const trie = new CheckpointTrie({ db: new LevelDB(this.stateDB), useHashedKeys: true })
 
       const stateManager = new DefaultStateManager({
         trie,
