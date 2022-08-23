@@ -1,7 +1,7 @@
 import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { MapDB } from '../db'
+import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
@@ -39,15 +39,17 @@ interface Path {
 export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore
+  private lock: Semaphore
 
   /** The backend DB */
-  db: DB
-  private _root: Buffer
-  private _deleteFromDB: boolean
-  private _hash: HashFunc
-  private _hashLen: number
+  db: DB | CheckpointDB
+  dbStorage: DB
+  protected _root: Buffer
+  protected _deleteFromDB: boolean
+  protected _hash: HashFunc
+  protected _hashLen: number
   protected _persistRoot: boolean
+  protected _useCheckpoints: boolean
 
   /**
    * Create a new trie
@@ -55,7 +57,15 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
+
+    this._useCheckpoints = opts?.useCheckpoints ?? false
     this.db = opts?.db ?? new MapDB()
+    this.dbStorage = opts?.dbStorage ?? this.db
+
+    if (opts?.useCheckpoints === true) {
+      this.db = new CheckpointDB(this.dbStorage)
+    }
+
     this._hash = opts?.hash ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -105,13 +115,6 @@ export class Trie {
         throw error
       }
     }
-  }
-
-  /**
-   * Trie has no checkpointing so return false
-   */
-  get isCheckpoint() {
-    return false
   }
 
   /**
@@ -728,16 +731,23 @@ export class Trie {
   }
 
   /**
-   * Creates a new trie backed by the same db.
+   * Returns a copy of the underlying trie with the interface of CheckpointTrie.
+   * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy(): Trie {
-    return new Trie({
+  copy(includeCheckpoints = true): Trie {
+    const trie = new Trie({
       db: this.db.copy(),
-      root: this.root,
-      deleteFromDB: this._deleteFromDB,
+      dbStorage: this.dbStorage.copy(),
+      deleteFromDB: (this as any)._deleteFromDB,
+      hash: (this as any)._hash,
       persistRoot: this._persistRoot,
-      hash: this._hash,
+      root: this.root,
+      useCheckpoints: this._useCheckpoints,
     })
+    if (includeCheckpoints && this.isCheckpoint) {
+      ;(trie.db as CheckpointDB).checkpoints = [...(trie.db as CheckpointDB).checkpoints]
+    }
+    return trie
   }
 
   /**
@@ -770,5 +780,68 @@ export class Trie {
 
   protected hash(msg: Uint8Array): Buffer {
     return Buffer.from(this._hash(msg))
+  }
+
+  /**
+   * Is the trie during a checkpoint phase?
+   */
+  get isCheckpoint() {
+    if (!this._useCheckpoints) {
+      return false
+    }
+
+    return (this.db as CheckpointDB).isCheckpoint
+  }
+
+  /**
+   * Creates a checkpoint that can later be reverted to or committed.
+   * After this is called, all changes can be reverted until `commit` is called.
+   */
+  checkpoint() {
+    if (!this._useCheckpoints) {
+      throw new Error("Can't use `revert` without `_useCheckpoints`")
+    }
+
+    ;(this.db as CheckpointDB).checkpoint(this.root)
+  }
+
+  /**
+   * Commits a checkpoint to disk, if current checkpoint is not nested.
+   * If nested, only sets the parent checkpoint as current checkpoint.
+   * @throws If not during a checkpoint phase
+   */
+  async commit(): Promise<void> {
+    if (!this._useCheckpoints) {
+      throw new Error("Can't use `revert` without `_useCheckpoints`")
+    }
+
+    if (!this.isCheckpoint) {
+      throw new Error('trying to commit when not checkpointed')
+    }
+
+    await this.lock.wait()
+    await (this.db as CheckpointDB).commit()
+    await this.persistRoot()
+    this.lock.signal()
+  }
+
+  /**
+   * Reverts the trie to the state it was at when `checkpoint` was first called.
+   * If during a nested checkpoint, sets root to most recent checkpoint, and sets
+   * parent checkpoint as current.
+   */
+  async revert(): Promise<void> {
+    if (!this._useCheckpoints) {
+      throw new Error("Can't use `revert` without `_useCheckpoints`")
+    }
+
+    if (!this.isCheckpoint) {
+      throw new Error('trying to revert when not checkpointed')
+    }
+
+    await this.lock.wait()
+    this.root = await (this.db as CheckpointDB).revert()
+    await this.persistRoot()
+    this.lock.signal()
   }
 }

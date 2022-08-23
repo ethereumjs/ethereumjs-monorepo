@@ -2,7 +2,7 @@ import { KECCAK256_RLP } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, CheckpointTrie, MapDB, SecureTrie, Trie } from '../../src'
+import { ROOT_DB_KEY as BASE_DB_KEY, MapDB, Trie } from '../../src'
 
 function bytesToHex(bytes: Buffer | null) {
   return bytes?.toString('hex')
@@ -13,14 +13,14 @@ for (const { constructor, title } of [
     constructor: Trie,
     title: 'Trie',
   },
-  {
-    constructor: CheckpointTrie,
-    title: 'CheckpointTrie',
-  },
-  {
-    constructor: SecureTrie,
-    title: 'SecureTrie',
-  },
+  // {
+  //   constructor: CheckpointTrie,
+  //   title: 'CheckpointTrie',
+  // },
+  // {
+  //   constructor: SecureTrie,
+  //   title: 'SecureTrie',
+  // },
 ]) {
   const IS_SECURE_TRIE = title === 'SecureTrie'
 
@@ -42,7 +42,7 @@ for (const { constructor, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and defaults to `false` with a database',
       async function (st) {
-        st.false(((await constructor.create({ db: new MapDB() })) as any)._persistRoot)
+        st.false(((await constructor.create()) as any)._persistRoot)
 
         st.end()
       }
@@ -51,9 +51,7 @@ for (const { constructor, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
       async function (st) {
-        st.false(
-          ((await constructor.create({ db: new MapDB(), persistRoot: false })) as any)._persistRoot
-        )
+        st.false(((await constructor.create({ persistRoot: false })) as any)._persistRoot)
 
         st.end()
       }
@@ -65,7 +63,6 @@ for (const { constructor, title } of [
         st.false(
           (
             (await constructor.create({
-              db: new MapDB(),
               persistRoot: false,
             })) as any
           )._persistRoot
@@ -86,7 +83,6 @@ for (const { constructor, title } of [
 
     t.test('persist the root if the `persistRoot` option is `true`', async function (st) {
       const trie = await constructor.create({
-        db: new MapDB(),
         persistRoot: true,
       })
 
@@ -101,7 +97,6 @@ for (const { constructor, title } of [
 
     t.test('persist the root if the `root` option is given', async function (st) {
       const trie = await constructor.create({
-        db: new MapDB(),
         root: KECCAK256_RLP,
         persistRoot: true,
       })
@@ -117,7 +112,6 @@ for (const { constructor, title } of [
 
     t.test('does not persist the root if the `persistRoot` option is `false`', async function (st) {
       const trie = await constructor.create({
-        db: new MapDB(),
         persistRoot: false,
       })
 
@@ -156,7 +150,6 @@ for (const { constructor, title } of [
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({
-        db: new MapDB(),
         persistRoot: true,
       })
       st.equal(await empty.db.get(ROOT_DB_KEY), null)
@@ -165,7 +158,7 @@ for (const { constructor, title } of [
     })
 
     t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new constructor({ db: new MapDB(), persistRoot: true })
+      const trie = new constructor({ persistRoot: true })
 
       try {
         await trie.put(BASE_DB_KEY, Buffer.from('bar'))

@@ -1,3 +1,4 @@
+import type { CheckpointDB } from './db'
 import type { BranchNode, ExtensionNode, LeafNode } from './trie'
 import type { WalkController } from './util/walkController'
 
@@ -24,7 +25,13 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB
+  db?: DB | CheckpointDB
+
+  /**
+   * A database instance.
+   */
+  dbStorage?: DB
+
   /**
    * A `Buffer` for the root of a previously stored trie
    */
@@ -44,6 +51,11 @@ export interface TrieOpts {
    * Store the root inside the database after every `write` operation
    */
   persistRoot?: boolean
+
+  /**
+   * Adds checkpointing to the {@link Trie}
+   */
+  useCheckpoints?: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch

@@ -3,9 +3,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { ROOT_DB_KEY } from '../types'
 
-import { CheckpointTrie } from './checkpoint'
+import { Trie } from './trie'
 import { prepareTrieOpts } from './util'
 
+import type { CheckpointDB } from '../db'
 import type { Proof, TrieOpts } from '../types'
 
 /**
@@ -16,9 +17,25 @@ import type { Proof, TrieOpts } from '../types'
  * @extends Trie
  * @public
  */
-export class SecureTrie extends CheckpointTrie {
+export class SecureTrie extends Trie {
+  constructor(opts?: TrieOpts) {
+    super({
+      ...opts,
+      useCheckpoints: true,
+    })
+  }
+
   static async create(opts?: TrieOpts) {
     const hash = opts?.hash ?? keccak256
+
+    if (opts === undefined) {
+      opts = {
+        useCheckpoints: true,
+      }
+    } else {
+      opts.useCheckpoints = true
+    }
+
     return new SecureTrie(await prepareTrieOpts(hash(ROOT_DB_KEY), opts))
   }
 
@@ -114,13 +131,14 @@ export class SecureTrie extends CheckpointTrie {
   copy(includeCheckpoints = true): SecureTrie {
     const secureTrie = new SecureTrie({
       db: this.dbStorage.copy(),
-      root: this.root,
+      root: this._root,
       deleteFromDB: (this as any)._deleteFromDB,
       persistRoot: this._persistRoot,
       hash: (this as any)._hash,
+      useCheckpoints: true,
     })
     if (includeCheckpoints && this.isCheckpoint) {
-      secureTrie.db.checkpoints = [...this.db.checkpoints]
+      ;(secureTrie.db as CheckpointDB).checkpoints = [...(this.db as CheckpointDB).checkpoints]
     }
     return secureTrie
   }
@@ -130,7 +148,7 @@ export class SecureTrie extends CheckpointTrie {
    */
   async persistRoot() {
     if (this._persistRoot === true) {
-      await this.db.put(this.hash(ROOT_DB_KEY), this.root)
+      await this.db.put(this.hash(ROOT_DB_KEY), this._root)
     }
   }
 }
