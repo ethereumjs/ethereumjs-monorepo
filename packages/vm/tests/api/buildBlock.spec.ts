@@ -9,15 +9,12 @@ import { VM } from '../../src/vm'
 
 import { setBalance } from './utils'
 
-import type { EEI } from '../../src'
-import type { EVM } from '@ethereumjs/evm'
-
 tape('BlockBuilder', async (t) => {
   t.test('should build a valid block', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create<EVM, EEI>({ common, blockchain })
+    const vm = await VM.create({ common, blockchain })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
