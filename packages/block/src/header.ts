@@ -22,7 +22,6 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { getHeaderData } from './helpers'
 
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -106,8 +105,62 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
-    const headerData = getHeaderData(values)
-    return BlockHeader.fromHeaderData(headerData, opts)
+    const [
+      parentHash,
+      uncleHash,
+      coinbase,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      logsBloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
+      baseFeePerGas,
+    ] = values
+
+    if (values.length > 16) {
+      throw new Error('invalid header. More values than expected were received')
+    }
+    if (values.length < 15) {
+      throw new Error('invalid header. Less values than expected were received')
+    }
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number)) {
+        throw new Error('invalid header. baseFeePerGas should be provided')
+      }
+    }
+
+    return new BlockHeader(
+      {
+        parentHash,
+        uncleHash,
+        coinbase,
+        stateRoot,
+        transactionsTrie,
+        receiptTrie,
+        logsBloom,
+        difficulty,
+        number,
+        gasLimit,
+        gasUsed,
+        timestamp,
+        extraData,
+        mixHash,
+        nonce,
+        baseFeePerGas,
+      },
+      opts
+    )
   }
 
   /**
