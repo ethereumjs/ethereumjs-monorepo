@@ -149,7 +149,7 @@ export class Trie {
       return await this.del(key)
     }
 
-    await this.lock.wait()
+    await this.lock.acquire()
     const appliedKey = this.appliedKey(key)
     if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
@@ -161,7 +161,7 @@ export class Trie {
       await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this.lock.release()
   }
 
   /**
@@ -171,14 +171,14 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
-    await this.lock.wait()
+    await this.lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
     if (node) {
       await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this.lock.release()
   }
 
   /**
