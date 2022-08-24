@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661315880539,
+  "lastUpdate": 1661334533831,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "dabbfb19f05ec733ddca12e9796fe179c7385af8",
-          "message": "Remove state tests from coverage run (#2170)\n\n* Remove state tests from coverage run\r\n\r\n* adjust skipbalance logic (#2172)\r\n\r\n* vm: adjust skipbalance logic, balance = tx cost\r\n* evm: adjust skip balance logic and docs\r\n\r\n* chore: add `.editorconfig` file (#2165)\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* ci: use `npm ci` instead of `npm i` to install dependencies (#2174)\r\n\r\nCo-authored-by: Brian Faust <hello@basecode.sh>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-08-18T08:53:48-04:00",
-          "tree_id": "1875fbd7c462049d13d779b7368f4bb07dd39011",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dabbfb19f05ec733ddca12e9796fe179c7385af8"
-        },
-        "date": 1660827739035,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12612,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12754,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12393,
-            "range": "±5.21%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12811,
-            "range": "±2.59%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12696,
-            "range": "±2.67%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.95%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fffe4ab648855911c0a84b48e214a0843111aa67",
+          "message": "refactor(trie): integrate `CheckpointTrie` behaviour into main `Trie` class (#2215)\n\n* trie: removed deprecated prove() function (renamed to createProof())\r\n\r\n* trie: added secure option to base trie, integrated secure trie functionality\r\n\r\n* trie: adopted secureTrie.spec.ts tests (5 failing)\r\n\r\n* trie: fixed copy function\r\n\r\n* trie: fixed secureTrie.spec.ts branching test\r\n\r\n* trie: additional test fixes\r\n\r\n* trie: removed secure.ts SecureTrie class definition file\r\n\r\n* trie: updated README\r\n\r\n* trie: removed secure export, unified prepareTrieOpts and expand to CheckpointTrie\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* trie: renamed _secure -> _hashKeys and _hash() -> _hashKeysFunction\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): always use `CheckpointDB` as internal database\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor: always support checkpointing\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor: prevent manual usage of `CheckpointDB` as option\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2022-08-24T11:46:13+02:00",
+          "tree_id": "8c39acada8b8adc674e29940ff10e7beb59ee809",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fffe4ab648855911c0a84b48e214a0843111aa67"
+        },
+        "date": 1661334533274,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23224,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22375,
+            "range": "±4.01%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22803,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22590,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20564,
+            "range": "±8.28%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
           }
         ]
       }
