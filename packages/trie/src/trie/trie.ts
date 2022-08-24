@@ -756,7 +756,7 @@ export class Trie {
       useHashedKeys: this._useHashedKeys,
       useHashedKeysFunction: this._useHashedKeysFunction,
     })
-    if (includeCheckpoints && this.isCheckpoint) {
+    if (includeCheckpoints && this.hasCheckpoints()) {
       trie.db.checkpoints = [...this.db.checkpoints]
     }
     return trie
@@ -809,8 +809,8 @@ export class Trie {
   /**
    * Is the trie during a checkpoint phase?
    */
-  get isCheckpoint() {
-    return this.db.isCheckpoint
+  hasCheckpoints() {
+    return this.db.hasCheckpoints()
   }
 
   /**
@@ -827,7 +827,7 @@ export class Trie {
    * @throws If not during a checkpoint phase
    */
   async commit(): Promise<void> {
-    if (!this.isCheckpoint) {
+    if (!this.hasCheckpoints()) {
       throw new Error('trying to commit when not checkpointed')
     }
 
@@ -843,7 +843,7 @@ export class Trie {
    * parent checkpoint as current.
    */
   async revert(): Promise<void> {
-    if (!this.isCheckpoint) {
+    if (!this.hasCheckpoints()) {
       throw new Error('trying to revert when not checkpointed')
     }
 
