@@ -28,8 +28,6 @@ import type { StateManager } from '@ethereumjs/statemanager'
 /**
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
- *
- * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export class VM<
   EVMType extends EVMInterface = EVMInterface,
@@ -47,6 +45,9 @@ export class VM<
 
   readonly _common: Common
 
+  /**
+   * The VM event bus. This is an AsyncEventEmitter, please consult the README to learn how to use it.
+   */
   readonly events: AsyncEventEmitter<VMEvents>
 
   /**
