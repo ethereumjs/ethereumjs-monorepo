@@ -35,7 +35,7 @@ interface Path {
  * The API for the base and the secure interface are about the same.
  */
 export class Trie {
-  #opts: TrieOptsWithDefaults = {
+  private readonly _opts: TrieOptsWithDefaults = {
     deleteFromDB: false,
     persistRoot: false,
     useHashedKeys: false,
@@ -57,7 +57,7 @@ export class Trie {
    */
   constructor(opts?: TrieOpts) {
     if (opts !== undefined) {
-      this.#opts = { ...this.#opts, ...opts }
+      this._opts = { ...this._opts, ...opts }
     }
 
     if (opts?.db instanceof CheckpointDB) {
@@ -152,7 +152,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this.#opts.persistRoot && key.equals(ROOT_DB_KEY)) {
+    if (this._opts.persistRoot && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -596,7 +596,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this.#opts.deleteFromDB) {
+        if (this._opts.deleteFromDB) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -689,7 +689,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useHashedKeysFunction: this.#opts.useHashedKeysFunction,
+      useHashedKeysFunction: this._opts.useHashedKeysFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -726,7 +726,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this.#opts.useHashedKeysFunction
+      this._opts.useHashedKeysFunction
     )
   }
 
@@ -744,7 +744,7 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
-      ...this.#opts,
+      ...this._opts,
       db: this.db.db.copy(),
       root: this.root,
     })
@@ -758,7 +758,7 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this.#opts.persistRoot) {
+    if (this._opts.persistRoot) {
       await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
@@ -788,14 +788,14 @@ export class Trie {
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this.#opts.useHashedKeys) {
+    if (this._opts.useHashedKeys) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this.#opts.useHashedKeysFunction(msg))
+    return Buffer.from(this._opts.useHashedKeysFunction(msg))
   }
 
   /**
