@@ -45,8 +45,8 @@ export class Trie {
   db: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
-  protected _useHashedKeys: boolean
-  protected _useHashedKeysFunction: HashKeysFunction
+  protected _useKeyHashing: boolean
+  protected _useKeyHashingFunction: HashKeysFunction
   protected _hashLen: number
   protected _persistRoot: boolean
 
@@ -58,8 +58,8 @@ export class Trie {
     this.lock = new Semaphore(1)
 
     this.db = opts?.db ?? new MapDB()
-    this._useHashedKeys = opts?.useHashedKeys ?? false
-    this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
+    this._useKeyHashing = opts?.useKeyHashing ?? false
+    this._useKeyHashingFunction = opts?.useKeyHashingFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -677,7 +677,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useHashedKeysFunction: this._useHashedKeysFunction,
+      useKeyHashingFunction: this._useKeyHashingFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -714,7 +714,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._useHashedKeysFunction
+      this._useKeyHashingFunction
     )
   }
 
@@ -733,8 +733,8 @@ export class Trie {
     return new Trie({
       db: this.db.copy(),
       deleteFromDB: this._deleteFromDB,
-      useHashedKeys: this._useHashedKeys,
-      useHashedKeysFunction: this._useHashedKeysFunction,
+      useKeyHashing: this._useKeyHashing,
+      useKeyHashingFunction: this._useKeyHashingFunction,
       persistRoot: this._persistRoot,
       root: this.root,
     })
@@ -770,17 +770,17 @@ export class Trie {
 
   /**
    * Returns the key practically applied for trie construction
-   * depending on the `useHashedKeys` option being set or not.
+   * depending on the `useKeyHashing` option being set or not.
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._useHashedKeys) {
+    if (this._useKeyHashing) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._useHashedKeysFunction(msg))
+    return Buffer.from(this._useKeyHashingFunction(msg))
   }
 }

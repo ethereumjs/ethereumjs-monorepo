@@ -109,12 +109,12 @@ Nothing spectacular: only the root hash of the tree has changed, as the key has 
 
 ### Example 1c - Automatically Creating and Updating a Secure Trie
 
-Fortunately, we also have an option called "useHashedKeys" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
+Fortunately, we also have an option called "useKeyHashing" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
 const { Trie } = require('@ethereumjs/trie')// We import the class required to create a secure Merkle Patricia Tree
 
-const trie = new Trie({ useHashedKeys: true }) // We create an empty Merkle Patricia Tree
+const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
 
 async function test() {
@@ -134,7 +134,7 @@ Value (String):  testValue
 Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb> // Same hash!
 ```
 
-To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useHashedKeys` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
+To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useKeyHashing` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
 
 ### Example 1d - Deleting a Key-Value Pair from a Trie
 

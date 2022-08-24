@@ -10,7 +10,7 @@ import type { getCb, putCb } from '../src/cache'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {
-    const trie = new Trie({ useHashedKeys: true })
+    const trie = new Trie({ useKeyHashing: true })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
       const rlp = await innerTrie.get(address.buf)
@@ -32,7 +32,7 @@ tape('cache initialization', (t) => {
 })
 
 tape('cache put and get account', (t) => {
-  const trie = new Trie({ useHashedKeys: true })
+  const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)
@@ -103,7 +103,7 @@ tape('cache put and get account', (t) => {
 })
 
 tape('cache checkpointing', (t) => {
-  const trie = new Trie({ useHashedKeys: true })
+  const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
     const rlp = await innerTrie.get(address.buf)

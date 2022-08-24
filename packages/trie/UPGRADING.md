@@ -10,7 +10,7 @@ Upgrading from v4 to v5 is relatively straightforward.
 
 ### SecureTrie as an Option
 
-In v5 the `SecureTrie` class has been removed in favor of a simple constructor option `useHashedKeys` - defaulting to `false` in the base `Trie` implementation. This reduces the level of inheritance dependencies (in the old structure it was e.g. not possible to create a secure trie without the checkpoint functionality, which are logically completely unrelated) and frees things up for future design changes and additions.
+In v5 the `SecureTrie` class has been removed in favor of a simple constructor option `useKeyHashing` - defaulting to `false` in the base `Trie` implementation. This reduces the level of inheritance dependencies (in the old structure it was e.g. not possible to create a secure trie without the checkpoint functionality, which are logically completely unrelated) and frees things up for future design changes and additions.
 
 Updating is pretty much straight-forward:
 
@@ -19,13 +19,13 @@ const trie = new SecureTrie() // old
 ```
 
 ```typescript
-const trie = new CheckpointTrie({ useHashedKeys: true }) // new
+const trie = new CheckpointTrie({ useKeyHashing: true }) // new
 ```
 
 Note that while upgrading to `CheckpointTrie` gives you guaranteed functional equivalency you might actually want to think if you need the checkpointing functionality or if you otherwise want to upgrade to a simple base trie with:
 
 ```typescript
-const trie = new Trie({ useHashedKeys: true }) // new (alternative without checkpointing)
+const trie = new Trie({ useKeyHashing: true }) // new (alternative without checkpointing)
 ```
 
 ### Database Abstraction

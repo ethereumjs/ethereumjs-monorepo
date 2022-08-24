@@ -40,7 +40,7 @@ const main = async () => {
     .toString('hex')}', 'hex'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
-  const trie = new Trie({ db: stateDB, useHashedKeys: true })
+  const trie = new Trie({ db: stateDB, useKeyHashing: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(Buffer.from('${(
