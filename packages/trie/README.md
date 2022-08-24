@@ -24,7 +24,7 @@ If you currently use this package in your project and plan to upgrade, please re
 
 ## Usage
 
-This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useHashedKeys` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
+This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
 **Note:** Up to v4 of the Trie library the secure trie was implemented as a separate `SecureTrie` class, see the [upgrade guide](./UPGRADING.md) for more infos.
 
@@ -176,7 +176,7 @@ const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 const trie = new Trie({
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
   root: stateRootBuffer,
-  useHashedKeys: true,
+  useKeyHashing: true,
 })
 
 trie
@@ -198,7 +198,7 @@ const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 const trie = new Trie({
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')),
   root: stateRoot
-  useHashedKeys: true,
+  useKeyHashing: true,
 })
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
