@@ -31,10 +31,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM<
-  EVMType extends EVMInterface = EVMInterface,
-  EEIType extends EEIInterface = EEIInterface
-> extends AsyncEventEmitter<VMEvents> {
+export class VM<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI> {
   /**
    * The StateManager used by the VM
    */
@@ -215,7 +212,7 @@ export class VM<
    *  - `generate`: false
    */
   async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
-    return runBlock.bind(this)(opts)
+    return runBlock.bind(<any>this)(opts)
   }
 
   /**
@@ -228,7 +225,7 @@ export class VM<
    * @param {RunTxOpts} opts
    */
   async runTx(opts: RunTxOpts): Promise<RunTxResult> {
-    return runTx.bind(this)(opts)
+    return runTx.bind(<any>this)(opts)
   }
 
   /**
@@ -246,7 +243,7 @@ export class VM<
    * - {@link BlockBuilder.revert}
    */
   async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
-    return buildBlock.bind(this)(opts)
+    return buildBlock.bind(<any>this)(opts)
   }
 
   /**
