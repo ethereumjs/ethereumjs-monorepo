@@ -24,10 +24,11 @@ If you currently use this package in your project and plan to upgrade, please re
 
 ## Usage
 
-You will find three variants of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) implemented in this library, namely `BaseTrie`, `CheckpointTrie` and `SecureTrie`:
+This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
-- `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` through the methods `checkpoint`, `commit` and `revert`
-- `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys
+**Note:** Up to v4 of the Trie library the secure trie was implemented as a separate `SecureTrie` class, see the [upgrade guide](./UPGRADING.md) for more infos.
+
+An additional `CheckpointTrie` implementation adds checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
 
 It is best to select the variant that is most appropriate for your unique use case.
 
@@ -66,7 +67,7 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Persistence
 
-You can enable persistence by setting the `persistRoot` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -74,7 +75,7 @@ import { Level } from 'level'
 
 const trie = await Trie.create({
   db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
-  persistRoot: true,
+  useRootPersistence: true,
 })
 ```
 
@@ -109,7 +110,7 @@ const trie = new Trie()
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
   const proof = await trie.createProof(Buffer.from('test'))
-  const value = await trie.verifyProof(trie.root, Buffer.from('test'), proof)
+  const value = await trie.verifyProof(trie.root(), Buffer.from('test'), proof)
   console.log(value.toString()) // 'one'
 }
 
@@ -127,7 +128,7 @@ async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
   await trie.put(Buffer.from('test2'), Buffer.from('two'))
   const proof = await trie.createProof(Buffer.from('test3'))
-  const value = await trie.verifyProof(trie.root, Buffer.from('test3'), proof)
+  const value = await trie.verifyProof(trie.root(), Buffer.from('test3'), proof)
   console.log(value.toString()) // null
 }
 
@@ -147,7 +148,7 @@ async function test() {
   const proof = await trie.createProof(Buffer.from('test2'))
   proof[1].reverse()
   try {
-    const value = await trie.verifyProof(trie.root, Buffer.from('test2'), proof)
+    const value = await trie.verifyProof(trie.root(), Buffer.from('test2'), proof)
     console.log(value.toString()) // results in error
   } catch (err) {
     console.log(err) // Missing node in DB
@@ -165,16 +166,17 @@ You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf 
 
 ```typescript
 import { Level } from 'level'
-import { SecureTrie, LevelDB } from '@ethereumjs/trie'
+import { LevelDB, Trie } from '@ethereumjs/trie'
 
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
 // Convert the state root to a Buffer (strip the 0x prefix)
 const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
-const trie = new SecureTrie({
+const trie = new Trie({
   db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
   root: stateRootBuffer,
+  useKeyHashing: true,
 })
 
 trie
@@ -187,13 +189,17 @@ trie
 
 ```typescript
 import { Level } from 'level'
-import { SecureTrie, LevelDB } from '@ethereumjs/trie'
+import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
-const trie = new SecureTrie({ db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER', root: stateRoot })
+const trie = new Trie({
+  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')),
+  root: stateRoot
+  useKeyHashing: true,
+})
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
@@ -208,7 +214,7 @@ async function test() {
   console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
 
   const storageTrie = trie.copy()
-  storageTrie.root = acc.stateRoot
+  storageTrie.root(acc.stateRoot)
 
   console.log('------Storage------')
   const stream = storageTrie.createReadStream()

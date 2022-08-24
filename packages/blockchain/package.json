@@ -49,8 +49,7 @@
     "ethereum-cryptography": "^1.1.2",
     "level": "^8.0.0",
     "lru-cache": "^5.1.1",
-    "memory-level": "^1.0.0",
-    "semaphore-async-await": "^1.5.1"
+    "memory-level": "^1.0.0"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",

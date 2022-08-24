@@ -298,7 +298,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       await vm.runTx({ tx: tx2 })
       t.fail('cannot reach this')
     } catch (e: any) {
-      t.pass('succesfully threw on insufficient balance for transaction')
+      t.pass('successfully threw on insufficient balance for transaction')
     }
     t.end()
   })
@@ -315,7 +315,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       await vm.runTx({ tx })
       t.fail('cannot reach this')
     } catch (e: any) {
-      t.pass('succesfully threw on wrong nonces')
+      t.pass('successfully threw on wrong nonces')
     }
     t.end()
   })

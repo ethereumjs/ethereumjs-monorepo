@@ -1,12 +1,12 @@
 import * as tape from 'tape'
 
-import { CheckpointTrie, MapDB } from '../src'
+import { Trie } from '../src'
 
 import type { BatchDBOp } from '../src'
 
 tape('kv stream test', function (tester) {
   const it = tester.test
-  const trie = new CheckpointTrie({ db: new MapDB() })
+  const trie = new Trie()
   const ops = [
     {
       type: 'del',
@@ -124,7 +124,7 @@ tape('kv stream test', function (tester) {
 
 tape('db stream test', function (tester) {
   const it = tester.test
-  const trie = new CheckpointTrie({ db: new MapDB() })
+  const trie = new Trie()
   const ops = [
     {
       type: 'put',

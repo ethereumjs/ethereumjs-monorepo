@@ -122,7 +122,6 @@ test('DPT: simulate bootstrap', async (t) => {
 
   await util.delay(250)
 
-  // dpts.forEach((dpt, i) => console.log(`${i}:${dpt.getPeers().length}`))
   for (const dpt of dpts) {
     t.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
   }

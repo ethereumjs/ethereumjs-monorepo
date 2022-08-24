@@ -2,6 +2,7 @@ name: VM Nightly
 on:
   schedule:
     - cron: 0 0 * * *
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/vm
@@ -26,7 +27,7 @@ jobs:
       - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      - run: npm ci
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -49,7 +50,7 @@ jobs:
       - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      - run: npm ci
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:allForks
@@ -71,7 +72,7 @@ jobs:
       - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      - run: npm ci
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain:allForks
@@ -94,7 +95,7 @@ jobs:
       - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      - run: npm ci
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:slow

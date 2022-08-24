@@ -1,8 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { SecureTrie } from '@ethereumjs/trie'
-import { isTruthy, toBuffer } from '@ethereumjs/util'
+import { Trie } from '@ethereumjs/trie'
+import { toBuffer } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
@@ -20,7 +20,7 @@ function parseTestCases(
 ) {
   let testCases = []
 
-  if (isTruthy(testData['post'][forkConfigTestSuite])) {
+  if (testData['post'][forkConfigTestSuite] !== undefined) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       const testIndexes = testCase['indexes']
       const tx = { ...testData.transaction }
@@ -40,7 +40,7 @@ function parseTestCases(
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
 
-      if (isTruthy(tx.accessLists)) {
+      if (tx.accessLists !== undefined) {
         tx.accessList = testData.transaction.accessLists[testIndexes['data']]
         if (tx.chainId === undefined) {
           tx.chainId = 1
@@ -67,7 +67,7 @@ function parseTestCases(
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
-  if (isTruthy(options.dist)) {
+  if (options.dist === true) {
     ;({ VM } = require('../../../dist'))
   } else {
     ;({ VM } = require('../../../src'))
@@ -79,7 +79,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new SecureTrie()
+  const state = new Trie({ useKeyHashing: true })
   const stateManager = new DefaultStateManager({
     trie: state,
   })
@@ -102,7 +102,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
-      if (isTruthy(options.jsontrace)) {
+      if (options.jsontrace === true) {
         vm.evm.events.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
@@ -139,7 +139,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  const stateManagerStateRoot = vm.stateManager._trie.root
+  const stateManagerStateRoot = vm.stateManager._trie.root()
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
   const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
 
@@ -164,7 +164,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       return
     }
     for (const testCase of testCases) {
-      if (isTruthy(options.reps)) {
+      if (options.reps !== undefined && options.reps > 0) {
         let totalTimeSpent = 0
         for (let x = 0; x < options.reps; x++) {
           totalTimeSpent += await runTestCase(options, testCase, t)
