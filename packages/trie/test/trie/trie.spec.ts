@@ -15,16 +15,8 @@ for (const { constructor, defaults, title } of [
   },
   {
     constructor: Trie,
-    title: 'CheckpointTrie',
-    defaults: {
-      useCheckpoints: true,
-    },
-  },
-  {
-    constructor: Trie,
     title: 'SecureTrie',
     defaults: {
-      useCheckpoints: true,
       useHashedKeys: true,
     },
   },

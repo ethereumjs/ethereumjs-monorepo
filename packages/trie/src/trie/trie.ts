@@ -49,7 +49,6 @@ export class Trie {
   protected _useHashedKeysFunction: HashKeysFunction
   protected _hashLen: number
   protected _persistRoot: boolean
-  protected _useCheckpoints: boolean
 
   /**
    * Create a new trie
@@ -66,7 +65,6 @@ export class Trie {
       this.db = new CheckpointDB(this.dbStorage)
     }
 
-    this._useCheckpoints = opts?.useCheckpoints ?? false
     this._useHashedKeys = opts?.useHashedKeys ?? false
     this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -587,7 +585,7 @@ export class Trie {
    * @param node - the node to format.
    * @param topLevel - if the node is at the top level.
    * @param opStack - the opStack to push the node's data.
-   * @param remove - whether to remove the node (only used for `useCheckpoints`).
+   * @param remove - whether to remove the node
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
@@ -755,7 +753,6 @@ export class Trie {
       deleteFromDB: this._deleteFromDB,
       persistRoot: this._persistRoot,
       root: this.root,
-      useCheckpoints: this._useCheckpoints,
       useHashedKeys: this._useHashedKeys,
       useHashedKeysFunction: this._useHashedKeysFunction,
     })
@@ -813,10 +810,6 @@ export class Trie {
    * Is the trie during a checkpoint phase?
    */
   get isCheckpoint() {
-    if (!this._useCheckpoints) {
-      return false
-    }
-
     return this.db.isCheckpoint
   }
 
@@ -825,10 +818,6 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    if (!this._useCheckpoints) {
-      throw new Error("Can't use `revert` without `_useCheckpoints`")
-    }
-
     this.db.checkpoint(this.root)
   }
 
@@ -838,10 +827,6 @@ export class Trie {
    * @throws If not during a checkpoint phase
    */
   async commit(): Promise<void> {
-    if (!this._useCheckpoints) {
-      throw new Error("Can't use `revert` without `_useCheckpoints`")
-    }
-
     if (!this.isCheckpoint) {
       throw new Error('trying to commit when not checkpointed')
     }
@@ -858,10 +843,6 @@ export class Trie {
    * parent checkpoint as current.
    */
   async revert(): Promise<void> {
-    if (!this._useCheckpoints) {
-      throw new Error("Can't use `revert` without `_useCheckpoints`")
-    }
-
     if (!this.isCheckpoint) {
       throw new Error('trying to revert when not checkpointed')
     }

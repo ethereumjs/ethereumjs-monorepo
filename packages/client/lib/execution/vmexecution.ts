@@ -42,7 +42,6 @@ export class VMExecution extends Execution {
     if (isFalsy(this.config.vm)) {
       const trie = new Trie({
         db: new LevelDB(this.stateDB),
-        useCheckpoints: true,
         useHashedKeys: true,
       })
 

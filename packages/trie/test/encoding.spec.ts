@@ -3,8 +3,8 @@ import * as tape from 'tape'
 
 import { Trie } from '../src'
 
-const trie = new Trie({ useCheckpoints: true })
-const trie2 = new Trie({ useCheckpoints: true })
+const trie = new Trie()
+const trie2 = new Trie()
 const hex = 'FF44A3B3'
 
 tape('encoding hex prefixes', async function (t) {

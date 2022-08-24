@@ -8,7 +8,7 @@ import { keys } from './keys'
 
 export function createSuite(db: DB) {
   const trie = new Trie({ db })
-  const checkpointTrie = new Trie({ db, useCheckpoints: true })
+  const checkpointTrie = new Trie({ db })
 
   const ROUNDS = 1000
   const KEY_SIZE = 32
