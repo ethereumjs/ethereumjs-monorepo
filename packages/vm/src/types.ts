@@ -58,7 +58,10 @@ export type VMEvents = {
 /**
  * Options for instantiating a {@link VM}.
  */
-export interface VMOpts {
+export interface VMOpts<
+  EVMType extends EVMInterface = EVMInterface,
+  EEIType extends EEIInterface = EEIInterface
+> {
   /**
    * Use a {@link Common} instance
    * if you want to change the chain setup.
@@ -133,12 +136,12 @@ export interface VMOpts {
   /**
    * Use a custom EEI for the EVM. If this is not present, use the default EEI.
    */
-  eei?: EEIInterface
+  eei?: EEIType
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVMInterface
+  evm?: EVMType
 }
 
 /**
