@@ -484,11 +484,20 @@ export class Skeleton extends MetaDBManager {
         break
       }
       // Insert into chain
-      const numBlocksInserted = await this.chain.putBlocks([block], true)
+      let numBlocksInserted = 0
+      try {
+        numBlocksInserted = await this.chain.putBlocks([block], true)
+      } catch (e) {
+        this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
+      }
+
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
-          `Failed to put block num=${number} from skeleton chain to canonical`
+          `Failed to put block number=${number} fork=${block._common.hardfork()} hash=${short(
+            block.hash()
+          )} from skeleton chain to canonical`
         )
+        await this.backStep()
         break
       }
       // Delete skeleton block to clean up as we go
@@ -518,6 +527,7 @@ export class Skeleton extends MetaDBManager {
       block.hash(),
       bigIntToBuffer(block.header.number)
     )
+
     return true
   }
 

@@ -480,25 +480,25 @@ tape('[Skeleton]', async (t) => {
       )
       const block3PoS = Block.fromBlockData(
         { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByChainTTD: BigInt(200) }
       )
-      const block4PoW = Block.fromBlockData(
+      const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByChainTTD: BigInt(200) }
       )
       const block4PoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByChainTTD: BigInt(200) }
       )
       const block5 = Block.fromBlockData(
         { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByChainTTD: BigInt(200) }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
-      await skeleton.initSync(block4PoW)
+      await skeleton.initSync(block4InvalidPoS)
       await skeleton.putBlocks([block3PoW, block2])
       st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
       await skeleton.putBlocks([block1])
@@ -588,15 +588,15 @@ tape('[Skeleton]', async (t) => {
         { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
         { common }
       )
-      const block4PoW = Block.fromBlockData(
+      const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByChainTTD: 200 }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
-      await skeleton.initSync(block4PoW)
+      await skeleton.initSync(block4InvalidPoS)
       await skeleton.putBlocks([block3PoW, block2])
       st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
       await skeleton.putBlocks([block1])
