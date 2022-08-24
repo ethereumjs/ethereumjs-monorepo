@@ -42,7 +42,7 @@ Let's begin right away with a simple example. Don't worry if things aren't too c
 const { Trie } = require('@ethereumjs/trie') // We import the library required to create a basic Merkle Patricia Tree
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
 ```
 
 and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to buffers, as that is what the Trie methods expect:
@@ -55,7 +55,7 @@ async function test() {
   const retrievedValue = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
   console.log('Value (Bytes): ', retrievedValue)
   console.log('Value (String): ', retrievedValue.toString())
-  console.log('Updated trie root:', trie.root) // The new trie root (32 bytes)
+  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
 }
 
 test()
@@ -86,14 +86,14 @@ const { Trie } = require('@ethereumjs/trie')
 const { keccak256 } = require('@ethereumjs/util')
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
 
 async function test() {
   await trie.put(keccak256(Buffer.from('testKey')), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair hash("testKey"): "testValue"
   const value = await trie.get(keccak256(Buffer.from('testKey'))) // We retrieve (using "get") the value at hash("testKey"_
   console.log('Value (Bytes): ', value)
   console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root) // The new trie root (32 bytes)
+  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
 }
 
 test()
@@ -109,20 +109,20 @@ Nothing spectacular: only the root hash of the tree has changed, as the key has 
 
 ### Example 1c - Automatically Creating and Updating a Secure Trie
 
-Fortunately, we also have an option called "useHashedKeys" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
+Fortunately, we also have an option called "useKeyHashing" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
 const { Trie } = require('@ethereumjs/trie')// We import the class required to create a secure Merkle Patricia Tree
 
-const trie = new Trie({ useHashedKeys: true }) // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
+const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
+console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
 
 async function test() {
   await trie.put(Buffer.from('testKey'), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const value = await trie.get(Buffer.from('testKey')) // We retrieve (using "get") the value at key "testKey"
   console.log('Value (Bytes): ', value)
   console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root) // The new trie root (32 bytes)
+  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
 }
 
 test()
@@ -134,7 +134,7 @@ Value (String):  testValue
 Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb> // Same hash!
 ```
 
-To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useHashedKeys` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
+To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useKeyHashing` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
 
 ### Example 1d - Deleting a Key-Value Pair from a Trie
 
@@ -147,12 +147,12 @@ async function test() {
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const valuePre = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
   console.log('Value (String): ', valuePre.toString()) // We retrieve our value
-  console.log('Updated trie root:', trie.root) // The new trie root
+  console.log('Updated trie root:', trie.root()) // The new trie root
 
   await trie.del(key)
   const valuePost = await trie.get(key) // We try to retrieve the value at (deleted) key "testKey"
   console.log('Value at key "testKey": ', valuePost) // Key not found. Value is therefore null.
-  console.log('Trie root after deletion:', trie.root) // Our trie root is back to its initial value
+  console.log('Trie root after deletion:', trie.root()) // Our trie root is back to its initial value
 }
 
 test()

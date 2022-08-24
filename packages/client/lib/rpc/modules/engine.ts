@@ -136,7 +136,7 @@ const txsTrieRoot = async (txs: TypedTransaction[]) => {
   for (const [i, tx] of txs.entries()) {
     await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
-  return trie.root
+  return trie.root()
 }
 
 /**

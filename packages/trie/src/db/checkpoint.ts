@@ -20,7 +20,7 @@ export class CheckpointDB implements DB {
   /**
    * Is the DB during a checkpoint phase?
    */
-  get isCheckpoint() {
+  hasCheckpoints() {
     return this.checkpoints.length > 0
   }
 
@@ -37,7 +37,7 @@ export class CheckpointDB implements DB {
    */
   async commit() {
     const { keyValueMap } = this.checkpoints.pop()!
-    if (!this.isCheckpoint) {
+    if (!this.hasCheckpoints()) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
       for (const [key, value] of keyValueMap.entries()) {
@@ -86,7 +86,7 @@ export class CheckpointDB implements DB {
     // Nothing has been found in cache, look up from disk
 
     const value = await this.db.get(key)
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
     }
@@ -98,7 +98,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // put value in cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
     } else {
@@ -110,7 +110,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Buffer): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // delete the value in the current cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
     } else {
@@ -123,7 +123,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       for (const op of opStack) {
         if (op.type === 'put') {
           await this.put(op.key, op.value)

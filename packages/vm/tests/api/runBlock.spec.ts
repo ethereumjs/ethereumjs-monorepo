@@ -41,14 +41,14 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
 
     st.ok(
       //@ts-ignore
-      vm.stateManager._trie.root.equals(genesis.header.stateRoot),
+      vm.stateManager._trie.root().equals(genesis.header.stateRoot),
       'genesis state root should match calculated state root'
     )
 
     const res = await vm.runBlock({
       block,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
@@ -71,7 +71,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     await vm.runBlock({
       block: block1,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
@@ -80,7 +80,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     await vm.runBlock({
       block: block2,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
@@ -89,7 +89,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     await vm.runBlock({
       block: block3,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
