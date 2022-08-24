@@ -71,7 +71,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new Trie({ useHashedKeys: true, persistRoot: true })
+      const trie = new Trie({ useHashedKeys: true, useRootPersistence: true })
 
       try {
         await trie.put(ROOT_DB_KEY, Buffer.from('bar'))

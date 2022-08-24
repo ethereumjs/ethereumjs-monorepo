@@ -48,7 +48,7 @@ export class Trie {
   protected _useHashedKeys: boolean
   protected _useHashedKeysFunction: HashKeysFunction
   protected _hashLen: number
-  protected _persistRoot: boolean
+  protected _useRootPersistence: boolean
 
   /**
    * Create a new trie
@@ -71,7 +71,7 @@ export class Trie {
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
     this._deleteFromDB = opts?.deleteFromDB ?? false
-    this._persistRoot = opts?.persistRoot ?? false
+    this._useRootPersistence = opts?.useRootPersistence ?? false
 
     if (opts?.root) {
       this.root = opts.root
@@ -87,7 +87,7 @@ export class Trie {
 
     key = Buffer.from(key)
 
-    if (opts?.db !== undefined && opts?.persistRoot === true) {
+    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
         opts.root = (await opts?.db.get(key)) ?? undefined
       } else {
@@ -156,7 +156,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+    if (this._useRootPersistence && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -751,7 +751,7 @@ export class Trie {
       db: this.db.copy(),
       dbStorage: this.dbStorage.copy(),
       deleteFromDB: this._deleteFromDB,
-      persistRoot: this._persistRoot,
+      useRootPersistence: this._useRootPersistence,
       root: this.root,
       useHashedKeys: this._useHashedKeys,
       useHashedKeysFunction: this._useHashedKeysFunction,
@@ -766,7 +766,7 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot === true) {
+    if (this._useRootPersistence === true) {
       await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }

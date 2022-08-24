@@ -67,7 +67,7 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 #### Persistence
 
-You can enable persistence by setting the `persistRoot` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -75,7 +75,7 @@ import { Level } from 'level'
 
 const trie = await Trie.create({
   db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
-  persistRoot: true,
+  useRootPersistence: true,
 })
 ```
 
