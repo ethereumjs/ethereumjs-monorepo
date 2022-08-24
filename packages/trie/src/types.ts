@@ -59,7 +59,7 @@ export interface TrieOpts {
   /**
    * Store the root inside the database after every `write` operation
    */
-  persistRoot?: boolean
+  useRootPersistence?: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch
