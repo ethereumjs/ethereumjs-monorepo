@@ -187,7 +187,8 @@ for (const { constructor, defaults, title } of [
         db: new MapDB(),
         useRootPersistence: true,
       })
-      st.equal(await empty.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await empty._db.get(ROOT_DB_KEY), null)
 
       st.end()
     })
