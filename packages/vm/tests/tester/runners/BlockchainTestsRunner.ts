@@ -33,7 +33,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   const cacheDB = new Level('./.cachedb')
-  const state = new Trie({ useHashedKeys: true })
+  const state = new Trie({ useKeyHashing: true })
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)

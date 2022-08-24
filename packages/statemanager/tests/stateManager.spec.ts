@@ -315,7 +315,8 @@ tape('StateManager', (t) => {
     await stateManager.putContractStorage(address1, key1, key2)
     await stateManager.putContractStorage(address1, key2, key2)
     const root = await stateManager.getStateRoot()
-    const rawNode = await stateManager._trie.db.get(root)
+    // @ts-expect-error
+    const rawNode = await stateManager._trie._db.get(root)
 
     await codeStateManager.putContractCode(address1, rawNode!)
 
