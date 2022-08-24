@@ -31,7 +31,7 @@ tape('testing checkpoints', function (tester) {
 
   it('should create a checkpoint', function (t) {
     trie.checkpoint()
-    t.ok(trie.isCheckpoint)
+    t.ok(trie.hasCheckpoints())
     t.end()
   })
 
@@ -59,7 +59,8 @@ tape('testing checkpoints', function (tester) {
     t.equal(trieCopy.root.toString('hex'), postRoot)
     // @ts-expect-error
     t.equal(trieCopy._db.checkpoints.length, 1)
-    t.ok(trieCopy.isCheckpoint)
+    t.equal(trieCopy.db.checkpoints.length, 1)
+    t.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(Buffer.from('do'))
     t.ok(Buffer.from('verb').equals(Buffer.from(res!)))
     const res2 = await trieCopy.get(Buffer.from('love'))
@@ -70,8 +71,8 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and use the correct hash function', async function (t) {
     const trie = new Trie({
       db: new MapDB(),
-      useHashedKeys: true,
-      useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
+      useKeyHashing: true,
+      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
     })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
@@ -84,10 +85,10 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('should revert to the orginal root', async function (t) {
-    t.ok(trie.isCheckpoint)
+    t.ok(trie.hasCheckpoints())
     await trie.revert()
     t.equal(trie.root.toString('hex'), preRoot)
-    t.notOk(trie.isCheckpoint)
+    t.notOk(trie.hasCheckpoints())
     t.end()
   })
 
@@ -102,7 +103,7 @@ tape('testing checkpoints', function (tester) {
     await trie.put(Buffer.from('test'), Buffer.from('something'))
     await trie.put(Buffer.from('love'), Buffer.from('emotion'))
     await trie.commit()
-    t.equal(trie.isCheckpoint, false)
+    t.equal(trie.hasCheckpoints(), false)
     t.equal(trie.root.toString('hex'), postRoot)
     t.end()
   })
@@ -121,7 +122,7 @@ tape('testing checkpoints', function (tester) {
     await trie.put(Buffer.from('the feels'), Buffer.from('emotion'))
     await trie.revert()
     await trie.commit()
-    t.equal(trie.isCheckpoint, false)
+    t.equal(trie.hasCheckpoints(), false)
     t.equal(trie.root.toString('hex'), root.toString('hex'))
     t.end()
   })
