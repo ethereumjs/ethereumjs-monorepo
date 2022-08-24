@@ -87,7 +87,7 @@ const directories = require('fs')
     try {
       return {
         directory: join(BASE_PATH, directory.name),
-        ...require(join(BASE_PATH, directory.name, 'package.json'))
+        ...require(join(BASE_PATH, directory.name, 'package.json')),
       }
     } catch {
       return undefined
