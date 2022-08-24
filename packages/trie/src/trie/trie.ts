@@ -13,7 +13,6 @@ import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNo
 
 import type {
   BatchDBOp,
-  DB,
   EmbeddedNode,
   FoundNodeFunction,
   HashKeysFunction,
@@ -42,7 +41,6 @@ export class Trie {
 
   /** The backend DB */
   db: CheckpointDB
-  dbStorage: DB
   protected _root: Buffer
   protected _deleteFromDB: boolean
   protected _useHashedKeys: boolean
@@ -57,14 +55,11 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this.dbStorage = opts?.dbStorage ?? opts?.db ?? new MapDB()
-
     if (opts?.db instanceof CheckpointDB) {
-      this.db = opts.db
-    } else {
-      this.db = new CheckpointDB(this.dbStorage)
+      throw new Error('Cannot pass in an instance of CheckpointDB')
     }
 
+    this.db = new CheckpointDB(opts?.db ?? new MapDB())
     this._useHashedKeys = opts?.useHashedKeys ?? false
     this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -748,8 +743,7 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
-      db: this.db.copy(),
-      dbStorage: this.dbStorage.copy(),
+      db: this.db.db.copy(),
       deleteFromDB: this._deleteFromDB,
       useRootPersistence: this._useRootPersistence,
       root: this.root,
