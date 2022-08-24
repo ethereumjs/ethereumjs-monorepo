@@ -161,7 +161,7 @@ export class Trie {
       return await this.del(key)
     }
 
-    await this._lock.wait()
+    await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     if (this.root().equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
@@ -173,7 +173,7 @@ export class Trie {
       await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
-    this._lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -183,14 +183,14 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
-    await this._lock.wait()
+    await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
     if (node) {
       await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
-    this._lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -749,7 +749,7 @@ export class Trie {
       root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie.db.checkpoints = [...this._db.checkpoints]
+      trie._db.checkpoints = [...this._db.checkpoints]
     }
     return trie
   }
@@ -823,10 +823,10 @@ export class Trie {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    await this._lock.wait()
+    await this._lock.acquire()
     await this._db.commit()
     await this.persistRoot()
-    this._lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -839,10 +839,10 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    await this._lock.wait()
+    await this._lock.acquire()
     this.root(await this._db.revert())
     await this.persistRoot()
-    this._lock.signal()
+    this._lock.release()
   }
 
   /**
