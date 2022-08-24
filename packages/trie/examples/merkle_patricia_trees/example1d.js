@@ -3,7 +3,7 @@
 const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root: ', trie.root) // The trie root
+console.log('Empty trie root: ', trie.root()) // The trie root
 
 async function test() {
   const key = Buffer.from('testKey')
@@ -11,12 +11,12 @@ async function test() {
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const valuePre = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
   console.log('Value (String): ', valuePre.toString()) // We retrieve our value
-  console.log('Updated trie root:', trie.root) // The new trie root
+  console.log('Updated trie root:', trie.root()) // The new trie root
 
   await trie.del(key)
   const valuePost = await trie.get(key) // We try to retrieve the value at (deleted) key "testKey"
   console.log('Value at key "testKey": ', valuePost) // Key not found. Value is therefore null.
-  console.log('Trie root after deletion:', trie.root) // Our trie root is back to its initial value
+  console.log('Trie root after deletion:', trie.root()) // Our trie root is back to its initial value
 }
 
 test()

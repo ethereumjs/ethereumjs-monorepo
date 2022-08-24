@@ -8,27 +8,29 @@ Due to the high number of breaking changes, upgrading is typically a tedious pro
 
 ### Options
 
-The 5.0.0 release comes with a variety of new options, some of them replacing old behaviours or classes.
+The 5.0.0 release comes with a variety of new options, some of which replace old behaviours or classes.
 
-#### `CheckpointTrie` is now the default
+#### `CheckpointTrie` is Now the Default
 
-The `CheckpointTrie` has been deprecated in favour of making it a default behaviour. Every `Trie` instance now comes with checkpointing behaviour out of the box.
+The CheckpointTrie is now deprecated in order to make it a default behaviour. Every Trie instance now comes complete with checkpointing behaviour out of the box.
 
-#### `SecureTrie` is now an option
+#### `SecureTrie` is Now an Option
 
-In v5 the `SecureTrie` class has been deprecated in favour of the constructor option `useHashedKeys` - defaulting to `false`. This reduces the level of inheritance dependencies (in the old structure it was e.g. not possible to create a secure trie without the checkpoint functionality, which are logically completely unrelated) and frees things up for future design changes and additions. Updating is pretty much straight-forward:
+In v5, the `SecureTrie` class is now deprecated in favour of the constructor option `useHashedKeys` - defaulting to `false`. This effectively reduces the level of inheritance dependencies (for example, in the old structure, you could not create a secure trie without the checkpoint functionality which, in terms of logic, do not correlate in any way). This also provides more room to accommodate future design modifications and/or additions if required.
+
+Updating is a straightforward process:
 
 ```typescript
 const trie = new SecureTrie() // old
 ```
 
 ```typescript
-const trie = new Trie({ useHashedKeys: true }) // new
+const trie = new Trie({ useKeyHashing: true }) // new
 ```
 
-#### Root persistence is now an option
+#### Root Persistence is Now an Option
 
-Previously if you needed to persist and restore the root of your trie you had to figure out yourself how to do that. Now it is possible to get this behaviour out of the box. You can enable persistence by setting the `usePersistedRoot` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+In previous iterations, you would need to persist and restore the root of your trie and determine how to achieve this of your own accord. This behaviour is now available out of the box. You can enable persistence by setting the `usePersistedRoot` option to `true` when constructing a trie by using the `Trie.create` function. As such, this value is preserved when creating copies of the trie. Moreover, upon instantiating a trie, you will not have the ability to modify said value.
 
 ```typescript
 import { Trie, LevelDB } from '@ethereumjs/trie'
@@ -40,7 +42,7 @@ const trie = await Trie.create({
 })
 ```
 
-The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you don't have the need for automatic restoration of the root then you can use the `new Trie` constructor with the same options and get persistence without the automatic restoration.
+The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you do not require automatic restoration of the root, you can simply use the `new Trie` constructor with the same options and achieve persistence without automatic restoration.
 
 ### Database Abstraction
 
