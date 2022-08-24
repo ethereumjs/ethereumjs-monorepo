@@ -17,7 +17,7 @@ for (const { constructor, defaults, title } of [
     constructor: Trie,
     title: 'SecureTrie',
     defaults: {
-      useHashedKeys: true,
+      useKeyHashing: true,
     },
   },
 ]) {

@@ -317,9 +317,9 @@ async function verifyProof(
   rootHash: Buffer,
   key: Buffer,
   proof: Buffer[],
-  useHashedKeysFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useHashedKeysFunction })
+  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
   try {
     await proofTrie.fromProof(proof)
   } catch (e) {
@@ -414,7 +414,7 @@ export async function verifyRangeProof(
   keys: Nibbles[],
   values: Buffer[],
   proof: Buffer[] | null,
-  useHashedKeysFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction
 ): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
@@ -435,7 +435,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ useHashedKeysFunction })
+    const trie = new Trie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
@@ -457,7 +457,7 @@ export async function verifyRangeProof(
       rootHash,
       nibblesToBuffer(firstKey),
       proof,
-      useHashedKeysFunction
+      useKeyHashingFunction
     )
 
     if (value !== null || (await hasRightElement(trie, firstKey))) {
@@ -473,7 +473,7 @@ export async function verifyRangeProof(
       rootHash,
       nibblesToBuffer(firstKey),
       proof,
-      useHashedKeysFunction
+      useKeyHashingFunction
     )
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
@@ -496,7 +496,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useHashedKeysFunction })
+  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
   await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
