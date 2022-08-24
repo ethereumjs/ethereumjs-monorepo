@@ -4,7 +4,7 @@ import type { Message } from './message'
 import type { OpHandler } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-import AsyncEventEmitter from 'async-eventemitter'
+import type AsyncEventEmitter from 'async-eventemitter'
 
 /**
  * API of the EVM
