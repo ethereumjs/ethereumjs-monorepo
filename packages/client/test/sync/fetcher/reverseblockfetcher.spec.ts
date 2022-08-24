@@ -225,18 +225,18 @@ tape('[ReverseBlockFetcher]', async (t) => {
       timeout: 5,
     })
     const block47 = Block.fromBlockData(
-      { header: { number: BigInt(47) } },
+      { header: { number: BigInt(47), difficulty: BigInt(1) } },
       { hardforkByBlockNumber: true }
     )
     const block48 = Block.fromBlockData(
       {
-        header: { number: BigInt(48), parentHash: block47.hash() },
+        header: { number: BigInt(48), parentHash: block47.hash(), difficulty: BigInt(1) },
       },
       { hardforkByBlockNumber: true }
     )
     const block49 = Block.fromBlockData(
       {
-        header: { number: BigInt(49), parentHash: block48.hash() },
+        header: { number: BigInt(49), parentHash: block48.hash(), difficulty: BigInt(1) },
       },
       { hardforkByBlockNumber: true }
     )
