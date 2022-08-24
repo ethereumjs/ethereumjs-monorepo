@@ -15,12 +15,12 @@ import type {
   BatchDBOp,
   EmbeddedNode,
   FoundNodeFunction,
-  HashKeysFunction,
   Nibbles,
   Proof,
   PutBatch,
   TrieNode,
   TrieOpts,
+  TrieOptsWithDefaults,
 } from '../types'
 
 interface Path {
@@ -35,38 +35,39 @@ interface Path {
  * The API for the base and the secure interface are about the same.
  */
 export class Trie {
+  private readonly _opts: TrieOptsWithDefaults = {
+    deleteFromDB: false,
+    useKeyHashing: false,
+    useKeyHashingFunction: keccak256,
+    useRootPersistence: false,
+  }
+
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
 
   /** The backend DB */
   protected _db: CheckpointDB
-  protected _deleteFromDB: boolean
   protected _hashLen: number
-  protected _lock: Semaphore
+  protected _lock: Semaphore = new Semaphore(1)
   protected _root: Buffer
-  protected _useKeyHashing: boolean
-  protected _useKeyHashingFunction: HashKeysFunction
-  protected _useRootPersistence: boolean
 
   /**
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
   constructor(opts?: TrieOpts) {
-    this._lock = new Semaphore(1)
+    if (opts !== undefined) {
+      this._opts = { ...this._opts, ...opts }
+    }
 
     if (opts?.db instanceof CheckpointDB) {
       throw new Error('Cannot pass in an instance of CheckpointDB')
     }
 
     this._db = new CheckpointDB(opts?.db ?? new MapDB())
-    this._useKeyHashing = opts?.useKeyHashing ?? false
-    this._useKeyHashingFunction = opts?.useKeyHashingFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
-    this._deleteFromDB = opts?.deleteFromDB ?? false
-    this._useRootPersistence = opts?.useRootPersistence ?? false
 
     if (opts?.root) {
       this.root = opts.root
@@ -151,7 +152,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._useRootPersistence && key.equals(ROOT_DB_KEY)) {
+    if (this._opts.useRootPersistence && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -595,7 +596,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this._deleteFromDB) {
+        if (this._opts.deleteFromDB) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -688,7 +689,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useKeyHashingFunction: this._useKeyHashingFunction,
+      useKeyHashingFunction: this._opts.useKeyHashingFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -725,7 +726,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._useKeyHashingFunction
+      this._opts.useKeyHashingFunction
     )
   }
 
@@ -743,12 +744,9 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
+      ...this._opts,
       db: this._db.db.copy(),
-      deleteFromDB: this._deleteFromDB,
-      useRootPersistence: this._useRootPersistence,
       root: this.root,
-      useKeyHashing: this._useKeyHashing,
-      useKeyHashingFunction: this._useKeyHashingFunction,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       trie.db.checkpoints = [...this._db.checkpoints]
@@ -760,7 +758,7 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._useRootPersistence === true) {
+    if (this._opts.useRootPersistence) {
       await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
@@ -790,14 +788,14 @@ export class Trie {
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._useKeyHashing) {
+    if (this._opts.useKeyHashing) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._useKeyHashingFunction(msg))
+    return Buffer.from(this._opts.useKeyHashingFunction(msg))
   }
 
   /**
