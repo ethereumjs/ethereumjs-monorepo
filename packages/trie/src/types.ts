@@ -1,4 +1,3 @@
-import type { CheckpointDB } from './db'
 import type { BranchNode, ExtensionNode, LeafNode } from './trie'
 import type { WalkController } from './util/walkController'
 
@@ -25,12 +24,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB | CheckpointDB
-
-  /**
-   * A database instance.
-   */
-  dbStorage?: DB
+  db?: DB
 
   /**
    * A `Buffer` for the root of a previously stored trie
