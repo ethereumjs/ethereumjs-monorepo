@@ -162,7 +162,6 @@ export class BlockHeader {
       opts
     )
   }
-
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
