@@ -37,15 +37,15 @@ interface Path {
 export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore
 
   /** The backend DB */
-  db: CheckpointDB
-  protected _root: Buffer
+  protected _db: CheckpointDB
   protected _deleteFromDB: boolean
+  protected _hashLen: number
+  protected _lock: Semaphore
+  protected _root: Buffer
   protected _useKeyHashing: boolean
   protected _useKeyHashingFunction: HashKeysFunction
-  protected _hashLen: number
   protected _useRootPersistence: boolean
 
   /**
@@ -53,13 +53,13 @@ export class Trie {
    * @param opts Options for instantiating the trie
    */
   constructor(opts?: TrieOpts) {
-    this.lock = new Semaphore(1)
+    this._lock = new Semaphore(1)
 
     if (opts?.db instanceof CheckpointDB) {
       throw new Error('Cannot pass in an instance of CheckpointDB')
     }
 
-    this.db = new CheckpointDB(opts?.db ?? new MapDB())
+    this._db = new CheckpointDB(opts?.db ?? new MapDB())
     this._useKeyHashing = opts?.useKeyHashing ?? false
     this._useKeyHashingFunction = opts?.useKeyHashingFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -160,7 +160,7 @@ export class Trie {
       return await this.del(key)
     }
 
-    await this.lock.wait()
+    await this._lock.wait()
     const appliedKey = this.appliedKey(key)
     if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
@@ -172,7 +172,7 @@ export class Trie {
       await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -182,14 +182,14 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
-    await this.lock.wait()
+    await this._lock.wait()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
     if (node) {
       await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -282,7 +282,7 @@ export class Trie {
 
     const encoded = newNode.serialize()
     this.root = this.hash(encoded)
-    await this.db.put(this.root, encoded)
+    await this._db.put(this.root, encoded)
     await this.persistRoot()
   }
 
@@ -295,7 +295,7 @@ export class Trie {
     }
     let value = null
     let foundNode = null
-    value = await this.db.get(node as Buffer)
+    value = await this._db.get(node as Buffer)
     if (value) {
       foundNode = decodeNode(value)
     } else {
@@ -570,7 +570,7 @@ export class Trie {
       this.root = lastRoot
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
   }
 
@@ -660,7 +660,7 @@ export class Trie {
       this.root = opStack[0].key
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
     return
   }
@@ -743,7 +743,7 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
-      db: this.db.db.copy(),
+      db: this._db.db.copy(),
       deleteFromDB: this._deleteFromDB,
       useRootPersistence: this._useRootPersistence,
       root: this.root,
@@ -751,7 +751,7 @@ export class Trie {
       useKeyHashingFunction: this._useKeyHashingFunction,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie.db.checkpoints = [...this.db.checkpoints]
+      trie.db.checkpoints = [...this._db.checkpoints]
     }
     return trie
   }
@@ -761,7 +761,7 @@ export class Trie {
    */
   async persistRoot() {
     if (this._useRootPersistence === true) {
-      await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
+      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
 
@@ -804,7 +804,7 @@ export class Trie {
    * Is the trie during a checkpoint phase?
    */
   hasCheckpoints() {
-    return this.db.hasCheckpoints()
+    return this._db.hasCheckpoints()
   }
 
   /**
@@ -812,7 +812,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this.db.checkpoint(this.root)
+    this._db.checkpoint(this.root)
   }
 
   /**
@@ -825,10 +825,10 @@ export class Trie {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    await this.lock.wait()
-    await this.db.commit()
+    await this._lock.wait()
+    await this._db.commit()
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -841,9 +841,16 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    await this.lock.wait()
-    this.root = await this.db.revert()
+    await this._lock.wait()
+    this.root = await this._db.revert()
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
+  }
+
+  /**
+   * Flushes all checkpoints, restoring the initial checkpoint state.
+   */
+  flushCheckpoints() {
+    this._db.checkpoints = []
   }
 }

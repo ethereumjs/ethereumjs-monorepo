@@ -57,6 +57,8 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
     trieCopy = trie.copy()
     t.equal(trieCopy.root.toString('hex'), postRoot)
+    // @ts-expect-error
+    t.equal(trieCopy._db.checkpoints.length, 1)
     t.equal(trieCopy.db.checkpoints.length, 1)
     t.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(Buffer.from('do'))

@@ -101,11 +101,13 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
-      st.equal(bytesToHex(await trie.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      // @ts-expect-error
+      st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       st.end()
     })
@@ -118,11 +120,13 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      st.true((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      // @ts-expect-error
+      st.true((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
 
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
-      st.false((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      // @ts-expect-error
+      st.false((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
 
       st.end()
     })
@@ -136,11 +140,13 @@ for (const { constructor, defaults, title } of [
           useRootPersistence: false,
         })
 
-        st.equal(await trie.db.get(ROOT_DB_KEY), null)
+        // @ts-expect-error
+        st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
         await trie.put(Buffer.from('do_not_persist_with_db'), Buffer.from('bar'))
 
-        st.equal(await trie.db.get(ROOT_DB_KEY), null)
+        // @ts-expect-error
+        st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
         st.end()
       }
@@ -149,11 +155,13 @@ for (const { constructor, defaults, title } of [
     t.test('persists the root if the `db` option is not provided', async function (st) {
       const trie = await constructor.create({ ...defaults, useRootPersistence: true })
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
       await trie.put(Buffer.from('do_not_persist_without_db'), Buffer.from('bar'))
 
-      st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.notEqual(await trie._db.get(ROOT_DB_KEY), null)
 
       st.end()
     })
@@ -162,13 +170,16 @@ for (const { constructor, defaults, title } of [
       const db = new MapDB()
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
-      st.equal(bytesToHex(await trie.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      // @ts-expect-error
+      st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
       const copy = await constructor.create({ ...defaults, db, useRootPersistence: true })
-      st.equal(bytesToHex(await copy.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      // @ts-expect-error
+      st.equal(bytesToHex(await copy._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor.create({

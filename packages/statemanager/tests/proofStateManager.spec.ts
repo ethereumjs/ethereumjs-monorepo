@@ -51,7 +51,8 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     trie.root = stateRoot!
     const proof = await stateManager.getProof(address)
@@ -78,7 +79,8 @@ tape('ProofStateManager', (t) => {
         if (stateRoot === undefined) {
           stateRoot = key
         }
-        await trie.db.put(key, bufferData)
+        // @ts-expect-error
+        await trie._db.put(key, bufferData)
       }
       trie.root = stateRoot!
       const proof = await stateManager.getProof(address)
@@ -106,7 +108,8 @@ tape('ProofStateManager', (t) => {
         if (stateRoot === undefined) {
           stateRoot = key
         }
-        await trie.db.put(key, bufferData)
+        // @ts-expect-error
+        await trie._db.put(key, bufferData)
       }
       const storageRoot = ropsten_contractWithStorage.storageHash
       const storageTrie = new Trie({ useKeyHashing: true })
@@ -115,7 +118,8 @@ tape('ProofStateManager', (t) => {
         storageKeys.push(toBuffer(storageProofsData.key))
         for (const storageProofData of storageProofsData.proof) {
           const key = Buffer.from(keccak256(toBuffer(storageProofData)))
-          await storageTrie.db.put(key, toBuffer(storageProofData))
+          // @ts-expect-error
+          await storageTrie._db.put(key, toBuffer(storageProofData))
         }
       }
       storageTrie.root = toBuffer(storageRoot)
@@ -146,7 +150,8 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     const storageRoot = ropsten_contractWithStorage.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
@@ -155,7 +160,8 @@ tape('ProofStateManager', (t) => {
       storageKeys.push(toBuffer(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
         const key = Buffer.from(keccak256(toBuffer(storageProofData)))
-        await storageTrie.db.put(key, toBuffer(storageProofData))
+        // @ts-expect-error
+        await storageTrie._db.put(key, toBuffer(storageProofData))
       }
     }
     storageTrie.root = toBuffer(storageRoot)
@@ -213,7 +219,8 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
