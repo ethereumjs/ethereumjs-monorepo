@@ -252,7 +252,8 @@ tape('shall handle the case of node not found correctly', async (t) => {
   t.ok(path.node !== null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
-  await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
+  // @ts-expect-error
+  await trie._db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
 
   path = await trie.findPath(Buffer.from('aaa'))
 
@@ -346,7 +347,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 })
 
 tape('dummy hash', async (t) => {
-  const useHashedKeysFunction: HashKeysFunction = (msg) => {
+  const useKeyHashingFunction: HashKeysFunction = (msg) => {
     const hashLen = 32
     if (msg.length <= hashLen - 5) {
       return Buffer.concat([Buffer.from('hash_'), Buffer.alloc(hashLen - msg.length, 0), msg])
@@ -357,10 +358,10 @@ tape('dummy hash', async (t) => {
 
   const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
   const expectedRoot = Buffer.from(
-    useHashedKeysFunction(new LeafNode(bufferToNibbles(k), v).serialize())
+    useKeyHashingFunction(new LeafNode(bufferToNibbles(k), v).serialize())
   )
 
-  const trie = new Trie({ useHashedKeysFunction })
+  const trie = new Trie({ useKeyHashingFunction })
   await trie.put(k, v)
   t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
 
@@ -368,7 +369,7 @@ tape('dummy hash', async (t) => {
 })
 
 tape('blake2b256 trie root', async (t) => {
-  const trie = new Trie({ useHashedKeysFunction: (msg) => blake2b(msg, 32) })
+  const trie = new Trie({ useKeyHashingFunction: (msg) => blake2b(msg, 32) })
   await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
   t.equal(

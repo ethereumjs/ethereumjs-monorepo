@@ -2,7 +2,7 @@
 
 const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 
-const trie = new Trie({ useHashedKeys: true }) // We create an empty Merkle Patricia Tree
+const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
 
 async function test() {

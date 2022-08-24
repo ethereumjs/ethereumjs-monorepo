@@ -47,19 +47,26 @@ export interface TrieOpts {
    *
    * Note: This functionality has been refactored along the v5 release and was before
    * provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
-   * instantiation with `useHashedKeys` set to `true`.
+   * instantiation with `useKeyHashing` set to `true`.
    */
-  useHashedKeys?: boolean
+  useKeyHashing?: boolean
 
   /**
    * Hash function used for hashing trie node and securing key.
    */
-  useHashedKeysFunction?: HashKeysFunction
+  useKeyHashingFunction?: HashKeysFunction
 
   /**
    * Store the root inside the database after every `write` operation
    */
-  persistRoot?: boolean
+  useRootPersistence?: boolean
+}
+
+export type TrieOptsWithDefaults = TrieOpts & {
+  deleteFromDB: boolean
+  useKeyHashing: boolean
+  useKeyHashingFunction: HashKeysFunction
+  useRootPersistence: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch
