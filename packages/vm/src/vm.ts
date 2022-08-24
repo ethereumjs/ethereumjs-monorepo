@@ -31,7 +31,10 @@ import type { StateManager } from '@ethereumjs/statemanager'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM {
+export class VM<
+  EVMType extends EVMInterface = EVMInterface,
+  EEIType extends EEIInterface = EEIInterface
+> {
   /**
    * The StateManager used by the VM
    */
@@ -49,10 +52,10 @@ export class VM {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface | EVM
-  readonly eei: EEIInterface
+  readonly evm: EVMType
+  readonly eei: EEIType
 
-  protected readonly _opts: VMOpts
+  protected readonly _opts: VMOpts<EVMType, EEIType>
   protected _isInitialized: boolean = false
 
   protected readonly _hardforkByBlockNumber: boolean
@@ -80,7 +83,11 @@ export class VM {
    *
    * @param opts VM engine constructor options
    */
-  static async create(opts: VMOpts = {}): Promise<VM> {
+  static async create<
+    EVMType extends EVMInterface = EVM,
+    // EEIType defaults to EEI if no custom EVM is provided, otherwise it defaults to the EEI provided by the custom EVM
+    EEIType extends EEIInterface = EVMType extends EVM ? EEI : EVMType['eei']
+  >(opts: VMOpts<EVMType, EEIType> = {}): Promise<VM<EVMType, EEIType>> {
     const vm = new this(opts)
     await vm.init()
     return vm
@@ -94,7 +101,7 @@ export class VM {
    * use the async {@link VM.create} constructor instead (same API).
    * @param opts
    */
-  protected constructor(opts: VMOpts = {}) {
+  protected constructor(opts: VMOpts<EVMType, EEIType> = {}) {
     this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
@@ -124,7 +131,7 @@ export class VM {
       if (opts.evm) {
         this.eei = opts.evm.eei
       } else {
-        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+        this.eei = <any>new EEI(this.stateManager, this._common, this.blockchain)
       }
     }
 
@@ -132,7 +139,7 @@ export class VM {
     if (opts.evm) {
       this.evm = opts.evm
     } else {
-      this.evm = new EVM({
+      this.evm = <any>new EVM({
         common: this._common,
         eei: this.eei,
       })
@@ -246,14 +253,14 @@ export class VM {
   /**
    * Returns a copy of the {@link VM} instance.
    */
-  async copy(): Promise<VM> {
+  async copy(): Promise<VM<EVMType, EVMType['eei']>> {
     const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = evmCopy.eei
-    return VM.create({
+    const eeiCopy = evmCopy.eei
+    return VM.create<EVMType, EVMType['eei']>({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
-      evm: evmCopy,
+      evm: <EVMType>evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })

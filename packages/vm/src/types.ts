@@ -1,8 +1,9 @@
 import type { Bloom } from './bloom'
+import type { EEI } from './eei/eei'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { EEIInterface, EVM, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike } from '@ethereumjs/util'
@@ -58,7 +59,7 @@ export type VMEvents = {
 /**
  * Options for instantiating a {@link VM}.
  */
-export interface VMOpts {
+export interface VMOpts<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI> {
   /**
    * Use a {@link Common} instance
    * if you want to change the chain setup.
@@ -133,12 +134,13 @@ export interface VMOpts {
   /**
    * Use a custom EEI for the EVM. If this is not present, use the default EEI.
    */
-  eei?: EEIInterface
+  eei?: EEIType
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
+   * If a custom EVM is provided, it must come with a custom EEI that matches the EEIType.
    */
-  evm?: EVMInterface
+  evm?: EVMType & { eei: EEIType }
 }
 
 /**

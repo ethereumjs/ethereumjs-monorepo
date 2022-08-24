@@ -8,6 +8,8 @@ import * as tape from 'tape'
 import { VM } from '../../src'
 import { EEI } from '../../src/eei/eei'
 
+import type { EEIInterface } from '@ethereumjs/evm'
+
 const ZeroAddress = Address.zero()
 
 tape('EEI', (t) => {
@@ -60,7 +62,7 @@ tape('EEI', (t) => {
   })
 
   t.test('eei should return consistent values in vm/evm', async (st) => {
-    const eei = new EEI(
+    const eei: EEIInterface = new EEI(
       new StateManager(),
       new Common({ chain: 'mainnet' }),
       await Blockchain.create()
