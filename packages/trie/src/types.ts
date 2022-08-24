@@ -68,6 +68,13 @@ export interface TrieOpts {
   persistRoot?: boolean
 }
 
+export type TrieOptsWithDefaults = TrieOpts & {
+  deleteFromDB: boolean
+  useHashedKeys: boolean
+  useHashedKeysFunction: HashKeysFunction
+  persistRoot: boolean
+}
+
 export type BatchDBOp = PutBatch | DelBatch
 
 export interface PutBatch {

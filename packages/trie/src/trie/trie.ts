@@ -16,12 +16,12 @@ import type {
   DB,
   EmbeddedNode,
   FoundNodeFunction,
-  HashKeysFunction,
   Nibbles,
   Proof,
   PutBatch,
   TrieNode,
   TrieOpts,
+  TrieOptsWithDefaults,
 } from '../types'
 
 interface Path {
@@ -36,6 +36,13 @@ interface Path {
  * The API for the base and the secure interface are about the same.
  */
 export class Trie {
+  #opts: TrieOptsWithDefaults = {
+    deleteFromDB: false,
+    persistRoot: false,
+    useHashedKeys: false,
+    useHashedKeysFunction: keccak256,
+  }
+
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
   protected lock: Semaphore
@@ -44,17 +51,17 @@ export class Trie {
   db: CheckpointDB
   dbStorage: DB
   protected _root: Buffer
-  protected _deleteFromDB: boolean
-  protected _useHashedKeys: boolean
-  protected _useHashedKeysFunction: HashKeysFunction
   protected _hashLen: number
-  protected _persistRoot: boolean
 
   /**
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
   constructor(opts?: TrieOpts) {
+    if (opts !== undefined) {
+      this.#opts = { ...this.#opts, ...opts }
+    }
+
     this.lock = new Semaphore(1)
 
     this.dbStorage = opts?.dbStorage ?? opts?.db ?? new MapDB()
@@ -65,13 +72,9 @@ export class Trie {
       this.db = new CheckpointDB(this.dbStorage)
     }
 
-    this._useHashedKeys = opts?.useHashedKeys ?? false
-    this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
-    this._deleteFromDB = opts?.deleteFromDB ?? false
-    this._persistRoot = opts?.persistRoot ?? false
 
     if (opts?.root) {
       this.root = opts.root
@@ -156,7 +159,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+    if (this.#opts.persistRoot && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -600,7 +603,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this._deleteFromDB) {
+        if (this.#opts.deleteFromDB) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -693,7 +696,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useHashedKeysFunction: this._useHashedKeysFunction,
+      useHashedKeysFunction: this.#opts.useHashedKeysFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -730,7 +733,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._useHashedKeysFunction
+      this.#opts.useHashedKeysFunction
     )
   }
 
@@ -748,13 +751,10 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
+      ...this.#opts,
       db: this.db.copy(),
       dbStorage: this.dbStorage.copy(),
-      deleteFromDB: this._deleteFromDB,
-      persistRoot: this._persistRoot,
       root: this.root,
-      useHashedKeys: this._useHashedKeys,
-      useHashedKeysFunction: this._useHashedKeysFunction,
     })
     if (includeCheckpoints && this.isCheckpoint) {
       trie.db.checkpoints = [...this.db.checkpoints]
@@ -766,7 +766,7 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot === true) {
+    if (this.#opts.persistRoot) {
       await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
@@ -796,14 +796,14 @@ export class Trie {
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._useHashedKeys) {
+    if (this.#opts.useHashedKeys) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._useHashedKeysFunction(msg))
+    return Buffer.from(this.#opts.useHashedKeysFunction(msg))
   }
 
   /**
