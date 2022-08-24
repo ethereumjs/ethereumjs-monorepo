@@ -54,8 +54,8 @@ async function unset(
      * remove self from parent
      */
     if (
-      key.length - pos < child.keyLength ||
-      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength)) !== 0
+      key.length - pos < child.keyLength() ||
+      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength())) !== 0
     ) {
       if (removeLeft) {
         if (nibblesCompare(child._nibbles, key.slice(pos)) < 0) {
@@ -74,7 +74,7 @@ async function unset(
       ;(parent as BranchNode).setBranch(key[pos - 1], null)
       return pos - 1
     } else {
-      const _child = await trie.lookupNode(child.value)
+      const _child = await trie.lookupNode(child.value())
       if (_child && _child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).setBranch(key[pos - 1], null)
@@ -85,7 +85,7 @@ async function unset(
       stack.push(child)
 
       // continue to the next node
-      return await unset(trie, child, _child, key, pos + child.keyLength, removeLeft, stack)
+      return await unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
     }
   } else if (child === null) {
     return pos - 1
@@ -121,16 +121,16 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       // record this node on the stack
       stack.push(node)
 
-      if (left.length - pos < node.keyLength) {
+      if (left.length - pos < node.keyLength()) {
         shortForkLeft = nibblesCompare(left.slice(pos), node._nibbles)
       } else {
-        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength), node._nibbles)
+        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength()), node._nibbles)
       }
 
-      if (right.length - pos < node.keyLength) {
+      if (right.length - pos < node.keyLength()) {
         shortForkRight = nibblesCompare(right.slice(pos), node._nibbles)
       } else {
-        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength), node._nibbles)
+        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength()), node._nibbles)
       }
 
       // If one of `left` and `right` is not equal to node._nibbles, it means we found the fork point
@@ -145,8 +145,8 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
       // continue to the next node
       parent = node
-      pos += node.keyLength
-      node = await trie.lookupNode(node.value)
+      pos += node.keyLength()
+      node = await trie.lookupNode(node.value())
     } else if (node instanceof BranchNode) {
       // record this node on the stack
       stack.push(node)
@@ -248,7 +248,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return await removeSelfFromParentAndSaveStack(left)
       }
 
-      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength, false, stack)
+      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
       await saveStack(left.slice(0, pos + endPos), stack)
 
       return false
@@ -265,7 +265,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return await removeSelfFromParentAndSaveStack(right)
       }
 
-      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength, true, stack)
+      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)
       await saveStack(right.slice(0, pos + endPos), stack)
 
       return false
@@ -362,13 +362,13 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (
-        key.length - pos < node.keyLength ||
-        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength)) !== 0
+        key.length - pos < node.keyLength() ||
+        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength())) !== 0
       ) {
         return nibblesCompare(node._nibbles, key.slice(pos)) > 0
       }
 
-      pos += node.keyLength
+      pos += node.keyLength()
       node = await trie.lookupNode(node._value)
     } else if (node instanceof LeafNode) {
       return false
