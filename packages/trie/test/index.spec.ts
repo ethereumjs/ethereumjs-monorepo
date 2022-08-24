@@ -252,7 +252,8 @@ tape('shall handle the case of node not found correctly', async (t) => {
   t.ok(path.node !== null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
-  await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
+  // @ts-expect-error
+  await trie._db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
 
   path = await trie.findPath(Buffer.from('aaa'))
 

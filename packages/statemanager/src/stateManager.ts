@@ -138,7 +138,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
 
     const key = this._prefixCodeHashes ? Buffer.concat([CODEHASH_PREFIX, codeHash]) : codeHash
-    await this._trie.db.put(key, value)
+    // @ts-expect-error
+    await this._trie._db.put(key, value)
 
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
@@ -160,7 +161,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const key = this._prefixCodeHashes
       ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
       : account.codeHash
-    const code = await this._trie.db.get(key)
+    // @ts-expect-error
+    const code = await this._trie._db.get(key)
     return code ?? Buffer.alloc(0)
   }
 
@@ -174,7 +176,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
     storageTrie.root = account.storageRoot
-    storageTrie.db.checkpoints = []
+    storageTrie.flushCheckpoints()
     return storageTrie
   }
 
