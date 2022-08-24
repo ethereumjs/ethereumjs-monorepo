@@ -129,7 +129,7 @@ export class VM<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface
       if (opts.evm) {
         this.eei = opts.evm.eei
       } else {
-        this.eei = <any>new EEI(this.stateManager, this._common, this.blockchain)
+        this.eei = new EEI(this.stateManager, this._common, this.blockchain) as unknown as EEIType
       }
     }
 
@@ -137,10 +137,10 @@ export class VM<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface
     if (opts.evm) {
       this.evm = opts.evm
     } else {
-      this.evm = <any>new EVM({
+      this.evm = new EVM({
         common: this._common,
         eei: this.eei,
-      })
+      }) as unknown as EVMType
     }
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
