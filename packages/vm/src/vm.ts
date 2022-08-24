@@ -82,8 +82,9 @@ export class VM<
    * @param opts VM engine constructor options
    */
   static async create<
-    EVMType extends EVMInterface = EVMInterface,
-    EEIType extends EEIInterface = EEIInterface
+    EVMType extends EVMInterface = EVM,
+    // EEIType defaults to EEI if no custom EVM is provided, otherwise it defaults to the EEI provided by the custom EVM
+    EEIType extends EEIInterface = EVMType extends EVM ? EEI : EVMType['eei']
   >(opts: VMOpts<EVMType, EEIType> = {}): Promise<VM<EVMType, EEIType>> {
     const vm = new this(opts)
     await vm.init()
@@ -126,7 +127,7 @@ export class VM<
       this.eei = opts.eei
     } else {
       if (opts.evm) {
-        this.eei = <EEIType>opts.evm.eei
+        this.eei = opts.evm.eei
       } else {
         this.eei = <any>new EEI(this.stateManager, this._common, this.blockchain)
       }
@@ -248,10 +249,10 @@ export class VM<
   /**
    * Returns a copy of the {@link VM} instance.
    */
-  async copy(): Promise<VM<EVMType, EEIType>> {
+  async copy(): Promise<VM<EVMType, EVMType['eei']>> {
     const evmCopy = this.evm.copy()
     const eeiCopy = evmCopy.eei
-    return VM.create<EVMType, EEIType>({
+    return VM.create<EVMType, EVMType['eei']>({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
