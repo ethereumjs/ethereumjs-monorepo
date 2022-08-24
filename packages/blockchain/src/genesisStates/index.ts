@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { CheckpointTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { Account, isHexPrefixed, isTruthy, toBuffer, unpadBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 

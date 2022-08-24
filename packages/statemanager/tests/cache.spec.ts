@@ -1,4 +1,4 @@
-import { CheckpointTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
