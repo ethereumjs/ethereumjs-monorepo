@@ -143,7 +143,7 @@ export class Trie {
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value = null
     if (node && remaining.length === 0) {
-      value = node.value
+      value = node.value()
     }
     return value
   }
@@ -209,7 +209,7 @@ export class Trie {
       const stack: TrieNode[] = []
       const targetKey = bufferToNibbles(key)
 
-      const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
+      const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
         if (node === null) {
           return reject(new Error('Path not found'))
         }
@@ -233,7 +233,7 @@ export class Trie {
             }
           }
         } else if (node instanceof LeafNode) {
-          if (doKeysMatch(keyRemainder, node.key)) {
+          if (doKeysMatch(keyRemainder, node.key())) {
             // keys match, return node with empty key
             resolve({ node, remaining: [], stack })
           } else {
@@ -241,8 +241,8 @@ export class Trie {
             resolve({ node: null, remaining: keyRemainder, stack })
           }
         } else if (node instanceof ExtensionNode) {
-          const matchingLen = matchingNibbleLength(keyRemainder, node.key)
-          if (matchingLen !== node.key.length) {
+          const matchingLen = matchingNibbleLength(keyRemainder, node.key())
+          if (matchingLen !== node.key().length) {
             // keys don't match, fail
             resolve({ node: null, remaining: keyRemainder, stack })
           } else {
@@ -343,12 +343,12 @@ export class Trie {
         if (n instanceof BranchNode) {
           l++
         } else {
-          l += n.key.length
+          l += n.key().length
         }
       }
 
       if (
-        matchingNibbleLength(lastNode.key, key.slice(l)) === lastNode.key.length &&
+        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length &&
         keyRemainder.length === 0
       ) {
         matchLeaf = true
@@ -357,7 +357,7 @@ export class Trie {
 
     if (matchLeaf) {
       // just updating a found value
-      lastNode.value = value
+      lastNode.value(value)
       stack.push(lastNode as TrieNode)
     } else if (lastNode instanceof BranchNode) {
       stack.push(lastNode)
@@ -368,17 +368,17 @@ export class Trie {
         const newLeaf = new LeafNode(keyRemainder, value)
         stack.push(newLeaf)
       } else {
-        lastNode.value = value
+        lastNode.value(value)
       }
     } else {
       // create a branch node
-      const lastKey = lastNode.key
+      const lastKey = lastNode.key()
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
       const newBranchNode = new BranchNode()
 
       // create a new extension node
       if (matchingLength !== 0) {
-        const newKey = lastNode.key.slice(0, matchingLength)
+        const newKey = lastNode.key().slice(0, matchingLength)
         const newExtNode = new ExtensionNode(newKey, value)
         stack.push(newExtNode)
         lastKey.splice(0, matchingLength)
@@ -392,16 +392,16 @@ export class Trie {
 
         if (lastKey.length !== 0 || lastNode instanceof LeafNode) {
           // shrinking extension or leaf
-          lastNode.key = lastKey
+          lastNode.key(lastKey)
           const formattedNode = this._formatNode(lastNode, false, toSave)
           newBranchNode.setBranch(branchKey, formattedNode as EmbeddedNode)
         } else {
           // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
-          newBranchNode.setBranch(branchKey, lastNode.value)
+          newBranchNode.setBranch(branchKey, lastNode.value())
         }
       } else {
-        newBranchNode.value = lastNode.value
+        newBranchNode.value(lastNode.value())
       }
 
       if (keyRemainder.length !== 0) {
@@ -410,7 +410,7 @@ export class Trie {
         const newLeafNode = new LeafNode(keyRemainder, value)
         stack.push(newLeafNode)
       } else {
-        newBranchNode.value = value
+        newBranchNode.value(value)
       }
     }
 
@@ -444,33 +444,33 @@ export class Trie {
           stack.push(extensionNode)
           key.push(branchKey)
         } else {
-          const branchNodeKey = branchNode.key
+          const branchNodeKey = branchNode.key()
           // branch key is an extension or a leaf
           // branch->(leaf or extension)
           branchNodeKey.unshift(branchKey)
-          branchNode.key = branchNodeKey.slice(0)
+          branchNode.key(branchNodeKey.slice(0))
           key = key.concat(branchNodeKey)
         }
         stack.push(branchNode)
       } else {
         // parent is an extension
-        let parentKey = parentNode.key
+        let parentKey = parentNode.key()
 
         if (branchNode instanceof BranchNode) {
           // ext->branch
           parentKey.push(branchKey)
           key.push(branchKey)
-          parentNode.key = parentKey
+          parentNode.key(parentKey)
           stack.push(parentNode)
         } else {
-          const branchNodeKey = branchNode.key
+          const branchNodeKey = branchNode.key()
           // branch node is an leaf or extension and parent node is an exstention
           // add two keys together
           // dont push the parent node
           branchNodeKey.unshift(branchKey)
           key = key.concat(branchNodeKey)
           parentKey = parentKey.concat(branchNodeKey)
-          branchNode.key = parentKey
+          branchNode.key(parentKey)
         }
 
         stack.push(branchNode)
@@ -493,14 +493,14 @@ export class Trie {
     }
 
     if (lastNode instanceof BranchNode) {
-      lastNode.value = null
+      lastNode.value(null)
     } else {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.
       if (!(parentNode instanceof BranchNode)) {
         throw new Error('Expected branch node')
       }
-      const lastNodeKey = lastNode.key
+      const lastNodeKey = lastNode.key()
       key.splice(key.length - lastNodeKey.length)
       // delete the value
       this._formatNode(lastNode, false, opStack, true)
@@ -556,11 +556,11 @@ export class Trie {
     while (stack.length) {
       const node = stack.pop() as TrieNode
       if (node instanceof LeafNode) {
-        key.splice(key.length - node.key.length)
+        key.splice(key.length - node.key().length)
       } else if (node instanceof ExtensionNode) {
-        key.splice(key.length - node.key.length)
+        key.splice(key.length - node.key().length)
         if (lastRoot) {
-          node.value = lastRoot
+          node.value(lastRoot)
         }
       } else if (node instanceof BranchNode) {
         if (lastRoot) {
