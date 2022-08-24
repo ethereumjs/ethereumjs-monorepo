@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 
@@ -6,6 +7,7 @@ import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
+import type { BigIntLike } from '@ethereumjs/util'
 
 // Thanks to go-ethereum for the skeleton design
 
@@ -69,11 +71,17 @@ export class Skeleton extends MetaDBManager {
   private filling = false /** Whether we are actively filling the canonical chain */
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
+  private chainTTD: BigIntLike
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
     this.status = { progress: { subchains: [] } }
     this.started = new Date().getTime()
+    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    if (chainTTD === undefined || chainTTD === null) {
+      throw Error('Cannot create skeleton as merge not set')
+    }
+    this.chainTTD = chainTTD
   }
 
   async open() {
@@ -334,7 +342,9 @@ export class Skeleton extends MetaDBManager {
   async putBlocks(blocks: Block[]): Promise<number> {
     let merged = false
     this.config.logger.debug(
-      `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(blocks[0]?.hash())} end=${
+      `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(
+        blocks[0]?.hash()
+      )} fork=${blocks[0]._common.hardfork()} end=${
         blocks[blocks.length - 1]?.header.number
       } count=${blocks.length}, subchain head=${this.status.progress.subchains[0]?.head} tail = ${
         this.status.progress.subchains[0].tail
@@ -362,7 +372,7 @@ export class Skeleton extends MetaDBManager {
             this.status.progress.subchains[0].head
           } tail=${this.status.progress.subchains[0].tail} next=${short(
             this.status.progress.subchains[0].next
-          )}, block number=${number} hash=${short(block.hash())}`
+          )}, block number=${number} hash=${short(block.hash())} fork=${block._common.hardfork()}`
         )
         throw Error(`Blocks don't extend canonical subchain`)
       }
@@ -519,6 +529,7 @@ export class Skeleton extends MetaDBManager {
       const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBuffer(number))
       const block = Block.fromRLPSerializedBlock(rlp!, {
         common: this.config.chainCommon,
+        hardforkByChainTTD: this.chainTTD,
       })
       return block
     } catch (error: any) {

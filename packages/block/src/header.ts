@@ -22,6 +22,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
+import { getHeaderData } from './helpers'
 
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -105,63 +106,10 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
-    const [
-      parentHash,
-      uncleHash,
-      coinbase,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      logsBloom,
-      difficulty,
-      number,
-      gasLimit,
-      gasUsed,
-      timestamp,
-      extraData,
-      mixHash,
-      nonce,
-      baseFeePerGas,
-    ] = values
-
-    if (values.length > 16) {
-      throw new Error('invalid header. More values than expected were received')
-    }
-    if (values.length < 15) {
-      throw new Error('invalid header. Less values than expected were received')
-    }
-
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number)) {
-        throw new Error('invalid header. baseFeePerGas should be provided')
-      }
-    }
-
-    return new BlockHeader(
-      {
-        parentHash,
-        uncleHash,
-        coinbase,
-        stateRoot,
-        transactionsTrie,
-        receiptTrie,
-        logsBloom,
-        difficulty,
-        number,
-        gasLimit,
-        gasUsed,
-        timestamp,
-        extraData,
-        mixHash,
-        nonce,
-        baseFeePerGas,
-      },
-      opts
-    )
+    const headerData = getHeaderData(values)
+    return BlockHeader.fromHeaderData(headerData, opts)
   }
+
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
@@ -178,7 +126,11 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
+    if (
+      (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) ||
+      (options.hardforkByBlockNumber !== undefined && options.hardforkByChainTTD !== undefined) ||
+      (options.hardforkByTTD !== undefined && options.hardforkByChainTTD !== undefined)
+    ) {
       throw new Error(
         `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
@@ -226,8 +178,17 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+    if (
+      hardforkByBlockNumber ||
+      options.hardforkByTTD !== undefined ||
+      options.hardforkByChainTTD !== undefined
+    ) {
+      let td = options.hardforkByTTD
+      if (options.hardforkByChainTTD !== undefined && difficulty === BigInt(0)) {
+        // This is infered to be a post merge block
+        td = options.hardforkByChainTTD
+      }
+      this._common.setHardforkByBlockNumber(number, td)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {
