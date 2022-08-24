@@ -3,14 +3,14 @@
 const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
 
 const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
 
 async function test() {
   await trie.put(Buffer.from('testKey'), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const value = await trie.get(Buffer.from('testKey')) // We retrieve (using "get") the value at key "testKey"
   console.log('Value (Bytes): ', value)
   console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root) // The new trie root (32 bytes)
+  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
 }
 
 test()

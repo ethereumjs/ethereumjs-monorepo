@@ -70,7 +70,7 @@ export class Trie {
     this._root = this.EMPTY_TRIE_ROOT
 
     if (opts?.root) {
-      this.root = opts.root
+      this.root(opts.root)
     }
   }
 
@@ -95,21 +95,21 @@ export class Trie {
   }
 
   /**
-   * Sets the current root of the `trie`
+   * Gets and/or Sets the current root of the `trie`
    */
-  set root(value: Buffer) {
-    if (isFalsy(value)) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    if (value.length !== this._hashLen)
-      throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
-    this._root = value
-  }
+  root(value?: Buffer): Buffer {
+    if (value !== undefined) {
+      if (isFalsy(value)) {
+        value = this.EMPTY_TRIE_ROOT
+      }
 
-  /**
-   * Gets the current root of the `trie`
-   */
-  get root(): Buffer {
+      if (value.length !== this._hashLen) {
+        throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
+      }
+
+      this._root = value
+    }
+
     return this._root
   }
 
@@ -163,7 +163,7 @@ export class Trie {
 
     await this._lock.wait()
     const appliedKey = this.appliedKey(key)
-    if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
+    if (this.root().equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
       await this._createInitialNode(appliedKey, value)
     } else {
@@ -250,7 +250,7 @@ export class Trie {
 
       // walk trie and process nodes
       try {
-        await this.walkTrie(this.root, onFound)
+        await this.walkTrie(this.root(), onFound)
       } catch (error: any) {
         if (error.message === 'Missing node in DB' && !throwIfMissing) {
           // pass
@@ -282,8 +282,8 @@ export class Trie {
     const newNode = new LeafNode(bufferToNibbles(key), value)
 
     const encoded = newNode.serialize()
-    this.root = this.hash(encoded)
-    await this._db.put(this.root, encoded)
+    this.root(this.hash(encoded))
+    await this._db.put(this.root(), encoded)
     await this.persistRoot()
   }
 
@@ -484,7 +484,7 @@ export class Trie {
 
     if (!parentNode) {
       // the root here has to be a leaf.
-      this.root = this.EMPTY_TRIE_ROOT
+      this.root(this.EMPTY_TRIE_ROOT)
       return
     }
 
@@ -568,7 +568,7 @@ export class Trie {
     }
 
     if (lastRoot) {
-      this.root = lastRoot
+      this.root(lastRoot)
     }
 
     await this._db.batch(opStack)
@@ -657,8 +657,8 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
-      this.root = opStack[0].key
+    if (this.root() === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+      this.root(opStack[0].key)
     }
 
     await this._db.batch(opStack)
@@ -746,7 +746,7 @@ export class Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.copy(),
-      root: this.root,
+      root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       trie.db.checkpoints = [...this._db.checkpoints]
@@ -759,7 +759,7 @@ export class Trie {
    */
   async persistRoot() {
     if (this._opts.useRootPersistence) {
-      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root)
+      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
     }
   }
 
@@ -779,7 +779,7 @@ export class Trie {
         onFound(nodeRef, node, key, walkController)
       }
     }
-    await this.walkTrie(this.root, outerOnFound)
+    await this.walkTrie(this.root(), outerOnFound)
   }
 
   /**
@@ -810,7 +810,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this._db.checkpoint(this.root)
+    this._db.checkpoint(this.root())
   }
 
   /**
@@ -840,7 +840,7 @@ export class Trie {
     }
 
     await this._lock.wait()
-    this.root = await this._db.revert()
+    this.root(await this._db.revert())
     await this.persistRoot()
     this._lock.signal()
   }

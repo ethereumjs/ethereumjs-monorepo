@@ -139,7 +139,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  const stateManagerStateRoot = vm.stateManager._trie.root
+  const stateManagerStateRoot = vm.stateManager._trie.root()
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
   const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
 

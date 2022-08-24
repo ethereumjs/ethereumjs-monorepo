@@ -55,7 +55,7 @@ This allows to swap out the applied `keccak256` hash functionality from the [@no
 So the usage of the following methods change and need to be updated (for all types of tries):
 
 - `Trie.createProof(trie, myKey)` -> `trie.createProof(myKey)`
-- `Trie.verifyProof(trie.root, myKey, proof)` -> `trie.verifyProof(trie.root, myKey, proof)`
+- `Trie.verifyProof(trie.root(), myKey, proof)` -> `trie.verifyProof(trie.root(), myKey, proof)`
 - `Trie.verifyRangeProof(...)` -> `trie.verifyRangeProof(...)`
 
 ## Other Changes

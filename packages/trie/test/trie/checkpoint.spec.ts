@@ -17,13 +17,13 @@ tape('testing checkpoints', function (tester) {
     trie = new Trie()
     await trie.put(Buffer.from('do'), Buffer.from('verb'))
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
-    preRoot = trie.root.toString('hex')
+    preRoot = trie.root().toString('hex')
     t.end()
   })
 
   it('should copy trie and get value added to original trie', async function (t) {
     trieCopy = trie.copy()
-    t.equal(trieCopy.root.toString('hex'), preRoot)
+    t.equal(trieCopy.root().toString('hex'), preRoot)
     const res = await trieCopy.get(Buffer.from('do'))
     t.ok(Buffer.from('verb').equals(Buffer.from(res!)))
     t.end()
@@ -38,7 +38,7 @@ tape('testing checkpoints', function (tester) {
   it('should save to the cache', async function (t) {
     await trie.put(Buffer.from('test'), Buffer.from('something'))
     await trie.put(Buffer.from('love'), Buffer.from('emotion'))
-    postRoot = trie.root.toString('hex')
+    postRoot = trie.root().toString('hex')
     t.end()
   })
 
@@ -56,10 +56,9 @@ tape('testing checkpoints', function (tester) {
 
   it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
     trieCopy = trie.copy()
-    t.equal(trieCopy.root.toString('hex'), postRoot)
+    t.equal(trieCopy.root().toString('hex'), postRoot)
     // @ts-expect-error
     t.equal(trieCopy._db.checkpoints.length, 1)
-    t.equal(trieCopy.db.checkpoints.length, 1)
     t.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(Buffer.from('do'))
     t.ok(Buffer.from('verb').equals(Buffer.from(res!)))
@@ -87,7 +86,7 @@ tape('testing checkpoints', function (tester) {
   it('should revert to the orginal root', async function (t) {
     t.ok(trie.hasCheckpoints())
     await trie.revert()
-    t.equal(trie.root.toString('hex'), preRoot)
+    t.equal(trie.root().toString('hex'), preRoot)
     t.notOk(trie.hasCheckpoints())
     t.end()
   })
@@ -104,7 +103,7 @@ tape('testing checkpoints', function (tester) {
     await trie.put(Buffer.from('love'), Buffer.from('emotion'))
     await trie.commit()
     t.equal(trie.hasCheckpoints(), false)
-    t.equal(trie.root.toString('hex'), postRoot)
+    t.equal(trie.root().toString('hex'), postRoot)
     t.end()
   })
 
@@ -117,13 +116,13 @@ tape('testing checkpoints', function (tester) {
   it('should commit a nested checkpoint', async function (t) {
     trie.checkpoint()
     await trie.put(Buffer.from('test'), Buffer.from('something else'))
-    const { root } = trie
+    const root = trie.root()
     trie.checkpoint()
     await trie.put(Buffer.from('the feels'), Buffer.from('emotion'))
     await trie.revert()
     await trie.commit()
     t.equal(trie.hasCheckpoints(), false)
-    t.equal(trie.root.toString('hex'), root.toString('hex'))
+    t.equal(trie.root().toString('hex'), root.toString('hex'))
     t.end()
   })
 

@@ -107,7 +107,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
   // Parent node
   let parent: TrieNode | null = null
   // Current node
-  let node: TrieNode | null = await trie.lookupNode(trie.root)
+  let node: TrieNode | null = await trie.lookupNode(trie.root())
   let shortForkLeft!: number
   let shortForkRight!: number
   // A stack of modified nodes.
@@ -348,7 +348,7 @@ async function verifyProof(
  */
 async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
   let pos = 0
-  let node = await trie.lookupNode(trie.root)
+  let node = await trie.lookupNode(trie.root())
   while (node !== null) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
@@ -439,7 +439,7 @@ export async function verifyRangeProof(
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
-    if (rootHash.compare(trie.root) !== 0) {
+    if (rootHash.compare(trie.root()) !== 0) {
       throw new Error('invalid all elements proof: root mismatch')
     }
     return false
@@ -502,7 +502,7 @@ export async function verifyRangeProof(
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
   if (empty) {
-    trie.root = trie.EMPTY_TRIE_ROOT
+    trie.root(trie.EMPTY_TRIE_ROOT)
   }
 
   // Put all elements to the trie
@@ -511,7 +511,7 @@ export async function verifyRangeProof(
   }
 
   // Compare rootHash
-  if (trie.root.compare(rootHash) !== 0) {
+  if (trie.root().compare(rootHash) !== 0) {
     throw new Error('invalid two edge elements proof: root mismatch')
   }
 

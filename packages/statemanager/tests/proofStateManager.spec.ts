@@ -54,7 +54,7 @@ tape('ProofStateManager', (t) => {
       // @ts-expect-error
       await trie._db.put(key, bufferData)
     }
-    trie.root = stateRoot!
+    trie.root(stateRoot!)
     const proof = await stateManager.getProof(address)
     st.deepEqual(ropsten_validAccount, proof)
     st.ok(await stateManager.verifyProof(ropsten_validAccount))
@@ -82,7 +82,7 @@ tape('ProofStateManager', (t) => {
         // @ts-expect-error
         await trie._db.put(key, bufferData)
       }
-      trie.root = stateRoot!
+      trie.root(stateRoot!)
       const proof = await stateManager.getProof(address)
       st.deepEqual(ropsten_nonexistentAccount, proof)
       st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
@@ -122,10 +122,10 @@ tape('ProofStateManager', (t) => {
           await storageTrie._db.put(key, toBuffer(storageProofData))
         }
       }
-      storageTrie.root = toBuffer(storageRoot)
+      storageTrie.root(toBuffer(storageRoot))
       const addressHex = address.buf.toString('hex')
       stateManager._storageTries[addressHex] = storageTrie
-      trie.root = stateRoot!
+      trie.root(stateRoot!)
 
       const proof = await stateManager.getProof(address, storageKeys)
       st.deepEqual(ropsten_contractWithStorage, proof)
@@ -164,10 +164,10 @@ tape('ProofStateManager', (t) => {
         await storageTrie._db.put(key, toBuffer(storageProofData))
       }
     }
-    storageTrie.root = toBuffer(storageRoot)
+    storageTrie.root(toBuffer(storageRoot))
     const addressHex = address.buf.toString('hex')
     stateManager._storageTries[addressHex] = storageTrie
-    trie.root = stateRoot!
+    trie.root(stateRoot!)
 
     // tamper with account data
     const testdata = ropsten_contractWithStorage as any
@@ -224,10 +224,10 @@ tape('ProofStateManager', (t) => {
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
-    storageTrie.root = toBuffer(storageRoot)
+    storageTrie.root(toBuffer(storageRoot))
     const addressHex = address.buf.toString('hex')
     stateManager._storageTries[addressHex] = storageTrie
-    trie.root = stateRoot!
+    trie.root(stateRoot!)
 
     // tamper with account data
     const testdata = ropsten_nonexistentAccount as any

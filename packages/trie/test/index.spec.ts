@@ -68,7 +68,7 @@ tape('simple save and retrieve', function (tester) {
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
     t.equal(
       'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-      trie.root.toString('hex')
+      trie.root().toString('hex')
     )
     t.end()
   })
@@ -95,7 +95,7 @@ tape('simple save and retrieve', function (tester) {
     it('should store a longer string', async function (t) {
       await trie.put(Buffer.from('done'), Buffer.from(longString))
       await trie.put(Buffer.from('doge'), Buffer.from('coin'))
-      t.equal(longStringRoot, trie.root.toString('hex'))
+      t.equal(longStringRoot, trie.root().toString('hex'))
       t.end()
     })
 
@@ -124,7 +124,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('do'), Buffer.from('verb'))
       t.equal(
         'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -133,7 +133,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -157,7 +157,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -295,7 +295,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
     await trie4.put(j, rlpAccount)
     await trie4.put(v, rlpAccount)
     await trie4.put(a, rlpAccount)
-    t.equal(trie4.root.toString('hex'), genesisStateRoot)
+    t.equal(trie4.root().toString('hex'), genesisStateRoot)
     t.end()
   })
 })
@@ -339,7 +339,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
       'should return null on latest state root independently from deleteFromDB setting'
     )
 
-    s.trie.root = rootAfterK1
+    s.trie.root(rootAfterK1)
     t.deepEqual(await s.trie.get(k1), s.expected, s.msg)
   }
 
@@ -363,7 +363,7 @@ tape('dummy hash', async (t) => {
 
   const trie = new Trie({ useKeyHashingFunction })
   await trie.put(k, v)
-  t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
+  t.equal(trie.root().toString('hex'), expectedRoot.toString('hex'))
 
   t.end()
 })
@@ -373,7 +373,7 @@ tape('blake2b256 trie root', async (t) => {
   await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
   t.equal(
-    trie.root.toString('hex'),
+    trie.root().toString('hex'),
     'e118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
   )
   t.end()
@@ -382,6 +382,6 @@ tape('blake2b256 trie root', async (t) => {
 tape('empty root', async (t) => {
   const trie = new Trie()
 
-  t.equal(trie.root.toString('hex'), KECCAK256_RLP_S)
+  t.equal(trie.root().toString('hex'), KECCAK256_RLP_S)
   t.end()
 })

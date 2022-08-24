@@ -66,6 +66,6 @@ export class TrieReadStream extends Readable {
         }
       }
     }
-    await this.trie.walkTrie(this.trie.root, outerOnFound)
+    await this.trie.walkTrie(this.trie.root(), outerOnFound)
   }
 }

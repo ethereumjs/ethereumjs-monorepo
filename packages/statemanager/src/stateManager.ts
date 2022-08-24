@@ -175,7 +175,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from state trie
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
-    storageTrie.root = account.storageRoot
+    storageTrie.root(account.storageRoot)
     storageTrie.flushCheckpoints()
     return storageTrie
   }
@@ -237,7 +237,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
         // update contract storageRoot
         const contract = this._cache.get(address)
-        contract.storageRoot = storageTrie.root
+        contract.storageRoot = storageTrie.root()
 
         await this.putAccount(address, contract)
         resolve()
@@ -288,7 +288,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async clearContractStorage(address: Address): Promise<void> {
     await this._modifyContractStorage(address, (storageTrie, done) => {
-      storageTrie.root = storageTrie.EMPTY_TRIE_ROOT
+      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
   }
@@ -446,8 +446,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getStateRoot(): Promise<Buffer> {
     await this._cache.flush()
-    const stateRoot = this._trie.root
-    return stateRoot
+    return this._trie.root()
   }
 
   /**
@@ -467,7 +466,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       }
     }
 
-    this._trie.root = stateRoot
+    this._trie.root(stateRoot)
     this._cache.clear()
     this._storageTries = {}
   }

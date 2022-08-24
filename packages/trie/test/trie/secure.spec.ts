@@ -29,7 +29,7 @@ tape('SecureTrie', function (t) {
       await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
       const proof = await trie.createProof(Buffer.from('key1aa'))
-      const val = await trie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+      const val = await trie.verifyProof(trie.root(), Buffer.from('key1aa'), proof)
       st.equal(val!.toString('utf8'), '01234')
       st.end()
     })
@@ -44,7 +44,7 @@ tape('SecureTrie', function (t) {
         const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.emptyValues.root)
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.emptyValues.root)
       t.end()
     })
 
@@ -54,7 +54,7 @@ tape('SecureTrie', function (t) {
         const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.branchingTests.root)
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.branchingTests.root)
       t.end()
     })
 
@@ -66,7 +66,7 @@ tape('SecureTrie', function (t) {
         }
         await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.jeff.root.toString('hex'))
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.jeff.root.toString('hex'))
       t.end()
     })
 

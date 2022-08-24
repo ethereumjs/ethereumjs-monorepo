@@ -48,10 +48,10 @@ export async function genesisStateRoot(genesisState: GenesisState) {
           )
           await storageTrie.put(storageKey, storageVal)
         }
-        account.storageRoot = storageTrie.root
+        account.storageRoot = storageTrie.root()
       }
     }
     await trie.put(address, account.serialize())
   }
-  return trie.root
+  return trie.root()
 }

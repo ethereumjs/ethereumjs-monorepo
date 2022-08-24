@@ -22,7 +22,7 @@ tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {
     const stateManager = new DefaultStateManager()
 
-    st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
+    st.deepEqual(stateManager._trie.root(), KECCAK256_RLP, 'it has default root')
     const res = await stateManager.getStateRoot()
     st.deepEqual(res, KECCAK256_RLP, 'it has default root')
     st.end()
@@ -30,7 +30,7 @@ tape('StateManager', (t) => {
 
   t.test('should set the state root to empty', async (st) => {
     const stateManager = new DefaultStateManager()
-    st.ok(stateManager._trie.root.equals(KECCAK256_RLP), 'it has default root')
+    st.ok(stateManager._trie.root().equals(KECCAK256_RLP), 'it has default root')
 
     // commit some data to the trie
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
@@ -39,7 +39,7 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(address, account)
     await stateManager.commit()
     await stateManager.flush()
-    st.ok(!stateManager._trie.root.equals(KECCAK256_RLP), 'it has a new root')
+    st.ok(!stateManager._trie.root().equals(KECCAK256_RLP), 'it has a new root')
 
     // set state root to empty trie root
     const emptyTrieRoot = Buffer.from(KECCAK256_RLP_S, 'hex')
