@@ -37,19 +37,19 @@ interface Path {
 export class Trie {
   private readonly _opts: TrieOptsWithDefaults = {
     deleteFromDB: false,
-    persistRoot: false,
-    useHashedKeys: false,
-    useHashedKeysFunction: keccak256,
+    useKeyHashing: false,
+    useKeyHashingFunction: keccak256,
+    useRootPersistence: false,
   }
 
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore = new Semaphore(1)
 
   /** The backend DB */
-  db: CheckpointDB
-  protected _root: Buffer
+  protected _db: CheckpointDB
   protected _hashLen: number
+  protected _lock: Semaphore = new Semaphore(1)
+  protected _root: Buffer
 
   /**
    * Create a new trie
@@ -64,7 +64,7 @@ export class Trie {
       throw new Error('Cannot pass in an instance of CheckpointDB')
     }
 
-    this.db = new CheckpointDB(opts?.db ?? new MapDB())
+    this._db = new CheckpointDB(opts?.db ?? new MapDB())
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -77,13 +77,13 @@ export class Trie {
   static async create(opts?: TrieOpts) {
     let key = ROOT_DB_KEY
 
-    if (opts?.useHashedKeys === true) {
-      key = (opts?.useHashedKeysFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
+    if (opts?.useKeyHashing === true) {
+      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
     }
 
     key = Buffer.from(key)
 
-    if (opts?.db !== undefined && opts?.persistRoot === true) {
+    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
         opts.root = (await opts?.db.get(key)) ?? undefined
       } else {
@@ -152,7 +152,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._opts.persistRoot && key.equals(ROOT_DB_KEY)) {
+    if (this._opts.useRootPersistence && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -161,7 +161,7 @@ export class Trie {
       return await this.del(key)
     }
 
-    await this.lock.wait()
+    await this._lock.wait()
     const appliedKey = this.appliedKey(key)
     if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
@@ -173,7 +173,7 @@ export class Trie {
       await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -183,14 +183,14 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
-    await this.lock.wait()
+    await this._lock.wait()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
     if (node) {
       await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -283,7 +283,7 @@ export class Trie {
 
     const encoded = newNode.serialize()
     this.root = this.hash(encoded)
-    await this.db.put(this.root, encoded)
+    await this._db.put(this.root, encoded)
     await this.persistRoot()
   }
 
@@ -296,7 +296,7 @@ export class Trie {
     }
     let value = null
     let foundNode = null
-    value = await this.db.get(node as Buffer)
+    value = await this._db.get(node as Buffer)
     if (value) {
       foundNode = decodeNode(value)
     } else {
@@ -571,7 +571,7 @@ export class Trie {
       this.root = lastRoot
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
   }
 
@@ -661,7 +661,7 @@ export class Trie {
       this.root = opStack[0].key
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
     return
   }
@@ -689,7 +689,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useHashedKeysFunction: this._opts.useHashedKeysFunction,
+      useKeyHashingFunction: this._opts.useKeyHashingFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -726,7 +726,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._opts.useHashedKeysFunction
+      this._opts.useKeyHashingFunction
     )
   }
 
@@ -745,11 +745,11 @@ export class Trie {
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
       ...this._opts,
-      db: this.db.db.copy(),
+      db: this._db.db.copy(),
       root: this.root,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie.db.checkpoints = [...this.db.checkpoints]
+      trie.db.checkpoints = [...this._db.checkpoints]
     }
     return trie
   }
@@ -758,8 +758,8 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._opts.persistRoot) {
-      await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
+    if (this._opts.useRootPersistence) {
+      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root)
     }
   }
 
@@ -784,25 +784,25 @@ export class Trie {
 
   /**
    * Returns the key practically applied for trie construction
-   * depending on the `useHashedKeys` option being set or not.
+   * depending on the `useKeyHashing` option being set or not.
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._opts.useHashedKeys) {
+    if (this._opts.useKeyHashing) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._opts.useHashedKeysFunction(msg))
+    return Buffer.from(this._opts.useKeyHashingFunction(msg))
   }
 
   /**
    * Is the trie during a checkpoint phase?
    */
   hasCheckpoints() {
-    return this.db.hasCheckpoints()
+    return this._db.hasCheckpoints()
   }
 
   /**
@@ -810,7 +810,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this.db.checkpoint(this.root)
+    this._db.checkpoint(this.root)
   }
 
   /**
@@ -823,10 +823,10 @@ export class Trie {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    await this.lock.wait()
-    await this.db.commit()
+    await this._lock.wait()
+    await this._db.commit()
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
   }
 
   /**
@@ -839,9 +839,16 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    await this.lock.wait()
-    this.root = await this.db.revert()
+    await this._lock.wait()
+    this.root = await this._db.revert()
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.signal()
+  }
+
+  /**
+   * Flushes all checkpoints, restoring the initial checkpoint state.
+   */
+  flushCheckpoints() {
+    this._db.checkpoints = []
   }
 }

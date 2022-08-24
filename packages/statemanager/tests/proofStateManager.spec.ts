@@ -41,7 +41,7 @@ tape('ProofStateManager', (t) => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = new Trie({ useHashedKeys: true })
+    const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -51,7 +51,8 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     trie.root = stateRoot!
     const proof = await stateManager.getProof(address)
@@ -68,7 +69,7 @@ tape('ProofStateManager', (t) => {
       // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
       // Storage slots: empty list
       const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-      const trie = new Trie({ useHashedKeys: true })
+      const trie = new Trie({ useKeyHashing: true })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
       let stateRoot: Buffer | undefined
@@ -78,7 +79,8 @@ tape('ProofStateManager', (t) => {
         if (stateRoot === undefined) {
           stateRoot = key
         }
-        await trie.db.put(key, bufferData)
+        // @ts-expect-error
+        await trie._db.put(key, bufferData)
       }
       trie.root = stateRoot!
       const proof = await stateManager.getProof(address)
@@ -96,7 +98,7 @@ tape('ProofStateManager', (t) => {
       // Note: the first slot has a value, but the second slot is empty
       // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
       const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-      const trie = new Trie({ useHashedKeys: true })
+      const trie = new Trie({ useKeyHashing: true })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
       let stateRoot: Buffer | undefined
@@ -106,16 +108,18 @@ tape('ProofStateManager', (t) => {
         if (stateRoot === undefined) {
           stateRoot = key
         }
-        await trie.db.put(key, bufferData)
+        // @ts-expect-error
+        await trie._db.put(key, bufferData)
       }
       const storageRoot = ropsten_contractWithStorage.storageHash
-      const storageTrie = new Trie({ useHashedKeys: true })
+      const storageTrie = new Trie({ useKeyHashing: true })
       const storageKeys: Buffer[] = []
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
         storageKeys.push(toBuffer(storageProofsData.key))
         for (const storageProofData of storageProofsData.proof) {
           const key = Buffer.from(keccak256(toBuffer(storageProofData)))
-          await storageTrie.db.put(key, toBuffer(storageProofData))
+          // @ts-expect-error
+          await storageTrie._db.put(key, toBuffer(storageProofData))
         }
       }
       storageTrie.root = toBuffer(storageRoot)
@@ -136,7 +140,7 @@ tape('ProofStateManager', (t) => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useHashedKeys: true })
+    const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -146,16 +150,18 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     const storageRoot = ropsten_contractWithStorage.storageHash
-    const storageTrie = new Trie({ useHashedKeys: true })
+    const storageTrie = new Trie({ useKeyHashing: true })
     const storageKeys: Buffer[] = []
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
       storageKeys.push(toBuffer(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
         const key = Buffer.from(keccak256(toBuffer(storageProofData)))
-        await storageTrie.db.put(key, toBuffer(storageProofData))
+        // @ts-expect-error
+        await storageTrie._db.put(key, toBuffer(storageProofData))
       }
     }
     storageTrie.root = toBuffer(storageRoot)
@@ -203,7 +209,7 @@ tape('ProofStateManager', (t) => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useHashedKeys: true })
+    const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -213,10 +219,11 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      await trie.db.put(key, bufferData)
+      // @ts-expect-error
+      await trie._db.put(key, bufferData)
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
-    const storageTrie = new Trie({ useHashedKeys: true })
+    const storageTrie = new Trie({ useKeyHashing: true })
     storageTrie.root = toBuffer(storageRoot)
     const addressHex = address.buf.toString('hex')
     stateManager._storageTries[addressHex] = storageTrie

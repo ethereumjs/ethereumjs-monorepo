@@ -57,6 +57,8 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
     trieCopy = trie.copy()
     t.equal(trieCopy.root.toString('hex'), postRoot)
+    // @ts-expect-error
+    t.equal(trieCopy._db.checkpoints.length, 1)
     t.equal(trieCopy.db.checkpoints.length, 1)
     t.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(Buffer.from('do'))
@@ -69,8 +71,8 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and use the correct hash function', async function (t) {
     const trie = new Trie({
       db: new MapDB(),
-      useHashedKeys: true,
-      useHashedKeysFunction: (value) => createHash('sha256').update(value).digest(),
+      useKeyHashing: true,
+      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
     })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
