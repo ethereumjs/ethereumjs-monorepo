@@ -1,4 +1,4 @@
-const { readFileSync } = require('fs')
+const { readFileSync, existsSync } = require('fs')
 const { join } = require('path')
 
 const COLORS = {
@@ -24,23 +24,25 @@ const LOGGER = {
   },
 }
 
-function countExternalDependencies(dependency) {
-  try {
-    const { dependencies, devDependencies } = JSON.parse(
-      readFileSync(`./node_modules/${dependency}/package.json`).toString()
-    )
+function countExternalDependencies({ dependency, directory }) {
+  const paths = [
+    `./node_modules/${dependency}/package.json`,
+    `${directory}/node_modules/${dependency}/package.json`,
+  ]
 
-    return {
-      dependencies: dependencies === undefined ? 0 : new Set(Object.keys(dependencies)).size,
-      devDependencies:
-        devDependencies === undefined ? 0 : new Set(Object.keys(devDependencies)).size,
-    }
-  } catch {
-    return {
-      dependencies: 0,
-      devDependencies: 0,
+  for (const path of paths) {
+    if (existsSync(path)) {
+      const { dependencies, devDependencies } = JSON.parse(readFileSync(path).toString())
+
+      return {
+        dependencies: dependencies === undefined ? 0 : new Set(Object.keys(dependencies)).size,
+        devDependencies:
+          devDependencies === undefined ? 0 : new Set(Object.keys(devDependencies)).size,
+      }
     }
   }
+
+  throw new Error(`Failed to find 'package.json' for '${dependency}'`)
 }
 
 function logDependencies(type, map) {
@@ -83,7 +85,10 @@ const directories = require('fs')
   .filter((file) => file.isDirectory())
   .map((directory) => {
     try {
-      return require(join(BASE_PATH, directory.name, 'package.json'))
+      return {
+        directory: join(BASE_PATH, directory.name),
+        ...require(join(BASE_PATH, directory.name, 'package.json'))
+      }
     } catch {
       return undefined
     }
@@ -95,14 +100,14 @@ directories.push(require('../package.json'))
 
 let prod = new Map()
 let devs = new Map()
-for (const { dependencies, devDependencies } of directories) {
+for (const { directory, dependencies, devDependencies } of directories) {
   if (dependencies) {
     for (const dependency of Object.keys(dependencies)) {
       if (WHITELIST.some((acceptable) => dependency.startsWith(acceptable))) {
         continue
       }
 
-      prod.set(dependency, countExternalDependencies(dependency))
+      prod.set(dependency, countExternalDependencies({ dependency, directory }))
     }
   }
 
@@ -112,7 +117,7 @@ for (const { dependencies, devDependencies } of directories) {
         continue
       }
 
-      devs.set(dependency, countExternalDependencies(dependency))
+      devs.set(dependency, countExternalDependencies({ dependency, directory }))
     }
   }
 }
