@@ -1,25 +1,26 @@
+import { Trie } from '@ethereumjs/trie'
 import {
   Account,
-  Address,
   arrToBufArr,
   bigIntToHex,
   bufferToBigInt,
   bufferToHex,
   toBuffer,
 } from '@ethereumjs/util'
-import { JsonRpcProvider } from '@ethersproject/providers'
-
-import { Common } from '@ethereumjs/common'
-import { SecureTrie } from '@ethereumjs/trie'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+
 import { Cache } from './cache'
-import { StorageDump } from './interface'
-import { BaseStateManager, StateManager } from '.'
+
+import { BaseStateManager } from '.'
+
+import type { StateManager } from '.'
+import type { StorageDump } from './interface'
+import type { Address } from '@ethereumjs/util'
+import type { JsonRpcProvider } from '@ethersproject/providers'
 
 const log = debug('statemanager')
 export interface EthersStateManagerOpts {
-  common?: Common
   provider: JsonRpcProvider
   blockTag?: bigint | string
 }
@@ -30,11 +31,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private storageCache: Map<string, Buffer>
   private blockTag: string
   private root: Buffer | undefined
-  private trie: SecureTrie
+  private trie: Trie
 
   constructor(opts: EthersStateManagerOpts) {
-    super({ common: opts.common })
-    this.trie = new SecureTrie()
+    super({})
+    this.trie = new Trie({ useKeyHashing: true })
     this.provider = opts.provider
     if (typeof opts.blockTag === 'bigint') {
       this.blockTag = bigIntToHex(opts.blockTag)
@@ -81,7 +82,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   copy(): EthersStateManager {
-    return new EthersStateManager({ common: this._common.copy(), provider: this.provider })
+    return new EthersStateManager({ provider: this.provider })
   }
 
   dumpStorage(_address: Address): Promise<StorageDump> {
@@ -97,7 +98,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       // Get merkle proof for `address` from provider
       const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
       const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
-      const trie = new SecureTrie()
+      const trie = new Trie({ useKeyHashing: true })
       const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
       // if not verified (i.e. verifyProof returns null), account does not exist
       if (verified === null) return false
@@ -122,7 +123,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       for (const proofItem of rawData) {
         const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
         const hash = keccak256(dataBuffer)
-        await this.trie.db.put(arrToBufArr(hash), dataBuffer)
+        await this.trie.put(arrToBufArr(hash), dataBuffer)
       }
     } catch (e) {
       accountData.balance = await this.provider.getBalance(address.toString(), this.blockTag)
@@ -135,7 +136,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBuffer(accountData.codeHash),
-      stateRoot: await this.getStateRoot(),
+      storageRoot: await this.getStateRoot(),
     })
     return account
   }
@@ -165,11 +166,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
         (await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])).stateRoot
       )
     }*/
-    return this.trie.root
+    return this.trie.root()
   }
 
   async setStateRoot(_stateRoot: Buffer): Promise<void> {
-    this.trie.root = _stateRoot
+    this.trie.root(_stateRoot)
   }
   hasStateRoot(_root: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
