@@ -11,6 +11,7 @@ import { baseRequest, createClient, createManager, params, startRPC } from '../h
 import { checkError } from '../util'
 
 import type { FullEthereumService } from '../../../lib/service'
+import type { AfterBlockEvent } from '@ethereumjs/vm'
 
 const method = 'eth_getStorageAt'
 
@@ -73,7 +74,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: AfterBlockEvent) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)
@@ -105,7 +106,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // run block
   let ranBlock2: Block | undefined = undefined
-  vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
+  vm.events.once('afterBlock', (result: AfterBlockEvent) => (ranBlock2 = result.block))
   await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
   await vm.blockchain.putBlock(ranBlock2!)
 

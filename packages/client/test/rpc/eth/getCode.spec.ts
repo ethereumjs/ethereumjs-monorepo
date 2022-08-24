@@ -10,6 +10,7 @@ import { baseRequest, createClient, createManager, params, startRPC } from '../h
 import { checkError } from '../util'
 
 import type { FullEthereumService } from '../../../lib/service'
+import type { AfterBlockEvent } from '@ethereumjs/vm'
 
 const method = 'eth_getCode'
 
@@ -84,7 +85,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: AfterBlockEvent) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)
