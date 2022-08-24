@@ -82,7 +82,7 @@ async function verify(
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
   return await trie.verifyRangeProof(
-    trie.root,
+    trie.root(),
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
@@ -199,7 +199,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     t.equal(
       await trie.verifyRangeProof(
-        trie.root,
+        trie.root(),
         null,
         null,
         entries.map(([key]) => key),

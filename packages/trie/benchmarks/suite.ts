@@ -40,7 +40,7 @@ export function createSuite(db: DB) {
           }
 
           if (i % (eraSize as number) === 0) {
-            key = trie.root
+            key = trie.root()
           }
         }
       })

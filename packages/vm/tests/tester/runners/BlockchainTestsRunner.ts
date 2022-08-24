@@ -89,7 +89,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.eei, testData)
 
-  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.ok(vm.stateManager._trie.root().equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
@@ -174,7 +174,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root
+      vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
@@ -198,7 +198,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root = headBlock.header.stateRoot
+          vm.stateManager._trie.root(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }

@@ -224,10 +224,10 @@ export class Block {
       return result
     }
 
-    if (this.txTrie.root.equals(KECCAK256_RLP)) {
+    if (this.txTrie.root().equals(KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root.equals(this.header.transactionsTrie)
+    result = this.txTrie.root().equals(this.header.transactionsTrie)
     return result
   }
 

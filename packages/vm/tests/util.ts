@@ -47,7 +47,7 @@ export function dumpState(state: any, cb: Function) {
     return new Promise((resolve) => {
       const storage: any = {}
       const storageTrie = state.copy(false)
-      storageTrie.root = account.storageRoot
+      storageTrie.root(account.storageRoot)
       const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
@@ -207,7 +207,7 @@ export function verifyAccountPostConditions(
     }
 
     // validate storage
-    const origRoot = state.root
+    const origRoot = state.root()
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
@@ -215,7 +215,7 @@ export function verifyAccountPostConditions(
         acctData.storage[key]
     }
 
-    state.root = account.storageRoot
+    state.root(account.storageRoot)
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = data.key.toString('hex')
@@ -246,7 +246,7 @@ export function verifyAccountPostConditions(
         }
       }
 
-      state.root = origRoot
+      state.root(origRoot)
       resolve()
     })
   })
@@ -347,7 +347,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
     const storageRoot = (await state.getAccount(address)).storageRoot
 
     if (testData.exec?.address === addressStr) {
-      testData.root = storageRoot
+      testData.root(storageRoot)
     }
 
     // Put account data
