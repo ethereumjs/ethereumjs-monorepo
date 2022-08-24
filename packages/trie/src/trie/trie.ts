@@ -825,10 +825,10 @@ export class Trie {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    await this.lock.wait()
+    await this.lock.acquire()
     await this.db.commit()
     await this.persistRoot()
-    this.lock.signal()
+    this.lock.release()
   }
 
   /**
@@ -841,9 +841,9 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    await this.lock.wait()
+    await this.lock.acquire()
     this.root = await this.db.revert()
     await this.persistRoot()
-    this.lock.signal()
+    this.lock.release()
   }
 }
