@@ -38,7 +38,7 @@ interface Path {
 export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  private lock: Semaphore
+  protected lock: Semaphore
 
   /** The backend DB */
   db: CheckpointDB
