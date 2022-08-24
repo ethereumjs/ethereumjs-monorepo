@@ -33,12 +33,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: client
@@ -51,7 +51,7 @@ jobs:
           command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
       - run: npm run test:browser
-      
+
       - run: npm run lint
   test-client-cli:
     runs-on: ubuntu-latest
@@ -68,7 +68,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - uses: nick-fields/retry@v2

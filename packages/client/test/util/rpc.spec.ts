@@ -6,11 +6,12 @@ import { Config } from '../../lib/config'
 import { RPCManager } from '../../lib/rpc'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 import {
+  MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-  MethodConfig,
 } from '../../lib/util/rpc'
+
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {

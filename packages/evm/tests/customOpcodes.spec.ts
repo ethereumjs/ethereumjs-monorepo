@@ -1,9 +1,11 @@
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-import { InterpreterStep, RunState } from '../src/interpreter'
-import { AddOpcode } from '../src/types'
+
 import { getEEI } from './utils'
+
+import type { InterpreterStep, RunState } from '../src/interpreter'
+import type { AddOpcode } from '../src/types'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
@@ -15,10 +17,10 @@ tape('VM: custom opcodes', (t) => {
     opcode: 0x21,
     opcodeName: 'TEST',
     baseFee: fee,
-    gasFunction: function (runState: RunState, gas: bigint) {
+    gasFunction(runState: RunState, gas: bigint) {
       return gas + logicFee
     },
-    logicFunction: function (runState: RunState) {
+    logicFunction(runState: RunState) {
       runState.stack.push(BigInt(stackPush))
     },
   }
@@ -39,9 +41,9 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('21', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
-    st.ok(correctOpcodeName, 'succesfully set opcode name')
+    st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    st.ok(res.runState!.stack._store[0] === stackPush, 'successfully ran opcode logic')
+    st.ok(correctOpcodeName, 'successfully set opcode name')
   })
 
   t.test('should delete opcodes from the EVM', async (st) => {
@@ -54,7 +56,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === gas, 'succesfully deleted opcode')
+    st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
   })
 
   t.test('should not override default opcodes', async (st) => {
@@ -69,7 +71,7 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('01', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === gas, 'succesfully deleted opcode')
+    st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
     const eei = await getEEI()
     const evmDefault = await EVM.create({ eei })
@@ -100,8 +102,8 @@ tape('VM: custom opcodes', (t) => {
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === totalFee, 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
+    st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    st.ok(res.runState!.stack._store[0] === stackPush, 'successfully ran opcode logic')
   })
 
   t.test('should pass the correct EVM options when copying the EVM', async (st) => {
@@ -112,7 +114,7 @@ tape('VM: custom opcodes', (t) => {
       opcode: 0x21,
       opcodeName: 'TEST',
       baseFee: fee,
-      logicFunction: function (runState: RunState) {
+      logicFunction(runState: RunState) {
         runState.stack.push(BigInt(stackPush))
       },
     }

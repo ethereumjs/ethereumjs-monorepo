@@ -1,4 +1,3 @@
-import type { Block } from '@ethereumjs/block'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -7,16 +6,21 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { LevelDB, SecureTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
-import { Execution, ExecutionOptions } from './execution'
+
+import { Execution } from './execution'
+import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
+
+import type { ExecutionOptions } from './execution'
+import type { Block } from '@ethereumjs/block'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -36,10 +40,12 @@ export class VMExecution extends Execution {
     super(options)
 
     if (isFalsy(this.config.vm)) {
-      const trie = new Trie({ db: new LevelDB(this.stateDB) })
+      const trie = new Trie({
+        db: new LevelDB(this.stateDB),
+        useKeyHashing: true,
+      })
 
       const stateManager = new DefaultStateManager({
-        common: this.config.execCommon,
         trie,
       })
 

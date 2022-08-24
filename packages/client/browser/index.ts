@@ -1,11 +1,12 @@
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
+import debug from 'debug'
 import { Level } from 'level'
 
-import debug from 'debug'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { EthereumClient } from '../lib/client'
-import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
+import { parseMultiaddrs } from '../lib/util'
+
 import { getLogger } from './logging'
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -49,12 +50,12 @@ export * from './logging'
 
 export async function createClient(args: any) {
   // Turn on `debug` logs, defaults to all client logging
-  debug.enable(args.debugLogs ?? "")
+  debug.enable(args.debugLogs ?? '')
   const logger = getLogger({ loglevel: args.loglevel })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const common = new Common({ chain: args.network ?? Chain.Mainnet })
   const key = await Config.getClientKey(datadir, common)
-  const bootnodes = (args.bootnodes !== undefined) ? parseMultiaddrs(args.bootnodes) : undefined
+  const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const config = new Config({
     common,
     key,
@@ -71,7 +72,6 @@ export async function createClient(args: any) {
   config.events.setMaxListeners(50)
   const chainDB = new Level<string | Buffer, string | Buffer>(`${datadir}/${common.chainName()}`)
 
-
   const blockchain = await Blockchain.create({
     db: chainDB,
     common: config.chainCommon,
@@ -79,7 +79,7 @@ export async function createClient(args: any) {
     validateBlocks: true,
     validateConsensus: false,
   })
-  return new EthereumClient({ config, blockchain,  chainDB })
+  return new EthereumClient({ config, blockchain, chainDB })
 }
 
 export async function run(args: any) {

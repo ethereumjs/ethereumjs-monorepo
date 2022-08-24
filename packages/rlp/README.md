@@ -8,13 +8,17 @@
 
 [Recursive Length Prefix](https://eth.wiki/en/fundamentals/rlp) encoding for Node.js and the browser.
 
-## INSTALL
+## Installation
 
-`npm install @ethereumjs/rlp`
+To obtain the latest version, simply require the project using `npm`:
 
-install with `-g` if you want to use the CLI.
+```shell
+npm install @ethereumjs/rlp
+```
 
-## USAGE
+Install with `-g` if you want to use the CLI.
+
+## Usage
 
 ```typescript
 import assert from 'assert'
@@ -67,7 +71,7 @@ Please note that number-related API signatures have changed along with this vers
 - `rlp encode '["cat", "dog"]'` -> `0xc88363617483646f67`
 - `rlp decode 0xc88363617483646f67` -> `["cat","dog"]`
 
-## TESTS
+## Tests
 
 Tests use mocha.
 
@@ -75,7 +79,7 @@ To run tests and linting: `npm test`
 
 To auto-fix linting problems run: `npm run lint:fix`
 
-## CODE COVERAGE
+## Code Coverage
 
 Install dev dependencies: `npm install`
 
@@ -83,11 +87,13 @@ Run coverage: `npm run coverage`
 
 The results will be at: `coverage/lcov-report/index.html`
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+## License
+
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR

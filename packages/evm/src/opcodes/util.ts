@@ -1,10 +1,13 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork } from '@ethereumjs/common'
 import { bigIntToBuffer, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { ERROR, EvmError } from '../exceptions'
-import { RunState } from '../interpreter'
+import { EvmError } from '../exceptions'
+
+import type { ERROR } from '../exceptions'
+import type { RunState } from '../interpreter'
+import type { Common } from '@ethereumjs/common'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
@@ -251,7 +254,7 @@ const N = BigInt(115792089237316195423570985008687907853269984665640564039457584
 export function exponentation(bas: bigint, exp: bigint) {
   let t = BigInt(1)
   while (exp > BigInt(0)) {
-    if (exp % BigInt(2) != BigInt(0)) {
+    if (exp % BigInt(2) !== BigInt(0)) {
       t = (t * bas) % N
     }
     bas = (bas * bas) % N

@@ -1,11 +1,10 @@
-import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
-  TxOptions,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -22,9 +21,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
 
-import { VmState } from '../src/eei/vmState'
+import type { VmState } from '../src/eei/vmState'
+import type { BlockOptions } from '@ethereumjs/block'
+import type { TxOptions } from '@ethereumjs/tx'
+import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -46,7 +47,7 @@ export function dumpState(state: any, cb: Function) {
     return new Promise((resolve) => {
       const storage: any = {}
       const storageTrie = state.copy(false)
-      storageTrie.root = account.stateRoot
+      storageTrie.root(account.storageRoot)
       const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
@@ -67,7 +68,7 @@ export function dumpState(state: any, cb: Function) {
     }
     for (let i = 0; i < results.length; i++) {
       console.log("SHA3'd address: " + bufferToHex(results[i].address))
-      console.log('\tstate root: ' + bufferToHex(results[i].stateRoot))
+      console.log('\tstorage root: ' + bufferToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
         console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
@@ -206,7 +207,7 @@ export function verifyAccountPostConditions(
     }
 
     // validate storage
-    const origRoot = state.root
+    const origRoot = state.root()
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
@@ -214,7 +215,7 @@ export function verifyAccountPostConditions(
         acctData.storage[key]
     }
 
-    state.root = account.stateRoot
+    state.root(account.storageRoot)
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = data.key.toString('hex')
@@ -245,7 +246,7 @@ export function verifyAccountPostConditions(
         }
       }
 
-      state.root = origRoot
+      state.root(origRoot)
       resolve()
     })
   })
@@ -271,24 +272,6 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
     t.equal(amountSpent, balance, 'correct gas')
   } else {
     t.equal(results, undefined)
-  }
-}
-
-/**
- * verifyLogs
- * @param logs to verify
- * @param testData from tests repo
- */
-export function verifyLogs(logs: any, testData: any, t: tape.Test) {
-  if (isTruthy(testData.logs)) {
-    testData.logs.forEach(function (log: any, i: number) {
-      const rlog = logs[i]
-      t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
-      t.equal(bufferToHex(rlog[2]), log.data, 'log: valid data')
-      log.topics.forEach(function (topic: string, i: number) {
-        t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
-      })
-    })
   }
 }
 
@@ -361,14 +344,14 @@ export async function setupPreConditions(state: VmState, testData: any) {
     // Put contract code
     await state.putContractCode(address, codeBuf)
 
-    const stateRoot = (await state.getAccount(address)).stateRoot
+    const storageRoot = (await state.getAccount(address)).storageRoot
 
     if (testData.exec?.address === addressStr) {
-      testData.root = stateRoot
+      testData.root(storageRoot)
     }
 
     // Put account data
-    const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })
+    const account = Account.fromAccountData({ nonce, balance, codeHash, storageRoot })
     await state.putAccount(address, account)
   }
   await state.commit()
@@ -414,7 +397,7 @@ export function getDAOCommon(activationBlock: number) {
   const editedForks = []
   // explicitly edit the "dao" block number:
   for (const fork of forks) {
-    if (fork.name == Hardfork.Dao) {
+    if (fork.name === Hardfork.Dao) {
       editedForks.push({
         name: Hardfork.Dao,
         forkHash: fork.forkHash,

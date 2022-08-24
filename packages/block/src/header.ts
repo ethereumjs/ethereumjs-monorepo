@@ -1,14 +1,10 @@
-import {
-  Chain,
-  CliqueConfig,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-} from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  TypeOutput,
   arrToBufArr,
   bigIntToBuffer,
   bigIntToHex,
@@ -20,16 +16,15 @@ import {
   ecsign,
   isFalsy,
   isTruthy,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
   toType,
-  TypeOutput,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -98,15 +93,6 @@ export class BlockHeader {
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
-    }
-
-    // If an RLP serialized block header is provided and no `hardforkByBlockNumber` opt is provided, default true to
-    // avoid scenarios where no `opts.common` or `opts.hardforkByBlockNumber` is provided and a serialized blockheader
-    // is provided that predates London result in a default base fee being added to the block
-    // (resulting in an erroneous block hash since the default `common` hardfork is London and the blockheader constructor
-    // adds a default basefee if EIP-1559 is active and no basefee is provided in the `headerData`)
-    if (opts.hardforkByTTD === undefined) {
-      opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
     }
 
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
@@ -198,6 +184,7 @@ export class BlockHeader {
       )
     }
 
+    const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -302,7 +289,7 @@ export class BlockHeader {
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
-    this._consensusFormatValidation()
+    if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -342,18 +329,8 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(Chain.Kovan)) {
-        if (nonce.length !== 65) {
-          const msg = this._errorMsg(
-            `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
-          )
-          throw new Error(msg)
-        }
-      } else {
-        const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-        throw new Error(msg)
-      }
+      const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      throw new Error(msg)
     }
 
     // check if the block used too much gas

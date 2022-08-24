@@ -1,11 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
-import { EVMStateAccess } from '@ethereumjs/evm/dist/types'
-import { AccountFields, StateManager } from '@ethereumjs/statemanager'
-import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { Account, Address, isTruthy, toBuffer } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
-const Set = require('core-js-pure/es/set')
+import { debug as createDebugLogger } from 'debug'
+
+import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
+import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
+import type { AccessList, AccessListItem } from '@ethereumjs/tx'
+import type { Debugger } from 'debug'
 
 type AddressHex = string
 
@@ -201,7 +202,7 @@ export class VmState implements EVMStateAccess {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  protected touchAccount(address: Address): void {
+  touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
   }
 
@@ -216,16 +217,16 @@ export class VmState implements EVMStateAccess {
 
     if (isTruthy(mapTarget)) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap.forEach((slotSet: Set<string>, addressString: string) => {
+      for (const [addressString, slotSet] of storageMap) {
         const addressExists = mapTarget.get(addressString)
         if (!addressExists) {
           mapTarget.set(addressString, new Set())
         }
         const storageSet = mapTarget.get(addressString)
-        slotSet.forEach((value: string) => {
+        for (const value of slotSet) {
           storageSet!.add(value)
-        })
-      })
+        }
+      }
     }
   }
 
@@ -363,7 +364,7 @@ export class VmState implements EVMStateAccess {
     const key = address.toString('hex')
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
     if (!storageSet) {
-      const emptyStorage = new Set()
+      const emptyStorage = new Set<string>()
       this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
     }
   }
@@ -445,7 +446,7 @@ export class VmState implements EVMStateAccess {
 
     // Transfer folded map to final structure
     const accessList: AccessList = []
-    folded.forEach((slots, addressStr) => {
+    for (const [addressStr, slots] of folded.entries()) {
       const address = Address.fromString(`0x${addressStr}`)
       const check1 = addressesRemoved.find((a) => a.equals(address))
       const check2 =
@@ -461,7 +462,7 @@ export class VmState implements EVMStateAccess {
         }
         accessList!.push(accessListItem)
       }
-    })
+    }
 
     return accessList
   }

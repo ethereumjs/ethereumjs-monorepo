@@ -6,6 +6,7 @@ import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
+
 import { setBalance } from './utils'
 
 tape('BlockBuilder', async (t) => {

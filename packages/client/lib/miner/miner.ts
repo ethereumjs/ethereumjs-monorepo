@@ -1,15 +1,18 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { CliqueConsensus } from '@ethereumjs/blockchain'
-import { CliqueConfig, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Ethash, Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Ethash } from '@ethereumjs/ethash'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { Config } from '../config'
-import { VMExecution } from '../execution'
-import { FullEthereumService } from '../service'
-import type { FullSynchronizer } from '../sync'
 import { Event } from '../types'
+
+import type { Config } from '../config'
+import type { VMExecution } from '../execution'
+import type { FullEthereumService } from '../service'
+import type { FullSynchronizer } from '../sync'
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { CliqueConfig } from '@ethereumjs/common'
+import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
 
 export interface MinerOptions {
   /* Config */

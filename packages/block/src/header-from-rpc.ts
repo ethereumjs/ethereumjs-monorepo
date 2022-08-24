@@ -2,7 +2,8 @@ import { isTruthy } from '@ethereumjs/util'
 
 import { BlockHeader } from './header'
 import { numberToHex } from './helpers'
-import { BlockOptions } from './types'
+
+import type { BlockOptions } from './types'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.

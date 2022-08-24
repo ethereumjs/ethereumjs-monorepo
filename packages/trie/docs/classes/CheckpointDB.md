@@ -113,7 +113,7 @@ Performs a batch operation on db.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L123)
+[packages/trie/src/db/checkpoint.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L125)
 
 ___
 
@@ -172,7 +172,7 @@ to the **same** underlying leveldb instance.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L140)
+[packages/trie/src/db/checkpoint.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L142)
 
 ___
 
@@ -198,7 +198,7 @@ Removes a raw value in the underlying leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L110)
+[packages/trie/src/db/checkpoint.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L112)
 
 ___
 
@@ -226,7 +226,7 @@ A Promise that resolves to `Buffer` if a value is found or `null` if no value is
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L76)
+[packages/trie/src/db/checkpoint.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L78)
 
 ___
 
@@ -253,7 +253,7 @@ Writes a value directly to leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L98)
+[packages/trie/src/db/checkpoint.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L100)
 
 ___
 
@@ -269,4 +269,4 @@ Reverts the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L68)
+[packages/trie/src/db/checkpoint.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L70)

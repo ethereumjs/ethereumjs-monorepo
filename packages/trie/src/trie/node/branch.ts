@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
-import { EmbeddedNode } from '../../types'
+import type { EmbeddedNode } from '../../types'
 
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
@@ -19,12 +19,12 @@ export class BranchNode {
     return node
   }
 
-  get value(): Buffer | null {
-    return this._value && this._value.length > 0 ? this._value : null
-  }
+  value(v?: Buffer | null): Buffer | null {
+    if (v !== null && v !== undefined) {
+      this._value = v
+    }
 
-  set value(v: Buffer | null) {
-    this._value = v
+    return this._value && this._value.length > 0 ? this._value : null
   }
 
   setBranch(i: number, v: EmbeddedNode | null) {

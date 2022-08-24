@@ -1,22 +1,18 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain, EthashConsensus } from '@ethereumjs/blockchain'
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  bufferToBigInt,
-  isFalsy,
-  isHexPrefixed,
-  isTruthy,
-  stripHexPrefix,
-  toBuffer,
-} from '@ethereumjs/util'
+import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
-import * as tape from 'tape'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
+
+import type { EthashConsensus } from '@ethereumjs/blockchain'
+import type { Common } from '@ethereumjs/common'
+import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -28,7 +24,7 @@ function formatBlockHeader(data: any) {
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
-  if (testData.network != options.forkConfigTestSuite) {
+  if (testData.network !== options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
@@ -37,7 +33,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   const cacheDB = new Level('./.cachedb')
-  const state = new Trie()
+  const state = new Trie({ useKeyHashing: true })
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)
@@ -57,7 +53,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const blockData = { header }
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
-  if (isTruthy(testData.genesisRLP)) {
+  if (typeof testData.genesisRLP === 'string') {
     const rlp = toBuffer(testData.genesisRLP)
     t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
@@ -93,10 +89,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.eei, testData)
 
-  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.ok(vm.stateManager._trie.root().equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
-  async function handleError(error: string | undefined, expectException: string) {
-    if (expectException) {
+  async function handleError(error: string | undefined, expectException: string | boolean) {
+    if (expectException !== false) {
       t.pass(`Expected exception ${expectException}`)
     } else {
       t.fail(error)
@@ -110,14 +106,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
-    const expectException =
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      raw[paramFork] || raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
+    const expectException = (raw[paramFork] ??
+      raw[paramAll1] ??
+      raw[paramAll2] ??
+      raw.blockHeader === undefined) as string | boolean
 
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
+      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bufferToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -126,7 +123,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
+      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
       // Update common HF
       let TD: bigint | undefined = undefined
       try {
@@ -140,14 +137,18 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
-      if (typeof raw.transactionSequence !== 'undefined') {
+      if (raw.transactionSequence !== undefined) {
         const parentBlock = await vm.blockchain.getIteratorHead()
         const blockBuilder = await vm.buildBlock({
           parentBlock,
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
-        for (const txData of raw.transactionSequence) {
-          const shouldFail = txData.valid == 'false'
+
+        for (const txData of raw.transactionSequence as Record<
+          'exception' | 'rawBytes' | 'valid',
+          string
+        >[]) {
+          const shouldFail = txData.valid === 'false'
           try {
             const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
@@ -173,7 +174,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root
+      vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
@@ -194,10 +195,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // imported if it is not equal to the expected postState. it is useful
         // for debugging to skip this, so that verifyPostConditions will compare
         // testData.postState to the actual postState, rather than to the preState.
-        if (isFalsy(options.debug)) {
+        if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root = headBlock.header.stateRoot
+          vm.stateManager._trie.root(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }
@@ -207,7 +208,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
       await cacheDB.close()
 
-      if (isTruthy(expectException)) {
+      if (expectException !== false) {
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }

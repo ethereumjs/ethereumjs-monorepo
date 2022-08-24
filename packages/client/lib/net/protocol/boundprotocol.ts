@@ -1,10 +1,11 @@
 import { isTruthy } from '@ethereumjs/util'
 
-import { Config } from '../../config'
 import { Event } from '../../types'
-import { Peer } from '../peer/peer'
-import { Message, Protocol } from './protocol'
-import { Sender } from './sender'
+
+import type { Config } from '../../config'
+import type { Peer } from '../peer/peer'
+import type { Message, Protocol } from './protocol'
+import type { Sender } from './sender'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -114,7 +115,7 @@ export class BoundProtocol {
       } else {
         this.config.events.emit(
           Event.PROTOCOL_MESSAGE,
-          { name: message.name, data: data },
+          { name: message.name, data },
           this.protocol.name,
           this.peer
         )

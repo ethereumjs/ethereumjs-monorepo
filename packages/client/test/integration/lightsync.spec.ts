@@ -2,6 +2,7 @@ import * as tape from 'tape'
 
 import { SyncMode } from '../../lib/config'
 import { Event } from '../../lib/types'
+
 import { destroy, setup, wait } from './util'
 
 tape('[Integration:LightSync]', async (t) => {

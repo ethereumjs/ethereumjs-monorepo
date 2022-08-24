@@ -1,24 +1,26 @@
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
-  Account,
-  Address,
+  MAX_UINT64,
   bigIntToHex,
   bufferToBigInt,
   intToHex,
   isFalsy,
   isTruthy,
-  MAX_UINT64,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
-import { EVM, EVMResult } from './evm'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Message } from './message'
-import { AsyncOpHandler, Opcode, OpHandler, trap } from './opcodes'
+import { trap } from './opcodes'
 import { Stack } from './stack'
-import { Block, EEIInterface, Log } from './types'
+
+import type { EVM, EVMResult } from './evm'
+import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
+import type { Block, EEIInterface, Log } from './types'
+import type { Common } from '@ethereumjs/common'
+import type { Account, Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -137,7 +139,7 @@ export class Interpreter {
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,
-      env: env,
+      env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,

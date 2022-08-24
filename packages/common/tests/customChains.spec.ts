@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src'
+
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'
@@ -162,4 +163,23 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     )
     st.end()
   })
+})
+
+tape.only('custom chain setup with hardforks with undefined/null block numbers', (t) => {
+  const undefinedHardforks = [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    { name: 'homestead' },
+    { name: 'byzantium', block: null },
+    { name: 'tangerineWhistle', block: 10 },
+  ]
+
+  const common = Common.custom({ hardforks: undefinedHardforks })
+  common.setHardforkByBlockNumber(10)
+  t.equal('tangerineWhistle', common.hardfork(), 'set correct hardfork')
+  common.setHardforkByBlockNumber(3)
+  t.equal('chainstart', common.hardfork(), 'set correct hardfork')
+  t.end()
 })

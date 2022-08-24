@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)).
+
+## Blockchain Interface Changes
+
+The Blockchain interface has been expanded by a few methods and is now guaranteed to work with the VM. The following properties and methods have been added, see PR [#2069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2069):
+
+- `consensus: Consensus` property (for the consensus implementation)
+- `copy(): BlockchainInterface` method
+- `validateHeader(header: BlockHeader, height?: bigint): Promise<void>` method
+
+The following methods are added, but are optional to implement:
+
+- `getIteratorHead?(name?: string): Promise<Block>` method
+- `getTotalDifficulty?(hash: Buffer, number?: bigint): Promise<bigint>` method
+- `genesisState?(): GenesisState` method
+- `getCanonicalHeadBlock?(): Promise<Block>` method
+
+## Other Changes
+
+- Update to renamed `hardforkByTTD` (before: `hardforkByTD`) option for Block instantiations, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+
 ## 6.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)) for the main change set description.

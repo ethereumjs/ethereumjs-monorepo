@@ -3,8 +3,9 @@ import { arrToBufArr, bufArrToArr, bufferToInt, intToBuffer } from '@ethereumjs/
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
-import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Sender } from './sender'
+
+import type { Libp2pMuxedStream as MuxedStream } from '../../types'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
@@ -47,9 +48,9 @@ export class Libp2pSender extends Sender {
           const code = bufferToInt(codeBuf)
           if (code === 0) {
             const status: any = {}
-            payload.forEach(([k, v]: any) => {
+            for (const [k, v] of payload.values()) {
               status[k.toString()] = v
-            })
+            }
             this.status = status
           } else {
             this.emit('message', { code, payload })

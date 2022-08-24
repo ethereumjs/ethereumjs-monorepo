@@ -1,13 +1,20 @@
-import { TransactionFactory, TxData, TypedTransaction } from '@ethereumjs/tx'
-import { isTruthy, setLengthLeft, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { TypeOutput, isTruthy, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
-import { Block, BlockOptions } from './index'
+
+import { Block } from './index'
+
+import type { BlockOptions } from './index'
+import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
-  txParams.gasLimit = toType((txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit), TypeOutput.BigInt)
+  txParams.gasLimit = toType(
+    txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit,
+    TypeOutput.BigInt
+  )
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // check and convert gasPrice and value params

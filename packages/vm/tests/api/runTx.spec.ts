@@ -1,17 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {
-  FeeMarketEIP1559Transaction,
-  FeeMarketEIP1559TxData,
-  Transaction,
-  TransactionFactory,
-} from '@ethereumjs/tx'
-import { Account, Address, isTruthy, MAX_INTEGER } from '@ethereumjs/util'
+import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { Account, Address, MAX_INTEGER } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
+
 import { createAccount, getTransaction, setBalance } from './utils'
+
+import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
@@ -300,7 +298,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       await vm.runTx({ tx: tx2 })
       t.fail('cannot reach this')
     } catch (e: any) {
-      t.pass('succesfully threw on insufficient balance for transaction')
+      t.pass('successfully threw on insufficient balance for transaction')
     }
     t.end()
   })
@@ -317,7 +315,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       await vm.runTx({ tx })
       t.fail('cannot reach this')
     } catch (e: any) {
-      t.pass('succesfully threw on wrong nonces')
+      t.pass('successfully threw on wrong nonces')
     }
     t.end()
   })
@@ -662,7 +660,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
   const sender = Address.fromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
-    if (isTruthy(balance)) {
+    if (balance !== undefined) {
       await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     }
     const tx = Transaction.fromTxData({
@@ -676,8 +674,8 @@ tape('runTx() -> skipBalance behavior', async (t) => {
     const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
       afterTxBalance,
-      balance ?? BigInt(0),
-      `sender balance before and after transaction should be equal with skipBalance`
+      balance !== undefined ? balance - 1n : BigInt(0),
+      `sender balance should be >= 0 after transaction with skipBalance`
     )
     t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }

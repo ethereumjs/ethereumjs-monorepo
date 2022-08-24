@@ -1,7 +1,9 @@
-import { Trie } from '../trie'
 import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
-import { FoundNodeFunction, Nibbles, TrieNode } from '../types'
+
 import { PrioritizedTaskExecutor } from './tasks'
+
+import type { Trie } from '../trie'
+import type { FoundNodeFunction, Nibbles, TrieNode } from '../types'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -70,7 +72,7 @@ export class WalkController {
     }
     let children
     if (node instanceof ExtensionNode) {
-      children = [[node.key, node.value]]
+      children = [[node.key(), node.value()]]
     } else if (node instanceof BranchNode) {
       children = node.getChildren().map((b) => [[b[0]], b[1]])
     }

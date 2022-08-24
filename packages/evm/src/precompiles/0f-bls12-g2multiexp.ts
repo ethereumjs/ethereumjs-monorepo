@@ -1,9 +1,13 @@
 import { isFalsy } from '@ethereumjs/util'
 
-import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
+import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
-import { PrecompileInput } from './types'
+
 import { gasDiscountPairs } from './util/bls12_381'
+
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
+
 const {
   BLS12_381_ToG2Point,
   BLS12_381_ToFrPoint,
@@ -17,7 +21,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  if (inputData.length == 0) {
+  if (inputData.length === 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
 
@@ -29,7 +33,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   let gasDiscountMultiplier
 
   if (numPairs <= gasDiscountArray.length) {
-    if (numPairs == 0) {
+    if (numPairs === 0) {
       gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
     } else {
       gasDiscountMultiplier = gasDiscountArray[numPairs - 1][1]
@@ -44,7 +48,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length % 288 != 0) {
+  if (inputData.length % 288 !== 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -91,6 +95,6 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: returnValue,
+    returnValue,
   }
 }

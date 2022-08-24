@@ -27,7 +27,7 @@ WalkController is an interface to control how the trie is being traversed.
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L10)
+[packages/trie/src/util/walkController.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L12)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L11)
+[packages/trie/src/util/walkController.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L13)
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L12)
+[packages/trie/src/util/walkController.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L14)
 
 ## Methods
 
@@ -70,7 +70,7 @@ Run all children of a node. Priority of these nodes are the key length of the ch
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L67)
+[packages/trie/src/util/walkController.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L69)
 
 ___
 
@@ -95,7 +95,7 @@ Push a branch of a certain BranchNode to the event queue.
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L118)
+[packages/trie/src/util/walkController.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L120)
 
 ___
 
@@ -119,7 +119,7 @@ Push a node to the queue. If the queue has places left for tasks, the node is ex
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L95)
+[packages/trie/src/util/walkController.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L97)
 
 ___
 
@@ -144,4 +144,4 @@ Async function to create and start a new walk over a trie.
 
 #### Defined in
 
-[packages/trie/src/util/walkController.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L37)
+[packages/trie/src/util/walkController.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/walkController.ts#L39)

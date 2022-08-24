@@ -3,6 +3,7 @@ import * as test from 'tape'
 
 import * as devp2p from '../../src'
 import { ETH } from '../../src'
+
 import * as util from './util'
 
 const GENESIS_TD = 17179869184
@@ -45,8 +46,8 @@ test('ETH: send status message (NetworkId mismatch)', (t) => {
     t.end()
   }
 
-  const c1 = new Common({ chain: Chain.Mainnet })
-  const c2 = new Common({ chain: Chain.Ropsten })
+  const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 

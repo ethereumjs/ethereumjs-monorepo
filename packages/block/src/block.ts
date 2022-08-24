@@ -1,19 +1,20 @@
-import { Common, ConsensusType } from '@ethereumjs/common'
+import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Capability,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  TransactionFactory,
-  TxOptions,
-  TypedTransaction,
-} from '@ethereumjs/tx'
-import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BlockHeader } from './header'
-import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { Common } from '@ethereumjs/common'
+import type {
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TxOptions,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 
 /**
  * An object that represents the block.
@@ -223,10 +224,10 @@ export class Block {
       return result
     }
 
-    if (this.txTrie.root.equals(KECCAK256_RLP)) {
+    if (this.txTrie.root().equals(KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root.equals(this.header.transactionsTrie)
+    result = this.txTrie.root().equals(this.header.transactionsTrie)
     return result
   }
 
@@ -240,7 +241,8 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    this.transactions.forEach((tx, i) => {
+    // eslint-disable-next-line prefer-const
+    for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -258,7 +260,7 @@ export class Block {
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
-    })
+    }
 
     return stringError ? errors : errors.length === 0
   }

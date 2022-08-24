@@ -1,6 +1,3 @@
-import { URL } from 'url'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import {
   addHexPrefix,
@@ -12,8 +9,11 @@ import {
   stripHexPrefix,
 } from '@ethereumjs/util'
 import { Multiaddr, multiaddr } from 'multiaddr'
+import { URL } from 'url'
 
 import type { MultiaddrLike } from '../types'
+import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -73,13 +73,10 @@ export function parseTransports(transports: string[]) {
     const options: { [key: string]: string } = {}
     const [name, ...pairs] = t.split(':')
     if (pairs.length) {
-      pairs
-        .join(':')
-        .split(',')
-        .forEach((p: string) => {
-          const [key, value] = p.split('=')
-          options[key] = value
-        })
+      for (const p of pairs.join(':').split(',')) {
+        const [key, value] = p.split('=')
+        options[key] = value
+      }
     }
     return { name, options }
   })

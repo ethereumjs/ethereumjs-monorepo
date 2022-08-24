@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.0.0-beta.2",
+  "version": "4.0.0-beta.3",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "keywords": [
     "ethereum",
@@ -50,26 +50,18 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.2",
-    "@ethereumjs/rlp": "4.0.0-beta.2",
-    "@ethereumjs/util": "8.0.0-beta.2",
+    "@ethereumjs/common": "3.0.0-beta.3",
+    "@ethereumjs/rlp": "4.0.0-beta.3",
+    "@ethereumjs/util": "8.0.0-beta.3",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
-    "@types/node": "^16.11.7",
-    "@types/tape": "^4.13.2",
-    "eslint": "^8.0.0",
-    "karma": "^6.3.2",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.0",
-    "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.3",
+    "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
-    "node-dir": "^0.1.16",
-    "nyc": "^15.1.0",
-    "tape": "^5.3.1",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "node-dir": "^0.1.16"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }

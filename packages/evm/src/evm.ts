@@ -1,30 +1,34 @@
-import { promisify } from 'util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import AsyncEventEmitter = require('async-eventemitter')
 import {
-  Account,
   Address,
+  KECCAK256_NULL,
+  MAX_INTEGER,
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
   isFalsy,
   isTruthy,
-  KECCAK256_NULL,
-  MAX_INTEGER,
   short,
   zeros,
 } from '@ethereumjs/util'
+import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
+import { promisify } from 'util'
 
 import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
-import { Interpreter, InterpreterOpts, RunState } from './interpreter'
-import { Message, MessageWithTo } from './message'
-import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
+import { Interpreter } from './interpreter'
+import { Message } from './message'
+import { getOpcodesForHF } from './opcodes'
+import { getActivePrecompiles } from './precompiles'
 import { TransientStorage } from './transientStorage'
-import {
+
+import type { InterpreterOpts, RunState } from './interpreter'
+import type { MessageWithTo } from './message'
+import type { OpHandler, OpcodeList } from './opcodes'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type {
   Block,
   CustomOpcode,
   EEIInterface,
@@ -36,6 +40,7 @@ import {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
+import type { Account } from '@ethereumjs/util'
 
 const debug = createDebugLogger('evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -695,10 +700,12 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
-        callerAccount.balance += value
-        await this.eei.putAccount(caller, callerAccount)
+        if (callerAccount.balance < value) {
+          // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
+          callerAccount.balance = value
+          await this.eei.putAccount(caller, callerAccount)
+        }
       }
 
       message = new Message({
@@ -767,7 +774,10 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       result.execResult.gasRefund = BigInt(0)
     }
     if (err) {
-      if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (
+        this._common.gteHardfork(Hardfork.Homestead) ||
+        err.error !== ERROR.CODESTORE_OUT_OF_GAS
+      ) {
         result.execResult.logs = []
         await this.eei.revert()
         this._transientStorage.revert()

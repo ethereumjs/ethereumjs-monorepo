@@ -7,6 +7,7 @@ import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
+
 import { createBlock } from './util'
 
 tape('[Blockchain]: Block validation tests', (t) => {
@@ -183,7 +184,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    st.pass('uncle blocks validated succesfully')
+    st.pass('uncle blocks validated successfully')
   })
 
   t.test('EIP1559 base fee tests', async (st) => {

@@ -1,12 +1,14 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
-import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { EVM } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI
