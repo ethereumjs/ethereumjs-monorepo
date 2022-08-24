@@ -2,7 +2,7 @@ import { isTruthy } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
-import { CheckpointTrie, MapDB, ROOT_DB_KEY, Trie } from '../../src'
+import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
 
 tape('SecureTrie', function (t) {
   const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
@@ -84,7 +84,7 @@ tape('SecureTrie', function (t) {
   })
 })
 
-const trie = new CheckpointTrie({ useKeyHashing: true, db: new MapDB() })
+const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 const a = Buffer.from(
   'f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
   'hex'
@@ -142,7 +142,7 @@ tape('secure tests should not crash', async function (t) {
 
 tape('SecureTrie.copy', function (it) {
   it.test('created copy includes values added after checkpoint', async function (t) {
-    const trie = new CheckpointTrie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
@@ -154,7 +154,7 @@ tape('SecureTrie.copy', function (it) {
   })
 
   it.test('created copy includes values added before checkpoint', async function (t) {
-    const trie = new CheckpointTrie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
@@ -166,7 +166,7 @@ tape('SecureTrie.copy', function (it) {
   })
 
   it.test('created copy uses the correct hash function', async function (t) {
-    const trie = new CheckpointTrie({
+    const trie = new Trie({
       db: new MapDB(),
       useKeyHashing: true,
       useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),

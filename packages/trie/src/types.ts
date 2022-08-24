@@ -25,10 +25,12 @@ export interface TrieOpts {
    * A database instance.
    */
   db?: DB
+
   /**
    * A `Buffer` for the root of a previously stored trie
    */
   root?: Buffer
+
   /**
    * Delete nodes from DB on delete operations (disallows switching to an older state root)
    * Default: `false`

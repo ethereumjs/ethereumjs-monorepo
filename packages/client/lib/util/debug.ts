@@ -27,7 +27,7 @@ import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM }  from './lib'
-import { CheckpointTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { DefaultStateManager } from './lib/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
