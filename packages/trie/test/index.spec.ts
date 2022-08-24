@@ -68,7 +68,7 @@ tape('simple save and retrieve', function (tester) {
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
     t.equal(
       'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-      trie.root.toString('hex')
+      trie.root().toString('hex')
     )
     t.end()
   })
@@ -95,7 +95,7 @@ tape('simple save and retrieve', function (tester) {
     it('should store a longer string', async function (t) {
       await trie.put(Buffer.from('done'), Buffer.from(longString))
       await trie.put(Buffer.from('doge'), Buffer.from('coin'))
-      t.equal(longStringRoot, trie.root.toString('hex'))
+      t.equal(longStringRoot, trie.root().toString('hex'))
       t.end()
     })
 
@@ -124,7 +124,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('do'), Buffer.from('verb'))
       t.equal(
         'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -133,7 +133,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -157,7 +157,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex')
+        trie.root().toString('hex')
       )
       t.end()
     })
@@ -252,7 +252,8 @@ tape('shall handle the case of node not found correctly', async (t) => {
   t.ok(path.node !== null, 'findPath should find a node')
 
   const { stack } = await trie.findPath(Buffer.from('aaa'))
-  await trie.db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
+  // @ts-expect-error
+  await trie._db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
 
   path = await trie.findPath(Buffer.from('aaa'))
 
@@ -294,7 +295,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
     await trie4.put(j, rlpAccount)
     await trie4.put(v, rlpAccount)
     await trie4.put(a, rlpAccount)
-    t.equal(trie4.root.toString('hex'), genesisStateRoot)
+    t.equal(trie4.root().toString('hex'), genesisStateRoot)
     t.end()
   })
 })
@@ -338,7 +339,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
       'should return null on latest state root independently from deleteFromDB setting'
     )
 
-    s.trie.root = rootAfterK1
+    s.trie.root(rootAfterK1)
     t.deepEqual(await s.trie.get(k1), s.expected, s.msg)
   }
 
@@ -346,7 +347,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 })
 
 tape('dummy hash', async (t) => {
-  const useHashedKeysFunction: HashKeysFunction = (msg) => {
+  const useKeyHashingFunction: HashKeysFunction = (msg) => {
     const hashLen = 32
     if (msg.length <= hashLen - 5) {
       return Buffer.concat([Buffer.from('hash_'), Buffer.alloc(hashLen - msg.length, 0), msg])
@@ -357,22 +358,22 @@ tape('dummy hash', async (t) => {
 
   const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
   const expectedRoot = Buffer.from(
-    useHashedKeysFunction(new LeafNode(bufferToNibbles(k), v).serialize())
+    useKeyHashingFunction(new LeafNode(bufferToNibbles(k), v).serialize())
   )
 
-  const trie = new Trie({ useHashedKeysFunction })
+  const trie = new Trie({ useKeyHashingFunction })
   await trie.put(k, v)
-  t.equal(trie.root.toString('hex'), expectedRoot.toString('hex'))
+  t.equal(trie.root().toString('hex'), expectedRoot.toString('hex'))
 
   t.end()
 })
 
 tape('blake2b256 trie root', async (t) => {
-  const trie = new Trie({ useHashedKeysFunction: (msg) => blake2b(msg, 32) })
+  const trie = new Trie({ useKeyHashingFunction: (msg) => blake2b(msg, 32) })
   await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
   t.equal(
-    trie.root.toString('hex'),
+    trie.root().toString('hex'),
     'e118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
   )
   t.end()
@@ -381,6 +382,6 @@ tape('blake2b256 trie root', async (t) => {
 tape('empty root', async (t) => {
   const trie = new Trie()
 
-  t.equal(trie.root.toString('hex'), KECCAK256_RLP_S)
+  t.equal(trie.root().toString('hex'), KECCAK256_RLP_S)
   t.end()
 })

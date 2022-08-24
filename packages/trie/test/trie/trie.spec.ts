@@ -17,7 +17,7 @@ for (const { constructor, defaults, title } of [
     constructor: Trie,
     title: 'SecureTrie',
     defaults: {
-      useHashedKeys: true,
+      useKeyHashing: true,
     },
   },
 ]) {
@@ -41,18 +41,8 @@ for (const { constructor, defaults, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and defaults to `false` with a database',
       async function (st) {
-        st.false(((await constructor.create({ ...defaults, db: new MapDB() })) as any)._persistRoot)
-
-        st.end()
-      }
-    )
-
-    t.test(
-      'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
-      async function (st) {
         st.false(
-          ((await constructor.create({ ...defaults, db: new MapDB(), persistRoot: false })) as any)
-            ._persistRoot
+          ((await constructor.create({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
         )
 
         st.end()
@@ -60,11 +50,33 @@ for (const { constructor, defaults, title } of [
     )
 
     t.test(
-      'creates an instance via the static constructor `create` function and respects the `persistRoot` option with a database',
+      'creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database',
       async function (st) {
         st.false(
-          ((await constructor.create({ ...defaults, db: new MapDB(), persistRoot: false })) as any)
-            ._persistRoot
+          (
+            (await constructor.create({
+              ...defaults,
+              db: new MapDB(),
+              useRootPersistence: false,
+            })) as any
+          )._useRootPersistence
+        )
+
+        st.end()
+      }
+    )
+
+    t.test(
+      'creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database',
+      async function (st) {
+        st.false(
+          (
+            (await constructor.create({
+              ...defaults,
+              db: new MapDB(),
+              useRootPersistence: false,
+            })) as any
+          )._useRootPersistence
         )
 
         st.end()
@@ -74,20 +86,28 @@ for (const { constructor, defaults, title } of [
     t.test(
       'creates an instance via the static constructor `create` function and defaults to `false` without a database',
       async function (st) {
-        st.false(((await constructor.create({ ...defaults, db: new MapDB() })) as any)._persistRoot)
+        st.false(
+          ((await constructor.create({ ...defaults, db: new MapDB() })) as any)._useRootPersistence
+        )
 
         st.end()
       }
     )
 
-    t.test('persist the root if the `persistRoot` option is `true`', async function (st) {
-      const trie = await constructor.create({ ...defaults, db: new MapDB(), persistRoot: true })
+    t.test('persist the root if the `useRootPersistence` option is `true`', async function (st) {
+      const trie = await constructor.create({
+        ...defaults,
+        db: new MapDB(),
+        useRootPersistence: true,
+      })
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
-      st.equal(bytesToHex(await trie.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      // @ts-expect-error
+      st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       st.end()
     })
@@ -97,38 +117,51 @@ for (const { constructor, defaults, title } of [
         ...defaults,
         db: new MapDB(),
         root: KECCAK256_RLP,
-        persistRoot: true,
+        useRootPersistence: true,
       })
 
-      st.true((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      // @ts-expect-error
+      st.true((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
 
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
 
-      st.false((await trie.db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      // @ts-expect-error
+      st.false((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
 
       st.end()
     })
 
-    t.test('does not persist the root if the `persistRoot` option is `false`', async function (st) {
-      const trie = await constructor.create({ ...defaults, db: new MapDB(), persistRoot: false })
+    t.test(
+      'does not persist the root if the `useRootPersistence` option is `false`',
+      async function (st) {
+        const trie = await constructor.create({
+          ...defaults,
+          db: new MapDB(),
+          useRootPersistence: false,
+        })
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+        // @ts-expect-error
+        st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
-      await trie.put(Buffer.from('do_not_persist_with_db'), Buffer.from('bar'))
+        await trie.put(Buffer.from('do_not_persist_with_db'), Buffer.from('bar'))
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+        // @ts-expect-error
+        st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
-      st.end()
-    })
+        st.end()
+      }
+    )
 
     t.test('persists the root if the `db` option is not provided', async function (st) {
-      const trie = await constructor.create({ ...defaults, persistRoot: true })
+      const trie = await constructor.create({ ...defaults, useRootPersistence: true })
 
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
       await trie.put(Buffer.from('do_not_persist_without_db'), Buffer.from('bar'))
 
-      st.notEqual(await trie.db.get(ROOT_DB_KEY), null)
+      // @ts-expect-error
+      st.notEqual(await trie._db.get(ROOT_DB_KEY), null)
 
       st.end()
     })
@@ -136,24 +169,32 @@ for (const { constructor, defaults, title } of [
     t.test('persist and restore the root', async function (st) {
       const db = new MapDB()
 
-      const trie = await constructor.create({ ...defaults, db, persistRoot: true })
-      st.equal(await trie.db.get(ROOT_DB_KEY), null)
+      const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
+      // @ts-expect-error
+      st.equal(await trie._db.get(ROOT_DB_KEY), null)
       await trie.put(Buffer.from('foo'), Buffer.from('bar'))
-      st.equal(bytesToHex(await trie.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      // @ts-expect-error
+      st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
-      const copy = await constructor.create({ ...defaults, db, persistRoot: true })
-      st.equal(bytesToHex(await copy.db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
+      const copy = await constructor.create({ ...defaults, db, useRootPersistence: true })
+      // @ts-expect-error
+      st.equal(bytesToHex(await copy._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
-      const empty = await constructor.create({ ...defaults, db: new MapDB(), persistRoot: true })
-      st.equal(await empty.db.get(ROOT_DB_KEY), null)
+      const empty = await constructor.create({
+        ...defaults,
+        db: new MapDB(),
+        useRootPersistence: true,
+      })
+      // @ts-expect-error
+      st.equal(await empty._db.get(ROOT_DB_KEY), null)
 
       st.end()
     })
 
     t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new constructor({ ...defaults, db: new MapDB(), persistRoot: true })
+      const trie = new constructor({ ...defaults, db: new MapDB(), useRootPersistence: true })
 
       try {
         await trie.put(BASE_DB_KEY, Buffer.from('bar'))

@@ -15,12 +15,12 @@ import type {
   BatchDBOp,
   EmbeddedNode,
   FoundNodeFunction,
-  HashKeysFunction,
   Nibbles,
   Proof,
   PutBatch,
   TrieNode,
   TrieOpts,
+  TrieOptsWithDefaults,
 } from '../types'
 
 interface Path {
@@ -35,54 +35,55 @@ interface Path {
  * The API for the base and the secure interface are about the same.
  */
 export class Trie {
+  private readonly _opts: TrieOptsWithDefaults = {
+    deleteFromDB: false,
+    useKeyHashing: false,
+    useKeyHashingFunction: keccak256,
+    useRootPersistence: false,
+  }
+
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore
 
   /** The backend DB */
-  db: CheckpointDB
-  protected _root: Buffer
-  protected _deleteFromDB: boolean
-  protected _useHashedKeys: boolean
-  protected _useHashedKeysFunction: HashKeysFunction
+  protected _db: CheckpointDB
   protected _hashLen: number
-  protected _persistRoot: boolean
+  protected _lock: Semaphore = new Semaphore(1)
+  protected _root: Buffer
 
   /**
    * Create a new trie
    * @param opts Options for instantiating the trie
    */
   constructor(opts?: TrieOpts) {
-    this.lock = new Semaphore(1)
+    if (opts !== undefined) {
+      this._opts = { ...this._opts, ...opts }
+    }
 
     if (opts?.db instanceof CheckpointDB) {
       throw new Error('Cannot pass in an instance of CheckpointDB')
     }
 
-    this.db = new CheckpointDB(opts?.db ?? new MapDB())
-    this._useHashedKeys = opts?.useHashedKeys ?? false
-    this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
+    this._db = new CheckpointDB(opts?.db ?? new MapDB())
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
-    this._deleteFromDB = opts?.deleteFromDB ?? false
-    this._persistRoot = opts?.persistRoot ?? false
 
     if (opts?.root) {
-      this.root = opts.root
+      this.root(opts.root)
     }
   }
 
   static async create(opts?: TrieOpts) {
     let key = ROOT_DB_KEY
 
-    if (opts?.useHashedKeys === true) {
-      key = (opts?.useHashedKeysFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
+    if (opts?.useKeyHashing === true) {
+      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
     }
 
     key = Buffer.from(key)
 
-    if (opts?.db !== undefined && opts?.persistRoot === true) {
+    if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
         opts.root = (await opts?.db.get(key)) ?? undefined
       } else {
@@ -94,21 +95,21 @@ export class Trie {
   }
 
   /**
-   * Sets the current root of the `trie`
+   * Gets and/or Sets the current root of the `trie`
    */
-  set root(value: Buffer) {
-    if (isFalsy(value)) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    if (value.length !== this._hashLen)
-      throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
-    this._root = value
-  }
+  root(value?: Buffer): Buffer {
+    if (value !== undefined) {
+      if (isFalsy(value)) {
+        value = this.EMPTY_TRIE_ROOT
+      }
 
-  /**
-   * Gets the current root of the `trie`
-   */
-  get root(): Buffer {
+      if (value.length !== this._hashLen) {
+        throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
+      }
+
+      this._root = value
+    }
+
     return this._root
   }
 
@@ -138,7 +139,7 @@ export class Trie {
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value = null
     if (node && remaining.length === 0) {
-      value = node.value
+      value = node.value()
     }
     return value
   }
@@ -151,7 +152,7 @@ export class Trie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._persistRoot && key.equals(ROOT_DB_KEY)) {
+    if (this._opts.useRootPersistence && key.equals(ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -160,9 +161,9 @@ export class Trie {
       return await this.del(key)
     }
 
-    await this.lock.wait()
+    await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
-    if (this.root.equals(this.EMPTY_TRIE_ROOT)) {
+    if (this.root().equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
       await this._createInitialNode(appliedKey, value)
     } else {
@@ -172,7 +173,7 @@ export class Trie {
       await this._updateNode(appliedKey, value, remaining, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -182,14 +183,14 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
-    await this.lock.wait()
+    await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
     if (node) {
       await this._deleteNode(appliedKey, stack)
     }
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -204,7 +205,7 @@ export class Trie {
       const stack: TrieNode[] = []
       const targetKey = bufferToNibbles(key)
 
-      const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
+      const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
         if (node === null) {
           return reject(new Error('Path not found'))
         }
@@ -228,7 +229,7 @@ export class Trie {
             }
           }
         } else if (node instanceof LeafNode) {
-          if (doKeysMatch(keyRemainder, node.key)) {
+          if (doKeysMatch(keyRemainder, node.key())) {
             // keys match, return node with empty key
             resolve({ node, remaining: [], stack })
           } else {
@@ -236,8 +237,8 @@ export class Trie {
             resolve({ node: null, remaining: keyRemainder, stack })
           }
         } else if (node instanceof ExtensionNode) {
-          const matchingLen = matchingNibbleLength(keyRemainder, node.key)
-          if (matchingLen !== node.key.length) {
+          const matchingLen = matchingNibbleLength(keyRemainder, node.key())
+          if (matchingLen !== node.key().length) {
             // keys don't match, fail
             resolve({ node: null, remaining: keyRemainder, stack })
           } else {
@@ -249,7 +250,7 @@ export class Trie {
 
       // walk trie and process nodes
       try {
-        await this.walkTrie(this.root, onFound)
+        await this.walkTrie(this.root(), onFound)
       } catch (error: any) {
         if (error.message === 'Missing node in DB' && !throwIfMissing) {
           // pass
@@ -281,8 +282,8 @@ export class Trie {
     const newNode = new LeafNode(bufferToNibbles(key), value)
 
     const encoded = newNode.serialize()
-    this.root = this.hash(encoded)
-    await this.db.put(this.root, encoded)
+    this.root(this.hash(encoded))
+    await this._db.put(this.root(), encoded)
     await this.persistRoot()
   }
 
@@ -295,7 +296,7 @@ export class Trie {
     }
     let value = null
     let foundNode = null
-    value = await this.db.get(node as Buffer)
+    value = await this._db.get(node as Buffer)
     if (value) {
       foundNode = decodeNode(value)
     } else {
@@ -338,12 +339,12 @@ export class Trie {
         if (n instanceof BranchNode) {
           l++
         } else {
-          l += n.key.length
+          l += n.key().length
         }
       }
 
       if (
-        matchingNibbleLength(lastNode.key, key.slice(l)) === lastNode.key.length &&
+        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length &&
         keyRemainder.length === 0
       ) {
         matchLeaf = true
@@ -352,7 +353,7 @@ export class Trie {
 
     if (matchLeaf) {
       // just updating a found value
-      lastNode.value = value
+      lastNode.value(value)
       stack.push(lastNode as TrieNode)
     } else if (lastNode instanceof BranchNode) {
       stack.push(lastNode)
@@ -363,17 +364,17 @@ export class Trie {
         const newLeaf = new LeafNode(keyRemainder, value)
         stack.push(newLeaf)
       } else {
-        lastNode.value = value
+        lastNode.value(value)
       }
     } else {
       // create a branch node
-      const lastKey = lastNode.key
+      const lastKey = lastNode.key()
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
       const newBranchNode = new BranchNode()
 
       // create a new extension node
       if (matchingLength !== 0) {
-        const newKey = lastNode.key.slice(0, matchingLength)
+        const newKey = lastNode.key().slice(0, matchingLength)
         const newExtNode = new ExtensionNode(newKey, value)
         stack.push(newExtNode)
         lastKey.splice(0, matchingLength)
@@ -387,16 +388,16 @@ export class Trie {
 
         if (lastKey.length !== 0 || lastNode instanceof LeafNode) {
           // shrinking extension or leaf
-          lastNode.key = lastKey
+          lastNode.key(lastKey)
           const formattedNode = this._formatNode(lastNode, false, toSave)
           newBranchNode.setBranch(branchKey, formattedNode as EmbeddedNode)
         } else {
           // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
-          newBranchNode.setBranch(branchKey, lastNode.value)
+          newBranchNode.setBranch(branchKey, lastNode.value())
         }
       } else {
-        newBranchNode.value = lastNode.value
+        newBranchNode.value(lastNode.value())
       }
 
       if (keyRemainder.length !== 0) {
@@ -405,7 +406,7 @@ export class Trie {
         const newLeafNode = new LeafNode(keyRemainder, value)
         stack.push(newLeafNode)
       } else {
-        newBranchNode.value = value
+        newBranchNode.value(value)
       }
     }
 
@@ -439,33 +440,33 @@ export class Trie {
           stack.push(extensionNode)
           key.push(branchKey)
         } else {
-          const branchNodeKey = branchNode.key
+          const branchNodeKey = branchNode.key()
           // branch key is an extension or a leaf
           // branch->(leaf or extension)
           branchNodeKey.unshift(branchKey)
-          branchNode.key = branchNodeKey.slice(0)
+          branchNode.key(branchNodeKey.slice(0))
           key = key.concat(branchNodeKey)
         }
         stack.push(branchNode)
       } else {
         // parent is an extension
-        let parentKey = parentNode.key
+        let parentKey = parentNode.key()
 
         if (branchNode instanceof BranchNode) {
           // ext->branch
           parentKey.push(branchKey)
           key.push(branchKey)
-          parentNode.key = parentKey
+          parentNode.key(parentKey)
           stack.push(parentNode)
         } else {
-          const branchNodeKey = branchNode.key
+          const branchNodeKey = branchNode.key()
           // branch node is an leaf or extension and parent node is an exstention
           // add two keys together
           // dont push the parent node
           branchNodeKey.unshift(branchKey)
           key = key.concat(branchNodeKey)
           parentKey = parentKey.concat(branchNodeKey)
-          branchNode.key = parentKey
+          branchNode.key(parentKey)
         }
 
         stack.push(branchNode)
@@ -483,19 +484,19 @@ export class Trie {
 
     if (!parentNode) {
       // the root here has to be a leaf.
-      this.root = this.EMPTY_TRIE_ROOT
+      this.root(this.EMPTY_TRIE_ROOT)
       return
     }
 
     if (lastNode instanceof BranchNode) {
-      lastNode.value = null
+      lastNode.value(null)
     } else {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.
       if (!(parentNode instanceof BranchNode)) {
         throw new Error('Expected branch node')
       }
-      const lastNodeKey = lastNode.key
+      const lastNodeKey = lastNode.key()
       key.splice(key.length - lastNodeKey.length)
       // delete the value
       this._formatNode(lastNode, false, opStack, true)
@@ -551,11 +552,11 @@ export class Trie {
     while (stack.length) {
       const node = stack.pop() as TrieNode
       if (node instanceof LeafNode) {
-        key.splice(key.length - node.key.length)
+        key.splice(key.length - node.key().length)
       } else if (node instanceof ExtensionNode) {
-        key.splice(key.length - node.key.length)
+        key.splice(key.length - node.key().length)
         if (lastRoot) {
-          node.value = lastRoot
+          node.value(lastRoot)
         }
       } else if (node instanceof BranchNode) {
         if (lastRoot) {
@@ -567,10 +568,10 @@ export class Trie {
     }
 
     if (lastRoot) {
-      this.root = lastRoot
+      this.root(lastRoot)
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
   }
 
@@ -595,7 +596,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this._deleteFromDB) {
+        if (this._opts.deleteFromDB) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -656,11 +657,11 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
-      this.root = opStack[0].key
+    if (this.root() === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+      this.root(opStack[0].key)
     }
 
-    await this.db.batch(opStack)
+    await this._db.batch(opStack)
     await this.persistRoot()
     return
   }
@@ -688,7 +689,7 @@ export class Trie {
   async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     const proofTrie = new Trie({
       root: rootHash,
-      useHashedKeysFunction: this._useHashedKeysFunction,
+      useKeyHashingFunction: this._opts.useKeyHashingFunction,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -725,7 +726,7 @@ export class Trie {
       keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
       values,
       proof,
-      this._useHashedKeysFunction
+      this._opts.useKeyHashingFunction
     )
   }
 
@@ -743,15 +744,12 @@ export class Trie {
    */
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
-      db: this.db.db.copy(),
-      deleteFromDB: this._deleteFromDB,
-      persistRoot: this._persistRoot,
-      root: this.root,
-      useHashedKeys: this._useHashedKeys,
-      useHashedKeysFunction: this._useHashedKeysFunction,
+      ...this._opts,
+      db: this._db.db.copy(),
+      root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie.db.checkpoints = [...this.db.checkpoints]
+      trie._db.checkpoints = [...this._db.checkpoints]
     }
     return trie
   }
@@ -760,8 +758,8 @@ export class Trie {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._persistRoot === true) {
-      await this.db.put(this.appliedKey(ROOT_DB_KEY), this.root)
+    if (this._opts.useRootPersistence) {
+      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
     }
   }
 
@@ -781,30 +779,30 @@ export class Trie {
         onFound(nodeRef, node, key, walkController)
       }
     }
-    await this.walkTrie(this.root, outerOnFound)
+    await this.walkTrie(this.root(), outerOnFound)
   }
 
   /**
    * Returns the key practically applied for trie construction
-   * depending on the `useHashedKeys` option being set or not.
+   * depending on the `useKeyHashing` option being set or not.
    * @param key
    */
   protected appliedKey(key: Buffer) {
-    if (this._useHashedKeys) {
+    if (this._opts.useKeyHashing) {
       return this.hash(key)
     }
     return key
   }
 
   protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._useHashedKeysFunction(msg))
+    return Buffer.from(this._opts.useKeyHashingFunction(msg))
   }
 
   /**
    * Is the trie during a checkpoint phase?
    */
   hasCheckpoints() {
-    return this.db.hasCheckpoints()
+    return this._db.hasCheckpoints()
   }
 
   /**
@@ -812,7 +810,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this.db.checkpoint(this.root)
+    this._db.checkpoint(this.root())
   }
 
   /**
@@ -825,10 +823,10 @@ export class Trie {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    await this.lock.wait()
-    await this.db.commit()
+    await this._lock.acquire()
+    await this._db.commit()
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.release()
   }
 
   /**
@@ -841,9 +839,16 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    await this.lock.wait()
-    this.root = await this.db.revert()
+    await this._lock.acquire()
+    this.root(await this._db.revert())
     await this.persistRoot()
-    this.lock.signal()
+    this._lock.release()
+  }
+
+  /**
+   * Flushes all checkpoints, restoring the initial checkpoint state.
+   */
+  flushCheckpoints() {
+    this._db.checkpoints = []
   }
 }

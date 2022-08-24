@@ -42,7 +42,7 @@ export class VMExecution extends Execution {
     if (isFalsy(this.config.vm)) {
       const trie = new Trie({
         db: new LevelDB(this.stateDB),
-        useHashedKeys: true,
+        useKeyHashing: true,
       })
 
       const stateManager = new DefaultStateManager({

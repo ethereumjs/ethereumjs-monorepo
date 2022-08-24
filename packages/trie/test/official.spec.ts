@@ -21,7 +21,7 @@ tape('official tests', async function (t) {
         await trie.put(Buffer.from(input[0]), input[1])
       }
     }
-    t.equal('0x' + trie.root.toString('hex'), expect)
+    t.equal('0x' + trie.root().toString('hex'), expect)
     trie = new Trie()
   }
   t.end()
@@ -48,7 +48,7 @@ tape('official tests any order', async function (t) {
 
       await trie.put(Buffer.from(key), Buffer.from(val))
     }
-    t.equal('0x' + trie.root.toString('hex'), test.root)
+    t.equal('0x' + trie.root().toString('hex'), test.root)
     trie = new Trie()
   }
   t.end()

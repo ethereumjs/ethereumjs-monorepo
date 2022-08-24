@@ -79,7 +79,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie({ useHashedKeys: true })
+  const state = new Trie({ useKeyHashing: true })
   const stateManager = new DefaultStateManager({
     trie: state,
   })
@@ -139,7 +139,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  const stateManagerStateRoot = vm.stateManager._trie.root
+  const stateManagerStateRoot = vm.stateManager._trie.root()
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
   const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
 

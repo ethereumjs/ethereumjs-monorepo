@@ -72,7 +72,7 @@ export class WalkController {
     }
     let children
     if (node instanceof ExtensionNode) {
-      children = [[node.key, node.value]]
+      children = [[node.key(), node.value()]]
     } else if (node instanceof BranchNode) {
       children = node.getChildren().map((b) => [[b[0]], b[1]])
     }
