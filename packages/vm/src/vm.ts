@@ -29,10 +29,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
  */
-export class VM<
-  EVMType extends EVMInterface = EVMInterface,
-  EEIType extends EEIInterface = EEIInterface
-> {
+export class VM<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI> {
   /**
    * The StateManager used by the VM
    */
@@ -247,7 +244,7 @@ export class VM<
    * - {@link BlockBuilder.build}
    * - {@link BlockBuilder.revert}
    */
-  async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
+  async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder<EVMType, EEIType>> {
     return buildBlock.bind(this)(opts)
   }
 

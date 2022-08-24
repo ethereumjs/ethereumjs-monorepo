@@ -7,18 +7,20 @@ import { Address, TypeOutput, isTruthy, toBuffer, toType } from '@ethereumjs/uti
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
 
+import type { EEI } from './eei/eei'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
+import type { EEIInterface, EVM, EVMInterface } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
-export class BlockBuilder {
+export class BlockBuilder<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI> {
   /**
    * The cumulative gas used by the transactions added to the block.
    */
   gasUsed = BigInt(0)
 
-  private readonly vm: VM
+  private readonly vm: VM<EVMType, EEIType>
   private blockOpts: BuilderOpts
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
@@ -31,7 +33,7 @@ export class BlockBuilder {
     return this.transactionResults.map((result) => result.receipt)
   }
 
-  constructor(vm: VM, opts: BuildBlockOpts) {
+  constructor(vm: VM<EVMType, EEIType>, opts: BuildBlockOpts) {
     this.vm = vm
     this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
 
@@ -218,6 +220,9 @@ export class BlockBuilder {
   }
 }
 
-export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  return new BlockBuilder(this, opts)
+export async function buildBlock<
+  EVMType extends EVMInterface = EVM,
+  EEIType extends EEIInterface = EEI
+>(this: VM<EVMType, EEIType>, opts: BuildBlockOpts): Promise<BlockBuilder<EVMType, EEIType>> {
+  return new BlockBuilder<EVMType, EEIType>(this, opts)
 }

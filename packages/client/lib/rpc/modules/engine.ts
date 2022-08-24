@@ -17,8 +17,9 @@ import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
+import type { EVM } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { VM } from '@ethereumjs/vm'
+import type { EEI, VM } from '@ethereumjs/vm'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -628,11 +629,15 @@ export class Engine {
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
-      const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
-        timestamp,
-        mixHash: prevRandao,
-        coinbase: suggestedFeeRecipient,
-      })
+      const payloadId = await this.pendingBlock.start(
+        (await this.vm.copy()) as VM<EVM, EEI>,
+        parentBlock,
+        {
+          timestamp,
+          mixHash: prevRandao,
+          coinbase: suggestedFeeRecipient,
+        }
+      )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       const response = { payloadStatus, payloadId: bufferToHex(payloadId) }

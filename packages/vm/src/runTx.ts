@@ -6,6 +6,7 @@ import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
 
+import type { EEI } from './eei/eei'
 import type {
   AfterTxEvent,
   BaseTxReceipt,
@@ -16,6 +17,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
+import type { EEIInterface, EVM, EVMInterface } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -29,7 +31,10 @@ const debugGas = createDebugLogger('vm:tx:gas')
 /**
  * @ignore
  */
-export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+export async function runTx<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI>(
+  this: VM<EVMType, EEIType>,
+  opts: RunTxOpts
+): Promise<RunTxResult> {
   // tx is required
   if (isFalsy(opts.tx)) {
     throw new Error('invalid input, tx is required')
@@ -151,7 +156,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 }
 
-async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+async function _runTx<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI>(
+  this: VM<EVMType, EEIType>,
+  opts: RunTxOpts
+): Promise<RunTxResult> {
   const state = this.eei
 
   const { tx, block } = opts
@@ -500,8 +508,11 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
  */
-export async function generateTxReceipt(
-  this: VM,
+export async function generateTxReceipt<
+  EVMType extends EVMInterface = EVM,
+  EEIType extends EEIInterface = EEI
+>(
+  this: VM<EVMType, EEIType>,
   tx: TypedTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint
@@ -556,7 +567,12 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
+function _errorMsg<EVMType extends EVMInterface = EVM, EEIType extends EEIInterface = EEI>(
+  msg: string,
+  vm: VM<EVMType, EEIType>,
+  block: Block,
+  tx: TypedTransaction
+) {
   const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 
