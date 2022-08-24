@@ -52,8 +52,6 @@ const trie = new Trie()
 trie.hasCheckpoints()
 ```
 
-####
-
 ### Options
 
 The 5.0.0 release comes with a variety of new options, some of which replace old behaviours or classes.
