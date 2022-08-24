@@ -1,7 +1,7 @@
 import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { MapDB } from '../db'
+import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
@@ -10,11 +10,9 @@ import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
-import { prepareTrieOpts } from './util'
 
 import type {
   BatchDBOp,
-  DB,
   EmbeddedNode,
   FoundNodeFunction,
   HashKeysFunction,
@@ -42,7 +40,7 @@ export class Trie {
   protected lock: Semaphore
 
   /** The backend DB */
-  db: DB
+  db: CheckpointDB
   protected _root: Buffer
   protected _deleteFromDB: boolean
   protected _useHashedKeys: boolean
@@ -57,7 +55,11 @@ export class Trie {
   constructor(opts?: TrieOpts) {
     this.lock = new Semaphore(1)
 
-    this.db = opts?.db ?? new MapDB()
+    if (opts?.db instanceof CheckpointDB) {
+      throw new Error('Cannot pass in an instance of CheckpointDB')
+    }
+
+    this.db = new CheckpointDB(opts?.db ?? new MapDB())
     this._useHashedKeys = opts?.useHashedKeys ?? false
     this._useHashedKeysFunction = opts?.useHashedKeysFunction ?? keccak256
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -72,7 +74,23 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
-    return new Trie(await prepareTrieOpts(opts))
+    let key = ROOT_DB_KEY
+
+    if (opts?.useHashedKeys === true) {
+      key = (opts?.useHashedKeysFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
+    }
+
+    key = Buffer.from(key)
+
+    if (opts?.db !== undefined && opts?.persistRoot === true) {
+      if (opts?.root === undefined) {
+        opts.root = (await opts?.db.get(key)) ?? undefined
+      } else {
+        await opts?.db.put(key, opts.root)
+      }
+    }
+
+    return new Trie(opts)
   }
 
   /**
@@ -108,13 +126,6 @@ export class Trie {
         throw error
       }
     }
-  }
-
-  /**
-   * Trie has no checkpointing so return false
-   */
-  get isCheckpoint() {
-    return false
   }
 
   /**
@@ -569,7 +580,7 @@ export class Trie {
    * @param node - the node to format.
    * @param topLevel - if the node is at the top level.
    * @param opStack - the opStack to push the node's data.
-   * @param remove - whether to remove the node (only used for CheckpointTrie).
+   * @param remove - whether to remove the node
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
@@ -727,17 +738,22 @@ export class Trie {
   }
 
   /**
-   * Creates a new trie backed by the same db.
+   * Returns a copy of the underlying trie.
+   * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy(): Trie {
-    return new Trie({
-      db: this.db.copy(),
+  copy(includeCheckpoints = true): Trie {
+    const trie = new Trie({
+      db: this.db.db.copy(),
       deleteFromDB: this._deleteFromDB,
-      useHashedKeys: this._useHashedKeys,
-      useHashedKeysFunction: this._useHashedKeysFunction,
       persistRoot: this._persistRoot,
       root: this.root,
+      useHashedKeys: this._useHashedKeys,
+      useHashedKeysFunction: this._useHashedKeysFunction,
     })
+    if (includeCheckpoints && this.isCheckpoint) {
+      trie.db.checkpoints = [...this.db.checkpoints]
+    }
+    return trie
   }
 
   /**
@@ -782,5 +798,52 @@ export class Trie {
 
   protected hash(msg: Uint8Array): Buffer {
     return Buffer.from(this._useHashedKeysFunction(msg))
+  }
+
+  /**
+   * Is the trie during a checkpoint phase?
+   */
+  get isCheckpoint() {
+    return this.db.isCheckpoint
+  }
+
+  /**
+   * Creates a checkpoint that can later be reverted to or committed.
+   * After this is called, all changes can be reverted until `commit` is called.
+   */
+  checkpoint() {
+    this.db.checkpoint(this.root)
+  }
+
+  /**
+   * Commits a checkpoint to disk, if current checkpoint is not nested.
+   * If nested, only sets the parent checkpoint as current checkpoint.
+   * @throws If not during a checkpoint phase
+   */
+  async commit(): Promise<void> {
+    if (!this.isCheckpoint) {
+      throw new Error('trying to commit when not checkpointed')
+    }
+
+    await this.lock.wait()
+    await this.db.commit()
+    await this.persistRoot()
+    this.lock.signal()
+  }
+
+  /**
+   * Reverts the trie to the state it was at when `checkpoint` was first called.
+   * If during a nested checkpoint, sets root to most recent checkpoint, and sets
+   * parent checkpoint as current.
+   */
+  async revert(): Promise<void> {
+    if (!this.isCheckpoint) {
+      throw new Error('trying to revert when not checkpointed')
+    }
+
+    await this.lock.wait()
+    this.root = await this.db.revert()
+    await this.persistRoot()
+    this.lock.signal()
   }
 }

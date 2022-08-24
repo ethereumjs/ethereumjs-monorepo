@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { CheckpointTrie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
@@ -79,7 +79,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new CheckpointTrie({ useHashedKeys: true })
+  const state = new Trie({ useHashedKeys: true })
   const stateManager = new DefaultStateManager({
     trie: state,
   })

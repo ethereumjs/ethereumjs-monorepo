@@ -186,7 +186,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     t.equal(await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey), true)
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new Trie({ db: new MapDB() })
+    const tinyTrie = new Trie()
     const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -305,7 +305,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a gapped range proof and verify it', async (t) => {
-    const trie = new Trie({ db: new MapDB() })
+    const trie = new Trie()
     const entries: [Buffer, Buffer][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBuffer(i), 32)
