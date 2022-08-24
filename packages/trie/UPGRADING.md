@@ -6,6 +6,54 @@ Due to the high number of breaking changes, upgrading is typically a tedious pro
 
 ## From v4 to v5
 
+### API, Name and Visibility Changes
+
+We have instituted several changes to the public API of this package in order to provide an improved DX and simplify the process of maintaining it.
+
+### Deprecated `root` Getter and Setter
+
+Due to the ambiguity of the `get` and `set` functions (also known as getters and setters), their status is now deprecated. This is because their ambiguity can create the impression of interacting with a property on a trie instance. For this reason, a single `root(hash?: Buffer): Buffer` function serves as their replacement and can effectively work to get and set properties. This also makes it obvious that you intend to modify an internal property of the trie that is neither accessible or mutable via any other means other than this particular function.
+
+### Getter
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root
+
+// New
+const trie = new Trie()
+trie.root()
+```
+
+### Setter
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root = Buffer.alloc(32)
+
+// New
+const trie = new Trie()
+trie.root(Buffer.alloc(32))
+```
+
+### Deprecated `isCheckpoint` Getter
+
+The status of the `isCheckpoint` getter function is now deprecated. The `hasCheckpoints()` function serves as its replacement and offers the same behaviour.
+
+```tsx
+// Old
+const trie = new Trie()
+trie.isCheckpoint
+
+// New
+const trie = new Trie()
+trie.hasCheckpoints()
+```
+
+####
+
 ### Options
 
 The 5.0.0 release comes with a variety of new options, some of which replace old behaviours or classes.
@@ -16,29 +64,29 @@ The CheckpointTrie is now deprecated in order to make it a default behaviour. Ev
 
 #### `SecureTrie` is Now an Option
 
-In v5, the `SecureTrie` class is now deprecated in favour of the constructor option `useHashedKeys` - defaulting to `false`. This effectively reduces the level of inheritance dependencies (for example, in the old structure, you could not create a secure trie without the checkpoint functionality which, in terms of logic, do not correlate in any way). This also provides more room to accommodate future design modifications and/or additions if required.
+In v5, the `SecureTrie` class is now deprecated in favour of the constructor option `useKeyHashing` - defaulting to `false`. This effectively reduces the level of inheritance dependencies (for example, in the old structure, you could not create a secure trie without the checkpoint functionality which, in terms of logic, do not correlate in any way). This also provides more room to accommodate future design modifications and/or additions if required.
 
 Updating is a straightforward process:
 
-```typescript
-const trie = new SecureTrie() // old
-```
+```ts
+// Old
+const trie = new SecureTrie()
 
-```typescript
-const trie = new Trie({ useKeyHashing: true }) // new
+// New
+const trie = new Trie({ useKeyHashing: true })
 ```
 
 #### Root Persistence is Now an Option
 
-In previous iterations, you would need to persist and restore the root of your trie and determine how to achieve this of your own accord. This behaviour is now available out of the box. You can enable persistence by setting the `usePersistedRoot` option to `true` when constructing a trie by using the `Trie.create` function. As such, this value is preserved when creating copies of the trie. Moreover, upon instantiating a trie, you will not have the ability to modify said value.
+In previous iterations, you would need to persist and restore the root of your trie and determine how to achieve this of your own accord. This behaviour is now available out of the box. You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie by using the `Trie.create` function. As such, this value is preserved when creating copies of the trie. Moreover, upon instantiating a trie, you will not have the ability to modify said value.
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
 const trie = await Trie.create({
   db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
-  usePersistedRoot: true,
+  useRootPersistence: true,
 })
 ```
 
