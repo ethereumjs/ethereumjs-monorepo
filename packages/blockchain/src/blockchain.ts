@@ -7,7 +7,7 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
-import { Semaphore } from './semaphore'
+import { Lock } from './lock'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -47,7 +47,7 @@ export class Blockchain implements BlockchainInterface {
   private _heads: { [key: string]: Buffer }
 
   protected _isInitialized = false
-  private _lock: Semaphore
+  private _lock: Lock
 
   _common: Common
   private _hardforkByHeadBlockNumber: boolean
@@ -151,7 +151,7 @@ export class Blockchain implements BlockchainInterface {
 
     this._heads = {}
 
-    this._lock = new Semaphore(1)
+    this._lock = new Lock()
 
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
