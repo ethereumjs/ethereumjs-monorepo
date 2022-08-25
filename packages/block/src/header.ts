@@ -344,9 +344,13 @@ export class BlockHeader {
         throw new Error(msg)
       }
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      if (typeof londonHfBlock === 'bigint' && this.number === londonHfBlock) {
+      if (
+        typeof londonHfBlock === 'bigint' &&
+        londonHfBlock !== 0n &&
+        this.number === londonHfBlock
+      ) {
         const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (this.baseFeePerGas! !== initialBaseFee) {
+        if (this.baseFeePerGas !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
