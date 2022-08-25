@@ -14,9 +14,9 @@ import { Cache } from './cache'
 
 import { BaseStateManager } from '.'
 
-import type { StateManager } from '.'
+import type { Proof, StateManager } from '.'
 import type { StorageDump } from './interface'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { JsonRpcProvider } from '@ethersproject/providers'
 
 const log = debug('statemanager')
@@ -159,5 +159,39 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
   hasStateRoot(_root: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
+  }
+
+  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
+    const account = await this.getAccount(address)
+    const accountProof: PrefixedHexString[] = (await this.trie.createProof(address.buf)).map((p) =>
+      bufferToHex(p)
+    )
+    /*  const storageProof: StorageProof[] = []
+    const storageTrie = await this._getStorageTrie(address)
+
+    for (const storageKey of storageSlots) {
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
+      let value = bufferToHex(await this.getContractStorage(address, storageKey))
+      if (value === '0x') {
+        value = '0x0'
+      }
+      const proofItem: StorageProof = {
+        key: bufferToHex(storageKey),
+        value,
+        proof,
+      }
+      storageProof.push(proofItem)
+    }*/
+
+    const returnValue: Proof = {
+      address: address.toString(),
+      balance: bigIntToHex(account.balance),
+      codeHash: bufferToHex(account.codeHash),
+      nonce: bigIntToHex(account.nonce),
+      storageHash: bufferToHex(account.storageRoot),
+      accountProof,
+      storageProof: [],
+    }
+    return returnValue
   }
 }

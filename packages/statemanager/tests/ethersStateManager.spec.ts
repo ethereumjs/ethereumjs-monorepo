@@ -8,6 +8,8 @@ import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
+import type { Proof } from '../src'
+
 const provider = new CloudflareProvider()
 
 tape('Ethers State Manager API tests', async (t) => {
@@ -123,6 +125,16 @@ tape.only('runBlock test', async (t) => {
     )
   } catch (err) {
     console.log(err)
+  }
+
+  const proof = (await provider.send('eth_getProof', [
+    block.header.coinbase.toString(),
+    [],
+    bigIntToHex(block.header.number),
+  ])) as Proof
+  const localproof = await state.getProof(block.header.coinbase)
+  for (let j = 0; j < proof.accountProof.length; j++) {
+    t.deepEqual(localproof.accountProof[j], proof.accountProof[j], 'proof nodes are equal')
   }
   t.end()
 })
