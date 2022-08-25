@@ -31,7 +31,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM extends AsyncEventEmitter<VMEvents> {
+export class VM {
   /**
    * The StateManager used by the VM
    */
@@ -44,10 +44,12 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
   readonly _common: Common
 
+  readonly events: AsyncEventEmitter<VMEvents>
+
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface | EVM
+  readonly evm: EVMInterface
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
@@ -93,7 +95,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    * @param opts
    */
   protected constructor(opts: VMOpts = {}) {
-    super()
+    this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
 
@@ -152,7 +154,9 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
   }
 
   async init(): Promise<void> {

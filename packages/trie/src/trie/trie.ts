@@ -4,9 +4,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
+import { Lock } from '../util/lock'
 import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
-import { Semaphore } from '../util/semaphore'
 import { WalkController } from '../util/walkController'
 
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
@@ -48,7 +48,7 @@ export class Trie {
   /** The backend DB */
   protected _db: CheckpointDB
   protected _hashLen: number
-  protected _lock: Semaphore = new Semaphore(1)
+  protected _lock = new Lock()
   protected _root: Buffer
 
   /**

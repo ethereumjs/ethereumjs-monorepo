@@ -5,8 +5,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
-
 tape('VM events', (t) => {
   const privKey = toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
@@ -14,7 +12,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('beforeBlock', (val: any) => {
+    vm.events.on('beforeBlock', (val: any) => {
       emitted = val
     })
 
@@ -35,7 +33,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('afterBlock', (val: any) => {
+    vm.events.on('afterBlock', (val: any) => {
       emitted = val
     })
 
@@ -57,7 +55,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted
-    vm.on('beforeTx', (val: any) => {
+    vm.events.on('beforeTx', (val: any) => {
       emitted = val
     })
 
@@ -79,7 +77,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.on('afterTx', (val: any) => {
+    vm.events.on('afterTx', (val: any) => {
       emitted = val
     })
 
@@ -102,7 +100,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    ;(<EVM>vm.evm).on('beforeMessage', (val: any) => {
+    vm.evm.events!.on('beforeMessage', (val: any) => {
       emitted = val
     })
 
@@ -126,7 +124,7 @@ tape('VM events', (t) => {
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    ;(<EVM>vm.evm).on('afterMessage', (val: any) => {
+    vm.evm.events!.on('afterMessage', (val: any) => {
       emitted = val
     })
 
@@ -148,7 +146,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let lastEmitted: any
-    ;(<EVM>vm.evm).on('step', (val: any) => {
+    vm.evm.events!.on('step', (val: any) => {
       lastEmitted = val
     })
 
@@ -172,7 +170,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let emitted: any
-    ;(<EVM>vm.evm).on('newContract', (val: any) => {
+    vm.evm.events!.on('newContract', (val: any) => {
       emitted = val
     })
 

@@ -6,21 +6,89 @@ Due to the high number of breaking changes, upgrading is typically a tedious pro
 
 ## From v4 to v5
 
-Upgrading from v4 to v5 is relatively straightforward.
+### API, Name and Visibility Changes
 
-### SecureTrie as an Option
+We have instituted several changes to the public API of this package in order to provide an improved DX and simplify the process of maintaining it.
 
-In v5 the `SecureTrie` class has been removed in favor of a simple constructor option `useKeyHashing` - defaulting to `false` in the base `Trie` implementation. This reduces the level of inheritance dependencies (in the old structure it was e.g. not possible to create a secure trie without the checkpoint functionality, which are logically completely unrelated) and frees things up for future design changes and additions.
+### Deprecated `root` Getter and Setter
 
-Updating is pretty much straight-forward:
+Due to the ambiguity of the `get` and `set` functions (also known as getters and setters), their status is now deprecated. This is because their ambiguity can create the impression of interacting with a property on a trie instance. For this reason, a single `root(hash?: Buffer): Buffer` function serves as their replacement and can effectively work to get and set properties. This also makes it obvious that you intend to modify an internal property of the trie that is neither accessible or mutable via any other means other than this particular function.
 
-```typescript
-const trie = new SecureTrie() // old
+### Getter
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root
+
+// New
+const trie = new Trie()
+trie.root()
 ```
 
-```typescript
-const trie = new Trie({ useKeyHashing: true }) // new
+### Setter
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root = Buffer.alloc(32)
+
+// New
+const trie = new Trie()
+trie.root(Buffer.alloc(32))
 ```
+
+### Deprecated `isCheckpoint` Getter
+
+The status of the `isCheckpoint` getter function is now deprecated. The `hasCheckpoints()` function serves as its replacement and offers the same behaviour.
+
+```tsx
+// Old
+const trie = new Trie()
+trie.isCheckpoint
+
+// New
+const trie = new Trie()
+trie.hasCheckpoints()
+```
+
+### Options
+
+The 5.0.0 release comes with a variety of new options, some of which replace old behaviours or classes.
+
+#### `CheckpointTrie` is Now the Default
+
+The CheckpointTrie is now deprecated in order to make it a default behaviour. Every Trie instance now comes complete with checkpointing behaviour out of the box.
+
+#### `SecureTrie` is Now an Option
+
+In v5, the `SecureTrie` class is now deprecated in favour of the constructor option `useKeyHashing` - defaulting to `false`. This effectively reduces the level of inheritance dependencies (for example, in the old structure, you could not create a secure trie without the checkpoint functionality which, in terms of logic, do not correlate in any way). This also provides more room to accommodate future design modifications and/or additions if required.
+
+Updating is a straightforward process:
+
+```ts
+// Old
+const trie = new SecureTrie()
+
+// New
+const trie = new Trie({ useKeyHashing: true })
+```
+
+#### Root Persistence is Now an Option
+
+In previous iterations, you would need to persist and restore the root of your trie and determine how to achieve this of your own accord. This behaviour is now available out of the box. You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie by using the `Trie.create` function. As such, this value is preserved when creating copies of the trie. Moreover, upon instantiating a trie, you will not have the ability to modify said value.
+
+```ts
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+const trie = await Trie.create({
+  db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
+  useRootPersistence: true,
+})
+```
+
+The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you do not require automatic restoration of the root, you can simply use the `new Trie` constructor with the same options and achieve persistence without automatic restoration.
 
 ### Database Abstraction
 

@@ -103,7 +103,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
-        vm.evm.on('step', function (e: InterpreterStep) {
+        vm.evm.events.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
             return '0x' + item.toString(16)
@@ -121,7 +121,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
           t.comment(JSON.stringify(opTrace))
         })
-        vm.on('afterTx', async () => {
+        vm.events.on('afterTx', async () => {
           const stateRoot = {
             stateRoot: vm.stateManager._trie.root.toString('hex'),
           }
