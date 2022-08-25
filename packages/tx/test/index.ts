@@ -22,7 +22,7 @@ if (isTruthy(argv.b)) {
   require('./eip1559.spec')
   require('./transactionFactory.spec')
 } else {
-  require('./transactionRunner')
+  require('./transactionRunner.spec')
   require('./base.spec')
   require('./legacy.spec')
   require('./typedTxsAndEIP2930.spec')
