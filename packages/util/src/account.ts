@@ -15,7 +15,6 @@ import {
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
 import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
 import { stripHexPrefix } from './internal'
-import { isTruthy } from './types'
 
 import type { BigIntLike, BufferLike } from './types'
 
@@ -38,10 +37,10 @@ export class Account {
     const { nonce, balance, storageRoot, codeHash } = accountData
 
     return new Account(
-      isTruthy(nonce) ? bufferToBigInt(toBuffer(nonce)) : undefined,
-      isTruthy(balance) ? bufferToBigInt(toBuffer(balance)) : undefined,
-      isTruthy(storageRoot) ? toBuffer(storageRoot) : undefined,
-      isTruthy(codeHash) ? toBuffer(codeHash) : undefined
+      nonce !== undefined ? bufferToBigInt(toBuffer(nonce)) : undefined,
+      balance !== undefined ? bufferToBigInt(toBuffer(balance)) : undefined,
+      storageRoot !== undefined ? toBuffer(storageRoot) : undefined,
+      codeHash !== undefined ? toBuffer(codeHash) : undefined
     )
   }
 
@@ -158,7 +157,7 @@ export const toChecksumAddress = function (
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
-  if (isTruthy(eip1191ChainId)) {
+  if (eip1191ChainId !== undefined) {
     const chainId = bufferToBigInt(toBuffer(eip1191ChainId))
     prefix = chainId.toString() + '0x'
   }
