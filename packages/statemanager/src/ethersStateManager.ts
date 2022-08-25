@@ -1,3 +1,4 @@
+import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -5,6 +6,8 @@ import {
   bigIntToHex,
   bufferToBigInt,
   bufferToHex,
+  intToHex,
+  isHexPrefixed,
   toBuffer,
 } from '@ethereumjs/util'
 import { debug } from 'debug'
@@ -16,6 +19,7 @@ import { BaseStateManager } from '.'
 
 import type { Proof, StateManager } from '.'
 import type { StorageDump } from './interface'
+import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -128,7 +132,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBuffer(accountData.codeHash),
-      storageRoot: await this.getStateRoot(),
+      storageRoot: accountData.storageHash,
     })
     return account
   }
@@ -193,5 +197,32 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       storageProof: [],
     }
     return returnValue
+  }
+
+  /**
+   * Retrieves a block from the provider to use in the VM
+   * @param blockTag block hash or block number to be run
+   * @param common Common instance used in VM
+   * @returns the block specified by `blockTag`
+   */
+  getBlockFromProvider = async (blockTag: string | bigint, common: Common) => {
+    let blockData
+    if (typeof blockTag === 'bigint') {
+      blockData = await this.provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+    } else if (isHexPrefixed(blockTag)) {
+      blockData = await this.provider.send('eth_getBlockByHash', [blockTag, true])
+    }
+    const uncleHeaders = []
+    if (blockData.uncles.length > 0) {
+      for (let x = 0; x < blockData.uncles.length; x++) {
+        const headerData = await this.provider.send('eth_getUncleByBlockHashAndIndex', [
+          blockData.hash,
+          intToHex(x),
+        ])
+        uncleHeaders.push(headerData)
+      }
+    }
+
+    return blockFromRpc(blockData, uncleHeaders, { common, hardforkByBlockNumber: true })
   }
 }
