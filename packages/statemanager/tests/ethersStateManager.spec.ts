@@ -1,21 +1,11 @@
-import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Address,
-  bigIntToBuffer,
-  bigIntToHex,
-  bufferToHex,
-  intToHex,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
-
-import type { Proof } from '../src'
 
 const provider = new CloudflareProvider()
 
