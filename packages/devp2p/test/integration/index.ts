@@ -1,7 +1,7 @@
-import './dpt-simulator'
-import './eth-simulator'
-import './les-simulator'
-import './rlpx-simulator'
-import './snap-simulator'
+import './dpt-simulator.spec'
+import './eth-simulator.spec'
+import './les-simulator.spec'
+import './rlpx-simulator.spec'
+import './snap-simulator.spec'
 
 export * from './util'
