@@ -5,7 +5,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
 import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
@@ -27,7 +26,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
 
     // Track stack
     let stack: any = []
-    ;(<EVM>vm.evm).on('step', (istep: InterpreterStep) => {
+    vm.evm.events!.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }
