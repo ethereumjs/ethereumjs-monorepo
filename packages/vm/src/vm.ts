@@ -49,7 +49,7 @@ export class VM {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface | EVM
+  readonly evm: EVMInterface
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
