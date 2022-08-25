@@ -346,7 +346,7 @@ export class BlockHeader {
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
       if (
         typeof londonHfBlock === 'bigint' &&
-        londonHfBlock !== 0n &&
+        londonHfBlock !== BigInt(0) &&
         this.number === londonHfBlock
       ) {
         const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
