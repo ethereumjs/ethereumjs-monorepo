@@ -1,5 +1,5 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, isTruthy, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 
@@ -18,11 +18,11 @@ function normalizeTxParams(_txParams: any) {
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // check and convert gasPrice and value params
-  txParams.gasPrice = toType(txParams.gasPrice, TypeOutput.BigInt)
-  txParams.value = toType(txParams.value, TypeOutput.BigInt)
+  txParams.gasPrice = txParams.gasPrice !== undefined ? BigInt(txParams.gasPrice) : undefined
+  txParams.value = txParams.value !== undefined ? BigInt(txParams.value) : undefined
 
   // strict byte length checking
-  txParams.to = isTruthy(txParams.to) ? setLengthLeft(toBuffer(txParams.to), 20) : null
+  txParams.to = txParams.to !== undefined ? setLengthLeft(toBuffer(txParams.to), 20) : null
 
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
@@ -43,7 +43,7 @@ export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: Blo
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  if (isTruthy(blockParams.transactions)) {
+  if (blockParams.transactions !== undefined) {
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)

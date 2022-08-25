@@ -7,6 +7,8 @@ import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
+import type { Proof } from '../src'
+
 const provider = new CloudflareProvider()
 
 tape('Ethers State Manager API tests', async (t) => {
@@ -85,11 +87,11 @@ tape('runTx tests', async (t) => {
  *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
  */
 
-tape('runBlock test', async (t) => {
+tape.only('runBlock test', async (t) => {
   if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
-  const blockTag = 173991n
+  const blockTag = 78910n
   const state = new EthersStateManager({
     provider,
     // Set the state manager to look at the state of the chain before the block has been executed
@@ -103,7 +105,7 @@ tape('runBlock test', async (t) => {
     ).stateRoot.slice(2),
     'hex'
   )
-  const block = await state.getBlockFromProvider(blockTag, common)
+  const block = await state.getBlockFromProvider(BigInt('0x2ca14a'), common)
 
   try {
     const res = await vm.runBlock({
@@ -121,7 +123,7 @@ tape('runBlock test', async (t) => {
   } catch (err) {
     console.log(err)
   }
-  /*
+
   const proof = (await provider.send('eth_getProof', [
     block.header.coinbase.toString(),
     [],
@@ -130,6 +132,6 @@ tape('runBlock test', async (t) => {
   const localproof = await state.getProof(block.header.coinbase)
   for (let j = 0; j < proof.accountProof.length; j++) {
     t.deepEqual(localproof.accountProof[j], proof.accountProof[j], 'proof nodes are equal')
-  }*/
+  }
   t.end()
 })
