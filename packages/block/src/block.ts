@@ -50,22 +50,18 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
+      hardforkByBlockNumber: true,
       ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
       // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByBlockNumber: undefined,
       hardforkByTTD: undefined,
       hardforkByChainTTD: undefined,
     }
     // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (
-      opts?.hardforkByBlockNumber !== undefined ||
-      opts?.hardforkByTTD !== undefined ||
-      opts?.hardforkByChainTTD !== undefined
-    ) {
+    if (opts?.hardforkByTTD !== undefined || opts?.hardforkByChainTTD !== undefined) {
       uncleOpts.hardforkByBlockNumber = true
     }
     for (const uhData of uhsData ?? []) {
@@ -122,22 +118,18 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
+      hardforkByBlockNumber: true,
       ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
       // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByBlockNumber: undefined,
       hardforkByTTD: undefined,
       hardforkByChainTTD: undefined,
     }
     // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (
-      opts?.hardforkByBlockNumber !== undefined ||
-      opts?.hardforkByTTD !== undefined ||
-      opts?.hardforkByChainTTD !== undefined
-    ) {
+    if (opts?.hardforkByTTD !== undefined || opts?.hardforkByChainTTD !== undefined) {
       uncleOpts.hardforkByBlockNumber = true
     }
     for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
