@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { isTruthy, toBuffer } from '@ethereumjs/util'
+import { toBuffer } from '@ethereumjs/util'
 import * as minimist from 'minimist'
 import * as tape from 'tape'
 
@@ -40,12 +40,12 @@ const forkNameMap: ForkNamesMap = {
   Homestead: 'homestead',
 }
 
-const EIPs: any = {
+const EIPs: Record<string, number[] | undefined> = {
   'London+3860': [3860],
 }
 
 tape('TransactionTests', async (t) => {
-  const fileFilterRegex = isTruthy(file) ? new RegExp(file + '[^\\w]') : undefined
+  const fileFilterRegex = file !== undefined ? new RegExp(file + '[^\\w]') : undefined
   await getTests(
     (
       _filename: string,
@@ -59,14 +59,14 @@ tape('TransactionTests', async (t) => {
             continue
           }
           const forkTestData = testData.result[forkName]
-          const shouldBeInvalid = isTruthy(forkTestData.exception)
+          const shouldBeInvalid = forkTestData.exception !== undefined
 
           try {
             const rawTx = toBuffer(testData.txbytes)
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
             const activateEIPs = EIPs[forkName]
-            if (isTruthy(activateEIPs)) {
+            if (activateEIPs !== undefined) {
               common.setEIPs(activateEIPs)
             }
             const tx = TransactionFactory.fromSerializedData(rawTx, { common })
