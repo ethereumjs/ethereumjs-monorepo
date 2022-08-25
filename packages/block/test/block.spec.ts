@@ -101,6 +101,20 @@ tape('[Block]: block functions', function (t) {
     block = Block.fromBlockData(
       {
         header: {
+          number: 20, // Future block
+        },
+      },
+      { common, hardforkByChainTTD: 5000 }
+    )
+    st.equal(
+      block._common.hardfork(),
+      Hardfork.Merge,
+      'should use hardforkByChainTTD for block with difficulty =0'
+    )
+
+    block = Block.fromBlockData(
+      {
+        header: {
           number: 12, // Berlin block,
           extraData: Buffer.alloc(97),
         },
