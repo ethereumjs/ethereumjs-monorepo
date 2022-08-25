@@ -7,9 +7,9 @@ const crypto = require('crypto')
 
 // This method verifies if all keys in DB are reachable
 async function verifyPrunedTrie(trie: Trie, tester: tape.Test) {
-  const root = trie.root.toString('hex')
+  const root = trie.root().toString('hex')
   let ok = true
-  for (const dbkey of (<any>trie.db)._database.keys()) {
+  for (const dbkey of (<any>trie)._db.db._database.keys()) {
     if (dbkey === root) {
       // The root key can never be found from the trie, otherwise this would
       // convert the tree from a directed acyclic graph to a directed cycling graph
@@ -19,7 +19,7 @@ async function verifyPrunedTrie(trie: Trie, tester: tape.Test) {
     // Track if key is found
     let found = false
     try {
-      await trie.walkTrie(trie.root, async function (nodeRef, node, key, controller) {
+      await trie.walkTrie(trie.root(), async function (nodeRef, node, key, controller) {
         if (found) {
           // Abort all other children checks
           return
@@ -37,7 +37,7 @@ async function verifyPrunedTrie(trie: Trie, tester: tape.Test) {
         }
         if (node instanceof ExtensionNode) {
           // If the value of the ExtensionNode points to the dbkey, then it is found
-          if (node.value.toString('hex') === dbkey) {
+          if (node.value().toString('hex') === dbkey) {
             found = true
             return
           }
@@ -72,7 +72,7 @@ tape('Pruned trie tests', function (tester) {
     await trie.put(key, Buffer.from('5'))
     await trie.put(key, Buffer.from('6'))
 
-    st.equals((<any>trie.db)._database.size, 6, 'DB size correct')
+    st.equals((<any>trie)._db.db._database.size, 6, 'DB size correct')
   })
 
   it('should prune simple trie', async function (st) {
@@ -85,20 +85,20 @@ tape('Pruned trie tests', function (tester) {
     await trie.put(key, Buffer.from('5'))
     await trie.put(key, Buffer.from('6'))
 
-    st.equals((<any>trie.db)._database.size, 1, 'DB size correct')
+    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
   })
 
   it('should prune simple trie', async function (st) {
     const trie = new Trie({ useNodePruning: true })
     const key = Buffer.from('test')
     await trie.put(key, Buffer.from('1'))
-    st.equals((<any>trie.db)._database.size, 1, 'DB size correct')
+    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
 
     await trie.del(key)
-    st.equals((<any>trie.db)._database.size, 0, 'DB size correct')
+    st.equals((<any>trie)._db.db._database.size, 0, 'DB size correct')
 
     await trie.put(key, Buffer.from('1'))
-    st.equals((<any>trie.db)._database.size, 1, 'DB size correct')
+    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
   })
 
   it('should prune trie with depth = 2', async function (st) {
@@ -199,10 +199,10 @@ tape('Pruned trie tests', function (tester) {
       }
 
       await verifyPrunedTrie(trie, st)
-      st.ok(trie.root.equals(KECCAK256_RLP), 'trie is empty')
+      st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
-      for (const _dbkey of (<any>trie.db)._database.keys()) {
+      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
       st.ok(dbKeys === 0, 'db is empty')

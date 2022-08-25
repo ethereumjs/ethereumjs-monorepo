@@ -170,11 +170,7 @@ tape('testing deletion cases', function (tester) {
     trie: new Trie(),
     msg: 'without DB delete',
   }
-  const trieSetupWithDBDelete = {
-    trie: new Trie({ deleteFromDB: true }),
-    msg: 'with DB delete',
-  }
-  const trieSetups = [trieSetupWithoutDBDelete, trieSetupWithDBDelete]
+  const trieSetups = [trieSetupWithoutDBDelete]
 
   it('should delete from a branch->branch-branch', async function (t) {
     for (const trieSetup of trieSetups) {
@@ -318,14 +314,9 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 
   const trieSetups = [
     {
-      trie: new Trie({ deleteFromDB: false }),
+      trie: new Trie(),
       expected: v1,
       msg: 'should return v1 when setting back the state root when deleteFromDB=false',
-    },
-    {
-      trie: new Trie({ deleteFromDB: true }),
-      expected: null,
-      msg: 'should return null when setting back the state root when deleteFromDB=true',
     },
   ]
 

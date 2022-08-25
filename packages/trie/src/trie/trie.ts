@@ -190,7 +190,7 @@ export class Trie {
         }
       }
       // then update
-      await this._updateNode(key, value, remaining, stack)
+      await this._updateNode(appliedKey, value, remaining, stack)
       if (this._opts.useNodePruning) {
         // Only after updating the node we can delete the keyhashes
         await this._db.batch(ops)
