@@ -5,8 +5,6 @@ import {
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
-  isFalsy,
-  isTruthy,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
@@ -122,7 +120,7 @@ export class Miner {
     while (iterations !== 0 && !this.stopMining) {
       // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
-      const solution = await new Promise((resolve) => {
+      const solution: Solution | null = await new Promise((resolve) => {
         setTimeout(() => {
           const nonce = setLengthLeft(bigIntToBuffer(this.currentNonce), 8)
 
@@ -146,8 +144,8 @@ export class Miner {
         }, 0)
       })
 
-      if (isTruthy(solution)) {
-        return <Solution>solution
+      if (solution !== null) {
+        return solution
       }
     }
   }
@@ -216,11 +214,12 @@ export class Ethash {
   }
 
   run(val: Buffer, nonce: Buffer, fullSize?: number) {
-    if (isFalsy(fullSize) && isTruthy(this.fullSize)) {
-      fullSize = this.fullSize
-    }
-    if (isFalsy(fullSize)) {
-      throw new Error('fullSize needed')
+    if (fullSize === undefined) {
+      if (this.fullSize === undefined) {
+        throw new Error('fullSize needed')
+      } else {
+        fullSize = this.fullSize
+      }
     }
     const n = Math.floor(fullSize / params.HASH_BYTES)
     const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
