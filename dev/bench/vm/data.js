@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661433984267,
+  "lastUpdate": 1661436578500,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "cec57578ae395ee91b2dec83cdfac592b32bbf0c",
-          "message": "Bump EVM coverage (#2180)\n\n* evm: update coverage\r\n\r\n* evm: try update coverage\r\n\r\n* evm: correctly set coverage commands\r\n\r\n* evm: fix ci\r\n\r\n* vm: import evm from src, not dist",
-          "timestamp": "2022-08-19T09:30:15+02:00",
-          "tree_id": "38c644889cbaaebc3e4c7af862ffb3f8f0007f54",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cec57578ae395ee91b2dec83cdfac592b32bbf0c"
-        },
-        "date": 1660894626322,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 13633,
-            "range": "±3.23%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 13910,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 13058,
-            "range": "±6.08%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 13649,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13263,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "193e9e974be30ec4528353fc0cbd87ed9160403a",
+          "message": "chore: rename `Semaphore` to `Lock` (#2234)",
+          "timestamp": "2022-08-25T16:04:48+02:00",
+          "tree_id": "7d130c5f00f8a47d626ca1b375e2a9614997c8b0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/193e9e974be30ec4528353fc0cbd87ed9160403a"
+        },
+        "date": 1661436577887,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19612,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18917,
+            "range": "±4.21%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18120,
+            "range": "±5.43%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19651,
+            "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19002,
+            "range": "±1.66%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
