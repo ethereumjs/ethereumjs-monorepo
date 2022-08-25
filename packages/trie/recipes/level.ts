@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
@@ -16,11 +15,11 @@ export class LevelDB implements DB {
   }
 
   async get(key: Buffer): Promise<Buffer | null> {
-    let value = null
+    let value: Buffer | null = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
-      if (isTruthy(error.notFound)) {
+      if (error.notFound !== undefined) {
         // not found, returning null
       } else {
         throw error

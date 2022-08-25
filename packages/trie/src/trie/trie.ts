@@ -1,4 +1,4 @@
-import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -633,8 +633,7 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        if (isFalsy(op.value)) {
-          console.log('falsy op value', op.value)
+        if (op.value === null || op.value === undefined) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
@@ -658,7 +657,7 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root() === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
       this.root(opStack[0].key)
     }
 
