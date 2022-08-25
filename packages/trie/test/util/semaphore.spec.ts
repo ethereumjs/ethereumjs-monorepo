@@ -11,11 +11,11 @@ tape('Semaphore', (t) => {
     const lock = new Semaphore(1)
 
     const f = async () => {
-      await lock.wait()
+      await lock.acquire()
       const local = global
       await wait(500)
       global = local + 1
-      lock.signal()
+      lock.release()
     }
 
     void f()

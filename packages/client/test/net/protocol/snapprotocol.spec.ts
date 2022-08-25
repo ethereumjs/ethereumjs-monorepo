@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { CheckpointTrie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToBuffer, convertSlimAccount } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -147,7 +147,7 @@ tape('[SnapProtocol]', (t) => {
       resData
     )
 
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => convertSlimAccount(acc.body))
@@ -293,7 +293,7 @@ tape('[SnapProtocol]', (t) => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new CheckpointTrie({ db: new LevelDB() })
+    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)

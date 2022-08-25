@@ -2,13 +2,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark'
 
-import { CheckpointTrie, DB, Trie } from '../dist'
+import { DB, Trie } from '../dist'
 
 import { keys } from './keys'
 
 export function createSuite(db: DB) {
   const trie = new Trie({ db })
-  const checkpointTrie = new CheckpointTrie({ db })
+  const checkpointTrie = new Trie({ db })
 
   const ROUNDS = 1000
   const KEY_SIZE = 32
@@ -40,7 +40,7 @@ export function createSuite(db: DB) {
           }
 
           if (i % (eraSize as number) === 0) {
-            key = trie.root
+            key = trie.root()
           }
         }
       })

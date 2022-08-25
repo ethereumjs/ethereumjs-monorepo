@@ -54,8 +54,8 @@ async function unset(
      * remove self from parent
      */
     if (
-      key.length - pos < child.keyLength ||
-      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength)) !== 0
+      key.length - pos < child.keyLength() ||
+      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength())) !== 0
     ) {
       if (removeLeft) {
         if (nibblesCompare(child._nibbles, key.slice(pos)) < 0) {
@@ -74,7 +74,7 @@ async function unset(
       ;(parent as BranchNode).setBranch(key[pos - 1], null)
       return pos - 1
     } else {
-      const _child = await trie.lookupNode(child.value)
+      const _child = await trie.lookupNode(child.value())
       if (_child && _child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).setBranch(key[pos - 1], null)
@@ -85,7 +85,7 @@ async function unset(
       stack.push(child)
 
       // continue to the next node
-      return await unset(trie, child, _child, key, pos + child.keyLength, removeLeft, stack)
+      return await unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
     }
   } else if (child === null) {
     return pos - 1
@@ -107,7 +107,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
   // Parent node
   let parent: TrieNode | null = null
   // Current node
-  let node: TrieNode | null = await trie.lookupNode(trie.root)
+  let node: TrieNode | null = await trie.lookupNode(trie.root())
   let shortForkLeft!: number
   let shortForkRight!: number
   // A stack of modified nodes.
@@ -121,16 +121,16 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       // record this node on the stack
       stack.push(node)
 
-      if (left.length - pos < node.keyLength) {
+      if (left.length - pos < node.keyLength()) {
         shortForkLeft = nibblesCompare(left.slice(pos), node._nibbles)
       } else {
-        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength), node._nibbles)
+        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength()), node._nibbles)
       }
 
-      if (right.length - pos < node.keyLength) {
+      if (right.length - pos < node.keyLength()) {
         shortForkRight = nibblesCompare(right.slice(pos), node._nibbles)
       } else {
-        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength), node._nibbles)
+        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength()), node._nibbles)
       }
 
       // If one of `left` and `right` is not equal to node._nibbles, it means we found the fork point
@@ -145,8 +145,8 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
       // continue to the next node
       parent = node
-      pos += node.keyLength
-      node = await trie.lookupNode(node.value)
+      pos += node.keyLength()
+      node = await trie.lookupNode(node.value())
     } else if (node instanceof BranchNode) {
       // record this node on the stack
       stack.push(node)
@@ -248,7 +248,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return await removeSelfFromParentAndSaveStack(left)
       }
 
-      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength, false, stack)
+      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
       await saveStack(left.slice(0, pos + endPos), stack)
 
       return false
@@ -265,7 +265,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return await removeSelfFromParentAndSaveStack(right)
       }
 
-      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength, true, stack)
+      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)
       await saveStack(right.slice(0, pos + endPos), stack)
 
       return false
@@ -317,9 +317,9 @@ async function verifyProof(
   rootHash: Buffer,
   key: Buffer,
   proof: Buffer[],
-  useHashedKeysFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Buffer | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useHashedKeysFunction })
+  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
   try {
     await proofTrie.fromProof(proof)
   } catch (e) {
@@ -348,7 +348,7 @@ async function verifyProof(
  */
 async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
   let pos = 0
-  let node = await trie.lookupNode(trie.root)
+  let node = await trie.lookupNode(trie.root())
   while (node !== null) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
@@ -362,13 +362,13 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (
-        key.length - pos < node.keyLength ||
-        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength)) !== 0
+        key.length - pos < node.keyLength() ||
+        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength())) !== 0
       ) {
         return nibblesCompare(node._nibbles, key.slice(pos)) > 0
       }
 
-      pos += node.keyLength
+      pos += node.keyLength()
       node = await trie.lookupNode(node._value)
     } else if (node instanceof LeafNode) {
       return false
@@ -414,7 +414,7 @@ export async function verifyRangeProof(
   keys: Nibbles[],
   values: Buffer[],
   proof: Buffer[] | null,
-  useHashedKeysFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction
 ): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
@@ -435,11 +435,11 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ useHashedKeysFunction })
+    const trie = new Trie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
-    if (rootHash.compare(trie.root) !== 0) {
+    if (rootHash.compare(trie.root()) !== 0) {
       throw new Error('invalid all elements proof: root mismatch')
     }
     return false
@@ -457,7 +457,7 @@ export async function verifyRangeProof(
       rootHash,
       nibblesToBuffer(firstKey),
       proof,
-      useHashedKeysFunction
+      useKeyHashingFunction
     )
 
     if (value !== null || (await hasRightElement(trie, firstKey))) {
@@ -473,7 +473,7 @@ export async function verifyRangeProof(
       rootHash,
       nibblesToBuffer(firstKey),
       proof,
-      useHashedKeysFunction
+      useKeyHashingFunction
     )
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
@@ -496,13 +496,13 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useHashedKeysFunction })
+  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
   await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
   if (empty) {
-    trie.root = trie.EMPTY_TRIE_ROOT
+    trie.root(trie.EMPTY_TRIE_ROOT)
   }
 
   // Put all elements to the trie
@@ -511,7 +511,7 @@ export async function verifyRangeProof(
   }
 
   // Compare rootHash
-  if (trie.root.compare(rootHash) !== 0) {
+  if (trie.root().compare(rootHash) !== 0) {
     throw new Error('invalid two edge elements proof: root mismatch')
   }
 

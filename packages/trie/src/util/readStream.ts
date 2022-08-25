@@ -28,7 +28,7 @@ export class TrieReadStream extends Readable {
         if (node !== null) {
           this.push({
             key: nibblesToBuffer(key),
-            value: node.value,
+            value: node.value(),
           })
           walkController.allChildren(node, key)
         }
@@ -53,10 +53,10 @@ export class TrieReadStream extends Readable {
       let fullKey = key
 
       if (node instanceof LeafNode) {
-        fullKey = key.concat(node.key)
+        fullKey = key.concat(node.key())
         // found leaf node!
         onFound(nodeRef, node, fullKey, walkController)
-      } else if (node instanceof BranchNode && node.value) {
+      } else if (node instanceof BranchNode && node.value()) {
         // found branch with value
         onFound(nodeRef, node, fullKey, walkController)
       } else {
@@ -66,6 +66,6 @@ export class TrieReadStream extends Readable {
         }
       }
     }
-    await this.trie.walkTrie(this.trie.root, outerOnFound)
+    await this.trie.walkTrie(this.trie.root(), outerOnFound)
   }
 }
