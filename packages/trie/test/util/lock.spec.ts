@@ -1,14 +1,14 @@
 // Based on https://github.com/jsoendermann/semaphore-async-await/blob/master/__tests__/Semaphore.spec.ts
 import * as tape from 'tape'
 
-import { Semaphore } from '../../src/util/semaphore'
+import { Lock } from '../../src/util/lock'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-tape('Semaphore', (t) => {
+tape('Lock', (t) => {
   t.test('should lock', async (st) => {
     let global = 0
-    const lock = new Semaphore(1)
+    const lock = new Lock()
 
     const f = async () => {
       await lock.acquire()
