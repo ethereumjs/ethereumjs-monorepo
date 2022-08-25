@@ -6,7 +6,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
 import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -83,7 +82,7 @@ tape('EIP3198 tests', (t) => {
     // Track stack
 
     let stack: any = []
-    ;(<EVM>vm.evm).on('step', (istep: InterpreterStep) => {
+    vm.evm.events!.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }

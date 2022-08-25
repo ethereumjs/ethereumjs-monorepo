@@ -5,8 +5,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
-
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
   contracts: { code: string; address: Address }[]
@@ -27,7 +25,7 @@ tape('EIP 1153: transient storage', (t) => {
     let currentGas = initialGas
     const vm = await VM.create({ common })
 
-    ;(<EVM>vm.evm).on('step', function (step: any) {
+    vm.evm.events!.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
