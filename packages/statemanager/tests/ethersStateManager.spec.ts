@@ -1,17 +1,17 @@
-import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
-import { CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
-import * as tape from 'tape'
 import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
-import { VM } from '@ethereumjs/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
+import { CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
+import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
 const provider = new CloudflareProvider()
 
 tape('Ethers State Manager API tests', async (t) => {
-  const state = new EthersStateManager({ provider: provider })
+  const state = new EthersStateManager({ provider })
   const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
   const account = await state.getAccount(vitalikDotEth)
   t.ok(account.nonce > 0n, 'Vitalik.eth returned a valid nonce')
@@ -59,7 +59,7 @@ tape('Ethers State Manager API tests', async (t) => {
 
 tape('runTx tests', async (t) => {
   const common = new Common({ chain: Chain.Mainnet })
-  const state = new EthersStateManager({ provider: provider })
+  const state = new EthersStateManager({ provider })
   const vm = await VM.create({ common, stateManager: state })
 
   const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -90,23 +90,39 @@ tape.only('runBlock test', async (t) => {
   if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
-  const blockTag = BigInt(
-    (await provider.send('eth_getBlockByNumber', [bigIntToHex(71980n), false])).number
-  )
+  const blockTag = 719n
   const state = new EthersStateManager({
-    provider: provider,
+    provider,
     // Set the state manager to look at the state of the chain before the block has been executed
     blockTag: blockTag - 1n,
   })
-  const vm = await VM.create({ common, stateManager: state })
-  const previousStateRoot = Buffer.from((await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])).stateRoot.slice(2), 'hex')
-  await state.setStateRoot(previousStateRoot)
-  const blockData = await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
-  const block = blockFromRpc(blockData, undefined, { common, hardforkByBlockNumber: true})
-  const res = await vm.runBlock({
-    block,
-    skipHeaderValidation: true,
-  })
 
-  t.equal(bufferToHex(block.header.stateRoot), bufferToHex(res.stateRoot), 'was able to run block')
+  const vm = await VM.create({ common, stateManager: state })
+  const previousStateRoot = Buffer.from(
+    (
+      await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])
+    ).stateRoot.slice(2),
+    'hex'
+  )
+
+  const blockData = await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+  const block = blockFromRpc(blockData, undefined, { common, hardforkByBlockNumber: true })
+
+  try {
+    const res = await vm.runBlock({
+      block,
+      root: previousStateRoot,
+      generate: true,
+      skipHeaderValidation: true,
+    })
+
+    t.equal(
+      bufferToHex(res.stateRoot),
+      bufferToHex(block.header.stateRoot),
+      'was able to run block and computed correct state root'
+    )
+  } catch (err) {
+    console.log(err)
+  }
+  t.end()
 })

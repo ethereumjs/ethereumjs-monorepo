@@ -48,12 +48,10 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this._cache = new Cache({
       getCb: (address) => this.getAccountFromProvider(address),
       putCb: async (keyBuf, accountRlp) => {
-        const trie = this.trie
-        await trie.put(keyBuf, accountRlp)
+        await this.trie.put(keyBuf, accountRlp)
       },
       deleteCb: async (keyBuf) => {
-        const trie = this.trie
-        await trie.del(keyBuf)
+        await this.trie.del(keyBuf)
       },
     })
   }
@@ -90,7 +88,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async accountExists(address: Address): Promise<boolean> {
-    log(`seeing if ${address.toString()} exists`)
+    log(`Verify if ${address.toString()} exists`)
     const account = this._cache.get(address)
     if (account.isEmpty()) {
       // Get latest block (or block specified in `this.blockTag`)
@@ -111,27 +109,21 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    log(`getting account data for ${address.toString()}`)
-    let accountData
-    try {
-      accountData = await this.provider.send('eth_getProof', [
-        address.toString(),
-        [],
-        this.blockTag,
-      ])
-      const rawData = accountData.accountProof
-      for (const proofItem of rawData) {
-        const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
-        const hash = keccak256(dataBuffer)
-        await this.trie.put(arrToBufArr(hash), dataBuffer)
-      }
-    } catch (e) {
-      accountData.balance = await this.provider.getBalance(address.toString(), this.blockTag)
-      accountData.nonce = await this.provider.getTransactionCount(address.toString(), this.blockTag)
-      accountData.codeHash = keccak256(
-        toBuffer(await this.provider.getCode(address.toString(), this.blockTag))
-      )
+    log(`Retrieving account data for ${address.toString()} from provider`)
+
+    const accountData = await this.provider.send('eth_getProof', [
+      address.toString(),
+      [],
+      this.blockTag,
+    ])
+    const rawData = accountData.accountProof
+    for (const proofItem of rawData) {
+      // Dump raw proof nodes to DB under their hashed keys
+      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
+      const hash = keccak256(dataBuffer)
+      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
     }
+
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
@@ -157,19 +149,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getStateRoot(): Promise<Buffer> {
-    /*if (this.blockTag === 'latest') {
-      const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
-      return toBuffer(block.stateRoot)
-    }
-    if (typeof this.root === 'undefined') {
-      this.root = toBuffer(
-        (await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])).stateRoot
-      )
-    }*/
+    await this._cache.flush()
     return this.trie.root()
   }
 
   async setStateRoot(_stateRoot: Buffer): Promise<void> {
+    this._cache.flush
     this.trie.root(_stateRoot)
   }
   hasStateRoot(_root: Buffer): Promise<boolean> {
