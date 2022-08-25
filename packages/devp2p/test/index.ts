@@ -1,7 +1,0 @@
-import './dpt-message.spec'
-import './rlpx-ecies.spec'
-import './rlpx-mac.spec'
-import './integration'
-import './enr.spec'
-import './dns.spec'
-import './browser.spec'
