@@ -184,7 +184,7 @@ export class BlockHeader {
       (options.hardforkByTTD !== undefined && options.hardforkByChainTTD !== undefined)
     ) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
+        `The hardforkByBlockNumber, hardforkByTTD and hardforkByChainTTD options can't be used in conjunction`
       )
     }
 
