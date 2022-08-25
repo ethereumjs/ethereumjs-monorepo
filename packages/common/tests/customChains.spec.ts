@@ -165,7 +165,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   })
 })
 
-tape.only('custom chain setup with hardforks with undefined/null block numbers', (t) => {
+tape('custom chain setup with hardforks with undefined/null block numbers', (t) => {
   const undefinedHardforks = [
     {
       name: 'chainstart',
@@ -176,7 +176,22 @@ tape.only('custom chain setup with hardforks with undefined/null block numbers',
     { name: 'tangerineWhistle', block: 10 },
   ]
 
-  const common = Common.custom({ hardforks: undefinedHardforks })
+  t.throws(
+    //@ts-expect-error -- Disabling type check to verify that error is thrown
+    () => Common.custom({ hardforks: undefinedHardforks }),
+    'throws when a hardfork with an undefined block number is passed'
+  )
+
+  const nullHardforks = [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    { name: 'homestead', block: null },
+    { name: 'tangerineWhistle', block: 10 },
+  ]
+
+  const common = Common.custom({ hardforks: nullHardforks })
   common.setHardforkByBlockNumber(10)
   t.equal('tangerineWhistle', common.hardfork(), 'set correct hardfork')
   common.setHardforkByBlockNumber(3)
