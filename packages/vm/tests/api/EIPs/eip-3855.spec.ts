@@ -4,7 +4,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
 import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
 tape('EIP 3541 tests', (t) => {
@@ -18,7 +17,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 opcode', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
       if (typeof stack !== 'undefined') {
         st.fail('should only do PUSH0 once')
       }
@@ -39,8 +38,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 to create a stack with stack limit length', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[] = []
-
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
       stack = e.stack
     })
 

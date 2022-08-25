@@ -252,7 +252,7 @@ export class Interpreter {
       gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._evm.listenerCount('step') > 0 || this._evm.DEBUG) {
+    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
