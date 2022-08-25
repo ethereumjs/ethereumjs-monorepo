@@ -452,7 +452,11 @@ export class BlockHeader {
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (typeof londonHardforkBlock === 'bigint' && this.number === londonHardforkBlock) {
+    if (
+      typeof londonHardforkBlock === 'bigint' &&
+      londonHardforkBlock !== BigInt(0) &&
+      this.number === londonHardforkBlock
+    ) {
       const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
