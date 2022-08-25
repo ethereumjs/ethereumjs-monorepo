@@ -1,4 +1,4 @@
-import { TypeOutput, intToBuffer, isFalsy, isTruthy, toType } from '@ethereumjs/util'
+import { TypeOutput, intToBuffer, toType } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
@@ -178,7 +178,7 @@ export class Common extends EventEmitter {
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
-    if (isTruthy(initializedChains[chain])) {
+    if (initializedChains[chain] !== undefined) {
       return initializedChains[chain] as ChainConfig
     }
 
@@ -191,7 +191,7 @@ export class Common extends EventEmitter {
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
     this._hardfork = this.DEFAULT_HARDFORK
-    if (isTruthy(opts.hardfork)) {
+    if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
     }
     if (opts.eips) {
@@ -285,7 +285,10 @@ export class Common extends EventEmitter {
       if (blockNumber >= BigInt(hf.block)) {
         hardfork = hf.name as Hardfork
       }
-      if (td && isTruthy(hf.ttd)) {
+      if (
+        td &&
+        (typeof hf.ttd === 'string' || (typeof hf.ttd === 'bigint' && hf.ttd !== BigInt(0)))
+      ) {
         if (td >= BigInt(hf.ttd)) {
           minTdHF = hf.name
         } else {
@@ -296,14 +299,14 @@ export class Common extends EventEmitter {
     }
     if (td) {
       let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
-      if (isTruthy(minTdHF)) {
+      if (minTdHF !== undefined) {
         if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
           const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
           msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
           throw new Error(`${msg}: ${msgAdd}`)
         }
       }
-      if (isTruthy(maxTdHF)) {
+      if (maxTdHF !== undefined) {
         if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
           const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
           msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
@@ -360,7 +363,7 @@ export class Common extends EventEmitter {
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
-      if (isTruthy(EIPs[eip].requiredEIPs)) {
+      if (EIPs[eip].requiredEIPs !== undefined) {
         for (const elem of EIPs[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
@@ -412,7 +415,7 @@ export class Common extends EventEmitter {
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if (isFalsy(hfChanges[1][topic])) {
+        if (hfChanges[1][topic] === undefined) {
           throw new Error(`Topic ${topic} not defined`)
         }
         if (hfChanges[1][topic][name] !== undefined) {
@@ -495,7 +498,7 @@ export class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlock(hardfork)
-    if (isTruthy(hfBlock) && blockNumber >= hfBlock) {
+    if (typeof hfBlock === 'bigint' && hfBlock !== BigInt(0) && blockNumber >= hfBlock) {
       return true
     }
     return false
@@ -597,7 +600,7 @@ export class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const block = this.hardforkBlock(hardfork)
-    return isTruthy(block) ? block === blockNumber : false
+    return typeof block === 'bigint' && block !== BigInt(0) ? block === blockNumber : false
   }
 
   /**
@@ -809,9 +812,7 @@ export class Common extends EventEmitter {
       }
       if (hfChanges[0] === hardfork) break
     }
-    return isTruthy(value)
-      ? value
-      : (this._chainParams['consensus']['algorithm'] as ConsensusAlgorithm)
+    return value ?? (this._chainParams['consensus']['algorithm'] as ConsensusAlgorithm)
   }
 
   /**
@@ -839,9 +840,7 @@ export class Common extends EventEmitter {
       }
       if (hfChanges[0] === hardfork) break
     }
-    return isTruthy(value)
-      ? value
-      : this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm]!
+    return value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm]!
   }
 
   /**
