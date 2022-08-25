@@ -121,7 +121,35 @@ tape('[Block]: block functions', function (t) {
         'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
+          `The hardforkByBlockNumber, hardforkByTTD and hardforkByChainTTD options can't be used in conjunction`
+        ),
+        msg
+      )
+    }
+
+    try {
+      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByChainTTD: 3000 })
+      st.fail('should not reach this')
+    } catch (e: any) {
+      const msg =
+        'should throw if hardforkByBlockNumber and hardforkByChainTTD options are used in conjunction'
+      st.ok(
+        e.message.includes(
+          `The hardforkByBlockNumber, hardforkByTTD and hardforkByChainTTD options can't be used in conjunction`
+        ),
+        msg
+      )
+    }
+
+    try {
+      Block.fromBlockData({}, { common, hardforkByTTD: 3000, hardforkByChainTTD: 3000 })
+      st.fail('should not reach this')
+    } catch (e: any) {
+      const msg =
+        'should throw if hardforkByTTD and hardforkByChainTTD options are used in conjunction'
+      st.ok(
+        e.message.includes(
+          `The hardforkByBlockNumber, hardforkByTTD and hardforkByChainTTD options can't be used in conjunction`
         ),
         msg
       )
