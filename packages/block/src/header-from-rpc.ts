@@ -37,7 +37,7 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
       coinbase: miner,
       stateRoot,
       transactionsTrie: transactionsRoot,
-      receiptTrie: receiptRoot !== undefined && receiptRoot !== null ? receiptRoot : receiptsRoot,
+      receiptTrie: receiptRoot ?? receiptsRoot,
       logsBloom,
       difficulty: numberToHex(difficulty),
       number,
