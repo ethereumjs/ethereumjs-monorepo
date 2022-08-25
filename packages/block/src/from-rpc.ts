@@ -1,5 +1,5 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { isTruthy, setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { setLengthLeft, toBuffer } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 import { numberToHex } from './helpers'
@@ -20,7 +20,10 @@ function normalizeTxParams(_txParams: any) {
   txParams.value = numberToHex(txParams.value)
 
   // strict byte length checking
-  txParams.to = isTruthy(txParams.to) ? setLengthLeft(toBuffer(txParams.to), 20) : null
+  txParams.to =
+    txParams.to !== null && txParams.to !== undefined
+      ? setLengthLeft(toBuffer(txParams.to), 20)
+      : null
 
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
@@ -42,7 +45,7 @@ export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: Blo
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  if (isTruthy(blockParams.transactions)) {
+  if (blockParams.transactions !== undefined) {
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)

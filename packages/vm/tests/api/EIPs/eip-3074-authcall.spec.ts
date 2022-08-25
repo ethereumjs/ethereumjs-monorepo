@@ -169,14 +169,14 @@ function MSTORE(position: Buffer, value: Buffer) {
  * @returns - The bytecode to execute AUTHCALL
  */
 function getAuthCallCode(data: AuthcallData) {
-  const gasLimitBuffer = setLengthLeft(bigIntToBuffer(data.gasLimit ?? 0n), 32)
+  const gasLimitBuffer = setLengthLeft(bigIntToBuffer(data.gasLimit ?? BigInt(0)), 32)
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(bigIntToBuffer(data.value ?? 0n), 32)
-  const valueExtBuffer = setLengthLeft(bigIntToBuffer(data.valueExt ?? 0n), 32)
-  const argsOffsetBuffer = setLengthLeft(bigIntToBuffer(data.argsOffset ?? 0n), 32)
-  const argsLengthBuffer = setLengthLeft(bigIntToBuffer(data.argsLength ?? 0n), 32)
-  const retOffsetBuffer = setLengthLeft(bigIntToBuffer(data.retOffset ?? 0n), 32)
-  const retLengthBuffer = setLengthLeft(bigIntToBuffer(data.retLength ?? 0n), 32)
+  const valueBuffer = setLengthLeft(bigIntToBuffer(data.value ?? BigInt(0)), 32)
+  const valueExtBuffer = setLengthLeft(bigIntToBuffer(data.valueExt ?? BigInt(0)), 32)
+  const argsOffsetBuffer = setLengthLeft(bigIntToBuffer(data.argsOffset ?? BigInt(0)), 32)
+  const argsLengthBuffer = setLengthLeft(bigIntToBuffer(data.argsLength ?? BigInt(0)), 32)
+  const retOffsetBuffer = setLengthLeft(bigIntToBuffer(data.retOffset ?? BigInt(0)), 32)
+  const retLengthBuffer = setLengthLeft(bigIntToBuffer(data.retLength ?? BigInt(0)), 32)
   const PUSH32 = Buffer.from('7f', 'hex')
   const AUTHCALL = Buffer.from('f7', 'hex')
   const order = [
