@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, isFalsy, short, toBuffer } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -31,7 +31,7 @@ const debugGas = createDebugLogger('vm:tx:gas')
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // tx is required
-  if (isFalsy(opts.tx)) {
+  if (opts.tx === undefined) {
     throw new Error('invalid input, tx is required')
   }
 
