@@ -302,6 +302,36 @@ tape('[Skeleton]', async (t) => {
     }
   })
 
+  t.test(`skeleton init should throw error if merge not set`, async (st) => {
+    st.plan(1)
+    const genesis = {
+      ...genesisJSON,
+      config: {
+        ...genesisJSON.config,
+        // skip the merge hardfork
+        terminalTotalDifficulty: undefined,
+        clique: undefined,
+        ethash: {},
+      },
+      extraData: '0x00000000000000000',
+      difficulty: '0x1',
+    }
+    const params = await parseCustomParams(genesis, 'merge-not-set')
+    const common = new Common({
+      chain: params.name,
+      customChains: [params],
+    })
+    const config = new Config({ common, transports: [] })
+    const chain = new Chain({ config })
+    ;(chain.blockchain as any)._validateBlocks = false
+    try {
+      new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    } catch (e) {
+      st.pass(`Skeleton init should error if merge not set`)
+    }
+    st.end()
+  })
+
   t.test('should fill the canonical chain after being linked to genesis', async (st) => {
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
