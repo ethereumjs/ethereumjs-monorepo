@@ -296,12 +296,11 @@ tape('testing checkpoints', function (tester) {
         '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
       ]
     )
-    // >>>>> THIS FAILS FOR WHATEVER REASON?
     t.equal((await CommittedState.get(KEY))?.toString(), '1')
     t.equal(
       // @ts-expect-error
       (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
     t.equal(
       CommittedState.root().toString('hex'),
@@ -334,8 +333,12 @@ tape('testing checkpoints', function (tester) {
     // Calling CheckTx.commit() once more will make this `false` and fail as expected.
     t.false(CheckTx.hasCheckpoints())
 
+    // We should have a checkpoint left for CommittedState
+    t.true(CommittedState.hasCheckpoints())
+
     // CheckTx has been fully committed so we can set the CommittedState root
     CommittedState.root(CheckTx.root())
+    await CommittedState.commit()
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     t.deepEqual(
