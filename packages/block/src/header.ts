@@ -22,6 +22,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
+import { valuesArrayToHeaderData } from './helpers'
 
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -90,11 +91,9 @@ export class BlockHeader {
    */
   public static fromRLPSerializedHeader(serializedHeaderData: Buffer, opts: BlockOptions = {}) {
     const values = arrToBufArr(RLP.decode(Uint8Array.from(serializedHeaderData)))
-
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
     }
-
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
   }
 
@@ -105,62 +104,17 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
-    const [
-      parentHash,
-      uncleHash,
-      coinbase,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      logsBloom,
-      difficulty,
-      number,
-      gasLimit,
-      gasUsed,
-      timestamp,
-      extraData,
-      mixHash,
-      nonce,
-      baseFeePerGas,
-    ] = values
-
-    if (values.length > 16) {
-      throw new Error('invalid header. More values than expected were received')
-    }
-    if (values.length < 15) {
-      throw new Error('invalid header. Less values than expected were received')
-    }
-
+    const headerData = valuesArrayToHeaderData(values)
+    const { number, baseFeePerGas } = headerData
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number)) {
+      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number! as Buffer)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-
-    return new BlockHeader(
-      {
-        parentHash,
-        uncleHash,
-        coinbase,
-        stateRoot,
-        transactionsTrie,
-        receiptTrie,
-        logsBloom,
-        difficulty,
-        number,
-        gasLimit,
-        gasUsed,
-        timestamp,
-        extraData,
-        mixHash,
-        nonce,
-        baseFeePerGas,
-      },
-      opts
-    )
+    return BlockHeader.fromHeaderData(headerData, opts)
   }
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.

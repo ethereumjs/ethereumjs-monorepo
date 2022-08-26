@@ -194,7 +194,11 @@ const assembleBlock = async (
     transactions,
   } = payload
   const { config } = chain
-  const { chainCommon: common } = config
+  const common = config.chainCommon.copy()
+
+  // This is a post merge block, so set its common accordingly
+  const ttd = common.hardforkTTD(Hardfork.Merge)
+  common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined)
 
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
@@ -222,10 +226,9 @@ const assembleBlock = async (
 
   let block: Block
   try {
-    block = Block.fromBlockData(
-      { header, transactions: txs },
-      { common, hardforkByTTD: chain.headers.td }
-    )
+    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
+    // correctly set to the correct hf
+    block = Block.fromBlockData({ header, transactions: txs }, { common })
 
     // Verify blockHash matches payload
     if (!block.hash().equals(toBuffer(payload.blockHash))) {
