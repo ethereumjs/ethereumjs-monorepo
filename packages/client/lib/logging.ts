@@ -64,9 +64,9 @@ function logFormat(colors = false) {
       const regex = /(\w+)=(.+?)(?:\s|$)/g
       const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
       info.message = info.message.replace(regex, replaceFn)
-      if (info.attentionCL !== undefined)
+      if (typeof info.attentionCL === 'string')
         info.attentionCL = info.attentionCL.replace(regex, replaceFn)
-      if (info.attentionHF !== undefined)
+      if (typeof info.attentionHF === 'string')
         info.attentionHF = info.attentionHF.replace(regex, replaceFn)
     }
 
