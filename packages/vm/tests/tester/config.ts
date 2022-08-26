@@ -217,6 +217,13 @@ const transitionNetworks = {
   },
 }
 
+const retestethAlias = {
+  Frontier: 'chainstart',
+  EIP150: 'tangerineWhistle',
+  EIP158: 'spuriousDragon',
+  ConstantinopleFix: 'petersburg',
+}
+
 const testLegacy = {
   chainstart: true,
   homestead: true,
@@ -334,8 +341,8 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
  * @returns the Common which should be used
  */
 export function getCommon(network: string): Common {
-  if (network === 'ConstantinopleFix') {
-    network = 'Petersburg' // Fix for retesteth
+  if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
+    network = retestethAlias[network as keyof typeof retestethAlias]
   }
   let networkLowercase = network.toLowerCase()
   if (network.includes('+')) {

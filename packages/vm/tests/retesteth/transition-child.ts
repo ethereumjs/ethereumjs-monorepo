@@ -38,7 +38,6 @@ async function runTransition(argsIn: any) {
     .option('output.alloc', {
       describe: 'File to write output allocation to (after running the transactions)',
     }).argv
-  console.log(args)
   const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
   const rlpTxs = JSON.parse(readFileSync(args.input.txs).toString())
   const inputEnv = JSON.parse(readFileSync(args.input.env).toString())
