@@ -347,7 +347,7 @@ async function executeBlocks(client: EthereumClient) {
  * Note: this is destructive and removes blocks from the blockchain. Please back up your datadir.
  */
 async function startBlock(client: EthereumClient) {
-  if (args.startBlock === undefined || args.startBlock === 0) return
+  if (typeof args.startBlock === 'number') return
   const startBlock = BigInt(args.startBlock)
   const { blockchain } = client.chain
   const height = (await blockchain.getCanonicalHeadHeader()).number
@@ -398,7 +398,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     ...dbs,
   })
 
-  if (args.startBlock !== undefined) {
+  if (typeof args.startBlock === 'number') {
     await startBlock(client)
   }
 
@@ -656,7 +656,7 @@ async function run() {
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
     maxFetcherJobs: args.maxFetcherJobs,
-    mine: args.mine ?? args.dev,
+    mine: args.mine === true ? args.mine : args.dev,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,
     multiaddrs,
