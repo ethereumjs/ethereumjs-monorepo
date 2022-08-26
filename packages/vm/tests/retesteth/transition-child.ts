@@ -85,9 +85,9 @@ async function runTransition(argsIn: any) {
   for (const txData of <NestedBufferArray>txsData) {
     let tx: TypedTransaction
     if (Buffer.isBuffer(txData)) {
-      tx = TransactionFactory.fromSerializedData(txData as Buffer)
+      tx = TransactionFactory.fromSerializedData(txData as Buffer, { common })
     } else {
-      tx = Transaction.fromValuesArray(txData as Buffer[])
+      tx = Transaction.fromValuesArray(txData as Buffer[], { common })
     }
     await builder.addTransaction(tx)
   }
