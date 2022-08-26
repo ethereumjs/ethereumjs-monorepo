@@ -45,7 +45,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
-    "test": "npm run tape -- ./test/index.ts",
+    "test": "npm run tape -- './test/**/*.spec.ts'",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
