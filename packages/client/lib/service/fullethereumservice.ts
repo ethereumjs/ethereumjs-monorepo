@@ -231,8 +231,9 @@ export class FullEthereumService extends EthereumService {
       const { reqId, block, max, skip, reverse } = message.data
       if (typeof block === 'bigint') {
         if (
-          (isTruthy(reverse) && block > this.chain.headers.height) ||
-          (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
+          (reverse === true && block > this.chain.headers.height) ||
+          ((reverse === false || reverse === undefined) &&
+            block + BigInt(max * skip) > this.chain.headers.height)
         ) {
           // Respond with an empty list in case the header is higher than the current height
           // This is to ensure Geth does not disconnect with "useless peer"
