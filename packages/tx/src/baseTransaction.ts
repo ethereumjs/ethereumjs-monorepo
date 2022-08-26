@@ -1,29 +1,31 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
 import {
   Address,
-  BigIntLike,
-  toBuffer,
   MAX_INTEGER,
   MAX_UINT64,
-  unpadBuffer,
-  ecsign,
-  publicToAddress,
-  bufferToHex,
-  bufferToBigInt,
   SECP256K1_ORDER_DIV_2,
+  bufferToBigInt,
+  bufferToHex,
+  ecsign,
+  isTruthy,
+  publicToAddress,
+  toBuffer,
+  unpadBuffer,
 } from '@ethereumjs/util'
-import {
-  TxData,
-  JsonTx,
-  AccessListEIP2930ValuesArray,
+
+import { Capability } from './types'
+
+import type {
   AccessListEIP2930TxData,
-  FeeMarketEIP1559ValuesArray,
+  AccessListEIP2930ValuesArray,
   FeeMarketEIP1559TxData,
-  TxValuesArray,
-  Capability,
+  FeeMarketEIP1559ValuesArray,
+  JsonTx,
+  TxData,
   TxOptions,
+  TxValuesArray,
 } from './types'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
   hash: Buffer | undefined
@@ -85,7 +87,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.London
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Merge
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData

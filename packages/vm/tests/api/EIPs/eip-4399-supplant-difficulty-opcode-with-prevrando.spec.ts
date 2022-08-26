@@ -1,17 +1,18 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '../../../src/vm'
 import { bufferToBigInt } from '@ethereumjs/util'
-import { EVM } from '@ethereumjs/evm'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
-    const genesis = await vm.blockchain.getCanonicalHeadBlock()
+    const genesis = await vm.blockchain.getCanonicalHeadBlock!()
     const header = {
       number: 1,
       parentHash: genesis.header.hash(),
@@ -25,7 +26,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
 
     // Track stack
     let stack: any = []
-    ;(<EVM>vm.evm).on('step', (istep: InterpreterStep) => {
+    vm.evm.events!.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }

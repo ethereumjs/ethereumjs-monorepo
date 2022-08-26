@@ -1,11 +1,15 @@
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { Address, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Chain, Common, CliqueConfig, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+
 import { Block } from '../src'
-const blocksMainnet = require('./testdata/blocks_mainnet.json')
+import { BlockHeader } from '../src/header'
+
+import type { CliqueConfig } from '@ethereumjs/common'
+
 const blocksGoerli = require('./testdata/blocks_goerli.json')
+const blocksMainnet = require('./testdata/blocks_mainnet.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -63,15 +67,44 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromRLPSerializedHeader()', function (st) {
-    let header = BlockHeader.fromHeaderData({}, { freeze: false })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader)
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+      common,
+    })
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, { freeze: false })
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+      common,
+      freeze: false,
+    })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
 
+    st.throws(
+      () =>
+        BlockHeader.fromRLPSerializedHeader(rlpHeader, {
+          common,
+          freeze: false,
+          hardforkByTTD: 1n, // Added to bypass defaulting hardforkByBlockNumber to true in static constructor
+        }),
+      (err: any) => err.message.includes('A base fee'),
+      'throws when RLP serialized block with no base fee on default hardfork (london) and hardforkByBlockNumber left undefined'
+    )
+
+    header = BlockHeader.fromRLPSerializedHeader(
+      Buffer.from(
+        'f90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
+        'hex'
+      ),
+      { common, hardforkByBlockNumber: false }
+    )
+    st.equal(
+      header.hash().toString('hex'),
+      'f0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
+      'genesis block should produce incorrect hash since default hardfork is london'
+    )
     st.end()
   })
 
@@ -86,6 +119,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray()', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const zero = Buffer.alloc(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
@@ -101,10 +135,10 @@ tape('[Block]: Header functions', function (t) {
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    let header = BlockHeader.fromValuesArray(headerArray)
+    let header = BlockHeader.fromValuesArray(headerArray, { common })
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
+    header = BlockHeader.fromValuesArray(headerArray, { common, freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
     st.end()
   })
@@ -248,6 +282,49 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
+
+  t.test('should skip consensusFormatValidation if flag is set to false', (st) => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+    const extraData = Buffer.concat([Buffer.alloc(1)])
+
+    try {
+      BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
+      st.pass(
+        'should instantiate header with invalid extraData when skipConsensusFormatValidation === true'
+      )
+    } catch (error: any) {
+      st.fail('should not throw')
+    }
+
+    st.end()
+  })
+
+  t.test('_genericFormatValidation checks', (st) => {
+    const badHash = Buffer.alloc(31)
+
+    st.throws(
+      () => BlockHeader.fromHeaderData({ parentHash: badHash }),
+      (err: any) => err.message.includes('parentHash must be 32 bytes'),
+      'throws on invalid parent hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ stateRoot: badHash }),
+      (err: any) => err.message.includes('stateRoot must be 32 bytes'),
+      'throws on invalid state root hash length'
+    )
+    st.throws(
+      () => BlockHeader.fromHeaderData({ transactionsTrie: badHash }),
+      (err: any) => err.message.includes('transactionsTrie must be 32 bytes'),
+      'throws on invalid transactionsTrie root hash length'
+    )
+
+    st.throws(
+      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }),
+      (err: any) => err.message.includes('nonce must be 8 bytes'),
+      'contains nonce length error message'
+    )
+    st.end()
+  })
   /*
   TODO: Decide if we need to move these tests to blockchain
   t.test('header validation -> poa checks', async function (st) {
@@ -363,16 +440,17 @@ tape('[Block]: Header functions', function (t) {
   })
 */
   t.test('should test validateGasLimit()', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
-    Object.keys(bcBlockGasLimitTestData).forEach((key) => {
+    for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
-      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
+      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
       const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
-      const block = Block.fromRLPSerializedBlock(blockRlp)
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
-    })
+    }
 
     st.end()
   })

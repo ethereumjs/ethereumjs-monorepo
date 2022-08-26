@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md)).
+
+### New Package Name
+
+**Attention!** This library has been renamed along this release and moved to the scoped package name format already used for most of the other EthereumJS libraries, see PR [#2092](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2092). In this case the library is renamed as follows:
+
+- `rlp` -> `@ethereumjs/rlp`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/rlp
+```
+
 ## 4.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md)) for the main change set description.
@@ -23,13 +39,13 @@ Now every import is a named import and we think the long term benefits will very
 The main `RLP` class import has been updated, so import changes from:
 
 ```typescript
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 ```
 
 to:
 
 ```typescript
-import { RLP } from 'rlp'
+import { RLP } from '@ethereumjs/rlp'
 ```
 
 ## Other Changes
@@ -64,7 +80,15 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
+
+### Uint8Array / Buffer Removal
+
+This is technically not a change from the v4 version as it was already introduced in v3, but since a lot of people will likely update from a v2 `RLP` version, we will also mention it here:
+
+The v3 release replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers, see `v3.0.0` [release notes](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#300---2022-01-27).
+
+There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
 
 ## 3.0.0 - 2022-01-27
 
@@ -81,7 +105,7 @@ A new default export `RLP` now contains `encode` and `decode`.
 You can now import and use RLP like this:
 
 ```javascript
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 RLP.encode(1)
 ```
 
@@ -95,13 +119,13 @@ Example:
 
 ```typescript
 // Old, rlp v2
-import * as rlp from 'rlp'
+import * as rlp from '@ethereumjs/rlp'
 const bufArr = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
 const encoded = rlp.encode(bufArr)
 const decoded = rlp.decode(encoded)
 
 // New, rlp v3
-import RLP from 'rlp'
+import RLP from '@ethereumjs/rlp'
 const encoded: Uint8Array = RLP.encode(bufArrToArr(bufArr))
 const encodedAsBuffer = Buffer.from(encoded)
 const decoded: Uint8Array[] = RLP.decode(encoded)

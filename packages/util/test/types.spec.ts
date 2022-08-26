@@ -1,16 +1,17 @@
 import * as tape from 'tape'
+
 import {
-  toType,
   TypeOutput,
-  intToBuffer,
-  bufferToHex,
-  intToHex,
-  toBuffer,
-  bigIntToHex,
   bigIntToBuffer,
+  bigIntToHex,
   bufferToBigInt,
+  bufferToHex,
+  intToBuffer,
+  intToHex,
   isFalsy,
   isTruthy,
+  toBuffer,
+  toType,
 } from '../src'
 
 tape('toType', function (t) {
@@ -141,30 +142,30 @@ tape('isFalsy and isTruthy', function (t) {
   const falsyValues = [false, '', 0, NaN, null, undefined, BigInt(0)]
   const truthyValues = [true, 'test', -1, 1, BigInt(1), [], {}]
   t.test('isFalsy should return true for all falsy values', function (st) {
-    falsyValues.forEach((falsyValue) => {
+    for (const falsyValue of falsyValues) {
       st.ok(isFalsy(falsyValue) === true)
-    })
+    }
     st.end()
   })
 
   t.test('isFalsy should return false for truthy values', function (st) {
-    truthyValues.forEach((truthyValue) => {
+    for (const truthyValue of truthyValues) {
       st.ok(isFalsy(truthyValue) === false)
-    })
+    }
     st.end()
   })
 
   t.test('isTruthy should return false for all falsy values', function (st) {
-    falsyValues.forEach((falsyValue) => {
+    for (const falsyValue of falsyValues) {
       st.ok(isTruthy(falsyValue) === false)
-    })
+    }
     st.end()
   })
 
   t.test('isTruthy should return true for truthy values', function (st) {
-    truthyValues.forEach((truthyValue) => {
+    for (const truthyValue of truthyValues) {
       st.ok(isTruthy(truthyValue) === true)
-    })
+    }
     st.end()
   })
 })

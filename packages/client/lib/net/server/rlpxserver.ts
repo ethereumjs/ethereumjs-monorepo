@@ -1,8 +1,13 @@
-import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
-import { RlpxPeer } from '../peer/rlpxpeer'
-import { Server, ServerOptions } from './server'
-import { Event } from '../../types'
+import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
+
+import { Event } from '../../types'
+import { RlpxPeer } from '../peer/rlpxpeer'
+
+import { Server } from './server'
+
+import type { ServerOptions } from './server'
+import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */
@@ -97,7 +102,7 @@ export class RlpxServer extends Server {
     const id = this.rlpx._id.toString('hex')
     return {
       enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
-      id: id,
+      id,
       ip: this.ip,
       listenAddr: `[${this.ip}]:${this.config.port}`,
       ports: { discovery: this.config.port, listener: this.config.port },

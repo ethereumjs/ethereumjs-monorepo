@@ -4,7 +4,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["dom"],
-    "composite": true,
+    "composite": true
   },
   "include": ["src/**/*.ts"],
   "references": [

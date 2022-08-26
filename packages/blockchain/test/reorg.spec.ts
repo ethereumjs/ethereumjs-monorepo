@@ -1,10 +1,14 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
+
 import { Blockchain } from '../src'
-import { CliqueConsensus, CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
+import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
+
 import { generateConsecutiveBlock } from './util'
+
+import type { CliqueConsensus } from '../src/consensus/clique'
 
 tape('reorg tests', (t) => {
   t.test(

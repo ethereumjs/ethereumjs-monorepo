@@ -1,13 +1,16 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import * as tape from 'tape'
+
 import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
-import * as blockData from './testdata/testdata-from-rpc.json'
+
 import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-difficulty-as-integer.json'
+import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
 import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.json'
-import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
+import * as blockData from './testdata/testdata-from-rpc.json'
+
+import type { Transaction } from '@ethereumjs/tx'
 
 tape('[fromRPC]: block #2924874', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -37,10 +40,15 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with value parameter as integer string',
     function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const valueAsIntegerString = '1'
       const blockDataTransactionValueAsInteger = blockData
       blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
-      const blockFromTransactionValueAsInteger = blockFromRpc(blockDataTransactionValueAsInteger)
+      const blockFromTransactionValueAsInteger = blockFromRpc(
+        blockDataTransactionValueAsInteger,
+        undefined,
+        { common }
+      )
       st.equal(
         blockFromTransactionValueAsInteger.transactions[0].value.toString(),
         valueAsIntegerString
@@ -53,11 +61,14 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string',
     function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const gasPriceAsIntegerString = '1'
       const blockDataTransactionGasPriceAsInteger = blockData
       blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
       const blockFromTransactionGasPriceAsInteger = blockFromRpc(
-        blockDataTransactionGasPriceAsInteger
+        blockDataTransactionGasPriceAsInteger,
+        undefined,
+        { common }
       )
       st.equal(
         (blockFromTransactionGasPriceAsInteger.transactions[0] as Transaction).gasPrice.toString(),
@@ -71,7 +82,10 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'should create a block given json data that includes a difficulty parameter of type integer string',
     function (st) {
-      const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger)
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger, undefined, {
+        common,
+      })
       st.equal(
         blockDifficultyAsInteger.header.difficulty.toString(),
         blockDataDifficultyAsInteger.difficulty

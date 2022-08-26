@@ -1,7 +1,9 @@
-import { Config } from '../config'
 import { Event } from '../types'
-import { Peer } from './peer'
+
 import { RlpxServer } from './server'
+
+import type { Config } from '../config'
+import type { Peer } from './peer'
 
 export interface PeerPoolOptions {
   /* Config */
@@ -240,12 +242,12 @@ export class PeerPool {
         await Promise.all(promises)
       } else {
         let tablesize: number | undefined = 0
-        this.config.servers.forEach((server) => {
+        for (const server of this.config.servers) {
           if (server instanceof RlpxServer && server.discovery) {
             tablesize = server.dpt?.getPeers().length
             this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
           }
-        })
+        }
       }
     } else {
       this.noPeerPeriods = 0

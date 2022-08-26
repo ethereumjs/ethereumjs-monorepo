@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/CHANGELOG.md)).
+
+### Root Hash Persistance
+
+The trie library now comes with a new constructor option `useRootPersistence` which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071) and PR [#2123](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2123), thanks to @faustbrian for the contribution! ❤️
+
+To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
+
+```typescript
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
+
+const trie = new Trie({
+  db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
+  useRootPersistence: true,
+})
+```
+
+### Other Changes
+
+- Fix: Pass down a custom hash function for hashing on trie copies, PR [#2068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2068)
+
 # 5.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/CHANGELOG.md)) for the main change set description.
@@ -31,13 +55,12 @@ This allows to swap out the applied `keccak256` hash functionality from the [@no
 So the usage of the following methods change and need to be updated (for all types of tries):
 
 - `Trie.createProof(trie, myKey)` -> `trie.createProof(myKey)`
-- `Trie.verifyProof(trie.root, myKey, proof)` -> `trie.verifyProof(trie.root, myKey, proof)`
+- `Trie.verifyProof(trie.root(), myKey, proof)` -> `trie.verifyProof(trie.root(), myKey, proof)`
 - `Trie.verifyRangeProof(...)` -> `trie.verifyRangeProof(...)`
 
 ## Other Changes
 
 - Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
-
 
 # 5.0.0-beta.1 - 2022-06-30
 
@@ -79,7 +102,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to _not_ do which you didn't have before).
 
 ### Database Changes
 
@@ -96,8 +119,8 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 The new `DB` interface can be used like this for LevelDB:
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, LevelDB } from '@ethereumjs/trie'
+import { Level } from 'level'
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```

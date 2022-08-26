@@ -1,9 +1,10 @@
 import { EventEmitter } from 'events'
+import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { multiaddr } from 'multiaddr'
-import { getLogger } from '../../../lib/logging'
+
 import { Config } from '../../../lib/config'
+import { getLogger } from '../../../lib/logging'
 import { Event } from '../../../lib/types'
 import { wait } from '../../integration/util'
 
@@ -102,10 +103,10 @@ tape('[Libp2pServer]', async (t) => {
     ]
     const peer = td.object<any>()
     const peer2 = td.object({ id: 'id2', bindProtocols: td.func() }) as any
-    protos.forEach((p: any) => {
+    for (const p of protos) {
       p.open = td.func()
       td.when(p.open()).thenResolve(null)
-    })
+    }
     server.createPeer = td.func<typeof server['createPeer']>()
     server.getPeerInfo = td.func<typeof server['getPeerInfo']>()
     server.getPeerId = td.func<typeof server['getPeerId']>()

@@ -1,8 +1,10 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
+
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
-import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
 import type { FullSynchronizer } from '../../../lib/sync'
 
 const method = 'eth_syncing'

@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { VM } from '../../../src/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
-import { EOF } from '@ethereumjs/evm/dist/eof'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -33,12 +34,12 @@ tape('EIP 3670 tests', (t) => {
     st.ok(EOF.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
     st.ok(EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
 
-    Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
+    for (const opcode of [0x00, 0xf3, 0xfd, 0xfe, 0xff]) {
       st.ok(
         EOF.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
         `code ends with valid terminating instruction 0x${opcode.toString(16)}`
       )
-    })
+    }
 
     st.notOk(EOF.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
     st.notOk(
@@ -73,7 +74,7 @@ tape('EIP 3670 tests', (t) => {
   })
 
   t.test('invalid contract code transactions', async (st) => {
-    const vm = await VM.create({ common: common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance

@@ -1,8 +1,9 @@
-import * as tape from 'tape'
-import { Chain, Common } from '@ethereumjs/common'
-import { startRPC, createManager, createClient, baseSetup, params, baseRequest } from '../helpers'
-import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
+import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'net_version'
 
@@ -57,20 +58,6 @@ tape(`${method}: call on rinkeby`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes)
   td.reset()
-})
-
-tape(`${method}: call on kovan`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '42')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: call on goerli`, async (t) => {

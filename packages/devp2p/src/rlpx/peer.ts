@@ -1,16 +1,19 @@
-import { Socket } from 'net'
-import { EventEmitter } from 'events'
+import { RLP } from '@ethereumjs/rlp'
+import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
 import BufferList = require('bl')
+import { debug as createDebugLogger } from 'debug'
+import { EventEmitter } from 'events'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
-import { Common } from '@ethereumjs/common'
-import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { ETH, LES } from '../'
-import { int2buffer, buffer2int, formatLogData } from '../util'
+
+import { buffer2int, devp2pDebug, formatLogData, int2buffer } from '../util'
+
 import { ECIES } from './ecies'
+
+import type { ETH, LES } from '..'
+import type { Common } from '@ethereumjs/common'
+import type { Debugger } from 'debug'
+import type { Socket } from 'net'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled

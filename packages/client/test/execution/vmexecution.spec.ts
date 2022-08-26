@@ -1,12 +1,13 @@
-import * as tape from 'tape'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 import { VMExecution } from '../../lib/execution'
-import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import blocksDataGoerli = require('../testdata/blocks/goerli.json')
+import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import testnet = require('../testdata/common/testnet.json')
 
 tape('[VMExecution]', async (t) => {
@@ -34,9 +35,9 @@ tape('[VMExecution]', async (t) => {
       validateConsensus: false,
     })
     let exec = await testSetup(blockchain)
-    const oldHead = await exec.vm.blockchain.getIteratorHead()
+    const oldHead = await exec.vm.blockchain.getIteratorHead!()
     await exec.run()
-    let newHead = await exec.vm.blockchain.getIteratorHead()
+    let newHead = await exec.vm.blockchain.getIteratorHead!()
     t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
@@ -45,7 +46,7 @@ tape('[VMExecution]', async (t) => {
     })
     exec = await testSetup(blockchain)
     await exec.run()
-    newHead = await exec.vm.blockchain.getIteratorHead()
+    newHead = await exec.vm.blockchain.getIteratorHead!()
     t.equals(newHead.header.number, BigInt(5), 'should run all blocks')
 
     const common = new Common({ chain: 'testnet', customChains: [testnet] })
@@ -64,9 +65,9 @@ tape('[VMExecution]', async (t) => {
       common,
     })
     let exec = await testSetup(blockchain, common)
-    const oldHead = await exec.vm.blockchain.getIteratorHead()
+    const oldHead = await exec.vm.blockchain.getIteratorHead!()
     await exec.run()
-    let newHead = await exec.vm.blockchain.getIteratorHead()
+    let newHead = await exec.vm.blockchain.getIteratorHead!()
     t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await Blockchain.fromBlocksData(blocksDataGoerli, {
@@ -76,7 +77,7 @@ tape('[VMExecution]', async (t) => {
     })
     exec = await testSetup(blockchain, common)
     await exec.run()
-    newHead = await exec.vm.blockchain.getIteratorHead()
+    newHead = await exec.vm.blockchain.getIteratorHead!()
     t.equals(newHead.header.number, BigInt(7), 'should run all blocks')
 
     t.end()

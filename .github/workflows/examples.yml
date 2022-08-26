@@ -15,14 +15,12 @@ jobs:
   test-examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
       - run: npm run examples

@@ -1,14 +1,10 @@
-import {
-  Chain,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-  CliqueConfig,
-} from '@ethereumjs/common'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  TypeOutput,
   arrToBufArr,
   bigIntToBuffer,
   bigIntToHex,
@@ -18,17 +14,17 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  KECCAK256_RLP_ARRAY,
-  KECCAK256_RLP,
-  toType,
-  TypeOutput,
-  zeros,
-  isTruthy,
   isFalsy,
+  isTruthy,
+  toType,
+  zeros,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
-import { CLIQUE_EXTRA_VANITY, CLIQUE_EXTRA_SEAL } from './clique'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
+
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -182,12 +178,13 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
+    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
+    const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -229,8 +226,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
+    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {
@@ -292,7 +289,7 @@ export class BlockHeader {
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
-    this._consensusFormatValidation()
+    if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -332,18 +329,8 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(Chain.Kovan)) {
-        if (nonce.length !== 65) {
-          const msg = this._errorMsg(
-            `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
-          )
-          throw new Error(msg)
-        }
-      } else {
-        const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-        throw new Error(msg)
-      }
+      const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      throw new Error(msg)
     }
 
     // check if the block used too much gas

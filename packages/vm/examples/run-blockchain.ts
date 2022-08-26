@@ -40,7 +40,7 @@ async function main() {
     await vm.runBlock({ block, root: parentState })
   })
 
-  const blockchainHead = await vm.blockchain.getIteratorHead()
+  const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))

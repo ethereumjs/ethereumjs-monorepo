@@ -2,6 +2,7 @@ name: VM Nightly
 on:
   schedule:
     - cron: 0 0 * * *
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/vm
@@ -14,9 +15,7 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:
@@ -37,7 +36,7 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -59,7 +58,7 @@ jobs:
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -82,7 +81,7 @@ jobs:
   test-vm-slow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "composite": true,
+    "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
@@ -16,5 +16,5 @@
     { "path": "../trie/tsconfig.prod.json" },
     { "path": "../tx/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
-  ],
+  ]
 }

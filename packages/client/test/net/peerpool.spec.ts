@@ -1,10 +1,12 @@
+import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { EventEmitter } from 'events'
+
 import { Config } from '../../lib/config'
-import { RlpxServer } from '../../lib/net/server'
 import { Event } from '../../lib/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
+
+import type { RlpxServer } from '../../lib/net/server'
 
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
@@ -28,7 +30,7 @@ tape('[PeerPool]', async (t) => {
     const peer = new MockPeer({
       id: 'peer',
       location: 'abc',
-      config: config,
+      config,
       address: '0.0.0.0',
       transport: 'udp',
     })
@@ -78,7 +80,9 @@ tape('[PeerPool]', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
     peers[1].idle = true
-    peers.forEach((p) => pool.add(p))
+    for (const p of peers) {
+      pool.add(p)
+    }
     t.equals(pool.idle(), peers[1], 'correct idle peer')
     t.equals(
       pool.idle((p: any) => p.id > 1),
@@ -92,8 +96,10 @@ tape('[PeerPool]', async (t) => {
     const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
     const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
-    peers.forEach((p: any) => pool.add(p))
-    peers.forEach((p: any) => pool.ban(p, 1000))
+    for (const p of peers as any) {
+      pool.add(p)
+      pool.ban(p, 1000)
+    }
     pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => t.equals(peer, peers[1], 'banned peer'))
     pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       t.equals(peer, peers[1], 'removed peer')

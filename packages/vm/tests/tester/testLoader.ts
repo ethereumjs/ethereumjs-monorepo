@@ -1,8 +1,8 @@
 import * as fs from 'fs'
-import * as path from 'path'
 import * as dir from 'node-dir'
+import * as path from 'path'
+
 import { DEFAULT_TESTS_PATH } from './config'
-import { isTruthy } from '@ethereumjs/util'
 
 const falsePredicate = () => false
 
@@ -135,16 +135,16 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
       return skipTest(name, args.skipVM)
     }
   }
-  if (isTruthy(args.singleSource)) {
+  if (args.singleSource !== undefined) {
     return getTestFromSource(args.singleSource, onFile)
   }
-  if (isTruthy(args.file)) {
+  if (args.file !== undefined) {
     fileFilter = new RegExp(args.file)
   }
-  if (isTruthy(args.excludeDir)) {
+  if (args.excludeDir !== undefined) {
     excludeDir = new RegExp(args.excludeDir)
   }
-  if (isTruthy(args.test)) {
+  if (args.test !== undefined) {
     skipFn = (testName: string) => {
       return testName !== args.test
     }

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/CHANGELOG.md)).
+
+Alignment release without direct changes on the library.
+
 ## 8.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/CHANGELOG.md)) for the main change set description.
@@ -22,8 +28,7 @@ The Util library itself has no import changes along this update.
 
 ## Other Changes
 
-- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 
-
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
 
 ## 8.0.0-beta.1 - 2022-06-30
 
@@ -65,7 +70,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient it deviates from the ESM specification and forces downstream users into these options which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to *not* do which you didn't have before).
+Along the breaking releases we have therefore deactivated both of these options and you might therefore need to adopt some import statements accordingly. Note that you still have got the possibility to activate these options in your bundle and/or transpilation pipeline (but now you also have the option to _not_ do which you didn't have before).
 
 ### BigInt Helpers and API Changes
 
@@ -171,7 +176,7 @@ See: PR [#1517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1517)
 ## 7.1.1 - 2021-09-24
 
 - Fixed a bug in `toType()` helper function to now return `null`/`undefined` for respective input values, PR [#1477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1477)
--  Add note discouraging use of `EIP-1191` format checksums when using `toChecksumAddress()` (breaks checksum backwards compatibility in current form), PR [#1463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1463)
+- Add note discouraging use of `EIP-1191` format checksums when using `toChecksumAddress()` (breaks checksum backwards compatibility in current form), PR [#1463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1463)
 
 ## 7.1.0 - 2021-07-08
 
@@ -262,7 +267,7 @@ const account = new Account(
   new BN(0), // nonce, default: 0
   new BN(10).pow(new BN(18)), // balance, default: 0
   undefined, // stateRoot, default: KECCAK256_RLP (hash of RLP of null)
-  undefined, // codeHash, default: KECCAK256_NULL (hash of null)
+  undefined // codeHash, default: KECCAK256_NULL (hash of null)
 )
 ```
 
@@ -300,7 +305,7 @@ import { Address } from 'ethereumjs-util'
 
 const pubKey = Buffer.from(
   '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-  'hex',
+  'hex'
 )
 const address = Address.fromPublicKey(pubKey)
 ```

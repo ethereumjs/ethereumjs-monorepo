@@ -1,10 +1,11 @@
-import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
-import { VM } from '../../../src/vm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { EVM } from '@ethereumjs/evm'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')
@@ -116,7 +117,7 @@ tape('EIP-3529 tests', (t) => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -183,7 +184,7 @@ tape('EIP-3529 tests', (t) => {
 
     let startGas: bigint
     let finalGas: bigint
-    ;(<EVM>vm.evm).on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }

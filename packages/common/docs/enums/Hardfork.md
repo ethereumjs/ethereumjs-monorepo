@@ -4,7 +4,7 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [ArrowGlacier](Hardfork.md#arrowglacier)
 - [Berlin](Hardfork.md#berlin)
@@ -12,6 +12,7 @@
 - [Chainstart](Hardfork.md#chainstart)
 - [Constantinople](Hardfork.md#constantinople)
 - [Dao](Hardfork.md#dao)
+- [GrayGlacier](Hardfork.md#grayglacier)
 - [Homestead](Hardfork.md#homestead)
 - [Istanbul](Hardfork.md#istanbul)
 - [London](Hardfork.md#london)
@@ -23,162 +24,172 @@
 - [SpuriousDragon](Hardfork.md#spuriousdragon)
 - [TangerineWhistle](Hardfork.md#tangerinewhistle)
 
-## Enumeration members
+## Enumeration Members
 
 ### ArrowGlacier
 
-• **ArrowGlacier** = `"arrowGlacier"`
+• **ArrowGlacier** = ``"arrowGlacier"``
 
 #### Defined in
 
-[packages/common/src/index.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L81)
+[packages/common/src/enums.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L23)
 
 ___
 
 ### Berlin
 
-• **Berlin** = `"berlin"`
+• **Berlin** = ``"berlin"``
 
 #### Defined in
 
-[packages/common/src/index.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L79)
+[packages/common/src/enums.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L21)
 
 ___
 
 ### Byzantium
 
-• **Byzantium** = `"byzantium"`
+• **Byzantium** = ``"byzantium"``
 
 #### Defined in
 
-[packages/common/src/index.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L74)
+[packages/common/src/enums.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L16)
 
 ___
 
 ### Chainstart
 
-• **Chainstart** = `"chainstart"`
+• **Chainstart** = ``"chainstart"``
 
 #### Defined in
 
-[packages/common/src/index.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L69)
+[packages/common/src/enums.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L11)
 
 ___
 
 ### Constantinople
 
-• **Constantinople** = `"constantinople"`
+• **Constantinople** = ``"constantinople"``
 
 #### Defined in
 
-[packages/common/src/index.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L75)
+[packages/common/src/enums.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L17)
 
 ___
 
 ### Dao
 
-• **Dao** = `"dao"`
+• **Dao** = ``"dao"``
 
 #### Defined in
 
-[packages/common/src/index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L71)
+[packages/common/src/enums.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L13)
+
+___
+
+### GrayGlacier
+
+• **GrayGlacier** = ``"grayGlacier"``
+
+#### Defined in
+
+[packages/common/src/enums.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L24)
 
 ___
 
 ### Homestead
 
-• **Homestead** = `"homestead"`
+• **Homestead** = ``"homestead"``
 
 #### Defined in
 
-[packages/common/src/index.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L70)
+[packages/common/src/enums.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L12)
 
 ___
 
 ### Istanbul
 
-• **Istanbul** = `"istanbul"`
+• **Istanbul** = ``"istanbul"``
 
 #### Defined in
 
-[packages/common/src/index.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L77)
+[packages/common/src/enums.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L19)
 
 ___
 
 ### London
 
-• **London** = `"london"`
+• **London** = ``"london"``
 
 #### Defined in
 
-[packages/common/src/index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L80)
+[packages/common/src/enums.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L22)
 
 ___
 
 ### Merge
 
-• **Merge** = `"merge"`
+• **Merge** = ``"merge"``
 
 #### Defined in
 
-[packages/common/src/index.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L84)
+[packages/common/src/enums.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L26)
 
 ___
 
 ### MergeForkIdTransition
 
-• **MergeForkIdTransition** = `"mergeForkIdTransition"`
+• **MergeForkIdTransition** = ``"mergeForkIdTransition"``
 
 #### Defined in
 
-[packages/common/src/index.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L83)
+[packages/common/src/enums.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L25)
 
 ___
 
 ### MuirGlacier
 
-• **MuirGlacier** = `"muirGlacier"`
+• **MuirGlacier** = ``"muirGlacier"``
 
 #### Defined in
 
-[packages/common/src/index.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L78)
+[packages/common/src/enums.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L20)
 
 ___
 
 ### Petersburg
 
-• **Petersburg** = `"petersburg"`
+• **Petersburg** = ``"petersburg"``
 
 #### Defined in
 
-[packages/common/src/index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L76)
+[packages/common/src/enums.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L18)
 
 ___
 
 ### Shanghai
 
-• **Shanghai** = `"shanghai"`
+• **Shanghai** = ``"shanghai"``
 
 #### Defined in
 
-[packages/common/src/index.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L82)
+[packages/common/src/enums.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L27)
 
 ___
 
 ### SpuriousDragon
 
-• **SpuriousDragon** = `"spuriousDragon"`
+• **SpuriousDragon** = ``"spuriousDragon"``
 
 #### Defined in
 
-[packages/common/src/index.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L73)
+[packages/common/src/enums.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L15)
 
 ___
 
 ### TangerineWhistle
 
-• **TangerineWhistle** = `"tangerineWhistle"`
+• **TangerineWhistle** = ``"tangerineWhistle"``
 
 #### Defined in
 
-[packages/common/src/index.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L72)
+[packages/common/src/enums.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L14)

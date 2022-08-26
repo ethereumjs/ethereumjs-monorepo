@@ -1,9 +1,11 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
-import { Config } from '../config'
+
 import { Event } from '../types'
+
+import type { Config } from '../config'
+import type { AbstractLevel } from 'abstract-level'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -274,7 +276,7 @@ export class Chain {
       }
       const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByTD: this.headers.td,
+        hardforkByTTD: this.headers.td,
       })
       await this.blockchain.putBlock(block)
       numAdded++
@@ -323,7 +325,7 @@ export class Chain {
       }
       const header = BlockHeader.fromValuesArray(h.raw(), {
         common: this.config.chainCommon,
-        hardforkByTD: this.headers.td,
+        hardforkByTTD: this.headers.td,
       })
       await this.blockchain.putHeader(header)
       numAdded++

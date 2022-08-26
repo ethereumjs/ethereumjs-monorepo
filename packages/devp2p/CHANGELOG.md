@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This change should not directly affect this library but might be relevant since it is not recommended to use different Common library versions between the different EthereumJS libraries.
+
 ## 5.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/CHANGELOG.md)) for the main change set description.
@@ -44,8 +54,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 ## Other Changes
 
-- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030) 
-
+- Added `ESLint` strict boolean expressions linting rule, PR [#2030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2030)
 
 ## 5.0.0-beta.1 - 2022-06-30
 
@@ -75,7 +84,7 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 
 While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
-Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option *not* to, which you didn't have before).
+Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
 
 ### Other Changes
 
@@ -155,7 +164,7 @@ The `ETH` protocol support has been updated to now also support versions `64` an
 
 ### DNS Discovery Support
 
-Node discovery via DNS has been added to quickly acquire testnet (or mainnet) peers from the DNS ENR tree per [EIP-1459](https://eips.ethereum.org/EIPS/eip-1459), see PRs [#1070](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1070), [#1097](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1097) and [#1149](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1149). This allows for easier peer discovery especially on the testnets. Peer search is randomized as being recommended in the EIP and the implementation avoids to download the entire DNS tree at once. 
+Node discovery via DNS has been added to quickly acquire testnet (or mainnet) peers from the DNS ENR tree per [EIP-1459](https://eips.ethereum.org/EIPS/eip-1459), see PRs [#1070](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1070), [#1097](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1097) and [#1149](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1149). This allows for easier peer discovery especially on the testnets. Peer search is randomized as being recommended in the EIP and the implementation avoids to download the entire DNS tree at once.
 
 DNS discovery can be activated in the `DPT` module with the `shouldGetDnsPeers` option, in addition there is a new `shouldFindNeighbours` option allowing to deactivate the classical v4 discovery process. Both discovery methods can be used in conjunction though. DNS Peer discovery can be customized/configured with additional constructor options `dnsRefreshQuantity`, `dnsNetworks` and `dnsAddress`. See [API section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#api) in the README for a description.
 
@@ -175,7 +184,7 @@ DNS discovery can be activated in the `DPT` module with the `shouldGetDnsPeers` 
 - Connection reliability: distribute network traffic on `DPT` additions of new neighbour peers, PR [#1036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1036)
 - Fixed a critical peer data processing bug, PR [#1064](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1064)
 - Added socket destroyed checks on peer message sending to safeguard against stream-was-destroyed error, PR [#1075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1075)
-- `DPT`: fixed undefined array access in ETH._getStatusString() on malformed ETH/64 status msgs, PR [#1029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1029)
+- `DPT`: fixed undefined array access in ETH.\_getStatusString() on malformed ETH/64 status msgs, PR [#1029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1029)
 
 ### Maintenance / Testing / CI
 

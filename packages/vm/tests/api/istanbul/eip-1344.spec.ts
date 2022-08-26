@@ -1,8 +1,9 @@
-import * as tape from 'tape'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '../../../src/vm'
-import { bufferToBigInt } from '@ethereumjs/util'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { bufferToBigInt } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },

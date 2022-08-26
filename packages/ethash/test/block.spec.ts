@@ -1,10 +1,13 @@
-import * as tape from 'tape'
-import { Block, BlockBuffer } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, toBuffer } from '@ethereumjs/util'
-import { Ethash } from '../src'
 import { MemoryLevel } from 'memory-level'
-import { RLP } from 'rlp'
+import * as tape from 'tape'
+
+import { Ethash } from '../src'
+
+import type { BlockBuffer } from '@ethereumjs/block'
 
 const cacheDB = new MemoryLevel()
 
@@ -28,7 +31,7 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
   // Put correct amount of extraData in block extraData field so block can be deserialized
   const values = arrToBufArr(RLP.decode(Uint8Array.from(invalidRlp))) as BlockBuffer
   values[0][12] = Buffer.alloc(32)
-  const invalidBlock = Block.fromValuesArray(values)
+  const invalidBlock = Block.fromValuesArray(values, { common })
   const invalidBlockResult = await e.verifyPOW(invalidBlock)
   t.ok(!invalidBlockResult, 'should be invalid')
 

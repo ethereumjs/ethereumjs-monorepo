@@ -1,6 +1,7 @@
 import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'admin_nodeInfo'
 

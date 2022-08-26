@@ -1,18 +1,22 @@
-import * as tape from 'tape'
-import { NestedUint8Array, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Block, BlockBuffer } from '../src'
+import { RLP } from '@ethereumjs/rlp'
+import { toBuffer, zeros } from '@ethereumjs/util'
+import * as tape from 'tape'
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
+import util from 'util'
+
+import { Block } from '../src'
 import { blockFromRpc } from '../src/from-rpc'
-import * as testnetMerge from './testdata/testnetMerge.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
+
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
+import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
+import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import * as testnetMerge from './testdata/testnetMerge.json'
 
-// explicitly import util, needed for karma-typescript bundling
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import util from 'util'
+import type { BlockBuffer } from '../src'
+import type { NestedUint8Array } from '@ethereumjs/util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -52,10 +56,10 @@ tape('[Block]: block functions', function (t) {
 
     const valuesArray = <BlockBuffer>[headerArray, [], []]
 
-    block = Block.fromValuesArray(valuesArray)
+    block = Block.fromValuesArray(valuesArray, { common })
     st.ok(Object.isFrozen(block), 'block should be frozen by default')
 
-    block = Block.fromValuesArray(valuesArray, { freeze: false })
+    block = Block.fromValuesArray(valuesArray, { common, freeze: false })
     st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
 
     st.end()
@@ -86,12 +90,12 @@ tape('[Block]: block functions', function (t) {
           number: 20, // Future block
         },
       },
-      { common, hardforkByTD: 5001 }
+      { common, hardforkByTTD: 5001 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Merge,
-      'should use hardforkByTD option (td > threshold)'
+      'should use hardforkByTTD option (td > threshold)'
     )
 
     block = Block.fromBlockData(
@@ -101,23 +105,23 @@ tape('[Block]: block functions', function (t) {
           extraData: Buffer.alloc(97),
         },
       },
-      { common, hardforkByTD: 3000 }
+      { common, hardforkByTTD: 3000 }
     )
     st.equal(
       block._common.hardfork(),
       Hardfork.Berlin,
-      'should work with hardforkByTD option (td < threshold)'
+      'should work with hardforkByTTD option (td < threshold)'
     )
 
     try {
-      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )
@@ -186,7 +190,8 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation', async function (st) {
     const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.header as any).transactionsTrie = Buffer.alloc(32)
     try {
@@ -266,14 +271,20 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should return the same block data from raw()', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
-    const blockFromRaw = Block.fromValuesArray(block.raw())
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+      common,
+    })
+    const blockFromRaw = Block.fromValuesArray(block.raw(), { common })
     st.ok(block.hash().equals(blockFromRaw.hash()))
     st.end()
   })
 
   t.test('should test toJSON', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+      common,
+    })
     st.equal(typeof block.toJSON(), 'object')
     st.end()
   })
@@ -304,7 +315,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
       const genesis = Block.fromBlockData({}, { common })
 
       const nextBlockHeaderData = {
@@ -312,9 +323,13 @@ tape('[Block]: block functions', function (t) {
         timestamp: genesis.header.timestamp + BigInt(10),
       }
 
-      const blockWithoutDifficultyCalculation = Block.fromBlockData({
-        header: nextBlockHeaderData,
-      })
+      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const blockWithoutDifficultyCalculation = Block.fromBlockData(
+        {
+          header: nextBlockHeaderData,
+        },
+        { common }
+      )
 
       // test if difficulty defaults to 0
       st.equal(
@@ -329,6 +344,7 @@ tape('[Block]: block functions', function (t) {
           header: nextBlockHeaderData,
         },
         {
+          common,
           calcDifficultyFromHeader: genesis.header,
         }
       )
@@ -354,6 +370,7 @@ tape('[Block]: block functions', function (t) {
           header: noParentHeaderData,
         },
         {
+          common,
           calcDifficultyFromHeader: genesis.header,
         }
       )

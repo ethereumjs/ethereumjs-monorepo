@@ -18,7 +18,7 @@
 
 #### Defined in
 
-[packages/util/src/signature.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L10)
+[signature.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L10)
 
 ___
 
@@ -28,14 +28,14 @@ ___
 
 #### Defined in
 
-[packages/util/src/signature.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L11)
+[signature.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L11)
 
 ___
 
 ### v
 
-• **v**: `number`
+• **v**: `bigint`
 
 #### Defined in
 
-[packages/util/src/signature.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L9)
+[signature.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L9)

@@ -1,12 +1,14 @@
+import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { Common } from '@ethereumjs/common'
+
+import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-import { Chain } from '../../lib/blockchain'
 import { parseCustomParams } from '../../lib/util'
 import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
-import { Log } from '@ethereumjs/evm/dist/types'
+
+import type { Log } from '@ethereumjs/evm/dist/types'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
@@ -74,12 +76,18 @@ tape('[FullEthereumService]', async (t) => {
     let config = new Config({ transports: [] })
     const chain = new Chain({ config })
     let service = new FullEthereumService({ config, chain })
-    t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
-    t.notOk(service.protocols[1], 'no light protocol')
+    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
+    t.notOk(
+      service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
+      'no light protocol'
+    )
     config = new Config({ transports: [], lightserv: true })
     service = new FullEthereumService({ config, chain })
-    t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
-    t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
+    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
+    t.ok(
+      service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
+      'lightserv protocols'
+    )
     t.end()
   })
 

@@ -1,6 +1,1 @@
-module.exports = {
-  extends: "../../config/eslint.js",
-  ignorePatterns: ["examples"],
-  rules: {
-  }
-}
+module.exports = require('../../config/eslint.js')

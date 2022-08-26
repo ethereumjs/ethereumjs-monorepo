@@ -1,6 +1,7 @@
-import * as tape from 'tape'
-import { Address, isFalsy } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Address, isFalsy } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
 import { getEEI } from '../utils'
@@ -56,7 +57,7 @@ tape('Precompiles: hardfork availability', (t) => {
     const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     ECPAIRING = getActivePrecompiles(commonHomestead).get(ECPAIR_AddressStr)!
 
-    if (ECPAIRING != undefined) {
+    if (ECPAIRING !== undefined) {
       st.fail('ECPAIRING is available in homestead while it should not be available')
     } else {
       st.pass('ECPAIRING not available in homestead')

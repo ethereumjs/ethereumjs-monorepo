@@ -1,21 +1,24 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { RLP } from '@ethereumjs/rlp'
 import {
+  MAX_INTEGER,
+  arrToBufArr,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
-  bufferToBigInt,
-  arrToBufArr,
   bufArrToArr,
+  bufferToBigInt,
   ecrecover,
-  MAX_INTEGER,
   toBuffer,
   unpadBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
 import { BaseTransaction } from './baseTransaction'
-import { Common } from '@ethereumjs/common'
+import { Capability } from './types'
 import { checkMaxInitCodeSize } from './util'
+
+import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0
 
@@ -208,7 +211,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    *
    * ```javascript
    * import { bufArrToArr } from '@ethereumjs/util'
-   * import { RLP } from 'rlp'
+   * import { RLP } from '@ethereumjs/rlp'
    * const message = tx.getMessageToSign(false)
    * const serializedMessage = Buffer.from(RLP.encode(bufArrToArr(message))) // use this for the HW wallet input
    * ```

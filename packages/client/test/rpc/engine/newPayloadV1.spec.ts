@@ -1,16 +1,17 @@
-import * as tape from 'tape'
-type Test = tape.Test
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { params, baseRequest, baseSetup, setupChain } from '../helpers'
-import { checkError } from '../util'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
-import blocks = require('../../testdata/blocks/beacon.json')
-import { HttpServer } from 'jayson'
-import { bufferToHex, zeros } from '@ethereumjs/util'
 import { BlockHeader } from '@ethereumjs/block'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Address, bufferToHex, zeros } from '@ethereumjs/util'
+import * as tape from 'tape'
 import * as td from 'testdouble'
+
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import blocks = require('../../testdata/blocks/beacon.json')
+import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { checkError } from '../util'
+
+import type { HttpServer } from 'jayson'
+type Test = tape.Test
 
 const method = 'engine_newPayloadV1'
 

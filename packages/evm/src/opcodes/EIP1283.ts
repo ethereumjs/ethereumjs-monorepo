@@ -1,5 +1,5 @@
-import { Common } from '@ethereumjs/common'
-import { RunState } from './../interpreter'
+import type { RunState } from '../interpreter'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-1283 (Constantinople)

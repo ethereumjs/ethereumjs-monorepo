@@ -1,11 +1,12 @@
 import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { CheckpointTrie, LevelDB } from '../src'
+
+import { Trie } from '../src'
 
 tape('official tests', async function (t) {
   const jsonTests = require('./fixtures/trietest.json').tests
   const testNames = Object.keys(jsonTests)
-  let trie = new CheckpointTrie({ db: new LevelDB() })
+  let trie = new Trie()
 
   for (const testName of testNames) {
     const inputs = jsonTests[testName].in
@@ -20,8 +21,8 @@ tape('official tests', async function (t) {
         await trie.put(Buffer.from(input[0]), input[1])
       }
     }
-    t.equal('0x' + trie.root.toString('hex'), expect)
-    trie = new CheckpointTrie({ db: new LevelDB() })
+    t.equal('0x' + trie.root().toString('hex'), expect)
+    trie = new Trie()
   }
   t.end()
 })
@@ -29,7 +30,7 @@ tape('official tests', async function (t) {
 tape('official tests any order', async function (t) {
   const jsonTests = require('./fixtures/trieanyorder.json').tests
   const testNames = Object.keys(jsonTests)
-  let trie = new CheckpointTrie({ db: new LevelDB() })
+  let trie = new Trie()
   for (const testName of testNames) {
     const test = jsonTests[testName]
     const keys = Object.keys(test.in)
@@ -47,8 +48,8 @@ tape('official tests any order', async function (t) {
 
       await trie.put(Buffer.from(key), Buffer.from(val))
     }
-    t.equal('0x' + trie.root.toString('hex'), test.root)
-    trie = new CheckpointTrie({ db: new LevelDB() })
+    t.equal('0x' + trie.root().toString('hex'), test.root)
+    trie = new Trie()
   }
   t.end()
 })

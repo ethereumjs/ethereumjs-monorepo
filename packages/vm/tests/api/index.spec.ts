@@ -1,20 +1,21 @@
-import * as tape from 'tape'
-import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
+// explicitly import util and buffer,
+// needed for karma-typescript bundling
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
+import * as tape from 'tape'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import { VM } from '../../src/vm'
 import { isRunningInKarma } from '../util'
-import { setupVM } from './utils'
+
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
+import { setupVM } from './utils'
 
-// explicitly import util and buffer,
-// needed for karma-typescript bundling
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { VMOpts } from '../../src'
+import type { VMOpts } from '../../src'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
  * Tests for the main constructor API and
@@ -36,18 +37,18 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
     const vm = await VM.create()
     st.ok(vm.stateManager)
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), Hardfork.London, 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.Merge, 'it has correct default HF')
     st.end()
   })
 
   t.test('should be able to activate precompiles', async (st) => {
     const vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has different root'
     )
@@ -88,10 +89,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should only accept valid chain and fork', async (st) => {
     let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     let vm = await VM.create({ common })
-    st.equal(
-      (vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'),
-      BigInt(500)
-    )
+    st.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
@@ -144,26 +142,26 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   )
 })
 
-tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain', (t) => {
-  t.test('hardforkByBlockNumber, hardforkByTD', async (st) => {
+tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain', (t) => {
+  t.test('hardforkByBlockNumber, hardforkByTTD', async (st) => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, hardforkByBlockNumber: true })
     st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
 
-    vm = await VM.create({ common, hardforkByTD: 5001 })
-    st.equal((vm as any)._hardforkByTD, BigInt(5001), 'should set hardforkByTD option')
+    vm = await VM.create({ common, hardforkByTTD: 5001 })
+    st.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
 
     try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
       st.fail('should not reach this')
     } catch (e: any) {
       const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
       st.ok(
         e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
         ),
         msg
       )
@@ -175,7 +173,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
   t.test('should instantiate', async (st) => {
     const vm = await setupVM()
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )
@@ -218,19 +216,19 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     //
 
     opts = {
-      hardforkByTD: BigInt(5001),
+      hardforkByTTD: BigInt(5001),
     }
     vm = await VM.create(opts)
     vmCopy = await vm.copy()
     st.deepEqual(
-      (vmCopy as any)._hardforkByTD,
+      (vmCopy as any)._hardforkByTTD,
       BigInt(5001),
-      'copy() correctly passes hardforkByTD option'
+      'copy() correctly passes hardforkByTTD option'
     )
     st.deepEqual(
       (vm as any)._hardforkByBlockNumber,
       (vmCopy as any)._hardforkByBlockNumber,
-      'hardforkByTD options match'
+      'hardforkByTTD options match'
     )
   })
   tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
@@ -247,7 +245,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     /*
         idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
               when calling from the activated VM. Explicitly check that the difference in gas cost is equal to the common callNewAccount gas.
-        code:             remarks: (top of the stack is at the zero index)       
+        code:             remarks: (top of the stack is at the zero index)
           PUSH1 0x00
           DUP1
           DUP1
@@ -265,7 +263,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

@@ -4,38 +4,38 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [Casper](ConsensusAlgorithm.md#casper)
 - [Clique](ConsensusAlgorithm.md#clique)
 - [Ethash](ConsensusAlgorithm.md#ethash)
 
-## Enumeration members
+## Enumeration Members
 
 ### Casper
 
-• **Casper** = `"casper"`
+• **Casper** = ``"casper"``
 
 #### Defined in
 
-[packages/common/src/index.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L96)
+[packages/common/src/enums.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L39)
 
 ___
 
 ### Clique
 
-• **Clique** = `"clique"`
+• **Clique** = ``"clique"``
 
 #### Defined in
 
-[packages/common/src/index.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L95)
+[packages/common/src/enums.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L38)
 
 ___
 
 ### Ethash
 
-• **Ethash** = `"ethash"`
+• **Ethash** = ``"ethash"``
 
 #### Defined in
 
-[packages/common/src/index.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L94)
+[packages/common/src/enums.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L37)

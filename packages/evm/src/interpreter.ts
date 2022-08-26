@@ -1,25 +1,26 @@
-import { debug as createDebugLogger } from 'debug'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
-  Account,
-  Address,
+  MAX_UINT64,
   bigIntToHex,
   bufferToBigInt,
   intToHex,
   isFalsy,
   isTruthy,
-  MAX_UINT64,
 } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
 
+import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
-import { Stack } from './stack'
-import { Opcode, OpHandler, AsyncOpHandler, trap } from './opcodes'
-import { EOF } from './eof'
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import { EVM, EVMResult } from './evm'
 import { Message } from './message'
-import { Log } from './types'
-import { EEIInterface, Block } from './types'
+import { trap } from './opcodes'
+import { Stack } from './stack'
+
+import type { EVM, EVMResult } from './evm'
+import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
+import type { Block, EEIInterface, Log } from './types'
+import type { Common } from '@ethereumjs/common'
+import type { Account, Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -138,7 +139,7 @@ export class Interpreter {
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,
-      env: env,
+      env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
@@ -251,7 +252,7 @@ export class Interpreter {
       gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._evm.listenerCount('step') > 0 || this._evm.DEBUG) {
+    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)

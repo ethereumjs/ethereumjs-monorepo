@@ -45,7 +45,7 @@ ___
 
 ### chainId
 
-• `Optional` **chainId**: `BNLike`
+• `Optional` **chainId**: `BigIntLike`
 
 The transaction's chain ID
 
@@ -73,7 +73,7 @@ ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: `BNLike`
+• `Optional` **gasLimit**: `BigIntLike`
 
 The transaction's gas limit.
 
@@ -89,7 +89,7 @@ ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: `BNLike`
+• `Optional` **gasPrice**: `BigIntLike`
 
 The transaction's gas price.
 
@@ -105,7 +105,7 @@ ___
 
 ### nonce
 
-• `Optional` **nonce**: `BNLike`
+• `Optional` **nonce**: `BigIntLike`
 
 The transaction's nonce.
 
@@ -121,7 +121,7 @@ ___
 
 ### r
 
-• `Optional` **r**: `BNLike`
+• `Optional` **r**: `BigIntLike`
 
 EC signature parameter.
 
@@ -137,7 +137,7 @@ ___
 
 ### s
 
-• `Optional` **s**: `BNLike`
+• `Optional` **s**: `BigIntLike`
 
 EC signature parameter.
 
@@ -169,7 +169,7 @@ ___
 
 ### type
 
-• `Optional` **type**: `BNLike`
+• `Optional` **type**: `BigIntLike`
 
 The transaction type
 
@@ -185,7 +185,7 @@ ___
 
 ### v
 
-• `Optional` **v**: `BNLike`
+• `Optional` **v**: `BigIntLike`
 
 EC recovery ID.
 
@@ -201,7 +201,7 @@ ___
 
 ### value
 
-• `Optional` **value**: `BNLike`
+• `Optional` **value**: `BigIntLike`
 
 The amount of Ether sent.
 

@@ -1,8 +1,12 @@
-import * as tape from 'tape'
 import { Address } from '@ethereumjs/util'
-import { PrecompileInput } from '../src/precompiles'
-import { EVM, ExecResult } from '../src/evm'
+import * as tape from 'tape'
+
+import { EVM } from '../src/evm'
+
 import { getEEI } from './utils'
+
+import type { ExecResult } from '../src/evm'
+import type { PrecompileInput } from '../src/precompiles'
 
 const sender = new Address(Buffer.from('44'.repeat(20), 'hex'))
 const newPrecompile = new Address(Buffer.from('ff'.repeat(20), 'hex'))

@@ -13,7 +13,7 @@
 - [balance](Account.md#balance)
 - [codeHash](Account.md#codehash)
 - [nonce](Account.md#nonce)
-- [stateRoot](Account.md#stateroot)
+- [storageRoot](Account.md#storageroot)
 
 ### Methods
 
@@ -29,7 +29,7 @@
 
 ### constructor
 
-• **new Account**(`nonce?`, `balance?`, `stateRoot?`, `codeHash?`)
+• **new Account**(`nonce?`, `balance?`, `storageRoot?`, `codeHash?`)
 
 This constructor assigns and validates the values.
 Use the static factory methods to assist in creating an Account from varying data types.
@@ -38,24 +38,24 @@ Use the static factory methods to assist in creating an Account from varying dat
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `nonce` | [`BN`](BN.md) | `undefined` |
-| `balance` | [`BN`](BN.md) | `undefined` |
-| `stateRoot` | `Buffer` | `KECCAK256_RLP` |
+| `nonce` | `bigint` | `_0n` |
+| `balance` | `bigint` | `_0n` |
+| `storageRoot` | `Buffer` | `KECCAK256_RLP` |
 | `codeHash` | `Buffer` | `KECCAK256_NULL` |
 
 #### Defined in
 
-[packages/util/src/account.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L60)
+[account.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L68)
 
 ## Properties
 
 ### balance
 
-• **balance**: [`BN`](BN.md)
+• **balance**: `bigint`
 
 #### Defined in
 
-[packages/util/src/account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
+[account.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L33)
 
 ___
 
@@ -65,27 +65,27 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)
+[account.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L35)
 
 ___
 
 ### nonce
 
-• **nonce**: [`BN`](BN.md)
+• **nonce**: `bigint`
 
 #### Defined in
 
-[packages/util/src/account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L24)
+[account.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L32)
 
 ___
 
-### stateRoot
+### storageRoot
 
-• **stateRoot**: `Buffer`
+• **storageRoot**: `Buffer`
 
 #### Defined in
 
-[packages/util/src/account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)
+[account.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L34)
 
 ## Methods
 
@@ -101,7 +101,7 @@ Returns a `Boolean` determining if the account is a contract.
 
 #### Defined in
 
-[packages/util/src/account.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L111)
+[account.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L114)
 
 ___
 
@@ -119,7 +119,7 @@ account emptiness in [EIP-161](https://eips.ethereum.org/EIPS/eip-161):
 
 #### Defined in
 
-[packages/util/src/account.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L120)
+[account.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L123)
 
 ___
 
@@ -135,7 +135,7 @@ Returns a Buffer Array of the raw Buffers for the account, in order.
 
 #### Defined in
 
-[packages/util/src/account.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L92)
+[account.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L95)
 
 ___
 
@@ -151,7 +151,7 @@ Returns the RLP serialization of the account as a `Buffer`.
 
 #### Defined in
 
-[packages/util/src/account.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L104)
+[account.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L107)
 
 ___
 
@@ -171,7 +171,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L29)
+[account.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L37)
 
 ___
 
@@ -191,7 +191,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L40)
+[account.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L48)
 
 ___
 
@@ -211,4 +211,4 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L50)
+[account.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L58)

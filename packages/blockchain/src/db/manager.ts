@@ -1,10 +1,14 @@
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { AbstractLevel } from 'abstract-level'
+
 import { Cache } from './cache'
-import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+import { DBOp, DBTarget } from './operation'
+
+import type { DBOpData, DatabaseKey } from './operation'
+import type { BlockBodyBuffer, BlockBuffer, BlockOptions } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { AbstractLevel } from 'abstract-level'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'
@@ -115,7 +119,7 @@ export class DBManager {
     if (number === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -138,7 +142,7 @@ export class DBManager {
       opts.hardforkByBlockNumber = true
     } else {
       const parentHash = await this.numberToHash(blockNumber - BigInt(1))
-      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
+      opts.hardforkByTTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }

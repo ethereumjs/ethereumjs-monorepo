@@ -1,4 +1,4 @@
-import { DB, BatchDBOp, Checkpoint } from '../types'
+import type { BatchDBOp, Checkpoint, DB } from '../types'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -20,7 +20,7 @@ export class CheckpointDB implements DB {
   /**
    * Is the DB during a checkpoint phase?
    */
-  get isCheckpoint() {
+  hasCheckpoints() {
     return this.checkpoints.length > 0
   }
 
@@ -37,10 +37,10 @@ export class CheckpointDB implements DB {
    */
   async commit() {
     const { keyValueMap } = this.checkpoints.pop()!
-    if (!this.isCheckpoint) {
+    if (!this.hasCheckpoints()) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      keyValueMap.forEach(function (value, key) {
+      for (const [key, value] of keyValueMap.entries()) {
         if (value === null) {
           batchOp.push({
             type: 'del',
@@ -53,12 +53,14 @@ export class CheckpointDB implements DB {
             value,
           })
         }
-      })
+      }
       await this.batch(batchOp)
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      keyValueMap.forEach((value, key) => currentKeyValueMap.set(key, value))
+      for (const [key, value] of keyValueMap.entries()) {
+        currentKeyValueMap.set(key, value)
+      }
     }
   }
 
@@ -71,7 +73,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
@@ -84,7 +86,7 @@ export class CheckpointDB implements DB {
     // Nothing has been found in cache, look up from disk
 
     const value = await this.db.get(key)
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
     }
@@ -93,10 +95,10 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // put value in cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
     } else {
@@ -105,10 +107,10 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async del(key: Buffer): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       // delete the value in the current cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
     } else {
@@ -118,10 +120,10 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
-    if (this.isCheckpoint) {
+    if (this.hasCheckpoints()) {
       for (const op of opStack) {
         if (op.type === 'put') {
           await this.put(op.key, op.value)
@@ -135,7 +137,7 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   copy(): CheckpointDB {
     return new CheckpointDB(this.db)

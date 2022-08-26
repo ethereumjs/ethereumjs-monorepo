@@ -9,17 +9,17 @@
 - [balance](AccountData.md#balance)
 - [codeHash](AccountData.md#codehash)
 - [nonce](AccountData.md#nonce)
-- [stateRoot](AccountData.md#stateroot)
+- [storageRoot](AccountData.md#storageroot)
 
 ## Properties
 
 ### balance
 
-• `Optional` **balance**: [`BigIntLike`](../README.md#bnlike)
+• `Optional` **balance**: [`BigIntLike`](../README.md#bigintlike)
 
 #### Defined in
 
-[packages/util/src/account.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L18)
+[account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)
 
 ___
 
@@ -29,24 +29,24 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L20)
+[account.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L28)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: [`BNLike`](../README.md#bnlike)
+• `Optional` **nonce**: [`BigIntLike`](../README.md#bigintlike)
 
 #### Defined in
 
-[packages/util/src/account.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L17)
+[account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
 
 ___
 
-### stateRoot
+### storageRoot
 
-• `Optional` **stateRoot**: [`BufferLike`](../README.md#bufferlike)
+• `Optional` **storageRoot**: [`BufferLike`](../README.md#bufferlike)
 
 #### Defined in
 
-[packages/util/src/account.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L19)
+[account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)

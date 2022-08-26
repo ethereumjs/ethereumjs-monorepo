@@ -15,14 +15,14 @@ The options for initializing a [Transaction](../classes/Transaction.md).
 
 ### common
 
-• `Optional` **common**: `default`
+• `Optional` **common**: `Common`
 
-A {@link Common} object defining the chain and hardfork for the transaction.
+A Common object defining the chain and hardfork for the transaction.
 
 Object will be internally copied so that tx behavior don't incidentally
 change on future HF changes.
 
-Default: {@link Common} object set to `mainnet` and the default hardfork as defined in the {@link Common} class.
+Default: Common object set to `mainnet` and the default hardfork as defined in the Common class.
 
 Current default hardfork: `istanbul`
 
@@ -41,7 +41,7 @@ strong additional security guarantees on the consistency of the tx parameters.
 It also enables tx hash caching when the `hash()` method is called multiple times.
 
 If you need to deactivate the tx freeze - e.g. because you want to subclass tx and
-add aditional properties - it is strongly encouraged that you do the freeze yourself
+add additional properties - it is strongly encouraged that you do the freeze yourself
 within your code instead.
 
 Default: true

@@ -1,12 +1,14 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bufferToHex } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
 import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_call'
@@ -65,7 +67,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)
@@ -103,6 +105,13 @@ tape(`${method}: call with valid arguments`, async (t) => {
   expectRes = (res: any) => {
     const msg = 'should return the correct return value with no gas limit provided'
     t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, [{ gasLimit, data }, 'latest'])
+  expectRes = (res: any) => {
+    const msg = `should let run call without 'to' for contract creation`
+    t.equal(res.body.result, bufferToHex(result.results[0].execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })

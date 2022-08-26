@@ -1,13 +1,15 @@
 import * as events from 'events'
-import {
-  Protocol,
+
+import type { Config } from '../../config'
+import type {
   BoundProtocol,
   EthProtocolMethods,
   LesProtocolMethods,
+  Protocol,
   Sender,
+  SnapProtocolMethods,
 } from '../protocol'
-import { Server } from '../server'
-import { Config } from '../../config'
+import type { Server } from '../server'
 
 export interface PeerOptions {
   /* Config */
@@ -57,6 +59,7 @@ export class Peer extends events.EventEmitter {
 
   // Dynamically bound protocol properties
   public eth: (BoundProtocol & EthProtocolMethods) | undefined
+  public snap: (BoundProtocol & SnapProtocolMethods) | undefined
   public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**
@@ -131,9 +134,9 @@ export class Peer extends events.EventEmitter {
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    this.bound.forEach(async (bound) => {
+    for (const bound of this.bound.values()) {
       bound.handleMessageQueue()
-    })
+    }
   }
 
   toString(withFullId = false): string {

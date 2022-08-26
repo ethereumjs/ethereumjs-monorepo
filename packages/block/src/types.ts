@@ -1,8 +1,12 @@
-import { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
-import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-
+import type { BlockHeader } from './header'
+import type { Common } from '@ethereumjs/common'
+import type {
+  AccessListEIP2930TxData,
+  FeeMarketEIP1559TxData,
+  JsonTx,
+  TxData,
+} from '@ethereumjs/tx'
+import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -18,7 +22,7 @@ export interface BlockOptions {
    * Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
    * hardfork in the {@link Common} class.
    *
-   * Current default hardfork: `london`
+   * Current default hardfork: `merge`
    */
   common?: Common
   /**
@@ -33,11 +37,11 @@ export interface BlockOptions {
    * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
    * and determines the HF by both the block number and the TD.
    *
-   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
+   * Since the TTD is only a threshold the block number will in doubt take precedence (imagine
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BigIntLike
+  hardforkByTTD?: BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
@@ -64,6 +68,10 @@ export interface BlockOptions {
    * Will throw if provided on a non-PoA chain.
    */
   cliqueSigner?: Buffer
+  /**
+   *  Skip consensus format validation checks on header if set. Defaults to false.
+   */
+  skipConsensusFormatValidation?: boolean
 }
 
 /**

@@ -14,18 +14,15 @@ const newCorePackageJson = {
   ...corePackageJson,
   dependencies: {
     ...corePackageJson.dependencies,
-    ...resolutions
-  }
+    ...resolutions,
+  },
 }
 
-fs.writeFileSync(
-  corePackageJsonLocation,
-  JSON.stringify(newCorePackageJson, null, 2)
-)
+fs.writeFileSync(corePackageJsonLocation, JSON.stringify(newCorePackageJson, null, 2))
 
 /*
  * resolutions workaround notes:
- * 
+ *
  * `@types/node`:
  * yarn is picking up @types/node v16.x that the ci is running on,
  * so pin the hardhat version to the ethereumjs version
@@ -38,7 +35,7 @@ fs.writeFileSync(
  * named without a reference to 'ethereumjs-util/node_modules/@types/bn.js'.
  * This is likely not portable. A type annotation is necessary.
  * ```
-*/
+ */
 const rootPackageJsonLocation = `${process.cwd()}/hardhat/package.json`
 const rootPackageJson = require(rootPackageJsonLocation)
 
@@ -47,11 +44,8 @@ const newRootPackageJson = {
   resolutions: {
     ...rootPackageJson.resolutions,
     '@types/node': '^10.17.24',
-    '@types/bn.js': '^5.1.0'
-  }
+    '@types/bn.js': '^5.1.0',
+  },
 }
 
-fs.writeFileSync(
-  rootPackageJsonLocation,
-  JSON.stringify(newRootPackageJson, null, 2)
-)
+fs.writeFileSync(rootPackageJsonLocation, JSON.stringify(newRootPackageJson, null, 2))

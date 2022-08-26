@@ -1,10 +1,12 @@
-import * as tape from 'tape'
-import { Address } from '@ethereumjs/util'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createAccount, isRunningInKarma } from './utils'
+import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { VmState } from '../../src/eei/vmState'
+
+import { createAccount, isRunningInKarma } from './utils'
 
 const StateManager = DefaultStateManager
 
@@ -42,7 +44,7 @@ tape('vmState', (t) => {
       'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
       'hex'
     )
-    const stateManager = new StateManager({ common })
+    const stateManager = new StateManager({})
 
     const vmState = new VmState({ stateManager, common })
     const blockchain = await Blockchain.create({ common })
@@ -67,10 +69,6 @@ tape('vmState', (t) => {
         Buffer.from('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d', 'hex'),
       ],
       [
-        Chain.Kovan,
-        Buffer.from('2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2', 'hex'),
-      ],
-      [
         Chain.Goerli,
         Buffer.from('5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008', 'hex'),
       ],
@@ -81,8 +79,8 @@ tape('vmState', (t) => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
-      const stateManager = new DefaultStateManager({ common })
+      const common = new Common({ chain, hardfork: Hardfork.Chainstart })
+      const stateManager = new DefaultStateManager({})
       const vmState = new VmState({ stateManager, common })
 
       const blockchain = await Blockchain.create({ common })

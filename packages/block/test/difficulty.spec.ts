@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { Chain, Common } from '@ethereumjs/common'
 import { bufferToInt } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { Block } from '../src'
 
 function runDifficultyTests(
@@ -54,7 +55,7 @@ tape('[Header]: difficulty tests', (t) => {
       const testData = hardforkTestData[hardfork]
       for (const testName in testData) {
         const test = testData[testName]
-        const common = new Common({ chain: Chain.Mainnet, hardfork: hardfork })
+        const common = new Common({ chain: Chain.Mainnet, hardfork })
         const blockOpts = { common }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = Block.fromBlockData(

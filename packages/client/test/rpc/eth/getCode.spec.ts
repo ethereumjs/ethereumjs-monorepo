@@ -1,12 +1,14 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
 import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getCode'
@@ -82,7 +84,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)

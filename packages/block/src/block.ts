@@ -1,18 +1,20 @@
+import { ConsensusType } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex, isTruthy } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { arrToBufArr, bufArrToArr, KECCAK256_RLP, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Common, ConsensusType } from '@ethereumjs/common'
-import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
+
+import { BlockHeader } from './header'
+
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { Common } from '@ethereumjs/common'
+import type {
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capability,
+  TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer } from './types'
 
 /**
  * An object that represents the block.
@@ -54,8 +56,8 @@ export class Block {
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // Uncles are obsolete post-merge (no use for hardforkByTD)
-      hardforkByTD: undefined,
+      // Uncles are obsolete post-merge (no use for hardforkByTTD)
+      hardforkByTTD: undefined,
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -118,7 +120,7 @@ export class Block {
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
     }
-    if (isTruthy(uncleOpts.hardforkByTD)) {
+    if (isTruthy(uncleOpts.hardforkByTTD)) {
       delete uncleOpts.hardforkByBlockNumber
     }
     for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
@@ -222,10 +224,10 @@ export class Block {
       return result
     }
 
-    if (this.txTrie.root.equals(KECCAK256_RLP)) {
+    if (this.txTrie.root().equals(KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root.equals(this.header.transactionsTrie)
+    result = this.txTrie.root().equals(this.header.transactionsTrie)
     return result
   }
 
@@ -239,7 +241,8 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    this.transactions.forEach((tx, i) => {
+    // eslint-disable-next-line prefer-const
+    for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -257,7 +260,7 @@ export class Block {
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
-    })
+    }
 
     return stringError ? errors : errors.length === 0
   }

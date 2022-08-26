@@ -1,21 +1,24 @@
-import { Block, HeaderData } from '@ethereumjs/block'
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
-import { RLP } from 'rlp'
-import { Trie } from '@ethereumjs/trie'
+import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
 
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { short } from '../../util'
 import { PendingBlock } from '../../miner'
+import { short } from '../../util'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { CLConnectionManager } from '../util/CLConnectionManager'
-import type { VM } from '@ethereumjs/vm'
-import type { EthereumClient } from '../../client'
+import { middleware, validators } from '../validation'
+
 import type { Chain } from '../../blockchain'
-import type { VMExecution } from '../../execution'
+import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
+import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
+import type { HeaderData } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -133,7 +136,7 @@ const txsTrieRoot = async (txs: TypedTransaction[]) => {
   for (const [i, tx] of txs.entries()) {
     await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
-  return trie.root
+  return trie.root()
 }
 
 /**
@@ -163,9 +166,8 @@ const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => 
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const td = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
-  if (td === undefined || td === null) return false
-  const ttd = BigInt(td)
+  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+  if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
   // Block is terminal if its td >= ttd and its parent td < ttd.
@@ -222,7 +224,7 @@ const assembleBlock = async (
   try {
     block = Block.fromBlockData(
       { header, transactions: txs },
-      { common, hardforkByTD: chain.headers.td }
+      { common, hardforkByTTD: chain.headers.td }
     )
 
     // Verify blockHash matches payload
@@ -436,7 +438,11 @@ export class Engine {
       for (const [i, block] of blocks.entries()) {
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
-        await this.execution.runWithoutSetHead({ block, root, hardforkByTD: this.chain.headers.td })
+        await this.execution.runWithoutSetHead({
+          block,
+          root,
+          hardforkByTTD: this.chain.headers.td,
+        })
       }
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
@@ -508,7 +514,7 @@ export class Engine {
             headBlock.hash()
           )}`
         )
-        this.service.beaconSync?.setHead(headBlock)
+        await this.service.beaconSync?.setHead(headBlock)
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }
@@ -689,17 +695,17 @@ export class Engine {
   ): Promise<TransitionConfigurationV1> {
     this.connectionManager.updateStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const td = this.chain.config.chainCommon.hardforkTD(Hardfork.Merge)
-    if (td === undefined || td === null) {
+    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    if (ttd === undefined || ttd === null) {
       throw {
         code: INTERNAL_ERROR,
         message: 'terminalTotalDifficulty not set internally',
       }
     }
-    if (td !== BigInt(terminalTotalDifficulty)) {
+    if (ttd !== BigInt(terminalTotalDifficulty)) {
       throw {
         code: INVALID_PARAMS,
-        message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
+        message: `terminalTotalDifficulty set to ${ttd}, received ${parseInt(
           terminalTotalDifficulty
         )}`,
       }

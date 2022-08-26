@@ -1,7 +1,9 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import * as tape from 'tape'
+
 import { Blockchain } from '../src'
+
 import * as testnet from './testdata/testnet.json'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
@@ -19,7 +21,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
     const block = Block.fromBlockData(
       {
         header: {
-          number: number,
+          number,
           parentHash: blocks[number - 1].hash(),
           timestamp: blocks[number - 1].header.timestamp + BigInt(1),
           gasLimit: number >= londonBlockNumber ? BigInt(10000) : BigInt(5000),
@@ -29,7 +31,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        hardforkByTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
+        hardforkByTTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
       }
     )
     blocks.push(block)
@@ -41,7 +43,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
     name: 'merge',
-    td: 1313600,
+    ttd: BigInt(1313600),
     block: null,
   }
   const scenarios = [
@@ -79,15 +81,19 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())
     t.equal(td, BigInt(1313601), 'should have calculated the correct post-Merge total difficulty')
 
-    const powBlock = Block.fromBlockData({
-      header: {
-        number: 16,
-        difficulty: BigInt(1),
-        parentHash: latestHeader.hash(),
-        timestamp: latestHeader.timestamp + BigInt(1),
-        gasLimit: BigInt(10000),
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const powBlock = Block.fromBlockData(
+      {
+        header: {
+          number: 16,
+          difficulty: BigInt(1),
+          parentHash: latestHeader.hash(),
+          timestamp: latestHeader.timestamp + BigInt(1),
+          gasLimit: BigInt(10000),
+        },
       },
-    })
+      { common }
+    )
     try {
       await blockchain.putBlock(powBlock)
       t.fail('should throw when inserting PoW block')

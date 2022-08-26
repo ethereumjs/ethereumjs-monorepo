@@ -1,7 +1,10 @@
-import * as tape from 'tape'
-import { Address, AddressLike, BigIntLike, BufferLike, toBuffer } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Address, toBuffer } from '@ethereumjs/util'
+import * as tape from 'tape'
+
 import { Transaction } from '../src'
+
+import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: string): AddressLike[] {

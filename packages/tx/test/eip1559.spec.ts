@@ -1,7 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
 import * as tape from 'tape'
+
 import { FeeMarketEIP1559Transaction } from '../src'
 
 const testdata = require('./json/eip1559.json') // Source: Besu
@@ -136,7 +137,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
-      get: function () {
+      get() {
         return newCommon
       },
     })

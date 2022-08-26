@@ -1,14 +1,9 @@
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
+import { Account, isHexPrefixed, isTruthy, toBuffer, unpadBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import {
-  Account,
-  isHexPrefixed,
-  toBuffer,
-  unpadBuffer,
-  PrefixedHexString,
-  isTruthy,
-} from '@ethereumjs/util'
-import { RLP } from 'rlp'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
 
@@ -26,7 +21,7 @@ export interface GenesisState {
  * Derives the stateRoot of the genesis block based on genesis allocations
  */
 export async function genesisStateRoot(genesisState: GenesisState) {
-  const trie = new Trie()
+  const trie = new Trie({ useKeyHashing: true })
   for (const [key, value] of Object.entries(genesisState)) {
     const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
     const account = new Account()
@@ -53,10 +48,10 @@ export async function genesisStateRoot(genesisState: GenesisState) {
           )
           await storageTrie.put(storageKey, storageVal)
         }
-        account.stateRoot = storageTrie.root
+        account.storageRoot = storageTrie.root()
       }
     }
     await trie.put(address, account.serialize())
   }
-  return trie.root
+  return trie.root()
 }

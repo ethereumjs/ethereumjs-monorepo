@@ -1,6 +1,7 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
-import { toBuffer, setLengthLeft, bufferToHex, bufferToInt, bufferToBigInt } from './bytes'
+import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
+
+import { bufferToBigInt, bufferToHex, bufferToInt, setLengthLeft, toBuffer } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBuffer } from './helpers'
 
@@ -45,7 +46,7 @@ function isValidSigRecovery(recovery: bigint): boolean {
 
 /**
  * ECDSA public key recovery from signature.
- * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+ * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Recovered public key
  */
 export const ecrecover = function (
@@ -67,7 +68,7 @@ export const ecrecover = function (
 
 /**
  * Convert signature parameters into the format of `eth_sign` RPC method.
- * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+ * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Signature
  */
 export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
@@ -82,7 +83,7 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: big
 
 /**
  * Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
- * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+ * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Signature
  */
 export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
@@ -142,7 +143,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
 
 /**
  * Validate a ECDSA signature.
- * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+ * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function (

@@ -1,10 +1,12 @@
+import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
 import * as td from 'testdouble'
-import { multiaddr } from 'multiaddr'
+
 import { Config } from '../../../lib/config'
-import { Protocol } from '../../../lib/net/protocol'
 import { Event } from '../../../lib/types'
-import { Libp2pPeer } from '../../../lib/net/peer'
+
+import type { Libp2pPeer } from '../../../lib/net/peer'
+import type { Protocol } from '../../../lib/net/protocol'
 
 tape('[Libp2pPeer]', async (t) => {
   const _PeerId = td.replace('peer-id')

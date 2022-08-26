@@ -1,12 +1,18 @@
-import * as PeerId from 'peer-id'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import { keys } from 'libp2p-crypto'
-import { Multiaddr, multiaddr } from 'multiaddr'
-import { Event, Libp2pConnection as Connection } from '../../types'
-import { Libp2pNode } from '../peer/libp2pnode'
-import { Libp2pPeer } from '../peer'
-import { Server, ServerOptions } from './server'
 import { isTruthy } from '@ethereumjs/util'
+// eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
+import { keys } from 'libp2p-crypto'
+import { multiaddr } from 'multiaddr'
+import * as PeerId from 'peer-id'
+
+import { Event } from '../../types'
+import { Libp2pPeer } from '../peer'
+import { Libp2pNode } from '../peer/libp2pnode'
+
+import { Server } from './server'
+
+import type { Libp2pConnection as Connection } from '../../types'
+import type { ServerOptions } from './server'
+import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */
@@ -60,7 +66,7 @@ export class Libp2pServer extends Server {
         addresses,
         bootnodes: this.bootnodes,
       })
-      this.protocols.forEach(async (p) => {
+      for (const p of this.protocols) {
         const protocol = `/${p.name}/${p.versions[0]}`
         this.node!.handle(protocol, async ({ connection, stream }) => {
           const [peerId] = this.getPeerInfo(connection)
@@ -70,7 +76,7 @@ export class Libp2pServer extends Server {
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
         })
-      })
+      }
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
       const id = peerId.toB58String()

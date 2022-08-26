@@ -20,7 +20,7 @@
     {
       "name": "chainstart",
       "block": 0,
-      "td": 0
+      "ttd": "0"
     },
     {
       "name": "shanghai",

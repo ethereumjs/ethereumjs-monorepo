@@ -1,28 +1,39 @@
-import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import {
-  zeros,
   TWO_POW256,
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
-  setLengthLeft,
-  isTruthy,
   isFalsy,
+  isTruthy,
+  setLengthLeft,
+  zeros,
 } from '@ethereumjs/util'
-import { RLP } from 'rlp'
+import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
+
 import {
-  params,
+  bufReverse,
   fnv,
   fnvBuffer,
-  bufReverse,
-  getEpoc,
   getCacheSize,
+  getEpoc,
   getFullSize,
   getSeed,
+  params,
 } from './util'
-import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
-import { AbstractLevel } from 'abstract-level'
-const xor = require('buffer-xor')
+
+import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { AbstractLevel } from 'abstract-level'
+
+function xor(a: Buffer, b: Buffer) {
+  const len = Math.max(a.length, b.length)
+  const res = Buffer.alloc(len)
+  for (let i = 0; i < len; i++) {
+    res[i] = a[i] ^ b[i]
+  }
+  return res
+}
 
 export type Solution = {
   mixHash: Buffer
@@ -310,7 +321,7 @@ export class Ethash {
           cacheSize: this.cacheSize,
           fullSize: this.fullSize,
           seed: this.seed,
-          cache: cache,
+          cache,
         },
         this.dbOpts
       )

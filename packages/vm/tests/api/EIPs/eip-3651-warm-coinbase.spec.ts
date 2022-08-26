@@ -1,9 +1,10 @@
-import * as tape from 'tape'
-import { VM } from '../../../src/vm'
+import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
-import { Block } from '@ethereumjs/block'
+import * as tape from 'tape'
+
+import { VM } from '../../../src/vm'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -30,7 +31,7 @@ const code = Buffer.from('60008080806001415AF100', 'hex')
 const contractAddress = new Address(Buffer.from('ee'.repeat(20), 'hex'))
 
 async function getVM(common: Common) {
-  const vm = await VM.create({ common: common })
+  const vm = await VM.create({ common })
   const account = await vm.stateManager.getAccount(sender)
   const balance = GWEI * BigInt(21000) * BigInt(10000000)
   account.balance = balance

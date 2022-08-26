@@ -8,9 +8,7 @@ An object with the block header's data represented as strings.
 
 ### Properties
 
-- [baseFee](JsonHeader.md#basefee)
 - [baseFeePerGas](JsonHeader.md#basefeepergas)
-- [bloom](JsonHeader.md#bloom)
 - [coinbase](JsonHeader.md#coinbase)
 - [difficulty](JsonHeader.md#difficulty)
 - [extraData](JsonHeader.md#extradata)
@@ -29,33 +27,13 @@ An object with the block header's data represented as strings.
 
 ## Properties
 
-### baseFee
-
-• `Optional` **baseFee**: `string`
-
-#### Defined in
-
-[types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L171)
-
-___
-
 ### baseFeePerGas
 
 • `Optional` **baseFeePerGas**: `string`
 
 #### Defined in
 
-[types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L164)
-
-___
-
-### bloom
-
-• `Optional` **bloom**: `BufferLike`
-
-#### Defined in
-
-[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L177)
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L151)
 
 ___
 
@@ -65,7 +43,7 @@ ___
 
 #### Defined in
 
-[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L151)
+[types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L138)
 
 ___
 
@@ -75,7 +53,7 @@ ___
 
 #### Defined in
 
-[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L156)
+[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L143)
 
 ___
 
@@ -85,7 +63,7 @@ ___
 
 #### Defined in
 
-[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L161)
+[types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L148)
 
 ___
 
@@ -95,7 +73,7 @@ ___
 
 #### Defined in
 
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L158)
+[types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)
 
 ___
 
@@ -105,7 +83,7 @@ ___
 
 #### Defined in
 
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
+[types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L146)
 
 ___
 
@@ -115,7 +93,7 @@ ___
 
 #### Defined in
 
-[types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L155)
+[types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L142)
 
 ___
 
@@ -125,7 +103,7 @@ ___
 
 #### Defined in
 
-[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L162)
+[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L149)
 
 ___
 
@@ -135,7 +113,7 @@ ___
 
 #### Defined in
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L163)
+[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L150)
 
 ___
 
@@ -145,7 +123,7 @@ ___
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L157)
+[types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L144)
 
 ___
 
@@ -155,7 +133,7 @@ ___
 
 #### Defined in
 
-[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L149)
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)
 
 ___
 
@@ -165,7 +143,7 @@ ___
 
 #### Defined in
 
-[types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)
+[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L141)
 
 ___
 
@@ -175,7 +153,7 @@ ___
 
 #### Defined in
 
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L152)
+[types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L139)
 
 ___
 
@@ -185,7 +163,7 @@ ___
 
 #### Defined in
 
-[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
+[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L147)
 
 ___
 
@@ -195,7 +173,7 @@ ___
 
 #### Defined in
 
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L153)
+[types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L140)
 
 ___
 
@@ -205,4 +183,4 @@ ___
 
 #### Defined in
 
-[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L150)
+[types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)

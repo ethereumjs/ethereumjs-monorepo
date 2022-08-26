@@ -1,13 +1,15 @@
-import * as tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Address, bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import * as tape from 'tape'
+
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
 import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getStorageAt'
@@ -71,7 +73,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)
@@ -103,7 +105,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // run block
   let ranBlock2: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock2 = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
   await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
   await vm.blockchain.putBlock(ranBlock2!)
 

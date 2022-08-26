@@ -49,7 +49,7 @@ ___
 
 ### chainId
 
-• `Optional` **chainId**: `BNLike`
+• `Optional` **chainId**: `BigIntLike`
 
 The transaction's chain ID
 
@@ -81,7 +81,7 @@ ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: `BNLike`
+• `Optional` **gasLimit**: `BigIntLike`
 
 The transaction's gas limit.
 
@@ -114,7 +114,7 @@ ___
 
 ### maxFeePerGas
 
-• `Optional` **maxFeePerGas**: `BNLike`
+• `Optional` **maxFeePerGas**: `BigIntLike`
 
 The maximum total fee
 
@@ -126,7 +126,7 @@ ___
 
 ### maxPriorityFeePerGas
 
-• `Optional` **maxPriorityFeePerGas**: `BNLike`
+• `Optional` **maxPriorityFeePerGas**: `BigIntLike`
 
 The maximum inclusion fee per gas (this fee is given to the miner)
 
@@ -138,7 +138,7 @@ ___
 
 ### nonce
 
-• `Optional` **nonce**: `BNLike`
+• `Optional` **nonce**: `BigIntLike`
 
 The transaction's nonce.
 
@@ -154,7 +154,7 @@ ___
 
 ### r
 
-• `Optional` **r**: `BNLike`
+• `Optional` **r**: `BigIntLike`
 
 EC signature parameter.
 
@@ -170,7 +170,7 @@ ___
 
 ### s
 
-• `Optional` **s**: `BNLike`
+• `Optional` **s**: `BigIntLike`
 
 EC signature parameter.
 
@@ -202,7 +202,7 @@ ___
 
 ### type
 
-• `Optional` **type**: `BNLike`
+• `Optional` **type**: `BigIntLike`
 
 The transaction type
 
@@ -218,7 +218,7 @@ ___
 
 ### v
 
-• `Optional` **v**: `BNLike`
+• `Optional` **v**: `BigIntLike`
 
 EC recovery ID.
 
@@ -234,7 +234,7 @@ ___
 
 ### value
 
-• `Optional` **value**: `BNLike`
+• `Optional` **value**: `BigIntLike`
 
 The amount of Ether sent.
 

@@ -1,17 +1,29 @@
-import { Account, Address, isTruthy, toType, TypeOutput } from '@ethereumjs/util'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
-import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
-import { runTx } from './runTx'
-import { runBlock } from './runBlock'
-import { buildBlock, BlockBuilder } from './buildBlock'
-import { RunTxOpts, RunTxResult, RunBlockOpts, RunBlockResult } from './types'
+import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, TypeOutput, isTruthy, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { VMEvents, VMOpts, BuildBlockOpts } from './types'
 
-import { EVM, getActivePrecompiles, EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import { buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
+import { runBlock } from './runBlock'
+import { runTx } from './runTx'
+
+import type { BlockBuilder } from './buildBlock'
+import type {
+  BuildBlockOpts,
+  RunBlockOpts,
+  RunBlockResult,
+  RunTxOpts,
+  RunTxResult,
+  VMEvents,
+  VMOpts,
+} from './types'
+import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
+import type { StateManager } from '@ethereumjs/statemanager'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -19,7 +31,7 @@ import { EEI } from './eei/eei'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM extends AsyncEventEmitter<VMEvents> {
+export class VM {
   /**
    * The StateManager used by the VM
    */
@@ -28,9 +40,11 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: Blockchain
+  readonly blockchain: BlockchainInterface
 
   readonly _common: Common
+
+  readonly events: AsyncEventEmitter<VMEvents>
 
   /**
    * The EVM used for bytecode execution
@@ -42,7 +56,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
   protected _isInitialized: boolean = false
 
   protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTD?: bigint
+  protected readonly _hardforkByTTD?: bigint
 
   /**
    * Cached emit() function, not for public usage
@@ -81,7 +95,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    * @param opts
    */
   protected constructor(opts: VMOpts = {}) {
-    super()
+    this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
 
@@ -95,18 +109,23 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({
-        common: this._common,
-      })
+      this.stateManager = new DefaultStateManager({})
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     // TODO tests
     if (opts.eei) {
+      if (opts.evm) {
+        throw new Error('cannot specify EEI if EVM opt provided')
+      }
       this.eei = opts.eei
     } else {
-      this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      if (opts.evm) {
+        this.eei = opts.evm.eei
+      } else {
+        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
+      }
     }
 
     // TODO tests
@@ -119,32 +138,42 @@ export class VM extends AsyncEventEmitter<VMEvents> {
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
+    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
       throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
       )
     }
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
+    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
   }
 
   async init(): Promise<void> {
     if (this._isInitialized) return
-    await (this.blockchain as any)._init()
+    if (typeof (<any>this.blockchain)._init === 'function') {
+      await (this.blockchain as any)._init()
+    }
 
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState === true) {
-        await this.eei.generateCanonicalGenesis(this.blockchain.genesisState())
+        if (typeof (<any>this.blockchain).genesisState === 'function') {
+          await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
+        } else {
+          throw new Error(
+            'cannot activate genesis state: blockchain object has no `genesisState` method'
+          )
+        }
       }
     }
 
@@ -157,7 +186,10 @@ export class VM extends AsyncEventEmitter<VMEvents> {
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
-          const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
+          const newAccount = Account.fromAccountData({
+            balance: 1,
+            storageRoot: account.storageRoot,
+          })
           await this.eei.putAccount(address, newAccount)
         }
       }
@@ -216,15 +248,14 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    */
   async copy(): Promise<VM> {
     const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = (evmCopy as any).eei
+    const eeiCopy: EEIInterface = evmCopy.eei
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,
       common: (eeiCopy as any)._common,
       evm: evmCopy,
-      eei: eeiCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTD: isTruthy(this._hardforkByTD) ? this._hardforkByTD : undefined,
+      hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
     })
   }
 

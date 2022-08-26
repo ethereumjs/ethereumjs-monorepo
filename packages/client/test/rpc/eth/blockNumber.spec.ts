@@ -1,6 +1,7 @@
-import * as tape from 'tape'
 import { bigIntToHex } from '@ethereumjs/util'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import * as tape from 'tape'
+
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'eth_blockNumber'
 
@@ -8,7 +9,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const mockBlockNumber = BigInt(123)
   const mockChain = {
     headers: { latest: { number: mockBlockNumber } },
-    getCanonicalHeadHeader: async function (): Promise<any> {
+    async getCanonicalHeadHeader(): Promise<any> {
       return {
         number: mockBlockNumber,
       }

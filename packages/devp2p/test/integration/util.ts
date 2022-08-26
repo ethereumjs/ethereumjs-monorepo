@@ -1,8 +1,11 @@
-import * as test from 'tape'
-import { Capabilities, DPT, ETH, RLPx, genPrivateKey } from '../../src'
-import { Chain, Common } from '@ethereumjs/common'
-import * as testdata from '../testdata.json'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { isTruthy } from '@ethereumjs/util'
+
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
+import * as testdata from '../testdata.json'
+
+import type { Capabilities } from '../../src'
+import type * as test from 'tape'
 
 type Test = test.Test
 
@@ -75,15 +78,15 @@ export function getTestRLPXs(
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common({ chain: Chain.Mainnet })
+    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   }
   const dpts = getTestDPTs(numRLPXs)
 
   for (let i = 0; i < numRLPXs; ++i) {
     const rlpx = new RLPx(dpts[i].privateKey, {
       dpt: dpts[i],
-      maxPeers: maxPeers,
-      capabilities: capabilities,
+      maxPeers,
+      capabilities,
       common: common.constructor === Array ? common[i] : (common as Common),
       listenPort: basePort + i,
     })

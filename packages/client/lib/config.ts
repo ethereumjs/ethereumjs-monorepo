@@ -1,13 +1,17 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
-import { Address } from '@ethereumjs/util'
-import { Multiaddr } from 'multiaddr'
-import { Logger, getLogger } from './logging'
-import { Libp2pServer, RlpxServer } from './net/server'
-import { parseTransports } from './util'
-import { EventBus, EventBusType } from './types'
 import { Level } from 'level'
+
+import { getLogger } from './logging'
+import { Libp2pServer, RlpxServer } from './net/server'
+import { EventBus } from './types'
+import { parseTransports } from './util'
+
+import type { Logger } from './logging'
+import type { EventBusType } from './types'
+import type { Address } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
+import type { Multiaddr } from 'multiaddr'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -43,6 +47,16 @@ export interface ConfigOptions {
    * Default: false
    */
   disableBeaconSync?: boolean
+
+  /**
+   * Whether to test and run snapSync. When fully ready, this needs to
+   * be replaced by a more sophisticated condition based on how far back we are
+   * from the head, and how to run it in conjuction with the beacon sync
+   * blocks at the head of chain.
+   *
+   * Default: false
+   */
+  forceSnapSync?: boolean
 
   /**
    * Provide a custom VM instance to process blocks
@@ -285,6 +299,9 @@ export class Config {
   public readonly skeletonFillCanonicalBackStep: number
   public readonly skeletonSubchainMergeMinimum: number
   public readonly disableBeaconSync: boolean
+  public readonly forceSnapSync: boolean
+  // Just a development only flag, will/should be removed
+  public readonly disableSnapSync: boolean = false
 
   public synchronized: boolean
   public lastSyncDate: number
@@ -326,6 +343,7 @@ export class Config {
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
     this.disableBeaconSync = options.disableBeaconSync ?? false
+    this.forceSnapSync = options.forceSnapSync ?? false
 
     this.synchronized = false
     this.lastSyncDate = 0

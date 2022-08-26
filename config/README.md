@@ -76,7 +76,7 @@ Add `.nycrc`:
 
 ```json
 {
-  "extends": "../../config/nyc.json"
+  "extends": "../../config/.c8rc.json"
 }
 ```
 

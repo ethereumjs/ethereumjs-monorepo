@@ -22,17 +22,17 @@ Header data for the block
 
 #### Defined in
 
-[types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
+[types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
 
 ___
 
 ### transactions
 
-• `Optional` **transactions**: (`TxData` \| `AccessListEIP2930TxData` \| `FeeMarketEIP1559TxData`)[]
+• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `TxData` \| `FeeMarketEIP1559TxData`)[]
 
 #### Defined in
 
-[types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L120)
+[types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
 
 ___
 
@@ -42,4 +42,4 @@ ___
 
 #### Defined in
 
-[types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L121)
+[types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
