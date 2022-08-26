@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
 import { multiaddr } from 'multiaddr'
@@ -142,7 +141,7 @@ export class Libp2pServer extends Server {
    */
   isBanned(peerId: string): boolean {
     const expireTime = this.banned.get(peerId)
-    if (isTruthy(expireTime) && expireTime > Date.now()) {
+    if (typeof expireTime === 'number' && expireTime !== 0 && expireTime > Date.now()) {
       return true
     }
     this.banned.delete(peerId)

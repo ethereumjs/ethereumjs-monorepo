@@ -77,7 +77,7 @@ export class Protocol {
           resolve(this.decodeStatus(status))
         }
       }
-      if (sender.status !== undefined) {
+      if (sender.status !== undefined && sender.status !== null) {
         handleStatus(sender.status)
       } else {
         sender.once('status', handleStatus)

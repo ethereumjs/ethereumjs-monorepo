@@ -393,7 +393,7 @@ export class Engine {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
-      if (isBlockExecuted) {
+      if (!isBlockExecuted) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
@@ -551,7 +551,7 @@ export class Engine {
         try {
           const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
           const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
-          if (isBlockExecuted) {
+          if (!isBlockExecuted) {
             throw new Error(`Parent block not yet executed number=${parent.header.number}`)
           }
           parentBlocks = await recursivelyFindParents(
