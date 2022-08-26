@@ -51,33 +51,39 @@ const errorFormat = format((info: any) => {
  *
  */
 function logFormat(colors = false) {
-  return printf((info: any) => {
-    let level = info.level.toUpperCase()
+  return printf(
+    (info: {
+      level: string
+      message: string | undefined
+      [key: string]: string | null | undefined
+    }) => {
+      let level = info.level.toUpperCase()
 
-    if (info.message === undefined) info.message = '(empty message)'
+      if (info.message === undefined) info.message = '(empty message)'
 
-    if (colors) {
-      const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-      const color = chalk.keyword(colorLevel).bind(chalk)
-      level = color(level)
+      if (colors) {
+        const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
+        const color = chalk.keyword(colorLevel).bind(chalk)
+        level = color(level)
 
-      const regex = /(\w+)=(.+?)(?:\s|$)/g
-      const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
-      info.message = info.message.replace(regex, replaceFn)
-      if (typeof info.attentionCL === 'string')
-        info.attentionCL = info.attentionCL.replace(regex, replaceFn)
-      if (typeof info.attentionHF === 'string')
-        info.attentionHF = info.attentionHF.replace(regex, replaceFn)
+        const regex = /(\w+)=(.+?)(?:\s|$)/g
+        const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
+        info.message = info.message.replace(regex, replaceFn)
+        if (typeof info.attentionCL === 'string')
+          info.attentionCL = info.attentionCL.replace(regex, replaceFn)
+        if (typeof info.attentionHF === 'string')
+          info.attentionHF = info.attentionHF.replace(regex, replaceFn)
+      }
+
+      if (info.attentionCL !== undefined) attentionCL = info.attentionCL
+      if (info.attentionHF !== undefined) attentionHF = info.attentionHF
+      const CLLog = attentionCL !== null ? `[ ${attentionCL} ] ` : ''
+      const HFLog = attentionHF !== null ? `[ ${attentionHF} ] ` : ''
+
+      const msg = `[${info.timestamp}] ${level} ${CLLog}${HFLog}${info.message}`
+      return msg
     }
-
-    if (info.attentionCL !== undefined) attentionCL = info.attentionCL
-    if (info.attentionHF !== undefined) attentionHF = info.attentionHF
-    const CLLog = attentionCL !== null ? `[ ${attentionCL} ] ` : ''
-    const HFLog = attentionHF !== null ? `[ ${attentionHF} ] ` : ''
-
-    const msg = `[${info.timestamp}] ${level} ${CLLog}${HFLog}${info.message}`
-    return msg
-  })
+  )
 }
 
 /**
