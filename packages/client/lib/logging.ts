@@ -1,4 +1,3 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as chalk from 'chalk'
 import { createLogger, format, transports as wTransports } from 'winston'
 
@@ -32,10 +31,10 @@ enum LevelColors {
  * Adds stack trace to error message if included
  */
 const errorFormat = format((info: any) => {
-  if (info.message instanceof Error && isTruthy(info.message.stack)) {
+  if (info.message instanceof Error && info.message.stack !== undefined) {
     return { ...info, message: info.message.stack }
   }
-  if (info instanceof Error && isTruthy(info.stack)) {
+  if (info instanceof Error && info.stack !== undefined) {
     return { ...info, message: info.stack }
   }
   return info
@@ -55,7 +54,7 @@ function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
 
-    if (isFalsy(info.message)) info.message = '(empty message)'
+    if (info.message === undefined) info.message = '(empty message)'
 
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
@@ -65,8 +64,10 @@ function logFormat(colors = false) {
       const regex = /(\w+)=(.+?)(?:\s|$)/g
       const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
       info.message = info.message.replace(regex, replaceFn)
-      if (isTruthy(info.attentionCL)) info.attentionCL = info.attentionCL.replace(regex, replaceFn)
-      if (isTruthy(info.attentionHF)) info.attentionHF = info.attentionHF.replace(regex, replaceFn)
+      if (info.attentionCL !== undefined)
+        info.attentionCL = info.attentionCL.replace(regex, replaceFn)
+      if (info.attentionHF !== undefined)
+        info.attentionHF = info.attentionHF.replace(regex, replaceFn)
     }
 
     if (info.attentionCL !== undefined) attentionCL = info.attentionCL
@@ -101,7 +102,7 @@ function logFileTransport(args: any) {
     level: args.logLevelFile,
     format: formatConfig(),
   }
-  if (isFalsy(args.logRotate)) {
+  if (args.logRotate !== true) {
     return new wTransports.File({
       ...opts,
       filename,
@@ -129,7 +130,7 @@ export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
       format: formatConfig(true),
     }),
   ]
-  if (isTruthy(args.logFile)) {
+  if (typeof args.logFile === 'string') {
     transports.push(logFileTransport(args))
   }
   const logger = createLogger({

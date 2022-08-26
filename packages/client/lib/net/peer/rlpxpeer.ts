@@ -4,7 +4,6 @@ import {
   RLPx as Devp2pRLPx,
   SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
-import { isTruthy } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 
 import { Event } from '../../types'
@@ -16,7 +15,7 @@ import type { Protocol } from '../protocol'
 import type { RlpxServer } from '../server'
 import type { PeerOptions } from './peer'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
-const devp2pCapabilities: any = {
+const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,
@@ -89,8 +88,8 @@ export class RlpxPeer extends Peer {
       const { name, versions } = protocol
       const keys = versions.map((v: number) => name + String(v))
       for (const key of keys) {
-        const capability = devp2pCapabilities[key]
-        if (isTruthy(capability)) {
+        const capability = devp2pCapabilities[key as keyof typeof devp2pCapabilities]
+        if (capability !== undefined) {
           capabilities.push(capability)
         }
       }
