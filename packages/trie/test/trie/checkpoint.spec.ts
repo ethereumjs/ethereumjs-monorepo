@@ -1,7 +1,8 @@
 import { createHash } from 'crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { MapDB, Trie } from '../../src'
+import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
 
 import type { BatchDBOp } from '../../src'
 
@@ -196,5 +197,164 @@ tape('testing checkpoints', function (tester) {
     await trie.revert()
     t.deepEqual(await trie.get(k1), v1, 'after revert (first CP): v1')
     t.end()
+  })
+
+  it('Checkpointing: nested checkpoints -> with pruning', async (t) => {
+    const KEY = Buffer.from('last_block_height')
+    const KEY_ROOT = Buffer.from(keccak256(ROOT_DB_KEY))
+
+    // Initialise State
+    const CommittedState = await Trie.create({
+      useKeyHashing: true,
+      useNodePruning: true,
+      useRootPersistence: true,
+    })
+
+    // Put some initial data
+    await CommittedState.put(KEY, Buffer.from('1'))
+
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=1 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c31',
+        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
+      ]
+    )
+    t.equal((await CommittedState.get(KEY))?.toString(), '1')
+    t.equal(
+      // @ts-expect-error
+      (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+    )
+    t.equal(
+      CommittedState.root().toString('hex'),
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+    )
+
+    // Take a checkpoint to enable nested checkpoints
+    CommittedState.checkpoint()
+
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=1 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c31',
+        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
+      ]
+    )
+    t.equal((await CommittedState.get(KEY))?.toString(), '1')
+    t.equal(
+      // @ts-expect-error
+      (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+    )
+    t.equal(
+      CommittedState.root().toString('hex'),
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+    )
+
+    // CheckTx with nested checkpoints (CommittedState checkpoint + its own)
+    const CheckTx = CommittedState.copy()
+    CheckTx.checkpoint()
+
+    // Test changes on CheckTx
+    await CheckTx.put(KEY, Buffer.from('2'))
+    await CheckTx.commit()
+
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CheckTx._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c31',
+        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
+      ]
+    )
+    t.equal((await CheckTx.get(KEY))?.toString(), '2')
+    t.equal(
+      // @ts-expect-error
+      (await CheckTx._db.get(KEY_ROOT))?.toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    t.equal(
+      CheckTx.root().toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    // That's the initial checkpoint we always keep to avoid disk writes.
+    // Calling CheckTx.commit() once more will make this `false` and fail as expected.
+    t.true(CheckTx.hasCheckpoints())
+
+    // Make sure CommittedState was not modified by committing CheckTx (2 keys, last_block_height=1 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c31',
+        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
+      ]
+    )
+    // >>>>> THIS FAILS FOR WHATEVER REASON?
+    t.equal((await CommittedState.get(KEY))?.toString(), '1')
+    t.equal(
+      // @ts-expect-error
+      (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    t.equal(
+      CommittedState.root().toString('hex'),
+      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+    )
+
+    // Commit final CheckTx checkpoint to persist
+    await CheckTx.commit()
+
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CheckTx._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',
+      ]
+    )
+    t.equal((await CheckTx.get(KEY))?.toString(), '2')
+    t.equal(
+      // @ts-expect-error
+      (await CheckTx._db.get(KEY_ROOT))?.toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    t.equal(
+      CheckTx.root().toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    // That's the initial checkpoint we always keep to avoid disk writes.
+    // Calling CheckTx.commit() once more will make this `false` and fail as expected.
+    t.false(CheckTx.hasCheckpoints())
+
+    // CheckTx has been fully committed so we can set the CommittedState root
+    CommittedState.root(CheckTx.root())
+
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    t.deepEqual(
+      // @ts-expect-error
+      [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
+      [
+        'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
+        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',
+      ]
+    )
+    t.equal((await CommittedState.get(KEY))?.toString(), '2')
+    t.equal(
+      // @ts-expect-error
+      (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
+    t.equal(
+      CommittedState.root().toString('hex'),
+      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+    )
   })
 })
