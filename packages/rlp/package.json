@@ -47,5 +47,8 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
