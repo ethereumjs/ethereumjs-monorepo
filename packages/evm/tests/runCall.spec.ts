@@ -562,6 +562,9 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
   const runCallArgs = {
     caller, // call address
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    // Simple test, PUSH <big number> PUSH 0 RETURN
+    // It tries to deploy a contract too large, where the code is all zeros
+    // (since memory which is not allocated/resized to yet is always defaulted to 0)
     data: Buffer.from('62FFFFFF6000F3', 'hex'),
   }
 
