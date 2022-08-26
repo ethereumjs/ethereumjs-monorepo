@@ -53,9 +53,12 @@ async function runTransition(argsIn: any) {
 
   const txsData = arrToBufArr(RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex')))
 
+  const headerData = block.header.toJSON()
+  headerData.difficulty = inputEnv.parentDifficulty
+
   const builder = new BlockBuilder(vm, {
     parentBlock: new Block(),
-    headerData: block.header.toJSON(),
+    headerData,
     blockOpts: { putBlockIntoBlockchain: false },
   })
 
