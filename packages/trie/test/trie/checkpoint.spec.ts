@@ -261,8 +261,11 @@ tape('testing checkpoints', function (tester) {
     CheckTx.checkpoint()
 
     // Test changes on CheckTx
-    await CheckTx.put(KEY, Buffer.from('2'))
-    await CheckTx.commit()
+    for (let index = 0; index < 100; index++) {
+      CheckTx.checkpoint()
+      await CheckTx.put(KEY, Buffer.from(`${index}`))
+      await CheckTx.commit()
+    }
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     t.deepEqual(
@@ -273,15 +276,15 @@ tape('testing checkpoints', function (tester) {
         '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
       ]
     )
-    t.equal((await CheckTx.get(KEY))?.toString(), '2')
+    t.equal((await CheckTx.get(KEY))?.toString(), '99')
     t.equal(
       // @ts-expect-error
       (await CheckTx._db.get(KEY_ROOT))?.toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
     t.equal(
       CheckTx.root().toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
     // That's the initial checkpoint we always keep to avoid disk writes.
     // Calling CheckTx.commit() once more will make this `false` and fail as expected.
@@ -317,30 +320,31 @@ tape('testing checkpoints', function (tester) {
       // @ts-expect-error
       [...CheckTx._db.db._database.values()].map((value) => value.toString('hex')),
       [
-        'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
-        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',
+        'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d',
+        'e5a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c823939',
       ]
     )
-    t.equal((await CheckTx.get(KEY))?.toString(), '2')
+    t.equal((await CheckTx.get(KEY))?.toString(), '99')
     t.equal(
       // @ts-expect-error
       (await CheckTx._db.get(KEY_ROOT))?.toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
     t.equal(
       CheckTx.root().toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
     // That's the initial checkpoint we always keep to avoid disk writes.
-    // Calling CheckTx.commit() once more will make this `false` and fail as expected.
-    t.false(CheckTx.hasCheckpoints())
+    t.true(CheckTx.hasCheckpoints())
 
     // We should have a checkpoint left for CommittedState
     t.true(CommittedState.hasCheckpoints())
 
     // CheckTx has been fully committed so we can set the CommittedState root
-    await CommittedState.commit()
-    await CommittedState.commit()
+    while (CommittedState.hasCheckpoints()) {
+      await CommittedState.commit()
+    }
+
     CommittedState.root(CheckTx.root())
     await CommittedState.persistRoot()
 
@@ -349,19 +353,19 @@ tape('testing checkpoints', function (tester) {
       // @ts-expect-error
       [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
       [
-        'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
-        'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',
+        'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d',
+        'e5a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c823939',
       ]
     )
-    t.equal((await CommittedState.get(KEY))?.toString(), '2')
+    t.equal((await CommittedState.get(KEY))?.toString(), '99')
     t.equal(
       // @ts-expect-error
       (await CommittedState._db.get(KEY_ROOT))?.toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
     t.equal(
       CommittedState.root().toString('hex'),
-      'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'
+      'ce4a1c53124b4c42d008aab8f4ce8015354ccdc82e858692e31dfccb63ba621d'
     )
   })
 })
