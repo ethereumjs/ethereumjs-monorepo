@@ -804,7 +804,15 @@ export class Trie {
       root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.checkpoints = [...this._db.checkpoints]
+      trie._db.checkpoints = []
+      for (let i = 0; i < this._db.checkpoints.length; i++) {
+        const checkpoint = this._db.checkpoints[i]
+        const item = {
+          root: checkpoint.root,
+          keyValueMap: new Map(checkpoint.keyValueMap),
+        }
+        trie._db.checkpoints.push(item)
+      }
     }
     return trie
   }
