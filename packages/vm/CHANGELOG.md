@@ -6,6 +6,57 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)).
+
+### Fixed Mainnet Merge HF Default
+
+Since this bug was so severe it gets its own section: `mainnet` in the underlying `@ethereumjs/common` library (`Chain.Mainnet`) was accidentally not updated yet to default to the `merge` HF (`Hardfork.Merge`) by an undiscovered overwrite back to `london`.
+
+This has been fixed in PR [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206) and `mainnet` now default to the `merge` as well.
+
+### Removed AsyncEventEmitter / New events Property
+
+This is the biggest VM change in this release. The inheritance structure of both the VM and the underlying EVM has been reworked and the `VM` and `EVM` classes have been freed from being a child class of `AsyncEventEmitter` and inheriting all its properties and methods in favor of a new `events` property cleanly separating all events logic from the core `VM`/`EVM`, see PR [#2235](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2235).
+
+This allows for an easier typing of the inner `EVM` and makes the core VM/EVM classes leaner and not overloaded with various other partly unused properties. The new `events` property is optional.
+
+Usage code of events needs to be slighly adopted and updated from:
+
+```typescript
+vm.on('beforeBlock', (val) => {
+  // Do something
+}
+vm.evm.on('step', (e) => {
+  // Do something
+}
+```
+
+To:
+
+```typescript
+vm.events.on('beforeBlock', (val) => {
+  // Do something
+}
+vm.evm.events!.on('step', (e) => {
+  // Do something
+}
+```
+
+### Other Changes
+
+- Made `touchAccount` of `VMState` public, PR [#2183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2183)
+- **Pontentially breaking:** Removed `common` option from underlying `StateManager`, PR [#2197](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2197)
+- Reworked/adjusted underlying EVM `skipBalance` option semantics, PR [#2138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2138)
+- Fixed an underlying EVM event signature typing bug, PR [#2184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2184)
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
 ## 6.0.0-beta.3 - 2022-08-10
 
 Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/CHANGELOG.md)).
