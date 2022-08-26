@@ -549,3 +549,26 @@ tape('runCall() -> skipBalance behavior', async (t) => {
     'runCall reverts when insufficient sender balance and skipBalance is false'
   )
 })
+
+tape('runCall() => allows to detect for max code size deposit errors', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  // setup the evm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller, // call address
+    gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    data: Buffer.from('62FFFFFF6000F3', 'hex'),
+  }
+
+  const result = await evm.runCall(runCallArgs)
+  t.equal(
+    result.execResult.exceptionError?.error,
+    ERROR.CODESIZE_EXCEEDS_MAXIMUM,
+    'reported error is correct'
+  )
+})
