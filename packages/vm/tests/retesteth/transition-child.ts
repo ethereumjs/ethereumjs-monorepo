@@ -12,6 +12,7 @@ import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
 import type { PostByzantiumTxReceipt } from '../../src'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedBufferArray } from '@ethereumjs/util'
 
@@ -81,19 +82,52 @@ async function runTransition(argsIn: any) {
     txCounter++
     continueFn!(undefined)
   })
+  ;(<any>vm.evm).events.on('step', function (e: InterpreterStep) {
+    let hexStack = []
+    hexStack = e.stack.map((item: bigint) => {
+      return '0x' + item.toString(16)
+    })
 
-  for (const txData of <NestedBufferArray>txsData) {
-    let tx: TypedTransaction
-    if (Buffer.isBuffer(txData)) {
-      tx = TransactionFactory.fromSerializedData(txData as Buffer, { common })
-    } else {
-      tx = Transaction.fromValuesArray(txData as Buffer[], { common })
+    const opTrace = {
+      pc: e.pc,
+      op: e.opcode.name,
+      gas: '0x' + e.gasLeft.toString(16),
+      gasCost: '0x' + e.opcode.fee.toString(16),
+      stack: hexStack,
+      depth: e.depth,
+      opName: e.opcode.name,
     }
-    await builder.addTransaction(tx)
+
+    console.log(JSON.stringify(opTrace))
+  })
+
+  const rejected = []
+
+  let index = 0
+  for (const txData of <NestedBufferArray>txsData) {
+    try {
+      let tx: TypedTransaction
+      if (Buffer.isBuffer(txData)) {
+        tx = TransactionFactory.fromSerializedData(txData as Buffer, { common })
+      } else {
+        tx = Transaction.fromValuesArray(txData as Buffer[], { common })
+      }
+      await builder.addTransaction(tx)
+    } catch (e: any) {
+      rejected.push({
+        index,
+        error: e.message,
+      })
+    }
+    index++
   }
 
   const logsBloom = builder.logsBloom()
   const logsHash = Buffer.from(keccak256(logsBloom))
+
+  console.log('0x' + (await vm.eei.getStateRoot()).toString('hex'))
+  console.log('0x' + (await builder.transactionsTrie()).toString('hex'))
+  console.log('0x' + (await builder.receiptTrie()).toString('hex'))
 
   const output = {
     stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
@@ -104,6 +138,11 @@ async function runTransition(argsIn: any) {
     currentDifficulty: '0x20000',
     receipts, // TODO fixme
   }
+
+  if (rejected.length > 0) {
+    ;(<any>output).rejected = rejected
+  }
+
   const outputAlloc = alloc //{}
 
   const outputResultFilePath = join(args.output.basedir, args.output.result)
@@ -116,6 +155,7 @@ async function runTransition(argsIn: any) {
 let running = false
 
 process.on('message', async (message) => {
+  console.log(message)
   if (running) {
     return
   }

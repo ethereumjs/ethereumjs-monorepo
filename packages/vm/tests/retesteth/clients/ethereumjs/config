@@ -23,5 +23,7 @@
         "BerlinToLondonAt5",
         "ArrowGlacier"
     ],
-    "exceptions": {}
+    "exceptions": {
+        "TR_NonceHasMaxValue": "nonce cannot equal or exceed MAX_UINT64"
+    }
 }
