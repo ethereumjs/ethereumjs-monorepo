@@ -43,13 +43,6 @@ export interface BlockOptions {
    */
   hardforkByTTD?: BigIntLike
   /**
-   * Infer the total difficulty by inspecting the difficulty field and determine the HF.
-   *
-   * This option is used specially when we cannnot calculate the total difficulty
-   * for e.g. in the blocks constructed in skeleton/beacon sync
-   */
-  hardforkByChainTTD?: BigIntLike
-  /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
    * difficulty takes precedence over a provided static `difficulty` value.

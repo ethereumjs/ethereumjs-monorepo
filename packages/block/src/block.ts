@@ -58,10 +58,9 @@ export class Block {
       calcDifficultyFromHeader: undefined,
       // This potentially overwrites hardforkBy options but we will set them cleanly just below
       hardforkByTTD: undefined,
-      hardforkByChainTTD: undefined,
     }
     // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined || opts?.hardforkByChainTTD !== undefined) {
+    if (opts?.hardforkByTTD !== undefined) {
       uncleOpts.hardforkByBlockNumber = true
     }
     for (const uhData of uhsData ?? []) {
@@ -126,10 +125,9 @@ export class Block {
       calcDifficultyFromHeader: undefined,
       // This potentially overwrites hardforkBy options but we will set them cleanly just below
       hardforkByTTD: undefined,
-      hardforkByChainTTD: undefined,
     }
     // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined || opts?.hardforkByChainTTD !== undefined) {
+    if (opts?.hardforkByTTD !== undefined) {
       uncleOpts.hardforkByBlockNumber = true
     }
     for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {

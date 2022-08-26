@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import { arrToBufArr, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 
 import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
@@ -517,17 +517,28 @@ export class Skeleton extends MetaDBManager {
     )
   }
 
+  serialize({ hardfork, blockRLP }: { hardfork: Hardfork | string; blockRLP: Buffer }): Buffer {
+    const skeletonArr = [Buffer.from(hardfork), blockRLP]
+    return Buffer.from(RLP.encode(skeletonArr))
+  }
+
+  deserialize(rlp: Buffer): { hardfork: Hardfork | string; blockRLP: Buffer } {
+    const [hardfork, blockRLP] = arrToBufArr(RLP.decode(Uint8Array.from(rlp))) as Buffer[]
+    return { hardfork: hardfork.toString(), blockRLP }
+  }
+
   /**
    * Writes a skeleton block to the db by number
    */
   private async putBlock(block: Block): Promise<boolean> {
-    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), block.serialize())
+    // Serialize the block with its hardfork so that its easy to load the block latter
+    const rlp = this.serialize({ hardfork: block._common.hardfork(), blockRLP: block.serialize() })
+    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), rlp)
     await this.put(
       DBKey.SkeletonBlockHashToNumber,
       block.hash(),
       bigIntToBuffer(block.header.number)
     )
-
     return true
   }
 
@@ -537,9 +548,12 @@ export class Skeleton extends MetaDBManager {
   async getBlock(number: bigint, onlySkeleton = false): Promise<Block | undefined> {
     try {
       const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBuffer(number))
-      const block = Block.fromRLPSerializedBlock(rlp!, {
-        common: this.config.chainCommon,
-        hardforkByChainTTD: this.chainTTD,
+      const { hardfork, blockRLP } = this.deserialize(rlp!)
+      const common = this.config.chainCommon.copy()
+      common.setHardfork(hardfork)
+
+      const block = Block.fromRLPSerializedBlock(blockRLP, {
+        common,
       })
       return block
     } catch (error: any) {

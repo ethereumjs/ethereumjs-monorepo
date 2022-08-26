@@ -510,19 +510,19 @@ tape('[Skeleton]', async (t) => {
       )
       const block3PoS = Block.fromBlockData(
         { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-        { common, hardforkByChainTTD: BigInt(200) }
+        { common, hardforkByTTD: BigInt(200) }
       )
       const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common, hardforkByChainTTD: BigInt(200) }
+        { common, hardforkByTTD: BigInt(200) }
       )
       const block4PoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-        { common, hardforkByChainTTD: BigInt(200) }
+        { common, hardforkByTTD: BigInt(200) }
       )
       const block5 = Block.fromBlockData(
         { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-        { common, hardforkByChainTTD: BigInt(200) }
+        { common, hardforkByTTD: BigInt(200) }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -620,7 +620,7 @@ tape('[Skeleton]', async (t) => {
       )
       const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common, hardforkByChainTTD: 200 }
+        { common, hardforkByTTD: 200 }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
