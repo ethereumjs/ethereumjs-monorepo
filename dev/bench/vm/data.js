@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661515429310,
+  "lastUpdate": 1661519999496,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d210bdaf657ec1aa5ae0024230a2950405167a6c",
-          "message": "refactor(trie): drop `level` dependency completely (#2167)\n\n* refactor(trie): drop `level` dependency completely\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: add legacy level example\r\n\r\n* chore: add recipes for different database implementations\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-19T11:33:13+02:00",
-          "tree_id": "54352d4f3bdc9a4160c1244142adc7c7f2a609e3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d210bdaf657ec1aa5ae0024230a2950405167a6c"
-        },
-        "date": 1660902015176,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 11879,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 11810,
-            "range": "±3.86%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12129,
-            "range": "±5.49%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12248,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 11792,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.77%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d394cc41c2fac4ab8f85642c53406656d7dd015",
+          "message": "Monorepo RC 1 Releases (#2237)\n\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (RLP v4.0.0-rc.1)\r\n\r\n* Minor\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Util v8.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Common v3.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Trie v5.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Tx v4.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Block v4.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Blockchain v6.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Ethash v2.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (StateManager v1.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Devp2p v5.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (EVM v1.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (VM v6.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version (Client v0.6.2)",
+          "timestamp": "2022-08-26T15:16:45+02:00",
+          "tree_id": "9129511ae257a2ba3a10f68b8f47f5c0a3da4b95",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d394cc41c2fac4ab8f85642c53406656d7dd015"
+        },
+        "date": 1661519997308,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10628,
+            "range": "±3.36%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10752,
+            "range": "±3.83%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 11069,
+            "range": "±2.11%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10854,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 10107,
+            "range": "±9.08%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
