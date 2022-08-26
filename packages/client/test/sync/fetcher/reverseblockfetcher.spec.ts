@@ -177,7 +177,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
 
   t.test('store()', async (st) => {
     td.reset()
-    st.plan(2)
+    st.plan(4)
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
@@ -193,11 +193,23 @@ tape('[ReverseBlockFetcher]', async (t) => {
       count: BigInt(10),
       timeout: 5,
     })
-    td.when(skeleton.putBlocks(td.matchers.anything())).thenReject(new Error('err0'))
+    td.when(skeleton.putBlocks(td.matchers.anything())).thenReject(
+      new Error(`Blocks don't extend canonical subchain`)
+    )
     try {
       await fetcher.store([])
+      st.fail('fetcher store should have errored')
     } catch (err: any) {
-      st.ok(err.message === 'err0', 'store() threw on invalid block')
+      st.ok(
+        err.message === `Blocks don't extend canonical subchain`,
+        'store() threw on invalid block'
+      )
+      const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
+        first: BigInt(10),
+        count: 10,
+      })
+      st.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      st.equal(banPeer, true, 'peer should be banned on this error')
     }
     td.reset()
     skeleton.putBlocks = td.func<any>()
