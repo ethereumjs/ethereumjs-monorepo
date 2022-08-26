@@ -312,7 +312,7 @@ export const validators = {
   get optional() {
     return (validator: any) => {
       return (params: any, index: number) => {
-        if (params[index] === undefined || params[index] === '') {
+        if (params[index] === undefined || params[index] === '' || params[index] === null) {
           return
         }
         return validator(params, index)
