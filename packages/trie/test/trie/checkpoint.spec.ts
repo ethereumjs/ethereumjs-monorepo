@@ -308,6 +308,8 @@ tape('testing checkpoints', function (tester) {
     )
 
     // Commit final CheckTx checkpoint to persist
+    const finalCheckpoint = (<any>CheckTx)._db.checkpoints[0]
+    ;(<any>CommittedState)._db.checkpoints.push(finalCheckpoint)
     await CheckTx.commit()
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
@@ -337,8 +339,10 @@ tape('testing checkpoints', function (tester) {
     t.true(CommittedState.hasCheckpoints())
 
     // CheckTx has been fully committed so we can set the CommittedState root
-    CommittedState.root(CheckTx.root())
     await CommittedState.commit()
+    await CommittedState.commit()
+    CommittedState.root(CheckTx.root())
+    await CommittedState.persistRoot()
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     t.deepEqual(
