@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -12,6 +12,8 @@ import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
 import type { PostByzantiumTxReceipt } from '../../src'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { NestedBufferArray } from '@ethereumjs/util'
 
 const yargs = require('yargs/yargs')
 
@@ -80,8 +82,13 @@ async function runTransition(argsIn: any) {
     continueFn!(undefined)
   })
 
-  for (const txData of txsData) {
-    const tx = Transaction.fromValuesArray(<any>txData)
+  for (const txData of <NestedBufferArray>txsData) {
+    let tx: TypedTransaction
+    if (Buffer.isBuffer(txData)) {
+      tx = TransactionFactory.fromSerializedData(txData as Buffer)
+    } else {
+      tx = Transaction.fromValuesArray(txData as Buffer[])
+    }
     await builder.addTransaction(tx)
   }
 
@@ -106,16 +113,24 @@ async function runTransition(argsIn: any) {
   writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
 }
 
+let running = false
+
 process.on('message', async (message) => {
+  if (running) {
+    return
+  }
   if (message === 'STOP') {
     process.exit()
   } else {
+    running = true
     try {
       await runTransition(message)
       // eslint-disable-next-line no-empty
     } catch (e) {
       console.log(e)
     }
+
+    running = false
 
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (process && process.send) {
