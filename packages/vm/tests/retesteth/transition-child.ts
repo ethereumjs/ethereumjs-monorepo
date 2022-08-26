@@ -82,24 +82,6 @@ async function runTransition(argsIn: any) {
     txCounter++
     continueFn!(undefined)
   })
-  ;(<any>vm.evm).events.on('step', function (e: InterpreterStep) {
-    let hexStack = []
-    hexStack = e.stack.map((item: bigint) => {
-      return '0x' + item.toString(16)
-    })
-
-    const opTrace = {
-      pc: e.pc,
-      op: e.opcode.name,
-      gas: '0x' + e.gasLeft.toString(16),
-      gasCost: '0x' + e.opcode.fee.toString(16),
-      stack: hexStack,
-      depth: e.depth,
-      opName: e.opcode.name,
-    }
-
-    console.log(JSON.stringify(opTrace))
-  })
 
   const rejected = []
 
