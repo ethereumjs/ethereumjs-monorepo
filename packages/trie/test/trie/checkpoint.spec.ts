@@ -267,7 +267,8 @@ tape('testing checkpoints', function (tester) {
       await CheckTx.commit()
     }
 
-    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    // Make sure CheckTx looks like we expect (2 keys, last_block_height=99 + __root__)
+    t.true(CheckTx.hasCheckpoints())
     t.deepEqual(
       // @ts-expect-error
       [...CheckTx._db.db._database.values()].map((value) => value.toString('hex')),
@@ -315,7 +316,7 @@ tape('testing checkpoints', function (tester) {
     ;(<any>CommittedState)._db.checkpoints.push(finalCheckpoint)
     await CheckTx.commit()
 
-    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    // Make sure CheckTx looks like we expect (2 keys, last_block_height=99 + __root__)
     t.deepEqual(
       // @ts-expect-error
       [...CheckTx._db.db._database.values()].map((value) => value.toString('hex')),
@@ -348,7 +349,7 @@ tape('testing checkpoints', function (tester) {
     CommittedState.root(CheckTx.root())
     await CommittedState.persistRoot()
 
-    // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
+    // Make sure CommittedState looks like we expect (2 keys, last_block_height=99 + __root__)
     t.deepEqual(
       // @ts-expect-error
       [...CommittedState._db.db._database.values()].map((value) => value.toString('hex')),
