@@ -1,20 +1,22 @@
 import { Block } from '@ethereumjs/block'
+import { RLP } from '@ethereumjs/rlp'
 import { Transaction } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { RLP } from 'rlp'
-import { PostByzantiumTxReceipt, VM } from '../../src'
+
+import { VM } from '../../src'
 import { BlockBuilder } from '../../src/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
+import type { PostByzantiumTxReceipt } from '../../src'
+
 const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
 
 async function runTransition(argsIn: any) {
-  const args = yargs(hideBin(argsIn))
+  const args = yargs(argsIn)
     .option('state.fork', {
       describe: 'Fork to use',
     })
@@ -36,6 +38,7 @@ async function runTransition(argsIn: any) {
     .option('output.alloc', {
       describe: 'File to write output allocation to (after running the transactions)',
     }).argv
+  console.log(args)
   const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
   const rlpTxs = JSON.parse(readFileSync(args.input.txs).toString())
   const inputEnv = JSON.parse(readFileSync(args.input.env).toString())
@@ -59,7 +62,7 @@ async function runTransition(argsIn: any) {
 
   let txCounter = 0
 
-  vm.on('afterTx', async (afterTx, continueFn) => {
+  vm.events.on('afterTx', async (afterTx, continueFn) => {
     const receipt = <PostByzantiumTxReceipt>afterTx.receipt
     const pushReceipt = {
       root: '0x',
@@ -105,14 +108,16 @@ async function runTransition(argsIn: any) {
 }
 
 process.on('message', async (message) => {
-  //console.log('message from parent:', message);
   if (message === 'STOP') {
     process.exit()
   } else {
     try {
       await runTransition(message)
       // eslint-disable-next-line no-empty
-    } catch (e) {}
+    } catch (e) {
+      console.log(e)
+    }
+
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (process && process.send) {
       process.send('done')

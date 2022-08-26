@@ -1,11 +1,7 @@
 import { resolve } from 'path'
-const ipc = require('node-ipc').default
 
 const fork = require('child_process').fork
-
-ipc.config.id = 'transition-tool-cluster'
-ipc.config.retry = 1500
-ipc.config.silent = true
+const http = require('http')
 
 const program = resolve('transition-child.ts')
 const parameters: any = []
@@ -37,8 +33,8 @@ function getChild() {
   return children[index]
 }
 
-ipc.serve(() => {
-  ipc.server.on('message', (message: any, socket: any) => {
+function runTest(message: any) {
+  return new Promise((resolve) => {
     const childObject = getChild()
 
     childObject.active = true
@@ -48,9 +44,22 @@ ipc.serve(() => {
 
     child.on('message', (_childMessage: any) => {
       childObject.active = false
-      ipc.server.emit(socket, 'message', 'KILL')
+      resolve(undefined)
     })
   })
-  console.log('Transition cluster ready')
+}
+
+const server = http.createServer((request: any, result: any) => {
+  if (request.method === 'POST') {
+    let message = ''
+    request.on('data', (data: any) => {
+      message += data.toString()
+    })
+    request.on('end', async () => {
+      await runTest(message)
+      result.end()
+    })
+  }
 })
-ipc.server.start()
+server.listen(3000)
+console.log('Transition cluster ready')

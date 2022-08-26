@@ -1,2 +1,1 @@
-ETHEREUMJS_RETESTETH=/home/jochem/Documents/ejs/ethereumjs-monorepo/packages/vm/tests/retesteth/transition-tool-launcher.ts
-ts-node $ETHEREUMJS_RETESTETH ${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20}
+curl -X POST -d "${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20}" --silent http://localhost:3000/
