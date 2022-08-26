@@ -12,7 +12,6 @@ import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
 import type { PostByzantiumTxReceipt } from '../../src'
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedBufferArray } from '@ethereumjs/util'
 
@@ -107,10 +106,6 @@ async function runTransition(argsIn: any) {
   const logsBloom = builder.logsBloom()
   const logsHash = Buffer.from(keccak256(logsBloom))
 
-  console.log('0x' + (await vm.eei.getStateRoot()).toString('hex'))
-  console.log('0x' + (await builder.transactionsTrie()).toString('hex'))
-  console.log('0x' + (await builder.receiptTrie()).toString('hex'))
-
   const output = {
     stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
     txRoot: '0x' + (await builder.transactionsTrie()).toString('hex'),
@@ -137,7 +132,6 @@ async function runTransition(argsIn: any) {
 let running = false
 
 process.on('message', async (message) => {
-  console.log(message)
   if (running) {
     return
   }
