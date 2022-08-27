@@ -824,8 +824,33 @@ export class Trie {
     for (let i = 0; i < keyValueItems.length; i++) {
       // TODO keys should be sorted (not sure how the promise event scheduler schedules all events)
       // Could be rather flakey, so need to sort
-      keys.push(keyValueItems[i].key)
-      values.push(keyValueItems[i].value)
+
+      // For some reason keys get added multiple times
+      // (How is this possible? Need to research, if this also happens in findPath then we need to optimize it!!)
+      let found = false
+      for (let j = 0; j < keys.length; j++) {
+        if (keys[j].equals(keyValueItems[i].key)) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        keys.push(keyValueItems[i].key)
+      }
+    }
+
+    keys.sort((a, b) => {
+      return Buffer.compare(a, b)
+    })
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
+      for (let j = 0; j < keyValueItems.length; j++) {
+        if (keyValueItems[j].key.equals(key)) {
+          values.push(keyValueItems[j].value)
+          break
+        }
+      }
     }
 
     return {
