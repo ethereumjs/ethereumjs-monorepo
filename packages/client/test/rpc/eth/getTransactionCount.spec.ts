@@ -64,7 +64,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   block.transactions[0] = tx
 
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   await vm.blockchain.putBlock(ranBlock!)
 

@@ -48,6 +48,7 @@
 - [listenerCount](SNAP-1.md#listenercount-1)
 - [on](SNAP-1.md#on-1)
 - [once](SNAP-1.md#once-1)
+- [setMaxListeners](SNAP-1.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -69,7 +70,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L10)
+[packages/devp2p/src/protocol/snap.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L13)
 
 ## Properties
 
@@ -83,7 +84,7 @@ Protocol.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -99,7 +100,7 @@ Protocol.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -113,7 +114,7 @@ Protocol.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -135,7 +136,7 @@ Protocol.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ___
 
@@ -154,7 +155,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L14)
+[packages/devp2p/src/protocol/snap.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L17)
 
 ## Methods
 
@@ -175,7 +176,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L16)
+[packages/devp2p/src/protocol/snap.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L19)
 
 ___
 
@@ -206,7 +207,7 @@ Protocol.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -273,7 +274,7 @@ Protocol.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -311,7 +312,7 @@ Protocol.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -336,7 +337,7 @@ Protocol.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -356,7 +357,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L83)
+[packages/devp2p/src/protocol/snap.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L86)
 
 ___
 
@@ -370,7 +371,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L87)
+[packages/devp2p/src/protocol/snap.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L90)
 
 ___
 
@@ -400,7 +401,7 @@ Protocol.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -438,7 +439,7 @@ Protocol.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -469,7 +470,7 @@ Protocol.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -524,7 +525,7 @@ Protocol.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -577,7 +578,7 @@ Protocol.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -619,7 +620,7 @@ Protocol.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -659,7 +660,7 @@ Protocol.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -714,7 +715,7 @@ Protocol.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -750,7 +751,7 @@ Protocol.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -856,7 +857,7 @@ Protocol.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -877,7 +878,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L51)
+[packages/devp2p/src/protocol/snap.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L54)
 
 ___
 
@@ -891,7 +892,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L42)
+[packages/devp2p/src/protocol/snap.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L45)
 
 ___
 
@@ -926,7 +927,7 @@ Protocol.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1243,3 +1244,44 @@ Protocol.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+Protocol.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

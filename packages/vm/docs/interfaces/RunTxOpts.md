@@ -27,7 +27,7 @@ If omitted, a default blank block will be used.
 
 #### Defined in
 
-[packages/vm/src/types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L287)
+[packages/vm/src/types.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L288)
 
 ___
 
@@ -39,7 +39,7 @@ To obtain an accurate tx receipt input the block gas used up until this tx.
 
 #### Defined in
 
-[packages/vm/src/types.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L322)
+[packages/vm/src/types.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L323)
 
 ___
 
@@ -58,7 +58,7 @@ StateManager.generateAccessList must be implemented.
 
 #### Defined in
 
-[packages/vm/src/types.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L317)
+[packages/vm/src/types.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L318)
 
 ___
 
@@ -70,7 +70,7 @@ Skip balance checks if true. Adds transaction cost to balance to ensure executio
 
 #### Defined in
 
-[packages/vm/src/types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L299)
+[packages/vm/src/types.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L300)
 
 ___
 
@@ -83,7 +83,7 @@ against the block's gas limit.
 
 #### Defined in
 
-[packages/vm/src/types.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L305)
+[packages/vm/src/types.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L306)
 
 ___
 
@@ -95,7 +95,7 @@ If true, skips the nonce check
 
 #### Defined in
 
-[packages/vm/src/types.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L295)
+[packages/vm/src/types.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L296)
 
 ___
 
@@ -107,4 +107,4 @@ An `@ethereumjs/tx` to run
 
 #### Defined in
 
-[packages/vm/src/types.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L291)
+[packages/vm/src/types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L292)

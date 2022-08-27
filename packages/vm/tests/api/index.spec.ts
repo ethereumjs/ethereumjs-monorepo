@@ -37,18 +37,18 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
     const vm = await VM.create()
     st.ok(vm.stateManager)
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), Hardfork.London, 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.Merge, 'it has correct default HF')
     st.end()
   })
 
   t.test('should be able to activate precompiles', async (st) => {
     const vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has different root'
     )
@@ -89,10 +89,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should only accept valid chain and fork', async (st) => {
     let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     let vm = await VM.create({ common })
-    st.equal(
-      (vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'),
-      BigInt(500)
-    )
+    st.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
@@ -176,7 +173,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
   t.test('should instantiate', async (st) => {
     const vm = await setupVM()
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )

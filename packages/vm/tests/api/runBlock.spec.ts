@@ -29,25 +29,26 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
   async function simpleRun(vm: VM, st: tape.Test) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const genesisRlp = toBuffer(testData.genesisRLP)
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp)
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     //@ts-ignore
     await setupPreConditions(vm.eei, testData)
 
     st.ok(
       //@ts-ignore
-      vm.stateManager._trie.root.equals(genesis.header.stateRoot),
+      vm.stateManager._trie.root().equals(genesis.header.stateRoot),
       'genesis state root should match calculated state root'
     )
 
     const res = await vm.runBlock({
       block,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
@@ -64,30 +65,31 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.eei, testData)
 
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block1Rlp = toBuffer(testData.blocks[0].rlp)
-    const block1 = Block.fromRLPSerializedBlock(block1Rlp)
+    const block1 = Block.fromRLPSerializedBlock(block1Rlp, { common })
     await vm.runBlock({
       block: block1,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
     const block2Rlp = toBuffer(testData.blocks[1].rlp)
-    const block2 = Block.fromRLPSerializedBlock(block2Rlp)
+    const block2 = Block.fromRLPSerializedBlock(block2Rlp, { common })
     await vm.runBlock({
       block: block2,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
     const block3Rlp = toBuffer(testData.blocks[2].rlp)
-    const block3 = Block.fromRLPSerializedBlock(block3Rlp)
+    const block3 = Block.fromRLPSerializedBlock(block3Rlp, { common })
     await vm.runBlock({
       block: block3,
       // @ts-ignore
-      root: vm.stateManager._trie.root,
+      root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
     })
 
@@ -195,8 +197,9 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   const vm = await VM.create({ common })
 
   t.test('should fail when runTx fails', async (t) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
@@ -225,7 +228,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     const vm = await VM.create({ common })
 
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
 
     await vm
       .runBlock({ block })
@@ -238,7 +241,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   t.test('should fail when no `validateHeader` method exists on blockchain class', async (t) => {
     const vm = await VM.create({ common })
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
     ;(vm.blockchain as any).validateHeader = undefined
     try {
       await vm.runBlock({ block })
@@ -255,7 +258,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     const vm = await VM.create({ common })
 
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
+    const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
@@ -384,12 +387,12 @@ async function runBlockAndGetAfterBlockEvent(
   }
 
   try {
-    vm.once('afterBlock', handler)
+    vm.events.once('afterBlock', handler)
     await vm.runBlock(runBlockOpts)
   } finally {
     // We need this in case `runBlock` throws before emitting the event.
     // Otherwise we'd be leaking the listener until the next call to runBlock.
-    vm.removeListener('afterBlock', handler)
+    vm.events.removeListener('afterBlock', handler)
   }
 
   return results!

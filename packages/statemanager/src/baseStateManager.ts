@@ -1,4 +1,3 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
@@ -20,7 +19,6 @@ import type { Debugger } from 'debug'
  * and we cannot guarantee a stable interface yet.
  */
 export abstract class BaseStateManager {
-  _common: Common
   _debug: Debugger
   _cache!: Cache
 
@@ -37,13 +35,7 @@ export abstract class BaseStateManager {
   /**
    * Needs to be called from the subclass constructor
    */
-  constructor(opts: DefaultStateManagerOpts) {
-    let common = opts.common
-    if (!common) {
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    }
-    this._common = common
-
+  constructor(_opts: DefaultStateManagerOpts) {
     // Safeguard if "process" is not available (browser)
     if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
@@ -79,7 +71,7 @@ export abstract class BaseStateManager {
   /**
    * Gets the account associated with `address`, modifies the given account
    * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
@@ -87,7 +79,7 @@ export abstract class BaseStateManager {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
     account.codeHash = accountFields.codeHash ?? account.codeHash
     await this.putAccount(address, account)
   }
