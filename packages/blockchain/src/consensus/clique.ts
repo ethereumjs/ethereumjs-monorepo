@@ -377,7 +377,7 @@ export class CliqueConsensus implements Consensus {
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
-    if (typeof lastBlockNumber === 'bigint') {
+    if (lastBlockNumber !== undefined) {
       const lastEpochBlockNumber =
         lastBlockNumber -
         (lastBlockNumber %
