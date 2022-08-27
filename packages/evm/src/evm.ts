@@ -444,7 +444,7 @@ export class EVM implements EVMInterface {
 
     // Check for collision
     if (
-      (typeof toAccount.nonce === 'bigint' && toAccount.nonce > BigInt(0)) ||
+      (toAccount.nonce !== undefined && toAccount.nonce > BigInt(0)) ||
       !toAccount.codeHash.equals(KECCAK256_NULL)
     ) {
       if (this.DEBUG) {
