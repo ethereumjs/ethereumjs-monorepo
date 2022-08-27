@@ -1,6 +1,0 @@
-{
-  "extends": "../../config/nyc.json",
-  "include": [
-    "lib/**/*.ts"
-  ]
-}

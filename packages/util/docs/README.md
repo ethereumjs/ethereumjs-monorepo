@@ -118,7 +118,7 @@ A type that represents an input that can be converted to an Address.
 
 #### Defined in
 
-[types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L30)
+[types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L32)
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 #### Defined in
 
-[types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L8)
+[types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L10)
 
 ___
 
@@ -138,7 +138,7 @@ ___
 
 #### Defined in
 
-[types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L13)
+[types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L15)
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 #### Defined in
 
-[types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L49)
+[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L51)
 
 ___
 
@@ -158,7 +158,7 @@ ___
 
 #### Defined in
 
-[types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L48)
+[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L50)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Defined in
 
-[types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L25)
+[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L27)
 
 ___
 
@@ -178,7 +178,7 @@ ___
 
 #### Defined in
 
-[bytes.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L135)
+[bytes.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L136)
 
 ___
 
@@ -197,7 +197,7 @@ ___
 
 #### Defined in
 
-[types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L61)
+[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L63)
 
 ## Variables
 
@@ -371,7 +371,7 @@ Adds "0x" to a given `String` if it does not already start with "0x".
 
 #### Defined in
 
-[bytes.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L257)
+[bytes.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L258)
 
 ___
 
@@ -393,7 +393,7 @@ Converts a Uint8Array or [NestedUint8Array](README.md#nesteduint8array) to Buffe
 
 #### Defined in
 
-[bytes.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L350)
+[bytes.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L351)
 
 ▸ **arrToBufArr**(`arr`): [`NestedBufferArray`](README.md#nestedbufferarray)
 
@@ -409,7 +409,7 @@ Converts a Uint8Array or [NestedUint8Array](README.md#nesteduint8array) to Buffe
 
 #### Defined in
 
-[bytes.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L351)
+[bytes.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L352)
 
 ▸ **arrToBufArr**(`arr`): `Buffer` \| [`NestedBufferArray`](README.md#nestedbufferarray)
 
@@ -425,7 +425,7 @@ Converts a Uint8Array or [NestedUint8Array](README.md#nesteduint8array) to Buffe
 
 #### Defined in
 
-[bytes.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L352)
+[bytes.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L353)
 
 ___
 
@@ -474,7 +474,7 @@ Converts a `Buffer` or `Array` to JSON.
 
 #### Defined in
 
-[bytes.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L314)
+[bytes.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L315)
 
 ___
 
@@ -496,7 +496,7 @@ Converts a bigint to a Buffer
 
 #### Defined in
 
-[bytes.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L223)
+[bytes.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L224)
 
 ___
 
@@ -518,7 +518,7 @@ Converts a bigint to a `0x` prefixed hex string
 
 #### Defined in
 
-[bytes.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L376)
+[bytes.ts:377](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L377)
 
 ___
 
@@ -541,7 +541,7 @@ Convert value from bigint to an unpadded Buffer
 
 #### Defined in
 
-[bytes.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L385)
+[bytes.ts:386](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L386)
 
 ___
 
@@ -563,7 +563,7 @@ Converts a Buffer or [NestedBufferArray](README.md#nestedbufferarray) to Uint8Ar
 
 #### Defined in
 
-[bytes.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L363)
+[bytes.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L364)
 
 ▸ **bufArrToArr**(`arr`): [`NestedUint8Array`](README.md#nesteduint8array)
 
@@ -579,7 +579,7 @@ Converts a Buffer or [NestedBufferArray](README.md#nestedbufferarray) to Uint8Ar
 
 #### Defined in
 
-[bytes.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L364)
+[bytes.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L365)
 
 ▸ **bufArrToArr**(`arr`): `Uint8Array` \| [`NestedUint8Array`](README.md#nesteduint8array)
 
@@ -595,7 +595,7 @@ Converts a Buffer or [NestedBufferArray](README.md#nestedbufferarray) to Uint8Ar
 
 #### Defined in
 
-[bytes.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L365)
+[bytes.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L366)
 
 ___
 
@@ -617,7 +617,7 @@ Converts a Buffer to a bigint
 
 #### Defined in
 
-[bytes.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L212)
+[bytes.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L213)
 
 ___
 
@@ -639,7 +639,7 @@ Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
 #### Defined in
 
-[bytes.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L204)
+[bytes.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L205)
 
 ___
 
@@ -665,7 +665,7 @@ If the input number exceeds 53 bits.
 
 #### Defined in
 
-[bytes.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L232)
+[bytes.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L233)
 
 ___
 
@@ -674,7 +674,7 @@ ___
 ▸ **ecrecover**(`msgHash`, `v`, `r`, `s`, `chainId?`): `Buffer`
 
 ECDSA public key recovery from signature.
-NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -794,7 +794,7 @@ Interprets a `Buffer` as a signed integer and returns a `BigInt`. Assumes 256-bi
 
 #### Defined in
 
-[bytes.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L242)
+[bytes.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L243)
 
 ___
 
@@ -841,7 +841,7 @@ Generates an address of a newly created contract.
 
 #### Defined in
 
-[account.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L196)
+[account.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L198)
 
 ___
 
@@ -865,7 +865,7 @@ Generates an address for a contract created using CREATE2.
 
 #### Defined in
 
-[account.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L216)
+[account.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L218)
 
 ___
 
@@ -970,7 +970,7 @@ Converts a public key to the Ethereum format.
 
 #### Defined in
 
-[account.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L313)
+[account.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L315)
 
 ___
 
@@ -992,7 +992,7 @@ Converts an `Number` to a `Buffer`
 
 #### Defined in
 
-[bytes.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L28)
+[bytes.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L29)
 
 ___
 
@@ -1014,7 +1014,7 @@ Converts a `Number` into a hex `String`
 
 #### Defined in
 
-[bytes.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L16)
+[bytes.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L17)
 
 ___
 
@@ -1040,7 +1040,7 @@ value is Falsy
 
 #### Defined in
 
-[types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L131)
+[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L133)
 
 ___
 
@@ -1125,7 +1125,7 @@ value is T
 
 #### Defined in
 
-[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L150)
+[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L152)
 
 ___
 
@@ -1147,7 +1147,7 @@ Checks if the address is a valid. Accepts checksummed addresses too.
 
 #### Defined in
 
-[account.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L129)
+[account.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L131)
 
 ___
 
@@ -1172,7 +1172,7 @@ See toChecksumAddress' documentation for details about the eip1191ChainId parame
 
 #### Defined in
 
-[account.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L184)
+[account.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L186)
 
 ___
 
@@ -1194,7 +1194,7 @@ Checks if the private key satisfies the rules of the curve secp256k1.
 
 #### Defined in
 
-[account.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L238)
+[account.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L240)
 
 ___
 
@@ -1218,7 +1218,7 @@ and the requirements of Ethereum.
 
 #### Defined in
 
-[account.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L248)
+[account.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L250)
 
 ___
 
@@ -1227,7 +1227,7 @@ ___
 ▸ **isValidSignature**(`v`, `r`, `s`, `homesteadOrLater?`, `chainId?`): `boolean`
 
 Validate a ECDSA signature.
-NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1267,7 +1267,7 @@ Checks if a given address is the zero address.
 
 #### Defined in
 
-[account.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L333)
+[account.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L335)
 
 ___
 
@@ -1313,7 +1313,7 @@ Returns the ethereum address of a given private key.
 
 #### Defined in
 
-[account.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L306)
+[account.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L308)
 
 ___
 
@@ -1335,7 +1335,7 @@ Returns the ethereum public key of a given private key.
 
 #### Defined in
 
-[account.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L296)
+[account.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L298)
 
 ___
 
@@ -1359,7 +1359,7 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 #### Defined in
 
-[account.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L279)
+[account.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L281)
 
 ___
 
@@ -1383,7 +1383,7 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 #### Defined in
 
-[account.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L279)
+[account.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L281)
 
 ___
 
@@ -1409,7 +1409,7 @@ Or it truncates the beginning if it exceeds.
 
 #### Defined in
 
-[bytes.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L73)
+[bytes.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L74)
 
 ___
 
@@ -1435,7 +1435,7 @@ it truncates the end if it exceeds.
 
 #### Defined in
 
-[bytes.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L85)
+[bytes.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L86)
 
 ___
 
@@ -1463,7 +1463,7 @@ Output: '657468657265756d0000000000000000000000000000000000…'
 
 #### Defined in
 
-[bytes.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L273)
+[bytes.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L274)
 
 ___
 
@@ -1535,7 +1535,7 @@ with a `toArray()` or `toBuffer()` method.
 
 #### Defined in
 
-[bytes.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L153)
+[bytes.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L154)
 
 ___
 
@@ -1567,7 +1567,7 @@ Usage of this EIP is therefore discouraged unless you have a very targeted use c
 
 #### Defined in
 
-[account.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L151)
+[account.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L153)
 
 ___
 
@@ -1576,7 +1576,7 @@ ___
 ▸ **toCompactSig**(`v`, `r`, `s`, `chainId?`): `string`
 
 Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
-NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1604,7 +1604,7 @@ ___
 ▸ **toRpcSig**(`v`, `r`, `s`, `chainId?`): `string`
 
 Convert signature parameters into the format of `eth_sign` RPC method.
-NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
+NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 #### Parameters
 
@@ -1653,7 +1653,7 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Defined in
 
-[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L74)
+[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L76)
 
 ▸ **toType**<`T`\>(`input`, `outputType`): `undefined`
 
@@ -1676,7 +1676,7 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Defined in
 
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L75)
+[types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L77)
 
 ▸ **toType**<`T`\>(`input`, `outputType`): [`TypeOutputReturnType`](README.md#typeoutputreturntype)[`T`]
 
@@ -1699,7 +1699,7 @@ Input of null/undefined returns null/undefined regardless of the output type.
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L76)
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L78)
 
 ___
 
@@ -1721,7 +1721,7 @@ Converts a `BigInt` to an unsigned integer and returns it as a `Buffer`. Assumes
 
 #### Defined in
 
-[bytes.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L250)
+[bytes.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L251)
 
 ___
 
@@ -1756,7 +1756,7 @@ Utf8 string
 
 #### Defined in
 
-[bytes.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L298)
+[bytes.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L299)
 
 ___
 
@@ -1780,7 +1780,7 @@ Trims leading zeros from an `Array` (of numbers).
 
 #### Defined in
 
-[bytes.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L119)
+[bytes.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L120)
 
 ___
 
@@ -1804,7 +1804,7 @@ Trims leading zeros from a `Buffer`.
 
 #### Defined in
 
-[bytes.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L109)
+[bytes.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L110)
 
 ___
 
@@ -1828,7 +1828,7 @@ Trims leading zeros from a hex-prefixed `String`.
 
 #### Defined in
 
-[bytes.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L129)
+[bytes.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L130)
 
 ___
 
@@ -1862,7 +1862,7 @@ if any provided value is found to have leading zero bytes
 
 #### Defined in
 
-[bytes.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L339)
+[bytes.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L340)
 
 ___
 
@@ -1878,7 +1878,7 @@ Returns the zero address.
 
 #### Defined in
 
-[account.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L324)
+[account.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L326)
 
 ___
 
@@ -1900,4 +1900,4 @@ Returns a buffer filled with 0s.
 
 #### Defined in
 
-[bytes.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L37)
+[bytes.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L38)

@@ -1,5 +1,6 @@
-const { Trie } = require('../dist')
 const { open } = require('lmdb')
+
+const { Trie } = require('../dist')
 
 class LMDB {
   constructor(path) {
