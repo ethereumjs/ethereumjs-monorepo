@@ -68,7 +68,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)

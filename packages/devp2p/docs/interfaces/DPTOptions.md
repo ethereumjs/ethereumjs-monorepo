@@ -28,7 +28,7 @@ Default: dgram-created socket
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L42)
+[packages/devp2p/src/dpt/dpt.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L44)
 
 ___
 
@@ -40,7 +40,7 @@ DNS server to query DNS TXT records from for peer discovery
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L84)
+[packages/devp2p/src/dpt/dpt.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L86)
 
 ___
 
@@ -54,7 +54,7 @@ Default: (network dependent)
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L79)
+[packages/devp2p/src/dpt/dpt.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L81)
 
 ___
 
@@ -69,7 +69,7 @@ Default: 25
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L72)
+[packages/devp2p/src/dpt/dpt.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L74)
 
 ___
 
@@ -83,7 +83,7 @@ Default: 0.0.0.0, no UDP or TCP port provided
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L35)
+[packages/devp2p/src/dpt/dpt.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L37)
 
 ___
 
@@ -97,7 +97,7 @@ Default: 60s
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L49)
+[packages/devp2p/src/dpt/dpt.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L51)
 
 ___
 
@@ -112,7 +112,7 @@ Default: true
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L57)
+[packages/devp2p/src/dpt/dpt.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L59)
 
 ___
 
@@ -126,7 +126,7 @@ Default: false
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L64)
+[packages/devp2p/src/dpt/dpt.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L66)
 
 ___
 
@@ -140,4 +140,4 @@ Default: 10s
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L28)
+[packages/devp2p/src/dpt/dpt.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L30)

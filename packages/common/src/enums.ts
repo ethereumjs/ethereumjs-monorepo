@@ -2,7 +2,6 @@ export enum Chain {
   Mainnet = 1,
   Ropsten = 3,
   Rinkeby = 4,
-  Kovan = 42,
   Goerli = 5,
   Sepolia = 11155111,
 }

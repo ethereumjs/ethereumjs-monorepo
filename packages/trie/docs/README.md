@@ -11,9 +11,8 @@
 - [CheckpointTrie](classes/CheckpointTrie.md)
 - [ExtensionNode](classes/ExtensionNode.md)
 - [LeafNode](classes/LeafNode.md)
-- [LevelDB](classes/LevelDB.md)
+- [MapDB](classes/MapDB.md)
 - [PrioritizedTaskExecutor](classes/PrioritizedTaskExecutor.md)
-- [SecureTrie](classes/SecureTrie.md)
 - [Trie](classes/Trie.md)
 - [TrieReadStream](classes/TrieReadStream.md)
 - [WalkController](classes/WalkController.md)
@@ -31,14 +30,13 @@
 - [Checkpoint](README.md#checkpoint)
 - [EmbeddedNode](README.md#embeddednode)
 - [FoundNodeFunction](README.md#foundnodefunction)
-- [HashFunc](README.md#hashfunc)
+- [HashKeysFunction](README.md#hashkeysfunction)
 - [Nibbles](README.md#nibbles)
 - [Proof](README.md#proof)
 - [TrieNode](README.md#trienode)
 
 ### Variables
 
-- [ENCODING\_OPTS](README.md#encoding_opts)
 - [ROOT\_DB\_KEY](README.md#root_db_key)
 
 ### Functions
@@ -56,7 +54,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L49)
+[packages/trie/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L63)
 
 ___
 
@@ -73,7 +71,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L96)
+[packages/trie/src/types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L110)
 
 ___
 
@@ -114,9 +112,9 @@ ___
 
 ___
 
-### HashFunc
+### HashKeysFunction
 
-Ƭ **HashFunc**: (`msg`: `Uint8Array`) => `Uint8Array`
+Ƭ **HashKeysFunction**: (`msg`: `Uint8Array`) => `Uint8Array`
 
 #### Type declaration
 
@@ -168,30 +166,13 @@ ___
 
 ## Variables
 
-### ENCODING\_OPTS
-
-• `Const` **ENCODING\_OPTS**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `keyEncoding` | `string` |
-| `valueEncoding` | `string` |
-
-#### Defined in
-
-[packages/trie/src/db/level.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/level.ts#L8)
-
-___
-
 ### ROOT\_DB\_KEY
 
 • `Const` **ROOT\_DB\_KEY**: `Buffer`
 
 #### Defined in
 
-[packages/trie/src/types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L103)
+[packages/trie/src/types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L117)
 
 ## Functions
 
@@ -211,7 +192,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L24)
+[packages/trie/src/trie/node/util.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L25)
 
 ___
 
@@ -231,7 +212,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L10)
+[packages/trie/src/trie/node/util.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L11)
 
 ___
 
@@ -251,13 +232,13 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L32)
+[packages/trie/src/trie/node/util.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/util.ts#L33)
 
 ___
 
 ### verifyRangeProof
 
-▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `hash`): `Promise`<`boolean`\>
+▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `useHashedKeysFunction`): `Promise`<`boolean`\>
 
 verifyRangeProof checks whether the given leaf nodes and edge proof
 can prove the given trie leaves range is matched with the specific root.
@@ -288,7 +269,7 @@ NOTE: Currently only supports verification when the length of firstKey and lastK
 | `keys` | [`Nibbles`](README.md#nibbles)[] | key list. |
 | `values` | `Buffer`[] | value list, one-to-one correspondence with keys. |
 | `proof` | ``null`` \| `Buffer`[] | proof node list, if proof is null, both `firstKey` and `lastKey` must be null |
-| `hash` | [`HashFunc`](README.md#hashfunc) | - |
+| `useHashedKeysFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
 
 #### Returns
 
@@ -298,4 +279,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L409)
+[packages/trie/src/proof/range.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L410)

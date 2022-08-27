@@ -431,7 +431,7 @@ tape(
     let storage = await eei.getContractStorage(address, slot)
 
     // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-    t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
+    t.ok(!storage.equals(emptyBuffer), 'successfully created contract')
 
     await evm.runCall(runCallArgs)
 

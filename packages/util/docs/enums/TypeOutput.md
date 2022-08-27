@@ -21,7 +21,7 @@ Type output options
 
 #### Defined in
 
-[types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L56)
+[types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L58)
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 #### Defined in
 
-[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L57)
+[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L59)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 #### Defined in
 
-[types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L55)
+[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L57)
 
 ___
 
@@ -51,4 +51,4 @@ ___
 
 #### Defined in
 
-[types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L58)
+[types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L60)
