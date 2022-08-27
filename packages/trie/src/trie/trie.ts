@@ -749,7 +749,7 @@ export class Trie {
     const lowKeyNibbles = bufferToNibbles(startingHash)
     const highKeyNibbles = bufferToNibbles(limitHash)
 
-    const initialProof = await this.createProof(startingHash)
+    const proof = await this.createProof(startingHash)
 
     const keyValueItems: RangeProofItem[] = []
 
@@ -791,7 +791,48 @@ export class Trie {
         })
       }
     })
-    return keyValueItems
+
+    let maxValueIndex = -1
+    let maxKeyBuffer = Buffer.from('')
+    for (let i = 0; i < keyValueItems.length; i++) {
+      if (Buffer.compare(keyValueItems[i].key, maxKeyBuffer) === 1) {
+        maxValueIndex = i
+        maxKeyBuffer = keyValueItems[i].key
+      }
+    }
+
+    if (maxValueIndex !== -1) {
+      const rightValueProof = await this.createProof(maxKeyBuffer)
+      for (let i = 0; i < rightValueProof.length; i++) {
+        // Check if proof node exists
+        let found = false
+        for (let j = 0; j < proof.length; j++) {
+          if (proof[j].equals(rightValueProof[i])) {
+            found = true
+            break
+          }
+        }
+        if (!found) {
+          proof.push(rightValueProof[i])
+        }
+      }
+    }
+
+    const keys = []
+    const values = []
+
+    for (let i = 0; i < keyValueItems.length; i++) {
+      // TODO keys should be sorted (not sure how the promise event scheduler schedules all events)
+      // Could be rather flakey, so need to sort
+      keys.push(keyValueItems[i].key)
+      values.push(keyValueItems[i].value)
+    }
+
+    return {
+      keys,
+      values,
+      proof,
+    }
   }
 
   /**

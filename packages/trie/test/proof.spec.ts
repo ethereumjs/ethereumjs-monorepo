@@ -170,6 +170,14 @@ tape('simple merkle proofs generation and verification', function (tester) {
     await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
     await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
 
-    console.log(await trie.createRangeProof(Buffer.from(''), Buffer.from('2FFF', 'hex')))
+    const lKey = Buffer.from('')
+    const rKey = Buffer.from('2FFF', 'hex')
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    console.log(proof)
+
+    // fails, invalid key order
+    await trie.verifyRangeProof(trie.root(), lKey, rKey, proof.keys, <any>proof.values, proof.proof)
   })
 })
