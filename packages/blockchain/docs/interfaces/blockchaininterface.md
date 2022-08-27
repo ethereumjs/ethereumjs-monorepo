@@ -33,7 +33,7 @@
 
 #### Defined in
 
-[types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L11)
+[types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L10)
 
 ## Methods
 
@@ -49,7 +49,7 @@ Returns a copy of the blockchain
 
 #### Defined in
 
-[types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L46)
+[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L45)
 
 ___
 
@@ -72,7 +72,7 @@ deleted and any encountered heads are set to the parent block.
 
 #### Defined in
 
-[types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L25)
+[types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L24)
 
 ___
 
@@ -89,7 +89,7 @@ All values are provided as hex-prefixed strings.
 
 #### Defined in
 
-[types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L71)
+[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L70)
 
 ___
 
@@ -111,7 +111,7 @@ Returns a block by its hash or number.
 
 #### Defined in
 
-[types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L30)
+[types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L29)
 
 ___
 
@@ -127,7 +127,7 @@ Returns the latest full block in the canonical chain.
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L76)
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
 
 ___
 
@@ -135,11 +135,13 @@ ___
 
 ▸ `Optional` **getIteratorHead**(`name?`): `Promise`<`Block`\>
 
+Returns the specified iterator head.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `name?` | `string` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `name?` | `string` | Optional name of the iterator head (default: 'vm') |
 
 #### Returns
 
@@ -147,7 +149,7 @@ ___
 
 #### Defined in
 
-[types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L60)
+[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L59)
 
 ___
 
@@ -170,7 +172,7 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L65)
+[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L64)
 
 ___
 
@@ -195,7 +197,7 @@ the onBlock function on each block.
 
 #### Defined in
 
-[types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L41)
+[types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L40)
 
 ___
 
@@ -217,7 +219,7 @@ Adds a block to the blockchain.
 
 #### Defined in
 
-[types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L17)
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L16)
 
 ___
 
@@ -240,4 +242,4 @@ Validates a block header, throwing if invalid. It is being validated against the
 
 #### Defined in
 
-[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L59)
+[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L52)

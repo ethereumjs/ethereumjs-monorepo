@@ -1,4 +1,6 @@
-import { isFalsy, isHexString } from '@ethereumjs/util'
+import { TypeOutput, isFalsy, isHexString, toType } from '@ethereumjs/util'
+
+import type { BlockHeaderBuffer, HeaderData } from './types'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -15,4 +17,59 @@ export const numberToHex = function (input?: string) {
     return '0x' + parseInt(input, 10).toString(16)
   }
   return input
+}
+
+export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
+  const [
+    parentHash,
+    uncleHash,
+    coinbase,
+    stateRoot,
+    transactionsTrie,
+    receiptTrie,
+    logsBloom,
+    difficulty,
+    number,
+    gasLimit,
+    gasUsed,
+    timestamp,
+    extraData,
+    mixHash,
+    nonce,
+    baseFeePerGas,
+  ] = values
+
+  if (values.length > 16) {
+    throw new Error('invalid header. More values than expected were received')
+  }
+  if (values.length < 15) {
+    throw new Error('invalid header. Less values than expected were received')
+  }
+
+  return {
+    parentHash,
+    uncleHash,
+    coinbase,
+    stateRoot,
+    transactionsTrie,
+    receiptTrie,
+    logsBloom,
+    difficulty,
+    number,
+    gasLimit,
+    gasUsed,
+    timestamp,
+    extraData,
+    mixHash,
+    nonce,
+    baseFeePerGas,
+  }
+}
+
+export function getDifficulty(headerData: HeaderData): bigint | null {
+  const { difficulty } = headerData
+  if (difficulty !== undefined) {
+    return toType(difficulty, TypeOutput.BigInt)
+  }
+  return null
 }

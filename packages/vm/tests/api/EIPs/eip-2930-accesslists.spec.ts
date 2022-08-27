@@ -5,8 +5,6 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { EVM } from '@ethereumjs/evm'
-
 const common = new Common({
   eips: [2718, 2929, 2930],
   chain: Chain.Mainnet,
@@ -66,7 +64,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
 
     let trace: any = []
 
-    ;(<EVM>vm.evm).on('step', (o: any) => {
+    vm.evm.events!.on('step', (o: any) => {
       trace.push([o.opcode.name, o.gasLeft])
     })
 
