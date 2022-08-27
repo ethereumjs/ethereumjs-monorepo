@@ -18,10 +18,8 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Flush the checkpoints and set the requested checkpoints.
-   *
+   * Flush the checkpoints and use the given checkpoints instead.
    * @param {Checkpoint[]} checkpoints
-   * @memberof CheckpointDB
    */
   setCheckpoints(checkpoints: Checkpoint[]) {
     this.checkpoints = []
