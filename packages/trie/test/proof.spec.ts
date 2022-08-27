@@ -1,10 +1,11 @@
 import * as tape from 'tape'
 
-import { Trie } from '../src'
+import { Trie, decodeNode } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
 
+  /*
   it('create a merkle proof and verify it', async (t) => {
     const trie = new Trie()
 
@@ -152,5 +153,23 @@ tape('simple merkle proofs generation and verification', function (tester) {
     t.equal(val!.toString('utf8'), 'c')
 
     t.end()
+  }) */
+
+  it('should create range proof', async (t) => {
+    const trie = new Trie()
+
+    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+
+    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+
+    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+
+    console.log(await trie.createRangeProof(Buffer.from(''), Buffer.from('2FFF', 'hex')))
   })
 })

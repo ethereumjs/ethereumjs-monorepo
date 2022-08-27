@@ -124,3 +124,8 @@ export type Checkpoint = {
 }
 
 export const ROOT_DB_KEY = Buffer.from('__root__')
+
+export type RangeProofItem = {
+  key: Buffer
+  value: Buffer
+}

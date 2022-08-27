@@ -5,7 +5,13 @@ import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
-import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import {
+  bufferToNibbles,
+  doKeysMatch,
+  matchingNibbleLength,
+  nibblesCompare,
+  nibblesToBuffer,
+} from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
@@ -18,6 +24,7 @@ import type {
   Nibbles,
   Proof,
   PutBatch,
+  RangeProofItem,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
@@ -728,6 +735,78 @@ export class Trie {
       proof,
       this._opts.useKeyHashingFunction
     )
+  }
+
+  /**
+   * Return a range proof of trie items between startingHash and limitHash
+   * This proof can be verified using `verifyRangeProof`.
+   * Note, that the proof will always include a proof for the startingHash (even if it does not exist)
+   * The limitHash could not be proved,
+   * @param startingHash This is the starting (hash) key item (note on non-hashed tries this is just a key)
+   * @param limitHash This is the limit (hash) key item (note on non-hashed tries this is just a key)
+   */
+  async createRangeProof(startingHash: Buffer, limitHash: Buffer) {
+    const lowKeyNibbles = bufferToNibbles(startingHash)
+    const highKeyNibbles = bufferToNibbles(limitHash)
+
+    const initialProof = await this.createProof(startingHash)
+
+    const keyValueItems: RangeProofItem[] = []
+
+    function keyChk(key: Nibbles) {
+      if (lowKeyNibbles.length < key.length || nibblesCompare(lowKeyNibbles, key) <= 0) {
+        // Larger or equal to starting hash
+        if (nibblesCompare(highKeyNibbles, key) >= 0) {
+          // Lower or equal to highKeyNibbles
+          return true
+        }
+      }
+      return false
+    }
+
+    await this.walkTrie(this.root(), async (_, node, keyProgress, walkController) => {
+      const keyCopy = [...keyProgress]
+      const key = nibblesToBuffer(keyProgress)
+      if (node instanceof BranchNode) {
+        const children = node.getChildren()
+        for (let i = 0; i < children.length; i++) {
+          const cpy = [...keyCopy]
+          cpy.push(children[i][0])
+          if (keyChk(cpy))
+            // This node matches the range, so go deeper
+            walkController.onlyBranchIndex(node, keyProgress, children[i][0])
+          if (node.value() !== null && keyChk(keyProgress)) {
+            keyValueItems.push({
+              key: nibblesToBuffer(keyProgress),
+              value: node.value()!,
+            })
+
+            // TODO edge case: there are no more keys, how to prove this?
+            // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
+            // X is the final value
+          }
+        }
+      } else if (node instanceof ExtensionNode) {
+        const extKey = [...keyProgress, ...node._nibbles]
+        if (keyChk(extKey)) {
+          walkController.allChildren(node, keyProgress)
+        }
+        if (node.value() !== null && keyChk(keyProgress)) {
+          keyValueItems.push({
+            key: nibblesToBuffer(keyProgress),
+            value: node.value()!,
+          })
+        }
+      } else if (node instanceof LeafNode) {
+        if (node.value() !== null && keyChk(keyProgress)) {
+          keyValueItems.push({
+            key: nibblesToBuffer(keyProgress),
+            value: node.value()!,
+          })
+        }
+      }
+    })
+    return keyValueItems
   }
 
   /**
