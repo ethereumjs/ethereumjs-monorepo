@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { Trie, decodeNode } from '../src'
+import { bufferToNibbles } from '../src/util/nibbles'
 
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
@@ -156,7 +157,9 @@ tape('simple merkle proofs generation and verification', function (tester) {
   }) */
 
   it('should create range proof', async (t) => {
-    const trie = new Trie()
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
 
     await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
     await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
@@ -171,13 +174,13 @@ tape('simple merkle proofs generation and verification', function (tester) {
     await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
 
     const lKey = Buffer.from('')
-    const rKey = Buffer.from('2FFF', 'hex')
+    const rKey = Buffer.from('FFFF', 'hex')
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
     console.log(proof)
 
     // fails, invalid key order
-    await trie.verifyRangeProof(trie.root(), lKey, rKey, proof.keys, <any>proof.values, proof.proof)
+    await trie.verifyRangeProof(trie.root(), lKey, rKey, proof.keys, proof.values, proof.proof)
   })
 })

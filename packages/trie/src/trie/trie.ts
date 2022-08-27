@@ -785,8 +785,16 @@ export class Trie {
         }
       }
       if (node !== null && node.value() !== null && keyChk(keyProgress)) {
+        let targetKey: Nibbles
+        if (node instanceof BranchNode) {
+          targetKey = keyProgress
+        } else if (node instanceof ExtensionNode) {
+          targetKey = [...keyProgress, ...node._nibbles]
+        } else if (node instanceof LeafNode) {
+          targetKey = [...keyProgress, ...node._nibbles]
+        }
         keyValueItems.push({
-          key: nibblesToBuffer(keyProgress),
+          key: nibblesToBuffer(targetKey!),
           value: node.value()!,
         })
       }
