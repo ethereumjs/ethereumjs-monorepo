@@ -2,7 +2,7 @@ import { setLengthLeft, toBuffer } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import { LevelDB, Trie } from '../../src'
+import { MapDB, Trie } from '../../src'
 
 import type { DB } from '../../src'
 
@@ -82,7 +82,7 @@ async function verify(
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
   return await trie.verifyRangeProof(
-    trie.root,
+    trie.root(),
     startKey,
     endKey,
     keys ?? targetRange.map(([key]) => key),
@@ -95,7 +95,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   const it = tester.test
 
   it('create a range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 2)
@@ -109,7 +109,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a non-existent range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 1)
@@ -137,7 +137,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create invalid non-existent range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 100
     const end = 200
@@ -164,7 +164,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a one element range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 255
     const startKey = entries[start][0]
@@ -186,7 +186,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     t.equal(await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey), true)
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new Trie({ db: new LevelDB() })
+    const tinyTrie = new Trie()
     const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -195,11 +195,11 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create all element range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     t.equal(
       await trie.verifyRangeProof(
-        trie.root,
+        trie.root(),
         null,
         null,
         entries.map(([key]) => key),
@@ -228,7 +228,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a single side range proof and verify it', async (t) => {
     const startKey = Buffer.from('00'.repeat(32), 'hex')
-    const { trie, entries } = await randomTrie(new LevelDB(), false)
+    const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const end of cases) {
@@ -238,7 +238,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a revert single side range proof and verify it', async (t) => {
     const endKey = Buffer.from('ff'.repeat(32), 'hex')
-    const { trie, entries } = await randomTrie(new LevelDB(), false)
+    const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const start of cases) {
@@ -248,7 +248,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a bad range proof and verify it', async (t) => {
     const runTest = async (cb: (trie: Trie, entries: [Buffer, Buffer][]) => Promise<void>) => {
-      const { trie, entries } = await randomTrie(new LevelDB(), false)
+      const { trie, entries } = await randomTrie(new MapDB(), false)
 
       let result = false
       try {
@@ -305,7 +305,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a gapped range proof and verify it', async (t) => {
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie()
     const entries: [Buffer, Buffer][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBuffer(i), 32)
@@ -344,7 +344,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a same side range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB())
+    const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 200
     const end = 200
@@ -376,7 +376,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('should hasRightElement succeed', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB(), false)
+    const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases: { start: number; end: number; expect: boolean }[] = [
       {
@@ -455,7 +455,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a bloated range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new LevelDB(), false)
+    const { trie, entries } = await randomTrie(new MapDB(), false)
 
     let bloatedProof: Buffer[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {

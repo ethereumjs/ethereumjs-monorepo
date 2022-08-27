@@ -26,7 +26,7 @@ export async function getPreState(
   },
   common: Common
 ): Promise<StateManager> {
-  const state = new DefaultStateManager({ common })
+  const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {
     const address = new Address(toBuffer(k))

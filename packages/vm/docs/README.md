@@ -50,10 +50,10 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `afterBlock` | (`data`: [`AfterBlockEvent`](interfaces/AfterBlockEvent.md), `resolve?`: (`result`: `any`) => `void`) => `void` |
-| `afterTx` | (`data`: [`AfterTxEvent`](interfaces/AfterTxEvent.md), `resolve?`: (`result`: `any`) => `void`) => `void` |
-| `beforeBlock` | (`data`: `Block`, `resolve?`: (`result`: `any`) => `void`) => `void` |
-| `beforeTx` | (`data`: `TypedTransaction`, `resolve?`: (`result`: `any`) => `void`) => `void` |
+| `afterBlock` | (`data`: [`AfterBlockEvent`](interfaces/AfterBlockEvent.md), `resolve?`: (`result?`: `any`) => `void`) => `void` |
+| `afterTx` | (`data`: [`AfterTxEvent`](interfaces/AfterTxEvent.md), `resolve?`: (`result?`: `any`) => `void`) => `void` |
+| `beforeBlock` | (`data`: `Block`, `resolve?`: (`result?`: `any`) => `void`) => `void` |
+| `beforeTx` | (`data`: `TypedTransaction`, `resolve?`: (`result?`: `any`) => `void`) => `void` |
 
 #### Defined in
 

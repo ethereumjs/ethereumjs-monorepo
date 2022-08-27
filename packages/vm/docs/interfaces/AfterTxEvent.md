@@ -38,7 +38,7 @@ EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 #### Defined in
 
-[packages/vm/src/types.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L359)
+[packages/vm/src/types.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L360)
 
 ___
 
@@ -54,7 +54,7 @@ The amount of ether used by this transaction
 
 #### Defined in
 
-[packages/vm/src/types.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L337)
+[packages/vm/src/types.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L338)
 
 ___
 
@@ -70,7 +70,7 @@ Bloom filter resulted from transaction
 
 #### Defined in
 
-[packages/vm/src/types.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L332)
+[packages/vm/src/types.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L333)
 
 ___
 
@@ -86,7 +86,7 @@ Address of created account during transaction, if any
 
 #### Defined in
 
-packages/evm/dist/evm.d.ts:192
+packages/evm/dist/evm.d.ts:194
 
 ___
 
@@ -102,7 +102,7 @@ Contains the results from running the code, if any, as described in runCode
 
 #### Defined in
 
-packages/evm/dist/evm.d.ts:196
+packages/evm/dist/evm.d.ts:198
 
 ___
 
@@ -118,7 +118,7 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 #### Defined in
 
-[packages/vm/src/types.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L354)
+[packages/vm/src/types.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L355)
 
 ___
 
@@ -134,7 +134,7 @@ The tx receipt
 
 #### Defined in
 
-[packages/vm/src/types.ts:342](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L342)
+[packages/vm/src/types.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L343)
 
 ___
 
@@ -152,7 +152,7 @@ which consists of calldata cost, intrinsic cost and optionally the access list c
 
 #### Defined in
 
-[packages/vm/src/types.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L349)
+[packages/vm/src/types.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L350)
 
 ___
 
@@ -164,4 +164,4 @@ The transaction which just got finished
 
 #### Defined in
 
-[packages/vm/src/types.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L366)
+[packages/vm/src/types.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L367)
