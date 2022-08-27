@@ -85,16 +85,16 @@ export class RlpxPeer extends Peer {
    */
   static capabilities(protocols: Protocol[]): Devp2pCapabilities[] {
     const capabilities: Devp2pCapabilities[] = []
-    protocols.forEach((protocol) => {
+    for (const protocol of protocols) {
       const { name, versions } = protocol
       const keys = versions.map((v: number) => name + String(v))
-      keys.forEach((key: any) => {
+      for (const key of keys) {
         const capability = devp2pCapabilities[key]
         if (isTruthy(capability)) {
           capabilities.push(capability)
         }
-      })
-    })
+      }
+    }
     return capabilities
   }
 

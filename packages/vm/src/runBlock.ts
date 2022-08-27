@@ -318,7 +318,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
-    receiptRoot: receiptTrie.root,
+    receiptRoot: receiptTrie.root(),
     receipts,
     results: txResults,
   }
@@ -439,7 +439,7 @@ async function _genTxTrie(block: Block) {
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
-  return trie.root
+  return trie.root()
 }
 
 /**

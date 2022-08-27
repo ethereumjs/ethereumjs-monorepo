@@ -62,10 +62,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
     )
     const blocks: Block[] = []
-    const blockOpts = {
-      common: this.config.chainCommon,
-      hardforkByBlockNumber: true,
-    }
     for (const [i, [txsData, unclesData]] of bodies.entries()) {
       if (
         (!headers[i].transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
@@ -77,7 +73,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         return []
       }
       const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
-      blocks.push(Block.fromValuesArray(values, blockOpts))
+      // Supply the common from the corresponding block header already set on correct fork
+      blocks.push(Block.fromValuesArray(values, { common: headers[i]._common }))
     }
     return blocks
   }

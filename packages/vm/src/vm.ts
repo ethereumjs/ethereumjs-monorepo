@@ -31,7 +31,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  *
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export class VM extends AsyncEventEmitter<VMEvents> {
+export class VM {
   /**
    * The StateManager used by the VM
    */
@@ -44,10 +44,12 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
   readonly _common: Common
 
+  readonly events: AsyncEventEmitter<VMEvents>
+
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface | EVM
+  readonly evm: EVMInterface
   readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
@@ -93,7 +95,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
    * @param opts
    */
   protected constructor(opts: VMOpts = {}) {
-    super()
+    this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
 
@@ -107,9 +109,7 @@ export class VM extends AsyncEventEmitter<VMEvents> {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({
-        common: this._common,
-      })
+      this.stateManager = new DefaultStateManager({})
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
@@ -154,7 +154,9 @@ export class VM extends AsyncEventEmitter<VMEvents> {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
   }
 
   async init(): Promise<void> {
@@ -184,7 +186,10 @@ export class VM extends AsyncEventEmitter<VMEvents> {
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account.isEmpty()) {
-          const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
+          const newAccount = Account.fromAccountData({
+            balance: 1,
+            storageRoot: account.storageRoot,
+          })
           await this.eei.putAccount(address, newAccount)
         }
       }

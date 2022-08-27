@@ -22,4 +22,4 @@
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L62)
+[packages/devp2p/src/rlpx/peer.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L65)

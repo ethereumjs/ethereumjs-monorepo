@@ -96,7 +96,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('Initialization -> decode with fromValuesArray()', function (st) {
-    txFixtures.slice(0, 4).forEach(function (tx: any) {
+    for (const tx of txFixtures.slice(0, 4)) {
       const txData = tx.raw.map(toBuffer)
       const pt = Transaction.fromValuesArray(txData)
 
@@ -111,7 +111,7 @@ tape('[Transaction]', function (t) {
       st.equal(bufferToHex(toBuffer(pt.s)), tx.raw[8])
 
       transactions.push(pt)
-    })
+    }
     st.end()
   })
 
@@ -124,9 +124,9 @@ tape('[Transaction]', function (t) {
   t.test(
     'Initialization -> throws when creating a a transaction with incompatible chainid and v value',
     function (st) {
-      let common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
+      let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
       let tx = Transaction.fromTxData({}, { common })
-      st.equal(tx.common.chainId(), BigInt(42))
+      st.equal(tx.common.chainId(), BigInt(5))
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
@@ -148,9 +148,9 @@ tape('[Transaction]', function (t) {
   )
 
   t.test('validate() -> should validate with string option', function (st) {
-    transactions.forEach(function (tx) {
+    for (const tx of transactions) {
       st.equal(typeof tx.validate(true)[0], 'string')
-    })
+    }
     st.end()
   })
 
@@ -208,11 +208,11 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('serialize()', function (st) {
-    transactions.forEach(function (tx, i) {
+    for (const [i, tx] of transactions.entries()) {
       const s1 = tx.serialize()
       const s2 = Buffer.from(RLP.encode(txFixtures[i].raw))
       st.ok(s1.equals(s2))
-    })
+    }
     st.end()
   })
 
@@ -279,12 +279,12 @@ tape('[Transaction]', function (t) {
   t.test(
     "getMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests",
     function (st) {
-      txFixturesEip155.forEach(function (tx) {
+      for (const tx of txFixturesEip155) {
         const pt = Transaction.fromSerializedTx(toBuffer(tx.rlp))
         st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
         st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
         st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
-      })
+      }
       st.end()
     }
   )
@@ -331,7 +331,7 @@ tape('[Transaction]', function (t) {
     'sign(), getSenderPublicKey() (implicit call) -> EIP155 hashing when singing',
     function (st) {
       const common = new Common({ chain: 1, hardfork: Hardfork.Petersburg })
-      txFixtures.slice(0, 3).forEach(function (txData) {
+      for (const txData of txFixtures.slice(0, 3)) {
         const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
           common,
         })
@@ -344,7 +344,7 @@ tape('[Transaction]', function (t) {
           '0x' + txData.sendersAddress,
           "computed sender address should equal the fixture's one"
         )
-      })
+      }
 
       st.end()
     }
@@ -465,9 +465,9 @@ tape('[Transaction]', function (t) {
   )
 
   t.test('sign(), verifySignature(): sign tx with chainId specified in params', function (st) {
-    const common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
     let tx = Transaction.fromTxData({}, { common })
-    st.equal(tx.common.chainId(), BigInt(42))
+    st.equal(tx.common.chainId(), BigInt(5))
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx = tx.sign(privKey)
@@ -476,7 +476,7 @@ tape('[Transaction]', function (t) {
 
     const reTx = Transaction.fromSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
-    st.equal(reTx.common.chainId(), BigInt(42))
+    st.equal(reTx.common.chainId(), BigInt(5))
 
     st.end()
   })

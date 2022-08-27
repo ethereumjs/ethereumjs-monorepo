@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[config.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L20)
+[config.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L23)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[config.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L21)
+[config.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L24)

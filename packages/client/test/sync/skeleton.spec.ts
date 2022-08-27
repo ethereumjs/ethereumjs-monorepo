@@ -302,6 +302,36 @@ tape('[Skeleton]', async (t) => {
     }
   })
 
+  t.test(`skeleton init should throw error if merge not set`, async (st) => {
+    st.plan(1)
+    const genesis = {
+      ...genesisJSON,
+      config: {
+        ...genesisJSON.config,
+        // skip the merge hardfork
+        terminalTotalDifficulty: undefined,
+        clique: undefined,
+        ethash: {},
+      },
+      extraData: '0x00000000000000000',
+      difficulty: '0x1',
+    }
+    const params = await parseCustomParams(genesis, 'merge-not-set')
+    const common = new Common({
+      chain: params.name,
+      customChains: [params],
+    })
+    const config = new Config({ common, transports: [] })
+    const chain = new Chain({ config })
+    ;(chain.blockchain as any)._validateBlocks = false
+    try {
+      new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    } catch (e) {
+      st.pass(`Skeleton init should error if merge not set`)
+    }
+    st.end()
+  })
+
   t.test('should fill the canonical chain after being linked to genesis', async (st) => {
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
@@ -480,25 +510,25 @@ tape('[Skeleton]', async (t) => {
       )
       const block3PoS = Block.fromBlockData(
         { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByTTD: BigInt(200) }
       )
-      const block4PoW = Block.fromBlockData(
+      const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByTTD: BigInt(200) }
       )
       const block4PoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByTTD: BigInt(200) }
       )
       const block5 = Block.fromBlockData(
         { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByTTD: BigInt(200) }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
-      await skeleton.initSync(block4PoW)
+      await skeleton.initSync(block4InvalidPoS)
       await skeleton.putBlocks([block3PoW, block2])
       st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
       await skeleton.putBlocks([block1])
@@ -588,15 +618,15 @@ tape('[Skeleton]', async (t) => {
         { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
         { common }
       )
-      const block4PoW = Block.fromBlockData(
+      const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common }
+        { common, hardforkByTTD: 200 }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
-      await skeleton.initSync(block4PoW)
+      await skeleton.initSync(block4InvalidPoS)
       await skeleton.putBlocks([block3PoW, block2])
       st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
       await skeleton.putBlocks([block1])

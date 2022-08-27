@@ -242,12 +242,12 @@ export class PeerPool {
         await Promise.all(promises)
       } else {
         let tablesize: number | undefined = 0
-        this.config.servers.forEach((server) => {
+        for (const server of this.config.servers) {
           if (server instanceof RlpxServer && server.discovery) {
             tablesize = server.dpt?.getPeers().length
             this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
           }
-        })
+        }
       }
     } else {
       this.noPeerPeriods = 0

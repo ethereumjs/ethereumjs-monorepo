@@ -62,7 +62,7 @@ Needs to be called from the subclass constructor
 
 #### Defined in
 
-[baseStateManager.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L39)
+[baseStateManager.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L40)
 
 ## Properties
 
@@ -72,7 +72,7 @@ Needs to be called from the subclass constructor
 
 #### Defined in
 
-[baseStateManager.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L24)
+[baseStateManager.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L25)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L22)
+[baseStateManager.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L23)
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L23)
+[baseStateManager.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L24)
 
 ## Methods
 
@@ -112,7 +112,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L105)
+[baseStateManager.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L106)
 
 ___
 
@@ -132,7 +132,7 @@ Partial implementation, called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L121)
+[baseStateManager.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L122)
 
 ___
 
@@ -151,7 +151,7 @@ Partial implementation, called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L131)
+[baseStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L132)
 
 ___
 
@@ -173,7 +173,7 @@ Deletes an account from state under the provided `address`. The account will als
 
 #### Defined in
 
-[baseStateManager.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L98)
+[baseStateManager.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L99)
 
 ___
 
@@ -187,7 +187,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L147)
+[baseStateManager.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L148)
 
 ___
 
@@ -209,7 +209,7 @@ Gets the account associated with `address`. Returns an empty account if the acco
 
 #### Defined in
 
-[baseStateManager.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L57)
+[baseStateManager.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L58)
 
 ___
 
@@ -230,7 +230,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L111)
+[baseStateManager.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L112)
 
 ___
 
@@ -240,14 +240,14 @@ ___
 
 Gets the account associated with `address`, modifies the given account
 fields, then saves the account into state. Account fields can include
-`nonce`, `balance`, `stateRoot`, and `codeHash`.
+`nonce`, `balance`, `storageRoot`, and `codeHash`.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `address` | `Address` | Address of the account to modify |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"stateRoot"`` \| ``"codeHash"``\>\> | Object containing account fields and values to modify |
+| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\> | Object containing account fields and values to modify |
 
 #### Returns
 
@@ -255,7 +255,7 @@ fields, then saves the account into state. Account fields can include
 
 #### Defined in
 
-[baseStateManager.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L85)
+[baseStateManager.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L86)
 
 ___
 
@@ -278,7 +278,7 @@ Saves an account into state under the provided `address`.
 
 #### Defined in
 
-[baseStateManager.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L67)
+[baseStateManager.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L68)
 
 ___
 
@@ -299,7 +299,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L110)
+[baseStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L111)
 
 ___
 
@@ -321,7 +321,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L112)
+[baseStateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L113)
 
 ___
 
@@ -340,4 +340,4 @@ Partial implementation , called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L142)
+[baseStateManager.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L143)

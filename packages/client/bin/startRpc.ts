@@ -1,5 +1,5 @@
 import { isFalsy, isTruthy } from '@ethereumjs/util'
-import { readFileSync, writeFileSync } from 'fs-extra'
+import { readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'

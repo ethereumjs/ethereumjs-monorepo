@@ -25,7 +25,7 @@ API of the EVM
 
 #### Defined in
 
-[packages/evm/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L17)
+[packages/evm/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L16)
 
 ___
 
@@ -35,7 +35,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L15)
+[packages/evm/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L14)
 
 ## Methods
 
@@ -49,7 +49,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L16)
+[packages/evm/src/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L15)
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L13)
+[packages/evm/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L12)
 
 ___
 
@@ -89,4 +89,4 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L14)
+[packages/evm/src/types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L13)

@@ -175,7 +175,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         true
       )
     } else {
-      numberList.forEach((first) => {
+      for (const first of numberList) {
         this.enqueueTask(
           {
             first,
@@ -183,7 +183,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
           },
           true
         )
-      })
+      }
     }
     this.debug(
       `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`
@@ -191,5 +191,22 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (this.in.length === 0) {
       this.nextTasks()
     }
+  }
+  processStoreError(
+    error: Error,
+    task: JobTask
+  ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
+    let stepBack = BigInt(0)
+    const destroyFetcher = !(error.message as string).includes('could not find parent header')
+    const banPeer = true
+
+    // we can step back here for blockfetcher
+    if (!destroyFetcher && this.reverse === false) {
+      stepBack = task.first - BigInt(1)
+      if (stepBack > BigInt(this.config.safeReorgDistance)) {
+        stepBack = BigInt(this.config.safeReorgDistance)
+      }
+    }
+    return { destroyFetcher, banPeer, stepBack }
   }
 }

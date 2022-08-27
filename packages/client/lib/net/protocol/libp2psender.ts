@@ -48,9 +48,9 @@ export class Libp2pSender extends Sender {
           const code = bufferToInt(codeBuf)
           if (code === 0) {
             const status: any = {}
-            payload.forEach(([k, v]: any) => {
+            for (const [k, v] of payload.values()) {
               status[k.toString()] = v
-            })
+            }
             this.status = status
           } else {
             this.emit('message', { code, payload })

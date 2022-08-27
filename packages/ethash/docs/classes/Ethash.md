@@ -44,7 +44,7 @@
 
 #### Defined in
 
-[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
+[index.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L169)
 
 ## Properties
 
@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[index.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L160)
+[index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 #### Defined in
 
-[index.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L159)
+[index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
+[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[index.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L158)
+[index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
+[index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 #### Defined in
 
-[index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
+[index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 #### Defined in
 
-[index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
+[index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L167)
 
 ## Methods
 
@@ -134,7 +134,7 @@ ___
 
 #### Defined in
 
-[index.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L338)
+[index.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L341)
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 #### Defined in
 
-[index.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L247)
+[index.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L250)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Defined in
 
-[index.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L195)
+[index.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L198)
 
 ___
 
@@ -193,7 +193,7 @@ To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(blo
 
 #### Defined in
 
-[index.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L334)
+[index.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L337)
 
 ___
 
@@ -213,7 +213,7 @@ ___
 
 #### Defined in
 
-[index.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L251)
+[index.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L254)
 
 ___
 
@@ -235,7 +235,7 @@ Loads the seed and cache given a block number.
 
 #### Defined in
 
-[index.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L258)
+[index.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L261)
 
 ___
 
@@ -256,7 +256,7 @@ ___
 
 #### Defined in
 
-[index.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L174)
+[index.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L177)
 
 ___
 
@@ -283,7 +283,7 @@ ___
 
 #### Defined in
 
-[index.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L208)
+[index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L211)
 
 ___
 
@@ -303,4 +303,4 @@ ___
 
 #### Defined in
 
-[index.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L349)
+[index.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L352)

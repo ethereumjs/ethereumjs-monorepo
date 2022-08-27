@@ -16,12 +16,6 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['test/**/*.ts'],
-      rules: {
-        'implicit-dependencies/no-implicit': ['error', { peer: false, dev: true, optional: false }],
-      },
-    },
-    {
       files: ['bin/**.ts'],
       rules: {
         'no-console': 'off',
