@@ -31,7 +31,7 @@ The gas used after executing the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L263)
+[packages/vm/src/types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L264)
 
 ___
 
@@ -43,7 +43,7 @@ The bloom filter of the LOGs (events) after executing the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L267)
+[packages/vm/src/types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L268)
 
 ___
 
@@ -55,7 +55,7 @@ The receipt root after executing the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L271)
+[packages/vm/src/types.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L272)
 
 ___
 
@@ -67,7 +67,7 @@ Receipts generated for transactions in the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L251)
+[packages/vm/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L252)
 
 ___
 
@@ -79,7 +79,7 @@ Results of executing the transactions in the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L255)
+[packages/vm/src/types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L256)
 
 ___
 
@@ -91,4 +91,4 @@ The stateRoot after executing the block
 
 #### Defined in
 
-[packages/vm/src/types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L259)
+[packages/vm/src/types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L260)

@@ -128,15 +128,20 @@ tape(`${method}: call with unsigned tx`, async (t) => {
 })
 
 tape(`${method}: call with no peers`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
-  const { server, client } = baseSetup({ syncTargetHeight, includeVM: true, noPeers: true })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
+  const syncTargetHeight = common.hardforkBlock(Hardfork.London)
+  const { server, client } = baseSetup({
+    commonChain: common,
+    syncTargetHeight,
+    includeVM: true,
+    noPeers: true,
+  })
 
   // Mainnet EIP-1559 tx
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(
-    Buffer.from(txData.slice(2), 'hex')
-  )
+  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData))
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 

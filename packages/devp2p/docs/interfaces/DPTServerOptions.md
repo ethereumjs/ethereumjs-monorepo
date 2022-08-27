@@ -22,7 +22,7 @@ Default: dgram-created socket
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L38)
+[packages/devp2p/src/dpt/server.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L41)
 
 ___
 
@@ -36,7 +36,7 @@ Default: 0.0.0.0, no UDP or TCP port provided
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L31)
+[packages/devp2p/src/dpt/server.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L34)
 
 ___
 
@@ -50,4 +50,4 @@ Default: 10s
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L24)
+[packages/devp2p/src/dpt/server.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L27)

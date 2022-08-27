@@ -50,6 +50,7 @@
 - [listenerCount](KBucket.md#listenercount-1)
 - [on](KBucket.md#on-1)
 - [once](KBucket.md#once-1)
+- [setMaxListeners](KBucket.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -69,7 +70,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L17)
+[packages/devp2p/src/dpt/kbucket.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L18)
 
 ## Properties
 
@@ -79,7 +80,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L16)
+[packages/devp2p/src/dpt/kbucket.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L17)
 
 ___
 
@@ -89,7 +90,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L15)
+[packages/devp2p/src/dpt/kbucket.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L16)
 
 ___
 
@@ -103,7 +104,7 @@ EventEmitter.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -119,7 +120,7 @@ EventEmitter.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -133,7 +134,7 @@ EventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -155,7 +156,7 @@ EventEmitter.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ## Methods
 
@@ -175,7 +176,7 @@ node_modules/@types/node/events.d.ts:272
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L51)
+[packages/devp2p/src/dpt/kbucket.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L56)
 
 ___
 
@@ -206,7 +207,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -226,7 +227,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L69)
+[packages/devp2p/src/dpt/kbucket.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L74)
 
 ___
 
@@ -293,7 +294,7 @@ EventEmitter.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -331,7 +332,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -351,7 +352,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L56)
+[packages/devp2p/src/dpt/kbucket.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L61)
 
 ___
 
@@ -365,7 +366,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L65)
+[packages/devp2p/src/dpt/kbucket.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L70)
 
 ___
 
@@ -390,7 +391,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -420,7 +421,7 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -458,7 +459,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -489,7 +490,7 @@ EventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -544,7 +545,7 @@ EventEmitter.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -597,7 +598,7 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -639,7 +640,7 @@ EventEmitter.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -679,7 +680,7 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -734,7 +735,7 @@ EventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -754,7 +755,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L73)
+[packages/devp2p/src/dpt/kbucket.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L78)
 
 ___
 
@@ -790,7 +791,7 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -896,7 +897,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -931,7 +932,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1005,7 +1006,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L41)
+[packages/devp2p/src/dpt/kbucket.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L46)
 
 ___
 
@@ -1268,3 +1269,44 @@ EventEmitter.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+EventEmitter.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

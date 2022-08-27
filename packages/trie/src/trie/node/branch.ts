@@ -19,12 +19,12 @@ export class BranchNode {
     return node
   }
 
-  get value(): Buffer | null {
-    return this._value && this._value.length > 0 ? this._value : null
-  }
+  value(v?: Buffer | null): Buffer | null {
+    if (v !== null && v !== undefined) {
+      this._value = v
+    }
 
-  set value(v: Buffer | null) {
-    this._value = v
+    return this._value && this._value.length > 0 ? this._value : null
   }
 
   setBranch(i: number, v: EmbeddedNode | null) {

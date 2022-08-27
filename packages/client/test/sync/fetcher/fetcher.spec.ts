@@ -15,6 +15,10 @@ class FetcherTest extends Fetcher<any, any, any> {
     return
   }
   async store(_store: any) {}
+  // Just return any via _error
+  processStoreError(error: any, _job: any) {
+    return error
+  }
 }
 
 tape('[Fetcher]', (t) => {
@@ -107,12 +111,18 @@ tape('[Fetcher]', (t) => {
     const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }
     fetcher.next = td.func<FetcherTest['next']>()
+    fetcher.processStoreError = td.func<FetcherTest['processStoreError']>()
     fetcher.write()
     ;(fetcher as any).running = true
     fetcher.store = td.func<FetcherTest['store']>()
     td.when(fetcher.store(td.matchers.anything())).thenReject(
       new Error('could not find parent header')
     )
+    td.when(fetcher.processStoreError(td.matchers.anything(), td.matchers.anything())).thenReturn({
+      destroyFetcher: false,
+      banPeer: true,
+      stepBack: BigInt(49),
+    })
     ;(fetcher as any).success(job, ['something'])
     setTimeout(() => {
       t.ok(

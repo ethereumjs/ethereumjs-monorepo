@@ -32,7 +32,7 @@ Interface that a consensus class needs to implement.
 
 #### Defined in
 
-[consensus/interface.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L10)
+[consensus/interface.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L9)
 
 ## Methods
 
@@ -54,7 +54,7 @@ Initialize genesis for consensus mechanism
 
 #### Defined in
 
-[consensus/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L15)
+[consensus/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L14)
 
 ___
 
@@ -78,7 +78,7 @@ Update consensus on new block
 
 #### Defined in
 
-[consensus/interface.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L36)
+[consensus/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L35)
 
 ___
 
@@ -100,7 +100,7 @@ Set up consensus mechanism
 
 #### Defined in
 
-[consensus/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L20)
+[consensus/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L19)
 
 ___
 
@@ -122,7 +122,7 @@ Validate block consensus parameters
 
 #### Defined in
 
-[consensus/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L26)
+[consensus/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L25)
 
 ___
 
@@ -142,4 +142,4 @@ ___
 
 #### Defined in
 
-[consensus/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L28)
+[consensus/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L27)

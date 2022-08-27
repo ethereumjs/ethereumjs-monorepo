@@ -8,9 +8,10 @@
 
 - [db](TrieOpts.md#db)
 - [deleteFromDB](TrieOpts.md#deletefromdb)
-- [hash](TrieOpts.md#hash)
 - [persistRoot](TrieOpts.md#persistroot)
 - [root](TrieOpts.md#root)
+- [useHashedKeys](TrieOpts.md#usehashedkeys)
+- [useHashedKeysFunction](TrieOpts.md#usehashedkeysfunction)
 
 ## Properties
 
@@ -39,18 +40,6 @@ Default: `false`
 
 ___
 
-### hash
-
-• `Optional` **hash**: [`HashFunc`](../README.md#hashfunc)
-
-Hash function used for hashing trie node and securing key.
-
-#### Defined in
-
-[packages/trie/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L41)
-
-___
-
 ### persistRoot
 
 • `Optional` **persistRoot**: `boolean`
@@ -59,7 +48,7 @@ Store the root inside the database after every `write` operation
 
 #### Defined in
 
-[packages/trie/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L46)
+[packages/trie/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L60)
 
 ___
 
@@ -72,3 +61,36 @@ A `Buffer` for the root of a previously stored trie
 #### Defined in
 
 [packages/trie/src/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L31)
+
+___
+
+### useHashedKeys
+
+• `Optional` **useHashedKeys**: `boolean`
+
+Create as a secure Trie where the keys are automatically hashed using the
+**keccak256** hash function or alternatively the custom hash function provided.
+Default: `false`
+
+This is the flavor of the Trie which is used in production Ethereum networks
+like Ethereum Mainnet.
+
+Note: This functionality has been refactored along the v5 release and was before
+provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
+instantiation with `useHashedKeys` set to `true`.
+
+#### Defined in
+
+[packages/trie/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L50)
+
+___
+
+### useHashedKeysFunction
+
+• `Optional` **useHashedKeysFunction**: [`HashKeysFunction`](../README.md#hashkeysfunction)
+
+Hash function used for hashing trie node and securing key.
+
+#### Defined in
+
+[packages/trie/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L55)

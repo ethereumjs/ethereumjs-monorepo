@@ -1,4 +1,5 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -18,6 +19,7 @@ import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
 import type { BlockBodyBuffer, BlockBuffer, BlockHeaderBuffer } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { BigIntLike } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 interface EthProtocolOptions extends ProtocolOptions {
@@ -77,6 +79,7 @@ export interface EthProtocolMethods {
 export class EthProtocol extends Protocol {
   private chain: Chain
   private nextReqId = BigInt(0)
+  private chainTTD?: BigIntLike
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
@@ -137,16 +140,19 @@ export class EthProtocol extends Protocol {
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
         bufferToBigInt(reqId),
-        headers.map((h) =>
-          // TODO: need to implement hardforkByTTD otherwise
-          // pre-merge blocks will fail to init if chainCommon is past merge
-          // and we request pre-mergs blocks (e.g. if we have a different terminal block
-          // and we look backwards for the correct block)
-          BlockHeader.fromValuesArray(h, {
-            hardforkByBlockNumber: true,
-            common: this.config.chainCommon,
-          })
-        ),
+        headers.map((h) => {
+          const headerData = valuesArrayToHeaderData(h)
+          const difficulty = getDifficulty(headerData)!
+          const common = this.config.chainCommon
+          // If this is a post merge block, we can still send chainTTD since it would still lead
+          // to correct hardfork choice
+          return BlockHeader.fromValuesArray(
+            h,
+            difficulty > 0
+              ? { common, hardforkByBlockNumber: true }
+              : { common, hardforkByTTD: this.chainTTD }
+          )
+        }),
       ],
     },
     {
@@ -275,6 +281,10 @@ export class EthProtocol extends Protocol {
     super(options)
 
     this.chain = options.chain
+    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    if (chainTTD !== null && chainTTD !== undefined) {
+      this.chainTTD = chainTTD
+    }
   }
 
   /**
