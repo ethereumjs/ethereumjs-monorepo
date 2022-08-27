@@ -92,7 +92,7 @@ export class Trie {
     return new Trie(opts)
   }
 
-  public database(db?: DB) {
+  database(db?: DB) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')
