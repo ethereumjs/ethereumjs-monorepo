@@ -2,6 +2,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: [
     '@typescript-eslint',
+    'github',
     'implicit-dependencies',
     'import',
     'prettier',
@@ -20,6 +21,7 @@ module.exports = {
     'karma.conf.js',
     'node_modules',
     'prettier.config.js',
+    'recipes',
     'scripts',
     'typedoc.js',
     'webpack.config.js',
@@ -55,6 +57,7 @@ module.exports = {
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/strict-boolean-expressions': ['error'],
     eqeqeq: 'error',
+    'github/array-foreach': 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
     'import/default': 'error',
     'import/export': 'error',
@@ -98,8 +101,7 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-const': 'error',
-    // TypeError: Error while loading rule 'prettier/prettier': context.getPhysicalFilename is not a function
-    'prettier/prettier': 'off',
+    'prettier/prettier': 'error',
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
   },

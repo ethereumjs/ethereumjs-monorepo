@@ -9,7 +9,7 @@ tape('General MuirGlacier VM tests', (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
     const vm = await VM.create({ common })
     st.ok(vm.stateManager)
-    st.deepEqual((<any>vm.stateManager)._trie.root, KECCAK256_RLP, 'it has default trie')
+    st.deepEqual((<any>vm.stateManager)._trie.root(), KECCAK256_RLP, 'it has default trie')
     st.end()
   })
 })

@@ -1,0 +1,6 @@
+{
+  "extends": "../../config/.c8rc.json",
+  "include": [
+    "src/**/*.ts"
+  ]
+}

@@ -59,6 +59,7 @@
 - [listenerCount](DPT.md#listenercount-1)
 - [on](DPT.md#on-1)
 - [once](DPT.md#once-1)
+- [setMaxListeners](DPT.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -79,7 +80,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L104)
+[packages/devp2p/src/dpt/dpt.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L106)
 
 ## Properties
 
@@ -89,7 +90,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L91)
+[packages/devp2p/src/dpt/dpt.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L93)
 
 ___
 
@@ -99,7 +100,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L89)
+[packages/devp2p/src/dpt/dpt.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L91)
 
 ___
 
@@ -109,7 +110,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L90)
+[packages/devp2p/src/dpt/dpt.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L92)
 
 ___
 
@@ -119,7 +120,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L88)
+[packages/devp2p/src/dpt/dpt.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L90)
 
 ___
 
@@ -133,7 +134,7 @@ EventEmitter.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -149,7 +150,7 @@ EventEmitter.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -163,7 +164,7 @@ EventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -185,7 +186,7 @@ EventEmitter.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ## Methods
 
@@ -205,7 +206,7 @@ node_modules/@types/node/events.d.ts:272
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L175)
+[packages/devp2p/src/dpt/dpt.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L177)
 
 ___
 
@@ -226,7 +227,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L154)
+[packages/devp2p/src/dpt/dpt.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L156)
 
 ___
 
@@ -257,7 +258,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -277,7 +278,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L201)
+[packages/devp2p/src/dpt/dpt.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L203)
 
 ___
 
@@ -298,7 +299,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L237)
+[packages/devp2p/src/dpt/dpt.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L239)
 
 ___
 
@@ -318,7 +319,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L145)
+[packages/devp2p/src/dpt/dpt.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L147)
 
 ___
 
@@ -338,7 +339,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L188)
+[packages/devp2p/src/dpt/dpt.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L190)
 
 ___
 
@@ -358,7 +359,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L149)
+[packages/devp2p/src/dpt/dpt.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L151)
 
 ___
 
@@ -425,7 +426,7 @@ EventEmitter.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -463,7 +464,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -483,7 +484,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L229)
+[packages/devp2p/src/dpt/dpt.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L231)
 
 ___
 
@@ -497,7 +498,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L242)
+[packages/devp2p/src/dpt/dpt.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L244)
 
 ___
 
@@ -522,7 +523,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -542,7 +543,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L221)
+[packages/devp2p/src/dpt/dpt.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L223)
 
 ___
 
@@ -556,7 +557,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L225)
+[packages/devp2p/src/dpt/dpt.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L227)
 
 ___
 
@@ -586,7 +587,7 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -624,7 +625,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -655,7 +656,7 @@ EventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -710,7 +711,7 @@ EventEmitter.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -763,7 +764,7 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -805,7 +806,7 @@ EventEmitter.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -845,7 +846,7 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -900,7 +901,7 @@ EventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -914,7 +915,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L246)
+[packages/devp2p/src/dpt/dpt.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L248)
 
 ___
 
@@ -950,7 +951,7 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -1056,7 +1057,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -1076,7 +1077,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L233)
+[packages/devp2p/src/dpt/dpt.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L235)
 
 ___
 
@@ -1111,7 +1112,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1428,3 +1429,44 @@ EventEmitter.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+EventEmitter.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

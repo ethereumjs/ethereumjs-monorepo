@@ -2,6 +2,7 @@ name: VM Nightly
 on:
   schedule:
     - cron: 0 0 * * *
+  workflow_dispatch:
 
 env:
   cwd: ${{github.workspace}}/packages/vm

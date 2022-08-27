@@ -63,6 +63,7 @@
 - [listenerCount](ETH-1.md#listenercount-1)
 - [on](ETH-1.md#on-1)
 - [once](ETH-1.md#once-1)
+- [setMaxListeners](ETH-1.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -84,7 +85,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L26)
+[packages/devp2p/src/protocol/eth.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L29)
 
 ## Properties
 
@@ -94,7 +95,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L23)
+[packages/devp2p/src/protocol/eth.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L26)
 
 ___
 
@@ -104,7 +105,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L21)
+[packages/devp2p/src/protocol/eth.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L24)
 
 ___
 
@@ -114,7 +115,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L22)
+[packages/devp2p/src/protocol/eth.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L25)
 
 ___
 
@@ -124,7 +125,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L24)
+[packages/devp2p/src/protocol/eth.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L27)
 
 ___
 
@@ -134,7 +135,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L18)
+[packages/devp2p/src/protocol/eth.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L21)
 
 ___
 
@@ -144,7 +145,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L17)
+[packages/devp2p/src/protocol/eth.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L20)
 
 ___
 
@@ -158,7 +159,7 @@ Protocol.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -174,7 +175,7 @@ Protocol.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -188,7 +189,7 @@ Protocol.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -210,7 +211,7 @@ Protocol.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ___
 
@@ -229,7 +230,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L42)
+[packages/devp2p/src/protocol/eth.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L45)
 
 ___
 
@@ -248,7 +249,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L43)
+[packages/devp2p/src/protocol/eth.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L46)
 
 ___
 
@@ -267,7 +268,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L44)
+[packages/devp2p/src/protocol/eth.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L47)
 
 ___
 
@@ -286,7 +287,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L45)
+[packages/devp2p/src/protocol/eth.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L48)
 
 ___
 
@@ -305,7 +306,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L46)
+[packages/devp2p/src/protocol/eth.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L49)
 
 ## Methods
 
@@ -325,7 +326,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L201)
+[packages/devp2p/src/protocol/eth.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L204)
 
 ___
 
@@ -345,7 +346,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L209)
+[packages/devp2p/src/protocol/eth.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L212)
 
 ___
 
@@ -366,7 +367,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L48)
+[packages/devp2p/src/protocol/eth.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L51)
 
 ___
 
@@ -380,7 +381,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L146)
+[packages/devp2p/src/protocol/eth.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L149)
 
 ___
 
@@ -400,7 +401,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L205)
+[packages/devp2p/src/protocol/eth.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L208)
 
 ___
 
@@ -422,7 +423,7 @@ Eth 64 Fork ID validation (EIP-2124)
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L109)
+[packages/devp2p/src/protocol/eth.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L112)
 
 ___
 
@@ -453,7 +454,7 @@ Protocol.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -520,7 +521,7 @@ Protocol.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -558,7 +559,7 @@ Protocol.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -583,7 +584,7 @@ Protocol.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -603,7 +604,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L335)
+[packages/devp2p/src/protocol/eth.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L338)
 
 ___
 
@@ -617,7 +618,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L197)
+[packages/devp2p/src/protocol/eth.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L200)
 
 ___
 
@@ -647,7 +648,7 @@ Protocol.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -685,7 +686,7 @@ Protocol.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -716,7 +717,7 @@ Protocol.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -771,7 +772,7 @@ Protocol.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -824,7 +825,7 @@ Protocol.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -866,7 +867,7 @@ Protocol.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -906,7 +907,7 @@ Protocol.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -961,7 +962,7 @@ Protocol.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -997,7 +998,7 @@ Protocol.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -1103,7 +1104,7 @@ Protocol.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -1124,7 +1125,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L280)
+[packages/devp2p/src/protocol/eth.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L283)
 
 ___
 
@@ -1144,7 +1145,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L229)
+[packages/devp2p/src/protocol/eth.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L232)
 
 ___
 
@@ -1179,7 +1180,7 @@ Protocol.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1496,3 +1497,44 @@ Protocol.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+Protocol.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280
