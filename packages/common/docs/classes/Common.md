@@ -90,6 +90,7 @@ can be created via the main constructor and the [customChains](../interfaces/Com
 - [listenerCount](Common.md#listenercount-1)
 - [on](Common.md#on-1)
 - [once](Common.md#once-1)
+- [setMaxListeners](Common.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -109,7 +110,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/common/src/common.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L186)
+[packages/common/src/common.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L189)
 
 ## Properties
 
@@ -119,7 +120,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/common/src/common.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L37)
+[packages/common/src/common.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L40)
 
 ___
 
@@ -133,7 +134,7 @@ EventEmitter.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -149,7 +150,7 @@ EventEmitter.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -163,7 +164,7 @@ EventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -185,7 +186,7 @@ EventEmitter.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ## Methods
 
@@ -210,7 +211,7 @@ Fork hash as hex string
 
 #### Defined in
 
-[packages/common/src/common.ts:638](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L638)
+[packages/common/src/common.ts:641](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L641)
 
 ___
 
@@ -234,7 +235,7 @@ Dictionary with hardfork params or null if hardfork not on chain
 
 #### Defined in
 
-[packages/common/src/common.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L333)
+[packages/common/src/common.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L336)
 
 ___
 
@@ -258,7 +259,7 @@ True if HF is active on block number
 
 #### Defined in
 
-[packages/common/src/common.ts:502](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L502)
+[packages/common/src/common.ts:505](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L505)
 
 ___
 
@@ -289,7 +290,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -307,7 +308,7 @@ Dict with bootstrap nodes
 
 #### Defined in
 
-[packages/common/src/common.ts:715](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L715)
+[packages/common/src/common.ts:718](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L718)
 
 ___
 
@@ -325,7 +326,7 @@ chain Id
 
 #### Defined in
 
-[packages/common/src/common.ts:739](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L739)
+[packages/common/src/common.ts:742](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L742)
 
 ___
 
@@ -343,7 +344,7 @@ chain name (lower case)
 
 #### Defined in
 
-[packages/common/src/common.ts:747](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L747)
+[packages/common/src/common.ts:750](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L750)
 
 ___
 
@@ -365,7 +366,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[packages/common/src/common.ts:795](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L795)
+[packages/common/src/common.ts:798](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L798)
 
 ___
 
@@ -392,7 +393,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[packages/common/src/common.ts:824](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L824)
+[packages/common/src/common.ts:827](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L827)
 
 ___
 
@@ -411,7 +412,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[packages/common/src/common.ts:773](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L773)
+[packages/common/src/common.ts:776](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L776)
 
 ___
 
@@ -427,7 +428,7 @@ Returns a deep copy of this [Common](Common.md) instance.
 
 #### Defined in
 
-[packages/common/src/common.ts:843](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L843)
+[packages/common/src/common.ts:846](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L846)
 
 ___
 
@@ -445,7 +446,7 @@ Array of DNS ENR urls
 
 #### Defined in
 
-[packages/common/src/common.ts:723](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L723)
+[packages/common/src/common.ts:726](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L726)
 
 ___
 
@@ -469,7 +470,7 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[packages/common/src/common.ts:556](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L556)
+[packages/common/src/common.ts:559](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L559)
 
 ___
 
@@ -487,7 +488,7 @@ List of EIPs
 
 #### Defined in
 
-[packages/common/src/common.ts:763](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L763)
+[packages/common/src/common.ts:766](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L766)
 
 ___
 
@@ -554,7 +555,7 @@ EventEmitter.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -592,7 +593,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -615,7 +616,7 @@ Returns an eth/64 compliant fork hash (EIP-2124)
 
 #### Defined in
 
-[packages/common/src/common.ts:669](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L669)
+[packages/common/src/common.ts:672](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L672)
 
 ___
 
@@ -633,7 +634,7 @@ Genesis dictionary
 
 #### Defined in
 
-[packages/common/src/common.ts:699](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L699)
+[packages/common/src/common.ts:702](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L702)
 
 ___
 
@@ -663,7 +664,7 @@ The name of the HF
 
 #### Defined in
 
-[packages/common/src/common.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L260)
+[packages/common/src/common.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L263)
 
 ___
 
@@ -688,7 +689,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -712,7 +713,7 @@ True if hardfork set is greater than hardfork provided
 
 #### Defined in
 
-[packages/common/src/common.ts:533](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L533)
+[packages/common/src/common.ts:536](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L536)
 
 ___
 
@@ -730,7 +731,7 @@ Hardfork name
 
 #### Defined in
 
-[packages/common/src/common.ts:731](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L731)
+[packages/common/src/common.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L734)
 
 ___
 
@@ -754,7 +755,7 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[packages/common/src/common.ts:542](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L542)
+[packages/common/src/common.ts:545](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L545)
 
 ___
 
@@ -776,7 +777,7 @@ Array with hardfork data (name, block, forkHash)
 
 #### Defined in
 
-[packages/common/src/common.ts:688](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L688)
+[packages/common/src/common.ts:691](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L691)
 
 ___
 
@@ -801,7 +802,7 @@ True if HF1 gte HF2
 
 #### Defined in
 
-[packages/common/src/common.ts:513](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L513)
+[packages/common/src/common.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L516)
 
 ___
 
@@ -826,7 +827,7 @@ True if HF is active on block number
 
 #### Defined in
 
-[packages/common/src/common.ts:487](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L487)
+[packages/common/src/common.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L490)
 
 ___
 
@@ -850,7 +851,7 @@ Total difficulty or null if no set
 
 #### Defined in
 
-[packages/common/src/common.ts:574](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L574)
+[packages/common/src/common.ts:577](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L577)
 
 ___
 
@@ -868,7 +869,7 @@ Array with arrays of hardforks
 
 #### Defined in
 
-[packages/common/src/common.ts:707](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L707)
+[packages/common/src/common.ts:710](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L710)
 
 ___
 
@@ -895,7 +896,7 @@ by the [eips](../interfaces/CommonOpts.md#eips) constructor option
 
 #### Defined in
 
-[packages/common/src/common.ts:466](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L466)
+[packages/common/src/common.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L469)
 
 ___
 
@@ -920,7 +921,7 @@ True if blockNumber is HF block
 
 #### Defined in
 
-[packages/common/src/common.ts:589](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L589)
+[packages/common/src/common.ts:592](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L592)
 
 ___
 
@@ -945,7 +946,7 @@ True if blockNumber is HF block
 
 #### Defined in
 
-[packages/common/src/common.ts:624](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L624)
+[packages/common/src/common.ts:627](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L627)
 
 ___
 
@@ -975,7 +976,7 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -1013,7 +1014,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -1031,7 +1032,7 @@ network Id
 
 #### Defined in
 
-[packages/common/src/common.ts:755](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L755)
+[packages/common/src/common.ts:758](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L758)
 
 ___
 
@@ -1055,7 +1056,7 @@ Block number or null if not available
 
 #### Defined in
 
-[packages/common/src/common.ts:601](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L601)
+[packages/common/src/common.ts:604](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L604)
 
 ___
 
@@ -1086,7 +1087,7 @@ EventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -1141,7 +1142,7 @@ EventEmitter.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -1194,7 +1195,7 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -1223,7 +1224,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[packages/common/src/common.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L378)
+[packages/common/src/common.ts:381](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L381)
 
 ___
 
@@ -1251,7 +1252,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[packages/common/src/common.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L452)
+[packages/common/src/common.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L455)
 
 ___
 
@@ -1277,7 +1278,7 @@ The value requested or `undefined` if not found
 
 #### Defined in
 
-[packages/common/src/common.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L427)
+[packages/common/src/common.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L430)
 
 ___
 
@@ -1303,7 +1304,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[packages/common/src/common.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L396)
+[packages/common/src/common.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L399)
 
 ___
 
@@ -1345,7 +1346,7 @@ EventEmitter.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -1385,7 +1386,7 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -1440,7 +1441,7 @@ EventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -1476,7 +1477,7 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -1582,7 +1583,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -1606,7 +1607,7 @@ The dictionary with parameters set as chain
 
 #### Defined in
 
-[packages/common/src/common.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L206)
+[packages/common/src/common.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L209)
 
 ___
 
@@ -1628,7 +1629,7 @@ Sets the active EIPs
 
 #### Defined in
 
-[packages/common/src/common.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L345)
+[packages/common/src/common.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L348)
 
 ___
 
@@ -1650,7 +1651,7 @@ Sets the hardfork to get params for
 
 #### Defined in
 
-[packages/common/src/common.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L232)
+[packages/common/src/common.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L235)
 
 ___
 
@@ -1680,7 +1681,7 @@ The name of the HF set
 
 #### Defined in
 
-[packages/common/src/common.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L322)
+[packages/common/src/common.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L325)
 
 ___
 
@@ -1715,7 +1716,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1735,7 +1736,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/common.ts:849](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L849)
+[packages/common/src/common.ts:852](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L852)
 
 ___
 
@@ -1776,7 +1777,7 @@ the `@ethereumjs/tx` library to a Layer-2 chain).
 
 #### Defined in
 
-[packages/common/src/common.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L68)
+[packages/common/src/common.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L71)
 
 ___
 
@@ -1854,7 +1855,7 @@ boolean
 
 #### Defined in
 
-[packages/common/src/common.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L158)
+[packages/common/src/common.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L161)
 
 ___
 
@@ -2117,3 +2118,44 @@ EventEmitter.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+EventEmitter.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

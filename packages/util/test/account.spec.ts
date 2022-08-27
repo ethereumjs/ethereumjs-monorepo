@@ -28,9 +28,9 @@ tape('Account', function (t) {
     st.equal(account.nonce, _0n, 'should have zero nonce')
     st.equal(account.balance, _0n, 'should have zero balance')
     st.equal(
-      account.stateRoot.toString('hex'),
+      account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have stateRoot equal to KECCAK256_RLP'
+      'should have storageRoot equal to KECCAK256_RLP'
     )
     st.equal(
       account.codeHash.toString('hex'),
@@ -44,16 +44,16 @@ tape('Account', function (t) {
     const raw = [
       '0x02', // nonce
       '0x0384', // balance
-      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // stateRoot
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // storageRoot
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
     const account = Account.fromValuesArray(raw.map(toBuffer))
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.stateRoot.toString('hex'),
+      account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct stateRoot'
+      'should have correct storageRoot'
     )
     st.equal(
       account.codeHash.toString('hex'),
@@ -67,16 +67,16 @@ tape('Account', function (t) {
     const raw = {
       nonce: '0x02',
       balance: '0x0384',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.stateRoot.toString('hex'),
+      account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct stateRoot'
+      'should have correct storageRoot'
     )
     st.equal(
       account.codeHash.toString('hex'),
@@ -95,9 +95,9 @@ tape('Account', function (t) {
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.stateRoot.toString('hex'),
+      account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct stateRoot'
+      'should have correct storageRoot'
     )
     st.equal(
       account.codeHash.toString('hex'),
@@ -111,12 +111,12 @@ tape('Account', function (t) {
     const raw = {
       nonce: '0x01',
       balance: '0x42',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
     const accountRlp = Buffer.from(
-      RLP.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+      RLP.encode([raw.nonce, raw.balance, raw.storageRoot, raw.codeHash])
     )
     st.ok(account.serialize().equals(accountRlp), 'should serialize correctly')
     st.end()
@@ -133,7 +133,7 @@ tape('Account', function (t) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     account = Account.fromAccountData(raw)
@@ -148,7 +148,7 @@ tape('Account', function (t) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
     }
     account = Account.fromAccountData(raw)
@@ -159,7 +159,7 @@ tape('Account', function (t) {
   t.test('validation', function (st) {
     st.throws(() => {
       new Account(undefined, undefined, Buffer.from('hey'), undefined)
-    }, 'should only accept length 32 buffer for stateRoot')
+    }, 'should only accept length 32 buffer for storageRoot')
 
     st.throws(() => {
       new Account(undefined, undefined, undefined, Buffer.from('hey'))

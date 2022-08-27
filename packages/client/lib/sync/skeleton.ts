@@ -1,11 +1,13 @@
 import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import { arrToBufArr, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
 
 import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
+import type { BigIntLike } from '@ethereumjs/util'
 
 // Thanks to go-ethereum for the skeleton design
 
@@ -69,11 +71,17 @@ export class Skeleton extends MetaDBManager {
   private filling = false /** Whether we are actively filling the canonical chain */
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
+  private chainTTD: BigIntLike
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
     this.status = { progress: { subchains: [] } }
     this.started = new Date().getTime()
+    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    if (chainTTD === undefined || chainTTD === null) {
+      throw Error('Cannot create skeleton as merge not set')
+    }
+    this.chainTTD = chainTTD
   }
 
   async open() {
@@ -334,7 +342,9 @@ export class Skeleton extends MetaDBManager {
   async putBlocks(blocks: Block[]): Promise<number> {
     let merged = false
     this.config.logger.debug(
-      `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(blocks[0]?.hash())} end=${
+      `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(
+        blocks[0]?.hash()
+      )} fork=${blocks[0]._common.hardfork()} end=${
         blocks[blocks.length - 1]?.header.number
       } count=${blocks.length}, subchain head=${this.status.progress.subchains[0]?.head} tail = ${
         this.status.progress.subchains[0].tail
@@ -362,7 +372,7 @@ export class Skeleton extends MetaDBManager {
             this.status.progress.subchains[0].head
           } tail=${this.status.progress.subchains[0].tail} next=${short(
             this.status.progress.subchains[0].next
-          )}, block number=${number} hash=${short(block.hash())}`
+          )}, block number=${number} hash=${short(block.hash())} fork=${block._common.hardfork()}`
         )
         throw Error(`Blocks don't extend canonical subchain`)
       }
@@ -474,11 +484,20 @@ export class Skeleton extends MetaDBManager {
         break
       }
       // Insert into chain
-      const numBlocksInserted = await this.chain.putBlocks([block], true)
+      let numBlocksInserted = 0
+      try {
+        numBlocksInserted = await this.chain.putBlocks([block], true)
+      } catch (e) {
+        this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
+      }
+
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
-          `Failed to put block num=${number} from skeleton chain to canonical`
+          `Failed to put block number=${number} fork=${block._common.hardfork()} hash=${short(
+            block.hash()
+          )} from skeleton chain to canonical`
         )
+        await this.backStep()
         break
       }
       // Delete skeleton block to clean up as we go
@@ -498,11 +517,23 @@ export class Skeleton extends MetaDBManager {
     )
   }
 
+  serialize({ hardfork, blockRLP }: { hardfork: Hardfork | string; blockRLP: Buffer }): Buffer {
+    const skeletonArr = [Buffer.from(hardfork), blockRLP]
+    return Buffer.from(RLP.encode(skeletonArr))
+  }
+
+  deserialize(rlp: Buffer): { hardfork: Hardfork | string; blockRLP: Buffer } {
+    const [hardfork, blockRLP] = arrToBufArr(RLP.decode(Uint8Array.from(rlp))) as Buffer[]
+    return { hardfork: hardfork.toString(), blockRLP }
+  }
+
   /**
    * Writes a skeleton block to the db by number
    */
   private async putBlock(block: Block): Promise<boolean> {
-    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), block.serialize())
+    // Serialize the block with its hardfork so that its easy to load the block latter
+    const rlp = this.serialize({ hardfork: block._common.hardfork(), blockRLP: block.serialize() })
+    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), rlp)
     await this.put(
       DBKey.SkeletonBlockHashToNumber,
       block.hash(),
@@ -517,8 +548,12 @@ export class Skeleton extends MetaDBManager {
   async getBlock(number: bigint, onlySkeleton = false): Promise<Block | undefined> {
     try {
       const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBuffer(number))
-      const block = Block.fromRLPSerializedBlock(rlp!, {
-        common: this.config.chainCommon,
+      const { hardfork, blockRLP } = this.deserialize(rlp!)
+      const common = this.config.chainCommon.copy()
+      common.setHardfork(hardfork)
+
+      const block = Block.fromRLPSerializedBlock(blockRLP, {
+        common,
       })
       return block
     } catch (error: any) {

@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.2 - 2022-08-29
+
+This release updates the underlying EthereumJS libraries to the newly released RC 1 versions.
+
+### Fixed Hardfork Issues in Beacon Sync
+
+This release mainly fixes various hardfork issues in beacon sync discovered after the `goerli` testnet merge, see PR [#2230](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2230):
+
+- Engine's assemble block was not using correct fork
+- Skeleton's call to getBlockHeaders wasn't resulting in correct block and hence the block bodies were also not correct because of which skeleton backfill was breaking
+- Reverse block fetcher sync was picking up a peer which seemed to be providing `london` blocks instead of merge causing the fetcher to break again and again instead of just banning that peer.
+- Skeleton's getBlock was not using the correct hardfork
+
+This will make beacon sync on Goerli and other Merge-activated chains more robust.
+
+### Other Changes
+
+- Mainnet Merge `TTD` `58750000000000000000000` has been added to the `mainnet` chain configuration of the underlying `Common` library, PR [#2185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2185)
+
 ## 0.6.1 - 2022-08-11
 
 This release updates the underlying EthereumJS libraries to the newly released Beta 3 versions.

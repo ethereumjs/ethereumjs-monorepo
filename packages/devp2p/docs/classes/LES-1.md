@@ -54,6 +54,7 @@
 - [listenerCount](LES-1.md#listenercount-1)
 - [on](LES-1.md#on-1)
 - [once](LES-1.md#once-1)
+- [setMaxListeners](LES-1.md#setmaxlisteners-1)
 
 ## Constructors
 
@@ -75,7 +76,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L16)
+[packages/devp2p/src/protocol/les.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L20)
 
 ## Properties
 
@@ -85,7 +86,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L14)
+[packages/devp2p/src/protocol/les.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L18)
 
 ___
 
@@ -95,7 +96,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L13)
+[packages/devp2p/src/protocol/les.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L17)
 
 ___
 
@@ -109,7 +110,7 @@ Protocol.captureRejectionSymbol
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:273
+node_modules/@types/node/events.d.ts:291
 
 ___
 
@@ -125,7 +126,7 @@ Protocol.captureRejections
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:278
+node_modules/@types/node/events.d.ts:296
 
 ___
 
@@ -139,7 +140,7 @@ Protocol.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:279
+node_modules/@types/node/events.d.ts:297
 
 ___
 
@@ -161,7 +162,7 @@ Protocol.errorMonitor
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:272
+node_modules/@types/node/events.d.ts:290
 
 ___
 
@@ -180,7 +181,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L24)
+[packages/devp2p/src/protocol/les.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L28)
 
 ___
 
@@ -199,7 +200,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L25)
+[packages/devp2p/src/protocol/les.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L29)
 
 ___
 
@@ -218,7 +219,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L26)
+[packages/devp2p/src/protocol/les.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L30)
 
 ## Methods
 
@@ -238,7 +239,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L128)
+[packages/devp2p/src/protocol/les.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L132)
 
 ___
 
@@ -259,7 +260,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L28)
+[packages/devp2p/src/protocol/les.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L32)
 
 ___
 
@@ -273,7 +274,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L93)
+[packages/devp2p/src/protocol/les.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L97)
 
 ___
 
@@ -304,7 +305,7 @@ Protocol.addListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:299
+node_modules/@types/node/events.d.ts:317
 
 ___
 
@@ -371,7 +372,7 @@ Protocol.emit
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:555
+node_modules/@types/node/events.d.ts:573
 
 ___
 
@@ -409,7 +410,7 @@ Protocol.eventNames
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:614
+node_modules/@types/node/events.d.ts:632
 
 ___
 
@@ -434,7 +435,7 @@ Protocol.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:471
+node_modules/@types/node/events.d.ts:489
 
 ___
 
@@ -454,7 +455,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L258)
+[packages/devp2p/src/protocol/les.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L262)
 
 ___
 
@@ -468,7 +469,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L124)
+[packages/devp2p/src/protocol/les.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L128)
 
 ___
 
@@ -498,7 +499,7 @@ Protocol.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:561
+node_modules/@types/node/events.d.ts:579
 
 ___
 
@@ -536,7 +537,7 @@ Protocol.listeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:484
+node_modules/@types/node/events.d.ts:502
 
 ___
 
@@ -567,7 +568,7 @@ Protocol.off
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:444
+node_modules/@types/node/events.d.ts:462
 
 ___
 
@@ -622,7 +623,7 @@ Protocol.on
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:330
+node_modules/@types/node/events.d.ts:348
 
 ___
 
@@ -675,7 +676,7 @@ Protocol.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:359
+node_modules/@types/node/events.d.ts:377
 
 ___
 
@@ -717,7 +718,7 @@ Protocol.prependListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:579
+node_modules/@types/node/events.d.ts:597
 
 ___
 
@@ -757,7 +758,7 @@ Protocol.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:595
+node_modules/@types/node/events.d.ts:613
 
 ___
 
@@ -812,7 +813,7 @@ Protocol.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:514
+node_modules/@types/node/events.d.ts:532
 
 ___
 
@@ -848,7 +849,7 @@ Protocol.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:455
+node_modules/@types/node/events.d.ts:473
 
 ___
 
@@ -954,7 +955,7 @@ Protocol.removeListener
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:439
+node_modules/@types/node/events.d.ts:457
 
 ___
 
@@ -975,7 +976,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L197)
+[packages/devp2p/src/protocol/les.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L201)
 
 ___
 
@@ -995,7 +996,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L154)
+[packages/devp2p/src/protocol/les.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L158)
 
 ___
 
@@ -1030,7 +1031,7 @@ Protocol.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:465
+node_modules/@types/node/events.d.ts:483
 
 ___
 
@@ -1347,3 +1348,44 @@ Protocol.once
 #### Defined in
 
 node_modules/@types/node/events.d.ts:158
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+```js
+const {
+  setMaxListeners,
+  EventEmitter
+} = require('events');
+
+const target = new EventTarget();
+const emitter = new EventEmitter();
+
+setMaxListeners(5, target, emitter);
+```
+
+**`Since`**
+
+v15.4.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `n?` | `number` | A non-negative number. The maximum number of listeners per `EventTarget` event. |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] | - |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+Protocol.setMaxListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:280

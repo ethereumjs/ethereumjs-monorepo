@@ -184,7 +184,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    st.pass('uncle blocks validated succesfully')
+    st.pass('uncle blocks validated successfully')
   })
 
   t.test('EIP1559 base fee tests', async (st) => {

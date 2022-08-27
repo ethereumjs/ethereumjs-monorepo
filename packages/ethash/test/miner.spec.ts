@@ -31,7 +31,7 @@ tape('Check if miner works as expected', async function (t) {
 
   t.equals((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
   await miner.iterate(1)
-  t.equals((miner as any).currentNonce, BigInt(2), 'miner succesfully iterates over nonces')
+  t.equals((miner as any).currentNonce, BigInt(2), 'miner successfully iterates over nonces')
 
   const solution = await miner.iterate(-1)
 
@@ -48,7 +48,7 @@ tape('Check if miner works as expected', async function (t) {
   )
 
   const validBlockResult = await e.verifyPOW(validBlock)
-  t.ok(validBlockResult, 'succesfully mined block')
+  t.ok(validBlockResult, 'successfully mined block')
   t.ok((miner as any).solution !== undefined, 'cached the solution')
 
   t.end()
@@ -70,7 +70,10 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
   const miner = e.getMiner(block.header)
   const solution = <BlockHeader>await miner.mine(-1)
 
-  t.ok(e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() })), 'succesfully mined block')
+  t.ok(
+    e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() }, { common })),
+    'successfully mined block'
+  )
 
   const blockMiner = e.getMiner(block)
   const blockSolution = <Block>await blockMiner.mine(-1)
@@ -98,7 +101,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
     miner.stop()
   }, 1000)
   const solution = await miner.iterate(-1)
-  t.ok(solution === undefined, 'succesfully stopped miner')
+  t.ok(solution === undefined, 'successfully stopped miner')
 
   t.end()
 })
@@ -110,7 +113,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
 
   t.throws(() => {
     e.getMiner(block)
-  }, 'miner constructor succesfully throws if no BlockHeader or Block object is passed')
+  }, 'miner constructor successfully throws if no BlockHeader or Block object is passed')
 
   t.end()
 })
