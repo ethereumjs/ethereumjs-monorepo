@@ -195,7 +195,7 @@ export class BlockHeader {
         }
       }
     } else {
-      if (typeof baseFeePerGas === 'bigint') {
+      if (baseFeePerGas !== undefined) {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
       }
     }
