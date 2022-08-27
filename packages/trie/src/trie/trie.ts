@@ -1,11 +1,17 @@
-import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, compareBytes, equalsBytes, nibblesToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import {
+  bytesToNibbles,
+  doKeysMatch,
+  matchingNibbleLength,
+  nibblesCompare,
+  nibblestoBytes,
+} from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
@@ -19,6 +25,7 @@ import type {
   Nibbles,
   Proof,
   PutBatch,
+  RangeProofItem,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
@@ -849,7 +856,182 @@ export class Trie {
   }
 
   /**
-   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
+   * Return a range proof of trie items between startingHash and limitHash
+   * This proof can be verified using `verifyRangeProof`.
+   * Note, that the proof will always include a proof for the startingHash (even if it does not exist)
+   * The limitHash could not be proved,
+   * @param startingHash This is the starting (hash) key item (note on non-hashed tries this is just a key)
+   * @param limitHash This is the limit (hash) key item (note on non-hashed tries this is just a key)
+   */
+  async createRangeProof(startingHash: Buffer, limitHash: Buffer) {
+    if (Buffer.compare(startingHash, limitHash) === 1) {
+      throw new Error('startingHash is higher than limitHash')
+    }
+
+    const lowKeyNibbles = bytesToNibbles(startingHash)
+    const highKeyNibbles = bytesToNibbles(limitHash)
+
+    const proof = await this.createProof(startingHash)
+
+    const keyValueItems: RangeProofItem[] = []
+
+    function keyChk(key: Nibbles) {
+      if (lowKeyNibbles.length < key.length || nibblesCompare(lowKeyNibbles, key) <= 0) {
+        // Larger or equal to starting hash
+        if (nibblesCompare(highKeyNibbles, key) >= 0) {
+          // Lower or equal to highKeyNibbles
+          return true
+        }
+      }
+      return false
+    }
+
+    const self = this
+
+    /**
+     * Helper method to walk the trie and only select nodes based upon the `keyCheck` method
+     * @param keyCheck Returns `true` if this key is interesting and this key should be checked
+     * @param onlyOneBranch If this is true, a `BranchNode` will only be explored the first time `keyCheck` returns `true`
+     * @param initialCheck Optional check, if this returns `true` do not run any checks and immediately return
+     */
+    async function walkTrie(
+      keyCheck: (key: Nibbles) => boolean,
+      onlyOneBranch = false,
+      initialCheck?: () => boolean
+    ) {
+      await self.walkTrie(self.root(), async (_, node, keyProgress, walkController) => {
+        if (initialCheck !== undefined && initialCheck()) {
+          return
+        }
+        const keyCopy = [...keyProgress]
+        // TODO edge case: there are no more keys, how to prove this?
+        // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
+        // X is the final value
+        if (node instanceof BranchNode) {
+          const children = node.getChildren()
+          for (let i = 0; i < children.length; i++) {
+            const cpy = [...keyCopy]
+            cpy.push(children[i][0])
+            if (keyCheck(cpy)) {
+              // This node matches the range, so go deeper
+              walkController.onlyBranchIndex(node, keyProgress, children[i][0])
+              if (onlyOneBranch) {
+                break
+              }
+            }
+          }
+        } else if (node instanceof ExtensionNode) {
+          const extKey = [...keyProgress, ...node._nibbles]
+          if (keyCheck(extKey)) {
+            walkController.allChildren(node, keyProgress)
+          }
+        }
+        if (node !== null && node.value() !== null && keyCheck(keyProgress)) {
+          let targetKey: Nibbles
+          if (node instanceof BranchNode) {
+            targetKey = keyProgress
+          } else if (node instanceof ExtensionNode) {
+            targetKey = [...keyProgress, ...node._nibbles]
+          } else if (node instanceof LeafNode) {
+            targetKey = [...keyProgress, ...node._nibbles]
+          }
+          const key = new Uint8Array([])
+          nibblesToBytes(new Uint8Array(targetKey!), key)
+          keyValueItems.push({
+            key,
+            value: node.value()!,
+          })
+        }
+      })
+    }
+
+    // Do a normal range check
+    await walkTrie(keyChk)
+
+    if (keyValueItems.length === 0) {
+      // If there are no key/values, then at least one key/value should be returned
+      // This is thus higher than the requested `limitHash`
+      await walkTrie(
+        function (key: Nibbles) {
+          return nibblesCompare(highKeyNibbles, key) < 0
+        },
+        true,
+        function () {
+          return keyValueItems.length > 0
+        }
+      )
+    }
+
+    let maxValueIndex = -1
+    let maxKeyBuffer = new Uint8Array()
+    for (let i = 0; i < keyValueItems.length; i++) {
+      if (Buffer.compare(keyValueItems[i].key, maxKeyBuffer) === 1) {
+        maxValueIndex = i
+        maxKeyBuffer = keyValueItems[i].key
+      }
+    }
+
+    if (maxValueIndex !== -1) {
+      const rightValueProof = await this.createProof(maxKeyBuffer)
+      for (let i = 0; i < rightValueProof.length; i++) {
+        // Check if proof node exists
+        let found = false
+        for (let j = 0; j < proof.length; j++) {
+          if (equalsBytes(proof[j], rightValueProof[i])) {
+            found = true
+            break
+          }
+        }
+        if (!found) {
+          proof.push(rightValueProof[i])
+        }
+      }
+    }
+
+    const keys = []
+    const values = []
+
+    for (let i = 0; i < keyValueItems.length; i++) {
+      // TODO keys should be sorted (not sure how the promise event scheduler schedules all events)
+      // Could be rather flakey, so need to sort
+
+      // For some reason keys get added multiple times
+      // (How is this possible? Need to research, if this also happens in findPath then we need to optimize it!!)
+      let found = false
+      for (let j = 0; j < keys.length; j++) {
+        if (equalsBytes(keys[j], keyValueItems[i].key)) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        keys.push(keyValueItems[i].key)
+      }
+    }
+
+    keys.sort((a, b) => {
+      return compareBytes(a,b) 
+    })
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
+      for (let j = 0; j < keyValueItems.length; j++) {
+        if (equalsBytes(keyValueItems[j].key, key)) {
+          values.push(keyValueItems[j].value)
+          break
+        }
+      }
+    }
+
+    return {
+      keys,
+      values,
+      proof,
+    }
+  }
+
+  /**
+   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
