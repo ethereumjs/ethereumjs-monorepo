@@ -766,7 +766,9 @@ export class Trie {
 
     await this.walkTrie(this.root(), async (_, node, keyProgress, walkController) => {
       const keyCopy = [...keyProgress]
-      const key = nibblesToBuffer(keyProgress)
+      // TODO edge case: there are no more keys, how to prove this?
+      // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
+      // X is the final value
       if (node instanceof BranchNode) {
         const children = node.getChildren()
         for (let i = 0; i < children.length; i++) {
@@ -775,35 +777,18 @@ export class Trie {
           if (keyChk(cpy))
             // This node matches the range, so go deeper
             walkController.onlyBranchIndex(node, keyProgress, children[i][0])
-          if (node.value() !== null && keyChk(keyProgress)) {
-            keyValueItems.push({
-              key: nibblesToBuffer(keyProgress),
-              value: node.value()!,
-            })
-
-            // TODO edge case: there are no more keys, how to prove this?
-            // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
-            // X is the final value
-          }
         }
       } else if (node instanceof ExtensionNode) {
         const extKey = [...keyProgress, ...node._nibbles]
         if (keyChk(extKey)) {
           walkController.allChildren(node, keyProgress)
         }
-        if (node.value() !== null && keyChk(keyProgress)) {
-          keyValueItems.push({
-            key: nibblesToBuffer(keyProgress),
-            value: node.value()!,
-          })
-        }
-      } else if (node instanceof LeafNode) {
-        if (node.value() !== null && keyChk(keyProgress)) {
-          keyValueItems.push({
-            key: nibblesToBuffer(keyProgress),
-            value: node.value()!,
-          })
-        }
+      }
+      if (node !== null && node.value() !== null && keyChk(keyProgress)) {
+        keyValueItems.push({
+          key: nibblesToBuffer(keyProgress),
+          value: node.value()!,
+        })
       }
     })
     return keyValueItems
