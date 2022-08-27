@@ -60,20 +60,6 @@ tape(`${method}: call on rinkeby`, async (t) => {
   td.reset()
 })
 
-tape(`${method}: call on kovan`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '42')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
-
 tape(`${method}: call on goerli`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })

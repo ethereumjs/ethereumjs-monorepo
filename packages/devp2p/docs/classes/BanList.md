@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L13)
+[packages/devp2p/src/dpt/ban-list.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L15)
 
 ## Methods
 
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L17)
+[packages/devp2p/src/dpt/ban-list.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L19)
 
 ___
 
@@ -62,4 +62,4 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L24)
+[packages/devp2p/src/dpt/ban-list.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L26)

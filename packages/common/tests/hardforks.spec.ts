@@ -252,10 +252,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
         Buffer.from('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177', 'hex'),
       ],
       [
-        Chain.Kovan,
-        Buffer.from('a3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9', 'hex'),
-      ],
-      [
         Chain.Goerli,
         Buffer.from('bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a', 'hex'),
       ],
@@ -301,9 +297,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     )
     st.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
-    c = new Common({ chain: Chain.Kovan })
+    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     let f = () => {
-      c.forkHash(Hardfork.Merge)
+      c.forkHash(Hardfork.Shanghai)
     }
     msg = 'should throw when called on non-applied or future HF'
     st.throws(f, /No fork hash calculation possible/, msg)

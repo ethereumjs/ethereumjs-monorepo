@@ -2,13 +2,13 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import Semaphore from 'semaphore-async-await'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
 import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
+import { Lock } from './lock'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -48,7 +48,7 @@ export class Blockchain implements BlockchainInterface {
   private _heads: { [key: string]: Buffer }
 
   protected _isInitialized = false
-  private _lock: Semaphore
+  private _lock: Lock
 
   _common: Common
   private _hardforkByHeadBlockNumber: boolean
@@ -152,7 +152,7 @@ export class Blockchain implements BlockchainInterface {
 
     this._heads = {}
 
-    this._lock = new Semaphore(1)
+    this._lock = new Lock()
 
     if (opts.genesisBlock !== undefined && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'
@@ -1248,11 +1248,11 @@ export class Blockchain implements BlockchainInterface {
       stateRoot,
     }
     if (common.consensusType() === 'poa') {
-      if (common.genesis().extraData !== undefined && common.chainName() !== 'kovan') {
+      if (common.genesis().extraData !== undefined) {
         // Ensure exta data is populated from genesis data if provided
         header.extraData = common.genesis().extraData
       } else {
-        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes (or if chain is Kovan)
+        // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
         header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
       }
     }
@@ -1277,8 +1277,6 @@ export class Blockchain implements BlockchainInterface {
         return require('./genesisStates/ropsten.json')
       case 'rinkeby':
         return require('./genesisStates/rinkeby.json')
-      case 'kovan':
-        return require('./genesisStates/kovan.json')
       case 'goerli':
         return require('./genesisStates/goerli.json')
       case 'sepolia':

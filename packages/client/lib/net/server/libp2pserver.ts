@@ -66,7 +66,7 @@ export class Libp2pServer extends Server {
         addresses,
         bootnodes: this.bootnodes,
       })
-      this.protocols.forEach(async (p) => {
+      for (const p of this.protocols) {
         const protocol = `/${p.name}/${p.versions[0]}`
         this.node!.handle(protocol, async ({ connection, stream }) => {
           const [peerId] = this.getPeerInfo(connection)
@@ -76,7 +76,7 @@ export class Libp2pServer extends Server {
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
         })
-      })
+      }
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
       const id = peerId.toB58String()

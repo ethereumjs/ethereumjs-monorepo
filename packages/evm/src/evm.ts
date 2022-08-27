@@ -139,7 +139,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
+export class EVM implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -151,6 +151,8 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   public eei: EEIInterface
 
   public readonly _transientStorage: TransientStorage
+
+  public readonly events: AsyncEventEmitter<EVMEvents>
 
   /**
    * This opcode data is always set since `getActiveOpcodes()` is called in the constructor
@@ -223,7 +225,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    super()
+    this.events = new AsyncEventEmitter<EVMEvents>()
 
     this._optsCached = opts
 
@@ -302,7 +304,9 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
   }
 
   protected async init(): Promise<void> {
@@ -700,10 +704,12 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
-        callerAccount.balance += value
-        await this.eei.putAccount(caller, callerAccount)
+        if (callerAccount.balance < value) {
+          // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
+          callerAccount.balance = value
+          await this.eei.putAccount(caller, callerAccount)
+        }
       }
 
       message = new Message({

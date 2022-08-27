@@ -27,7 +27,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dns/dns.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L36)
+[packages/devp2p/src/dns/dns.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L37)
 
 ## Methods
 
@@ -50,7 +50,7 @@ TestDouble mocking of the native `dns` module.
 
 #### Defined in
 
-[packages/devp2p/src/dns/dns.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L216)
+[packages/devp2p/src/dns/dns.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L217)
 
 ___
 
@@ -76,4 +76,4 @@ search exceeds `maxQuantity` plus the `errorTolerance` factor.
 
 #### Defined in
 
-[packages/devp2p/src/dns/dns.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L54)
+[packages/devp2p/src/dns/dns.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L55)
