@@ -759,7 +759,7 @@ export class Trie {
       root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.checkpoints = [...this._db.checkpoints]
+      trie._db.setCheckpoints(this._db.checkpoints)
     }
     return trie
   }

@@ -18,6 +18,23 @@ export class CheckpointDB implements DB {
   }
 
   /**
+   * Flush the checkpoints and set the requested checkpoints.
+   *
+   * @param {Checkpoint[]} checkpoints
+   * @memberof CheckpointDB
+   */
+  setCheckpoints(checkpoints: Checkpoint[]) {
+    this.checkpoints = []
+
+    for (let i = 0; i < checkpoints.length; i++) {
+      this.checkpoints.push({
+        root: checkpoints[i].root,
+        keyValueMap: new Map(checkpoints[i].keyValueMap),
+      })
+    }
+  }
+
+  /**
    * Is the DB during a checkpoint phase?
    */
   hasCheckpoints() {
