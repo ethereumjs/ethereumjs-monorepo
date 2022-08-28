@@ -6,7 +6,7 @@ import { numberToHex } from './helpers'
 
 import { Block } from './index'
 
-import type { BlockOptions } from './index'
+import type { BlockOptions, JsonRpcBlock } from './index'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 
 function normalizeTxParams(_txParams: any) {
@@ -41,17 +41,19 @@ function normalizeTxParams(_txParams: any) {
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param options - An object describing the blockchain
  */
-export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
+export function blockFromRpc(
+  blockParams: JsonRpcBlock,
+  uncles: any[] = [],
+  options?: BlockOptions
+) {
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  if (blockParams.transactions !== undefined) {
-    const opts = { common: header._common }
-    for (const _txParams of blockParams.transactions) {
-      const txParams = normalizeTxParams(_txParams)
-      const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
-      transactions.push(tx)
-    }
+  const opts = { common: header._common }
+  for (const _txParams of blockParams.transactions) {
+    const txParams = normalizeTxParams(_txParams)
+    const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
+    transactions.push(tx)
   }
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
