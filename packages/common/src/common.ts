@@ -285,10 +285,7 @@ export class Common extends EventEmitter {
       if (blockNumber >= BigInt(hf.block)) {
         hardfork = hf.name as Hardfork
       }
-      if (
-        td &&
-        (typeof hf.ttd === 'string' || (typeof hf.ttd === 'bigint' && hf.ttd !== BigInt(0)))
-      ) {
+      if (td && (typeof hf.ttd === 'string' || typeof hf.ttd === 'bigint')) {
         if (td >= BigInt(hf.ttd)) {
           minTdHF = hf.name
         } else {
