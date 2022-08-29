@@ -7,8 +7,6 @@ import type { PrecompileInput } from './types'
 const { BLS12_381_ToG2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
 
 export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
-  if (opts.data === undefined) throw new Error('opts.data missing but required')
-
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data

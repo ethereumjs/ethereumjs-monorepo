@@ -11,8 +11,6 @@ const {
 } = require('./util/bls12_381')
 
 export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
-  if (opts.data === undefined) throw new Error('opts.data missing but required')
-
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data

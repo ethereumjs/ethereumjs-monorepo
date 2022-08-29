@@ -6,8 +6,6 @@ import type { PrecompileInput } from './types'
 const bn128 = require('rustbn.js')
 
 export function precompile06(opts: PrecompileInput): ExecResult {
-  if (opts.data === undefined) throw new Error('opts.data missing but required')
-
   const inputData = opts.data
 
   const gasUsed = opts._common.param('gasPrices', 'ecAdd')

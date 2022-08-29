@@ -77,8 +77,6 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
-  if (opts.data === undefined) throw new Error('opts.data missing but required')
-
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
