@@ -59,6 +59,8 @@ evm
   })
   .then((results) => {
     console.log(`Returned: ${results.returnValue.toString('hex')}`)
+    console.log(gasUsed: ${result.executionGasUsed.toString()})
+
   })
   .catch(console.error)
 ```
