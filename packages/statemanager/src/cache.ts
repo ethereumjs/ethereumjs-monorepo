@@ -111,14 +111,13 @@ export class Cache {
     const it = this._cache.begin
     let next = true
     while (next) {
-      if (it.value !== undefined && it.value.modified === true) {
+      if (it.value?.modified === true) {
         it.value.modified = false
         const keyBuf = Buffer.from(it.key, 'hex')
         if (it.value.deleted === false) {
           const accountRlp = it.value.val
           await this._putCb(keyBuf, accountRlp)
         } else {
-          it.value.modified = false
           it.value.deleted = true
           it.value.virtual = true
           it.value.val = new Account().serialize()
