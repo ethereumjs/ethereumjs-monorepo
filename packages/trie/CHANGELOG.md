@@ -6,13 +6,120 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/CHANGELOG.md)).
+
+From Beta 3 to RC 1 the `Trie` library has seen the most vast set of changes, thanks again to @faustbrian for this various meaningful refactoring contributions! ❤️
+
+There are various substantial structural changes and reworkings which will make working with the Trie library more flexible and robust. Note that these changes will need some attention though on an upgrade depending on your existing usage of the Trie library.
+
+### Single Trie Class
+
+There is now one single `Trie` class which contains and exposes the functionality previously split into the three separate classes `Trie` -> `CheckpointTrie` and `SecureTrie`, see PRs [#2214](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2214) and [#2215](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2215). Class inheritance has been removed and the existing functionality has been integrated into one class. This should make it easier to extend the Trie class or customize its behavior without having to "dock" into the previous complicated inheritance structure.
+
+#### Default Checkpointing Behavior
+
+The `CheckpointTrie` class has been removed in favor of integrating the functionality into the main `Trie` class and make it a default behaviour. Every Trie instance now comes complete with checkpointing behaviour out of the box, without giving any additional weight or performance penalty if the functionality remains unused.
+
+#### Secure Trie with an Option
+
+The `SecureTrie` class has been removed as well. Instead there is a new constructor option `useKeyHashing` - defaulting to `false`. This effectively reduces the level of inheritance dependencies (for example, in the old structure, you could not create a secure trie without the checkpoint functionality which, in terms of logic, do not correlate in any way). This also provides more room to accommodate future design modifications and/or additions if required.
+
+Updating is a straightforward process:
+
+```ts
+// Old
+const trie = new SecureTrie()
+
+// New
+const trie = new Trie({ useKeyHashing: true })
+```
+
+### Removed Getter and Setter Functions
+
+Due to the ambiguity of the `get` and `set` functions (also known as getters and setters), usage has been removed from the library. This is because their ambiguity can create the impression of interacting with a property on a trie instance.
+
+#### Trie `root` Getter/Setter
+
+For this reason, a single `root(hash?: Buffer): Buffer` function serves as a replacement for the previous `root` getter and setter and can effectively work to get and set properties, see PR [#2219](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2219). This makes it obvious that you intend to modify an internal property of the trie that is neither accessible or mutable via any other means other than this particular function.
+
+##### Getter Example
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root
+
+// New
+const trie = new Trie()
+trie.root()
+```
+
+##### Setter Example
+
+```tsx
+// Old
+const trie = new Trie()
+trie.root = Buffer.alloc(32)
+
+// New
+const trie = new Trie()
+trie.root(Buffer.alloc(32))
+```
+
+#### Trie `isCheckpoint` Getter
+
+The `isCheckpoint` getter function has been removed, see PR [#2218](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2218) The `hasCheckpoints()` function serves as its replacement and offers the same behaviour.
+
+```tsx
+// Old
+const trie = new Trie()
+trie.isCheckpoint
+
+// New
+const trie = new Trie()
+trie.hasCheckpoints()
+```
+
+### Database Abstraction
+
+Another significant change is that we dropped support for `LevelDB` out of the box. As a result, you will need to have your own implementation available.
+
+#### Motivation
+
+The primary reason for this change is increase the flexibility of this package by allowing developers to select any type of storage for their unique purposes. In addition, this change renders the project far less susceptible to [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack). We trust that users and developers can appreciate the value of reducing this attack surface in exchange for a little more time spent on their part for the duration of this upgrade.
+
+#### LevelDB Removal
+
+Prior to v5, this package shipped with a LevelDB integration out of the box. Finalized within this RC release round we have introduced a database abstraction and therefore no longer ship with the aforementioned LevelDB implementation, see previous Beta CHANGELOGs as well as PR [#2167](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2167). However, for your convenience, we provide all of the necessary steps so that you can integrate it accordingly.
+
+See our [Upgrade Guide](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/UPGRADING.md) for more instructions on how to use the `Trie` library with LevelDB now.
+
+### Other Changes
+
+- Store `opts` in private property with defaults, PR [#2224](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2224)
+- **Potentially breaking:** Mark `db` as protected and rename to `_db` to avoid leaky properties, PR [#2221](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2221)
+- Replace `get/set` for `key/value` for nodes with function, PR [#2220](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2220)
+- Rename `persistRoot` to `useRootPersistence`, PR [#2223](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2223)
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+- Use `micro-bmark` for benchmarks, PR [#2128](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2128)
+- Move `Trie#_findValueNodes()` function to `TrieReadStream`, PR [#2186](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2186)
+- Replaced `semaphore-async-await` with simpler implementation, PR [#2187](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2187)
+- Renamed `Semaphore` to `Lock`, PR [#2234](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2234)
+
 ## 5.0.0-beta.3 - 2022-08-10
 
 Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/CHANGELOG.md)).
 
 ### Root Hash Persistance
 
-The trie library now comes with a new constructor option `useRootPersistence` which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071) and PR [#2123](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2123), thanks to @faustbrian for the contribution! ❤️
+The trie library now comes with a new constructor option `useRootPersistence` (note that the option has been called `persistRoot` up to Beta 3) which is disabled by default but allows to persist state root updates along write operations directly in the DB and therefore omits the need to manually set to a new state root, see PR [#2071](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2071) and PR [#2123](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2123), thanks to @faustbrian for the contribution! ❤️
 
 To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
 

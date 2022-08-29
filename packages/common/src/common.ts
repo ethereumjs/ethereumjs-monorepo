@@ -224,6 +224,11 @@ export class Common extends EventEmitter {
     } else {
       throw new Error('Wrong input format')
     }
+    for (const hf of this.hardforks()) {
+      if (hf.block === undefined) {
+        throw new Error(`Hardfork cannot have undefined block number`)
+      }
+    }
     return this._chainParams
   }
 
@@ -269,7 +274,7 @@ export class Common extends EventEmitter {
     let previousHF
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
-      if (typeof hf.block !== 'number') {
+      if (hf.block === null) {
         if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
           if (td >= BigInt(hf.ttd)) {
             return hf.name
