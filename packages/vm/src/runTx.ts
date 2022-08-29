@@ -30,11 +30,6 @@ const debugGas = createDebugLogger('vm:tx:gas')
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  // tx is required
-  if (opts.tx === undefined) {
-    throw new Error('invalid input, tx is required')
-  }
-
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
