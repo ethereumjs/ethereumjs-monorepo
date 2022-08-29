@@ -546,9 +546,6 @@ export class Blockchain implements BlockchainInterface {
       return
     }
     const parentHeader = (await this.getBlock(header.parentHash)).header
-    if (parentHeader === undefined) {
-      throw new Error(`could not find parent header ${header.errorStr()}`)
-    }
 
     const { number } = header
     if (number !== parentHeader.number + BigInt(1)) {
