@@ -347,7 +347,7 @@ async function executeBlocks(client: EthereumClient) {
  * Note: this is destructive and removes blocks from the blockchain. Please back up your datadir.
  */
 async function startBlock(client: EthereumClient) {
-  if (typeof args.startBlock === 'number') return
+  if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
   const { blockchain } = client.chain
   const height = (await blockchain.getCanonicalHeadHeader()).number
