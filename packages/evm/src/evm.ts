@@ -577,7 +577,7 @@ export class EVM implements EVMInterface {
         if (this.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
-        result = { ...result, ...OOGResult(message.gasLimit) }
+        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
         if (this.DEBUG) {
@@ -1020,6 +1020,14 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
     returnValue: Buffer.alloc(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasUsed,
+    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
 }
 
