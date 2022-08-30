@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661883471705,
+  "lastUpdate": 1661885754000,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c6254cefa513d32cf5cd4d6e8ce91b69d32dd93d",
-          "message": "fix(trie): add static `create` constructor to `CheckpointTrie` and `SecureTrie` (#2195)\n\n* chore: wip\r\n\r\n* fix(trie): assign changes to opts copy\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-08-22T14:48:42+02:00",
-          "tree_id": "00844ad90635ed5bf01117414d7c9f95db6a944e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6254cefa513d32cf5cd4d6e8ce91b69d32dd93d"
-        },
-        "date": 1661172691927,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21971,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21242,
-            "range": "±5.01%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21758,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21401,
-            "range": "±2.13%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18992,
-            "range": "±10.47%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "94646f3d77515293f6b6745e1f71ceb74ad5aea1",
+          "message": "stateManager: remove isTruthy and isFalsy (#2251)",
+          "timestamp": "2022-08-30T14:43:37-04:00",
+          "tree_id": "721dd046eb65e41ef1ccbaa73737f7d010304b47",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/94646f3d77515293f6b6745e1f71ceb74ad5aea1"
+        },
+        "date": 1661885752865,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10219,
+            "range": "±2.96%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10197,
+            "range": "±3.63%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 10017,
+            "range": "±5.24%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10237,
+            "range": "±2.51%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 10165,
+            "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
