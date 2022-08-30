@@ -1,14 +1,9 @@
-import { arrToBufArr } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { Trie, decodeNode } from '../src'
-import { bufferToNibbles } from '../src/util/nibbles'
+import { Trie } from '../src'
 
-/*
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
-
 
   it('create a merkle proof and verify it', async (t) => {
     const trie = new Trie()
@@ -157,14 +152,15 @@ tape('simple merkle proofs generation and verification', function (tester) {
     t.equal(val!.toString('utf8'), 'c')
 
     t.end()
-  }) 
-})*/
+  })
+})
 
 tape('createRangeProof()', function (tester) {
   const it = tester.test
 
   it('creates one key/value proof', async (t) => {
     // In this case, there are no key/values between the left and the right key
+    // However, the first value on the right of the rKey key should be reported
     const trie = new Trie({
       useKeyHashing: true,
     })
@@ -188,10 +184,143 @@ tape('createRangeProof()', function (tester) {
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
+    t.ok(proof.keys.length === 1)
+    t.ok(proof.values.length === 1)
+
     await proverTrie.verifyRangeProof(
       trie.root(),
       proof.keys[proof.keys.length - 1],
       proof.keys[proof.keys.length - 1],
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
+
+    t.end()
+  })
+
+  it('creates multiple key/value proof', async (t) => {
+    // In this case, report a part of the key/value pairs, together with the double proof of
+    // lKey and rKey
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie()
+
+    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+
+    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+
+    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+
+    const lKey = Buffer.from('00'.repeat(32), 'hex')
+    const rKey = Buffer.from('9999' + '00'.repeat(30), 'hex')
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    // This should report a part of the trie, somewhere between 1 and 9 elements
+
+    const vLen = proof.values.length
+    const kLen = proof.keys.length
+
+    t.ok(vLen === kLen)
+    t.ok(vLen > 1 && vLen < 9)
+
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      lKey,
+      rKey,
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
+
+    t.end()
+  })
+
+  it('creates zero key/value proof', async (t) => {
+    // In this case, there are no key/values between the left and the right key
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie()
+
+    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+
+    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+
+    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+
+    const lKey = Buffer.from('EF'.repeat(32), 'hex')
+    const rKey = Buffer.from('FF'.repeat(32), 'hex')
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      lKey,
+      rKey,
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
+
+    t.end()
+  })
+
+  it('creates all elements proof', async (t) => {
+    // In this case, report all values of the trie
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie()
+
+    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+
+    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
+    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+
+    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
+    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+
+    const lKey = Buffer.from('00'.repeat(32), 'hex')
+    const rKey = Buffer.from('FF'.repeat(32), 'hex')
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    // We do NOT need the multiproof here
+    // However, if we want to check this, we have to:
+    // (1) check if there is no item left of lKey
+    // (2) check if there is no item right of rKey
+    // This is trivial in a flat DB, but this is not yet supported
+    // Therefore, probably do not implement this.
+    t.ok(proof.proof.length === 0)
+    t.ok(proof.values.length === 9)
+    t.ok(proof.keys.length === 9)
+
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      lKey,
+      rKey,
       proof.keys,
       proof.values,
       proof.proof
