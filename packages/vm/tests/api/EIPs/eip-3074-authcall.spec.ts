@@ -7,7 +7,6 @@ import {
   bigIntToBuffer,
   bufferToBigInt,
   ecsign,
-  isTruthy,
   privateToAddress,
   setLengthLeft,
   toBuffer,
@@ -170,33 +169,14 @@ function MSTORE(position: Buffer, value: Buffer) {
  * @returns - The bytecode to execute AUTHCALL
  */
 function getAuthCallCode(data: AuthcallData) {
-  const ZEROS32 = zeros(32)
-  const gasLimitBuffer = setLengthLeft(
-    isTruthy(data.gasLimit) ? bigIntToBuffer(data.gasLimit) : ZEROS32,
-    32
-  )
+  const gasLimitBuffer = setLengthLeft(bigIntToBuffer(data.gasLimit ?? BigInt(0)), 32)
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(isTruthy(data.value) ? bigIntToBuffer(data.value) : ZEROS32, 32)
-  const valueExtBuffer = setLengthLeft(
-    isTruthy(data.valueExt) ? bigIntToBuffer(data.valueExt) : ZEROS32,
-    32
-  )
-  const argsOffsetBuffer = setLengthLeft(
-    isTruthy(data.argsOffset) ? bigIntToBuffer(data.argsOffset) : ZEROS32,
-    32
-  )
-  const argsLengthBuffer = setLengthLeft(
-    isTruthy(data.argsLength) ? bigIntToBuffer(data.argsLength) : ZEROS32,
-    32
-  )
-  const retOffsetBuffer = setLengthLeft(
-    isTruthy(data.retOffset) ? bigIntToBuffer(data.retOffset) : ZEROS32,
-    32
-  )
-  const retLengthBuffer = setLengthLeft(
-    isTruthy(data.retLength) ? bigIntToBuffer(data.retLength) : ZEROS32,
-    32
-  )
+  const valueBuffer = setLengthLeft(bigIntToBuffer(data.value ?? BigInt(0)), 32)
+  const valueExtBuffer = setLengthLeft(bigIntToBuffer(data.valueExt ?? BigInt(0)), 32)
+  const argsOffsetBuffer = setLengthLeft(bigIntToBuffer(data.argsOffset ?? BigInt(0)), 32)
+  const argsLengthBuffer = setLengthLeft(bigIntToBuffer(data.argsLength ?? BigInt(0)), 32)
+  const retOffsetBuffer = setLengthLeft(bigIntToBuffer(data.retOffset ?? BigInt(0)), 32)
+  const retLengthBuffer = setLengthLeft(bigIntToBuffer(data.retLength ?? BigInt(0)), 32)
   const PUSH32 = Buffer.from('7f', 'hex')
   const AUTHCALL = Buffer.from('f7', 'hex')
   const order = [
