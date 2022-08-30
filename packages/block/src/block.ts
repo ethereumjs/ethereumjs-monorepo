@@ -51,13 +51,17 @@ export class Block {
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
-      ...opts, // This potentially overwrites hardforkByBlocknumber
+      ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // Uncles are obsolete post-merge (no use for hardforkByTTD)
+      // This potentially overwrites hardforkBy options but we will set them cleanly just below
       hardforkByTTD: undefined,
+    }
+    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
+    if (opts?.hardforkByTTD !== undefined) {
+      uncleOpts.hardforkByBlockNumber = true
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -114,14 +118,17 @@ export class Block {
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
-      ...opts, // This potentially overwrites hardforkByBlocknumber
+      ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
+      // This potentially overwrites hardforkBy options but we will set them cleanly just below
+      hardforkByTTD: undefined,
     }
-    if (isTruthy(uncleOpts.hardforkByTTD)) {
-      delete uncleOpts.hardforkByBlockNumber
+    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
+    if (opts?.hardforkByTTD !== undefined) {
+      uncleOpts.hardforkByBlockNumber = true
     }
     for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))

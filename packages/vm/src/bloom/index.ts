@@ -1,4 +1,4 @@
-import { isTruthy, zeros } from '@ethereumjs/util'
+import { zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 const BYTE_SIZE = 256
@@ -67,10 +67,8 @@ export class Bloom {
    * Bitwise or blooms together.
    */
   or(bloom: Bloom) {
-    if (isTruthy(bloom)) {
-      for (let i = 0; i <= BYTE_SIZE; i++) {
-        this.bitvector[i] = this.bitvector[i] | bloom.bitvector[i]
-      }
+    for (let i = 0; i <= BYTE_SIZE; i++) {
+      this.bitvector[i] = this.bitvector[i] | bloom.bitvector[i]
     }
   }
 }

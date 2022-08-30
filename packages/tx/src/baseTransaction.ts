@@ -7,7 +7,6 @@ import {
   bufferToBigInt,
   bufferToHex,
   ecsign,
-  isTruthy,
   publicToAddress,
   toBuffer,
   unpadBuffer,
@@ -362,7 +361,7 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected _getCommon(common?: Common, chainId?: BigIntLike) {
     // Chain ID provided
-    if (isTruthy(chainId)) {
+    if (chainId !== undefined) {
       const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
