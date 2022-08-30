@@ -764,45 +764,11 @@ export class Trie {
       return false
     }
 
-    await this.walkTrie(this.root(), async (_, node, keyProgress, walkController) => {
-      const keyCopy = [...keyProgress]
-      // TODO edge case: there are no more keys, how to prove this?
-      // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
-      // X is the final value
-      if (node instanceof BranchNode) {
-        const children = node.getChildren()
-        for (let i = 0; i < children.length; i++) {
-          const cpy = [...keyCopy]
-          cpy.push(children[i][0])
-          if (keyChk(cpy))
-            // This node matches the range, so go deeper
-            walkController.onlyBranchIndex(node, keyProgress, children[i][0])
-        }
-      } else if (node instanceof ExtensionNode) {
-        const extKey = [...keyProgress, ...node._nibbles]
-        if (keyChk(extKey)) {
-          walkController.allChildren(node, keyProgress)
-        }
-      }
-      if (node !== null && node.value() !== null && keyChk(keyProgress)) {
-        let targetKey: Nibbles
-        if (node instanceof BranchNode) {
-          targetKey = keyProgress
-        } else if (node instanceof ExtensionNode) {
-          targetKey = [...keyProgress, ...node._nibbles]
-        } else if (node instanceof LeafNode) {
-          targetKey = [...keyProgress, ...node._nibbles]
-        }
-        keyValueItems.push({
-          key: nibblesToBuffer(targetKey!),
-          value: node.value()!,
-        })
-      }
-    })
+    const self = this
 
-    if (keyValueItems.length === 0) {
-      await this.walkTrie(this.root(), async (_, node, keyProgress, walkController) => {
-        if (keyValueItems.length > 0) {
+    async function walkTrie(keyCheck: (key: Nibbles) => boolean, initialCheck?: () => boolean) {
+      await self.walkTrie(self.root(), async (_, node, keyProgress, walkController) => {
+        if (initialCheck !== undefined && initialCheck()) {
           return
         }
         const keyCopy = [...keyProgress]
@@ -814,17 +780,17 @@ export class Trie {
           for (let i = 0; i < children.length; i++) {
             const cpy = [...keyCopy]
             cpy.push(children[i][0])
-            if (nibblesCompare(highKeyNibbles, cpy) < 0)
+            if (keyCheck(cpy))
               // This node matches the range, so go deeper
               walkController.onlyBranchIndex(node, keyProgress, children[i][0])
           }
         } else if (node instanceof ExtensionNode) {
           const extKey = [...keyProgress, ...node._nibbles]
-          if (nibblesCompare(highKeyNibbles, extKey) < 0) {
+          if (keyCheck(extKey)) {
             walkController.allChildren(node, keyProgress)
           }
         }
-        if (node !== null && node.value() !== null && nibblesCompare(highKeyNibbles, keyProgress)) {
+        if (node !== null && node.value() !== null && keyCheck(keyProgress)) {
           let targetKey: Nibbles
           if (node instanceof BranchNode) {
             targetKey = keyProgress
@@ -839,6 +805,19 @@ export class Trie {
           })
         }
       })
+    }
+
+    await walkTrie(keyChk)
+
+    if (keyValueItems.length === 0) {
+      await walkTrie(
+        function (key: Nibbles) {
+          return nibblesCompare(highKeyNibbles, key) < 0
+        },
+        function () {
+          return keyValueItems.length > 0
+        }
+      )
     }
 
     let maxValueIndex = -1
