@@ -800,6 +800,47 @@ export class Trie {
       }
     })
 
+    if (keyValueItems.length === 0) {
+      await this.walkTrie(this.root(), async (_, node, keyProgress, walkController) => {
+        if (keyValueItems.length > 0) {
+          return
+        }
+        const keyCopy = [...keyProgress]
+        // TODO edge case: there are no more keys, how to prove this?
+        // Check if there are nodes right of limitHash, if not, then return proof that there are no keys right of key X
+        // X is the final value
+        if (node instanceof BranchNode) {
+          const children = node.getChildren()
+          for (let i = 0; i < children.length; i++) {
+            const cpy = [...keyCopy]
+            cpy.push(children[i][0])
+            if (nibblesCompare(highKeyNibbles, cpy) < 0)
+              // This node matches the range, so go deeper
+              walkController.onlyBranchIndex(node, keyProgress, children[i][0])
+          }
+        } else if (node instanceof ExtensionNode) {
+          const extKey = [...keyProgress, ...node._nibbles]
+          if (nibblesCompare(highKeyNibbles, extKey) < 0) {
+            walkController.allChildren(node, keyProgress)
+          }
+        }
+        if (node !== null && node.value() !== null && nibblesCompare(highKeyNibbles, keyProgress)) {
+          let targetKey: Nibbles
+          if (node instanceof BranchNode) {
+            targetKey = keyProgress
+          } else if (node instanceof ExtensionNode) {
+            targetKey = [...keyProgress, ...node._nibbles]
+          } else if (node instanceof LeafNode) {
+            targetKey = [...keyProgress, ...node._nibbles]
+          }
+          keyValueItems.push({
+            key: nibblesToBuffer(targetKey!),
+            value: node.value()!,
+          })
+        }
+      })
+    }
+
     let maxValueIndex = -1
     let maxKeyBuffer = Buffer.from('')
     for (let i = 0; i < keyValueItems.length; i++) {

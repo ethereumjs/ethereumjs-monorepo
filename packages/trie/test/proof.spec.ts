@@ -161,6 +161,8 @@ tape('simple merkle proofs generation and verification', function (tester) {
       useKeyHashing: true,
     })
 
+    const proverTrie = new Trie()
+
     await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
     await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
     await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
@@ -173,14 +175,18 @@ tape('simple merkle proofs generation and verification', function (tester) {
     await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
     await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
 
-    const lKey = Buffer.from('')
-    const rKey = Buffer.from('FFFF', 'hex')
+    const lKey = Buffer.from('00'.repeat(32), 'hex')
+    const rKey = Buffer.from('1234' + '00'.repeat(30), 'hex')
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
-    console.log(proof)
-
-    // fails, invalid key order
-    await trie.verifyRangeProof(trie.root(), lKey, rKey, proof.keys, proof.values, proof.proof)
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      lKey,
+      rKey,
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
   })
 })
