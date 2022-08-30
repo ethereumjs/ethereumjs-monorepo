@@ -90,7 +90,7 @@ You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpo
 
 #### (Optional) Validator
 
-Once you start beacon node instructed as above, it will expose some default api endpoints. The validator started as instructed below will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator)
+Once you start a beacon node as instructed above, it will expose some default api endpoints. The validator started as instructed below will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator)
 
 1. Run cmd: `./lodestar validator --importKeystores /path/to/generated/keystores --importKeystoresPassword /path/to/keystores/password/file`
 
