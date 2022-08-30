@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
@@ -16,17 +15,18 @@ export class LevelDB implements DB {
   }
 
   async get(key: Buffer): Promise<Buffer | null> {
-    let value = null
+    let value: Buffer | null = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
-      if (isTruthy(error.notFound)) {
-        // not found, returning null
-      } else {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
         throw error
       }
     }
-    return value as Buffer
+    return value
   }
 
   async put(key: Buffer, val: Buffer): Promise<void> {
