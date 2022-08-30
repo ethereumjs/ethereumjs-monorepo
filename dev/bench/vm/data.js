@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661871001040,
+  "lastUpdate": 1661875035711,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fde101c9f77512ce3d46dc4d57785da57d2c2cbb",
-          "message": "docs(trie): add upgrade guide for v5 (#2196)\n\n* docs(trie): add upgrade guide for v5\r\n\r\n* Update UPGRADING.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-08-20T21:11:33-04:00",
-          "tree_id": "e2bab5131609754537d7a0bc62e6af5c019fb4c3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fde101c9f77512ce3d46dc4d57785da57d2c2cbb"
-        },
-        "date": 1661044461865,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21666,
-            "range": "±3.87%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21212,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20194,
-            "range": "±7.88%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21102,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 21092,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.68%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "39158443+xdrkush@users.noreply.github.com",
+            "name": "drkush",
+            "username": "xdrkush"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "52d59618df319184f129422904df0cb2f1d4fe8b",
+          "message": "Update: README.md -> Graph (#2242)",
+          "timestamp": "2022-08-30T17:52:58+02:00",
+          "tree_id": "283dca6b3a9b83f3ba890eb00833b0f47b8df049",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/52d59618df319184f129422904df0cb2f1d4fe8b"
+        },
+        "date": 1661875034658,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19362,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19018,
+            "range": "±5.08%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18430,
+            "range": "±4.82%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19113,
+            "range": "±2.39%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19028,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
