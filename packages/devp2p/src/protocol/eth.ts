@@ -5,7 +5,6 @@ import {
   bufArrToArr,
   bufferToBigInt,
   bufferToHex,
-  isTruthy,
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
@@ -32,7 +31,7 @@ export class ETH extends Protocol {
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
       const c = this._peer._common
-      this._hardfork = isTruthy(c.hardfork()) ? c.hardfork() : this._hardfork
+      this._hardfork = c.hardfork() ?? this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
       this._latestBlock = c.hardforkBlock(this._hardfork) ?? BigInt(0)
@@ -68,7 +67,7 @@ export class ETH extends Protocol {
         )
         this._peerStatus = payload as ETH.StatusMsg
         const peerStatusMsg = `${
-          isTruthy(this._peerStatus) ? this._getStatusString(this._peerStatus) : ''
+          this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
         }`
         this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         this._handleStatus()
@@ -219,7 +218,7 @@ export class ETH extends Protocol {
     )}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${
-        isTruthy(status[5]) ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'
+        status[5] !== undefined ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'
       }`
       sStr += `, ForkNext: ${
         (status[5][1] as Buffer).length > 0 ? buffer2int(status[5][1] as Buffer) : '-'
@@ -268,11 +267,7 @@ export class ETH extends Protocol {
     let payload = Buffer.from(RLP.encode(bufArrToArr(this._status)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (
-      isTruthy(this._peer._hello) &&
-      isTruthy(this._peer._hello.protocolVersion) &&
-      this._peer._hello.protocolVersion >= 5
-    ) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
@@ -324,11 +319,7 @@ export class ETH extends Protocol {
     payload = Buffer.from(RLP.encode(bufArrToArr(payload)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (
-      isTruthy(this._peer._hello) &&
-      isTruthy(this._peer._hello.protocolVersion) &&
-      this._peer._hello?.protocolVersion >= 5
-    ) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
