@@ -12,7 +12,8 @@
        "ConstantinopleFix",
        "Istanbul",
        "Berlin",
-       "London"
+       "London",
+       "Merge"
     ],
     "additionalForks":[
        "FrontierToHomesteadAt5",
@@ -21,7 +22,9 @@
        "HomesteadToDaoAt5",
        "ByzantiumToConstantinopleFixAt5",
        "BerlinToLondonAt5",
-       "ArrowGlacier"
+       "ArrowGlacier",
+       "ArrowGlacierToMergeAtDiffC0000",
+       "GrayGlacier"
     ],
     "exceptions":{
        "AddressTooShort":"",
