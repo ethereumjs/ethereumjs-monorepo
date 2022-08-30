@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'events'
@@ -164,7 +163,7 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    if (this._socket && isTruthy(peer.udpPort))
+    if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
@@ -204,12 +203,12 @@ export class Server extends EventEmitter {
       case 'pong': {
         let rkey = info.data.hash.toString('hex')
         const rkeyParity = this._parityRequestMap.get(rkey)
-        if (isTruthy(rkeyParity)) {
+        if (typeof rkeyParity === 'string') {
           rkey = rkeyParity
           this._parityRequestMap.delete(rkeyParity)
         }
         const request = this._requests.get(rkey)
-        if (isTruthy(request)) {
+        if (request !== undefined) {
           this._requests.delete(rkey)
           request.deferred.resolve({
             id: peerId,

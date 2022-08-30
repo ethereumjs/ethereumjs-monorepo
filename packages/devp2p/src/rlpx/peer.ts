@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
+import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import BufferList = require('bl')
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'
@@ -88,7 +88,7 @@ export class Peer extends EventEmitter {
   _id: Buffer
   _remoteClientIdFilter: any
   _remoteId: Buffer
-  _EIP8: Buffer
+  _EIP8: Buffer | boolean
   _eciesSession: ECIES
   _state: string
   _weHello: HelloMsg | null
@@ -101,7 +101,7 @@ export class Peer extends EventEmitter {
   _closed: boolean
   _connected: boolean
   _disconnectReason?: DISCONNECT_REASONS
-  _disconnectWe: any
+  _disconnectWe: null | boolean
   _pingTimeout: number
   _logger: Debugger
 
@@ -139,9 +139,10 @@ export class Peer extends EventEmitter {
     this._socket.on('data', this._onSocketData.bind(this))
     this._socket.on('error', (err: Error) => this.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
-    this._logger = isTruthy(this._socket.remoteAddress)
-      ? devp2pDebug.extend(this._socket.remoteAddress).extend(DEBUG_BASE_NAME)
-      : devp2pDebug.extend(DEBUG_BASE_NAME)
+    this._logger =
+      this._socket.remoteAddress !== undefined
+        ? devp2pDebug.extend(this._socket.remoteAddress).extend(DEBUG_BASE_NAME)
+        : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._connected = false
     this._closed = false
     this._disconnectWe = null
@@ -166,7 +167,7 @@ export class Peer extends EventEmitter {
     this._logger(
       `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
-    if (isTruthy(this._EIP8)) {
+    if (this._EIP8 === true) {
       const authEIP8 = this._eciesSession.createAuthEIP8()
       if (!authEIP8) return
       this._socket.write(authEIP8)
@@ -284,11 +285,7 @@ export class Peer extends EventEmitter {
     const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('PING', debugMsg)
     let data = Buffer.from(RLP.encode([]))
-    if (
-      isTruthy(this._hello) &&
-      isTruthy(this._hello.protocolVersion) &&
-      this._hello.protocolVersion >= 5
-    ) {
+    if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
     }
 
@@ -308,11 +305,7 @@ export class Peer extends EventEmitter {
     this.debug('PONG', debugMsg)
     let data = Buffer.from(RLP.encode([]))
 
-    if (
-      isTruthy(this._hello) &&
-      isTruthy(this._hello.protocolVersion) &&
-      this._hello.protocolVersion >= 5
-    ) {
+    if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
     }
     this._sendMessage(PREFIXES.PONG, data)
@@ -397,7 +390,7 @@ export class Peer extends EventEmitter {
       return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
     }
 
-    if (isTruthy(this._remoteClientIdFilter)) {
+    if (this._remoteClientIdFilter !== undefined) {
       for (const filterStr of this._remoteClientIdFilter) {
         if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
           return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
@@ -409,7 +402,7 @@ export class Peer extends EventEmitter {
     for (const item of this._hello.capabilities) {
       for (const obj of this._capabilities!) {
         if (obj.name !== item.name || obj.version !== item.version) continue
-        if (isTruthy(shared[obj.name]) && shared[obj.name].version > obj.version) continue
+        if (shared[obj.name] !== undefined && shared[obj.name].version > obj.version) continue
         shared[obj.name] = obj
       }
     }
@@ -509,7 +502,7 @@ export class Peer extends EventEmitter {
     const parseData = this._socketData.slice(0, bytesCount)
     this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const size = this._eciesSession.parseHeader(parseData)
-    if (isFalsy(size)) {
+    if (size === undefined) {
       this._logger('invalid header size!')
       return
     }
@@ -569,11 +562,7 @@ export class Peer extends EventEmitter {
       // Use snappy uncompression if peer supports DevP2P >=v5
       let compressed = false
       const origPayload = payload
-      if (
-        isTruthy(this._hello) &&
-        isTruthy(this._hello.protocolVersion) &&
-        this._hello?.protocolVersion >= 5
-      ) {
+      if (this._hello !== null && this._hello.protocolVersion >= 5) {
         payload = snappy.uncompress(payload)
         compressed = true
       }
@@ -702,7 +691,7 @@ export class Peer extends EventEmitter {
    */
   _addFirstPeerDebugger() {
     const ip = this._socket.remoteAddress
-    if (isTruthy(ip)) {
+    if (typeof ip === 'string') {
       this._logger = devp2pDebug.extend(ip).extend(`FIRST_PEER`).extend(DEBUG_BASE_NAME)
     }
   }
@@ -715,7 +704,7 @@ export class Peer extends EventEmitter {
    * @param disconnectReason Capitalized disconnect reason (e.g. 'TIMEOUT')
    */
   private debug(messageName: string, msg: string, disconnectReason?: string) {
-    if (isTruthy(disconnectReason)) {
+    if (disconnectReason !== undefined) {
       this._logger.extend(messageName).extend(disconnectReason)(msg)
     } else {
       this._logger.extend(messageName)(msg)
