@@ -77,7 +77,7 @@ export class Protocol {
           resolve(this.decodeStatus(status))
         }
       }
-      if (sender.status !== undefined && sender.status !== null) {
+      if (sender.status !== undefined && sender.status !== null && sender.status !== 0) {
         handleStatus(sender.status)
       } else {
         sender.once('status', handleStatus)
@@ -116,7 +116,7 @@ export class Protocol {
   /**
    * Decodes status message payload into a status object.  Must be implemented
    * by subclass.
-   * @param status status message payload
+   * @param _status status message payload
    */
   decodeStatus(_status: any): Object {
     throw new Error('Unimplemented')
@@ -138,7 +138,6 @@ export class Protocol {
    * Decodes message payload
    * @param message message definition
    * @param payload message payload
-   * @param bound reference to bound protocol
    */
   decode(message: Message, payload: any): any {
     if (message.decode) {
