@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661889489587,
+  "lastUpdate": 1661902730982,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "001e14792c79bb88f2286bcbb46651d9e6e82243",
-          "message": "vm: improve tester types and remove isTruthy/isFalsy checks (#2207)",
-          "timestamp": "2022-08-22T20:33:02-04:00",
-          "tree_id": "d5295f02bede67630c324a480f75478cb78ed412",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/001e14792c79bb88f2286bcbb46651d9e6e82243"
-        },
-        "date": 1661214945388,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21899,
-            "range": "±2.75%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20554,
-            "range": "±7.02%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21893,
-            "range": "±1.92%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21495,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 21457,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.73%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fababfef75fc2d0ad3be15510e0461f552b69e86",
+          "message": "devp2p: remove isTruthy and isFalsy (#2254)\n\n* devp2p: remove isTruthy and isFalsy\n\n* Update packages/devp2p/src/protocol/les.ts\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-08-30T19:36:19-04:00",
+          "tree_id": "9c1e32aea24ae038eb95ecdf6278c382325c53ea",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fababfef75fc2d0ad3be15510e0461f552b69e86"
+        },
+        "date": 1661902730346,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19592,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19448,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18844,
+            "range": "±5.28%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19182,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18991,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
