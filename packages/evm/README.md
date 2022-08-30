@@ -25,7 +25,6 @@ Note that this package atm cannot be run in a standalone mode but needs to be ex
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { EEI } from '@ethereumjs/vm'
 import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -33,14 +32,12 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 // Note: in a future release there will be an EEI default implementation
 // which will ease standalone initialization
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const blockchain = await Blockchain.create({ common })
 const stateManager = new DefaultStateManager({ common })
 const eei = new EEI(stateManager, common, blockchain)
 
 const evm = new EVM({
   common,
-  blockchain,
-  eei,
+  eei
 })
 
 const STOP = '00'
@@ -62,7 +59,8 @@ evm
   })
   .then((results) => {
     console.log(`Returned: ${results.returnValue.toString('hex')}`)
-    console.log(`gasUsed : ${results.gasUsed.toString()}`)
+    console.log(gasUsed: ${result.executionGasUsed.toString()})
+
   })
   .catch(console.error)
 ```

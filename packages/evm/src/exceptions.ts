@@ -1,6 +1,7 @@
 export enum ERROR {
   OUT_OF_GAS = 'out of gas',
   CODESTORE_OUT_OF_GAS = 'code store out of gas',
+  CODESIZE_EXCEEDS_MAXIMUM = 'code size to deposit exceeds maximum code size',
   STACK_UNDERFLOW = 'stack underflow',
   STACK_OVERFLOW = 'stack overflow',
   INVALID_JUMP = 'invalid JUMP',
