@@ -408,7 +408,7 @@ export class Common extends EventEmitter {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
-          value = valueEIP !== undefined ? valueEIP : value
+          value = typeof valueEIP === 'bigint' ? valueEIP : value
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
