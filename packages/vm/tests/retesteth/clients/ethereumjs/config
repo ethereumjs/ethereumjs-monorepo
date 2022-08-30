@@ -22,9 +22,7 @@
        "HomesteadToDaoAt5",
        "ByzantiumToConstantinopleFixAt5",
        "BerlinToLondonAt5",
-       "ArrowGlacier",
-       "ArrowGlacierToMergeAtDiffC0000",
-       "GrayGlacier"
+       "ArrowGlacier"
     ],
     "exceptions":{
        "AddressTooShort":"",
