@@ -4,7 +4,6 @@ import {
   MAX_UINT64,
   SECP256K1_ORDER,
   bufferToBigInt,
-  isTruthy,
   privateToPublic,
   toBuffer,
 } from '@ethereumjs/util'
@@ -277,7 +276,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
-        if (isTruthy(privateKey)) {
+        if (privateKey !== undefined) {
           st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
         }
 
@@ -319,7 +318,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
-        if (isTruthy(privateKey)) {
+        if (privateKey !== undefined) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           st.equal(
             signedTx.getSenderAddress().toString(),
@@ -336,7 +335,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
-        if (isTruthy(privateKey)) {
+        if (privateKey !== undefined) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           const txPubKey = signedTx.getSenderPublicKey()
           const pubKeyFromPriv = privateToPublic(Buffer.from(privateKey, 'hex'))
@@ -358,7 +357,7 @@ tape('[BaseTransaction]', function (t) {
       for (const txType of txTypes) {
         for (const [i, tx] of txType.txs.entries()) {
           const { privateKey } = txType.fixtures[i]
-          if (isTruthy(privateKey)) {
+          if (privateKey !== undefined) {
             let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
             signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
             ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
@@ -376,7 +375,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
-        if (isTruthy(privateKey)) {
+        if (privateKey !== undefined) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
           st.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
