@@ -56,9 +56,8 @@ export interface TrieOpts {
   useRootPersistence?: boolean
 
   /**
-   * Flag to prune the trie. When this is set to `true`,
-   * each time a value is overridden, then the (intermediate) nodes which are now not
-   * reachable anymore will be pruned (deleted) from the trie
+   * Flag to prune the trie. When set to `true`, each time a value is overridden,
+   * unreachable nodes will be pruned (deleted) from the trie
    */
   useNodePruning?: boolean
 }
