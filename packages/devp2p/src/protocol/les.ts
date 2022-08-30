@@ -181,7 +181,7 @@ export class LES extends Protocol {
     let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (this._peer._hello !== null && this._peer._hello?.protocolVersion >= 5) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
