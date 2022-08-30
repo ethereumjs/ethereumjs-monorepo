@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661879103531,
+  "lastUpdate": 1661881120484,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c701dbab8e3a6e55162ffb84b7ce366ee0ad4e54",
-          "message": "Breaking Release Documentation Improvements and Fixes (#2191)\n\n* Fixed wrong Common import example in various Beta 3 CHANGELOG files\r\n\r\n* Trie: corrected persistRoot example and description in Beta 3 CHANGELOG\r\n\r\n* RLP, Block, Tx: added additional notes on changed RLP library behavior and usage\r\n\r\n* docs(trie): align comment with code in LevelDB\r\n\r\n* Monorepo: clarify release cycle naming on main README release/branch section\r\n\r\n* Monorepo: adding some prose to the main README to ease getting a first impression and an overview of what is available\r\n\r\n* Ethash: fixed README rendering error\r\n\r\n* StateManager: fixed README actions badge URL\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2022-08-22T13:19:58+02:00",
-          "tree_id": "d6de0c08ea1f8f59d5cda7ce142aad40bc71e008",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c701dbab8e3a6e55162ffb84b7ce366ee0ad4e54"
-        },
-        "date": 1661167811701,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18477,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17828,
-            "range": "±6.47%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18564,
-            "range": "±2.38%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18165,
-            "range": "±2.67%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18293,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.28%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "742514acac7fa96c0da65698381435b4d604f515",
+          "message": "common: remove isTruthy and isFalsy (#2255)",
+          "timestamp": "2022-08-30T13:36:01-04:00",
+          "tree_id": "1ebbb533278c53071713cbc05823a6a98606694a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/742514acac7fa96c0da65698381435b4d604f515"
+        },
+        "date": 1661881119763,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18790,
+            "range": "±3.12%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18313,
+            "range": "±4.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17122,
+            "range": "±8.22%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18907,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18255,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
