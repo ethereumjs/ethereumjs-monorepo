@@ -562,7 +562,7 @@ export class Peer extends EventEmitter {
       // Use snappy uncompression if peer supports DevP2P >=v5
       let compressed = false
       const origPayload = payload
-      if (this._hello !== null && this._hello?.protocolVersion >= 5) {
+      if (this._hello !== null && this._hello.protocolVersion >= 5) {
         payload = snappy.uncompress(payload)
         compressed = true
       }
@@ -691,7 +691,7 @@ export class Peer extends EventEmitter {
    */
   _addFirstPeerDebugger() {
     const ip = this._socket.remoteAddress
-    if (ip !== undefined) {
+    if (typeof ip === 'string') {
       this._logger = devp2pDebug.extend(ip).extend(`FIRST_PEER`).extend(DEBUG_BASE_NAME)
     }
   }

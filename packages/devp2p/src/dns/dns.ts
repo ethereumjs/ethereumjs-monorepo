@@ -36,7 +36,7 @@ export class DNS {
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
 
-    if (options.dnsServerAddress !== undefined) {
+    if (typeof options.dnsServerAddress === 'string') {
       dns.setServers([options.dnsServerAddress])
     }
   }

@@ -319,7 +319,7 @@ export class ETH extends Protocol {
     payload = Buffer.from(RLP.encode(bufArrToArr(payload)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (this._peer._hello !== null && this._peer._hello?.protocolVersion >= 5) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
