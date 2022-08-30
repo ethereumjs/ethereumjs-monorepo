@@ -94,7 +94,7 @@ Once you start a beacon node as instructed above, it will expose some default ap
 
 1. Run cmd: `./lodestar validator --importKeystores /path/to/generated/keystores --importKeystoresPassword /path/to/keystores/password/file`
 
-Where the keystores have been generated via [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) with the same password as in the above provided password file.
+where the keystores have been generated via [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) with the same password as in the above provided password file.
 
 For a testnet chain, you may skip keystore generation and directly provide lodestar validator with a `mnemonic` and its range indices to derive validators via `--fromMnemonic` and `--mnemonicIndexes` args. For e.g.:
 
