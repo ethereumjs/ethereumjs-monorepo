@@ -1,5 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
-
 import { BlockHeader } from './header'
 import { numberToHex } from './helpers'
 
@@ -18,7 +16,6 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
     miner,
     stateRoot,
     transactionsRoot,
-    receiptRoot,
     receiptsRoot,
     logsBloom,
     difficulty,
@@ -39,7 +36,7 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
       coinbase: miner,
       stateRoot,
       transactionsTrie: transactionsRoot,
-      receiptTrie: isTruthy(receiptRoot) ? receiptRoot : receiptsRoot,
+      receiptTrie: receiptsRoot,
       logsBloom,
       difficulty: numberToHex(difficulty),
       number,
