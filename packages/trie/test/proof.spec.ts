@@ -1,3 +1,5 @@
+import { arrToBufArr } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { Trie, decodeNode } from '../src'

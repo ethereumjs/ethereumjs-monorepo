@@ -677,8 +677,8 @@ export class Trie {
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
    */
-  async createProof(key: Buffer): Promise<Proof> {
-    const { stack } = await this.findPath(this.appliedKey(key))
+  async createProof(key: Buffer, ignoreAppliedKey = false): Promise<Proof> {
+    const { stack } = await this.findPath(ignoreAppliedKey ? key : this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
@@ -749,7 +749,7 @@ export class Trie {
     const lowKeyNibbles = bufferToNibbles(startingHash)
     const highKeyNibbles = bufferToNibbles(limitHash)
 
-    const proof = await this.createProof(startingHash)
+    const proof = await this.createProof(startingHash, true)
 
     const keyValueItems: RangeProofItem[] = []
 
@@ -769,9 +769,14 @@ export class Trie {
     /**
      * Helper method to walk the trie and only select nodes based upon the `keyCheck` method
      * @param keyCheck Returns `true` if this key is interesting and this key should be checked
+     * @param onlyOneBranch If this is true, a `BranchNode` will only be explored the first time `keyCheck` returns `true`
      * @param initialCheck Optional check, if this returns `true` do not run any checks and immediately return
      */
-    async function walkTrie(keyCheck: (key: Nibbles) => boolean, initialCheck?: () => boolean) {
+    async function walkTrie(
+      keyCheck: (key: Nibbles) => boolean,
+      onlyOneBranch = false,
+      initialCheck?: () => boolean
+    ) {
       await self.walkTrie(self.root(), async (_, node, keyProgress, walkController) => {
         if (initialCheck !== undefined && initialCheck()) {
           return
@@ -785,9 +790,13 @@ export class Trie {
           for (let i = 0; i < children.length; i++) {
             const cpy = [...keyCopy]
             cpy.push(children[i][0])
-            if (keyCheck(cpy))
+            if (keyCheck(cpy)) {
               // This node matches the range, so go deeper
               walkController.onlyBranchIndex(node, keyProgress, children[i][0])
+              if (onlyOneBranch) {
+                break
+              }
+            }
           }
         } else if (node instanceof ExtensionNode) {
           const extKey = [...keyProgress, ...node._nibbles]
@@ -822,6 +831,7 @@ export class Trie {
         function (key: Nibbles) {
           return nibblesCompare(highKeyNibbles, key) < 0
         },
+        true,
         function () {
           return keyValueItems.length > 0
         }
@@ -838,7 +848,7 @@ export class Trie {
     }
 
     if (maxValueIndex !== -1) {
-      const rightValueProof = await this.createProof(maxKeyBuffer)
+      const rightValueProof = await this.createProof(maxKeyBuffer, true)
       for (let i = 0; i < rightValueProof.length; i++) {
         // Check if proof node exists
         let found = false
