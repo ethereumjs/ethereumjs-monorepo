@@ -87,11 +87,11 @@ tape('runTx tests', async (t) => {
  *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
  */
 
-tape('runBlock test', async (t) => {
+tape.only('runBlock test', async (t) => {
   if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
-  const blockTag = 78910n
+  const blockTag = 500002n
   const state = new EthersStateManager({
     provider,
     // Set the state manager to look at the state of the chain before the block has been executed
@@ -131,7 +131,11 @@ tape('runBlock test', async (t) => {
   ])) as Proof
   const localproof = await state.getProof(block.header.coinbase)
   for (let j = 0; j < proof.accountProof.length; j++) {
-    t.deepEqual(localproof.accountProof[j], proof.accountProof[j], 'proof nodes are equal')
+    t.deepEqual(
+      localproof.accountProof[j],
+      proof.accountProof[j],
+      'proof nodes for miner account match proof from provider'
+    )
   }
   t.end()
 })

@@ -19,6 +19,7 @@ import { BaseStateManager } from '.'
 
 import type { Proof, StateManager } from '.'
 import type { StorageDump } from './interface'
+import type { StorageProof } from './stateManager'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { JsonRpcProvider } from '@ethersproject/providers'
@@ -174,8 +175,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const accountProof: PrefixedHexString[] = (await this.trie.createProof(address.buf)).map((p) =>
       bufferToHex(p)
     )
-    /*  const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address)
+    const storageProof: StorageProof[] = []
+    const storageTrie = await this._lookupStorageTrie(address)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
@@ -189,7 +190,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
         proof,
       }
       storageProof.push(proofItem)
-    }*/
+    }
 
     const returnValue: Proof = {
       address: address.toString(),
@@ -228,5 +229,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     }
 
     return blockFromRpc(blockData, uncleHeaders, { common, hardforkByBlockNumber: true })
+  }
+
+  /**
+   * Creates a storage trie from the primary storage trie
+   * for an account and saves this in the storage cache.
+   * @private
+   */
+  async _lookupStorageTrie(address: Address): Promise<Trie> {
+    // from state trie
+    const account = await this.getAccount(address)
+    const storageTrie = this.trie.copy(false)
+    storageTrie.root(account.storageRoot)
+    storageTrie.flushCheckpoints()
+    return storageTrie
   }
 }
