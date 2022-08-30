@@ -15,7 +15,7 @@ Following networks have been merge to PoS with ethereumjs client having the bake
 2. Goerli (`--network goerli`)
 3. (Upcoming) Mainnet (`--network mainnet`)
 
-However, we recommend running `ethereumjs` on `sepolia` network as its relatively young and light.
+However, we recommend running `ethereumjs` on `sepolia` network as it's a relatively young network that can be easily synced by the `ethereumjs` client.
 
 ## Sepolia testnet instructions
 
