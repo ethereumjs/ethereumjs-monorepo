@@ -2,15 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  Address,
-  bigIntToBuffer,
-  bufArrToArr,
-  intToBuffer,
-  isTruthy,
-  short,
-} from '@ethereumjs/util'
+import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -53,8 +45,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   if (
     this._hardforkByBlockNumber ||
-    isTruthy(this._hardforkByTTD) ||
-    isTruthy(opts.hardforkByTTD)
+    this._hardforkByTTD !== undefined ||
+    opts.hardforkByTTD !== undefined
   ) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
