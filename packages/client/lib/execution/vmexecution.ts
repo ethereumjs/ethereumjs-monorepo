@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import { bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -39,7 +39,7 @@ export class VMExecution extends Execution {
   constructor(options: ExecutionOptions) {
     super(options)
 
-    if (isFalsy(this.config.vm)) {
+    if (this.config.vm === undefined) {
       const trie = new Trie({
         db: new LevelDB(this.stateDB),
         useKeyHashing: true,
@@ -110,7 +110,7 @@ export class VMExecution extends Execution {
       const result = await this.vm.runBlock(opts)
       receipts = result.receipts
     }
-    if (isTruthy(receipts)) {
+    if (receipts !== undefined) {
       // Save receipts
       this.pendingReceipts?.set(block.hash().toString('hex'), receipts)
     }
@@ -294,7 +294,7 @@ export class VMExecution extends Execution {
       )
       numExecuted = await this.vmPromise
 
-      if (isTruthy(errorBlock)) {
+      if (errorBlock !== undefined) {
         await this.chain.blockchain.setIteratorHead(
           'vm',
           (errorBlock as unknown as Block).header.parentHash
@@ -308,7 +308,7 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
 
-      if (isTruthy(numExecuted && numExecuted > 0)) {
+      if (typeof numExecuted === 'number' && numExecuted > 0) {
         const firstNumber = startHeadBlock.header.number
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number
