@@ -228,7 +228,7 @@ export class Miner {
       inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress
       )
-      difficulty = inTurn === true ? 2 : 1
+      difficulty = inTurn ? 2 : 1
     }
 
     let baseFeePerGas
