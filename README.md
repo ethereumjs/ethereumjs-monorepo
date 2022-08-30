@@ -64,23 +64,23 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    ethash --> blockchain
    ethash --> client
    devp2p --> client
-   block --> blockchain
    block --> client
+   block --> blockchain
    block --> ethash
    block --> vm
    blockchain --> client
    blockchain --> vm
    trie --> client
    trie --> vm
-   trie --> block
    trie --> blockchain
+   trie --> block
    trie --> statemanager
    common --> block
-   common --> blockchain
-   common --> evm
    common --> statemanager
    common --> tx
+   common --> blockchain
    common --> vm
+   common --> evm
    common --> client
    common --> devp2p
    evm --> vm

@@ -1,4 +1,4 @@
-import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -97,9 +97,9 @@ export class Trie {
   /**
    * Gets and/or Sets the current root of the `trie`
    */
-  root(value?: Buffer): Buffer {
+  root(value?: Buffer | null): Buffer {
     if (value !== undefined) {
-      if (isFalsy(value)) {
+      if (value === null) {
         value = this.EMPTY_TRIE_ROOT
       }
 
@@ -137,7 +137,7 @@ export class Trie {
    */
   async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
-    let value = null
+    let value: Buffer | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
@@ -157,7 +157,7 @@ export class Trie {
     }
 
     // If value is empty, delete
-    if (isFalsy(value) || value.toString() === '') {
+    if (value === null || value.length === 0) {
       return await this.del(key)
     }
 
@@ -426,9 +426,9 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      if (isFalsy(parentNode) || parentNode instanceof BranchNode) {
+      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
         // branch->?
-        if (isTruthy(parentNode)) {
+        if (parentNode !== null && parentNode !== undefined) {
           stack.push(parentNode)
         }
 
@@ -460,9 +460,9 @@ export class Trie {
           stack.push(parentNode)
         } else {
           const branchNodeKey = branchNode.key()
-          // branch node is an leaf or extension and parent node is an exstention
+          // branch node is an leaf or extension and parent node is an extension
           // add two keys together
-          // dont push the parent node
+          // don't push the parent node
           branchNodeKey.unshift(branchKey)
           key = key.concat(branchNodeKey)
           parentKey = parentKey.concat(branchNodeKey)
@@ -475,8 +475,8 @@ export class Trie {
       return key
     }
 
-    let lastNode = stack.pop() as TrieNode
-    if (isFalsy(lastNode)) throw new Error('missing last node')
+    let lastNode = stack.pop()
+    if (lastNode === undefined) throw new Error('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
@@ -633,7 +633,7 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        if (isFalsy(op.value)) {
+        if (op.value === null || op.value === undefined) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
@@ -657,7 +657,7 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root() === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
       this.root(opStack[0].key)
     }
 

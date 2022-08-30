@@ -19,7 +19,6 @@ export function blockHeaderFromRpc(
     miner,
     stateRoot,
     transactionsRoot,
-    receiptRoot, // TODO: Investigate dual receiptRoot/receiptsRoot usage.
     receiptsRoot,
     logsBloom,
     difficulty,
@@ -40,7 +39,7 @@ export function blockHeaderFromRpc(
       coinbase: miner,
       stateRoot,
       transactionsTrie: transactionsRoot,
-      receiptTrie: receiptRoot ?? receiptsRoot,
+      receiptTrie: receiptsRoot,
       logsBloom,
       difficulty: numberToHex(difficulty),
       number,
