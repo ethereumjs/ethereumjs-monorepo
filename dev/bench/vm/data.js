@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661875035711,
+  "lastUpdate": 1661877243943,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0e8b9cd8cc3d6bc4aa0e29458cfeeff909cb8382",
-          "message": "Remove common from state manager (#2197)\n\n* Remove common from state manager",
-          "timestamp": "2022-08-21T12:44:24-04:00",
-          "tree_id": "64a72dee20997dc12662a140a25ba51134ea5447",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e8b9cd8cc3d6bc4aa0e29458cfeeff909cb8382"
-        },
-        "date": 1661100850965,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 17863,
-            "range": "±3.33%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17908,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17302,
-            "range": "±6.20%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17226,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17260,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.81%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "15790b324582369214e592ba3bdcb6b50f4b852c",
+          "message": "vm: remove isTruthy and isFalsy (#2248)",
+          "timestamp": "2022-08-30T12:30:50-04:00",
+          "tree_id": "aba8c0e948a95c84899d15ce609ce19432c3783d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/15790b324582369214e592ba3bdcb6b50f4b852c"
+        },
+        "date": 1661877241470,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 9973,
+            "range": "±4.77%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 9815,
+            "range": "±4.45%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 10510,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10241,
+            "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9867,
+            "range": "±7.37%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
           }
         ]
       }
