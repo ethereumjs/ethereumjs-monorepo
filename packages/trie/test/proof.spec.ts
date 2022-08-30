@@ -3,10 +3,11 @@ import * as tape from 'tape'
 import { Trie, decodeNode } from '../src'
 import { bufferToNibbles } from '../src/util/nibbles'
 
+/*
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
 
-  /*
+
   it('create a merkle proof and verify it', async (t) => {
     const trie = new Trie()
 
@@ -154,9 +155,14 @@ tape('simple merkle proofs generation and verification', function (tester) {
     t.equal(val!.toString('utf8'), 'c')
 
     t.end()
-  }) */
+  }) 
+})*/
 
-  it('should create range proof', async (t) => {
+tape('createRangeProof()', function (tester) {
+  const it = tester.test
+
+  it('creates one key/value proof', async (t) => {
+    // In this case, there are no key/values between the left and the right key
     const trie = new Trie({
       useKeyHashing: true,
     })
@@ -182,11 +188,13 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     await proverTrie.verifyRangeProof(
       trie.root(),
-      lKey,
-      rKey,
+      proof.keys[proof.keys.length - 1],
+      proof.keys[proof.keys.length - 1],
       proof.keys,
       proof.values,
       proof.proof
     )
+
+    t.end()
   })
 })

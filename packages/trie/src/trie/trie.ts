@@ -766,6 +766,11 @@ export class Trie {
 
     const self = this
 
+    /**
+     * Helper method to walk the trie and only select nodes based upon the `keyCheck` method
+     * @param keyCheck Returns `true` if this key is interesting and this key should be checked
+     * @param initialCheck Optional check, if this returns `true` do not run any checks and immediately return
+     */
     async function walkTrie(keyCheck: (key: Nibbles) => boolean, initialCheck?: () => boolean) {
       await self.walkTrie(self.root(), async (_, node, keyProgress, walkController) => {
         if (initialCheck !== undefined && initialCheck()) {
@@ -807,9 +812,12 @@ export class Trie {
       })
     }
 
+    // Do a normal range check
     await walkTrie(keyChk)
 
     if (keyValueItems.length === 0) {
+      // If there are no key/values, then at least one key/value should be returned
+      // This is thus higher than the requested `limitHash`
       await walkTrie(
         function (key: Nibbles) {
           return nibblesCompare(highKeyNibbles, key) < 0
