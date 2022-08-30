@@ -71,7 +71,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     let storage: Buffer | string | undefined = this.storageCache.get(slotCacheKey)
     if (typeof storage !== 'undefined') return storage
     // Retrieve storage slot from provider if not found in cache
-    storage = await this.provider.getStorageAt(address.toString(), bufferToBigInt(key))
+    storage = await this.provider.getStorageAt(
+      address.toString(),
+      bufferToBigInt(key),
+      this.blockTag
+    )
     const value = toBuffer(storage)
     // Cache retrieved storage slot
     await this.putContractStorage(address, key, value)
@@ -142,7 +146,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getContractCode(address: Address): Promise<Buffer> {
-    const code = await this.provider.getCode(address.toString())
+    const code = await this.provider.getCode(address.toString(), this.blockTag)
     const codeBuffer = toBuffer(code)
     this.contractCache.set(address.toString(), codeBuffer)
     return codeBuffer
