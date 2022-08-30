@@ -2,7 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, TypeOutput, isTruthy, toType } from '@ethereumjs/util'
+import { Account, Address, TypeOutput, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 
@@ -255,7 +255,7 @@ export class VM {
       common: (eeiCopy as any)._common,
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTTD: isTruthy(this._hardforkByTTD) ? this._hardforkByTTD : undefined,
+      hardforkByTTD: this._hardforkByTTD,
     })
   }
 

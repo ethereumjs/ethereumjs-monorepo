@@ -1,6 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -333,7 +332,7 @@ export class Blockchain implements BlockchainInterface {
     return await this.runWithLock<Block>(async () => {
       // if the head is not found return the headHeader
       const hash = this._heads[name] ?? this._headBlockHash
-      if (isFalsy(hash)) throw new Error('No head found.')
+      if (hash === undefined) throw new Error('No head found.')
       const block = await this._getBlock(hash)
       return block
     })
@@ -356,8 +355,7 @@ export class Blockchain implements BlockchainInterface {
   async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
       if (!this._headBlockHash) throw new Error('No head block set')
-      const block = this._getBlock(this._headBlockHash)
-      return block
+      return this._getBlock(this._headBlockHash)
     })
   }
 
@@ -548,9 +546,6 @@ export class Blockchain implements BlockchainInterface {
       return
     }
     const parentHeader = (await this.getBlock(header.parentHash)).header
-    if (isFalsy(parentHeader)) {
-      throw new Error(`could not find parent header ${header.errorStr()}`)
-    }
 
     const { number } = header
     if (number !== parentHeader.number + BigInt(1)) {
@@ -573,7 +568,7 @@ export class Blockchain implements BlockchainInterface {
 
     header.validateGasLimit(parentHeader)
 
-    if (isTruthy(height)) {
+    if (height !== undefined) {
       const dif = height - parentHeader.number
 
       if (!(dif < BigInt(8) && dif > BigInt(1))) {
@@ -654,7 +649,7 @@ export class Blockchain implements BlockchainInterface {
     let parentHash = block.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
-      if (isFalsy(parentBlock)) {
+      if (parentBlock === undefined) {
         throw new Error(`could not find parent block ${block.errorStr()}`)
       }
       canonicalBlockMap.push(parentBlock)
@@ -842,7 +837,7 @@ export class Blockchain implements BlockchainInterface {
     // check if block is in the canonical chain
     const canonicalHash = await this.safeNumberToHash(blockNumber)
 
-    const inCanonical = isTruthy(canonicalHash) && canonicalHash.equals(blockHash)
+    const inCanonical = canonicalHash !== false && canonicalHash.equals(blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
@@ -926,7 +921,7 @@ export class Blockchain implements BlockchainInterface {
     return await this.runWithLock<number>(async (): Promise<number> => {
       const headHash = this._heads[name] ?? this.genesisBlock.hash()
 
-      if (isTruthy(maxBlocks) && maxBlocks < 0) {
+      if (typeof maxBlocks === 'number' && maxBlocks < 0) {
         throw 'If maxBlocks is provided, it has to be a non-negative number'
       }
 
@@ -1030,7 +1025,7 @@ export class Blockchain implements BlockchainInterface {
     let hash: Buffer | false
 
     hash = await this.safeNumberToHash(blockNumber)
-    while (isTruthy(hash)) {
+    while (hash !== false) {
       ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
 
       // reset stale iterator heads to current canonical head this can, for
@@ -1084,7 +1079,7 @@ export class Blockchain implements BlockchainInterface {
     const loopCondition = async () => {
       staleHash = await this.safeNumberToHash(currentNumber)
       currentCanonicalHash = header.hash()
-      return isFalsy(staleHash) || !currentCanonicalHash.equals(staleHash)
+      return staleHash === false || !currentCanonicalHash.equals(staleHash)
     }
 
     while (await loopCondition()) {
@@ -1164,7 +1159,7 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _getHeader(hash: Buffer, number?: bigint) {
-    if (isFalsy(number)) {
+    if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getHeader(hash, number)
