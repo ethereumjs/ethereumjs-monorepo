@@ -1,20 +1,19 @@
-import { isTruthy } from '@ethereumjs/util'
 import * as minimist from 'minimist'
 
 const argv = minimist(process.argv.slice(2))
 
-if (isTruthy(argv.b)) {
+if (argv.b === true) {
   require('./base.spec')
-} else if (isTruthy(argv.l)) {
+} else if (argv.l === true) {
   require('./legacy.spec')
-} else if (isTruthy(argv.e)) {
+} else if (argv.e === true) {
   require('./typedTxsAndEIP2930.spec')
   require('./eip1559.spec')
-} else if (isTruthy(argv.t)) {
+} else if (argv.t === true) {
   require('./transactionRunner')
-} else if (isTruthy(argv.f)) {
+} else if (argv.f === true) {
   require('./transactionFactory.spec')
-} else if (isTruthy(argv.a)) {
+} else if (argv.a === true) {
   // All manual API tests
   require('./base.spec')
   require('./legacy.spec')
