@@ -176,7 +176,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      blockFromRpc(testDataFromRpcGoerli, [], { common })
+      blockFromRpc(testDataFromRpcGoerli as any, [], { common })
       st.pass('does not throw')
     } catch (error: any) {
       st.fail('error thrown')
