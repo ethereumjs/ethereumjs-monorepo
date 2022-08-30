@@ -26,7 +26,7 @@ import type { RpcTx } from '../types'
 import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, JsonTx, TypedTransaction } from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -68,27 +68,6 @@ type JsonRpcBlock = {
   transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
-}
-type JsonRpcTx = {
-  blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
-  blockNumber: string | null // QUANTITY - block number where this transaction was in. null when it's pending.
-  from: string // DATA, 20 Bytes - address of the sender.
-  gas: string // QUANTITY - gas provided by the sender.
-  gasPrice: string // QUANTITY - gas price provided by the sender in wei. If EIP-1559 tx, defaults to maxFeePerGas.
-  maxFeePerGas?: string // QUANTITY - max total fee per gas provided by the sender in wei.
-  maxPriorityFeePerGas?: string // QUANTITY - max priority fee per gas provided by the sender in wei.
-  type: string // QUANTITY - EIP-2718 Typed Transaction type
-  accessList?: JsonTx['accessList'] // EIP-2930 access list
-  chainId?: string // Chain ID that this transaction is valid on.
-  hash: string // DATA, 32 Bytes - hash of the transaction.
-  input: string // DATA - the data send along with the transaction.
-  nonce: string // QUANTITY - the number of transactions made by the sender prior to this one.
-  to: string | null /// DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
-  transactionIndex: string | null // QUANTITY - integer of the transactions index position in the block. null when it's pending.
-  value: string // QUANTITY - value transferred in Wei.
-  v: string // QUANTITY - ECDSA recovery id
-  r: string // DATA, 32 Bytes - ECDSA signature r
-  s: string // DATA, 32 Bytes - ECDSA signature s
 }
 type JsonRpcReceipt = {
   transactionHash: string // DATA, 32 Bytes - hash of the transaction.
