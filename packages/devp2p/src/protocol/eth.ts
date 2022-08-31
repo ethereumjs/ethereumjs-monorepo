@@ -46,6 +46,7 @@ export class ETH extends Protocol {
   static eth64 = { name: 'eth', version: 64, length: 17, constructor: ETH }
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
+  static eth67 = { name: 'eth', version: 67, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
@@ -93,6 +94,11 @@ export class ETH extends Protocol {
       case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
       case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
+        return
+
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth67.version) break
         return
 
       default:
@@ -308,6 +314,11 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth65.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth67.version) break
+        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+
       default:
         throw new Error(`Unknown code ${code}`)
     }
@@ -349,6 +360,8 @@ export namespace ETH {
     NEW_BLOCK = 0x07,
 
     // eth63
+    GET_NODE_DATA = 0x0d,
+    NODE_DATA = 0x0e,
     GET_RECEIPTS = 0x0f,
     RECEIPTS = 0x10,
 
