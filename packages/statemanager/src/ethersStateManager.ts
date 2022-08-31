@@ -1,4 +1,5 @@
 import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -11,7 +12,7 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import { debug } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
 
@@ -33,6 +34,7 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
+  private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
   private blockTag: string
   private root: Buffer | undefined
   private trie: Trie
@@ -48,6 +50,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     }
 
     this.contractCache = new Map()
+    this.externallyRetrievedStorageKeys = new Map<string, Map<string, boolean>>()
+
     this._cache = new Cache({
       getCb: (address) => this.getAccountFromProvider(address),
       putCb: async (keyBuf, accountRlp) => {
@@ -66,51 +70,50 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     // Retrieve storage slot from provider if not found in cache
-    const res = await this.getContractStorageFromProvider(address, key)
+    await this.getContractStorageFromProvider(address, key)
 
-    const storage = await this.provider.getStorageAt(
-      address.toString(),
-      bufferToBigInt(key),
-      this.blockTag
-    )
-    console.log('getProof ----', bufferToHex(key), res)
-    console.log('getStorageAt ---', '0x' + bufferToBigInt(key).toString(16), storage)
-    const value = toBuffer(storage)
     const storageTrie = await this._lookupStorageTrie(address)
     const foundValue = await storageTrie.get(key) //@ts-ignore
-    console.log('value from trie', '0x' + foundValue.toString('hex'))
-    // Cache retrieved storage slot
-    await this.putContractStorage(address, key, value)
-    return value
+
+    return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
   }
 
-  async getContractStorageFromProvider(address: Address, key: Buffer): Promise<Buffer> {
+  async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
+    if (this.externallyRetrievedStorageKeys.has(address.toString())) {
+      let map = this.externallyRetrievedStorageKeys.get(address.toString())
+      if (map?.get(key.toString('hex'))) {
+        return
+      }
+    }
+
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
       [bufferToHex(key)],
       this.blockTag,
     ])
     const rawData = accountData.accountProof
-    for (const proofItem of rawData) {
-      // Dump raw proof nodes to DB under their hashed keys
-      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
-      const hash = keccak256(dataBuffer)
-      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
-    }
+    await this.trie.fromProof(rawData.map((e: string) => hexToBytes(e)))
     // Only requesting a single slot at a time so the proof will always be the first item in the array
     const storageData = accountData.storageProof[0]
 
-    for (const proofItem of storageData.proof) {
-      // Dump raw proof nodes to DB under their hashed keys
-      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
-      const hash = keccak256(dataBuffer)
-      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
-    }
-    return storageData.value
-  }
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     const storageTrie = await this._lookupStorageTrie(address)
-    await storageTrie.put(key, value)
+
+    await storageTrie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
+
+    let map = this.externallyRetrievedStorageKeys.get(address.toString())
+    if (!map) {
+      this.externallyRetrievedStorageKeys.set(address.toString(), new Map())
+    }
+    map = this.externallyRetrievedStorageKeys.get(address.toString())!
+    map.set(key.toString('hex'), true)
+  }
+
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    console.log('puts', address.toString(), key.toString('hex'), value.toString('hex'))
+    const storageTrie = await this._lookupStorageTrie(address)
+
+    await storageTrie.put(key, arrToBufArr(RLP.encode(value)))
+
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
     await this.putAccount(address, contract)
@@ -146,7 +149,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    log(`Retrieving account data for ${address.toString()} from provider`)
+    console.log(`Retrieving account data for ${address.toString()} from provider`)
 
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
@@ -154,12 +157,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       this.blockTag,
     ])
     const rawData = accountData.accountProof
-    for (const proofItem of rawData) {
-      // Dump raw proof nodes to DB under their hashed keys
-      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
-      const hash = keccak256(dataBuffer)
-      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
-    }
+
+    await this.trie.fromProof(rawData.map((e: string) => hexToBytes(e)))
 
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),

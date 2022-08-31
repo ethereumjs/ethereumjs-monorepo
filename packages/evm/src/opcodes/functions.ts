@@ -695,6 +695,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const [key, val] = runState.stack.popN(2)
 
+      console.log('store')
+      console.log(bigIntToBuffer(key).toString('hex'))
+      console.log(bigIntToBuffer(val).toString('hex'))
+
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value

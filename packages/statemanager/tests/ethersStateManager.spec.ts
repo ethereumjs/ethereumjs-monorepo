@@ -115,6 +115,8 @@ tape.only('runBlock test', async (t) => {
       skipHeaderValidation: true,
     })
 
+    console.log(res)
+
     t.equal(
       bufferToHex(res.stateRoot),
       bufferToHex(block.header.stateRoot),
