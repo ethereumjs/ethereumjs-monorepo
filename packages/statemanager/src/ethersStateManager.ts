@@ -82,6 +82,9 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     console.log('getProof ----', bufferToHex(key), res)
     console.log('getStorageAt ---', '0x' + bufferToBigInt(key).toString(16), storage)
     const value = toBuffer(storage)
+    const storageTrie = await this._lookupStorageTrie(address)
+    const foundValue = await storageTrie.get(key) //@ts-ignore
+    console.log('value from trie', '0x' + foundValue.toString('hex'))
     // Cache retrieved storage slot
     await this.putContractStorage(address, key, value)
     return value
