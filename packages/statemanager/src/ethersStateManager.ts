@@ -113,7 +113,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     await storageTrie.put(key, value)
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
-    await this.putAccount(contract)
+    await this.putAccount(address, contract)
   }
 
   copy(): EthersStateManager {
