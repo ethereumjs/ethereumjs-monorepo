@@ -58,9 +58,9 @@ export function getBlockchain(blockhashes: any): Mockchain {
 }
 
 export const verifyResult = (block: Block, result: RunBlockResult) => {
-  // verify the receipt root, the logs bloom and the gas used after block execution,
+  // verify the receipts root, the logs bloom and the gas used after block execution,
   // throw if any of these is not the expected value
-  if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+  if (result.receiptsRoot && !result.receiptsRoot.equals(block.header.receiptTrie)) {
     // there's something wrong here with the receipts trie.
     // if block has receipt data we can check against the expected result of the block
     // and the reported data of the VM in order to isolate the problem

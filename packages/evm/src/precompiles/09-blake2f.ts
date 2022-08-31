@@ -1,5 +1,3 @@
-import { isFalsy } from '@ethereumjs/util'
-
 import { OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -158,8 +156,6 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 }
 
 export function precompile09(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const data = opts.data
   if (data.length !== 213) {
     return {
