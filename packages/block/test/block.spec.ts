@@ -15,7 +15,7 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { BlockBuffer } from '../src'
+import type { BlockBuffer, JsonRpcBlock } from '../src'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
 tape('[Block]: block functions', function (t) {
@@ -176,7 +176,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      blockFromRpc(testDataFromRpcGoerli, [], { common })
+      blockFromRpc(testDataFromRpcGoerli as unknown as JsonRpcBlock, [], { common })
       st.pass('does not throw')
     } catch (error: any) {
       st.fail('error thrown')

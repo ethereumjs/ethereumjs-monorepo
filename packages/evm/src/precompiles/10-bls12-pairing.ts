@@ -1,5 +1,3 @@
-import { isFalsy } from '@ethereumjs/util'
-
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -12,8 +10,6 @@ const zeroBuffer = Buffer.alloc(32, 0)
 const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data

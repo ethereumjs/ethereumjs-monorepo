@@ -1,7 +1,6 @@
 import {
   bufferToBigInt,
   ecrecover,
-  isFalsy,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
@@ -13,8 +12,6 @@ import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const gasUsed = opts._common.param('gasPrices', 'ecRecover')
 
   if (opts.gasLimit < gasUsed) {
