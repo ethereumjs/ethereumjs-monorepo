@@ -17,14 +17,14 @@ tape('[fromRPC]: block #2924874', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
   t.test('should create a block with transactions with valid signatures', function (st) {
-    const block = blockFromRpc(blockData as JsonRpcBlock, [], { common })
+    const block = blockFromRpc(blockData as unknown as JsonRpcBlock, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
     st.equal(allValid, true, 'all transaction signatures are valid')
     st.end()
   })
 
   t.test('should create a block header with the correct hash', function (st) {
-    const block = blockHeaderFromRpc(blockData as JsonRpcBlock, { common })
+    const block = blockHeaderFromRpc(blockData as unknown as JsonRpcBlock, { common })
     const hash = Buffer.from(blockData.hash.slice(2), 'hex')
     st.ok(block.hash().equals(hash))
     st.end()
@@ -46,7 +46,7 @@ tape('[fromRPC]:', function (t) {
       const blockDataTransactionValueAsInteger = blockData
       blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
       const blockFromTransactionValueAsInteger = blockFromRpc(
-        blockDataTransactionValueAsInteger as JsonRpcBlock,
+        blockDataTransactionValueAsInteger as unknown as JsonRpcBlock,
         undefined,
         { common }
       )
@@ -67,7 +67,7 @@ tape('[fromRPC]:', function (t) {
       const blockDataTransactionGasPriceAsInteger = blockData
       blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
       const blockFromTransactionGasPriceAsInteger = blockFromRpc(
-        blockDataTransactionGasPriceAsInteger as JsonRpcBlock,
+        blockDataTransactionGasPriceAsInteger as unknown as JsonRpcBlock,
         undefined,
         { common }
       )
@@ -85,7 +85,7 @@ tape('[fromRPC]:', function (t) {
     function (st) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const blockDifficultyAsInteger = blockFromRpc(
-        blockDataDifficultyAsInteger as JsonRpcBlock,
+        blockDataDifficultyAsInteger as unknown as JsonRpcBlock,
         undefined,
         {
           common,
