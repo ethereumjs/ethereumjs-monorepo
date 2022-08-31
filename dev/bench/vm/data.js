@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661972977564,
+  "lastUpdate": 1661976614300,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "241f566a10c3378d1c62677ff9695600a7a7c812",
-          "message": "Trie: Refactor SecureTrie as an option (#2214)\n\n* trie: removed deprecated prove() function (renamed to createProof())\r\n\r\n* trie: added secure option to base trie, integrated secure trie functionality\r\n\r\n* trie: adopted secureTrie.spec.ts tests (5 failing)\r\n\r\n* trie: fixed copy function\r\n\r\n* trie: fixed secureTrie.spec.ts branching test\r\n\r\n* trie: additional test fixes\r\n\r\n* trie: removed secure.ts SecureTrie class definition file\r\n\r\n* trie: updated README\r\n\r\n* trie: removed secure export, unified prepareTrieOpts and expand to CheckpointTrie\r\n\r\n* trie: renamed _secure -> _hashKeys and _hash() -> _hashKeysFunction\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\nCo-authored-by: Brian Faust <hello@basecode.sh>",
-          "timestamp": "2022-08-23T18:10:23+02:00",
-          "tree_id": "c248739e5878574d19255a73168d9af0f60b77b3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/241f566a10c3378d1c62677ff9695600a7a7c812"
-        },
-        "date": 1661271238784,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12807,
-            "range": "±4.01%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 13004,
-            "range": "±2.68%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12477,
-            "range": "±6.43%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 13078,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12934,
-            "range": "±2.79%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.34%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45e47e32aefb32402e65d94bb95496fa3fe4944e",
+          "message": "client: remove isTruthy and isFalsy (#2258)\n\n* client: remove isTruthy and isFalsy\r\n\r\n* refactor: JsonRpc types\r\n\r\n* client: add check for 0\r\n\r\n* client: remove duplicate JsonRpcBlock type\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-08-31T16:07:32-04:00",
+          "tree_id": "8fdd196798c23c836eccee4a6a04b17e01b89c52",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/45e47e32aefb32402e65d94bb95496fa3fe4944e"
+        },
+        "date": 1661976613193,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19000,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18451,
+            "range": "±4.50%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17121,
+            "range": "±6.86%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19018,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17940,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
