@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EthereumClient } from '../../lib/client'
@@ -43,7 +42,10 @@ tape('[Util/RPC]', (t) => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(isTruthy(httpServer) && isTruthy(wsServer), 'should return http and ws servers')
+        st.ok(
+          httpServer !== undefined && wsServer !== undefined,
+          'should return http and ws servers'
+        )
       }
     }
     st.end()

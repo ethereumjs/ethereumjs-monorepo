@@ -269,7 +269,7 @@ export interface RunBlockResult {
   /**
    * The receipt root after executing the block
    */
-  receiptRoot: Buffer
+  receiptsRoot: Buffer
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

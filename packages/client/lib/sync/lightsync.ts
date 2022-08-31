@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -105,7 +104,11 @@ export class LightSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
-    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < height) {
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight < height
+    ) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }

@@ -1,4 +1,3 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { ENR } from './enr'
@@ -37,7 +36,7 @@ export class DNS {
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
 
-    if (isTruthy(options.dnsServerAddress)) {
+    if (typeof options.dnsServerAddress === 'string') {
       dns.setServers([options.dnsServerAddress])
     }
   }
@@ -198,7 +197,7 @@ export class DNS {
    * @return {boolean}
    */
   private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): boolean {
-    if (isFalsy(peer) || isFalsy(peer.address)) return false
+    if (peer === null || peer.address === undefined) return false
 
     for (const existingPeer of peers) {
       if (peer.address === existingPeer.address) {

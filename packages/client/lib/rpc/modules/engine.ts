@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bufferToHex, isFalsy, isTruthy, toBuffer, zeros } from '@ethereumjs/util'
+import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -275,7 +275,7 @@ export class Engine {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
-    if (isFalsy(this.service.execution)) {
+    if (this.service.execution === undefined) {
       throw Error('execution required for engine module')
     }
     this.execution = this.service.execution
@@ -378,7 +378,7 @@ export class Engine {
     const blockExists = await validBlock(toBuffer(blockHash), this.chain)
     if (blockExists) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
-      if (isTruthy(isBlockExecuted)) {
+      if (isBlockExecuted) {
         const response = {
           status: Status.VALID,
           latestValidHash: blockHash,
@@ -393,7 +393,7 @@ export class Engine {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
-      if (isFalsy(isBlockExecuted)) {
+      if (!isBlockExecuted) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
@@ -491,14 +491,14 @@ export class Engine {
     /*
      * Process head block
      */
-    let headBlock: Block
+    let headBlock: Block | undefined
     try {
       headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
     } catch (error) {
       headBlock =
         (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
-        (this.remoteBlocks.get(headBlockHash.slice(2)) as Block)
-      if (isFalsy(headBlock)) {
+        this.remoteBlocks.get(headBlockHash.slice(2))
+      if (headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
         const payloadStatus = {
           status: Status.SYNCING,
@@ -551,7 +551,7 @@ export class Engine {
         try {
           const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
           const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
-          if (isFalsy(isBlockExecuted)) {
+          if (!isBlockExecuted) {
             throw new Error(`Parent block not yet executed number=${parent.header.number}`)
           }
           parentBlocks = await recursivelyFindParents(
@@ -580,7 +580,8 @@ export class Engine {
 
       const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
-        (isFalsy(this.config.syncTargetHeight) ||
+        (typeof this.config.syncTargetHeight !== 'bigint' ||
+          this.config.syncTargetHeight === BigInt(0) ||
           this.config.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {

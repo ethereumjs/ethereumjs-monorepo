@@ -1,5 +1,4 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { isTruthy } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
 import { formatLogData } from '../util'
@@ -76,7 +75,7 @@ export class SNAP extends Protocol {
 
     // Use snappy compression if peer supports DevP2P >=v5
     const protocolVersion = this._peer._hello?.protocolVersion
-    if (isTruthy(protocolVersion) && protocolVersion >= 5) {
+    if (protocolVersion !== undefined && protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
