@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
@@ -345,5 +346,63 @@ tape('createRangeProof()', function (tester) {
     )
 
     t.end()
+  })
+
+  it('passes randomly created tries with randomly selected ranges', async (t) => {
+    for (let i = 0; i < 1; i++) {
+      const trie = new Trie({
+        useKeyHashing: true,
+      })
+      // Generate [100, 1000) key/value pairs
+      const keyCount = 100 + Math.floor(Math.random() * 900)
+      for (let j = 0; j < keyCount; j++) {
+        await trie.put(randomBytes(32), randomBytes(32))
+      }
+
+      // 1000 verified requests
+      for (let j = 0; j < 1000; j++) {
+        const lKey = randomBytes(32)
+        let rKey = randomBytes(32)
+        while (Buffer.compare(lKey, rKey) > 0) {
+          rKey = randomBytes(32)
+        }
+        const proof = await trie.createRangeProof(lKey, rKey)
+        const proverTrie = new Trie()
+        if (proof.values.length === 1) {
+          const reportedLKey = proof.keys[0]
+          if (Buffer.compare(reportedLKey, rKey) > 0) {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                reportedLKey,
+                reportedLKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              t.pass('succesfully verified')
+            } catch (e: any) {
+              t.fail('could not verify')
+              t.comment(e.message)
+            }
+          } else {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                lKey,
+                rKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              t.pass('succesfully verified')
+            } catch (e: any) {
+              t.fail('could not verify')
+              t.comment(e.message)
+            }
+          }
+        }
+      }
+    }
   })
 })
