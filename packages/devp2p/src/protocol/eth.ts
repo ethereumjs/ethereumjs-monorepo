@@ -98,7 +98,7 @@ export class ETH extends Protocol {
 
       case ETH.MESSAGE_CODES.GET_NODE_DATA:
       case ETH.MESSAGE_CODES.NODE_DATA:
-        if (this._version >= ETH.eth67.version) break
+        if (this._version < ETH.eth67.version) break
         return
 
       default:
@@ -316,7 +316,7 @@ export class ETH extends Protocol {
 
       case ETH.MESSAGE_CODES.GET_NODE_DATA:
       case ETH.MESSAGE_CODES.NODE_DATA:
-        if (this._version >= ETH.eth67.version) break
+        if (this._version < ETH.eth67.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
       default:
