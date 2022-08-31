@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import Heap = require('qheap')
 import { Readable, Writable } from 'stream'
@@ -544,6 +543,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return isTruthy(task) && 'first' in task && 'count' in task
+    return task !== undefined && 'first' in task && 'count' in task
   }
 }
