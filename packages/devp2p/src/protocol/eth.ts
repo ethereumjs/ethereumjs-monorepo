@@ -84,8 +84,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         return
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -299,8 +297,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -353,8 +349,6 @@ export namespace ETH {
     NEW_BLOCK = 0x07,
 
     // eth63
-    GET_NODE_DATA = 0x0d,
-    NODE_DATA = 0x0e,
     GET_RECEIPTS = 0x0f,
     RECEIPTS = 0x10,
 
