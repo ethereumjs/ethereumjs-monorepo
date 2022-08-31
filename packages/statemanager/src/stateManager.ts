@@ -6,8 +6,6 @@ import {
   KECCAK256_RLP,
   bigIntToHex,
   bufferToHex,
-  isFalsy,
-  isTruthy,
   setLengthLeft,
   short,
   toBuffer,
@@ -189,7 +187,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from storage cache
     const addressHex = address.buf.toString('hex')
     let storageTrie = this._storageTries[addressHex]
-    if (isFalsy(storageTrie)) {
+    if (storageTrie === undefined || storageTrie === null) {
       // lookup from state
       storageTrie = await this._lookupStorageTrie(address)
     }
@@ -264,7 +262,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (isTruthy(value) && value.length) {
+      if (Buffer.isBuffer(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
@@ -512,7 +510,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && isFalsy((account as any).virtual) && !this._cache.keyIsDeleted(address)) {
+    if (
+      account &&
+      ((account as any).virtual === undefined || (account as any).virtual === false) &&
+      !this._cache.keyIsDeleted(address)
+    ) {
       return true
     }
     if (await this._trie.get(address.buf)) {

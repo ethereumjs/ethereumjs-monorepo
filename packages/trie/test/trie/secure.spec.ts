@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
@@ -41,7 +40,10 @@ tape('SecureTrie', function (t) {
 
     it.test('empty values', async function (t) {
       for (const row of jsonTests.emptyValues.in) {
-        const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
+        const val =
+          row[1] !== undefined && row[1] !== null
+            ? Buffer.from(row[1])
+            : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
       t.equal('0x' + trie.root().toString('hex'), jsonTests.emptyValues.root)
@@ -51,7 +53,10 @@ tape('SecureTrie', function (t) {
     it.test('branchingTests', async function (t) {
       trie = new Trie({ useKeyHashing: true, db: new MapDB() })
       for (const row of jsonTests.branchingTests.in) {
-        const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
+        const val =
+          row[1] !== undefined && row[1] !== null
+            ? Buffer.from(row[1])
+            : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
       t.equal('0x' + trie.root().toString('hex'), jsonTests.branchingTests.root)
@@ -61,7 +66,7 @@ tape('SecureTrie', function (t) {
     it.test('jeff', async function (t) {
       for (const row of jsonTests.jeff.in) {
         let val = row[1]
-        if (isTruthy(val)) {
+        if (val !== undefined && val !== null) {
           val = Buffer.from(row[1].slice(2), 'hex')
         }
         await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
