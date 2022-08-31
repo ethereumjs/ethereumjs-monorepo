@@ -785,6 +785,58 @@ export class Trie {
     )
   }
 
+  // This method verifies if all keys in the trie (except the root) are reachable
+  // If one of the key is not reachable, then that key could be deleted from the DB
+  // (i.e. the Trie is not correctly pruned)
+  // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
+  async verifyIsPruned(): Promise<boolean> {
+    const trie = this
+    const root = trie.root().toString('hex')
+    for (const dbkey of (<any>trie)._db.db._database.keys()) {
+      if (dbkey === root) {
+        // The root key can never be found from the trie, otherwise this would
+        // convert the tree from a directed acyclic graph to a directed cycling graph
+        continue
+      }
+
+      // Track if key is found
+      let found = false
+      try {
+        await trie.walkTrie(trie.root(), async function (nodeRef, node, key, controller) {
+          if (found) {
+            // Abort all other children checks
+            return
+          }
+          if (node instanceof BranchNode) {
+            for (const item of node._branches) {
+              // If one of the branches matches the key, then it is found
+              if (item && item.toString('hex') === dbkey) {
+                found = true
+                return
+              }
+            }
+            // Check all children of the branch
+            controller.allChildren(node, key)
+          }
+          if (node instanceof ExtensionNode) {
+            // If the value of the ExtensionNode points to the dbkey, then it is found
+            if (node.value().toString('hex') === dbkey) {
+              found = true
+              return
+            }
+            controller.allChildren(node, key)
+          }
+        })
+      } catch (e: any) {
+        return false
+      }
+      if (!found) {
+        return false
+      }
+    }
+    return true
+  }
+
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`

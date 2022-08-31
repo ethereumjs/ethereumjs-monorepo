@@ -1,63 +1,9 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { BranchNode, ExtensionNode, Trie } from '../../src'
+import { Trie } from '../../src'
 
 const crypto = require('crypto')
-
-// This method verifies if all keys in DB are reachable
-async function verifyPrunedTrie(trie: Trie, tester: tape.Test) {
-  const root = trie.root().toString('hex')
-  let ok = true
-  for (const dbkey of (<any>trie)._db.db._database.keys()) {
-    if (dbkey === root) {
-      // The root key can never be found from the trie, otherwise this would
-      // convert the tree from a directed acyclic graph to a directed cycling graph
-      continue
-    }
-
-    // Track if key is found
-    let found = false
-    try {
-      await trie.walkTrie(trie.root(), async function (nodeRef, node, key, controller) {
-        if (found) {
-          // Abort all other children checks
-          return
-        }
-        if (node instanceof BranchNode) {
-          for (const item of node._branches) {
-            // If one of the branches matches the key, then it is found
-            if (item && item.toString('hex') === dbkey) {
-              found = true
-              return
-            }
-          }
-          // Check all children of the branch
-          controller.allChildren(node, key)
-        }
-        if (node instanceof ExtensionNode) {
-          // If the value of the ExtensionNode points to the dbkey, then it is found
-          if (node.value().toString('hex') === dbkey) {
-            found = true
-            return
-          }
-          controller.allChildren(node, key)
-        }
-      })
-    } catch (e: any) {
-      // Catch any errors on WalkTrie (happens if too many keys get deleted)
-      tester.fail(`WalkTrie error: ${e.message}`)
-      ok = false
-    }
-    if (!found) {
-      // If key is not found in the trie, then it should have been pruned in the db
-      tester.fail(`key not reachable in trie: ${dbkey}`)
-      ok = false
-    }
-  }
-  // Pass test
-  tester.ok(ok, 'all keys are reachable in the trie')
-}
 
 tape('Pruned trie tests', function (tester) {
   const it = tester.test
@@ -149,7 +95,7 @@ tape('Pruned trie tests', function (tester) {
   })
 
   it('should prune when keys are updated or deleted', async (st) => {
-    for (let testID = 0; testID < 100; testID++) {
+    for (let testID = 0; testID < 1; testID++) {
       const trie = new Trie({ useNodePruning: true })
       const keys: string[] = []
       for (let i = 0; i < 100; i++) {
@@ -170,7 +116,7 @@ tape('Pruned trie tests', function (tester) {
         await trie.put(Buffer.from(key), Buffer.from(values[i]))
       }
 
-      await verifyPrunedTrie(trie, st)
+      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
@@ -178,7 +124,7 @@ tape('Pruned trie tests', function (tester) {
         await trie.del(Buffer.from(keys[idx]))
       }
 
-      await verifyPrunedTrie(trie, st)
+      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
@@ -191,14 +137,14 @@ tape('Pruned trie tests', function (tester) {
         }
       }
 
-      await verifyPrunedTrie(trie, st)
+      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
         await trie.del(Buffer.from(keys[idx]))
       }
 
-      await verifyPrunedTrie(trie, st)
+      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
       st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
@@ -207,5 +153,27 @@ tape('Pruned trie tests', function (tester) {
       }
       st.ok(dbKeys === 0, 'db is empty')
     }
+  })
+
+  it('verifyIsPruned() => should correctly report unpruned Tries', async (st) => {
+    // Create empty Trie (is pruned)
+    let trie = new Trie()
+    // Create a new value (still is pruned)
+    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
+    // Overwrite this value (trie is now not pruned anymore)
+    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('aa', 'hex'))
+    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
+
+    // Create new empty Trie (is pruned)
+    trie = new Trie()
+    // Create a new value raw in DB (is not pruned)
+    await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
+    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
+    await (<any>trie)._db.db.del(Buffer.from('aa', 'hex'))
+    st.ok(await trie.verifyIsPruned(), 'trie is pruned')
+    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
+    st.ok(await trie.verifyIsPruned(), 'trie is pruned')
+    await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
+    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
   })
 })
