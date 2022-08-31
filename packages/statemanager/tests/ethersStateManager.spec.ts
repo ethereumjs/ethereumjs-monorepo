@@ -131,9 +131,8 @@ tape.only('runBlock test', async (t) => {
   ])) as Proof
   const localproof = await state.getProof(
     Address.fromString('0x4e9ad443432c3157634f7e30a98dfd524f092455')
-  )
-  console.log(proof, localproof)
-  /*for (let j = 0; j < proof.accountProof.length; j++) {
+  ) /*
+  for (let j = 0; j < proof.accountProof.length; j++) {
     t.deepEqual(
       localproof.accountProof[j],
       proof.accountProof[j],

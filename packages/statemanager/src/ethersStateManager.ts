@@ -72,17 +72,44 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     let storage: Buffer | string | undefined = this.storageCache.get(slotCacheKey)
     if (typeof storage !== 'undefined') return storage
     // Retrieve storage slot from provider if not found in cache
+    const res = await this.getContractStorageFromProvider(address, key)
+
     storage = await this.provider.getStorageAt(
       address.toString(),
       bufferToBigInt(key),
       this.blockTag
     )
+    console.log('getProof ----', bufferToHex(key), res)
+    console.log('getStorageAt ---', '0x' + bufferToBigInt(key).toString(16), storage)
     const value = toBuffer(storage)
     // Cache retrieved storage slot
     await this.putContractStorage(address, key, value)
     return value
   }
 
+  async getContractStorageFromProvider(address: Address, key: Buffer): Promise<Buffer> {
+    const accountData = await this.provider.send('eth_getProof', [
+      address.toString(),
+      [bufferToHex(key)],
+      this.blockTag,
+    ])
+    const rawData = accountData.accountProof
+    for (const proofItem of rawData) {
+      // Dump raw proof nodes to DB under their hashed keys
+      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
+      const hash = keccak256(dataBuffer)
+      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
+    }
+    const storageData = accountData.storageProof[0]
+
+    for (const proofItem of storageData.proof) {
+      // Dump raw proof nodes to DB under their hashed keys
+      const dataBuffer = Buffer.from(proofItem.slice(2), 'hex')
+      const hash = keccak256(dataBuffer)
+      await (this.trie as any)._db.put(arrToBufArr(hash), dataBuffer)
+    }
+    return storageData.value
+  }
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     // Set value in storageCache with `[address]--[hexKey]` formatted key
     this.storageCache.set(`${address.toString()}--${bufferToHex(key)}`, value)
