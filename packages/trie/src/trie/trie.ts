@@ -746,6 +746,10 @@ export class Trie {
    * @param limitHash This is the limit (hash) key item (note on non-hashed tries this is just a key)
    */
   async createRangeProof(startingHash: Buffer, limitHash: Buffer) {
+    if (Buffer.compare(startingHash, limitHash) === 1) {
+      throw new Error('startingHash is higher than limitHash')
+    }
+
     const lowKeyNibbles = bufferToNibbles(startingHash)
     const highKeyNibbles = bufferToNibbles(limitHash)
 

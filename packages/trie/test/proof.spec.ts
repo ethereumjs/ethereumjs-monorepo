@@ -158,6 +158,24 @@ tape('simple merkle proofs generation and verification', function (tester) {
 tape('createRangeProof()', function (tester) {
   const it = tester.test
 
+  it('throws when lKey is higher than rKey', async (t) => {
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
+    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+
+    const lKey = Buffer.from('ff'.repeat(32), 'hex')
+    const rKey = Buffer.from('00'.repeat(32), 'hex')
+    try {
+      await trie.createRangeProof(lKey, rKey)
+      t.fail('cannot reach this')
+    } catch (e) {
+      t.pass('succesfully threw')
+    }
+  })
+
   it('creates one key/value proof', async (t) => {
     // In this case, there are no key/values between the left and the right key
     // However, the first value on the right of the rKey key should be reported
