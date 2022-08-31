@@ -34,6 +34,7 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
+  private storageTries: { [key: string]: Trie }
   private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
   private blockTag: string
   private root: Buffer | undefined
@@ -42,6 +43,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   constructor(opts: EthersStateManagerOpts) {
     super({})
     this.trie = new Trie({ useKeyHashing: true })
+    this.storageTries = {}
     this.provider = opts.provider
     if (typeof opts.blockTag === 'bigint') {
       this.blockTag = bigIntToHex(opts.blockTag)
@@ -80,8 +82,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
   async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
     if (this.externallyRetrievedStorageKeys.has(address.toString())) {
-      let map = this.externallyRetrievedStorageKeys.get(address.toString())
-      if (map?.get(key.toString('hex'))) {
+      const map = this.externallyRetrievedStorageKeys.get(address.toString())
+      if (map?.get(key.toString('hex')) !== undefined) {
         return
       }
     }
