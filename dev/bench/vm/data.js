@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1661902730982,
+  "lastUpdate": 1661955625033,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5dc3fd75632df88890e0f7c67c148ab5c8e60303",
-          "message": "Common, Block, Blockchain, Client: removed Kovan chain support (EOL) (#2206)\n\n* Common, Block, Blockchain, Client: removed Kovan chain support (EOL)\r\n\r\n* Tx: additional Kovan-related test fixes\r\n\r\n* Common: set mainnet HF to merge, fixed common and block tests\r\n\r\n* Blockchain: fixed mainnet London->Merge related tests\r\n\r\n* VM: fixed mainnet London->Merge related tests\r\n\r\n* Client: attempted test fix (still fails)\r\n\r\n* client: fix sendRawTransaction test\r\n\r\n* monorepo: typo succesfully -> successfully\r\n\r\n* ethash: fix block test\r\n\r\n* ethash: fix miner test\r\n\r\n* devp2p: attempt fixing test failures\r\n\r\n* devp2p: remove console log\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2022-08-23T10:48:23+02:00",
-          "tree_id": "cf289e0770717d9cabb61215e0ea704a3bbfc48e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5dc3fd75632df88890e0f7c67c148ab5c8e60303"
-        },
-        "date": 1661244668299,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22780,
-            "range": "±2.82%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21858,
-            "range": "±5.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 23156,
-            "range": "±1.41%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22492,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22419,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.80%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "55ca254077729e7765993f18050edd98d32d8158",
+          "message": "evm: remove isTruthy and isFalsy (#2252)\n\n* evm: remove isTruthy and isFalsy\r\n\r\n* evm: undo accidental revert of recent change\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2022-08-31T10:16:32-04:00",
+          "tree_id": "c92f3ea6d01cb1e20a1acc7597f0111a78aa879b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/55ca254077729e7765993f18050edd98d32d8158"
+        },
+        "date": 1661955622810,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10132,
+            "range": "±3.64%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 9696,
+            "range": "±4.86%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 9970,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 9773,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9851,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
