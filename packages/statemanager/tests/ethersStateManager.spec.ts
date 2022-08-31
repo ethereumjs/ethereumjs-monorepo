@@ -108,7 +108,6 @@ tape.only('runBlock test', async (t) => {
   const block = await state.getBlockFromProvider(blockTag, common)
 
   try {
-    ;(<any>vm).events.on('afterTx', console.log)
     const res = await vm.runBlock({
       block,
       root: previousStateRoot,

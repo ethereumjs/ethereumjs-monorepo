@@ -511,6 +511,7 @@ export class Trie {
 
     // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
+      console.log('!!!!!!! DELETION !!!!!!!')
       // add the one remaing branch node to node above it
       const branchNode = branchNodes[0][1]
       const branchNodeKey = branchNodes[0][0]

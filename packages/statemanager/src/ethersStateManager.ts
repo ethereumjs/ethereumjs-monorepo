@@ -66,8 +66,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   async putContractCode(address: Address, value: Buffer): Promise<void> {
     // Store contract code in the cache
     this.contractCache.set(address.toString(), value)
-    if (!this.externallyRetrievedStorageKeys.has(address.toString())) {
-    }
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
@@ -101,8 +99,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const storageTrie = await this._lookupStorageTrie(address)
 
     await storageTrie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
-    const value = arrToBufArr(hexToBytes(storageData.proof[storageData.proof.length - 1]))
-    await this.putContractStorage(address, key, value)
+
     let map = this.externallyRetrievedStorageKeys.get(address.toString())
     if (!map) {
       this.externallyRetrievedStorageKeys.set(address.toString(), new Map())
@@ -112,8 +109,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    console.log('puts', address.toString(), key.toString('hex'), value.toString('hex'))
     const storageTrie = await this._lookupStorageTrie(address)
+
     await storageTrie.put(key, arrToBufArr(RLP.encode(value)))
+
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
     await this.putAccount(address, contract)
@@ -149,7 +149,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    log(`Retrieving account data for ${address.toString()} from provider`)
+    console.log(`Retrieving account data for ${address.toString()} from provider`)
 
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
