@@ -34,6 +34,7 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
+  private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
   private blockTag: string
   private root: Buffer | undefined
   private trie: Trie
@@ -49,6 +50,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     }
 
     this.contractCache = new Map()
+    this.externallyRetrievedStorageKeys = new Map<string, Map<string, boolean>>()
+
     this._cache = new Cache({
       getCb: (address) => this.getAccountFromProvider(address),
       putCb: async (keyBuf, accountRlp) => {
@@ -63,13 +66,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   async putContractCode(address: Address, value: Buffer): Promise<void> {
     // Store contract code in the cache
     this.contractCache.set(address.toString(), value)
+    if (!this.externallyRetrievedStorageKeys.has(address.toString())) {
+    }
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     // Retrieve storage slot from provider if not found in cache
     await this.getContractStorageFromProvider(address, key)
-
-    await this.provider.getStorageAt(address.toString(), bufferToBigInt(key), this.blockTag)
 
     const storageTrie = await this._lookupStorageTrie(address)
     const foundValue = await storageTrie.get(key) //@ts-ignore
@@ -78,6 +81,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
+    if (this.externallyRetrievedStorageKeys.has(address.toString())) {
+      let map = this.externallyRetrievedStorageKeys.get(address.toString())
+      if (map?.get(key.toString('hex'))) {
+        return
+      }
+    }
+
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
       [bufferToHex(key)],
@@ -88,8 +98,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     // Only requesting a single slot at a time so the proof will always be the first item in the array
     const storageData = accountData.storageProof[0]
 
-    await this.trie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
+    const storageTrie = await this._lookupStorageTrie(address)
+
+    await storageTrie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
+    const value = arrToBufArr(hexToBytes(storageData.proof[storageData.proof.length - 1]))
+    await this.putContractStorage(address, key, value)
+    let map = this.externallyRetrievedStorageKeys.get(address.toString())
+    if (!map) {
+      this.externallyRetrievedStorageKeys.set(address.toString(), new Map())
+    }
+    map = this.externallyRetrievedStorageKeys.get(address.toString())!
+    map.set(key.toString('hex'), true)
   }
+
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     const storageTrie = await this._lookupStorageTrie(address)
     await storageTrie.put(key, arrToBufArr(RLP.encode(value)))
