@@ -165,7 +165,6 @@ export interface JsonRpcBlock {
   logsBloom: string // the bloom filter for the logs of the block. null when pending block.
   transactionsRoot: string // the root of the transaction trie of the block.
   stateRoot: string // the root of the final state trie of the block.
-  receiptRoot?: string // the root of the receipts trie of the block.
   receiptsRoot: string // the root of the receipts trie of the block.
   miner: string // the address of the beneficiary to whom the mining rewards were given.
   difficulty: string // integer of the difficulty for this block.

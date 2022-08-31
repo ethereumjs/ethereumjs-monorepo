@@ -9,10 +9,7 @@ import type { BlockOptions, JsonRpcBlock } from './types'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param options - An object describing the blockchain
  */
-export function blockHeaderFromRpc(
-  blockParams: Omit<JsonRpcBlock, 'receiptsRoot'> & { receiptRoot?: string; receiptsRoot?: string },
-  options?: BlockOptions
-) {
+export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOptions) {
   const {
     parentHash,
     sha3Uncles,
