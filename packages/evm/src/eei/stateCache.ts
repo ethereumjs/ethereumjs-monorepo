@@ -225,12 +225,12 @@ export class StateCache {
     }
     this._storage.pop()
     this._accounts.pop()
-    if (this.touchedAccounts.has(ripemdPrecompileAddress)) {
+    if (this.touchedAccounts.has('0x' + ripemdPrecompileAddress)) {
       // Exceptional case due to consensus issue in Geth and Parity.
       // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
       // The RIPEMD precompile has to remain *touched* even when the call reverts,
       // and be considered for deletion.
-      this._touchedAccounts[this._touchedAccounts.length - 2].add(ripemdPrecompileAddress)
+      this._touchedAccounts[this._touchedAccounts.length - 2].add('0x' + ripemdPrecompileAddress)
     }
     this._touchedAccounts.pop()
     this._warmAddresses.pop()
