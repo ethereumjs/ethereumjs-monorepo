@@ -1,5 +1,3 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
-
 import { Event } from '../types'
 import { short } from '../util'
 
@@ -72,7 +70,7 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     const subchain = this.skeleton.bounds()
-    if (isTruthy(subchain)) {
+    if (subchain !== undefined) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
     }
@@ -214,7 +212,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (!isTruthy(this.skeleton.bounds()) || (await this.skeleton.isLinked())) {
+    if (this.skeleton.bounds() === undefined || (await this.skeleton.isLinked())) {
       this.clearFetcher()
       return false
     }
@@ -223,7 +221,11 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
+    if (
+      typeof this.config.syncTargetHeight !== 'bigint' ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight < latest.number
+    ) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -241,7 +243,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = tail - this.chain.blocks.height - BigInt(1)
     }
 
-    if (count > BigInt(0) && (!isTruthy(this.fetcher) || isTruthy(this.fetcher.errored))) {
+    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
       )
@@ -284,7 +286,7 @@ export class BeaconSynchronizer extends Synchronizer {
     // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     const shouldRunOnlyBatched = !(
-      isTruthy(this.skeleton.bounds()) &&
+      this.skeleton.bounds() !== undefined &&
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {

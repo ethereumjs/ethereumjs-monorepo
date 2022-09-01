@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -103,7 +102,7 @@ export class FullSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      if (typeof peer.eth !== 'undefined' && isTruthy(peer.eth.status)) {
+      if (peer.eth?.status !== undefined) {
         const td = peer.eth.status.td
         if (
           (!best && td >= this.chain.blocks.td) ||
@@ -131,7 +130,11 @@ export class FullSynchronizer extends Synchronizer {
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
-    if (isFalsy(this.config.syncTargetHeight) || this.txPool.running) {
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.txPool.running
+    ) {
       return
     }
     // If height gte target, we are close enough to the
@@ -153,7 +156,11 @@ export class FullSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight < latest.number
+    ) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -249,7 +256,8 @@ export class FullSynchronizer extends Synchronizer {
     if (!this.running) return
     // Batch the execution if we are not close to the head
     const shouldRunOnlyBatched =
-      isTruthy(this.config.syncTargetHeight) &&
+      typeof this.config.syncTargetHeight === 'bigint' &&
+      this.config.syncTargetHeight !== BigInt(0) &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
@@ -320,7 +328,11 @@ export class FullSynchronizer extends Synchronizer {
       await this.chain.putBlocks([block])
       // Check if new sync target height can be set
       const blockNumber = block.header.number
-      if (isFalsy(this.config.syncTargetHeight) || blockNumber > this.config.syncTargetHeight) {
+      if (
+        this.config.syncTargetHeight === undefined ||
+        this.config.syncTargetHeight === BigInt(0) ||
+        blockNumber > this.config.syncTargetHeight
+      ) {
         this.config.syncTargetHeight = blockNumber
       }
     } else {
@@ -353,7 +365,11 @@ export class FullSynchronizer extends Synchronizer {
       }
       // Check if new sync target height can be set
       if (newSyncHeight && blockNumber <= newSyncHeight[1]) continue
-      if (isTruthy(this.config.syncTargetHeight) && blockNumber <= this.config.syncTargetHeight)
+      if (
+        typeof this.config.syncTargetHeight === 'bigint' &&
+        this.config.syncTargetHeight !== BigInt(0) &&
+        blockNumber <= this.config.syncTargetHeight
+      )
         continue
       newSyncHeight = value
     }

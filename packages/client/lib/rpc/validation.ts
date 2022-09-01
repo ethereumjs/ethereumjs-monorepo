@@ -1,5 +1,3 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
-
 import { INVALID_PARAMS } from './error-code'
 
 /**
@@ -21,10 +19,10 @@ export function middleware(method: any, requiredParamsCount: number, validators:
       }
 
       for (let i = 0; i < validators.length; i++) {
-        if (isTruthy(validators[i])) {
+        if (validators[i] !== undefined) {
           for (let j = 0; j < validators[i].length; j++) {
             const error = validators[i][j](params, i)
-            if (isTruthy(error)) {
+            if (error !== undefined) {
               return reject(error)
             }
           }
@@ -198,7 +196,7 @@ export const validators = {
         const tx = params[index]
 
         for (const field of requiredFields) {
-          if (isFalsy(tx[field])) {
+          if (tx[field] === undefined) {
             return {
               code: INVALID_PARAMS,
               message: `invalid argument ${index}: required field ${field}`,
@@ -207,21 +205,21 @@ export const validators = {
         }
 
         const validate = (field: any, validator: Function) => {
-          if (isFalsy(field)) return
+          if (field === undefined) return
           const v = validator([field], 0)
-          if (isTruthy(v)) return v
+          if (v !== undefined) return v
         }
 
         // validate addresses
         for (const field of [tx.to, tx.from]) {
           const v = validate(field, this.address)
-          if (isTruthy(v)) return v
+          if (v !== undefined) return v
         }
 
         // validate hex
         for (const field of [tx.gas, tx.gasPrice, tx.value, tx.data]) {
           const v = validate(field, this.hex)
-          if (isTruthy(v)) return v
+          if (v !== undefined) return v
         }
       }
     }
@@ -247,7 +245,7 @@ export const validators = {
         for (const [key, validator] of Object.entries(form)) {
           const value = params[index][key]
           const result = validator([value], 0)
-          if (isTruthy(result)) {
+          if (result !== undefined) {
             // add key to message for context
             const originalMessage = result.message.split(':')
             const message = `invalid argument ${index} for key '${key}':${originalMessage[1]}`
@@ -277,7 +275,7 @@ export const validators = {
         }
         for (const value of params[index]) {
           const result = validator([value], 0)
-          if (isTruthy(result)) return result
+          if (result !== undefined) return result
         }
       }
     }
@@ -314,7 +312,7 @@ export const validators = {
   get optional() {
     return (validator: any) => {
       return (params: any, index: number) => {
-        if (isFalsy(params[index])) {
+        if (params[index] === undefined || params[index] === '' || params[index] === null) {
           return
         }
         return validator(params, index)
@@ -332,7 +330,7 @@ export const validators = {
   get either() {
     return (...validators: any) => {
       return (params: any, index: number) => {
-        if (isFalsy(params[index])) {
+        if (params[index] === undefined) {
           return
         }
         const results = validators.map((v: any) => v(params, index))

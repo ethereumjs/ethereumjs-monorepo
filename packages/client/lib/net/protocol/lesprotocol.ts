@@ -1,11 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import {
-  bigIntToBuffer,
-  bufferToBigInt,
-  bufferToInt,
-  intToBuffer,
-  isTruthy,
-} from '@ethereumjs/util'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
@@ -184,7 +178,9 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
     const forkID = [
       Buffer.from(forkHash.slice(2), 'hex'),
-      isTruthy(nextFork) ? bigIntToBuffer(nextFork) : Buffer.from([]),
+      typeof nextFork === 'bigint' && nextFork !== BigInt(0)
+        ? bigIntToBuffer(nextFork)
+        : Buffer.from([]),
     ]
 
     return {
@@ -204,9 +200,9 @@ export class LesProtocol extends Protocol {
    * @param status status message payload
    */
   decodeStatus(status: any): any {
-    this.isServer = isTruthy(status.serveHeaders)
+    this.isServer = status.serveHeaders !== undefined && status.serveHeaders !== false
     const mrc: any = {}
-    if (isTruthy(status['flowControl/MRC'])) {
+    if (status['flowControl/MRC'] !== undefined) {
       for (let entry of status['flowControl/MRC']) {
         entry = entry.map((e: any) => bufferToInt(e))
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
@@ -227,9 +223,13 @@ export class LesProtocol extends Protocol {
       serveHeaders: this.isServer,
       serveChainSince: status.serveChainSince ?? 0,
       serveStateSince: status.serveStateSince ?? 0,
-      txRelay: isTruthy(status.txRelay),
-      bl: isTruthy(status['flowControl/BL']) ? bufferToInt(status['flowControl/BL']) : undefined,
-      mrr: isTruthy(status['flowControl/MRR']) ? bufferToInt(status['flowControl/MRR']) : undefined,
+      txRelay: status.txRelay === true,
+      bl:
+        status['flowControl/BL'] !== undefined ? bufferToInt(status['flowControl/BL']) : undefined,
+      mrr:
+        status['flowControl/MRR'] !== undefined
+          ? bufferToInt(status['flowControl/MRR'])
+          : undefined,
       mrc,
     }
   }
