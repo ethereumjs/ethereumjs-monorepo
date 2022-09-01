@@ -177,4 +177,33 @@ tape('eeiDummy', (t) => {
       st.ok('threw on commit')
     }
   })
+
+  t.test('original storage checks', async (st) => {
+    const dummy = new EEIDummy()
+    await dummy.checkpoint()
+    await dummy.storageStore(dummyAddress, key1, storageSlot)
+    await dummy.commit()
+    st.ok(
+      (await dummy.getOriginalContractStorage(dummyAddress, key1)).equals(storageSlot),
+      'original storage is correct'
+    )
+    st.ok(
+      (await dummy.storageLoad(dummyAddress, key1, true)).equals(storageSlot),
+      'original storage is correct'
+    )
+    await dummy.checkpoint()
+    await dummy.storageStore(dummyAddress, key1, storageSlot2)
+    st.ok(
+      (await dummy.getOriginalContractStorage(dummyAddress, key1)).equals(storageSlot),
+      'original storage is correct'
+    )
+    st.ok(
+      (await dummy.storageLoad(dummyAddress, key1, true)).equals(storageSlot),
+      'original storage is correct'
+    )
+    st.ok(
+      (await dummy.storageLoad(dummyAddress, key1, false)).equals(storageSlot2),
+      'current storage is correct'
+    )
+  })
 })
