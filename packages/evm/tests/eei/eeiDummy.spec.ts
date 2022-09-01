@@ -10,6 +10,7 @@ const ripemdAddress = Address.fromString('0x' + ripemdPrecompileAddress)
 const storageSlot = Buffer.from('aa'.repeat(32), 'hex')
 const storageSlot2 = Buffer.from('bb'.repeat(32), 'hex')
 const key1 = Buffer.from('01', 'hex')
+const key2 = Buffer.from('02', 'hex')
 
 tape('eeiDummy', (t) => {
   t.test('should set and retrieve code', async (st) => {
@@ -25,7 +26,6 @@ tape('eeiDummy', (t) => {
   })
 
   // Cache tests
-  // TODO: verify we can also update existing slots
 
   t.test('verify touched accounts checkpoint/commit/revert', async (st) => {
     const dummy = new EEIDummy()
@@ -101,8 +101,13 @@ tape('eeiDummy', (t) => {
       'slot is OK on address 2'
     )
     st.ok(
-      (await dummy.storageLoad(dummyAddress, storageSlot2, false)).equals(Buffer.from('')),
+      (await dummy.storageLoad(dummyAddress, key2, false)).equals(Buffer.from('')),
       'slot 2 is OK address 1'
+    )
+    await dummy.storageStore(dummyAddress, key1, storageSlot2)
+    st.ok(
+      (await dummy.storageLoad(dummyAddress, key1, false)).equals(storageSlot2),
+      'slot is OK on address 1'
     )
     await dummy.revert()
     st.ok(
@@ -122,6 +127,7 @@ tape('eeiDummy', (t) => {
 
   t.test('verify account checkpoint/commit/revert', async (st) => {
     const account1 = new Account(BigInt(1))
+    const account2 = new Account(BigInt(2))
     const empty = new Account()
     const dummy = new EEIDummy()
     await dummy.checkpoint()
@@ -138,6 +144,11 @@ tape('eeiDummy', (t) => {
     st.ok(
       (await dummy.getAccount(dummyAddress)).serialize().equals(empty.serialize()),
       'account is OK on address 1'
+    )
+    await dummy.putAccount(dummyAddress, account2)
+    st.ok(
+      (await dummy.getAccount(dummyAddress)).serialize().equals(account2.serialize()),
+      'account1 is OK on address 1'
     )
     await dummy.checkpoint()
     await dummy.putAccount(dummyAddress, account1)
