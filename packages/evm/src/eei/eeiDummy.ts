@@ -1,13 +1,14 @@
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
-import { EEIInterface } from '../types'
+
 import { StateDummy } from './stateDummy'
+
+import type { EEIInterface } from '../types'
 
 function bigIntToAddress(address: bigint): Address {
   return new Address(setLengthLeft(bigIntToBuffer(address), 20))
 }
 
 export class EEIDummy extends StateDummy implements EEIInterface {
-
   constructor() {
     super()
   }

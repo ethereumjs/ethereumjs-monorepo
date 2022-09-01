@@ -13,6 +13,7 @@ import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
+import { EEIDummy } from './eei/eeiDummy'
 import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
@@ -39,7 +40,6 @@ import type {
   Log,
 } from './types'
 import type { Account } from '@ethereumjs/util'
-import { EEIDummy } from './eei/eeiDummy'
 
 const debug = createDebugLogger('evm')
 const debugGas = createDebugLogger('evm:gas')

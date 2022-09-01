@@ -1,7 +1,9 @@
-import { Address, Account } from '@ethereumjs/util'
+import { Account, Address } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { EVMStateAccess } from '../types'
+
 import { StateCache } from './stateCache'
+
+import type { EVMStateAccess } from '../types'
 
 export class StateDummy implements EVMStateAccess {
   stateCache: StateCache
@@ -57,12 +59,12 @@ export class StateDummy implements EVMStateAccess {
   }
   async modifyAccountFields(
     address: Address,
-    accountFields: Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+    accountFields: Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
   ): Promise<void> {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
     account.codeHash = accountFields.codeHash ?? account.codeHash
     await this.putAccount(address, account)
   }

@@ -1,4 +1,6 @@
-import { Account, Address } from '@ethereumjs/util'
+import { Account } from '@ethereumjs/util'
+
+import type { Address } from '@ethereumjs/util'
 
 export class StateCache {
   _storage: Map<string, Map<string, Buffer>>[]
@@ -136,44 +138,44 @@ export class StateCache {
     }
     const lastStorageMap = this.storage
     const mergeStorageMap = this._storage[this._storage.length - 2]
-    lastStorageMap.forEach((storageMap, key) => {
+    for (const [key, storageMap] of lastStorageMap.entries()) {
       let account = mergeStorageMap.get(key)
       if (!account) {
         mergeStorageMap.set(key, new Map<string, Buffer>())
-        account = mergeStorageMap.get(key)
       }
-      storageMap.forEach((value, key) => {
+      account = mergeStorageMap.get(key)
+      for (const value of storageMap.values()) {
         account!.set(key, value)
-      })
-    })
+      }
+    }
 
     const lastAccountMap = this.accounts
     const mergeAccountMap = this._accounts[this._accounts.length - 2]
 
-    lastAccountMap.forEach((value, key) => {
+    for (const [key, value] of lastAccountMap.entries()) {
       mergeAccountMap.set(key, value)
-    })
+    }
 
     const lastWarmAddresses = this.warmAddresses
     const mergeWarmAddresses = this._warmAddresses[this._warmAddresses.length - 2]
 
-    lastWarmAddresses.forEach((value) => {
+    for (const value of lastWarmAddresses) {
       mergeWarmAddresses.add(value)
-    })
+    }
 
     const lastWarmSlots = this.warmSlots
     const mergeWarmSlots = this._warmSlots[this._warmSlots.length - 2]
 
-    lastWarmSlots.forEach((slotsMap, key) => {
+    for (const [key, warmSlots] of lastWarmSlots.entries()) {
       let account = mergeWarmSlots.get(key)
       if (!account) {
         mergeWarmSlots.set(key, new Set<string>())
-        account = mergeWarmSlots.get(key)
       }
-      account!.forEach((value) => {
+      account = mergeWarmSlots.get(key)
+      for (const value of warmSlots.values()) {
         account!.add(value)
-      })
-    })
+      }
+    }
 
     this._storage.pop()
     this._accounts.pop()
