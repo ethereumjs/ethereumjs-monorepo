@@ -165,7 +165,7 @@ export class StateCache {
         mergeStorageMap.set(key, new Map<string, Buffer>())
       }
       account = mergeStorageMap.get(key)
-      for (const value of storageMap.values()) {
+      for (const [key, value] of storageMap.entries()) {
         account!.set(key, value)
       }
     }
@@ -207,6 +207,7 @@ export class StateCache {
 
     this._storage.pop()
     this._accounts.pop()
+    this._touchedAccounts.pop()
     this._warmAddresses.pop()
     this._warmSlots.pop()
   }
