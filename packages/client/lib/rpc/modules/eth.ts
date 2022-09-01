@@ -7,8 +7,6 @@ import {
   bigIntToHex,
   bufferToHex,
   intToHex,
-  isFalsy,
-  isTruthy,
   setLengthLeft,
   toBuffer,
   toType,
@@ -23,10 +21,10 @@ import type { ReceiptsManager } from '../../execution/receipt'
 import type { EthProtocol } from '../../net/protocol'
 import type { EthereumService, FullEthereumService } from '../../service'
 import type { RpcTx } from '../types'
-import type { Block } from '@ethereumjs/block'
+import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, JsonTx, TypedTransaction } from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -43,53 +41,6 @@ type GetLogsParams = {
   // neither fromBlock nor toBlock are allowed.
 }
 
-/*
- * Based on https://eth.wiki/json-rpc/API
- */
-type JsonRpcBlock = {
-  number: string // the block number. null when pending block.
-  hash: string // hash of the block. null when pending block.
-  parentHash: string // hash of the parent block.
-  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
-  nonce: string // hash of the generated proof-of-work. null when pending block.
-  sha3Uncles: string // SHA3 of the uncles data in the block.
-  logsBloom: string // the bloom filter for the logs of the block. null when pending block.
-  transactionsRoot: string // the root of the transaction trie of the block.
-  stateRoot: string // the root of the final state trie of the block.
-  receiptsRoot: string // the root of the receipts trie of the block.
-  miner: string // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: string // integer of the difficulty for this block.
-  totalDifficulty: string // integer of the total difficulty of the chain until this block.
-  extraData: string // the “extra data” field of this block.
-  size: string // integer the size of this block in bytes.
-  gasLimit: string // the maximum gas allowed in this block.
-  gasUsed: string // the total used gas by all transactions in this block.
-  timestamp: string // the unix timestamp for when the block was collated.
-  transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
-  uncles: string[] // Array of uncle hashes
-  baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
-}
-type JsonRpcTx = {
-  blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
-  blockNumber: string | null // QUANTITY - block number where this transaction was in. null when it's pending.
-  from: string // DATA, 20 Bytes - address of the sender.
-  gas: string // QUANTITY - gas provided by the sender.
-  gasPrice: string // QUANTITY - gas price provided by the sender in wei. If EIP-1559 tx, defaults to maxFeePerGas.
-  maxFeePerGas?: string // QUANTITY - max total fee per gas provided by the sender in wei.
-  maxPriorityFeePerGas?: string // QUANTITY - max priority fee per gas provided by the sender in wei.
-  type: string // QUANTITY - EIP-2718 Typed Transaction type
-  accessList?: JsonTx['accessList'] // EIP-2930 access list
-  chainId?: string // Chain ID that this transaction is valid on.
-  hash: string // DATA, 32 Bytes - hash of the transaction.
-  input: string // DATA - the data send along with the transaction.
-  nonce: string // QUANTITY - the number of transactions made by the sender prior to this one.
-  to: string | null /// DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
-  transactionIndex: string | null // QUANTITY - integer of the transactions index position in the block. null when it's pending.
-  value: string // QUANTITY - value transferred in Wei.
-  v: string // QUANTITY - ECDSA recovery id
-  r: string // DATA, 32 Bytes - ECDSA signature r
-  s: string // DATA, 32 Bytes - ECDSA signature s
-}
 type JsonRpcReceipt = {
   transactionHash: string // DATA, 32 Bytes - hash of the transaction.
   transactionIndex: string // QUANTITY - integer of the transactions index position in the block.
@@ -436,7 +387,7 @@ export class Eth {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -447,12 +398,12 @@ export class Eth {
 
     try {
       const runCallOpts = {
-        caller: isTruthy(from) ? Address.fromString(from) : undefined,
-        to: isTruthy(to) ? Address.fromString(to) : undefined,
+        caller: from !== undefined ? Address.fromString(from) : undefined,
+        to: to !== undefined ? Address.fromString(to) : undefined,
         gasLimit: toType(gasLimit, TypeOutput.BigInt),
         gasPrice: toType(gasPrice, TypeOutput.BigInt),
         value: toType(value, TypeOutput.BigInt),
-        data: isTruthy(data) ? toBuffer(data) : undefined,
+        data: data !== undefined ? toBuffer(data) : undefined,
       }
       const { execResult } = await vm.evm.runCall(runCallOpts)
       return bufferToHex(execResult.returnValue)
@@ -494,14 +445,14 @@ export class Eth {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
     const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    if (isFalsy(transaction.gas)) {
+    if (transaction.gas === undefined) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
       const latest = await this._chain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
@@ -511,7 +462,8 @@ export class Eth {
     const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
 
     // set from address
-    const from = isTruthy(transaction.from) ? Address.fromString(transaction.from) : Address.zero()
+    const from =
+      transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
     tx.getSenderAddress = () => {
       return from
     }
@@ -543,7 +495,7 @@ export class Eth {
     const address = Address.fromString(addressHex)
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -629,7 +581,7 @@ export class Eth {
     const [addressHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -652,7 +604,7 @@ export class Eth {
     const [addressHex, positionHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -663,7 +615,7 @@ export class Eth {
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
-    return isTruthy(storage)
+    return storage !== null && storage !== undefined
       ? bufferToHex(
           setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
         )
@@ -704,7 +656,7 @@ export class Eth {
     const [addressHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -817,7 +769,7 @@ export class Eth {
       }
     }
     let from: Block, to: Block
-    if (isTruthy(blockHash)) {
+    if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(toBuffer(blockHash))
       } catch (error: any) {
@@ -876,7 +828,7 @@ export class Eth {
         }
       })
       let addrs
-      if (isTruthy(address)) {
+      if (address !== undefined) {
         if (Array.isArray(address)) {
           addrs = address.map((a) => toBuffer(a))
         } else {
@@ -908,7 +860,10 @@ export class Eth {
 
     const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (isFalsy(syncTargetHeight) && !this.client.config.mine) {
+    if (
+      (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
+      !this.client.config.mine
+    ) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
@@ -916,7 +871,7 @@ export class Eth {
     }
     // Set the tx common to an appropriate HF to create a tx
     // with matching HF rules
-    if (isTruthy(syncTargetHeight)) {
+    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
       common.setHardforkByBlockNumber(syncTargetHeight)
     }
 
@@ -977,7 +932,7 @@ export class Eth {
     const [addressHex, slotsHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (isFalsy(this._vm)) {
+    if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
@@ -1016,7 +971,7 @@ export class Eth {
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
     let highestBlock
-    if (isTruthy(syncTargetHeight)) {
+    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
       highestBlock = bigIntToHex(syncTargetHeight)
     } else {
       const bestPeer = await synchronizer.best()

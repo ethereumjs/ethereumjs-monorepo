@@ -1,5 +1,5 @@
 import { Capability } from '@ethereumjs/tx'
-import { Address, bufferToHex, isFalsy, isTruthy } from '@ethereumjs/util'
+import { Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -194,7 +194,12 @@ export class TxPool {
    * Checks if tx pool should be started
    */
   checkRunState() {
-    if (this.running || isFalsy(this.config.syncTargetHeight)) return
+    if (
+      this.running ||
+      typeof this.config.syncTargetHeight !== 'bigint' ||
+      this.config.syncTargetHeight === BigInt(0)
+    )
+      return
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
@@ -265,7 +270,7 @@ export class TxPool {
       }
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
-    if (isTruthy(block.baseFeePerGas)) {
+    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BigInt(0)) {
       if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
@@ -496,14 +501,14 @@ export class TxPool {
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )
-    const getPooledTxs = await peer.eth!.getPooledTransactions({
+    const getPooledTxs = await peer.eth?.getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 
     // Remove from pending list regardless if tx is in result
     this.pending = this.pending.filter((hash) => !reqHashesStr.includes(hash))
 
-    if (isFalsy(getPooledTxs)) {
+    if (getPooledTxs === undefined) {
       return
     }
     const [_, txs] = getPooledTxs
@@ -576,7 +581,7 @@ export class TxPool {
    */
   private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
-    if (isTruthy(baseFee)) {
+    if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
@@ -648,7 +653,7 @@ export class TxPool {
         // therefore no txs from this address are currently executable
         continue
       }
-      if (isTruthy(baseFee)) {
+      if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)

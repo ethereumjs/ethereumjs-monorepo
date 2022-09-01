@@ -12,9 +12,7 @@ import {
   bigIntToBuffer,
   bufferToBigInt,
   bufferToHex,
-  isFalsy,
   isHexPrefixed,
-  isTruthy,
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
@@ -47,7 +45,7 @@ export function dumpState(state: any, cb: Function) {
     return new Promise((resolve) => {
       const storage: any = {}
       const storageTrie = state.copy(false)
-      storageTrie.root = account.storageRoot
+      storageTrie.root(account.storageRoot)
       const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
@@ -118,15 +116,15 @@ export function makeTx(
   opts?: TxOptions
 ): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction {
   let tx
-  if (isTruthy(txData.maxFeePerGas)) {
+  if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
-  } else if (isTruthy(txData.accessLists)) {
+  } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
     tx = Transaction.fromTxData(txData, opts)
   }
 
-  if (isTruthy(txData.secretKey)) {
+  if (txData.secretKey !== undefined) {
     const privKey = toBuffer(txData.secretKey)
     return tx.sign(privKey)
   }
@@ -157,7 +155,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       const address = keyMap[key]
       delete keyMap[key]
 
-      if (isTruthy(testData)) {
+      if (testData !== undefined) {
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
@@ -207,7 +205,7 @@ export function verifyAccountPostConditions(
     }
 
     // validate storage
-    const origRoot = state.root
+    const origRoot = state.root()
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
@@ -215,7 +213,7 @@ export function verifyAccountPostConditions(
         acctData.storage[key]
     }
 
-    state.root = account.storageRoot
+    state.root(account.storageRoot)
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = data.key.toString('hex')
@@ -223,9 +221,7 @@ export function verifyAccountPostConditions(
 
       if (key === '0x') {
         key = '0x00'
-        acctData.storage['0x00'] = isTruthy(acctData.storage['0x00'])
-          ? acctData.storage['0x00']
-          : acctData.storage['0x']
+        acctData.storage['0x00'] = acctData.storage['0x00'] ?? acctData.storage['0x']
         delete acctData.storage['0x']
       }
 
@@ -246,7 +242,7 @@ export function verifyAccountPostConditions(
         }
       }
 
-      state.root = origRoot
+      state.root(origRoot)
       resolve()
     })
   })
@@ -259,9 +255,9 @@ export function verifyAccountPostConditions(
  */
 export function verifyGas(results: any, testData: any, t: tape.Test) {
   const coinbaseAddr = testData.env.currentCoinbase
-  const preBal = isTruthy(testData.pre[coinbaseAddr]) ? testData.pre[coinbaseAddr].balance : 0
+  const preBal = testData.pre[coinbaseAddr] !== undefined ? testData.pre[coinbaseAddr].balance : 0
 
-  if (isFalsy(testData.post[coinbaseAddr])) {
+  if (testData.post[coinbaseAddr] === undefined) {
     return
   }
 
@@ -347,7 +343,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
     const storageRoot = (await state.getAccount(address)).storageRoot
 
     if (testData.exec?.address === addressStr) {
-      testData.root = storageRoot
+      testData.root(storageRoot)
     }
 
     // Put account data

@@ -54,7 +54,7 @@ For merge transition support, pass the chain TD up to the block being run
 
 #### Defined in
 
-[packages/vm/src/types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L241)
+[packages/vm/src/types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L242)
 
 ___
 
@@ -74,11 +74,12 @@ ___
 
 • `Optional` **skipBalance**: `boolean`
 
-If true, skips the balance check
+If true, checks the balance of the `from` account for the transaction and sets its
+balance equal equal to the upfront cost (gas limit * gas price + transaction value)
 
 #### Defined in
 
-[packages/vm/src/types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L237)
+[packages/vm/src/types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L238)
 
 ___
 

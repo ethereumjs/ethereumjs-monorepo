@@ -33,4 +33,4 @@
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L343)
+[packages/devp2p/src/protocol/eth.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L346)

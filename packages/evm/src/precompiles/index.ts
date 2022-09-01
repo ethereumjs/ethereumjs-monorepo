@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, isTruthy } from '@ethereumjs/util'
+import { Address } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover'
 import { precompile02 } from './02-sha256'
@@ -149,7 +149,7 @@ const precompileAvailability: PrecompileAvailability = {
 
 function getPrecompile(address: Address, common: Common): PrecompileFunc {
   const addr = address.buf.toString('hex')
-  if (isTruthy(precompiles[addr])) {
+  if (precompiles[addr] !== undefined) {
     const availability = precompileAvailability[addr]
     if (
       (availability.type === PrecompileAvailabilityCheck.Hardfork &&
@@ -193,7 +193,7 @@ function getActivePrecompiles(
     }
     const address = new Address(Buffer.from(addressString, 'hex'))
     const precompileFunc = getPrecompile(address, common)
-    if (isTruthy(precompileFunc)) {
+    if (precompileFunc !== undefined) {
       precompileMap.set(addressString, precompileFunc)
     }
   }

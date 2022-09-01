@@ -4,7 +4,7 @@ import { errSyncMerged } from '../skeleton'
 import { BlockFetcher } from './blockfetcher'
 
 import type { Skeleton } from '../skeleton'
-import type { BlockFetcherOptions } from './blockfetcherbase'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Block } from '@ethereumjs/block'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
@@ -56,5 +56,17 @@ export class ReverseBlockFetcher extends BlockFetcher {
         throw e
       }
     }
+  }
+
+  processStoreError(
+    error: Error,
+    _task: JobTask
+  ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
+    const stepBack = BigInt(0)
+    const destroyFetcher = !(error.message as string).includes(
+      `Blocks don't extend canonical subchain`
+    )
+    const banPeer = true
+    return { destroyFetcher, banPeer, stepBack }
   }
 }

@@ -493,7 +493,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           retLength,
         ] = runState.stack.peek(8)
 
-        if (valueExt !== 0n) {
+        if (valueExt !== BigInt(0)) {
           trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
         }
 

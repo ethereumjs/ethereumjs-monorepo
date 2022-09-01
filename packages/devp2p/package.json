@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/devp2p",
-  "version": "5.0.0-beta.3",
+  "version": "5.0.0-rc.1",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",
@@ -45,13 +45,13 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
-    "test": "npm run tape -- ./test/index.ts",
+    "test": "npm run tape -- './test/**/*.spec.ts'",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.3",
-    "@ethereumjs/rlp": "4.0.0-beta.3",
-    "@ethereumjs/util": "8.0.0-beta.3",
+    "@ethereumjs/common": "3.0.0-rc.1",
+    "@ethereumjs/rlp": "4.0.0-rc.1",
+    "@ethereumjs/util": "8.0.0-rc.1",
     "@scure/base": "1.1.1",
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
@@ -59,7 +59,6 @@
     "bl": "^1.1.2",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "inherits": "^2.0.1",
     "ip": "^1.1.3",
     "k-bucket": "^5.0.0",
     "lru-cache": "^5.1.1",
@@ -69,8 +68,8 @@
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
-    "@ethereumjs/block": "4.0.0-beta.3",
-    "@ethereumjs/tx": "4.0.0-beta.3",
+    "@ethereumjs/block": "4.0.0-rc.1",
+    "@ethereumjs/tx": "4.0.0-rc.1",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",
     "@types/ip": "^1.1.0",

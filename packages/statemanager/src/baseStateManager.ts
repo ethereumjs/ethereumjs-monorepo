@@ -1,4 +1,3 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
@@ -20,7 +19,6 @@ import type { Debugger } from 'debug'
  * and we cannot guarantee a stable interface yet.
  */
 export abstract class BaseStateManager {
-  _common: Common
   _debug: Debugger
   _cache!: Cache
 
@@ -37,13 +35,7 @@ export abstract class BaseStateManager {
   /**
    * Needs to be called from the subclass constructor
    */
-  constructor(opts: DefaultStateManagerOpts) {
-    let common = opts.common
-    if (!common) {
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    }
-    this._common = common
-
+  constructor(_opts: DefaultStateManagerOpts) {
     // Safeguard if "process" is not available (browser)
     if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true

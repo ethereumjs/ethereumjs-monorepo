@@ -1,4 +1,3 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
@@ -23,8 +22,7 @@ tape('StateManager', (t) => {
   t.test('should instantiate', async (st) => {
     const stateManager = new DefaultStateManager()
 
-    st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
-    st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
+    st.deepEqual(stateManager._trie.root(), KECCAK256_RLP, 'it has default root')
     const res = await stateManager.getStateRoot()
     st.deepEqual(res, KECCAK256_RLP, 'it has default root')
     st.end()
@@ -32,7 +30,7 @@ tape('StateManager', (t) => {
 
   t.test('should set the state root to empty', async (st) => {
     const stateManager = new DefaultStateManager()
-    st.ok(stateManager._trie.root.equals(KECCAK256_RLP), 'it has default root')
+    st.ok(stateManager._trie.root().equals(KECCAK256_RLP), 'it has default root')
 
     // commit some data to the trie
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
@@ -41,7 +39,7 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(address, account)
     await stateManager.commit()
     await stateManager.flush()
-    st.ok(!stateManager._trie.root.equals(KECCAK256_RLP), 'it has a new root')
+    st.ok(!stateManager._trie.root().equals(KECCAK256_RLP), 'it has a new root')
 
     // set state root to empty trie root
     const emptyTrieRoot = Buffer.from(KECCAK256_RLP_S, 'hex')
@@ -266,21 +264,6 @@ tape('StateManager', (t) => {
     st.end()
   })
 
-  t.test('should pass Common object when copying the state manager', (st) => {
-    const stateManager = new DefaultStateManager({
-      common: new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium }),
-    })
-
-    st.equal(stateManager._common.chainName(), 'goerli')
-    st.equal(stateManager._common.hardfork(), 'byzantium')
-
-    const stateManagerCopy = stateManager.copy()
-    st.equal((<any>stateManagerCopy)._common.chainName(), 'goerli')
-    st.equal((<any>stateManagerCopy)._common.hardfork(), 'byzantium')
-
-    st.end()
-  })
-
   t.test("should validate the key's length when modifying a contract's storage", async (st) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
@@ -332,7 +315,8 @@ tape('StateManager', (t) => {
     await stateManager.putContractStorage(address1, key1, key2)
     await stateManager.putContractStorage(address1, key2, key2)
     const root = await stateManager.getStateRoot()
-    const rawNode = await stateManager._trie.db.get(root)
+    // @ts-expect-error
+    const rawNode = await stateManager._trie._db.get(root)
 
     await codeStateManager.putContractCode(address1, rawNode!)
 
@@ -429,6 +413,31 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
     t.ok(codeRetrieved.equals(Buffer.alloc(0)))
+    t.end()
+  })
+
+  it('should prefix codehashes by default', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    await stateManager.putContractCode(address, code)
+    const codeRetrieved = await stateManager.getContractCode(address)
+    t.ok(codeRetrieved.equals(code))
+    t.end()
+  })
+
+  it('should not prefix codehashes if prefixCodeHashes = false', async (t) => {
+    const stateManager = new DefaultStateManager({
+      prefixCodeHashes: false,
+    })
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const code = Buffer.from('80', 'hex')
+    try {
+      await stateManager.putContractCode(address, code)
+      t.fail('should throw')
+    } catch (e) {
+      t.pass('successfully threw')
+    }
     t.end()
   })
 })

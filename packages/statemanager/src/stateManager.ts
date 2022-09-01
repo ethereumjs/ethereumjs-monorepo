@@ -1,13 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToHex,
   bufferToHex,
-  isFalsy,
-  isTruthy,
   setLengthLeft,
   short,
   toBuffer,
@@ -20,7 +18,6 @@ import { Cache } from './cache'
 
 import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
-import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 type StorageProof = {
@@ -54,13 +51,16 @@ const CODEHASH_PREFIX = Buffer.from('c')
  */
 export interface DefaultStateManagerOpts {
   /**
-   * Parameters of the chain {@link Common}
-   */
-  common?: Common
-  /**
-   * A {@link SecureTrie} instance
+   * A {@link Trie} instance
    */
   trie?: Trie
+  /**
+   * Option to prefix codehashes in the database. This defaults to `true`.
+   * If this is disabled, note that it is possible to corrupt the trie, by deploying code
+   * which code is equal to the preimage of a trie-node.
+   * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
+   */
+  prefixCodeHashes?: boolean
 }
 
 /**
@@ -77,14 +77,18 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 
+  private readonly _prefixCodeHashes: boolean
+
   /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
     super(opts)
 
-    this._trie = opts.trie ?? new Trie()
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
+
+    this._prefixCodeHashes = opts.prefixCodeHashes ?? true
 
     /*
      * For a custom StateManager implementation adopt these
@@ -115,7 +119,6 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   copy(): StateManager {
     return new DefaultStateManager({
       trie: this._trie.copy(false),
-      common: this._common,
     })
   }
 
@@ -132,8 +135,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       return
     }
 
-    const key = Buffer.concat([CODEHASH_PREFIX, codeHash])
-    await this._trie.db.put(key, value)
+    const key = this._prefixCodeHashes ? Buffer.concat([CODEHASH_PREFIX, codeHash]) : codeHash
+    // @ts-expect-error
+    await this._trie._db.put(key, value)
 
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
@@ -152,8 +156,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
-    const key = Buffer.concat([CODEHASH_PREFIX, account.codeHash])
-    const code = await this._trie.db.get(key)
+    const key = this._prefixCodeHashes
+      ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+      : account.codeHash
+    // @ts-expect-error
+    const code = await this._trie._db.get(key)
     return code ?? Buffer.alloc(0)
   }
 
@@ -166,8 +173,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from state trie
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
-    storageTrie.root = account.storageRoot
-    storageTrie.db.checkpoints = []
+    storageTrie.root(account.storageRoot)
+    storageTrie.flushCheckpoints()
     return storageTrie
   }
 
@@ -180,7 +187,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // from storage cache
     const addressHex = address.buf.toString('hex')
     let storageTrie = this._storageTries[addressHex]
-    if (isFalsy(storageTrie)) {
+    if (storageTrie === undefined || storageTrie === null) {
       // lookup from state
       storageTrie = await this._lookupStorageTrie(address)
     }
@@ -228,7 +235,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
         // update contract storageRoot
         const contract = this._cache.get(address)
-        contract.storageRoot = storageTrie.root
+        contract.storageRoot = storageTrie.root()
 
         await this.putAccount(address, contract)
         resolve()
@@ -255,7 +262,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (isTruthy(value) && value.length) {
+      if (Buffer.isBuffer(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
         if (this.DEBUG) {
@@ -279,7 +286,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async clearContractStorage(address: Address): Promise<void> {
     await this._modifyContractStorage(address, (storageTrie, done) => {
-      storageTrie.root = storageTrie.EMPTY_TRIE_ROOT
+      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
   }
@@ -367,7 +374,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await new Trie().verifyProof(rootHash, key, accountProof)
+    const value = await new Trie({ useKeyHashing: true }).verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -413,7 +420,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const proofValue = await new Trie().verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
+        storageRoot,
+        storageKey,
+        storageProof
+      )
       const reportedValue = setLengthLeft(
         Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
         32
@@ -433,8 +444,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getStateRoot(): Promise<Buffer> {
     await this._cache.flush()
-    const stateRoot = this._trie.root
-    return stateRoot
+    return this._trie.root()
   }
 
   /**
@@ -454,7 +464,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       }
     }
 
-    this._trie.root = stateRoot
+    this._trie.root(stateRoot)
     this._cache.clear()
     this._storageTries = {}
   }
@@ -500,7 +510,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && isFalsy((account as any).virtual) && !this._cache.keyIsDeleted(address)) {
+    if (
+      account &&
+      ((account as any).virtual === undefined || (account as any).virtual === false) &&
+      !this._cache.keyIsDeleted(address)
+    ) {
       return true
     }
     if (await this._trie.get(address.buf)) {

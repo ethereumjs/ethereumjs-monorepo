@@ -1,11 +1,10 @@
-import { isTruthy } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
-import { LevelDB, ROOT_DB_KEY, SecureTrie } from '../../src'
+import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
 
 tape('SecureTrie', function (t) {
-  const trie = new SecureTrie({ db: new LevelDB() })
+  const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
   const k = Buffer.from('foo')
   const v = Buffer.from('bar')
 
@@ -25,53 +24,59 @@ tape('SecureTrie', function (t) {
 
   tape('SecureTrie proof', function (t) {
     t.test('create a merkle proof and verify it with a single short key', async function (st) {
-      const trie = new SecureTrie({ db: new LevelDB() })
+      const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
       await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
       const proof = await trie.createProof(Buffer.from('key1aa'))
-      const val = await trie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+      const val = await trie.verifyProof(trie.root(), Buffer.from('key1aa'), proof)
       st.equal(val!.toString('utf8'), '01234')
       st.end()
     })
   })
 
   tape('secure tests', function (it) {
-    let trie = new SecureTrie({ db: new LevelDB() })
+    let trie = new Trie({ useKeyHashing: true, db: new MapDB() })
     const jsonTests = require('../fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
       for (const row of jsonTests.emptyValues.in) {
-        const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
+        const val =
+          row[1] !== undefined && row[1] !== null
+            ? Buffer.from(row[1])
+            : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.emptyValues.root)
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.emptyValues.root)
       t.end()
     })
 
     it.test('branchingTests', async function (t) {
-      trie = new SecureTrie({ db: new LevelDB() })
+      trie = new Trie({ useKeyHashing: true, db: new MapDB() })
       for (const row of jsonTests.branchingTests.in) {
-        const val = isTruthy(row[1]) ? Buffer.from(row[1]) : (null as unknown as Buffer)
+        const val =
+          row[1] !== undefined && row[1] !== null
+            ? Buffer.from(row[1])
+            : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.branchingTests.root)
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.branchingTests.root)
       t.end()
     })
 
     it.test('jeff', async function (t) {
       for (const row of jsonTests.jeff.in) {
         let val = row[1]
-        if (isTruthy(val)) {
+        if (val !== undefined && val !== null) {
           val = Buffer.from(row[1].slice(2), 'hex')
         }
         await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
       }
-      t.equal('0x' + trie.root.toString('hex'), jsonTests.jeff.root.toString('hex'))
+      t.equal('0x' + trie.root().toString('hex'), jsonTests.jeff.root.toString('hex'))
       t.end()
     })
 
     it.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = new SecureTrie({ db: new LevelDB(), persistRoot: true })
+      const trie = new Trie({ useKeyHashing: true, db: new MapDB(), useRootPersistence: true })
 
       try {
         await trie.put(ROOT_DB_KEY, Buffer.from('bar'))
@@ -84,7 +89,7 @@ tape('SecureTrie', function (t) {
   })
 })
 
-const trie = new SecureTrie({ db: new LevelDB() })
+const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 const a = Buffer.from(
   'f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
   'hex'
@@ -142,7 +147,7 @@ tape('secure tests should not crash', async function (t) {
 
 tape('SecureTrie.copy', function (it) {
   it.test('created copy includes values added after checkpoint', async function (t) {
-    const trie = new SecureTrie({ db: new LevelDB() })
+    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
@@ -154,7 +159,7 @@ tape('SecureTrie.copy', function (it) {
   })
 
   it.test('created copy includes values added before checkpoint', async function (t) {
-    const trie = new SecureTrie({ db: new LevelDB() })
+    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))
     trie.checkpoint()
@@ -166,9 +171,10 @@ tape('SecureTrie.copy', function (it) {
   })
 
   it.test('created copy uses the correct hash function', async function (t) {
-    const trie = new SecureTrie({
-      db: new LevelDB(),
-      hash: (value) => createHash('sha256').update(value).digest(),
+    const trie = new Trie({
+      db: new MapDB(),
+      useKeyHashing: true,
+      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
     })
 
     await trie.put(Buffer.from('key1'), Buffer.from('value1'))

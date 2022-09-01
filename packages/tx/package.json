@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.0.0-beta.3",
+  "version": "4.0.0-rc.1",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "keywords": [
     "ethereum",
@@ -50,13 +50,14 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-beta.3",
-    "@ethereumjs/rlp": "4.0.0-beta.3",
-    "@ethereumjs/util": "8.0.0-beta.3",
+    "@ethereumjs/common": "3.0.0-rc.1",
+    "@ethereumjs/rlp": "4.0.0-rc.1",
+    "@ethereumjs/util": "8.0.0-rc.1",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
+    "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16"
   },
