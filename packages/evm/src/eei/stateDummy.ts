@@ -13,7 +13,7 @@ export class StateDummy implements EVMStateAccess {
   }
 
   touchAccount(_address: Address): void {
-    throw new Error('Method not implemented.')
+    this.stateCache.touchedAccounts.add(_address.toString())
   }
   addWarmedAddress(address: Buffer): void {
     this.stateCache.warmAddresses.add(new Address(address).toString())
@@ -28,16 +28,29 @@ export class StateDummy implements EVMStateAccess {
     return this.stateCache.isWarmedStorage(new Address(address), slot)
   }
   clearWarmedAccounts(): void {
-    throw new Error('Method not implemented.')
+    if (this.stateCache._warmAddresses.length !== 1) {
+      throw new Error('cannot clear warmed accounts if cache is not at top level')
+    }
+    this.stateCache._warmAddresses = [new Set<string>()]
   }
   async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     return this.stateCache.getOriginalContractStorage(address, key)
   }
   clearOriginalStorageCache(): void {
-    throw new Error('Method not implemented.')
+    if (this.stateCache._storage.length !== 1) {
+      throw new Error('cannot clear storage accounts if cache is not at top level')
+    }
+    this.stateCache._storage = [new Map()]
   }
-  cleanupTouchedAccounts(): Promise<void> {
-    throw new Error('Method not implemented.')
+  async cleanupTouchedAccounts(): Promise<void> {
+    if (this.stateCache._touchedAccounts.length !== 1) {
+      throw new Error('cannot clear touched accounts if cache is not at top level')
+    }
+    for (const addressString of this.stateCache.touchedAccounts) {
+      const address = Address.fromString(addressString)
+      await this.deleteAccount(address)
+    }
+    this.stateCache._touchedAccounts = [new Set()]
   }
   generateCanonicalGenesis(_initState: any): Promise<void> {
     throw new Error('Method not implemented.')
@@ -55,6 +68,9 @@ export class StateDummy implements EVMStateAccess {
     return (await this.getAccount(address)).isEmpty()
   }
   async deleteAccount(_address: Address): Promise<void> {
+    /**
+     * TODO necessary for selfdestruct cleanups
+     */
     throw new Error('Method not implemented.')
   }
   async modifyAccountFields(
@@ -96,6 +112,17 @@ export class StateDummy implements EVMStateAccess {
     this.stateCache.revert()
   }
   getStateRoot(): Promise<Buffer> {
+    /**
+     * TODO
+     * This is technically possible. We have a flat map of accounts and storages
+     * If we create an internal Trie interface, then first setRoot(empty state root) and
+     * then first generate each storage trie (to get storage root). Set this for each account
+     * Set the codeHash for each account (can be directly read)
+     * Finally, get the nonce and balance from the accounts, merge the balance
+     * Now all the accounts for the trie have been generated. Dump those in the empty trie
+     * Now you have the root
+     * Note: this only works if we start with an empty state
+     */
     throw new Error('Method not implemented.')
   }
   setStateRoot(_stateRoot: Buffer): Promise<void> {

@@ -1,10 +1,13 @@
 import { Account } from '@ethereumjs/util'
 
+import { ripemdPrecompileAddress } from '../precompiles'
+
 import type { Address } from '@ethereumjs/util'
 
 export class StateCache {
   _storage: Map<string, Map<string, Buffer>>[]
   _accounts: Map<string, Account>[]
+  _touchedAccounts: Set<string>[]
   _warmAddresses: Set<string>[]
   _warmSlots: Map<string, Set<string>>[]
   _codeHash: Map<string, Buffer>
@@ -15,6 +18,10 @@ export class StateCache {
 
   get accounts() {
     return this._accounts[this._accounts.length - 1]
+  }
+
+  get touchedAccounts() {
+    return this._touchedAccounts[this._touchedAccounts.length - 1]
   }
 
   get warmAddresses() {
@@ -28,6 +35,7 @@ export class StateCache {
   constructor() {
     this._storage = [new Map<string, Map<string, Buffer>>()]
     this._accounts = [new Map<string, Account>()]
+    this._touchedAccounts = [new Set<string>()]
     this._warmAddresses = [new Set<string>()]
     this._warmSlots = [new Map<string, Set<string>>()]
     this._codeHash = new Map<string, Buffer>()
@@ -71,6 +79,19 @@ export class StateCache {
       return undefined
     }
     return new Account()
+  }
+
+  isTouchedAddress(address: Address): boolean {
+    let i = this._touchedAccounts.length - 1
+    const key = address.toString()
+    while (i >= 0) {
+      const cSlot = this._touchedAccounts[i]
+      if (cSlot.has(key)) {
+        return true
+      }
+      i--
+    }
+    return false
   }
 
   isWarmedAddress(address: Address): boolean {
@@ -156,6 +177,13 @@ export class StateCache {
       mergeAccountMap.set(key, value)
     }
 
+    const lastTouchedSet = this.touchedAccounts
+    const mergeTouchedSet = this._touchedAccounts[this._touchedAccounts.length - 2]
+
+    for (const value of lastTouchedSet) {
+      mergeTouchedSet.add(value)
+    }
+
     const lastWarmAddresses = this.warmAddresses
     const mergeWarmAddresses = this._warmAddresses[this._warmAddresses.length - 2]
 
@@ -186,6 +214,7 @@ export class StateCache {
   checkpoint() {
     this._storage.push(new Map<string, Map<string, Buffer>>())
     this._accounts.push(new Map<string, Account>())
+    this._touchedAccounts.push(new Set<string>())
     this._warmAddresses.push(new Set<string>())
     this._warmSlots.push(new Map<string, Set<string>>())
   }
@@ -196,6 +225,14 @@ export class StateCache {
     }
     this._storage.pop()
     this._accounts.pop()
+    if (this.touchedAccounts.has(ripemdPrecompileAddress)) {
+      // Exceptional case due to consensus issue in Geth and Parity.
+      // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
+      // The RIPEMD precompile has to remain *touched* even when the call reverts,
+      // and be considered for deletion.
+      this._touchedAccounts[this._touchedAccounts.length - 2].add(ripemdPrecompileAddress)
+    }
+    this._touchedAccounts.pop()
     this._warmAddresses.pop()
     this._warmSlots.pop()
   }
