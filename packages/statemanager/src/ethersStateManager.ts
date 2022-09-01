@@ -5,7 +5,6 @@ import {
   Account,
   arrToBufArr,
   bigIntToHex,
-  bufferToBigInt,
   bufferToHex,
   intToHex,
   isHexPrefixed,
@@ -151,8 +150,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
   async getAccountFromProvider(address: Address): Promise<Account> {
-    console.log(`Retrieving account data for ${address.toString()} from provider`)
-
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
       [],
