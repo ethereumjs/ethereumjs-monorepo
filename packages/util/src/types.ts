@@ -120,35 +120,3 @@ export function toType<T extends TypeOutput>(
       throw new Error('unknown outputType')
   }
 }
-
-type Falsy = false | '' | 0 | null | undefined | 0n
-
-/**
- * Returns true if a value is falsy
- *
- * @param value - Value to check for falseness
- *
- * @deprecated This helper function should only be used temporarily until the monorepo types are explicit enough
- */
-export function isFalsy(value: unknown): value is Falsy {
-  return !!(
-    value === false ||
-    value === '' ||
-    value === 0 ||
-    Number.isNaN(value) ||
-    value === null ||
-    typeof value === 'undefined' ||
-    value === BigInt(0)
-  )
-}
-
-/**
- * Returns true if a value is truthy
- *
- * @param value - Value to check for truthiness
- *
- * @deprecated This helper function should only be used temporarily until the monorepo types are explicit enough
- */
-export function isTruthy<T>(value: T | Falsy): value is T {
-  return !isFalsy(value)
-}

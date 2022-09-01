@@ -11,10 +11,11 @@ So to run ethereumjs in PoS (ready) configurations, one requires to specify the 
 
 Following networks have been merge to PoS with ethereumjs client having the baked in `merge` hardfork configurations:
 
-1. Ropsten (`--network ropsten`)
-2. Sepolia (`--network sepolia`)
+1. Sepolia (`--network sepolia`)
+2. Goerli (`--network goerli`)
+3. (Upcoming) Mainnet (`--network mainnet`)
 
-The `goerli` and `mainnet` hardforks will be configured for merge in the future releases. We recommend running `ethereumjs` on `sepolia` network as its relatively young and light (and the `kiln` network will be deprecated soon).
+However, we recommend running `ethereumjs` on `sepolia` network as it's a relatively young network that can be easily synced by the `ethereumjs` client.
 
 ## Sepolia testnet instructions
 
@@ -85,14 +86,18 @@ In case you want to host `engine_*` without auth (not recommended, only for debu
 
 This will by default try reaching out `ethereumjs` over the endpoint `8551`. (You may customize this in conjuction with `ethereumjs`, see lodestar cli help via `--help`).
 
-You may provide `--weakSubjectivityServerUrl` (with a synced `sepolia` beacon node endpoint as arg value) and `--weakSubjectivitySyncLatest` to start directly off the head on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
+You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
 
 #### (Optional) Validator
 
-To run the validator, you will need to add the following arg to the above beacon run command to expose api endpoints: `--api.rest.enabled`. The validator will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator)
+Once you start a beacon node as instructed above, it will expose some default api endpoints. The validator started as instructed below will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator)
 
-1. Run cmd: `./lodestar validator --rootDir=/path/to/sepolia/data/dir`
+1. Run cmd: `./lodestar validator --importKeystores /path/to/generated/keystores --importKeystoresPassword /path/to/keystores/password/file`
 
-This will pickup the keystores and secrets from the specified `rootDir`, you may override it via `--keystoresDir=/path/to/sepolia/keystores --secretsDir=/path/to/sepolia/secrets`.
+where the keystores have been generated via [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) with the same password as in the above provided password file.
 
-Or you may instead choose to provide a `mnemonic` and its range indices to derive validators via `--fromMnemonic "lens risk clerk foot verb planet drill roof boost aim salt omit celery tube list permit motor obvious flash demise churn hold wave hollow" --mnemonicIndexes 0..5` (Modify the mnemonic and range indices as per your validator configuration).
+For a testnet chain, you may skip keystore generation and directly provide lodestar validator with a `mnemonic` and its range indices to derive validators via `--fromMnemonic` and `--mnemonicIndexes` args. For e.g.:
+
+`./lodestar validator --fromMnemonic "lens risk clerk foot verb planet drill roof boost aim salt omit celery tube list permit motor obvious flash demise churn hold wave hollow" --mnemonicIndexes 0..5`
+
+(Modify the mnemonic and range indices as per your validator configuration).
