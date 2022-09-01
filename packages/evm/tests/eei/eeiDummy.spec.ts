@@ -162,7 +162,19 @@ tape('eeiDummy', (t) => {
   })
 
   // end of cache tests
-  t.test('should set and retrieve code', async (st) => {
+  t.test('cannot commit/revert upper level', async (st) => {
     const dummy = new EEIDummy()
+    try {
+      await dummy.commit()
+      st.fail('cannot reach this')
+    } catch {
+      st.ok('threw on commit')
+    }
+    try {
+      await dummy.revert()
+      st.fail('cannot reach this')
+    } catch {
+      st.ok('threw on commit')
+    }
   })
 })
