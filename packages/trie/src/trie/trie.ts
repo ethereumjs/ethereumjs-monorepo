@@ -789,10 +789,9 @@ export class Trie {
   // If one of the key is not reachable, then that key could be deleted from the DB
   // (i.e. the Trie is not correctly pruned)
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
-  async verifyIsPruned(): Promise<boolean> {
-    const trie = this
-    const root = trie.root().toString('hex')
-    for (const dbkey of (<any>trie)._db.db._database.keys()) {
+  async verifyPrunedIntegrity(): Promise<boolean> {
+    const root = this.root().toString('hex')
+    for (const dbkey of (<any>this)._db.db._database.keys()) {
       if (dbkey === root) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph
@@ -802,7 +801,7 @@ export class Trie {
       // Track if key is found
       let found = false
       try {
-        await trie.walkTrie(trie.root(), async function (nodeRef, node, key, controller) {
+        await this.walkTrie(this.root(), async function (nodeRef, node, key, controller) {
           if (found) {
             // Abort all other children checks
             return
@@ -827,7 +826,7 @@ export class Trie {
             controller.allChildren(node, key)
           }
         })
-      } catch (e: any) {
+      } catch {
         return false
       }
       if (!found) {

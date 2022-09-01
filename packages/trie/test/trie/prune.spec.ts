@@ -116,7 +116,7 @@ tape('Pruned trie tests', function (tester) {
         await trie.put(Buffer.from(key), Buffer.from(values[i]))
       }
 
-      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
@@ -124,7 +124,7 @@ tape('Pruned trie tests', function (tester) {
         await trie.del(Buffer.from(keys[idx]))
       }
 
-      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
@@ -137,14 +137,14 @@ tape('Pruned trie tests', function (tester) {
         }
       }
 
-      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
         await trie.del(Buffer.from(keys[idx]))
       }
 
-      st.ok(await trie.verifyIsPruned(), 'trie is correctly pruned')
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
       st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
@@ -155,25 +155,25 @@ tape('Pruned trie tests', function (tester) {
     }
   })
 
-  it('verifyIsPruned() => should correctly report unpruned Tries', async (st) => {
+  it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async (st) => {
     // Create empty Trie (is pruned)
     let trie = new Trie()
     // Create a new value (still is pruned)
     await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
     // Overwrite this value (trie is now not pruned anymore)
     await trie.put(Buffer.from('aa', 'hex'), Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
+    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
 
     // Create new empty Trie (is pruned)
     trie = new Trie()
     // Create a new value raw in DB (is not pruned)
     await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
+    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
     await (<any>trie)._db.db.del(Buffer.from('aa', 'hex'))
-    st.ok(await trie.verifyIsPruned(), 'trie is pruned')
+    st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
-    st.ok(await trie.verifyIsPruned(), 'trie is pruned')
+    st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyIsPruned()), 'trie is not pruned')
+    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
   })
 })
