@@ -37,10 +37,10 @@ interface Path {
  */
 export class Trie {
   private readonly _opts: TrieOptsWithDefaults = {
-    deleteFromDB: false,
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
+    useNodePruning: false,
   }
 
   /** The root for an empty trie */
@@ -179,8 +179,31 @@ export class Trie {
     } else {
       // First try to find the given key or its nearest node
       const { remaining, stack } = await this.findPath(appliedKey)
+      let ops: BatchDBOp[] = []
+      if (this._opts.useNodePruning) {
+        const val = await this.get(key)
+        // Only delete keys if it either does not exist, or if it gets updated
+        // (The update will update the hash of the node, thus we can delete the original leaf node)
+        if (val === null || !val.equals(value)) {
+          // All items of the stack are going to change.
+          // (This is the path from the root node to wherever it needs to insert nodes)
+          // The items change, because the leaf value is updated, thus all keyhashes in the
+          // stack should be updated as well, so that it points to the right key/value pairs of the path
+          const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+          ops = deleteHashes.map((e) => {
+            return {
+              type: 'del',
+              key: e,
+            }
+          })
+        }
+      }
       // then update
       await this._updateNode(appliedKey, value, remaining, stack)
+      if (this._opts.useNodePruning) {
+        // Only after updating the node we can delete the keyhashes
+        await this._db.batch(ops)
+      }
     }
     await this.persistRoot()
     this._lock.release()
@@ -196,8 +219,26 @@ export class Trie {
     await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
+
+    let ops: BatchDBOp[] = []
+    // Only delete if the `key` currently has any value
+    if (this._opts.useNodePruning && node !== null) {
+      const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+      // Just as with `put`, the stack items all will have their keyhashes updated
+      // So after deleting the node, one can safely delete these from the DB
+      ops = deleteHashes.map((e) => {
+        return {
+          type: 'del',
+          key: e,
+        }
+      })
+    }
     if (node) {
       await this._deleteNode(appliedKey, stack)
+    }
+    if (this._opts.useNodePruning) {
+      // Only after deleting the node it is possible to delete the keyhashes
+      await this._db.batch(ops)
     }
     await this.persistRoot()
     this._lock.release()
@@ -525,6 +566,19 @@ export class Trie {
       const branchNode = branchNodes[0][1]
       const branchNodeKey = branchNodes[0][0]
 
+      // Special case where one needs to delete an extra node:
+      // In this case, after updating the branch, the branch node has just one branch left
+      // However, this violates the trie spec; this should be converted in either an ExtensionNode
+      // Or a LeafNode
+      // Since this branch is deleted, one can thus also delete this branch from the DB
+      // So add this to the `opStack` and mark the keyhash to be deleted
+      if (this._opts.useNodePruning) {
+        opStack.push({
+          type: 'del',
+          key: branchNode as Buffer,
+        })
+      }
+
       // look up node
       const foundNode = await this.lookupNode(branchNode)
       if (foundNode) {
@@ -606,7 +660,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this._opts.deleteFromDB) {
+        if (this._opts.useNodePruning) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -738,6 +792,57 @@ export class Trie {
       proof,
       this._opts.useKeyHashingFunction
     )
+  }
+
+  // This method verifies if all keys in the trie (except the root) are reachable
+  // If one of the key is not reachable, then that key could be deleted from the DB
+  // (i.e. the Trie is not correctly pruned)
+  // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
+  async verifyPrunedIntegrity(): Promise<boolean> {
+    const root = this.root().toString('hex')
+    for (const dbkey of (<any>this)._db.db._database.keys()) {
+      if (dbkey === root) {
+        // The root key can never be found from the trie, otherwise this would
+        // convert the tree from a directed acyclic graph to a directed cycling graph
+        continue
+      }
+
+      // Track if key is found
+      let found = false
+      try {
+        await this.walkTrie(this.root(), async function (nodeRef, node, key, controller) {
+          if (found) {
+            // Abort all other children checks
+            return
+          }
+          if (node instanceof BranchNode) {
+            for (const item of node._branches) {
+              // If one of the branches matches the key, then it is found
+              if (item && item.toString('hex') === dbkey) {
+                found = true
+                return
+              }
+            }
+            // Check all children of the branch
+            controller.allChildren(node, key)
+          }
+          if (node instanceof ExtensionNode) {
+            // If the value of the ExtensionNode points to the dbkey, then it is found
+            if (node.value().toString('hex') === dbkey) {
+              found = true
+              return
+            }
+            controller.allChildren(node, key)
+          }
+        })
+      } catch {
+        return false
+      }
+      if (!found) {
+        return false
+      }
+    }
+    return true
   }
 
   /**
