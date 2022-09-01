@@ -11,7 +11,7 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import { debug } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
 
@@ -73,7 +73,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     // Retrieve storage slot from provider if not found in cache
     await this.getContractStorageFromProvider(address, key)
 
-    const storageTrie = await this._lookupStorageTrie(address)
+    const storageTrie = await this._getStorageTrie(address)
     const foundValue = await storageTrie.get(key) //@ts-ignore
 
     return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
@@ -97,7 +97,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     // Only requesting a single slot at a time so the proof will always be the first item in the array
     const storageData = accountData.storageProof[0]
 
-    const storageTrie = await this._lookupStorageTrie(address)
+    const storageTrie = await this._getStorageTrie(address)
 
     await storageTrie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
 
@@ -109,14 +109,25 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     map.set(key.toString('hex'), true)
   }
 
+  /**
+   * Adds value to the state trie for the `account`
+   * corresponding to `address` at the provided `key`.
+   * @param address -  Address to set a storage value for
+   * @param key - Key to set the value at. Must be 32 bytes long.
+   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
+   */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    console.log('puts', address.toString(), key.toString('hex'), value.toString('hex'))
-    const storageTrie = await this._lookupStorageTrie(address)
-
-    await storageTrie.put(key, arrToBufArr(RLP.encode(value)))
+    const storageTrie = await this._getStorageTrie(address)
+    if (value.length > 0)
+      await storageTrie.put(
+        key,
+        arrToBufArr(RLP.encode(value.length > 0 ? value : Buffer.from([])))
+      )
+    else await storageTrie.del(key)
 
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
+
     await this.putAccount(address, contract)
   }
 
@@ -202,7 +213,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       bufferToHex(p)
     )
     const storageProof: StorageProof[] = []
-    const storageTrie = await this._lookupStorageTrie(address)
+    const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
@@ -268,6 +279,22 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const storageTrie = this.trie.copy(false)
     storageTrie.root(account.storageRoot)
     storageTrie.flushCheckpoints()
+    return storageTrie
+  }
+
+  /**
+   * Gets the storage trie for an account from the storage
+   * cache or does a lookup.
+   * @private
+   */
+  async _getStorageTrie(address: Address): Promise<Trie> {
+    // from storage cache
+    const addressHex = address.buf.toString('hex')
+    let storageTrie = this.storageTries[addressHex]
+    if (storageTrie === undefined || storageTrie === null) {
+      // lookup from state
+      storageTrie = await this._lookupStorageTrie(address)
+    }
     return storageTrie
   }
 }

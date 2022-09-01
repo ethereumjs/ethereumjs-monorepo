@@ -106,7 +106,6 @@ tape.only('runBlock test', async (t) => {
     'hex'
   )
   const block = await state.getBlockFromProvider(blockTag, common)
-
   try {
     const res = await vm.runBlock({
       block,
@@ -114,8 +113,6 @@ tape.only('runBlock test', async (t) => {
       generate: true,
       skipHeaderValidation: true,
     })
-
-    console.log(res)
 
     t.equal(
       bufferToHex(res.stateRoot),
@@ -125,21 +122,20 @@ tape.only('runBlock test', async (t) => {
   } catch (err) {
     console.log(err)
   }
-  /*
+
   const proof = (await provider.send('eth_getProof', [
-    '0x4e9ad443432c3157634f7e30a98dfd524f092455',
+    block.header.coinbase.toString(),
     [],
     bigIntToHex(block.header.number),
   ])) as Proof
-  const localproof = await state.getProof(
-    Address.fromString('0x4e9ad443432c3157634f7e30a98dfd524f092455')
-  )
+  const localproof = await state.getProof(block.header.coinbase)
+
   for (let j = 0; j < proof.accountProof.length; j++) {
     t.deepEqual(
       localproof.accountProof[j],
       proof.accountProof[j],
-      'proof nodes for miner account match proof from provider'
+      'proof nodes for account match proof from provider'
     )
-  }*/
+  }
   t.end()
 })
