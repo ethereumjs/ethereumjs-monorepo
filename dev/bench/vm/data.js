@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1662029496528,
+  "lastUpdate": 1662031428711,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fffe4ab648855911c0a84b48e214a0843111aa67",
-          "message": "refactor(trie): integrate `CheckpointTrie` behaviour into main `Trie` class (#2215)\n\n* trie: removed deprecated prove() function (renamed to createProof())\r\n\r\n* trie: added secure option to base trie, integrated secure trie functionality\r\n\r\n* trie: adopted secureTrie.spec.ts tests (5 failing)\r\n\r\n* trie: fixed copy function\r\n\r\n* trie: fixed secureTrie.spec.ts branching test\r\n\r\n* trie: additional test fixes\r\n\r\n* trie: removed secure.ts SecureTrie class definition file\r\n\r\n* trie: updated README\r\n\r\n* trie: removed secure export, unified prepareTrieOpts and expand to CheckpointTrie\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* trie: renamed _secure -> _hashKeys and _hash() -> _hashKeysFunction\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): always use `CheckpointDB` as internal database\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor: always support checkpointing\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor: prevent manual usage of `CheckpointDB` as option\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-08-24T11:46:13+02:00",
-          "tree_id": "8c39acada8b8adc674e29940ff10e7beb59ee809",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fffe4ab648855911c0a84b48e214a0843111aa67"
-        },
-        "date": 1661334533274,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23224,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22375,
-            "range": "±4.01%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22803,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22590,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20564,
-            "range": "±8.28%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.15%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b9ecb20600406b8f8f893328b0643505dd8800dc",
+          "message": "feat(trie): support manual setting of checkpoints (#2240)\n\n* refactor(trie): expose `CheckpointDB` via `database` function\r\n\r\n* refactor(trie): support manual setting of checkpoints\r\n\r\n* Update packages/trie/src/trie/trie.ts\r\n\r\n* Update checkpoint.ts",
+          "timestamp": "2022-09-01T13:21:20+02:00",
+          "tree_id": "091f2d5dbde4b49e7b00e39cb45d98c00712c0a6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b9ecb20600406b8f8f893328b0643505dd8800dc"
+        },
+        "date": 1662031428029,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20059,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19214,
+            "range": "±4.08%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19308,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17844,
+            "range": "±7.11%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19778,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
