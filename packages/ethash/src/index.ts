@@ -1,16 +1,13 @@
-import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  TWO_POW256,
   bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
-  isFalsy,
-  isTruthy,
   setLengthLeft,
-  TWO_POW256,
   zeros,
 } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 
 import {
@@ -23,7 +20,18 @@ import {
   getSeed,
   params,
 } from './util'
-const xor = require('buffer-xor')
+
+import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { AbstractLevel } from 'abstract-level'
+
+function xor(a: Buffer, b: Buffer) {
+  const len = Math.max(a.length, b.length)
+  const res = Buffer.alloc(len)
+  for (let i = 0; i < len; i++) {
+    res[i] = a[i] ^ b[i]
+  }
+  return res
+}
 
 export type Solution = {
   mixHash: Buffer
@@ -112,7 +120,7 @@ export class Miner {
     while (iterations !== 0 && !this.stopMining) {
       // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
-      const solution = await new Promise((resolve) => {
+      const solution: Solution | null = await new Promise((resolve) => {
         setTimeout(() => {
           const nonce = setLengthLeft(bigIntToBuffer(this.currentNonce), 8)
 
@@ -136,8 +144,8 @@ export class Miner {
         }, 0)
       })
 
-      if (isTruthy(solution)) {
-        return <Solution>solution
+      if (solution !== null) {
+        return solution
       }
     }
   }
@@ -206,11 +214,12 @@ export class Ethash {
   }
 
   run(val: Buffer, nonce: Buffer, fullSize?: number) {
-    if (isFalsy(fullSize) && isTruthy(this.fullSize)) {
-      fullSize = this.fullSize
-    }
-    if (isFalsy(fullSize)) {
-      throw new Error('fullSize needed')
+    if (fullSize === undefined) {
+      if (this.fullSize === undefined) {
+        throw new Error('fullSize needed')
+      } else {
+        fullSize = this.fullSize
+      }
     }
     const n = Math.floor(fullSize / params.HASH_BYTES)
     const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
@@ -311,7 +320,7 @@ export class Ethash {
           cacheSize: this.cacheSize,
           fullSize: this.fullSize,
           seed: this.seed,
-          cache: cache,
+          cache,
         },
         this.dbOpts
       )

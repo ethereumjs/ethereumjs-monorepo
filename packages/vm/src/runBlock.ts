@@ -1,21 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { EVMStateAccess } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  Address,
-  bigIntToBuffer,
-  bufArrToArr,
-  intToBuffer,
-  isTruthy,
-  short,
-} from '@ethereumjs/util'
+import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
+
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
@@ -24,7 +16,8 @@ import type {
   RunBlockResult,
   TxReceipt,
 } from './types'
-import { VM } from './vm'
+import type { VM } from './vm'
+import type { EVMStateAccess } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
 
@@ -52,8 +45,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   if (
     this._hardforkByBlockNumber ||
-    isTruthy(this._hardforkByTTD) ||
-    isTruthy(opts.hardforkByTTD)
+    this._hardforkByTTD !== undefined ||
+    opts.hardforkByTTD !== undefined
   ) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
@@ -102,7 +95,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
           result.bloom.bitvector.length
-        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
+        } bytes) receiptsRoot=${result.receiptsRoot.toString('hex')} receipts=${
           result.receipts.length
         } txResults=${result.results.length}`
       )
@@ -129,7 +122,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (generateFields) {
     const bloom = result.bloom.bitvector
     const gasUsed = result.gasUsed
-    const receiptTrie = result.receiptRoot
+    const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
     const blockData = {
@@ -138,10 +131,10 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
-    if (result.receiptRoot.equals(block.header.receiptTrie) === false) {
+    if (result.receiptsRoot.equals(block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
-          `Invalid receiptTrie received=${result.receiptRoot.toString(
+          `Invalid receiptTrie received=${result.receiptsRoot.toString(
             'hex'
           )} expected=${block.header.receiptTrie.toString('hex')}`
         )
@@ -182,11 +175,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   const results: RunBlockResult = {
     receipts: result.receipts,
+    logsBloom: result.bloom.bitvector,
     results: result.results,
     stateRoot,
     gasUsed: result.gasUsed,
-    logsBloom: result.bloom.bitvector,
-    receiptRoot: result.receiptRoot,
+    receiptsRoot: result.receiptsRoot,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -317,7 +310,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
-    receiptRoot: receiptTrie.root,
+    receiptsRoot: receiptTrie.root(),
     receipts,
     results: txResults,
   }
@@ -438,7 +431,7 @@ async function _genTxTrie(block: Block) {
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
-  return trie.root
+  return trie.root()
 }
 
 /**

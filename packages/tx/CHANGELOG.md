@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/CHANGELOG.md)).
+
+### Fixed Mainnet Merge HF Default
+
+Since this bug was so severe it gets its own section: `mainnet` in the underlying `@ethereumjs/common` library (`Chain.Mainnet`) was accidentally not updated yet to default to the `merge` HF (`Hardfork.Merge`) by an undiscovered overwrite back to `london`.
+
+This has been fixed in PR [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206) and `mainnet` now default to the `merge` as well.
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
+## 4.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This means that if this library is instantiated without providing an explicit `Common`, the `Merge` HF will be set as the default hardfork and the behavior of the library changes according to up-to-`Merge` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const tx = Transaction.fromTxData(
+  {
+    // Provide your tx data here or use default values
+  },
+  { common }
+)
+```
+
 ## 4.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/CHANGELOG.md)) for the main change set description.
@@ -122,6 +162,14 @@ Additionally the following deprecated methods/getters have been removed from the
 ### Reduced Bundle Size (MB -> KB)
 
 The bundle size of the library has been dramatically reduced going down from MBs to KBs due to a reworked genesis code handling throughout the library stack in PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) allowing the `Common` library to now ship without the bundled (large) genesis state definitions (especially for mainnet).
+
+### RLP Changes
+
+If you are dealing with RLP encoded data and use the EthereumJS RLP library for decoding, please note that RLP library also got a major update and has been renamed along the way from `rlp` to a namespaced `@ethereumjs/rlp`, see RLP `v4.0.0-beta.1` (and following) release notes in the [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#400-beta1---2022-06-30).
+
+If you are updating from v2 you will likely also stumble upon the fact that with `v3` RLP replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers.
+
+New conversion functions have also been added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
 
 ### Other Changes
 

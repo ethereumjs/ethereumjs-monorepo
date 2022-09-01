@@ -1,14 +1,16 @@
-import { Block, HeaderData } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { TypedTransaction } from '@ethereumjs/tx'
-import { Address, isTruthy, toBuffer, toType, TypeOutput } from '@ethereumjs/util'
+import { Address, TypeOutput, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
-import { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
-import { VM } from './vm'
+
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
+import type { VM } from './vm'
+import type { HeaderData } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 export class BlockBuilder {
   /**
@@ -68,7 +70,7 @@ export class BlockBuilder {
     for (const [i, tx] of this.transactions.entries()) {
       await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
     }
-    return trie.root
+    return trie.root()
   }
 
   /**
@@ -93,7 +95,7 @@ export class BlockBuilder {
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
       await receiptTrie.put(Buffer.from(RLP.encode(i)), encodedReceipt)
     }
-    return receiptTrie.root
+    return receiptTrie.root()
   }
 
   /**
@@ -102,9 +104,10 @@ export class BlockBuilder {
   private async rewardMiner() {
     const minerReward = this.vm._common.param('pow', 'minerReward')
     const reward = calculateMinerReward(minerReward, 0)
-    const coinbase = isTruthy(this.headerData.coinbase)
-      ? new Address(toBuffer(this.headerData.coinbase))
-      : Address.zero()
+    const coinbase =
+      this.headerData.coinbase !== undefined
+        ? new Address(toBuffer(this.headerData.coinbase))
+        : Address.zero()
     await rewardAccount(this.vm.eei, coinbase, reward)
   }
 

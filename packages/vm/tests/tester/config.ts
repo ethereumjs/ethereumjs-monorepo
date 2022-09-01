@@ -1,6 +1,5 @@
-import * as path from 'path'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+import * as path from 'path'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -173,7 +172,7 @@ const normalHardforks = [
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
 
-const transitionNetworks: any = {
+const transitionNetworks = {
   ByzantiumToConstantinopleFixAt5: {
     byzantium: 0,
     constantinople: 5,
@@ -218,7 +217,7 @@ const transitionNetworks: any = {
   },
 }
 
-const testLegacy: any = {
+const testLegacy = {
   chainstart: true,
   homestead: true,
   tangerineWhistle: true,
@@ -242,12 +241,15 @@ const testLegacy: any = {
 /**
  * Returns an array of dirs to run tests on
  * @param network (fork identifier)
- * @param {string} Test type (BlockchainTests/StateTests)
+ * @param testType (BlockchainTests/StateTests)
  */
 export function getTestDirs(network: string, testType: string) {
   const testDirs = [testType]
   for (const key in testLegacy) {
-    if (key.toLowerCase() === network.toLowerCase() && isTruthy(testLegacy[key])) {
+    if (
+      key.toLowerCase() === network.toLowerCase() &&
+      testLegacy[key as keyof typeof testLegacy] === true
+    ) {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
       testDirs.push('LegacyTests/Constantinople/' + testType)
@@ -258,12 +260,18 @@ export function getTestDirs(network: string, testType: string) {
 }
 /**
  * Setups the common with networks
- * @param targetNetwork Network target
+ * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
-  const networkLowercase = targetNetwork.toLowerCase()
+function setupCommonWithNetworks(network: string, ttd?: number) {
+  let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
+  if (network.includes('+')) {
+    const index = network.indexOf('+')
+    networkLowercase = network.slice(0, index).toLowerCase()
+  } else {
+    networkLowercase = network.toLowerCase()
+  }
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
@@ -308,7 +316,8 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
     },
     { eips: [3607] }
   )
-  const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+  // Activate EIPs
+  const eips = network.match(/(?<=\+)(.\d+)/g)
   if (eips) {
     common.setEIPs(eips.map((e: string) => parseInt(e)))
   }
@@ -317,23 +326,24 @@ function setupCommonWithNetworks(targetNetwork: string, ttd?: number) {
 
 /**
  * Returns a Common for the given network (a test parameter)
- * @param {String} network - the network field of a test.
+ * @param network - the network field of a test.
  * If this network has a `+` sign, it will also include these EIPs.
  * For instance, London+3855 will activate the network on the London hardfork, but will also activate EIP 3855.
- * Multiple EIPs can also be activated by seperating them with a `+` sign.
+ * Multiple EIPs can also be activated by separating them with a `+` sign.
  * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
- * @returns {Common} the Common which should be used
+ * @returns the Common which should be used
  */
-export function getCommon(targetNetwork: string) {
-  let network = targetNetwork
-  const networkLowercase = network.toLowerCase()
+export function getCommon(network: string): Common {
+  let networkLowercase = network.toLowerCase()
   if (network.includes('+')) {
     const index = network.indexOf('+')
-    network = network.slice(0, index)
+    networkLowercase = network.slice(0, index).toLowerCase()
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
-    return setupCommonWithNetworks(targetNetwork)
+    // Case 1: normal network, such as "London" or "Byzantium" (without any EIPs enabled, and it is not a transition network)
+    return setupCommonWithNetworks(network)
   } else if (networkLowercase.match('tomergeatdiff')) {
+    // Case 2: special case of a transition network, this setups the right common with the right Merge properties (TTD)
     // This is a HF -> Merge transition
     const start = networkLowercase.match('tomergeatdiff')!.index!
     const end = start + 'tomergeatdiff'.length
@@ -341,11 +351,14 @@ export function getCommon(targetNetwork: string) {
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
   } else {
-    // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
-    const transitionForks = isTruthy(transitionNetworks[network])
-      ? transitionNetworks[network]
-      : transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
-    if (isFalsy(transitionForks)) {
+    // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
+    const transitionForks =
+      network in transitionNetworks
+        ? transitionNetworks[network as keyof typeof transitionNetworks]
+        : transitionNetworks[
+            (network.charAt(0).toUpperCase() + network.slice(1)) as keyof typeof transitionNetworks
+          ]
+    if (transitionForks === undefined) {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
@@ -357,17 +370,18 @@ export function getCommon(targetNetwork: string) {
     for (const hf of hardforks) {
       if (mainnetCommon.gteHardfork(hf.name) === true) {
         // this hardfork should be activated at block 0
-        const forkBlockNumber = transitionForks[hf.name]
+        const forkBlockNumber = transitionForks[hf.name as keyof typeof transitionForks] as
+          | number
+          | null
+          | undefined
         testHardforks.push({
           name: hf.name,
-          // forkHash: hf.forkHash,
-          block: forkBlockNumber === null || isTruthy(forkBlockNumber) ? forkBlockNumber : 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+          block: forkBlockNumber ?? 0, // If hardfork isn't in transitionForks, activate at 0
         })
       } else {
         // disable the hardfork
         testHardforks.push({
           name: hf.name,
-          // forkHash: hf.forkHash,
           block: null,
         })
       }
@@ -379,12 +393,16 @@ export function getCommon(targetNetwork: string) {
       {
         baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
+        eips: [3607],
       }
     )
   }
 }
 
-const expectedTestsFull: any = {
+const expectedTestsFull: {
+  BlockchainTests: Record<string, number | undefined>
+  GeneralStateTests: Record<string, number | undefined>
+} = {
   BlockchainTests: {
     Chainstart: 4496,
     Homestead: 7321,
@@ -432,7 +450,10 @@ const expectedTestsFull: any = {
 /**
  * Returns the amount of expected tests for a given fork, assuming all tests are ran
  */
-export function getExpectedTests(fork: string, name: string) {
+export function getExpectedTests(
+  fork: string,
+  name: 'BlockchainTests' | 'GeneralStateTests'
+): number | undefined {
   if (expectedTestsFull[name] === undefined) {
     return
   }

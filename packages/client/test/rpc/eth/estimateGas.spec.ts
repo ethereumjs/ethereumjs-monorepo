@@ -6,9 +6,10 @@ import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import type { FullEthereumService } from '../../../lib/service'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_estimateGas'
 
@@ -67,7 +68,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contract
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)

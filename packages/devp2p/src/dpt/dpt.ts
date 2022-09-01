@@ -1,14 +1,16 @@
 import { randomBytes } from 'crypto'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import ms = require('ms')
-import { Debugger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 
 import { DNS } from '../dns'
 import { buffer2int, devp2pDebug, pk2id } from '../util'
+
 import { BanList } from './ban-list'
 import { KBucket } from './kbucket'
 import { Server as DPTServer } from './server'
+
+import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
@@ -106,7 +108,7 @@ export class DPT extends EventEmitter {
 
     this.privateKey = Buffer.from(privateKey)
     this._id = pk2id(Buffer.from(getPublicKey(this.privateKey, false)))
-    this._shouldFindNeighbours = options.shouldFindNeighbours === false ? false : true
+    this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
     this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s
     this._dnsRefreshQuantity = Math.floor((options.dnsRefreshQuantity ?? 25) / 2)
@@ -256,7 +258,7 @@ export class DPT extends EventEmitter {
       for (const peer of peers) {
         // Randomly distributed selector based on peer ID
         // to decide on subdivided execution
-        const selector = buffer2int((peer.id! as Buffer).slice(0, 1)) % 10
+        const selector = buffer2int((peer.id as Buffer).slice(0, 1)) % 10
         if (selector === this._refreshIntervalSelectionCounter) {
           this._server.findneighbours(peer, randomBytes(64))
         }

@@ -1,9 +1,9 @@
-import * as tape from 'tape'
-
-import * as td from 'testdouble'
 import { BlockHeader } from '@ethereumjs/block'
-import { Config } from '../../lib/config'
+import * as tape from 'tape'
+import * as td from 'testdouble'
+
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 
 tape('[SnapSynchronizer]', async (t) => {
   class PeerPool {
@@ -12,7 +12,7 @@ tape('[SnapSynchronizer]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  
+
   const { SnapSynchronizer } = await import('../../lib/sync/snapsync')
 
   t.test('should initialize correctly', async (t) => {

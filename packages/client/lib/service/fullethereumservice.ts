@@ -1,18 +1,21 @@
-import type { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
-import { Peer } from '../net/peer/peer'
-import { Protocol } from '../net/protocol'
-import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
+import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
-import { EthereumService, EthereumServiceOptions } from './ethereumservice'
+
+import { EthereumService } from './ethereumservice'
 import { TxPool } from './txpool'
+
+import type { Peer } from '../net/peer/peer'
+import type { Protocol } from '../net/protocol'
+import type { EthereumServiceOptions } from './ethereumservice'
+import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */
@@ -227,8 +230,8 @@ export class FullEthereumService extends EthereumService {
       const { reqId, block, max, skip, reverse } = message.data
       if (typeof block === 'bigint') {
         if (
-          (isTruthy(reverse) && block > this.chain.headers.height) ||
-          (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
+          (reverse === true && block > this.chain.headers.height) ||
+          (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
         ) {
           // Respond with an empty list in case the header is higher than the current height
           // This is to ensure Geth does not disconnect with "useless peer"
@@ -282,7 +285,7 @@ export class FullEthereumService extends EthereumService {
       let receiptsSize = 0
       for (const hash of hashes) {
         const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
-        if (isFalsy(blockReceipts)) continue
+        if (blockReceipts === undefined) continue
         receipts.push(...blockReceipts)
         const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
         receiptsSize += Buffer.byteLength(receiptsBuffer)
@@ -310,8 +313,8 @@ export class FullEthereumService extends EthereumService {
       } else {
         if (typeof block === 'bigint') {
           if (
-            (isTruthy(reverse) && block > this.chain.headers.height) ||
-            (isFalsy(reverse) && block + BigInt(max * skip) > this.chain.headers.height)
+            (reverse === true && block > this.chain.headers.height) ||
+            (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
           ) {
             // Don't respond to requests greater than the current height
             return

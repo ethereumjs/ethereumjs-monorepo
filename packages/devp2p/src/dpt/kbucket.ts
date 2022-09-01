@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
-import { isTruthy } from '@ethereumjs/util'
 import _KBucket = require('k-bucket')
-import { PeerInfo } from './dpt'
+
+import type { PeerInfo } from './dpt'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
@@ -24,12 +24,16 @@ export class KBucket extends EventEmitter {
     })
 
     this._kbucket.on('added', (peer: PeerInfo) => {
-      KBucket.getKeys(peer).forEach((key) => this._peers.set(key, peer))
+      for (const key of KBucket.getKeys(peer)) {
+        this._peers.set(key, peer)
+      }
       this.emit('added', peer)
     })
 
     this._kbucket.on('removed', (peer: PeerInfo) => {
-      KBucket.getKeys(peer).forEach((key) => this._peers.delete(key))
+      for (const key of KBucket.getKeys(peer)) {
+        this._peers.delete(key)
+      }
       this.emit('removed', peer)
     })
 
@@ -44,7 +48,8 @@ export class KBucket extends EventEmitter {
 
     const keys = []
     if (Buffer.isBuffer(obj.id)) keys.push(obj.id.toString('hex'))
-    if (isTruthy(obj.address) && isTruthy(obj.tcpPort)) keys.push(`${obj.address}:${obj.tcpPort}`)
+    if (obj.address !== undefined && typeof obj.tcpPort === 'number')
+      keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys
   }
 

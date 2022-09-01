@@ -1,30 +1,32 @@
-import { promisify } from 'util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import AsyncEventEmitter = require('async-eventemitter')
 import {
-  Account,
   Address,
+  KECCAK256_NULL,
+  MAX_INTEGER,
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
-  isFalsy,
-  isTruthy,
-  KECCAK256_NULL,
-  MAX_INTEGER,
   short,
   zeros,
 } from '@ethereumjs/util'
+import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
+import { promisify } from 'util'
 
 import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
-import { Interpreter, InterpreterOpts, RunState } from './interpreter'
-import { Message, MessageWithTo } from './message'
-import { getOpcodesForHF, OpcodeList, OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './precompiles'
+import { Interpreter } from './interpreter'
+import { Message } from './message'
+import { getOpcodesForHF } from './opcodes'
+import { getActivePrecompiles } from './precompiles'
 import { TransientStorage } from './transientStorage'
-import {
+
+import type { InterpreterOpts, RunState } from './interpreter'
+import type { MessageWithTo } from './message'
+import type { OpHandler, OpcodeList } from './opcodes'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type {
   Block,
   CustomOpcode,
   EEIInterface,
@@ -36,6 +38,7 @@ import {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
+import type { Account } from '@ethereumjs/util'
 import { EEIDummy } from './eei/eeiDummy'
 
 const debug = createDebugLogger('evm')
@@ -135,7 +138,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
+export class EVM implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -147,6 +150,8 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   public eei: EEIInterface
 
   public readonly _transientStorage: TransientStorage
+
+  public readonly events: AsyncEventEmitter<EVMEvents>
 
   /**
    * This opcode data is always set since `getActiveOpcodes()` is called in the constructor
@@ -219,7 +224,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    super()
+    this.events = new AsyncEventEmitter<EVMEvents>()
 
     this._optsCached = opts
 
@@ -298,7 +303,9 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>promisify(this.emit.bind(this))
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
   }
 
   protected async init(): Promise<void> {
@@ -364,7 +371,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -476,13 +483,13 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     }
 
     let exit = false
-    if (isFalsy(message.code) || message.code.length === 0) {
+    if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -569,7 +576,7 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
         if (this.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
-        result = { ...result, ...OOGResult(message.gasLimit) }
+        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
         if (this.DEBUG) {
@@ -588,8 +595,8 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
     // Save code if a new contract was created
     if (
       !result.exceptionError &&
-      isTruthy(result.returnValue) &&
-      result.returnValue.toString() !== ''
+      result.returnValue !== undefined &&
+      result.returnValue.length !== 0
     ) {
       await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
@@ -696,10 +703,12 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        // if skipBalance, add `value` to caller balance to ensure sufficient funds
         const callerAccount = await this.eei.getAccount(caller)
-        callerAccount.balance += value
-        await this.eei.putAccount(caller, callerAccount)
+        if (callerAccount.balance < value) {
+          // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
+          callerAccount.balance = value
+          await this.eei.putAccount(caller, callerAccount)
+        }
       }
 
       message = new Message({
@@ -768,7 +777,10 @@ export class EVM extends AsyncEventEmitter<EVMEvents> implements EVMInterface {
       result.execResult.gasRefund = BigInt(0)
     }
     if (err) {
-      if (this._common.gteHardfork(Hardfork.Homestead) || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (
+        this._common.gteHardfork(Hardfork.Homestead) ||
+        err.error !== ERROR.CODESTORE_OUT_OF_GAS
+      ) {
         result.execResult.logs = []
         await this.eei.revert()
         this._transientStorage.revert()
@@ -1007,6 +1019,14 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
     returnValue: Buffer.alloc(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasUsed,
+    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
 }
 

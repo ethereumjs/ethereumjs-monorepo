@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -10,8 +9,7 @@ tape('Berlin: EIP 2315 tests', (t) => {
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0
     const vm = await VM.create({ common })
-
-    ;(<EVM>vm.evm).on('step', function (step: any) {
+    vm.evm.events!.on('step', function (step: any) {
       if (test.steps.length > 0) {
         st.equal(step.pc, test.steps[i].expectedPC)
         st.equal(step.opcode.name, test.steps[i].expectedOpcode)

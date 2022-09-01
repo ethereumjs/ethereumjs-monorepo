@@ -2,14 +2,13 @@
  * @module util
  */
 import { platform } from 'os'
-import { isFalsy } from '@ethereumjs/util'
 
 import { version as packageVersion } from '../../package.json'
 
 export * from '../../lib/util/parse'
 
 export function short(buf: Buffer | string): string {
-  if (isFalsy(buf)) return ''
+  if (buf === null || buf === undefined || buf === '') return ''
   const bufStr = Buffer.isBuffer(buf) ? `0x${buf.toString('hex')}` : buf
   let str = bufStr.substring(0, 6) + '…'
   if (bufStr.length === 66) {

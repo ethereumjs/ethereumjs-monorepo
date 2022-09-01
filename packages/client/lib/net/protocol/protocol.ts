@@ -1,9 +1,8 @@
-import { isTruthy } from '@ethereumjs/util'
-
-import { Config } from '../../config'
-import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
-import { Sender } from './sender'
+
+import type { Config } from '../../config'
+import type { Peer } from '../peer/peer'
+import type { Sender } from './sender'
 
 export interface ProtocolOptions {
   config: Config
@@ -73,12 +72,12 @@ export class Protocol {
         reject(new Error(`Handshake timed out after ${this.timeout}ms`))
       }, this.timeout)
       const handleStatus = (status: any) => {
-        if (isTruthy(timeout)) {
+        if (timeout !== null && timeout !== 0) {
           clearTimeout(timeout)
           resolve(this.decodeStatus(status))
         }
       }
-      if (isTruthy(sender.status)) {
+      if (sender.status !== undefined && sender.status !== null && sender.status !== 0) {
         handleStatus(sender.status)
       } else {
         sender.once('status', handleStatus)
@@ -117,7 +116,7 @@ export class Protocol {
   /**
    * Decodes status message payload into a status object.  Must be implemented
    * by subclass.
-   * @param status status message payload
+   * @param _status status message payload
    */
   decodeStatus(_status: any): Object {
     throw new Error('Unimplemented')
@@ -139,7 +138,6 @@ export class Protocol {
    * Decodes message payload
    * @param message message definition
    * @param payload message payload
-   * @param bound reference to bound protocol
    */
   decode(message: Message, payload: any): any {
     if (message.decode) {
@@ -158,8 +156,8 @@ export class Protocol {
     const bound = new BoundProtocol({
       config: this.config,
       protocol: this,
-      peer: peer,
-      sender: sender,
+      peer,
+      sender,
     })
     // Handshake only when snap, else
     if (this.name !== 'snap') {

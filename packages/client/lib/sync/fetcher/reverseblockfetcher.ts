@@ -1,9 +1,11 @@
-import type { Block } from '@ethereumjs/block'
-
 import { Event } from '../../types'
-import { errSyncMerged, Skeleton } from '../skeleton'
+import { errSyncMerged } from '../skeleton'
+
 import { BlockFetcher } from './blockfetcher'
-import { BlockFetcherOptions } from './blockfetcherbase'
+
+import type { Skeleton } from '../skeleton'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
+import type { Block } from '@ethereumjs/block'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
   /** Skeleton */
@@ -39,7 +41,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
       )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
-      if (e == errSyncMerged) {
+      if (e === errSyncMerged) {
         // Tear down the syncer to restart from new subchain segments
         this.debug('Skeleton subchains merged, restarting sync')
         this.running = false
@@ -54,5 +56,17 @@ export class ReverseBlockFetcher extends BlockFetcher {
         throw e
       }
     }
+  }
+
+  processStoreError(
+    error: Error,
+    _task: JobTask
+  ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
+    const stepBack = BigInt(0)
+    const destroyFetcher = !(error.message as string).includes(
+      `Blocks don't extend canonical subchain`
+    )
+    const banPeer = true
+    return { destroyFetcher, banPeer, stepBack }
   }
 }

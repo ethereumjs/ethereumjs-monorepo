@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)).
+
+### Fixed Mainnet Merge HF Default
+
+Since this bug was so severe it gets its own section: `mainnet` in the underlying `@ethereumjs/common` library (`Chain.Mainnet`) was accidentally not updated yet to default to the `merge` HF (`Hardfork.Merge`) by an undiscovered overwrite back to `london`.
+
+This has been fixed in PR [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206) and `mainnet` now default to the `merge` as well.
+
+### Other Changes
+
+- New `skipConsensusFormatValidation` option to skip consensus-related format validation checks (e.g. `extraData` checks on a `PoA` block), PRs [#2139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2139) and [#2209](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2209)
+- Do not auto-activate `hardforkByBlockNumber` in static BlockHeader `fromRLPSerializedHeader()` constructor, PR [#2205](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2205)
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
+## 4.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This means that if this library is instantiated without providing an explicit `Common`, the `Merge` HF will be set as the default hardfork and the library will behave according to the HF rules up to the `Merge`.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const block = Block.fromBlockData(
+  {
+    // Provide your block data here or use default values
+  },
+  { common }
+)
+```
+
+## Other Changes
+
+- **Breaking**: rename `hardforkByTD` option to `hardforkByTTD`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- Set `hardforkByBlockNumber` to `true` on RLP block constructor, PR [#2081](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2081)
+
 ## 4.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)) for the main change set description.
@@ -162,6 +212,14 @@ Additionally some methods have been renamed (same PR):
 - `Block(Header).canonicalDifficulty()` -> `Block(Header).ethashCanonicalDifficulty()`
 
 The internal format validation in `BlockHeader` has been reworked a bit as well, `_validateHeaderFields()` (normally private method) has been renamed and split up into `_genericFormatValidation()` as well as `_consensusFormatValidation()` with all consensus-specific validation tasks. This should simplify subclassing use cases if e.g. specific own consensus validation code is needed while the generic validation logic should be preserved.
+
+### RLP Changes
+
+If you are dealing with RLP encoded data and use the EthereumJS RLP library for decoding, please note that RLP library also got a major update and has been renamed along the way from `rlp` to a namespaced `@ethereumjs/rlp`, see RLP `v4.0.0-beta.1` (and following) release notes in the [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#400-beta1---2022-06-30).
+
+If you are updating from v2 you will likely also stumble upon the fact that with `v3` RLP replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers.
+
+New conversion functions have also been added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
 
 ### Other Changes
 

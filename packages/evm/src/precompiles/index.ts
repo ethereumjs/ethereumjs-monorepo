@@ -1,5 +1,5 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import { Address, isTruthy } from '@ethereumjs/util'
+import { Hardfork } from '@ethereumjs/common'
+import { Address } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover'
 import { precompile02 } from './02-sha256'
@@ -20,6 +20,8 @@ import { precompile10 } from './10-bls12-pairing'
 import { precompile11 } from './11-bls12-map-fp-to-g1'
 import { precompile12 } from './12-bls12-map-fp2-to-g2'
 import { PrecompileFunc, PrecompileInput } from './types'
+
+import type { Common } from '@ethereumjs/common'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -147,12 +149,12 @@ const precompileAvailability: PrecompileAvailability = {
 
 function getPrecompile(address: Address, common: Common): PrecompileFunc {
   const addr = address.buf.toString('hex')
-  if (isTruthy(precompiles[addr])) {
+  if (precompiles[addr] !== undefined) {
     const availability = precompileAvailability[addr]
     if (
-      (availability.type == PrecompileAvailabilityCheck.Hardfork &&
+      (availability.type === PrecompileAvailabilityCheck.Hardfork &&
         common.gteHardfork(availability.param)) ||
-      (availability.type == PrecompileAvailabilityCheck.EIP &&
+      (availability.type === PrecompileAvailabilityCheck.EIP &&
         common.eips().includes(availability.param))
     ) {
       return precompiles[addr]
@@ -191,7 +193,7 @@ function getActivePrecompiles(
     }
     const address = new Address(Buffer.from(addressString, 'hex'))
     const precompileFunc = getPrecompile(address, common)
-    if (isTruthy(precompileFunc)) {
+    if (precompileFunc !== undefined) {
       precompileMap.set(addressString, precompileFunc)
     }
   }

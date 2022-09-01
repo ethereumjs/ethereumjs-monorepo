@@ -1,9 +1,12 @@
-import { DPT as Devp2pDPT, Peer as Devp2pRLPxPeer, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 
 import { Event } from '../../types'
 import { RlpxPeer } from '../peer/rlpxpeer'
-import { Server, ServerOptions } from './server'
+
+import { Server } from './server'
+
+import type { ServerOptions } from './server'
+import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */
@@ -86,7 +89,7 @@ export class RlpxServer extends Server {
    */
   getRlpxInfo() {
     // TODO: return undefined? note that this.rlpx might be undefined if called before initRlpx
-    if (isFalsy(this.rlpx)) {
+    if (this.rlpx === undefined || this.rlpx === null) {
       return {
         enode: undefined,
         id: undefined,
@@ -98,7 +101,7 @@ export class RlpxServer extends Server {
     const id = this.rlpx._id.toString('hex')
     return {
       enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
-      id: id,
+      id,
       ip: this.ip,
       listenAddr: `[${this.ip}]:${this.config.port}`,
       ports: { discovery: this.config.port, listener: this.config.port },
@@ -218,7 +221,7 @@ export class RlpxServer extends Server {
         resolve()
       })
 
-      if (isTruthy(this.config.port)) {
+      if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
     })
@@ -247,7 +250,7 @@ export class RlpxServer extends Server {
           protocols: Array.from(this.protocols),
           // @ts-ignore: Property 'server' does not exist on type 'Socket'.
           // TODO: check this error
-          inbound: isTruthy(rlpxPeer._socket?.server),
+          inbound: rlpxPeer._socket.server !== undefined,
         })
         try {
           await peer.accept(rlpxPeer, this)
@@ -271,9 +274,9 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:error', (rlpxPeer: any, error: Error) => {
-        const peerId = isTruthy(rlpxPeer) && rlpxPeer.getId()
-        if (isFalsy(peerId)) {
+      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => {
+        const peerId = rlpxPeer.getId()
+        if (peerId === null) {
           return this.error(error)
         }
         this.error(error)
@@ -289,7 +292,7 @@ export class RlpxServer extends Server {
         resolve()
       })
 
-      if (isTruthy(this.config.port)) {
+      if (typeof this.config.port === 'number') {
         this.rlpx.listen(this.config.port, '0.0.0.0')
       }
     })

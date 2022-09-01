@@ -15,31 +15,32 @@ import {
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
 import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
 import { stripHexPrefix } from './internal'
-import { BigIntLike, BufferLike, isTruthy } from './types'
+
+import type { BigIntLike, BufferLike } from './types'
 
 const _0n = BigInt(0)
 
 export interface AccountData {
   nonce?: BigIntLike
   balance?: BigIntLike
-  stateRoot?: BufferLike
+  storageRoot?: BufferLike
   codeHash?: BufferLike
 }
 
 export class Account {
   nonce: bigint
   balance: bigint
-  stateRoot: Buffer
+  storageRoot: Buffer
   codeHash: Buffer
 
   static fromAccountData(accountData: AccountData) {
-    const { nonce, balance, stateRoot, codeHash } = accountData
+    const { nonce, balance, storageRoot, codeHash } = accountData
 
     return new Account(
-      isTruthy(nonce) ? bufferToBigInt(toBuffer(nonce)) : undefined,
-      isTruthy(balance) ? bufferToBigInt(toBuffer(balance)) : undefined,
-      isTruthy(stateRoot) ? toBuffer(stateRoot) : undefined,
-      isTruthy(codeHash) ? toBuffer(codeHash) : undefined
+      nonce !== undefined ? bufferToBigInt(toBuffer(nonce)) : undefined,
+      balance !== undefined ? bufferToBigInt(toBuffer(balance)) : undefined,
+      storageRoot !== undefined ? toBuffer(storageRoot) : undefined,
+      codeHash !== undefined ? toBuffer(codeHash) : undefined
     )
   }
 
@@ -54,19 +55,19 @@ export class Account {
   }
 
   public static fromValuesArray(values: Buffer[]) {
-    const [nonce, balance, stateRoot, codeHash] = values
+    const [nonce, balance, storageRoot, codeHash] = values
 
-    return new Account(bufferToBigInt(nonce), bufferToBigInt(balance), stateRoot, codeHash)
+    return new Account(bufferToBigInt(nonce), bufferToBigInt(balance), storageRoot, codeHash)
   }
 
   /**
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating an Account from varying data types.
    */
-  constructor(nonce = _0n, balance = _0n, stateRoot = KECCAK256_RLP, codeHash = KECCAK256_NULL) {
+  constructor(nonce = _0n, balance = _0n, storageRoot = KECCAK256_RLP, codeHash = KECCAK256_NULL) {
     this.nonce = nonce
     this.balance = balance
-    this.stateRoot = stateRoot
+    this.storageRoot = storageRoot
     this.codeHash = codeHash
 
     this._validate()
@@ -79,8 +80,8 @@ export class Account {
     if (this.balance < _0n) {
       throw new Error('balance must be greater than zero')
     }
-    if (this.stateRoot.length !== 32) {
-      throw new Error('stateRoot must have a length of 32')
+    if (this.storageRoot.length !== 32) {
+      throw new Error('storageRoot must have a length of 32')
     }
     if (this.codeHash.length !== 32) {
       throw new Error('codeHash must have a length of 32')
@@ -94,7 +95,7 @@ export class Account {
     return [
       bigIntToUnpaddedBuffer(this.nonce),
       bigIntToUnpaddedBuffer(this.balance),
-      this.stateRoot,
+      this.storageRoot,
       this.codeHash,
     ]
   }
@@ -156,7 +157,7 @@ export const toChecksumAddress = function (
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
-  if (isTruthy(eip1191ChainId)) {
+  if (eip1191ChainId !== undefined) {
     const chainId = bufferToBigInt(toBuffer(eip1191ChainId))
     prefix = chainId.toString() + '0x'
   }
@@ -339,4 +340,20 @@ export const isZeroAddress = function (hexAddress: string): boolean {
 
   const zeroAddr = zeroAddress()
   return zeroAddr === hexAddress
+}
+
+/**
+ * Converts a slim account RLP to a normal account RLP
+ */
+export function convertSlimAccount(body: any) {
+  const cpy = [body[0], body[1], body[2], body[3]]
+  if (arrToBufArr(body[2]).length === 0) {
+    // StorageRoot
+    cpy[2] = KECCAK256_RLP
+  }
+  if (arrToBufArr(body[3]).length === 0) {
+    // CodeHash
+    cpy[3] = KECCAK256_NULL
+  }
+  return arrToBufArr(RLP.encode(cpy))
 }

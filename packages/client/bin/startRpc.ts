@@ -1,17 +1,17 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
-import { readFileSync, writeFileSync } from 'fs-extra'
-import { Server as RPCServer } from 'jayson/promise'
+import { readFileSync, writeFileSync } from 'fs'
 
-import { EthereumClient } from '../lib/client'
-import { Config } from '../lib/config'
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
 import {
+  MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-  MethodConfig,
 } from '../lib/util'
+
+import type { EthereumClient } from '../lib/client'
+import type { Config } from '../lib/config'
+import type { Server as RPCServer } from 'jayson/promise'
 
 type RPCArgs = {
   rpc: boolean
@@ -37,11 +37,11 @@ type RPCArgs = {
  */
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret
-  if (isTruthy(jwtFilePath)) {
+  if (jwtFilePath !== undefined) {
     const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
-    if (isFalsy(jwtSecretHex) || jwtSecretHex.length !== 64) {
+    if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
     config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)

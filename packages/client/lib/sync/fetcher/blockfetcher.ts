@@ -1,10 +1,14 @@
-import { Block, BlockBuffer } from '@ethereumjs/block'
-import { isFalsy, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
+import { Block } from '@ethereumjs/block'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
 
-import { Peer } from '../../net/peer'
 import { Event } from '../../types'
-import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import { Job } from './types'
+
+import { BlockFetcherBase } from './blockfetcherbase'
+
+import type { Peer } from '../../net/peer'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
+import type { Job } from './types'
+import type { BlockBuffer } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher
@@ -41,14 +45,18 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       max: count,
       reverse: this.reverse,
     })
-    if (isFalsy(headersResult) || headersResult[1].length === 0) {
+    if (!Array.isArray(headersResult) || headersResult[1].length === 0) {
       // Catch occasional null or empty responses
       this.debug(`Peer ${peerInfo} returned no headers for blocks=${blocksRange}`)
       return []
     }
     const headers = headersResult[1]
-    const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
-    if (isFalsy(bodiesResult) || isFalsy(bodiesResult[1]) || bodiesResult[1].length === 0) {
+    const bodiesResult = await peer?.eth?.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
+    if (
+      !Array.isArray(bodiesResult) ||
+      !Array.isArray(bodiesResult[1]) ||
+      bodiesResult[1].length === 0
+    ) {
       // Catch occasional null or empty responses
       this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
       return []
@@ -58,10 +66,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
     )
     const blocks: Block[] = []
-    const blockOpts = {
-      common: this.config.chainCommon,
-      hardforkByBlockNumber: true,
-    }
     for (const [i, [txsData, unclesData]] of bodies.entries()) {
       if (
         (!headers[i].transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
@@ -73,7 +77,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         return []
       }
       const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
-      blocks.push(Block.fromValuesArray(values, blockOpts))
+      // Supply the common from the corresponding block header already set on correct fork
+      blocks.push(Block.fromValuesArray(values, { common: headers[i]._common }))
     }
     return blocks
   }

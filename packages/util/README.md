@@ -8,11 +8,15 @@
 
 A collection of utility functions for Ethereum. It can be used in Node.js and in the browser with [browserify](http://browserify.org/).
 
-# INSTALL
+## Installation
 
-`npm install @ethereumjs/util`
+To obtain the latest version, simply require the project using `npm`:
 
-# USAGE
+```shell
+npm install @ethereumjs/util
+```
+
+## Usage
 
 ```js
 import assert from 'assert'
@@ -23,9 +27,9 @@ assert.ok(isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'))
 assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
 ```
 
-# API
+## API
 
-## Documentation
+### Documentation
 
 Read the [API docs](docs/).
 
@@ -74,19 +78,17 @@ The following methods are available by an internalized version of the [ethjs-uti
 
 They can be imported by name:
 
-```js
+```typescript
 import { stripHexPrefix } from '@ethereumjs/util'
 ```
 
-# EthereumJS
+## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+## License
 
-# LICENSE
-
-MPL-2.0
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
 [util-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/util.svg
 [util-npm-link]: https://www.npmjs.org/package/@ethereumjs/util

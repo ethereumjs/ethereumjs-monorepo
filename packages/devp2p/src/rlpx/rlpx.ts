@@ -1,16 +1,20 @@
+import { debug as createDebugLogger } from 'debug'
+import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
+import * as LRUCache from 'lru-cache'
+import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
-import ms = require('ms')
-import { Common } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
-import * as LRUCache from 'lru-cache'
 
-import { DPT, PeerInfo } from '../dpt'
 import { buffer2int, createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
-import { Capabilities, DISCONNECT_REASONS, Peer } from './peer'
+
+import { DISCONNECT_REASONS, Peer } from './peer'
+
+import type { DPT, PeerInfo } from '../dpt'
+import type { Capabilities } from './peer'
+import type { Common } from '@ethereumjs/common'
+import type { Debugger } from 'debug'
+
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
 
@@ -74,7 +78,7 @@ export class RLPx extends EventEmitter {
     this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
-        if (isFalsy(peer.tcpPort)) {
+        if (peer.tcpPort === null || peer.tcpPort === undefined) {
           this._dpt!.banPeer(peer, ms('5m'))
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
@@ -103,9 +107,10 @@ export class RLPx extends EventEmitter {
     this._server.on('error', (err) => this.emit('error', err))
     this._server.on('connection', (socket) => this._onConnect(socket, null))
     const serverAddress = this._server.address()
-    this._debug = isTruthy(serverAddress)
-      ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(serverAddress as string)
-      : devp2pDebug.extend(DEBUG_BASE_NAME)
+    this._debug =
+      serverAddress !== null
+        ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(serverAddress as string)
+        : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRUCache({ max: 25000 })
@@ -134,7 +139,7 @@ export class RLPx extends EventEmitter {
   }
 
   async connect(peer: PeerInfo) {
-    if (isFalsy(peer.tcpPort) || isFalsy(peer.address)) return
+    if (peer.tcpPort === undefined || peer.tcpPort === null || peer.address === undefined) return
     this._isAliveCheck()
 
     if (!Buffer.isBuffer(peer.id)) throw new TypeError('Expected peer.id as Buffer')
@@ -199,7 +204,7 @@ export class RLPx extends EventEmitter {
     this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
     const peer: Peer = new Peer({
-      socket: socket,
+      socket,
       remoteId: peerId,
       privateKey: this._privateKey,
       id: this._id,
@@ -244,14 +249,14 @@ export class RLPx extends EventEmitter {
     })
 
     peer.once('close', (reason, disconnectWe) => {
-      if (isTruthy(disconnectWe)) {
+      if (disconnectWe === true) {
         this._debug(
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`,
           `disconnect`
         )
       }
 
-      if (isFalsy(disconnectWe) && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
+      if (disconnectWe !== true && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
         // hack
         if (this._getOpenQueueSlots() > 0) {
           this._peersQueue.push({

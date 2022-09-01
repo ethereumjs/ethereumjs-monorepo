@@ -1,13 +1,17 @@
-import { isTruthy } from '@ethereumjs/util'
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
-import { Multiaddr, multiaddr } from 'multiaddr'
+import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 
-import { Event, Libp2pConnection as Connection } from '../../types'
+import { Event } from '../../types'
 import { Libp2pPeer } from '../peer'
 import { Libp2pNode } from '../peer/libp2pnode'
-import { Server, ServerOptions } from './server'
+
+import { Server } from './server'
+
+import type { Libp2pConnection as Connection } from '../../types'
+import type { ServerOptions } from './server'
+import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */
@@ -61,7 +65,7 @@ export class Libp2pServer extends Server {
         addresses,
         bootnodes: this.bootnodes,
       })
-      this.protocols.forEach(async (p) => {
+      for (const p of this.protocols) {
         const protocol = `/${p.name}/${p.versions[0]}`
         this.node!.handle(protocol, async ({ connection, stream }) => {
           const [peerId] = this.getPeerInfo(connection)
@@ -71,7 +75,7 @@ export class Libp2pServer extends Server {
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
         })
-      })
+      }
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
       const id = peerId.toB58String()
@@ -137,7 +141,7 @@ export class Libp2pServer extends Server {
    */
   isBanned(peerId: string): boolean {
     const expireTime = this.banned.get(peerId)
-    if (isTruthy(expireTime) && expireTime > Date.now()) {
+    if (typeof expireTime === 'number' && expireTime !== 0 && expireTime > Date.now()) {
       return true
     }
     this.banned.delete(peerId)

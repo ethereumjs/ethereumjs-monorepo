@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/CHANGELOG.md)).
+
+### Fixed Mainnet Merge HF Default
+
+Since this bug was so severe it gets its own section: `mainnet` in Common (`Chain.Mainnet`) was accidentally not updated yet to default to the `merge` HF (`Hardfork.Merge`) by an undiscovered overwrite back to `london`.
+
+This has been fixed in PR [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206) and `mainnet` now default to the `merge` as well.
+
+### Other Changes
+
+- Mainnet Merge `TTD` `58750000000000000000000` has been added to the `mainnet` chain configuration, PR [#2185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2185)
+- **Eventually breaking:** `Common` now throws on instantiation if a passed-in chain configuration has a HF defined with `block` set to `undefined` (use `null` for non-applied HFs), PR [#2228](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2228)
+- The `Kovan` `PoA` testnet chain is EOL and has been removed from the chain configuration, [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206)
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
+## 3.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default for the Common library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+If you want instantiate the library with an explicit HF set you can do:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+```
+
+## Other Changes
+
+- **Breaking:** renamed `td` (terminal total difficulty for the Merge HF) HF parameter in HF JSON files to `ttd`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- **Breaking:** renamed `hardforkTD()` method to `hardforkTTD()`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- **Breaking:** renamed `td` parameter in `HardforkConfig` interface to `ttd`, PR [#2075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2075)
+- Set `goerli` Merge TTD to 10790000, PR [#2079](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2079)
+- Update `mergeForkIdTransition` Merge transition HF (separate "artificial" HF construct only for networking layer) for `sepolia`, PR [#2098](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2098)
+
 ## 3.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/CHANGELOG.md)) for the main change set description.

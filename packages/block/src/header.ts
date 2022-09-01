@@ -1,14 +1,10 @@
-import {
-  Chain,
-  CliqueConfig,
-  Common,
-  ConsensusAlgorithm,
-  ConsensusType,
-  Hardfork,
-} from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  TypeOutput,
   arrToBufArr,
   bigIntToBuffer,
   bigIntToHex,
@@ -18,18 +14,16 @@ import {
   bufferToHex,
   ecrecover,
   ecsign,
-  isFalsy,
-  isTruthy,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
   toType,
-  TypeOutput,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import { valuesArrayToHeaderData } from './helpers'
+
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { CliqueConfig } from '@ethereumjs/common'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -95,20 +89,9 @@ export class BlockHeader {
    */
   public static fromRLPSerializedHeader(serializedHeaderData: Buffer, opts: BlockOptions = {}) {
     const values = arrToBufArr(RLP.decode(Uint8Array.from(serializedHeaderData)))
-
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
     }
-
-    // If an RLP serialized block header is provided and no `hardforkByBlockNumber` opt is provided, default true to
-    // avoid scenarios where no `opts.common` or `opts.hardforkByBlockNumber` is provided and a serialized blockheader
-    // is provided that predates London result in a default base fee being added to the block
-    // (resulting in an erroneous block hash since the default `common` hardfork is London and the blockheader constructor
-    // adds a default basefee if EIP-1559 is active and no basefee is provided in the `headerData`)
-    if (opts.hardforkByTTD === undefined) {
-      opts.hardforkByBlockNumber = opts.hardforkByBlockNumber ?? true
-    }
-
     return BlockHeader.fromValuesArray(values as Buffer[], opts)
   }
 
@@ -119,62 +102,17 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
-    const [
-      parentHash,
-      uncleHash,
-      coinbase,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      logsBloom,
-      difficulty,
-      number,
-      gasLimit,
-      gasUsed,
-      timestamp,
-      extraData,
-      mixHash,
-      nonce,
-      baseFeePerGas,
-    ] = values
-
-    if (values.length > 16) {
-      throw new Error('invalid header. More values than expected were received')
-    }
-    if (values.length < 15) {
-      throw new Error('invalid header. Less values than expected were received')
-    }
-
+    const headerData = valuesArrayToHeaderData(values)
+    const { number, baseFeePerGas } = headerData
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number)) {
+      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number! as Buffer)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-
-    return new BlockHeader(
-      {
-        parentHash,
-        uncleHash,
-        coinbase,
-        stateRoot,
-        transactionsTrie,
-        receiptTrie,
-        logsBloom,
-        difficulty,
-        number,
-        gasLimit,
-        gasUsed,
-        timestamp,
-        extraData,
-        mixHash,
-        nonce,
-        baseFeePerGas,
-      },
-      opts
-    )
+    return BlockHeader.fromHeaderData(headerData, opts)
   }
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -198,6 +136,7 @@ export class BlockHeader {
       )
     }
 
+    const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -219,9 +158,9 @@ export class BlockHeader {
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
     const uncleHash = toType(headerData.uncleHash, TypeOutput.Buffer) ?? defaults.uncleHash
-    const coinbase = isTruthy(headerData.coinbase)
-      ? new Address(toType(headerData.coinbase, TypeOutput.Buffer))
-      : defaults.coinbase
+    const coinbase = new Address(
+      toType(headerData.coinbase ?? defaults.coinbase, TypeOutput.Buffer)
+    )
     const stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
     const transactionsTrie =
       toType(headerData.transactionsTrie, TypeOutput.Buffer) ?? defaults.transactionsTrie
@@ -302,7 +241,7 @@ export class BlockHeader {
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
-    this._consensusFormatValidation()
+    if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -342,18 +281,8 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId() === BigInt(Chain.Kovan)) {
-        if (nonce.length !== 65) {
-          const msg = this._errorMsg(
-            `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
-          )
-          throw new Error(msg)
-        }
-      } else {
-        const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-        throw new Error(msg)
-      }
+      const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      throw new Error(msg)
     }
 
     // check if the block used too much gas
@@ -369,9 +298,13 @@ export class BlockHeader {
         throw new Error(msg)
       }
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      if (isTruthy(londonHfBlock) && this.number === londonHfBlock) {
+      if (
+        typeof londonHfBlock === 'bigint' &&
+        londonHfBlock !== BigInt(0) &&
+        this.number === londonHfBlock
+      ) {
         const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (this.baseFeePerGas! !== initialBaseFee) {
+        if (this.baseFeePerGas !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
@@ -473,7 +406,11 @@ export class BlockHeader {
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (isTruthy(londonHardforkBlock) && this.number === londonHardforkBlock) {
+    if (
+      typeof londonHardforkBlock === 'bigint' &&
+      londonHardforkBlock !== BigInt(0) &&
+      this.number === londonHardforkBlock
+    ) {
       const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
@@ -843,7 +780,7 @@ export class BlockHeader {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
-    if (isFalsy(DAOActivationBlock) || this.number < DAOActivationBlock) {
+    if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
     const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')

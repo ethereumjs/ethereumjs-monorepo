@@ -34,7 +34,7 @@ This method returns the right transaction.
 
 #### Defined in
 
-[transactionFactory.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L85)
+[transactionFactory.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L86)
 
 ___
 
@@ -57,7 +57,7 @@ This method tries to decode serialized data.
 
 #### Defined in
 
-[transactionFactory.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L51)
+[transactionFactory.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L52)
 
 ___
 
@@ -80,4 +80,4 @@ Create a transaction from a `txData` object
 
 #### Defined in
 
-[transactionFactory.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L24)
+[transactionFactory.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L25)

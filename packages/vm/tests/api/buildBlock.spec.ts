@@ -6,6 +6,7 @@ import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
+
 import { setBalance } from './utils'
 
 tape('BlockBuilder', async (t) => {
@@ -49,7 +50,7 @@ tape('BlockBuilder', async (t) => {
     }
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptRoot.equals(block.header.receiptTrie))
+    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
@@ -287,7 +288,7 @@ tape('BlockBuilder', async (t) => {
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptRoot.equals(block.header.receiptTrie))
+    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
@@ -383,7 +384,7 @@ tape('BlockBuilder', async (t) => {
     }
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptRoot.equals(block.header.receiptTrie))
+    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()

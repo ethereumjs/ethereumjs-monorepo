@@ -4,6 +4,7 @@ import * as tape from 'tape'
 
 import { Ethash } from '../src'
 import { getCacheSize, getEpoc, getFullSize } from '../src/util'
+
 const powTests = require('./ethash_tests.json')
 
 const ethash = new Ethash()

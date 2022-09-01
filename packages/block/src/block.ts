@@ -1,19 +1,20 @@
-import { Common, ConsensusType } from '@ethereumjs/common'
+import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Capability,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  TransactionFactory,
-  TxOptions,
-  TypedTransaction,
-} from '@ethereumjs/tx'
-import { arrToBufArr, bufArrToArr, bufferToHex, isTruthy, KECCAK256_RLP } from '@ethereumjs/util'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BlockHeader } from './header'
-import { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { Common } from '@ethereumjs/common'
+import type {
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TxOptions,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 
 /**
  * An object that represents the block.
@@ -50,13 +51,17 @@ export class Block {
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
-      ...opts, // This potentially overwrites hardforkByBlocknumber
+      ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // Uncles are obsolete post-merge (no use for hardforkByTTD)
+      // This potentially overwrites hardforkBy options but we will set them cleanly just below
       hardforkByTTD: undefined,
+    }
+    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
+    if (opts?.hardforkByTTD !== undefined) {
+      uncleOpts.hardforkByBlockNumber = true
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -99,7 +104,7 @@ export class Block {
 
     // parse transactions
     const transactions = []
-    for (const txData of isTruthy(txsData) ? txsData : []) {
+    for (const txData of txsData ?? []) {
       transactions.push(
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
@@ -113,16 +118,19 @@ export class Block {
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
-      ...opts, // This potentially overwrites hardforkByBlocknumber
+      ...opts,
       // Use header common in case of hardforkByBlockNumber being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
+      // This potentially overwrites hardforkBy options but we will set them cleanly just below
+      hardforkByTTD: undefined,
     }
-    if (isTruthy(uncleOpts.hardforkByTTD)) {
-      delete uncleOpts.hardforkByBlockNumber
+    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
+    if (opts?.hardforkByTTD !== undefined) {
+      uncleOpts.hardforkByBlockNumber = true
     }
-    for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
+    for (const uncleHeaderData of uhsData ?? []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
@@ -223,10 +231,10 @@ export class Block {
       return result
     }
 
-    if (this.txTrie.root.equals(KECCAK256_RLP)) {
+    if (this.txTrie.root().equals(KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root.equals(this.header.transactionsTrie)
+    result = this.txTrie.root().equals(this.header.transactionsTrie)
     return result
   }
 
@@ -240,7 +248,8 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    this.transactions.forEach((tx, i) => {
+    // eslint-disable-next-line prefer-const
+    for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -258,7 +267,7 @@ export class Block {
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
-    })
+    }
 
     return stringError ? errors : errors.length === 0
   }

@@ -1,21 +1,16 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common } from '@ethereumjs/common'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import { Address, isTruthy } from '@ethereumjs/util'
-import type { IncomingMessage } from 'connect'
-import { HttpServer, Server as RPCServer } from 'jayson/promise'
+import { Address } from '@ethereumjs/util'
+import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
-import * as tape from 'tape'
 
 import { Chain } from '../../lib/blockchain/chain'
-import type { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
 import { VMExecution } from '../../lib/execution'
 import { getLogger } from '../../lib/logging'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { RPCManager as Manager } from '../../lib/rpc'
-import type { FullEthereumService } from '../../lib/service'
 import { TxPool } from '../../lib/service/txpool'
 import { Event } from '../../lib/types'
 import {
@@ -24,7 +19,16 @@ import {
   parseCustomParams,
   parseGenesisState,
 } from '../../lib/util'
+
 import { mockBlockchain } from './mockBlockchain'
+
+import type { EthereumClient } from '../../lib/client'
+import type { FullEthereumService } from '../../lib/service'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { IncomingMessage } from 'connect'
+import type { HttpServer } from 'jayson/promise'
+import type * as tape from 'tape'
+
 const request = require('supertest')
 
 const config: any = {}
@@ -40,11 +44,12 @@ export function startRPC(
 ) {
   const { port, wsServer } = opts
   const server = new RPCServer(methods)
-  const httpServer = isTruthy(wsServer)
-    ? createWsRPCServerListener({ server, withEngineMiddleware })
-    : createRPCServerListener({ server, withEngineMiddleware })
+  const httpServer =
+    wsServer === true
+      ? createWsRPCServerListener({ server, withEngineMiddleware })
+      : createRPCServerListener({ server, withEngineMiddleware })
   if (!httpServer) throw Error('Could not create server')
-  if (isTruthy(port)) httpServer.listen(port)
+  if (port !== undefined) httpServer.listen(port)
   return httpServer
 }
 
@@ -76,7 +81,7 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
-  if (isTruthy(chain._headers)) {
+  if (chain._headers !== undefined) {
     chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
   }
 
@@ -92,7 +97,7 @@ export function createClient(clientOpts: any = {}) {
 
   config.syncTargetHeight = clientOpts.syncTargetHeight
 
-  const synchronizer: any = {
+  const synchronizer = {
     startingBlock: 0,
     best: () => {
       return undefined
@@ -103,8 +108,8 @@ export function createClient(clientOpts: any = {}) {
   }
 
   let execution
-  if (isTruthy(clientOpts.includeVM)) {
-    const metaDB: any = isTruthy(clientOpts.enableMetaDB) ? new MemoryLevel() : undefined
+  if (clientOpts.includeVM === true) {
+    const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
 
@@ -142,7 +147,7 @@ export function createClient(clientOpts: any = {}) {
     },
   }
 
-  if (isTruthy(clientOpts.includeVM)) {
+  if (clientOpts.includeVM === true) {
     client.services[0].txPool = new TxPool({ config, service: client.services[0] })
   }
 

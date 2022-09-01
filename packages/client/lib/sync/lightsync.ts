@@ -1,12 +1,14 @@
-import type { BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy } from '@ethereumjs/util'
 
-import { Peer } from '../net/peer/peer'
 import { Event } from '../types'
 import { short } from '../util'
+
 import { HeaderFetcher } from './fetcher'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import { Synchronizer } from './sync'
+
+import type { Peer } from '../net/peer/peer'
+import type { SynchronizerOptions } from './sync'
+import type { BlockHeader } from '@ethereumjs/block'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -28,16 +30,15 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   get fetcher(): HeaderFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof HeaderFetcher)){
-      throw Error(`Invalid Fetcher, expected HeaderFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof HeaderFetcher)) {
+      throw Error(`Invalid Fetcher, expected HeaderFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: HeaderFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: HeaderFetcher | null) {
+    this._fetcher = fetcher
   }
-
 
   /**
    * Open synchronizer. Must be called before sync() is called
@@ -103,7 +104,11 @@ export class LightSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
-    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < height) {
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight < height
+    ) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }

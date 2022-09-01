@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
-import { Chain } from '../blockchain'
-import { Config } from '../config'
-import { Peer } from '../net/peer/peer'
-import { PeerPool } from '../net/peerpool'
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
 import { short } from '../util'
-import { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+
+import type { Chain } from '../blockchain'
+import type { Config } from '../config'
+import type { Peer } from '../net/peer/peer'
+import type { PeerPool } from '../net/peerpool'
+import type { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -83,12 +83,12 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null{
-    return this._fetcher;
+  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+    return this._fetcher
   }
 
-  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -144,7 +144,7 @@ export abstract class Synchronizer {
    * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
-    if (isFalsy(this.config.syncTargetHeight)) {
+    if (this.config.syncTargetHeight === undefined || this.config.syncTargetHeight === BigInt(0)) {
       return
     }
     if (this.chain.headers.height >= this.config.syncTargetHeight) {
@@ -182,7 +182,7 @@ export abstract class Synchronizer {
       const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
-        const heightStr = isTruthy(height) ? ` height=${height}` : ''
+        const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
         this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)

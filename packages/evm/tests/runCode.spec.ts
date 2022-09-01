@@ -1,7 +1,7 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
+
 import { getEEI } from './utils'
 
 const STOP = '00'
@@ -45,13 +45,13 @@ tape('VM.runCode: initial program counter', async (t) => {
       err = e
     }
 
-    if (isTruthy(testData.error)) {
-      err = isTruthy(err) ? err.message : 'no error thrown'
+    if (testData.error !== undefined) {
+      err = err?.message ?? 'no error thrown'
       t.equal(err, testData.error, 'error message should match')
       err = false
     }
 
-    t.assert(isFalsy(err))
+    t.assert(err === false || err === undefined)
   }
 })
 

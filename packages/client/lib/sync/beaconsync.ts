@@ -1,13 +1,15 @@
-import type { Block } from '@ethereumjs/block'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+import { Event } from '../types'
+import { short } from '../util'
+
+import { ReverseBlockFetcher } from './fetcher'
+import { errSyncReorged } from './skeleton'
+import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
-import { Event } from '../types'
-import { short } from '../util'
-import { ReverseBlockFetcher } from './fetcher'
-import { errSyncReorged, Skeleton } from './skeleton'
-import { Synchronizer, SynchronizerOptions } from './sync'
+import type { Skeleton } from './skeleton'
+import type { SynchronizerOptions } from './sync'
+import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -45,14 +47,14 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   get fetcher(): ReverseBlockFetcher | null {
-    if(this._fetcher!==null && !(this._fetcher instanceof ReverseBlockFetcher)){
-      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`);
+    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+      throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
-    return this._fetcher;
+    return this._fetcher
   }
 
-  set fetcher(fetcher: ReverseBlockFetcher | null){
-    this._fetcher = fetcher;
+  set fetcher(fetcher: ReverseBlockFetcher | null) {
+    this._fetcher = fetcher
   }
 
   /**
@@ -68,7 +70,7 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     const subchain = this.skeleton.bounds()
-    if (isTruthy(subchain)) {
+    if (subchain !== undefined) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
     }
@@ -188,7 +190,7 @@ export class BeaconSynchronizer extends Synchronizer {
       )
       return true
     } catch (error) {
-      if (error == errSyncReorged) {
+      if (error === errSyncReorged) {
         this.config.logger.debug(
           `Beacon sync reorged, new head number=${block.header.number} hash=${short(
             block.header.hash()
@@ -210,7 +212,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (!isTruthy(this.skeleton.bounds()) || (await this.skeleton.isLinked())) {
+    if (this.skeleton.bounds() === undefined || (await this.skeleton.isLinked())) {
       this.clearFetcher()
       return false
     }
@@ -219,7 +221,11 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = latest.number
-    if (isFalsy(this.config.syncTargetHeight) || this.config.syncTargetHeight < latest.number) {
+    if (
+      typeof this.config.syncTargetHeight !== 'bigint' ||
+      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight < latest.number
+    ) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
@@ -237,7 +243,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = tail - this.chain.blocks.height - BigInt(1)
     }
 
-    if (count > BigInt(0) && (!isTruthy(this.fetcher) || isTruthy(this.fetcher.errored))) {
+    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
       )
@@ -280,7 +286,7 @@ export class BeaconSynchronizer extends Synchronizer {
     // Execute single block when within 50 blocks of head if skeleton not filling,
     // otherwise run execution in batch of 50 blocks when filling canonical chain.
     const shouldRunOnlyBatched = !(
-      isTruthy(this.skeleton.bounds()) &&
+      this.skeleton.bounds() !== undefined &&
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {

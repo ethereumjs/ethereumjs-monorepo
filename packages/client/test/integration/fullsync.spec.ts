@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { Event } from '../../lib/types'
+
 import { destroy, setup, wait } from './util'
 
 tape('[Integration:FullSync]', async (t) => {

@@ -22,7 +22,7 @@ Header data for the block
 
 #### Defined in
 
-[types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L99)
+[types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 #### Defined in
 
-[types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)
+[types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
 
 ___
 
@@ -42,4 +42,4 @@ ___
 
 #### Defined in
 
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
+[types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)

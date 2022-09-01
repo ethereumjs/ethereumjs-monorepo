@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md)).
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
+## 4.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md)).
+
+### New Package Name
+
+**Attention!** This library has been renamed along this release and moved to the scoped package name format already used for most of the other EthereumJS libraries, see PR [#2092](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2092). In this case the library is renamed as follows:
+
+- `rlp` -> `@ethereumjs/rlp`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/rlp
+```
+
 ## 4.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md)) for the main change set description.
@@ -65,6 +91,14 @@ The above TypeScript options provide some semantic sugar like allowing to write 
 While this is convenient, it deviates from the ESM specification and forces downstream users into using these options, which might not be desirable, see [this TypeScript Semver docs section](https://www.semver-ts.org/#module-interop) for some more detailed argumentation.
 
 Along with the breaking releases we have therefore deactivated both of these options and you might therefore need to adapt some import statements accordingly. Note that you still can activate these options in your bundle and/or transpilation pipeline (but now you also have the option _not_ to, which you didn't have before).
+
+### Uint8Array / Buffer Removal
+
+This is technically not a change from the v4 version as it was already introduced in v3, but since a lot of people will likely update from a v2 `RLP` version, we will also mention it here:
+
+The v3 release replaces Buffers as input and output values in favor of Uint8Arrays for improved performance and greater compatibility with browsers, see `v3.0.0` [release notes](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/CHANGELOG.md#300---2022-01-27).
+
+There are new conversion functions added to the `@ethereumjs/util` library, see [RLP docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#buffer-compatibility) on how to use and do the conversion.
 
 ## 3.0.0 - 2022-01-27
 

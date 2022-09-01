@@ -1,10 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -17,7 +17,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 opcode', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
       if (typeof stack !== 'undefined') {
         st.fail('should only do PUSH0 once')
       }
@@ -29,7 +29,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10),
     })
 
-    st.ok(stack!.length == 1)
+    st.ok(stack!.length === 1)
     st.equal(stack![0], BigInt(0))
     st.equal(result.executionGasUsed, common.param('gasPrices', 'push0'))
     st.end()
@@ -38,8 +38,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('should correctly use push0 to create a stack with stack limit length', async (st) => {
     const vm = await VM.create({ common })
     let stack: bigint[] = []
-
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
       stack = e.stack
     })
 
@@ -50,12 +49,12 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.ok(stack.length == depth)
-    stack.forEach((elem: bigint) => {
+    st.ok(stack.length === depth)
+    for (const elem of stack) {
       if (elem !== BigInt(0)) {
         st.fail('stack element is not 0')
       }
-    })
+    }
     st.equal(result.executionGasUsed, common.param('gasPrices', 'push0')! * BigInt(depth))
     st.end()
   })

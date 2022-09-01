@@ -1,19 +1,21 @@
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
+import { Buffer } from 'buffer'
 import * as tape from 'tape'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
-import { VMOpts } from '../../src'
 import { VM } from '../../src/vm'
 import { isRunningInKarma } from '../util'
+
 import * as testnet from './testdata/testnet.json'
 import * as testnet2 from './testdata/testnet2.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils'
+
+import type { VMOpts } from '../../src'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
  * Tests for the main constructor API and
@@ -35,18 +37,18 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
     const vm = await VM.create()
     st.ok(vm.stateManager)
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), Hardfork.London, 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.Merge, 'it has correct default HF')
     st.end()
   })
 
   t.test('should be able to activate precompiles', async (st) => {
     const vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has different root'
     )
@@ -87,10 +89,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should only accept valid chain and fork', async (st) => {
     let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     let vm = await VM.create({ common })
-    st.equal(
-      (vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'),
-      BigInt(500)
-    )
+    st.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
@@ -174,7 +173,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
   t.test('should instantiate', async (st) => {
     const vm = await setupVM()
     st.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
+      (vm.stateManager as DefaultStateManager)._trie.root(),
       KECCAK256_RLP,
       'it has default trie'
     )
@@ -264,7 +263,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
     await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

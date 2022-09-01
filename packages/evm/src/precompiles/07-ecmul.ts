@@ -1,12 +1,11 @@
-import { isFalsy } from '@ethereumjs/util'
+import { OOGResult } from '../evm'
 
-import { ExecResult, OOGResult } from '../evm'
-import { PrecompileInput } from './types'
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
+
 const bn128 = require('rustbn.js')
 
 export function precompile07(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const inputData = opts.data
   const gasUsed = opts._common.param('gasPrices', 'ecMul')
 

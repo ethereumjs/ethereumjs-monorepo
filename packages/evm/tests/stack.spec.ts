@@ -3,6 +3,7 @@ import * as tape from 'tape'
 
 import { EVM } from '../src'
 import { Stack } from '../src/stack'
+
 import { createAccount, getEEI } from './utils'
 
 tape('Stack', (t) => {
@@ -154,7 +155,7 @@ tape('Stack', (t) => {
     await eei.putContractCode(addr, Buffer.from(code, 'hex'))
     await eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
-      caller: caller,
+      caller,
       gasLimit: BigInt(0xffffffffff),
       to: addr,
       value: BigInt(1),

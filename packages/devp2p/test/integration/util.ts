@@ -1,9 +1,10 @@
-import { Chain, Common } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
-import * as test from 'tape'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-import { Capabilities, DPT, ETH, genPrivateKey, RLPx } from '../../src'
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import * as testdata from '../testdata.json'
+
+import type { Capabilities } from '../../src'
+import type * as test from 'tape'
 
 type Test = test.Test
 
@@ -76,15 +77,15 @@ export function getTestRLPXs(
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common({ chain: Chain.Mainnet })
+    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   }
   const dpts = getTestDPTs(numRLPXs)
 
   for (let i = 0; i < numRLPXs; ++i) {
     const rlpx = new RLPx(dpts[i].privateKey, {
       dpt: dpts[i],
-      maxPeers: maxPeers,
-      capabilities: capabilities,
+      maxPeers,
+      capabilities,
       common: common.constructor === Array ? common[i] : (common as Common),
       listenPort: basePort + i,
     })
@@ -125,13 +126,13 @@ export function twoPeerMsgExchange(
     protocol.sendStatus(opts.status0) // (1 ->)
 
     protocol.once('status', () => {
-      if (isTruthy(opts.onOnceStatus0)) opts.onOnceStatus0(rlpxs, protocol)
+      if (opts.onOnceStatus0 !== undefined) opts.onOnceStatus0(rlpxs, protocol)
     }) // (-> 2)
     protocol.on('message', async (code: any, payload: any) => {
-      if (isTruthy(opts.onOnMsg0)) opts.onOnMsg0(rlpxs, protocol, code, payload)
+      if (opts.onOnMsg0 !== undefined) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: Error) => {
-      if (isTruthy(opts.onPeerError0)) {
+      if (opts.onPeerError0 !== undefined) {
         opts.onPeerError0(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 0 error: ${err}`)
@@ -150,10 +151,10 @@ export function twoPeerMsgExchange(
           protocol.sendStatus(opts.status1) // (2 ->)
           break
       }
-      if (isTruthy(opts.onOnMsg1)) opts.onOnMsg1(rlpxs, protocol, code, payload)
+      if (opts.onOnMsg1 !== undefined) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: any) => {
-      if (isTruthy(opts.onPeerError1)) {
+      if (opts.onPeerError1 !== undefined) {
         opts.onPeerError1(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 1 error: ${err}`)
@@ -242,7 +243,7 @@ export function twoPeerMsgExchange3(
       opts.receiveMessage(rlpxs, protocol, code, payload)
     })
     peer.on('error', (err: any) => {
-      if (isTruthy(opts.onPeerError1)) {
+      if (opts.onPeerError1 !== false) {
         opts.onPeerError1(err, rlpxs)
       } else {
         t.fail(`Unexpected peer 1 error: ${err}`)

@@ -1,10 +1,9 @@
-import { isTruthy } from '@ethereumjs/util'
-import { Multiaddr } from 'multiaddr'
-
-import { Config } from '../../config'
-import { DnsNetwork, KeyLike, MultiaddrLike } from '../../types'
 import { parseKey, parseMultiaddrs } from '../../util/parse'
-import { Protocol } from '../protocol/protocol'
+
+import type { Config } from '../../config'
+import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types'
+import type { Protocol } from '../protocol/protocol'
+import type { Multiaddr } from 'multiaddr'
 
 export interface ServerOptions {
   /* Config */
@@ -43,8 +42,8 @@ export class Server {
    */
   constructor(options: ServerOptions) {
     this.config = options.config
-    this.key = isTruthy(options.key) ? parseKey(options.key) : this.config.key
-    this.bootnodes = isTruthy(options.bootnodes) ? parseMultiaddrs(options.bootnodes) : []
+    this.key = options.key !== undefined ? parseKey(options.key) : this.config.key
+    this.bootnodes = options.bootnodes !== undefined ? parseMultiaddrs(options.bootnodes) : []
     this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000
 
@@ -104,7 +103,9 @@ export class Server {
       this.config.logger.error('Cannot require protocols after server has been started')
       return false
     }
-    protocols.forEach((p) => this.protocols.add(p))
+    for (const p of protocols) {
+      this.protocols.add(p)
+    }
     return true
   }
 

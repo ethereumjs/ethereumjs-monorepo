@@ -5,6 +5,7 @@ import * as tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { baseRequest, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
+
 import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getLogs'

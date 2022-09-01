@@ -28,14 +28,14 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
       - run: npm run coverage
       - run: npm run test:API:browser
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
@@ -52,7 +52,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:selectedForks
@@ -69,7 +69,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
@@ -84,7 +84,7 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm i
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run build:benchmarks

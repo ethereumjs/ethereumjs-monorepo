@@ -5,6 +5,7 @@ import * as tape from 'tape'
 
 import { EVM } from '../src'
 import { ERROR } from '../src/exceptions'
+
 import { getEEI } from './utils'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
@@ -29,7 +30,7 @@ tape('Create where FROM account nonce is 0', async (t) => {
 
 /*
     This test:
-        Setups a contract at address 0x00..ff 
+        Setups a contract at address 0x00..ff
         Instantiates the EVM at the Constantinople fork
         Calls the address with various arguments (callvalue is used as argument). VMs `runCall` is used.
         The CREATE2 address which the contract creates is checked against the expected CREATE2 value.
@@ -66,7 +67,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address
       value: BigInt(value), // call with this value (the value is used in the contract as an argument, see above's code)
@@ -116,7 +117,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   const code = '600160011B00'
   /*
       code:             remarks: (top of the stack is at the zero index)
-        PUSH1 0x01  
+        PUSH1 0x01
         PUSH1 0x01
         SHL
         STOP
@@ -126,7 +127,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   await eeiConstantinople.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address
   }
@@ -158,19 +159,19 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const code = '61000260005561000160005500'
   /*
       idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
-      code:             
+      code:
         PUSH2 0x0002
         PUSH1 0x00
         SSTORE              -> make storage slot 0 "dirty"
         PUSH2 0x0001
-        PUSH1 0x00          
+        PUSH1 0x00
         SSTORE              -> -> restore it to the original storage value (refund sstoreCleanRefundEIP2200)
         STOP
-      gas cost: 
+      gas cost:
         4x PUSH                                         12
         2x SSTORE (slot is nonzero, so charge 5000): 10000
         net                                          10012
-      gas refund 
+      gas refund
         sstoreCleanRefundEIP2200                      4200
       gas used
                                                      10012 - 4200 = 5812
@@ -186,7 +187,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -214,7 +215,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -242,7 +243,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
@@ -275,7 +276,7 @@ tape(
 
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(200),
     }
@@ -284,7 +285,7 @@ tape(
 
     t.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
     t.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    t.ok(result.execResult.exceptionError!.error == ERROR.OUT_OF_GAS, 'call went out of gas')
+    t.ok(result.execResult.exceptionError!.error === ERROR.OUT_OF_GAS, 'call went out of gas')
 
     t.end()
   }
@@ -307,7 +308,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     to: address,
     gasLimit: BigInt(0xffffffffff),
   }
@@ -374,7 +375,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   for (const callData of data) {
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(0xffffffffff),
       value: BigInt(callData.value),
@@ -404,7 +405,7 @@ tape(
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
         CODE:
-          PUSH 0 
+          PUSH 0
           DUP1
           DUP1
           CREATE -> Stack is now [0,0,0] ([value, offset, length])
@@ -421,7 +422,7 @@ tape(
 
     // setup the call arguments
     const runCallArgs = {
-      caller: caller, // call address
+      caller, // call address
       to: address,
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     }
@@ -430,7 +431,7 @@ tape(
     let storage = await eei.getContractStorage(address, slot)
 
     // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-    t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
+    t.ok(!storage.equals(emptyBuffer), 'successfully created contract')
 
     await evm.runCall(runCallArgs)
 
@@ -464,7 +465,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
+    caller, // call address
     gasLimit: BigInt(150000),
     data: Buffer.from(code, 'hex'),
     gasPrice: BigInt(70000000000),
@@ -546,5 +547,31 @@ tape('runCall() -> skipBalance behavior', async (t) => {
     res2.execResult.exceptionError?.error,
     'insufficient balance',
     'runCall reverts when insufficient sender balance and skipBalance is false'
+  )
+})
+
+tape('runCall() => allows to detect for max code size deposit errors', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  // setup the evm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller, // call address
+    gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    // Simple test, PUSH <big number> PUSH 0 RETURN
+    // It tries to deploy a contract too large, where the code is all zeros
+    // (since memory which is not allocated/resized to yet is always defaulted to 0)
+    data: Buffer.from('62FFFFFF6000F3', 'hex'),
+  }
+
+  const result = await evm.runCall(runCallArgs)
+  t.equal(
+    result.execResult.exceptionError?.error,
+    ERROR.CODESIZE_EXCEEDS_MAXIMUM,
+    'reported error is correct'
   )
 })

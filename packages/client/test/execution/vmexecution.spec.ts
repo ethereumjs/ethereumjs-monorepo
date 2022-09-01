@@ -6,8 +6,8 @@ import * as tape from 'tape'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { VMExecution } from '../../lib/execution'
-import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import blocksDataGoerli = require('../testdata/blocks/goerli.json')
+import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import testnet = require('../testdata/common/testnet.json')
 
 tape('[VMExecution]', async (t) => {

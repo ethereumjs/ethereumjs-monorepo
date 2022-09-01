@@ -1,24 +1,19 @@
-import { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import {
-  Account,
-  Address,
-  bigIntToHex,
-  bufferToBigInt,
-  intToHex,
-  isFalsy,
-  isTruthy,
-  MAX_UINT64,
-} from '@ethereumjs/util'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
-import { EVM, EVMResult } from './evm'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Message } from './message'
-import { AsyncOpHandler, Opcode, OpHandler, trap } from './opcodes'
+import { trap } from './opcodes'
 import { Stack } from './stack'
-import { Block, EEIInterface, Log } from './types'
+
+import type { EVM, EVMResult } from './evm'
+import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
+import type { Block, EEIInterface, Log } from './types'
+import type { Common } from '@ethereumjs/common'
+import type { Account, Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -137,7 +132,7 @@ export class Interpreter {
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,
-      env: env,
+      env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
@@ -250,7 +245,7 @@ export class Interpreter {
       gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._evm.listenerCount('step') > 0 || this._evm.DEBUG) {
+    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
@@ -832,7 +827,7 @@ export class Interpreter {
 
     // Set return value
     if (
-      isTruthy(results.execResult.returnValue) &&
+      results.execResult.returnValue !== undefined &&
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
@@ -949,7 +944,7 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (isFalsy(this._result.selfdestruct[this._env.address.buf.toString('hex')])) {
+    if (this._result.selfdestruct[this._env.address.buf.toString('hex')] === undefined) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 

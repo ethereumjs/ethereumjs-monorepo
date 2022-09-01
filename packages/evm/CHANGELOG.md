@@ -6,6 +6,74 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.0.0-rc.1 - 2022-08-29
+
+Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)).
+
+### Fixed Mainnet Merge HF Default
+
+Since this bug was so severe it gets its own section: `mainnet` in the underlying `@ethereumjs/common` library (`Chain.Mainnet`) was accidentally not updated yet to default to the `merge` HF (`Hardfork.Merge`) by an undiscovered overwrite back to `london`.
+
+This has been fixed in PR [#2206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2206) and `mainnet` now default to the `merge` as well.
+
+### Removed AsyncEventEmitter / New events Property
+
+This is the biggest EVM change in this release. The inheritance structure of the EVM has been reworked and the `EVM` class has been freed from being a child class of `AsyncEventEmitter` and inheriting all its properties and methods in favor of a new `events` property cleanly separating all events logic from the core `EVM`, see PR [#2235](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2235).
+
+This allows for an easier typing of the `EVM` and makes the core EVM class leaner and not overloaded with various other partly unused properties. The new `events` property is optional.
+
+Usage code of events needs to be slighly adopted and updated from:
+
+```typescript
+evm.on('step', (e) => {
+  // Do something
+}
+```
+
+To:
+
+```typescript
+evm.events.on('step', (e) => {
+  // Do something
+}
+```
+
+### Other Changes
+
+- Reworked/adjusted `skipBalance` option semantics, PR [#2138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2138)
+- Fixed an event signature typing bug, PR [#2184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2184)
+
+### Maintenance Updates
+
+- Added `engine` field to `package.json` limiting Node versions to v14 or higher, PR [#2164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2164)
+- Replaced `nyc` (code coverage) configurations with `c8` configurations, PR [#2192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2192)
+- Code formats improvements by adding various new linting rules, see Issue [#1935](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1935)
+
+## 1.0.0-beta.3 - 2022-08-10
+
+Beta 3 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)).
+
+### Merge Hardfork Default
+
+Since the Merge HF is getting close we have decided to directly jump on the `Merge` HF (before: `Istanbul`) as default in the underlying `@ethereumjs/common` library and skip the `London` default HF as we initially intended to set (see Beta 1 CHANGELOG), see PR [#2087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2087).
+
+This means that if this library is instantiated without providing an explicit `Common`, the `Merge` HF will be set as the default hardfork and the behavior of the library changes according to up-to-`Merge` HF rules.
+
+If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+```
+
+## Other Changes
+
+- Ensure EVM runs when nonce is 0, PR [#2054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2054)
+- EVM/VM instantiation fixes, PR [#2078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2078)
+- Moved `@types/async-eventemitter` from devDependencis to dependencies, PR [#2077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2077)
+- Added additional exports `EvmErrorMessage`, `ExecResult`, `InterpreterStep`, `Message`, PR [#2063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2063)
+
 ## 1.0.0-beta.2 - 2022-07-15
 
 Beta 2 release for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)) for the main change set description.

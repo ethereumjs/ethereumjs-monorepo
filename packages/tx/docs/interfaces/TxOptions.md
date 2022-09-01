@@ -28,7 +28,7 @@ Current default hardfork: `istanbul`
 
 #### Defined in
 
-[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L52)
+[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
 
 ___
 
@@ -48,4 +48,4 @@ Default: true
 
 #### Defined in
 
-[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L64)
+[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)

@@ -6,9 +6,10 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import type { FullEthereumService } from '../../../lib/service'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
+
+import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_getTransactionCount'
 
@@ -63,7 +64,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   block.transactions[0] = tx
 
   let ranBlock: Block | undefined = undefined
-  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
   await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   await vm.blockchain.putBlock(ranBlock!)
 

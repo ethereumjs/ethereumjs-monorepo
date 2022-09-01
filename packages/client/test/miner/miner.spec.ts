@@ -1,9 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { CliqueConsensus } from '@ethereumjs/blockchain'
-import { Chain as CommonChain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -13,9 +11,12 @@ import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Miner } from '../../lib/miner'
 import { FullEthereumService } from '../../lib/service'
-import type { FullSynchronizer } from '../../lib/sync'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
+
+import type { FullSynchronizer } from '../../lib/sync'
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
+import type { VM } from '@ethereumjs/vm'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -229,12 +230,12 @@ tape('[Miner]', async (t) => {
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
-      get: function () {
+      get() {
         return { latest: block.header }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get: function () {
+      get() {
         return { latest: block }
       },
     })
@@ -278,12 +279,12 @@ tape('[Miner]', async (t) => {
     const gasLimit = 100000
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
-      get: function () {
+      get() {
         return { latest: block.header, height: BigInt(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
-      get: function () {
+      get() {
         return { latest: block, height: BigInt(0) }
       },
     })

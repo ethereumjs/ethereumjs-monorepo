@@ -1,14 +1,15 @@
-import { Readable, Writable } from 'stream'
-import { debug as createDebugLogger, Debugger } from 'debug'
+import { debug as createDebugLogger } from 'debug'
 import Heap = require('qheap')
-import { isTruthy } from '@ethereumjs/util'
+import { Readable, Writable } from 'stream'
 
-import { Config } from '../../config'
-import { Peer } from '../../net/peer'
-import { PeerPool } from '../../net/peerpool'
 import { Event } from '../../types'
-import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
-import { Job } from './types'
+
+import type { Config } from '../../config'
+import type { Peer } from '../../net/peer'
+import type { PeerPool } from '../../net/peerpool'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
+import type { Job } from './types'
+import type { Debugger } from 'debug'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -130,6 +131,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param result fetch result
    */
   abstract store(_result: StorageItem[]): Promise<void>
+
+  /**
+   * Process the error and evaluate if fetcher is to be destroyed, peer banned and if there
+   * is any stepback
+   */
+  abstract processStoreError(
+    _error: Error,
+    _task: JobTask | BlockFetcherJobTask
+  ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint }
 
   /**
    * Generate list of tasks to fetch
@@ -260,12 +270,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
     error?: Error,
     irrecoverable?: boolean,
-    dequeued?: boolean
+    dequeued?: boolean,
+    banPeer?: boolean
   ) {
     const jobItems = job instanceof Array ? job : [job]
-    if (irrecoverable === true) {
+    if (irrecoverable === true || banPeer === true) {
       this.pool.ban(jobItems[0].peer!, this.banTime)
-    } else {
+    }
+    if (!(irrecoverable === true)) {
       void this.wait().then(() => {
         jobItems[0].peer!.idle = true
       })
@@ -396,22 +408,19 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
-        if (
-          (error.message as string).includes('could not find parent header') &&
-          this.isBlockFetcherJobTask(jobItems[0].task)
-        ) {
+        const { destroyFetcher, banPeer, stepBack } = this.processStoreError(
+          error,
+          jobItems[0].task
+        )
+        if (!destroyFetcher && this.isBlockFetcherJobTask(jobItems[0].task)) {
           // Non-fatal error: ban peer and re-enqueue job.
           // Modify the first job so that it is enqueued from safeReorgDistance as most likely
           // this is because of a reorg.
-          let stepBack = jobItems[0].task.first - BigInt(1)
-          if (stepBack > BigInt(this.config.safeReorgDistance)) {
-            stepBack = BigInt(this.config.safeReorgDistance)
-          }
           this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
           jobItems[0].task.first -= stepBack
           jobItems[0].task.count += Number(stepBack)
           // This will requeue the jobs as we are marking this failure as non-fatal.
-          this.failure(jobItems, error, false, true)
+          this.failure(jobItems, error, false, true, banPeer)
           cb()
           return
         }
@@ -534,6 +543,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return isTruthy(task) && 'first' in task && 'count' in task
+    return task !== undefined && 'first' in task && 'count' in task
   }
 }

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
+
 const DuplexPair = require('it-pair/duplex')
 
 const Stream = function (protocols: string[]) {
@@ -25,7 +25,7 @@ interface ServerDetails {
 export const servers: ServerDetails = {}
 
 export function createServer(location: string) {
-  if (isTruthy(servers[location])) {
+  if (servers[location] !== undefined) {
     throw new Error(`Already running a server at ${location}`)
   }
   servers[location] = {
@@ -38,9 +38,9 @@ export function createServer(location: string) {
 }
 
 export function destroyStream(id: string, location: string) {
-  if (isTruthy(servers[location])) {
+  if (servers[location] !== undefined) {
     const stream = servers[location].streams[id]
-    if (isTruthy(stream)) {
+    if (stream !== undefined) {
       delete servers[location].streams[id]
     }
   }
@@ -57,7 +57,7 @@ export async function destroyServer(location: string) {
 }
 
 export function createStream(id: string, location: string, protocols: string[]) {
-  if (isFalsy(servers[location])) {
+  if (servers[location] === undefined) {
     throw new Error(`There is no server at ${location}`)
   }
   const stream = Stream(protocols)

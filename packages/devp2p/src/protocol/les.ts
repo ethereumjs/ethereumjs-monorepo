@@ -1,11 +1,15 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bigIntToBuffer, bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
+import { arrToBufArr, bigIntToBuffer, bufArrToArr } from '@ethereumjs/util'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { DISCONNECT_REASONS } from '../rlpx/peer'
 import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
-import { EthProtocol, Protocol, SendMethod } from './protocol'
+
+import { EthProtocol, Protocol } from './protocol'
+
+import type { Peer } from '../rlpx/peer'
+import type { SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
@@ -44,9 +48,9 @@ export class LES extends Protocol {
           'STATUS'
         )
         const statusArray: any = {}
-        payload.forEach(function (value: any) {
+        for (const value of payload as any) {
           statusArray[value[0].toString()] = value[1]
-        })
+        }
         this._peerStatus = statusArray
         const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
         this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
@@ -132,20 +136,20 @@ export class LES extends Protocol {
     )}, `
     sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
     sStr += `GenH:${status['genesisHash'].toString('hex')}`
-    if (isTruthy(status['serveHeaders'])) sStr += `, serveHeaders active`
-    if (isTruthy(status['serveChainSince']))
+    if (status['serveHeaders'] !== undefined) sStr += `, serveHeaders active`
+    if (status['serveChainSince'] !== undefined)
       sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
-    if (isTruthy(status['serveStateSince']))
+    if (status['serveStateSince'] !== undefined)
       sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
-    if (isTruthy(status['txRelay'])) sStr += `, txRelay active`
-    if (isTruthy(status['flowControl/BL)'])) sStr += `, flowControl/BL set`
-    if (isTruthy(status['flowControl/MRR)'])) sStr += `, flowControl/MRR set`
-    if (isTruthy(status['flowControl/MRC)'])) sStr += `, flowControl/MRC set`
-    if (isTruthy(status['forkID']))
+    if (status['txRelay'] !== undefined) sStr += `, txRelay active`
+    if (status['flowControl/BL)'] !== undefined) sStr += `, flowControl/BL set`
+    if (status['flowControl/MRR)'] !== undefined) sStr += `, flowControl/MRR set`
+    if (status['flowControl/MRC)'] !== undefined) sStr += `, flowControl/MRC set`
+    if (status['forkID'] !== undefined)
       sStr += `, forkID: [crc32: ${status['forkID'][0].toString('hex')}, nextFork: ${buffer2int(
         status['forkID'][1]
       )}]`
-    if (isTruthy(status['recentTxLookup']))
+    if (status['recentTxLookup'] !== undefined)
       sStr += `, recentTxLookup: ${buffer2int(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
@@ -154,7 +158,7 @@ export class LES extends Protocol {
   sendStatus(status: LES.Status) {
     if (this._status !== null) return
 
-    if (isFalsy(status.announceType)) {
+    if (status.announceType === undefined) {
       status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = int2buffer(this._version)
@@ -163,9 +167,9 @@ export class LES extends Protocol {
     this._status = status
 
     const statusList: any[][] = []
-    Object.keys(status).forEach((key) => {
+    for (const key of Object.keys(status)) {
       statusList.push([Buffer.from(key), status[key]])
-    })
+    }
 
     this.debug(
       'STATUS',
@@ -177,11 +181,7 @@ export class LES extends Protocol {
     let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (
-      isTruthy(this._peer._hello) &&
-      isTruthy(this._peer._hello.protocolVersion) &&
-      this._peer._hello?.protocolVersion >= 5
-    ) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
@@ -244,11 +244,7 @@ export class LES extends Protocol {
     payload = Buffer.from(RLP.encode(payload))
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if (
-      isTruthy(this._peer._hello) &&
-      isTruthy(this._peer._hello.protocolVersion) &&
-      this._peer._hello?.protocolVersion >= 5
-    ) {
+    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 

@@ -1,26 +1,24 @@
-import { URL } from 'url'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
-import type { Common } from '@ethereumjs/common'
 import { Hardfork } from '@ethereumjs/common'
 import {
   addHexPrefix,
   bigIntToHex,
   intToHex,
-  isFalsy,
   isHexPrefixed,
-  isTruthy,
   stripHexPrefix,
 } from '@ethereumjs/util'
 import { Multiaddr, multiaddr } from 'multiaddr'
+import { URL } from 'url'
 
 import type { MultiaddrLike } from '../types'
+import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
  * @param input comma separated string
  */
 export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
-  if (isFalsy(input)) {
+  if (input === '') {
     return []
   }
   if (!Array.isArray(input) && typeof input === 'object') {
@@ -46,7 +44,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       // parse as object
       if (typeof s === 'object') {
         const { ip, port } = s as any
-        if (isTruthy(ip) && isTruthy(port)) {
+        if (ip !== undefined && port !== undefined) {
           return multiaddr(`/ip4/${ip}/tcp/${port}`)
         }
       }
@@ -73,13 +71,10 @@ export function parseTransports(transports: string[]) {
     const options: { [key: string]: string } = {}
     const [name, ...pairs] = t.split(':')
     if (pairs.length) {
-      pairs
-        .join(':')
-        .split(',')
-        .forEach((p: string) => {
-          const [key, value] = p.split('=')
-          options[key] = value
-        })
+      for (const p of pairs.join(':').split(',')) {
+        const [key, value] = p.split('=')
+        options[key] = value
+      }
     }
     return { name, options }
   })
@@ -146,20 +141,21 @@ async function parseGethParams(json: any) {
       baseFeePerGas,
     },
     bootstrapNodes: [],
-    consensus: isTruthy(config.clique)
-      ? {
-          type: 'poa',
-          algorithm: 'clique',
-          clique: {
-            period: config.clique.period,
-            epoch: config.clique.epoch,
+    consensus:
+      config.clique !== undefined
+        ? {
+            type: 'poa',
+            algorithm: 'clique',
+            clique: {
+              period: config.clique.period,
+              epoch: config.clique.epoch,
+            },
+          }
+        : {
+            type: 'pow',
+            algorithm: 'ethash',
+            ethash: {},
           },
-        }
-      : {
-          type: 'pow',
-          algorithm: 'ethash',
-          ethash: {},
-        },
   }
 
   const forkMap: { [key: string]: string } = {
@@ -203,7 +199,7 @@ export async function parseCustomParams(json: any, name?: string) {
     if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
       throw new Error('Invalid format, expected geth genesis fields missing')
     }
-    if (isTruthy(name)) {
+    if (name !== undefined) {
       json.name = name
     }
     return parseGethParams(json)
@@ -222,8 +218,8 @@ export async function parseGenesisState(json: any) {
     let { balance, code, storage } = json.alloc[address]
     address = addHexPrefix(address)
     balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
-    code = isTruthy(code) ? addHexPrefix(code) : undefined
-    storage = isTruthy(storage) ? Object.entries(storage) : undefined
+    code = code !== undefined ? addHexPrefix(code) : undefined
+    storage = storage !== undefined ? Object.entries(storage) : undefined
     state[address] = [balance, code, storage] as any
   }
   return state
@@ -248,7 +244,7 @@ export function parseKey(input: string | Buffer) {
 export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
   for (const hf of (common as any)._chainParams.hardforks) {
     if (
-      isFalsy(hf.forkHash) &&
+      (hf.forkHash === null || hf.forkhash === undefined) &&
       typeof hf.block !== 'undefined' &&
       (hf.block !== null || typeof hf.td !== 'undefined')
     ) {

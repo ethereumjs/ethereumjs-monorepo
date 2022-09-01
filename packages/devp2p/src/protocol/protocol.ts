@@ -1,10 +1,12 @@
+import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'
 import ms = require('ms')
-import { isTruthy } from '@ethereumjs/util'
-import { debug as createDebugLogger, Debugger } from 'debug'
 
-import { DISCONNECT_REASONS, Peer } from '../rlpx/peer'
+import { DISCONNECT_REASONS } from '../rlpx/peer'
 import { devp2pDebug } from '../util'
+
+import type { Peer } from '../rlpx/peer'
+import type { Debugger } from 'debug'
 
 export enum EthProtocol { // What does this represent?
   ETH = 'eth',
@@ -69,7 +71,7 @@ export class Protocol extends EventEmitter {
 
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
-    if (isTruthy(ip)) {
+    if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
     }
   }
@@ -82,7 +84,7 @@ export class Protocol extends EventEmitter {
    */
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
-    if (isTruthy(ip)) {
+    if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
       this._firstPeer = ip
@@ -97,11 +99,11 @@ export class Protocol extends EventEmitter {
    */
   protected debug(messageName: string, msg: string) {
     this._debug(msg)
-    if (isTruthy(this.msgDebuggers[messageName])) {
+    if (this.msgDebuggers[messageName] !== undefined) {
       this.msgDebuggers[messageName](msg)
     }
     const ip = this._peer._socket.remoteAddress
-    if (isTruthy(ip) && isTruthy(this.msgDebuggers[ip])) {
+    if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
       this.msgDebuggers[ip](msg)
     }
   }

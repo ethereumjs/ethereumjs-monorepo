@@ -1,11 +1,14 @@
-import { Block, BlockBodyBuffer, BlockBuffer, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufferToBigInt, isFalsy, isTruthy } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
+import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 
 import { Cache } from './cache'
-import { DatabaseKey, DBOp, DBOpData, DBTarget } from './operation'
+import { DBOp, DBTarget } from './operation'
+
+import type { DBOpData, DatabaseKey } from './operation'
+import type { BlockBodyBuffer, BlockBuffer, BlockOptions } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { AbstractLevel } from 'abstract-level'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'
@@ -183,8 +186,8 @@ export class DBManager {
     const dbKey = dbGetOperation.baseDBOp.key
     const dbOpts = dbGetOperation.baseDBOp
 
-    if (isTruthy(cacheString)) {
-      if (isFalsy(this._cache[cacheString])) {
+    if (cacheString !== undefined) {
+      if (this._cache[cacheString] === undefined) {
         throw new Error(`Invalid cache: ${cacheString}`)
       }
 

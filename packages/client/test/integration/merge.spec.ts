@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import {
   Chain as ChainCommon,
   Common,
@@ -7,15 +7,18 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address, isFalsy, isTruthy } from '@ethereumjs/util'
+import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
+
 import { MockServer } from './mocks/mockserver'
 import { destroy, setup } from './util'
+
+import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
 tape('[Integration:Merge]', async (t) => {
   const commonPoA = Common.custom(
@@ -142,7 +145,7 @@ tape('[Integration:Merge]', async (t) => {
     remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
       const { height, td } = remoteService.chain.headers
       if (td > targetTTD) {
-        if (isFalsy(terminalHeight)) {
+        if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
           terminalHeight = height
         }
         t.equal(
@@ -156,7 +159,11 @@ tape('[Integration:Merge]', async (t) => {
         await destroy(remoteServer, remoteService)
         t.end()
       }
-      if (isTruthy(terminalHeight) && terminalHeight < height) {
+      if (
+        typeof terminalHeight === 'bigint' &&
+        terminalHeight !== BigInt(0) &&
+        terminalHeight < height
+      ) {
         t.fail('chain should not exceed merge terminal block')
       }
     })

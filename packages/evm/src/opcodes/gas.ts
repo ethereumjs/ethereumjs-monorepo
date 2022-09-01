@@ -1,8 +1,8 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 
 import { ERROR } from '../exceptions'
-import { RunState } from '../interpreter'
+
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
@@ -15,6 +15,9 @@ import {
   trap,
   updateSstoreGas,
 } from './util'
+
+import type { RunState } from '../interpreter'
+import type { Common } from '@ethereumjs/common'
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -490,7 +493,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           retLength,
         ] = runState.stack.peek(8)
 
-        if (valueExt !== 0n) {
+        if (valueExt !== BigInt(0)) {
           trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
         }
 

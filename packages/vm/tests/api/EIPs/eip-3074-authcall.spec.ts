@@ -1,16 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EVM } from '@ethereumjs/evm'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import { Transaction } from '@ethereumjs/tx'
 import {
   Address,
   bigIntToBuffer,
   bufferToBigInt,
-  ECDSASignature,
   ecsign,
-  isTruthy,
   privateToAddress,
   setLengthLeft,
   toBuffer,
@@ -20,6 +16,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
+
+import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { ECDSASignature } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -170,33 +169,14 @@ function MSTORE(position: Buffer, value: Buffer) {
  * @returns - The bytecode to execute AUTHCALL
  */
 function getAuthCallCode(data: AuthcallData) {
-  const ZEROS32 = zeros(32)
-  const gasLimitBuffer = setLengthLeft(
-    isTruthy(data.gasLimit) ? bigIntToBuffer(data.gasLimit) : ZEROS32,
-    32
-  )
+  const gasLimitBuffer = setLengthLeft(bigIntToBuffer(data.gasLimit ?? BigInt(0)), 32)
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(isTruthy(data.value) ? bigIntToBuffer(data.value) : ZEROS32, 32)
-  const valueExtBuffer = setLengthLeft(
-    isTruthy(data.valueExt) ? bigIntToBuffer(data.valueExt) : ZEROS32,
-    32
-  )
-  const argsOffsetBuffer = setLengthLeft(
-    isTruthy(data.argsOffset) ? bigIntToBuffer(data.argsOffset) : ZEROS32,
-    32
-  )
-  const argsLengthBuffer = setLengthLeft(
-    isTruthy(data.argsLength) ? bigIntToBuffer(data.argsLength) : ZEROS32,
-    32
-  )
-  const retOffsetBuffer = setLengthLeft(
-    isTruthy(data.retOffset) ? bigIntToBuffer(data.retOffset) : ZEROS32,
-    32
-  )
-  const retLengthBuffer = setLengthLeft(
-    isTruthy(data.retLength) ? bigIntToBuffer(data.retLength) : ZEROS32,
-    32
-  )
+  const valueBuffer = setLengthLeft(bigIntToBuffer(data.value ?? BigInt(0)), 32)
+  const valueExtBuffer = setLengthLeft(bigIntToBuffer(data.valueExt ?? BigInt(0)), 32)
+  const argsOffsetBuffer = setLengthLeft(bigIntToBuffer(data.argsOffset ?? BigInt(0)), 32)
+  const argsLengthBuffer = setLengthLeft(bigIntToBuffer(data.argsLength ?? BigInt(0)), 32)
+  const retOffsetBuffer = setLengthLeft(bigIntToBuffer(data.retOffset ?? BigInt(0)), 32)
+  const retLengthBuffer = setLengthLeft(bigIntToBuffer(data.retLength ?? BigInt(0)), 32)
   const PUSH32 = Buffer.from('7f', 'hex')
   const AUTHCALL = Buffer.from('f7', 'hex')
   const order = [
@@ -224,7 +204,7 @@ function flipSignature(signature: any) {
   const s = bufferToBigInt(signature.s)
   const flipped = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n - s
 
-  if (signature.v == 27) {
+  if (signature.v === 27) {
     signature.v = 28
   } else {
     signature.v = 27
@@ -479,7 +459,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-    ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft
       }
@@ -522,7 +502,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const vm = await setupVM(code)
 
     let gas: bigint
-    ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
+    vm.evm.events!.on('step', async (e: InterpreterStep) => {
       if (e.opcode.name === 'AUTHCALL') {
         gas = e.gasLeft // This thus overrides the first time AUTHCALL is used and thus the gas for the second call is stored
       }
@@ -563,7 +543,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
       let gas: bigint
       let gasAfterCall: bigint
-      ;(<EVM>vm.evm).on('step', async (e: InterpreterStep) => {
+      vm.evm.events!.on('step', async (e: InterpreterStep) => {
         if (gas && gasAfterCall === undefined) {
           gasAfterCall = e.gasLeft
         }
@@ -608,7 +588,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const vm = await setupVM(code)
 
       let gas: bigint
-      ;(<EVM>vm.evm).on('step', (e: InterpreterStep) => {
+      vm.evm.events!.on('step', (e: InterpreterStep) => {
         if (e.opcode.name === 'AUTHCALL') {
           gas = e.gasLeft
         }

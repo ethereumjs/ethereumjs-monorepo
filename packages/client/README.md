@@ -9,7 +9,7 @@
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | ------------------------------------------------------------------- |
 
-# INTRODUCTION
+## Introduction
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
@@ -25,9 +25,9 @@ The client has an extremely modular design by building upon central other librar
 
 We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
 
-# SETUP
+## Installation
 
-## INSTALL
+To obtain the latest version, simply require the project using `npm`:
 
 ```shell
 npm install -g @ethereumjs/client
@@ -39,7 +39,7 @@ For development purposes the client can also be set up like this:
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
 3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
 
-## USAGE
+## Usage
 
 ### Introduction
 
@@ -277,7 +277,7 @@ Output:
 }
 ```
 
-## DEVELOPMENT
+## Development
 
 ### Design
 
@@ -291,7 +291,7 @@ We would love to hear feedback from you on what you are planning and exchange on
 
 ### Debugging
 
-### Local Test Network
+#### Local Test Network
 
 For some guidance on how to setup local testnetworks see the examples on [local debugging](./examples/local-debugging.md) and setting up a [private network with Geth](./examples/private-geth-network.md).
 

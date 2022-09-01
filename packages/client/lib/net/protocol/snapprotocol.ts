@@ -1,6 +1,10 @@
-import { AccountData as AccountDataBody, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
-import { Chain } from '../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
+import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+
+import { Protocol } from './protocol'
+
+import type { Chain } from '../../blockchain'
+import type { Message, ProtocolOptions } from './protocol'
+import type { AccountData as AccountDataBody } from '@ethereumjs/util'
 
 interface SnapProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -54,7 +58,13 @@ type GetTrieNodesOpts = {
 export interface SnapProtocolMethods {
   getAccountRange: (
     opts: GetAccountRangeOpts
-  ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[][] }>
+  ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[] }>
+  getStorageRanges: (opts: GetStorageRangesOpts) => Promise<{
+    reqId: bigint
+    slots: StorageData[]
+    proof: Buffer[]
+  }>
+  getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
 }
 
 /**
@@ -144,19 +154,21 @@ export class SnapProtocol extends Protocol {
         proof,
       }: {
         reqId: bigint
-        slots: StorageData[]
+        slots: StorageData[][]
         proof: Buffer[]
       }) => {
         return [
           bigIntToBuffer(reqId ?? ++this.nextReqId),
-          slots.map((slot) => [slot.hash, slot.body]),
+          slots.map((accSlots) => accSlots.map((slotData) => [slotData.hash, slotData.body])),
           proof,
         ]
       },
       decode: ([reqId, slots, proof]: any) => {
         return {
           reqId: bufferToBigInt(reqId),
-          slots: slots.map(([hash, body]: any) => ({ hash, body } as StorageData)),
+          slots: slots.map((accSlots: any) =>
+            accSlots.map(([hash, body]: any) => ({ hash, body } as StorageData))
+          ),
           proof,
         }
       },

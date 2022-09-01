@@ -1,10 +1,10 @@
-import { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-
-import { EVM, EVMResult, ExecResult } from './evm'
-import { InterpreterStep } from './interpreter'
-import { Message } from './message'
-import { OpHandler } from './opcodes'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { EVM, EVMResult, ExecResult } from './evm'
+import type { InterpreterStep } from './interpreter'
+import type { Message } from './message'
+import type { OpHandler } from './opcodes'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type AsyncEventEmitter from 'async-eventemitter'
 
 /**
  * API of the EVM
@@ -15,6 +15,7 @@ export interface EVMInterface {
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
   eei: EEIInterface
+  events?: AsyncEventEmitter<EVMEvents>
 }
 
 /**
@@ -126,7 +127,8 @@ export interface EVMRunCallOpts {
    */
   selfdestruct?: { [k: string]: boolean }
   /**
-   * Skip balance checks if true. Adds transaction value to balance to ensure execution doesn't fail.
+   * Skip balance checks if true. If caller balance is less than message value,
+   * sets balance to message value to ensure execution doesn't fail.
    */
   skipBalance?: boolean
   /**
@@ -212,10 +214,10 @@ interface NewContractEvent {
 }
 
 export type EVMEvents = {
-  newContract: (data: NewContractEvent, resolve?: (result: any) => void) => void
-  beforeMessage: (data: Message, resolve?: (result: any) => void) => void
-  afterMessage: (data: EVMResult, resolve?: (result: any) => void) => void
-  step: (data: InterpreterStep, resolve?: (result: any) => void) => void
+  newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
+  beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
+  afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
+  step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
 }
 
 /**
@@ -245,7 +247,7 @@ declare type Proof = {
   storageProof: StorageProof[]
 }
 
-type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
+type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
 
 interface StateAccess {
   accountExists(address: Address): Promise<boolean>

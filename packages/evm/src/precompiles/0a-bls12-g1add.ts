@@ -1,13 +1,12 @@
-import { isFalsy } from '@ethereumjs/util'
-
-import { EvmErrorResult, ExecResult, OOGResult } from '../evm'
+import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
-import { PrecompileInput } from './types'
+
+import type { ExecResult } from '../evm'
+import type { PrecompileInput } from './types'
+
 const { BLS12_381_ToG1Point, BLS12_381_FromG1Point } = require('./util/bls12_381')
 
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
@@ -19,7 +18,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length != 256) {
+  if (inputData.length !== 256) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -55,6 +54,6 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: returnValue,
+    returnValue,
   }
 }

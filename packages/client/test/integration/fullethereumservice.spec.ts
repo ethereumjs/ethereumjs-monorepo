@@ -7,6 +7,7 @@ import * as tape from 'tape'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
+
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
 import { destroy } from './util'
