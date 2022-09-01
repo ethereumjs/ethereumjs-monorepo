@@ -13,6 +13,7 @@ import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNo
 
 import type {
   BatchDBOp,
+  DB,
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
@@ -46,7 +47,7 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
 
   /** The backend DB */
-  protected _db: CheckpointDB
+  protected _db!: CheckpointDB
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Buffer
@@ -60,11 +61,8 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    if (opts?.db instanceof CheckpointDB) {
-      throw new Error('Cannot pass in an instance of CheckpointDB')
-    }
+    this.database(opts?.db ?? new MapDB())
 
-    this._db = new CheckpointDB(opts?.db ?? new MapDB())
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -92,6 +90,18 @@ export class Trie {
     }
 
     return new Trie(opts)
+  }
+
+  database(db?: DB) {
+    if (db !== undefined) {
+      if (db instanceof CheckpointDB) {
+        throw new Error('Cannot pass in an instance of CheckpointDB')
+      }
+
+      this._db = new CheckpointDB(db)
+    }
+
+    return this._db
   }
 
   /**
@@ -749,7 +759,7 @@ export class Trie {
       root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.checkpoints = [...this._db.checkpoints]
+      trie._db.setCheckpoints(this._db.checkpoints)
     }
     return trie
   }
