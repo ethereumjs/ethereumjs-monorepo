@@ -179,7 +179,6 @@ export class Trie {
     } else {
       // First try to find the given key or its nearest node
       const { remaining, stack } = await this.findPath(appliedKey)
-      // then update
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
