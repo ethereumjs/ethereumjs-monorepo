@@ -33,7 +33,7 @@
     "coverage": "c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run coverage:test",
     "coverage:test": "npm run test; cd ../vm; npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
