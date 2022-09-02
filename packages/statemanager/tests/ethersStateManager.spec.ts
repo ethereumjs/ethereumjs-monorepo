@@ -42,13 +42,6 @@ tape('Ethers State Manager API tests', async (t) => {
     setLengthLeft(bigIntToBuffer(1n), 32)
   )
   t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
-  t.notEqual(
-    (state as any).storageCache.get(
-      UNIerc20ContractAddress + '--' + bufferToHex(setLengthLeft(bigIntToBuffer(1n), 32))
-    ),
-    undefined,
-    'a storage slot for the UNI contract exists in the cache'
-  )
 
   const stateRoot = await state.getStateRoot()
   t.ok(
@@ -87,7 +80,7 @@ tape('runTx tests', async (t) => {
  *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
  */
 
-tape.only('runBlock test', async (t) => {
+tape('runBlock test', async (t) => {
   if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
@@ -124,7 +117,6 @@ tape.only('runBlock test', async (t) => {
     console.log(err)
   }
 
-  /*
   const proof = (await provider.send('eth_getProof', [
     block.header.coinbase.toString(),
     [],
@@ -138,6 +130,6 @@ tape.only('runBlock test', async (t) => {
       proof.accountProof[j],
       'proof nodes for account match proof from provider'
     )
-  }*/
+  }
   t.end()
 })

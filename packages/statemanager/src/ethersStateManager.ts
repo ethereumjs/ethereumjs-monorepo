@@ -11,7 +11,7 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import { debug } from 'debug'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
 
@@ -135,8 +135,31 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return new EthersStateManager({ provider: this.provider })
   }
 
-  dumpStorage(_address: Address): Promise<StorageDump> {
-    throw new Error('Method not implemented.')
+  /**
+   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
+   * @param address - The address of the `account` to return storage for
+   * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
+   * Keys are are the storage keys, values are the storage values as strings.
+   * Both are represented as `0x` prefixed hex strings.
+   */
+  dumpStorage(address: Address): Promise<StorageDump> {
+    return new Promise((resolve, reject) => {
+      this._getStorageTrie(address)
+        .then((trie) => {
+          const storage: StorageDump = {}
+          const stream = trie.createReadStream()
+
+          stream.on('data', (val: any) => {
+            storage['0x' + val.key.toString('hex')] = '0x' + val.value.toString('hex')
+          })
+          stream.on('end', () => {
+            resolve(storage)
+          })
+        })
+        .catch((e) => {
+          reject(e)
+        })
+    })
   }
 
   async accountExists(address: Address): Promise<boolean> {
@@ -160,6 +183,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const account = await this._cache.getOrLoad(address)
     return account
   }
+
   async getAccountFromProvider(address: Address): Promise<Account> {
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
@@ -212,6 +236,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return await this.trie.checkRoot(root)
   }
 
+  /**
+   * Get an EIP-1186 proof
+   * @param address address to get proof of
+   * @param storageSlots storage slots to get proof of
+   * @returns an EIP-1186 formatted proof
+   */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
     const accountProof: PrefixedHexString[] = (await this.trie.createProof(address.buf)).map((p) =>
@@ -278,7 +308,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * for an account and saves this in the storage cache.
    * @private
    */
-  async _lookupStorageTrie(address: Address): Promise<Trie> {
+  private async _lookupStorageTrie(address: Address): Promise<Trie> {
     // from state trie
     const account = await this.getAccount(address)
     const storageTrie = this.trie.copy(false)
@@ -292,7 +322,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * cache or does a lookup.
    * @private
    */
-  async _getStorageTrie(address: Address): Promise<Trie> {
+  private async _getStorageTrie(address: Address): Promise<Trie> {
     // from storage cache
     const addressHex = address.buf.toString('hex')
     let storageTrie = this.storageTries[addressHex]
