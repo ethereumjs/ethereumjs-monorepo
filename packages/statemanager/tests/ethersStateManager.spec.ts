@@ -91,7 +91,7 @@ tape.only('runBlock test', async (t) => {
   if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider = new JsonRpcProvider(process.env.PROVIDER)
-  const blockTag = 500002n
+  const blockTag = 500000n
   const state = new EthersStateManager({
     provider,
     // Set the state manager to look at the state of the chain before the block has been executed
@@ -105,6 +105,7 @@ tape.only('runBlock test', async (t) => {
     ).stateRoot.slice(2),
     'hex'
   )
+
   const block = await state.getBlockFromProvider(blockTag, common)
   try {
     const res = await vm.runBlock({
@@ -123,6 +124,7 @@ tape.only('runBlock test', async (t) => {
     console.log(err)
   }
 
+  /*
   const proof = (await provider.send('eth_getProof', [
     block.header.coinbase.toString(),
     [],
@@ -136,6 +138,6 @@ tape.only('runBlock test', async (t) => {
       proof.accountProof[j],
       'proof nodes for account match proof from provider'
     )
-  }
+  }*/
   t.end()
 })

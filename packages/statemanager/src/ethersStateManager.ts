@@ -190,8 +190,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return codeBuffer
   }
 
-  clearContractStorage(_address: Address): Promise<void> {
-    throw new Error('Method not implemented.')
+  async clearContractStorage(address: Address): Promise<void> {
+    const storageTrie = await this._getStorageTrie(address)
+    storageTrie.root(this.trie.EMPTY_TRIE_ROOT)
+    const contract = await this.getAccount(address)
+    contract.storageRoot = storageTrie.root()
+    await this.putAccount(address, contract)
   }
 
   async getStateRoot(): Promise<Buffer> {
@@ -203,8 +207,9 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this._cache.flush
     this.trie.root(_stateRoot)
   }
+
   hasStateRoot(_root: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(this.trie.root().equals(this.trie.EMPTY_TRIE_ROOT))
   }
 
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
