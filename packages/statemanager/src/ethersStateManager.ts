@@ -208,8 +208,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.trie.root(_stateRoot)
   }
 
-  hasStateRoot(_root: Buffer): Promise<boolean> {
-    return Promise.resolve(this.trie.root().equals(this.trie.EMPTY_TRIE_ROOT))
+  async hasStateRoot(root: Buffer): Promise<boolean> {
+    return await this.trie.checkRoot(root)
   }
 
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
