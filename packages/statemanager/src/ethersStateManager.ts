@@ -64,11 +64,43 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     })
   }
 
+  copy(): EthersStateManager {
+    return new EthersStateManager({ provider: this.provider })
+  }
+
+  /**
+   * Gets the code corresponding to the provided `address`.
+   * @param address - Address to get the `code` for
+   * @returns {Promise<Buffer>} -  Resolves with the code corresponding to the provided address.
+   * Returns an empty `Buffer` if the account has no associated code.
+   */
+  async getContractCode(address: Address): Promise<Buffer> {
+    const code = await this.provider.getCode(address.toString(), this.blockTag)
+    const codeBuffer = toBuffer(code)
+    this.contractCache.set(address.toString(), codeBuffer)
+    return codeBuffer
+  }
+
+  /**
+   * Adds `value` to the state trie as code, and sets `codeHash` on the account
+   * corresponding to `address` to reference this.
+   * @param address - Address of the `account` to add the `code` for
+   * @param value - The value of the `code`
+   */
   async putContractCode(address: Address, value: Buffer): Promise<void> {
     // Store contract code in the cache
     this.contractCache.set(address.toString(), value)
   }
 
+  /**
+   * Gets the storage value associated with the provided `address` and `key`. This method returns
+   * the shortest representation of the stored value.
+   * @param address -  Address of the account to get the storage for
+   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
+   * @returns {Buffer} - The storage value for the account
+   * corresponding to the provided address at the provided key.
+   * If this does not exist an empty `Buffer` is returned.
+   */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
     // Retrieve storage slot from provider if not found in cache
     await this.getContractStorageFromProvider(address, key)
@@ -79,7 +111,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
   }
 
-  async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
+  /**
+   * Retrieves a storage slot from the provider and stores in the local trie
+   * @param address Address to be retrieved from provider
+   * @param key Key of storage slot to be returned
+   * @private
+   */
+  private async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
     if (this.externallyRetrievedStorageKeys.has(address.toString())) {
       const map = this.externallyRetrievedStorageKeys.get(address.toString())
       if (map?.get(key.toString('hex')) !== undefined) {
@@ -131,8 +169,16 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     await this.putAccount(address, contract)
   }
 
-  copy(): EthersStateManager {
-    return new EthersStateManager({ provider: this.provider })
+  /**
+   * Clears all storage entries for the account corresponding to `address`.
+   * @param address -  Address to clear the storage of
+   */
+  async clearContractStorage(address: Address): Promise<void> {
+    const storageTrie = await this._getStorageTrie(address)
+    storageTrie.root(this.trie.EMPTY_TRIE_ROOT)
+    const contract = await this.getAccount(address)
+    contract.storageRoot = storageTrie.root()
+    await this.putAccount(address, contract)
   }
 
   /**
@@ -162,6 +208,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     })
   }
 
+  /**
+   * Checks if the `account` corresponding to `address`
+   * exists
+   * @param address - Address of the `account` to check
+   */
   async accountExists(address: Address): Promise<boolean> {
     log(`Verify if ${address.toString()} exists`)
     const account = this._cache.get(address)
@@ -179,11 +230,22 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return true
   }
 
+  /**
+   * Gets the code corresponding to the provided `address`.
+   * @param address - Address to get the `code` for
+   * @returns {Promise<Buffer>} -  Resolves with the code corresponding to the provided address.
+   * Returns an empty `Buffer` if the account has no associated code.
+   */
   async getAccount(address: Address): Promise<Account> {
     const account = await this._cache.getOrLoad(address)
     return account
   }
 
+  /**
+   * Retrieves an account from the provider and stores in the local trie
+   * @param address Address of account to be retrieved from provider
+   * @private
+   */
   async getAccountFromProvider(address: Address): Promise<Account> {
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
@@ -203,35 +265,38 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     return account
   }
 
+  /**
+   * Saves an account into state under the provided `address`.
+   * @param address - Address under which to store `account`
+   * @param account - The account to store
+   */
   async putAccount(address: Address, account: Account): Promise<void> {
     this._cache.put(address, account, false)
   }
 
-  async getContractCode(address: Address): Promise<Buffer> {
-    const code = await this.provider.getCode(address.toString(), this.blockTag)
-    const codeBuffer = toBuffer(code)
-    this.contractCache.set(address.toString(), codeBuffer)
-    return codeBuffer
-  }
-
-  async clearContractStorage(address: Address): Promise<void> {
-    const storageTrie = await this._getStorageTrie(address)
-    storageTrie.root(this.trie.EMPTY_TRIE_ROOT)
-    const contract = await this.getAccount(address)
-    contract.storageRoot = storageTrie.root()
-    await this.putAccount(address, contract)
-  }
-
+  /**
+   * Gets the state-root of the Merkle-Patricia trie representation
+   * of the state of this StateManager.
+   * @returns {Buffer} - Returns the state-root of the `StateManager`
+   */
   async getStateRoot(): Promise<Buffer> {
     await this._cache.flush()
     return this.trie.root()
   }
 
-  async setStateRoot(_stateRoot: Buffer): Promise<void> {
+  /**
+   * Sets the state of the instance to that represented
+   * by the provided `stateRoot`.
+   * @param stateRoot - The state-root to reset the instance to
+   */
+  async setStateRoot(stateRoot: Buffer): Promise<void> {
     this._cache.flush
-    this.trie.root(_stateRoot)
+    this.trie.root(stateRoot)
   }
 
+  /**
+   * Checks whether there is a state corresponding to a stateRoot
+   */
   async hasStateRoot(root: Buffer): Promise<boolean> {
     return await this.trie.checkRoot(root)
   }
@@ -277,7 +342,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Retrieves a block from the provider to use in the VM
+   * Helper method to retrieve a block from the provider to use in the VM
    * @param blockTag block hash or block number to be run
    * @param common Common instance used in VM
    * @returns the block specified by `blockTag`
