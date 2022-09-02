@@ -8,7 +8,7 @@ import { Block } from './index'
 import type { BlockOptions } from './index'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 
-function normalizeTxParams(_txParams: any) {
+export function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
   txParams.gasLimit = toType(
@@ -22,7 +22,10 @@ function normalizeTxParams(_txParams: any) {
   txParams.value = txParams.value !== undefined ? BigInt(txParams.value) : undefined
 
   // strict byte length checking
-  txParams.to = txParams.to !== undefined ? setLengthLeft(toBuffer(txParams.to), 20) : null
+  txParams.to =
+    txParams.to !== undefined && txParams.to !== null
+      ? setLengthLeft(toBuffer(txParams.to), 20)
+      : null
 
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.
