@@ -1,4 +1,4 @@
-import { Account, Address } from '@ethereumjs/util'
+import { Account, Address, bufferToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EEIDummy } from '../../src/eei/eeiDummy'
@@ -205,5 +205,67 @@ tape('eeiDummy', (t) => {
       (await dummy.storageLoad(dummyAddress, key1, false)).equals(storageSlot2),
       'current storage is correct'
     )
+  })
+
+  t.test('account exists / account empty', async (st) => {
+    const dummy = new EEIDummy()
+    st.ok(!(await dummy.accountExists(dummyAddress)), 'account does not exist')
+    st.ok(await dummy.isAccountEmpty(dummyAddress), 'account is empty')
+    await dummy.putAccount(dummyAddress, new Account())
+    st.ok(await dummy.accountExists(dummyAddress), 'account does exist')
+    st.ok(await dummy.isAccountEmpty(dummyAddress), 'account is empty')
+    st.ok(!(await dummy.accountExists(dummyAddress2)), 'account 2 does not exist')
+    await dummy.putAccount(dummyAddress2, new Account(BigInt(1)))
+    st.ok(!(await dummy.isAccountEmpty(dummyAddress2)), 'account is empty')
+  })
+
+  t.test('blockhash is zero', async (st) => {
+    const dummy = new EEIDummy()
+    st.equals(await dummy.getBlockHash(BigInt(0)), BigInt(0), 'blockhash correct')
+    st.equals(await dummy.getBlockHash(BigInt(1)), BigInt(0), 'blockhash correct')
+    st.equals(await dummy.getBlockHash(BigInt(1337)), BigInt(0), 'blockhash correct')
+  })
+
+  t.test('external balance', async (st) => {
+    const dummy = new EEIDummy()
+    st.equals(await dummy.getExternalBalance(dummyAddress), BigInt(0), 'balance ok')
+    const balance = BigInt(1000)
+    await dummy.putAccount(dummyAddress, new Account(BigInt(0), balance))
+    st.equals(await dummy.getExternalBalance(dummyAddress), balance, 'balance ok')
+    st.equals(await dummy.getExternalBalance(dummyAddress2), BigInt(0), 'balance address 2 ok')
+  })
+
+  t.test('external code (size)', async (st) => {
+    const dummy = new EEIDummy()
+    const dummyAddressBigInt = bufferToBigInt(dummyAddress.buf)
+    const dummyAddress2BigInt = bufferToBigInt(dummyAddress2.buf)
+    st.ok((await dummy.getExternalCode(dummyAddressBigInt)).equals(Buffer.from('')), 'code ok')
+    st.equals(await dummy.getExternalCodeSize(dummyAddressBigInt), BigInt(0), 'size ok')
+    const code = Buffer.from('abcd', 'hex')
+    await dummy.putContractCode(dummyAddress, code)
+    st.ok((await dummy.getExternalCode(dummyAddressBigInt)).equals(code), 'code ok')
+    st.equals(await dummy.getExternalCodeSize(dummyAddressBigInt), BigInt(code.length), 'size ok')
+    st.ok((await dummy.getExternalCode(dummyAddress2BigInt)).equals(Buffer.from('')), 'code ok')
+    st.equals(await dummy.getExternalCodeSize(dummyAddress2BigInt), BigInt(0), 'size ok')
+  })
+
+  t.test('clear warmed accounts', async (st) => {
+    const dummy = new EEIDummy()
+    await dummy.checkpoint()
+    dummy.addWarmedAddress(dummyAddress.buf)
+    dummy.addWarmedStorage(dummyAddress.buf, key1)
+    try {
+      dummy.clearWarmedAccounts()
+      st.fail('cannot reach this')
+    } catch {
+      st.pass('succesfully failed')
+    }
+    st.ok(dummy.isWarmedAddress(dummyAddress.buf), 'sanity check address is warm')
+    st.ok(dummy.isWarmedStorage(dummyAddress.buf, key1), 'sanity check address is warm')
+    await dummy.commit()
+    dummy.clearWarmedAccounts()
+    st.ok(!dummy.isWarmedAddress(dummyAddress.buf), 'cleared')
+    st.ok(!dummy.isWarmedStorage(dummyAddress.buf, key1), 'cleared')
+    st.deepEqual(dummy.stateCache._warmAddresses, [new Map()], 'cleared addresses')
   })
 })

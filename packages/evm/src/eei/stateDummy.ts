@@ -8,6 +8,9 @@ import type { EVMStateAccess } from '../types'
 export class StateDummy implements EVMStateAccess {
   stateCache: StateCache
 
+  // TODO, most likely state deletes + account deletes are not handled very well
+  // Especially account exists is a problem, cannot put empty account, because it is
+  // either empty or deleted
   constructor() {
     this.stateCache = new StateCache()
   }

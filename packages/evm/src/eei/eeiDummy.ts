@@ -40,9 +40,6 @@ export class EEIDummy extends StateDummy implements EEIInterface {
   async isAccountEmpty(address: Address): Promise<boolean> {
     return await this.accountIsEmpty(address)
   }
-  async accountExists(address: Address): Promise<boolean> {
-    return await this.accountExists(address)
-  }
   copy(): EEIInterface {
     return new EEIDummy()
   }
