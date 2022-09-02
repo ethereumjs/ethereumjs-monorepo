@@ -112,6 +112,10 @@ test('ETH: should use latest protocol version on default', (t) => {
   sendWithProtocolVersion(t, 66)
 })
 
+test('ETH: send not-allowed eth67', (t) => {
+  sendNotAllowed(t, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.GET_NODE_DATA)
+})
+
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', (t) => {
   const cap = [devp2p.ETH.eth65]
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
