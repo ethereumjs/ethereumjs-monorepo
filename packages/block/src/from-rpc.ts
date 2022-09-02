@@ -5,7 +5,7 @@ import { blockHeaderFromRpc } from './header-from-rpc'
 
 import { Block } from './index'
 
-import type { BlockOptions } from './index'
+import type { BlockOptions, JsonRpcBlock } from './index'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 
 export function normalizeTxParams(_txParams: any) {
@@ -23,7 +23,7 @@ export function normalizeTxParams(_txParams: any) {
 
   // strict byte length checking
   txParams.to =
-    txParams.to !== undefined && txParams.to !== null
+    txParams.to !== null && txParams.to !== undefined
       ? setLengthLeft(toBuffer(txParams.to), 20)
       : null
 
@@ -42,7 +42,11 @@ export function normalizeTxParams(_txParams: any) {
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param options - An object describing the blockchain
  */
-export function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
+export function blockFromRpc(
+  blockParams: JsonRpcBlock,
+  uncles: any[] = [],
+  options?: BlockOptions
+) {
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []

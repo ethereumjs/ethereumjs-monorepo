@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isFalsy, isTruthy } from '@ethereumjs/util'
 
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
@@ -145,7 +144,7 @@ export abstract class Synchronizer {
    * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
-    if (isFalsy(this.config.syncTargetHeight)) {
+    if (this.config.syncTargetHeight === undefined || this.config.syncTargetHeight === BigInt(0)) {
       return
     }
     if (this.chain.headers.height >= this.config.syncTargetHeight) {
@@ -183,7 +182,7 @@ export abstract class Synchronizer {
       const resolveSync = (height?: number) => {
         this.clearFetcher()
         resolve(true)
-        const heightStr = isTruthy(height) ? ` height=${height}` : ''
+        const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
         this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)

@@ -1,10 +1,4 @@
-import {
-  bigIntToBuffer,
-  bufferToBigInt,
-  isFalsy,
-  setLengthLeft,
-  setLengthRight,
-} from '@ethereumjs/util'
+import { bigIntToBuffer, bufferToBigInt, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm'
 
@@ -83,8 +77,6 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
