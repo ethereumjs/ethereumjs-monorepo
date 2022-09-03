@@ -1,4 +1,4 @@
-import { RLP_EMPTY_STRING, isFalsy, isTruthy } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -13,6 +13,7 @@ import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNo
 
 import type {
   BatchDBOp,
+  DB,
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
@@ -36,17 +37,17 @@ interface Path {
  */
 export class Trie {
   private readonly _opts: TrieOptsWithDefaults = {
-    deleteFromDB: false,
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
+    useNodePruning: false,
   }
 
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
 
   /** The backend DB */
-  protected _db: CheckpointDB
+  protected _db!: CheckpointDB
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Buffer
@@ -60,11 +61,8 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    if (opts?.db instanceof CheckpointDB) {
-      throw new Error('Cannot pass in an instance of CheckpointDB')
-    }
+    this.database(opts?.db ?? new MapDB())
 
-    this._db = new CheckpointDB(opts?.db ?? new MapDB())
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
@@ -94,12 +92,24 @@ export class Trie {
     return new Trie(opts)
   }
 
+  database(db?: DB) {
+    if (db !== undefined) {
+      if (db instanceof CheckpointDB) {
+        throw new Error('Cannot pass in an instance of CheckpointDB')
+      }
+
+      this._db = new CheckpointDB(db)
+    }
+
+    return this._db
+  }
+
   /**
    * Gets and/or Sets the current root of the `trie`
    */
-  root(value?: Buffer): Buffer {
+  root(value?: Buffer | null): Buffer {
     if (value !== undefined) {
-      if (isFalsy(value)) {
+      if (value === null) {
         value = this.EMPTY_TRIE_ROOT
       }
 
@@ -137,7 +147,7 @@ export class Trie {
    */
   async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
-    let value = null
+    let value: Buffer | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
@@ -157,7 +167,7 @@ export class Trie {
     }
 
     // If value is empty, delete
-    if (isFalsy(value) || value.toString() === '') {
+    if (value === null || value.length === 0) {
       return await this.del(key)
     }
 
@@ -169,8 +179,31 @@ export class Trie {
     } else {
       // First try to find the given key or its nearest node
       const { remaining, stack } = await this.findPath(appliedKey)
+      let ops: BatchDBOp[] = []
+      if (this._opts.useNodePruning) {
+        const val = await this.get(key)
+        // Only delete keys if it either does not exist, or if it gets updated
+        // (The update will update the hash of the node, thus we can delete the original leaf node)
+        if (val === null || !val.equals(value)) {
+          // All items of the stack are going to change.
+          // (This is the path from the root node to wherever it needs to insert nodes)
+          // The items change, because the leaf value is updated, thus all keyhashes in the
+          // stack should be updated as well, so that it points to the right key/value pairs of the path
+          const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+          ops = deleteHashes.map((e) => {
+            return {
+              type: 'del',
+              key: e,
+            }
+          })
+        }
+      }
       // then update
       await this._updateNode(appliedKey, value, remaining, stack)
+      if (this._opts.useNodePruning) {
+        // Only after updating the node we can delete the keyhashes
+        await this._db.batch(ops)
+      }
     }
     await this.persistRoot()
     this._lock.release()
@@ -186,8 +219,26 @@ export class Trie {
     await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
+
+    let ops: BatchDBOp[] = []
+    // Only delete if the `key` currently has any value
+    if (this._opts.useNodePruning && node !== null) {
+      const deleteHashes = stack.map((e) => this.hash(e.serialize()))
+      // Just as with `put`, the stack items all will have their keyhashes updated
+      // So after deleting the node, one can safely delete these from the DB
+      ops = deleteHashes.map((e) => {
+        return {
+          type: 'del',
+          key: e,
+        }
+      })
+    }
     if (node) {
       await this._deleteNode(appliedKey, stack)
+    }
+    if (this._opts.useNodePruning) {
+      // Only after deleting the node it is possible to delete the keyhashes
+      await this._db.batch(ops)
     }
     await this.persistRoot()
     this._lock.release()
@@ -426,9 +477,9 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      if (isFalsy(parentNode) || parentNode instanceof BranchNode) {
+      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
         // branch->?
-        if (isTruthy(parentNode)) {
+        if (parentNode !== null && parentNode !== undefined) {
           stack.push(parentNode)
         }
 
@@ -460,9 +511,9 @@ export class Trie {
           stack.push(parentNode)
         } else {
           const branchNodeKey = branchNode.key()
-          // branch node is an leaf or extension and parent node is an exstention
+          // branch node is an leaf or extension and parent node is an extension
           // add two keys together
-          // dont push the parent node
+          // don't push the parent node
           branchNodeKey.unshift(branchKey)
           key = key.concat(branchNodeKey)
           parentKey = parentKey.concat(branchNodeKey)
@@ -475,8 +526,8 @@ export class Trie {
       return key
     }
 
-    let lastNode = stack.pop() as TrieNode
-    if (isFalsy(lastNode)) throw new Error('missing last node')
+    let lastNode = stack.pop()
+    if (lastNode === undefined) throw new Error('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
@@ -514,6 +565,19 @@ export class Trie {
       // add the one remaing branch node to node above it
       const branchNode = branchNodes[0][1]
       const branchNodeKey = branchNodes[0][0]
+
+      // Special case where one needs to delete an extra node:
+      // In this case, after updating the branch, the branch node has just one branch left
+      // However, this violates the trie spec; this should be converted in either an ExtensionNode
+      // Or a LeafNode
+      // Since this branch is deleted, one can thus also delete this branch from the DB
+      // So add this to the `opStack` and mark the keyhash to be deleted
+      if (this._opts.useNodePruning) {
+        opStack.push({
+          type: 'del',
+          key: branchNode as Buffer,
+        })
+      }
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
@@ -596,7 +660,7 @@ export class Trie {
       const hashRoot = Buffer.from(this.hash(encoded))
 
       if (remove) {
-        if (this._opts.deleteFromDB) {
+        if (this._opts.useNodePruning) {
           opStack.push({
             type: 'del',
             key: hashRoot,
@@ -633,7 +697,7 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        if (isFalsy(op.value)) {
+        if (op.value === null || op.value === undefined) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
@@ -657,7 +721,7 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root() === this.EMPTY_TRIE_ROOT && isTruthy(opStack[0])) {
+    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
       this.root(opStack[0].key)
     }
 
@@ -730,6 +794,57 @@ export class Trie {
     )
   }
 
+  // This method verifies if all keys in the trie (except the root) are reachable
+  // If one of the key is not reachable, then that key could be deleted from the DB
+  // (i.e. the Trie is not correctly pruned)
+  // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
+  async verifyPrunedIntegrity(): Promise<boolean> {
+    const root = this.root().toString('hex')
+    for (const dbkey of (<any>this)._db.db._database.keys()) {
+      if (dbkey === root) {
+        // The root key can never be found from the trie, otherwise this would
+        // convert the tree from a directed acyclic graph to a directed cycling graph
+        continue
+      }
+
+      // Track if key is found
+      let found = false
+      try {
+        await this.walkTrie(this.root(), async function (nodeRef, node, key, controller) {
+          if (found) {
+            // Abort all other children checks
+            return
+          }
+          if (node instanceof BranchNode) {
+            for (const item of node._branches) {
+              // If one of the branches matches the key, then it is found
+              if (item && item.toString('hex') === dbkey) {
+                found = true
+                return
+              }
+            }
+            // Check all children of the branch
+            controller.allChildren(node, key)
+          }
+          if (node instanceof ExtensionNode) {
+            // If the value of the ExtensionNode points to the dbkey, then it is found
+            if (node.value().toString('hex') === dbkey) {
+              found = true
+              return
+            }
+            controller.allChildren(node, key)
+          }
+        })
+      } catch {
+        return false
+      }
+      if (!found) {
+        return false
+      }
+    }
+    return true
+  }
+
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
@@ -749,7 +864,7 @@ export class Trie {
       root: this.root(),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.checkpoints = [...this._db.checkpoints]
+      trie._db.setCheckpoints(this._db.checkpoints)
     }
     return trie
   }

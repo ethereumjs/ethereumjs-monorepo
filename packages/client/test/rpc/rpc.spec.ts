@@ -1,4 +1,3 @@
-import { isFalsy } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
@@ -134,7 +133,7 @@ tape('call JSON RPC with nonexistent method', (t) => {
     .set('Content-Type', 'application/json')
     .send(req)
     .expect((res: any) => {
-      if (isFalsy(res.body.error)) {
+      if (res.body.error === undefined) {
         throw new Error('should return an error object')
       }
       if (res.body.error.code !== METHOD_NOT_FOUND) {

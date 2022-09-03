@@ -1,5 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
-
 import { Event } from '../../types'
 
 import type { Config } from '../../config'
@@ -101,7 +99,7 @@ export class BoundProtocol {
       error = new Error(`Could not decode message ${message.name}: ${e}`)
     }
     const resolver = this.resolvers.get(incoming.code)
-    if (isTruthy(resolver)) {
+    if (resolver !== undefined) {
       clearTimeout(resolver.timeout)
       this.resolvers.delete(incoming.code)
       if (error) {
@@ -162,7 +160,10 @@ export class BoundProtocol {
       resolve: null,
       reject: null,
     }
-    if (isTruthy(this.resolvers.get(message.response!))) {
+    if (
+      typeof message.response === 'number' &&
+      this.resolvers.get(message.response) !== undefined
+    ) {
       throw new Error(`Only one active request allowed per message type (${name})`)
     }
     this.resolvers.set(message.response!, resolver)

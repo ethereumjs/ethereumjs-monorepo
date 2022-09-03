@@ -32,12 +32,6 @@ export interface TrieOpts {
   root?: Buffer
 
   /**
-   * Delete nodes from DB on delete operations (disallows switching to an older state root)
-   * Default: `false`
-   */
-  deleteFromDB?: boolean
-
-  /**
    * Create as a secure Trie where the keys are automatically hashed using the
    * **keccak256** hash function or alternatively the custom hash function provided.
    * Default: `false`
@@ -60,13 +54,19 @@ export interface TrieOpts {
    * Store the root inside the database after every `write` operation
    */
   useRootPersistence?: boolean
+
+  /**
+   * Flag to prune the trie. When set to `true`, each time a value is overridden,
+   * unreachable nodes will be pruned (deleted) from the trie
+   */
+  useNodePruning?: boolean
 }
 
 export type TrieOptsWithDefaults = TrieOpts & {
-  deleteFromDB: boolean
   useKeyHashing: boolean
   useKeyHashingFunction: HashKeysFunction
   useRootPersistence: boolean
+  useNodePruning: boolean
 }
 
 export type BatchDBOp = PutBatch | DelBatch

@@ -6,8 +6,6 @@ import {
   bigIntToBuffer,
   generateAddress,
   generateAddress2,
-  isFalsy,
-  isTruthy,
   short,
   zeros,
 } from '@ethereumjs/util'
@@ -372,7 +370,7 @@ export class EVM implements EVMInterface {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -484,13 +482,13 @@ export class EVM implements EVMInterface {
     }
 
     let exit = false
-    if (isFalsy(message.code) || message.code.length === 0) {
+    if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
@@ -577,7 +575,7 @@ export class EVM implements EVMInterface {
         if (this.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
-        result = { ...result, ...OOGResult(message.gasLimit) }
+        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
         if (this.DEBUG) {
@@ -596,8 +594,8 @@ export class EVM implements EVMInterface {
     // Save code if a new contract was created
     if (
       !result.exceptionError &&
-      isTruthy(result.returnValue) &&
-      result.returnValue.toString() !== ''
+      result.returnValue !== undefined &&
+      result.returnValue.length !== 0
     ) {
       await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
@@ -1020,6 +1018,14 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
     returnValue: Buffer.alloc(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    executionGasUsed: gasUsed,
+    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
 }
 

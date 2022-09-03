@@ -1,4 +1,4 @@
-import { Account, isFalsy, isTruthy } from '@ethereumjs/util'
+import { Account } from '@ethereumjs/util'
 
 import type { Address } from '@ethereumjs/util'
 
@@ -60,7 +60,7 @@ export class Cache {
     const keyStr = key.buf.toString('hex')
 
     const it = this._cache.find(keyStr)
-    if (isTruthy(it.node)) {
+    if (it.node !== null) {
       const rlp = it.value.val
       const account = Account.fromRlpSerializedAccount(rlp)
       ;(account as any).virtual = it.value.virtual
@@ -75,7 +75,7 @@ export class Cache {
   keyIsDeleted(key: Address): boolean {
     const keyStr = key.buf.toString('hex')
     const it = this._cache.find(keyStr)
-    if (isTruthy(it.node)) {
+    if (it.node !== null) {
       return it.value.deleted
     }
     return false
@@ -111,26 +111,22 @@ export class Cache {
     const it = this._cache.begin
     let next = true
     while (next) {
-      if (isTruthy(it.value) && isTruthy(it.value.modified) && isFalsy(it.value.deleted)) {
+      if (it.value?.modified === true) {
         it.value.modified = false
-        const accountRlp = it.value.val
         const keyBuf = Buffer.from(it.key, 'hex')
-        await this._putCb(keyBuf, accountRlp)
-        next = it.hasNext
-        it.next()
-      } else if (isTruthy(it.value) && isTruthy(it.value.modified) && isTruthy(it.value.deleted)) {
-        it.value.modified = false
-        it.value.deleted = true
-        it.value.virtual = true
-        it.value.val = new Account().serialize()
-        const keyBuf = Buffer.from(it.key, 'hex')
-        await this._deleteCb(keyBuf)
-        next = it.hasNext
-        it.next()
-      } else {
-        next = it.hasNext
-        it.next()
+        if (it.value.deleted === false) {
+          const accountRlp = it.value.val
+          await this._putCb(keyBuf, accountRlp)
+        } else {
+          it.value.deleted = true
+          it.value.virtual = true
+          it.value.val = new Account().serialize()
+          await this._deleteCb(keyBuf)
+        }
       }
+
+      next = it.hasNext
+      it.next()
     }
   }
 
@@ -190,7 +186,7 @@ export class Cache {
     const keyHex = key.buf.toString('hex')
     const it = this._cache.find(keyHex)
     const val = value.serialize()
-    if (isTruthy(it.node)) {
+    if (it.node !== null) {
       this._cache = it.update({ val, modified, deleted, virtual })
     } else {
       this._cache = this._cache.insert(keyHex, { val, modified, deleted, virtual })

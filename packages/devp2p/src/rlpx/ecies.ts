@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr, isFalsy, isTruthy } from '@ethereumjs/util'
+import { bufArrToArr } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
@@ -78,7 +78,7 @@ export class ECIES {
   constructor(privateKey: Buffer, id: Buffer, remoteId: Buffer) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
-    this._remotePublicKey = isTruthy(remoteId) ? id2pk(remoteId) : null
+    this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
@@ -167,7 +167,7 @@ export class ECIES {
     this._ingressMac.update(Buffer.concat([xor(macSecret, this._nonce), remoteData]))
     this._egressMac = new MAC(macSecret)
 
-    if (isFalsy(this._initMsg)) return
+    if (this._initMsg === null || this._initMsg === undefined) return
     this._egressMac.update(Buffer.concat([xor(macSecret, this._remoteNonce), this._initMsg]))
   }
 
@@ -246,16 +246,16 @@ export class ECIES {
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
 
-    if (isFalsy(this._remoteNonce)) {
+    if (this._remoteNonce === null) {
       return
     }
     this._remoteEphemeralPublicKey = Buffer.from(
       ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false)
     )
 
-    if (isFalsy(this._remoteEphemeralPublicKey)) return
+    if (this._remoteEphemeralPublicKey === null) return
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    if (heid !== null && isTruthy(this._remoteEphemeralPublicKey)) {
+    if (heid !== null && this._remoteEphemeralPublicKey !== null) {
       assertEq(
         keccak256(pk2id(this._remoteEphemeralPublicKey)),
         heid,

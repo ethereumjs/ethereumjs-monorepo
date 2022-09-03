@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
 
 import { handlers } from './functions'
 import { dynamicGasHandlers } from './gas'
@@ -379,7 +378,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
         },
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
-      if (isTruthy(code.gasFunction)) {
+      if (code.gasFunction !== undefined) {
         dynamicGasHandlersCopy.set(code.opcode, code.gasFunction)
       }
       // logicFunction is never undefined

@@ -3,6 +3,7 @@ import type { Common } from '@ethereumjs/common'
 import type {
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,
+  JsonRpcTx,
   JsonTx,
   TxData,
 } from '@ethereumjs/tx'
@@ -149,4 +150,31 @@ export interface JsonHeader {
   mixHash?: string
   nonce?: string
   baseFeePerGas?: string
+}
+
+/*
+ * Based on https://eth.wiki/json-rpc/API
+ */
+export interface JsonRpcBlock {
+  number: string // the block number. null when pending block.
+  hash: string // hash of the block. null when pending block.
+  parentHash: string // hash of the parent block.
+  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
+  nonce: string // hash of the generated proof-of-work. null when pending block.
+  sha3Uncles: string // SHA3 of the uncles data in the block.
+  logsBloom: string // the bloom filter for the logs of the block. null when pending block.
+  transactionsRoot: string // the root of the transaction trie of the block.
+  stateRoot: string // the root of the final state trie of the block.
+  receiptsRoot: string // the root of the receipts trie of the block.
+  miner: string // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: string // integer of the difficulty for this block.
+  totalDifficulty: string // integer of the total difficulty of the chain until this block.
+  extraData: string // the “extra data” field of this block.
+  size: string // integer the size of this block in bytes.
+  gasLimit: string // the maximum gas allowed in this block.
+  gasUsed: string // the total used gas by all transactions in this block.
+  timestamp: string // the unix timestamp for when the block was collated.
+  transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: string[] // Array of uncle hashes
+  baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
