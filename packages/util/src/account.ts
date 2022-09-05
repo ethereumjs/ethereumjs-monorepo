@@ -27,6 +27,8 @@ export interface AccountData {
   codeHash?: BufferLike
 }
 
+export type AccountBodyBuffer = [Buffer, Buffer, Buffer | Uint8Array, Buffer | Uint8Array]
+
 export class Account {
   nonce: bigint
   balance: bigint
@@ -342,18 +344,31 @@ export const isZeroAddress = function (hexAddress: string): boolean {
   return zeroAddr === hexAddress
 }
 
+export function accountBodyFromSlim(body: AccountBodyBuffer) {
+  const [nonce, balance, storageRoot, codeHash] = body
+  return [
+    nonce,
+    balance,
+    arrToBufArr(storageRoot).length === 0 ? KECCAK256_RLP : storageRoot,
+    arrToBufArr(codeHash).length === 0 ? KECCAK256_NULL : codeHash,
+  ]
+}
+
+const emptyUint8Arr = new Uint8Array(0)
+export function accountBodyToSlim(body: AccountBodyBuffer) {
+  const [nonce, balance, storageRoot, codeHash] = body
+  return [
+    nonce,
+    balance,
+    arrToBufArr(storageRoot).equals(KECCAK256_RLP) ? emptyUint8Arr : storageRoot,
+    arrToBufArr(codeHash).equals(KECCAK256_NULL) ? emptyUint8Arr : codeHash,
+  ]
+}
+
 /**
  * Converts a slim account RLP to a normal account RLP
  */
-export function convertSlimAccount(body: any) {
-  const cpy = [body[0], body[1], body[2], body[3]]
-  if (arrToBufArr(body[2]).length === 0) {
-    // StorageRoot
-    cpy[2] = KECCAK256_RLP
-  }
-  if (arrToBufArr(body[3]).length === 0) {
-    // CodeHash
-    cpy[3] = KECCAK256_NULL
-  }
-  return arrToBufArr(RLP.encode(cpy))
+export function accountBodyToRLP(body: AccountBodyBuffer, couldBeSlim = true) {
+  const accountBody = couldBeSlim ? accountBodyFromSlim(body) : body
+  return arrToBufArr(RLP.encode(accountBody))
 }
