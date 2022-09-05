@@ -44,7 +44,7 @@
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
-    "@ethereumjs/common": "3.0.0-rc.1",
+    "@ethereumjs/common": "^3.0.0",
     "memory-level": "^1.0.0"
   },
   "engines": {
