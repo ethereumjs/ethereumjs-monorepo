@@ -12,6 +12,7 @@ Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS
 
 ### Changes
 
+- **Potentially breaking:** Removed acceptance of `receiptRoot` parameter (correct is plural: `receiptsRoot`) for `blockHeaderFromRpc()` function, PR [#2259](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2259)
 - Internal refactor: removed ambiguous boolean checks within conditional clauses, PR [#2256](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2256)
 
 ## 4.0.0-rc.1 - 2022-08-29
