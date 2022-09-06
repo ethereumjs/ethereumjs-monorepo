@@ -7,6 +7,8 @@ import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
+import { MockProvider } from './util'
+
 import type { Proof } from '../src'
 
 const provider = new CloudflareProvider()
@@ -80,10 +82,12 @@ tape('runTx tests', async (t) => {
  *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
  */
 
-tape('runBlock test', async (t) => {
-  if (process.env.PROVIDER === undefined) t.fail('no provider URL provided')
+tape.only('runBlock test', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const provider = new JsonRpcProvider(process.env.PROVIDER)
+  const provider =
+    process.env.PROVIDER !== undefined
+      ? new JsonRpcProvider(process.env.PROVIDER)
+      : new MockProvider()
   const blockTag = 500000n
   const state = new EthersStateManager({
     provider,
