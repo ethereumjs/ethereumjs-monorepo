@@ -46,7 +46,7 @@
     "ethereum-cryptography": "^1.1.2",
     "functional-red-black-tree": "^1.0.1",
     "@ethereumjs/common": "^3.0.0",
-    "@ethereumjs/rlp": "^4.0.0",
+    "@ethereumjs/rlp": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
