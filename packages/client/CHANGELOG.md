@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.3 - 2022-09-06
+
+This is the official Merge-ready release for the EthereumJS client! 🎉 Note that it is not possible yet to run EthereumJS client on mainnet though. This release nevertheless implements all final Merge specifications and includes Merge-related configuration parameters and is ready for current (`Sepolia`) and future Merge related testnets and development networks.
+
+This release also updates the underlying EthereumJS libraries to the final breaking versions.
+
 ## 0.6.2 - 2022-08-29
 
 This release updates the underlying EthereumJS libraries to the newly released RC 1 versions.

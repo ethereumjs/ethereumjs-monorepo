@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
@@ -46,8 +46,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-rc.1",
-    "@ethereumjs/util": "8.0.0-rc.1",
+    "@ethereumjs/common": "^3.0.0",
+    "@ethereumjs/util": "^8.0.0",
     "@types/async-eventemitter": "^0.2.1",
     "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
@@ -56,7 +56,7 @@
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/statemanager": "1.0.0-rc.1",
+    "@ethereumjs/statemanager": "^1.0.0",
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
