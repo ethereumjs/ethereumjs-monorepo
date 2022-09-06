@@ -7,7 +7,7 @@ import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
-import { MockProvider } from './util'
+import { MockProvider } from './testdata/providerData/mockProvider'
 
 import type { Proof } from '../src'
 
