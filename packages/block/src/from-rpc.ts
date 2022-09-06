@@ -50,13 +50,11 @@ export function blockFromRpc(
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  if (blockParams.transactions !== undefined) {
-    const opts = { common: header._common }
-    for (const _txParams of blockParams.transactions) {
-      const txParams = normalizeTxParams(_txParams)
-      const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
-      transactions.push(tx)
-    }
+  const opts = { common: header._common }
+  for (const _txParams of blockParams.transactions ?? []) {
+    const txParams = normalizeTxParams(_txParams)
+    const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
+    transactions.push(tx)
   }
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))

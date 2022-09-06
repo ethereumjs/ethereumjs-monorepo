@@ -27,7 +27,7 @@ import type { JsonRpcProvider } from '@ethersproject/providers'
 const log = debug('statemanager')
 export interface EthersStateManagerOpts {
   provider: JsonRpcProvider
-  blockTag?: bigint | string
+  blockTag?: bigint | 'latest' | 'earliest'
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
@@ -36,7 +36,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private storageTries: { [key: string]: Trie }
   private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
   private blockTag: string
-  private root: Buffer | undefined
   private trie: Trie
 
   constructor(opts: EthersStateManagerOpts) {
@@ -95,7 +94,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   /**
    * Gets the storage value associated with the provided `address` and `key`. This method returns
    * the shortest representation of the stored value.
-   * @param address -  Address of the account to get the storage for
+   * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    * @returns {Buffer} - The storage value for the account
    * corresponding to the provided address at the provided key.
@@ -106,7 +105,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     await this.getContractStorageFromProvider(address, key)
 
     const storageTrie = await this._getStorageTrie(address)
-    const foundValue = await storageTrie.get(key) //@ts-ignore
+    const foundValue = await storageTrie.get(key)
 
     return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
   }
@@ -142,17 +141,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     let map = this.externallyRetrievedStorageKeys.get(address.toString())
     if (!map) {
       this.externallyRetrievedStorageKeys.set(address.toString(), new Map())
+      map = this.externallyRetrievedStorageKeys.get(address.toString())!
     }
-    map = this.externallyRetrievedStorageKeys.get(address.toString())!
     map.set(key.toString('hex'), true)
   }
 
   /**
    * Adds value to the state trie for the `account`
    * corresponding to `address` at the provided `key`.
-   * @param address -  Address to set a storage value for
+   * @param address - Address to set a storage value for
    * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
+   * @param value - Value to set at `key` for account corresponding to `address`.
+   * Cannot be more than 32 bytes. Leading zeros are stripped.
+   * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     const storageTrie = await this._getStorageTrie(address)
@@ -209,8 +210,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Checks if the `account` corresponding to `address`
-   * exists
+   * Checks if an `account` exists at `address`
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
@@ -233,7 +233,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   /**
    * Gets the code corresponding to the provided `address`.
    * @param address - Address to get the `code` for
-   * @returns {Promise<Buffer>} -  Resolves with the code corresponding to the provided address.
+   * @returns {Promise<Buffer>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account> {
