@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1662031428711,
+  "lastUpdate": 1662456696840,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7c0b0adc00f3d21cd2b3cff69c7588293103f5ed",
-          "message": " refactor(trie): change `isCheckpoint` getter to `hasCheckpoints` checker (#2218)\n\n* trie: removed deprecated prove() function (renamed to createProof())\r\n\r\n* trie: added secure option to base trie, integrated secure trie functionality\r\n\r\n* trie: adopted secureTrie.spec.ts tests (5 failing)\r\n\r\n* trie: fixed copy function\r\n\r\n* trie: fixed secureTrie.spec.ts branching test\r\n\r\n* trie: additional test fixes\r\n\r\n* trie: removed secure.ts SecureTrie class definition file\r\n\r\n* trie: updated README\r\n\r\n* trie: removed secure export, unified prepareTrieOpts and expand to CheckpointTrie\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* trie: renamed _secure -> _hashKeys and _hash() -> _hashKeysFunction\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): rename `secure` to `useHashedKeys`\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor(trie): always use `CheckpointDB` as internal database\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* chore: wip\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\n\r\n* refactor: always support checkpointing\r\n\r\n* refactor(trie): change `isCheckpoint` getter to `hasCheckpoints` checker\r\n\r\nSigned-off-by: Brian Faust <hello@basecode.sh>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-08-24T12:58:54+02:00",
-          "tree_id": "0557a9b602bd07e9ff83564386ec7addd321b175",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7c0b0adc00f3d21cd2b3cff69c7588293103f5ed"
-        },
-        "date": 1661341097308,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23149,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22095,
-            "range": "±5.27%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22640,
-            "range": "±1.62%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21069,
-            "range": "±7.03%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22610,
-            "range": "±5.34%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.40%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1e0de28380e5e73e92be47895f6c79ffc90392c4",
+          "message": "Final Breaking Releases (#2270)\n\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (RLP v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Util v8.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Common v3.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Trie v5.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Tx v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Block v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Blockchain v6.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Ethash v2.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (StateManager v1.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Devp2p v5.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (EVM v1.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (VM v6.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version (Client v0.6.3)\r\n\r\n* Updated package-lock.json",
+          "timestamp": "2022-09-06T11:28:30+02:00",
+          "tree_id": "ee6a5e88b9a3f6d8b80026a176de0667a4054e0f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1e0de28380e5e73e92be47895f6c79ffc90392c4"
+        },
+        "date": 1662456695732,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 11785,
+            "range": "±3.63%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 12035,
+            "range": "±3.74%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 11597,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 11271,
+            "range": "±7.90%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12201,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
