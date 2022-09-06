@@ -11,9 +11,9 @@ import { MockProvider } from './testdata/providerData/mockProvider'
 
 import type { Proof } from '../src'
 
-const provider = new CloudflareProvider()
-
 tape('Ethers State Manager API tests', async (t) => {
+  const provider =
+    process.env.PROVIDER !== undefined ? new CloudflareProvider() : new MockProvider()
   const state = new EthersStateManager({ provider })
   const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
   const account = await state.getAccount(vitalikDotEth)
@@ -55,6 +55,8 @@ tape('Ethers State Manager API tests', async (t) => {
 
 tape('runTx tests', async (t) => {
   const common = new Common({ chain: Chain.Mainnet })
+  const provider =
+    process.env.PROVIDER !== undefined ? new CloudflareProvider() : new MockProvider()
   const state = new EthersStateManager({ provider })
   const vm = await VM.create({ common, stateManager: state })
 
@@ -67,6 +69,7 @@ tape('runTx tests', async (t) => {
     { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
     { common }
   ).sign(privateKey)
+
   const result = await vm.runTx({
     skipBalance: true,
     skipNonce: true,
@@ -77,12 +80,12 @@ tape('runTx tests', async (t) => {
   t.end()
 })
 
-/** To run the block test, you will need an Infura or Alchemy URL that gives access to complete chain history.
+/** To run the block test with an actual provider, you will need a provider URL (like alchemy or infura) that provides access to an archive node.
  *  Pass it in the PROVIDER=[provider url] npm run tape -- 'tests/ethersStateManager.spec.ts'
- *  Cloudflare only provides access to the last 128 blocks so throws errors on this test.
+ *  Note: Cloudflare only provides access to the last 128 blocks on these tests so will fail on these tests.
  */
 
-tape.only('runBlock test', async (t) => {
+tape('runBlock test', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider =
     process.env.PROVIDER !== undefined
