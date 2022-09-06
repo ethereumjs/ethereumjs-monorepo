@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Account } from '@ethereumjs/util'
 import { JsonRpcProvider } from '@ethersproject/providers'
 

@@ -35,7 +35,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "npm run test:node",
     "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- tests/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
