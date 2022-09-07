@@ -123,7 +123,6 @@ Note that the `--save-exact` flag will pin these dependencies to exact versions 
 Fortunately the implementation does not require any input from you other than copying and pasting the below code into a file of your choosing in any given location. You will then import this to any area in which you need to instantiate a trie.
 
 ```ts
-import { isTruthy } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
@@ -145,9 +144,10 @@ export class LevelDB implements DB {
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
-      if (isTruthy(error.notFound)) {
-        // not found, returning null
-      } else {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
         throw error
       }
     }

@@ -22,6 +22,7 @@
 
 ### Type Aliases
 
+- [AccountBodyBuffer](README.md#accountbodybuffer)
 - [AddressLike](README.md#addresslike)
 - [BigIntLike](README.md#bigintlike)
 - [BufferLike](README.md#bufferlike)
@@ -49,6 +50,9 @@
 
 ### Functions
 
+- [accountBodyFromSlim](README.md#accountbodyfromslim)
+- [accountBodyToRLP](README.md#accountbodytorlp)
+- [accountBodyToSlim](README.md#accountbodytoslim)
 - [addHexPrefix](README.md#addhexprefix)
 - [arrToBufArr](README.md#arrtobufarr)
 - [arrayContainsArray](README.md#arraycontainsarray)
@@ -74,10 +78,8 @@
 - [importPublic](README.md#importpublic)
 - [intToBuffer](README.md#inttobuffer)
 - [intToHex](README.md#inttohex)
-- [isFalsy](README.md#isfalsy)
 - [isHexPrefixed](README.md#ishexprefixed)
 - [isHexString](README.md#ishexstring)
-- [isTruthy](README.md#istruthy)
 - [isValidAddress](README.md#isvalidaddress)
 - [isValidChecksumAddress](README.md#isvalidchecksumaddress)
 - [isValidPrivate](README.md#isvalidprivate)
@@ -109,6 +111,16 @@
 - [zeros](README.md#zeros)
 
 ## Type Aliases
+
+### AccountBodyBuffer
+
+Ƭ **AccountBodyBuffer**: [`Buffer`, `Buffer`, `Buffer` \| `Uint8Array`, `Buffer` \| `Uint8Array`]
+
+#### Defined in
+
+[account.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L30)
+
+___
 
 ### AddressLike
 
@@ -352,6 +364,69 @@ ___
 [constants.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L27)
 
 ## Functions
+
+### accountBodyFromSlim
+
+▸ **accountBodyFromSlim**(`body`): (`Uint8Array` \| `Buffer`)[]
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `body` | [`AccountBodyBuffer`](README.md#accountbodybuffer) |
+
+#### Returns
+
+(`Uint8Array` \| `Buffer`)[]
+
+#### Defined in
+
+[account.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L347)
+
+___
+
+### accountBodyToRLP
+
+▸ **accountBodyToRLP**(`body`, `couldBeSlim?`): `Buffer`
+
+Converts a slim account RLP to a normal account RLP
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `body` | [`AccountBodyBuffer`](README.md#accountbodybuffer) | `undefined` |
+| `couldBeSlim` | `boolean` | `true` |
+
+#### Returns
+
+`Buffer`
+
+#### Defined in
+
+[account.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L371)
+
+___
+
+### accountBodyToSlim
+
+▸ **accountBodyToSlim**(`body`): (`Uint8Array` \| `Buffer`)[]
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `body` | [`AccountBodyBuffer`](README.md#accountbodybuffer) |
+
+#### Returns
+
+(`Uint8Array` \| `Buffer`)[]
+
+#### Defined in
+
+[account.ts:358](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L358)
+
+___
 
 ### addHexPrefix
 
@@ -841,7 +916,7 @@ Generates an address of a newly created contract.
 
 #### Defined in
 
-[account.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L198)
+[account.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L199)
 
 ___
 
@@ -865,7 +940,7 @@ Generates an address for a contract created using CREATE2.
 
 #### Defined in
 
-[account.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L218)
+[account.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L219)
 
 ___
 
@@ -970,7 +1045,7 @@ Converts a public key to the Ethereum format.
 
 #### Defined in
 
-[account.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L315)
+[account.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L316)
 
 ___
 
@@ -1015,32 +1090,6 @@ Converts a `Number` into a hex `String`
 #### Defined in
 
 [bytes.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L17)
-
-___
-
-### isFalsy
-
-▸ **isFalsy**(`value`): value is Falsy
-
-Returns true if a value is falsy
-
-**`Deprecated`**
-
-This helper function should only be used temporarily until the monorepo types are explicit enough
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `value` | `unknown` | Value to check for falseness |
-
-#### Returns
-
-value is Falsy
-
-#### Defined in
-
-[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L133)
 
 ___
 
@@ -1097,38 +1146,6 @@ output the string is a hex string
 
 ___
 
-### isTruthy
-
-▸ **isTruthy**<`T`\>(`value`): value is T
-
-Returns true if a value is truthy
-
-**`Deprecated`**
-
-This helper function should only be used temporarily until the monorepo types are explicit enough
-
-#### Type parameters
-
-| Name |
-| :------ |
-| `T` |
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `value` | `Falsy` \| `T` | Value to check for truthiness |
-
-#### Returns
-
-value is T
-
-#### Defined in
-
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L152)
-
-___
-
 ### isValidAddress
 
 ▸ **isValidAddress**(`hexAddress`): `boolean`
@@ -1147,7 +1164,7 @@ Checks if the address is a valid. Accepts checksummed addresses too.
 
 #### Defined in
 
-[account.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L131)
+[account.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L132)
 
 ___
 
@@ -1172,7 +1189,7 @@ See toChecksumAddress' documentation for details about the eip1191ChainId parame
 
 #### Defined in
 
-[account.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L186)
+[account.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L187)
 
 ___
 
@@ -1194,7 +1211,7 @@ Checks if the private key satisfies the rules of the curve secp256k1.
 
 #### Defined in
 
-[account.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L240)
+[account.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L241)
 
 ___
 
@@ -1218,7 +1235,7 @@ and the requirements of Ethereum.
 
 #### Defined in
 
-[account.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L250)
+[account.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L251)
 
 ___
 
@@ -1267,7 +1284,7 @@ Checks if a given address is the zero address.
 
 #### Defined in
 
-[account.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L335)
+[account.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L336)
 
 ___
 
@@ -1313,7 +1330,7 @@ Returns the ethereum address of a given private key.
 
 #### Defined in
 
-[account.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L308)
+[account.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L309)
 
 ___
 
@@ -1335,7 +1352,7 @@ Returns the ethereum public key of a given private key.
 
 #### Defined in
 
-[account.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L298)
+[account.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L299)
 
 ___
 
@@ -1359,7 +1376,7 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 #### Defined in
 
-[account.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L281)
+[account.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L282)
 
 ___
 
@@ -1383,7 +1400,7 @@ Accepts "Ethereum public keys" and SEC1 encoded keys.
 
 #### Defined in
 
-[account.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L281)
+[account.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L282)
 
 ___
 
@@ -1567,7 +1584,7 @@ Usage of this EIP is therefore discouraged unless you have a very targeted use c
 
 #### Defined in
 
-[account.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L153)
+[account.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L154)
 
 ___
 
@@ -1878,7 +1895,7 @@ Returns the zero address.
 
 #### Defined in
 
-[account.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L326)
+[account.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L327)
 
 ___
 
