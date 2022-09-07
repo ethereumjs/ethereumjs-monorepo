@@ -1,6 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, bigIntToBuffer, convertSlimAccount } from '@ethereumjs/util'
+import {
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  accountBodyToRLP,
+  bigIntToBuffer,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -37,10 +43,7 @@ tape('[SnapProtocol]', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
-    const root = {
-      number: BigInt(4),
-      stateRoot: Buffer.from([]),
-    }
+    const root = Buffer.from([])
     const reqId = BigInt(1)
     const origin = Buffer.from(
       '0000000000000000000000000000000000000000000000000000000000000000',
@@ -52,37 +55,47 @@ tape('[SnapProtocol]', (t) => {
     )
     const bytes = BigInt(5000000)
 
-    const res = p.decode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], [
-      reqId,
-      root,
-      origin,
-      limit,
-      bytes,
-    ])
-    const res2 = p.encode(p.messages.filter((message) => message.name === 'GetAccountRange')[0], {
-      reqId,
-      root,
-      origin,
-      limit,
-      bytes,
-    })
+    const payload = p.encode(
+      p.messages.filter((message) => message.name === 'GetAccountRange')[0],
+      {
+        reqId,
+        root,
+        origin,
+        limit,
+        bytes,
+      }
+    )
+
+    t.ok(
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
+    t.ok(
+      JSON.stringify(payload[1]) === JSON.stringify(setLengthLeft(root, 32)),
+      'correctly encoded root'
+    )
+    t.ok(JSON.stringify(payload[2]) === JSON.stringify(origin), 'correctly encoded origin')
+    t.ok(JSON.stringify(payload[3]) === JSON.stringify(limit), 'correctly encoded limit')
+    t.ok(
+      JSON.stringify(payload[4]) === JSON.stringify(bigIntToBuffer(bytes)),
+      'correctly encoded bytes'
+    )
+    t.ok(payload)
+
+    const res = p.decode(
+      p.messages.filter((message) => message.name === 'GetAccountRange')[0],
+      payload
+    )
 
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
-    t.ok(JSON.stringify(res.root) === JSON.stringify(root), 'correctly decoded root')
+    t.ok(
+      JSON.stringify(res.root) === JSON.stringify(setLengthLeft(root, 32)),
+      'correctly decoded root'
+    )
     t.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     t.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
     t.ok(res)
-
-    t.ok(
-      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
-      'correctly encoded reqId'
-    )
-    t.ok(JSON.stringify(res2[1]) === JSON.stringify(root), 'correctly encoded root')
-    t.ok(JSON.stringify(res2[2]) === JSON.stringify(origin), 'correctly encoded origin')
-    t.ok(JSON.stringify(res2[3]) === JSON.stringify(limit), 'correctly encoded limit')
-    t.ok(JSON.stringify(res2[4]) === JSON.stringify(bytes), 'correctly encoded bytes')
-    t.ok(res2)
     t.end()
   })
 
@@ -129,6 +142,44 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
+  t.test('AccountRange encode/decode should handle account slim body correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const pSlim = new SnapProtocol({ config, chain })
+    const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
+    // accountRangeRLP is the corresponding response to getAccountRangeRLP
+    const resData = RLP.decode(Buffer.from(accountRangeRLP, 'hex')) as unknown
+
+    const fullData = pFull.decode(
+      pFull.messages.filter((message) => message.name === 'AccountRange')[0],
+      resData
+    )
+    const { accounts: accountsFull } = fullData
+    t.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
+    const accountFull = accountsFull[0].body
+    t.ok(accountFull[2].equals(KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
+    t.ok(accountFull[3].equals(KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
+
+    // Lets encode fullData as it should be encoded in slim format and upon decoding
+    // we shpuld get slim format
+    const slimPayload = pFull.encode(
+      pFull.messages.filter((message) => message.name === 'AccountRange')[0],
+      fullData
+    )
+    const { accounts: accountsSlim } = pSlim.decode(
+      pSlim.messages.filter((message) => message.name === 'AccountRange')[0],
+      slimPayload
+    )
+
+    // 3 accounts are there in accountRangeRLP
+    t.ok(accountsSlim.length === 3, '3 accounts should be decoded in accountsSlim')
+    const accountSlim = accountsSlim[0].body
+    t.ok(accountSlim[2].length === 0, 'storageRoot should be decoded in slim')
+    t.ok(accountSlim[3].length === 0, 'codeHash should be decoded in slim')
+
+    t.end()
+  })
+
   t.test('AccountRange should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
@@ -150,7 +201,7 @@ tape('[SnapProtocol]', (t) => {
     const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
-      const values = accounts.map((acc: any) => convertSlimAccount(acc.body))
+      const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
       await trie.verifyRangeProof(
         stateRoot,
         keys[0],
@@ -173,13 +224,7 @@ tape('[SnapProtocol]', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
-    const root = {
-      number: BigInt(4),
-      stateRoot: Buffer.from([]),
-      hash: () => {
-        return Buffer.from([])
-      },
-    }
+    const root = Buffer.from([])
     const reqId = BigInt(1)
     const origin = Buffer.from(
       '0000000000000000000000000000000000000000000000000000000000000000',
@@ -191,48 +236,53 @@ tape('[SnapProtocol]', (t) => {
     )
     const bytes = BigInt(5000000)
     const accounts = [
-      new Account(BigInt(0), BigInt('40000000000100000')),
-      new Account(BigInt(2), BigInt('40000000000200000')),
+      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
+      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
     ]
 
-    const res = p.decode(p.messages.filter((message) => message.name === 'GetStorageRanges')[0], [
-      reqId,
-      root,
-      accounts,
-      origin,
-      limit,
-      bytes,
-    ])
-    const res2 = p.encode(p.messages.filter((message) => message.name === 'GetStorageRanges')[0], {
-      reqId,
-      root,
-      accounts,
-      origin,
-      limit,
-      bytes,
-    })
+    const payload = p.encode(
+      p.messages.filter((message) => message.name === 'GetStorageRanges')[0],
+      {
+        reqId,
+        root,
+        accounts,
+        origin,
+        limit,
+        bytes,
+      }
+    )
 
+    t.ok(
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
+    t.ok(
+      JSON.stringify(payload[1]) === JSON.stringify(setLengthLeft(root, 32)),
+      'correctly encoded root'
+    )
+    t.ok(JSON.stringify(payload[2]) === JSON.stringify(accounts), 'correctly encoded accounts')
+    t.ok(JSON.stringify(payload[3]) === JSON.stringify(origin), 'correctly encoded origin')
+    t.ok(JSON.stringify(payload[4]) === JSON.stringify(limit), 'correctly encoded limit')
+    t.ok(
+      JSON.stringify(payload[5]) === JSON.stringify(bigIntToBuffer(bytes)),
+      'correctly encoded bytes'
+    )
+    t.ok(payload)
+
+    const res = p.decode(
+      p.messages.filter((message) => message.name === 'GetStorageRanges')[0],
+      payload
+    )
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
-    t.ok(JSON.stringify(res.root) === JSON.stringify(root), 'correctly decoded root')
+    t.ok(
+      JSON.stringify(res.root) === JSON.stringify(setLengthLeft(root, 32)),
+      'correctly decoded root'
+    )
     t.ok(JSON.stringify(res.accounts) === JSON.stringify(accounts), 'correctly decoded accounts')
     t.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     t.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
-    t.ok(res)
-
-    t.ok(
-      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
-      'correctly encoded reqId'
-    )
-    t.ok(JSON.stringify(res2[1]) === JSON.stringify(root), 'correctly encoded root')
-    t.ok(JSON.stringify(res2[2]) === JSON.stringify(accounts), 'correctly encoded accounts')
-    t.ok(JSON.stringify(res2[3]) === JSON.stringify(origin), 'correctly encoded origin')
-    t.ok(JSON.stringify(res2[4]) === JSON.stringify(limit), 'correctly encoded limit')
-    t.ok(
-      JSON.stringify(res2[5]) === JSON.stringify(bigIntToBuffer(bytes)),
-      'correctly encoded bytes'
-    )
-    t.ok(res2)
+    t.ok(payload)
     t.end()
   })
 
@@ -320,38 +370,38 @@ tape('[SnapProtocol]', (t) => {
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
-    const hashes = Buffer.from(
-      '0000000000000000000000000f00000000000000000000000000000000000010',
-      'hex'
-    )
+    const hashes = [
+      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
+      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+    ]
     const bytes = BigInt(5000000)
 
-    const res = p.decode(p.messages.filter((message) => message.name === 'GetByteCodes')[0], [
-      reqId,
-      hashes,
-      bytes,
-    ])
-    const res2 = p.encode(p.messages.filter((message) => message.name === 'GetByteCodes')[0], {
+    const payload = p.encode(p.messages.filter((message) => message.name === 'GetByteCodes')[0], {
       reqId,
       hashes,
       bytes,
     })
 
+    t.ok(
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      'correctly encoded reqId'
+    )
+    t.ok(JSON.stringify(payload[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
+    t.ok(
+      JSON.stringify(payload[2]) === JSON.stringify(bigIntToBuffer(bytes)),
+      'correctly encoded bytes'
+    )
+    t.ok(payload)
+
+    const res = p.decode(
+      p.messages.filter((message) => message.name === 'GetByteCodes')[0],
+      payload
+    )
+
     t.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
     t.ok(JSON.stringify(res.hashes) === JSON.stringify(hashes), 'correctly decoded hashes')
     t.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
     t.ok(res)
-
-    t.ok(
-      JSON.stringify(res2[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
-      'correctly encoded reqId'
-    )
-    t.ok(JSON.stringify(res2[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
-    t.ok(
-      JSON.stringify(res2[2]) === JSON.stringify(bigIntToBuffer(bytes)),
-      'correctly encoded bytes'
-    )
-    t.ok(res2)
     t.end()
   })
 
@@ -379,7 +429,6 @@ tape('[SnapProtocol]', (t) => {
       byteCodesRLP === Buffer.from(payload).toString('hex'),
       'Re-encoded payload should match with original'
     )
-
     t.end()
   })
 

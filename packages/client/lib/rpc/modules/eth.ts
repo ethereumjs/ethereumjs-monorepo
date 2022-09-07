@@ -528,7 +528,7 @@ export class Eth {
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
     const block = await getBlockByOption(blockOpt, this._chain)
-    return await jsonRpcBlock(block, this._chain, includeTransactions)
+    return jsonRpcBlock(block, this._chain, includeTransactions)
   }
 
   /**
@@ -713,7 +713,7 @@ export class Eth {
         skipBlockValidation: true,
       })
       const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
-      return jsonRpcReceipt(
+      return await jsonRpcReceipt(
         receipt,
         totalGasSpent,
         effectiveGasPrice,
