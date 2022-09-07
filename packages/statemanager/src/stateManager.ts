@@ -500,7 +500,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * Checks whether there is a state corresponding to a stateRoot
    */
   async hasStateRoot(root: Buffer): Promise<boolean> {
-    return await this._trie.checkRoot(root)
+    return this._trie.checkRoot(root)
   }
 
   /**

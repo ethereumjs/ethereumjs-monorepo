@@ -46,7 +46,7 @@ async function unset(
     // continue to the next node
     const next = child.getBranch(key[pos])
     const _child = next && (await trie.lookupNode(next))
-    return await unset(trie, child, _child, key, pos + 1, removeLeft, stack)
+    return unset(trie, child, _child, key, pos + 1, removeLeft, stack)
   } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
     /**
      * This node is an extension node or lead node,
@@ -85,7 +85,7 @@ async function unset(
       stack.push(child)
 
       // continue to the next node
-      return await unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
+      return unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
     }
   } else if (child === null) {
     return pos - 1
@@ -234,18 +234,18 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     if (shortForkLeft !== 0 && shortForkRight !== 0) {
       // Unset the entire trie
-      return await removeSelfFromParentAndSaveStack(left)
+      return removeSelfFromParentAndSaveStack(left)
     }
 
     // Unset left node
     if (shortForkRight !== 0) {
       if (node instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left)
       }
 
       const child = await trie.lookupNode(node._value)
       if (child && child instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left)
       }
 
       const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
@@ -257,12 +257,12 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
     // Unset right node
     if (shortForkLeft !== 0) {
       if (node instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right)
       }
 
       const child = await trie.lookupNode(node._value)
       if (child && child instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right)
       }
 
       const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)

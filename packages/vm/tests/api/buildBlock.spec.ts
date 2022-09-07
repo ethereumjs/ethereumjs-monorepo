@@ -153,7 +153,7 @@ tape('BlockBuilder', async (t) => {
 
     st.ok(block.header.mixHash.equals(sealOpts.mixHash))
     st.ok(block.header.nonce.equals(sealOpts.nonce))
-    st.doesNotThrow(async () => await vm.blockchain.consensus.validateDifficulty(block.header))
+    st.doesNotThrow(async () => vm.blockchain.consensus.validateDifficulty(block.header))
     st.end()
   })
 

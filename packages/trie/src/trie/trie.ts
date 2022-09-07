@@ -168,7 +168,7 @@ export class Trie {
 
     // If value is empty, delete
     if (value === null || value.length === 0) {
-      return await this.del(key)
+      return this.del(key)
     }
 
     await this._lock.acquire()
