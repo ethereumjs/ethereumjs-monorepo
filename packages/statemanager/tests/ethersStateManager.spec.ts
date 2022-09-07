@@ -45,11 +45,6 @@ tape('Ethers State Manager API tests', async (t) => {
   )
   t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
-  const stateRoot = await state.getStateRoot()
-  t.ok(
-    stateRoot !== undefined && (state as any).root === undefined,
-    'state root was pulled from provider and not cached when blockTag is "latest"'
-  )
   t.end()
 })
 
