@@ -25,9 +25,9 @@ Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
-The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager`.
+The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `EthersStateManager` implementation that sources state and history data from an external `ethers` provider.
 
-### Example
+### `DefaultStateManager` Example
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
@@ -41,6 +41,28 @@ await stateManager.putAccount(address, account)
 await stateManager.commit()
 await stateManager.flush()
 ```
+
+### `EthersStateManager`
+
+First, a simple example of usage:
+
+```typescript
+import { Account, Address } from '@ethereumjs/util'
+import { EthersStateManager } from '@ethereumjs/statemanager'
+import { ethers } from 'ethers'
+
+const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
+const stateManager = new EthersStateManager({ provider })
+const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+const account = await stateManager.getAccount(vitalikDotEth)
+console.log('Vitalik has a current ETH balance of ', account.balance)
+```
+
+The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. It can be used in conjunction with the VM to run transactions against accounts sourced from the provider or to run blocks pulled from the provider.
+
+Refer to [this test script](./tests//ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+
+**WARNING** When running blocks in the VM with the `EthersStateManager`, there is an edge case where an account self destruct occurrs or a storage slot is deleted in which the block result produced by the VM when using the `EthersStateManager` will have a different state root than reported by the provider. Most blocks should execute successfully but this would be a prime suspect if the `vm` reports an invalid stateRoot reported after executing the block.
 
 ## API
 

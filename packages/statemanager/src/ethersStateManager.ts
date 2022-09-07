@@ -310,7 +310,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Checks whether there is a state corresponding to a stateRoot
    */
   async hasStateRoot(root: Buffer): Promise<boolean> {
-    return await this.trie.checkRoot(root)
+    const hasRoot = await this.trie.checkRoot(root)
+    return hasRoot
   }
 
   /**
