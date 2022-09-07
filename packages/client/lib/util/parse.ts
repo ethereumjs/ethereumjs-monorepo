@@ -202,7 +202,7 @@ export async function parseCustomParams(json: any, name?: string) {
     if (name !== undefined) {
       json.name = name
     }
-    return parseGethParams(json)
+    return await parseGethParams(json)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

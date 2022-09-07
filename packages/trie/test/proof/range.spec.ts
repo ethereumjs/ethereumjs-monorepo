@@ -81,7 +81,7 @@ async function verify(
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return await trie.verifyRangeProof(
+  return trie.verifyRangeProof(
     trie.root(),
     startKey,
     endKey,
