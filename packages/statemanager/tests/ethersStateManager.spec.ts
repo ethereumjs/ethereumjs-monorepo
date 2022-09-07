@@ -151,8 +151,8 @@ tape('runBlock test', async (t) => {
       bufferToHex(block.header.stateRoot),
       'was able to run block and computed correct state root'
     )
-  } catch (err) {
-    console.log(err)
+  } catch (err: any) {
+    t.fail(`should have successfully ran block; got error ${err.message}`)
   }
 
   const proof = (await provider.send('eth_getProof', [
