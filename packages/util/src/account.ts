@@ -13,7 +13,7 @@ import {
   zeros,
 } from './bytes'
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
-import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
+import { assertIsHexString, assertIsString, assertIsUint8Array } from './helpers'
 import { stripHexPrefix } from './internal'
 
 import type { BigIntLike, BufferLike } from './types'
@@ -44,8 +44,8 @@ export class Account {
     )
   }
 
-  public static fromRlpSerializedAccount(serialized: Buffer) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)) as Uint8Array[]) as Buffer[]
+  public static fromRlpSerializedAccount(serialized: Uint8Array) {
+    const values = arrToBufArr(RLP.decode(serialized) as Uint8Array[]) as Buffer[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized account input. Must be array')
@@ -194,9 +194,9 @@ export const isValidChecksumAddress = function (
  * @param from The address which is creating this new address
  * @param nonce The nonce of the from account
  */
-export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
-  assertIsBuffer(from)
-  assertIsBuffer(nonce)
+export const generateAddress = function (from: Buffer, nonce: Uint8Array): Buffer {
+  assertIsUint8Array(from)
+  assertIsUint8Array(nonce)
 
   if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
@@ -214,10 +214,14 @@ export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
  * @param salt A salt
  * @param initCode The init code of the contract being created
  */
-export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: Buffer): Buffer {
-  assertIsBuffer(from)
-  assertIsBuffer(salt)
-  assertIsBuffer(initCode)
+export const generateAddress2 = function (
+  from: Uint8Array,
+  salt: Uint8Array,
+  initCode: Uint8Array
+): Buffer {
+  assertIsUint8Array(from)
+  assertIsUint8Array(salt)
+  assertIsUint8Array(initCode)
 
   if (from.length !== 20) {
     throw new Error('Expected from to be of length 20')
@@ -236,7 +240,7 @@ export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: 
 /**
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
-export const isValidPrivate = function (privateKey: Buffer): boolean {
+export const isValidPrivate = function (privateKey: Uint8Array): boolean {
   return utils.isValidPrivateKey(privateKey)
 }
 
@@ -247,7 +251,7 @@ export const isValidPrivate = function (privateKey: Buffer): boolean {
  * @param sanitize Accept public keys in other formats
  */
 export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = false): boolean {
-  assertIsBuffer(publicKey)
+  assertIsUint8Array(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
     // Automatically checks whether point is on curve
@@ -278,7 +282,7 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
  * @param sanitize Accept public keys in other formats
  */
 export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false): Buffer {
-  assertIsBuffer(pubKey)
+  assertIsUint8Array(pubKey)
   if (sanitize && pubKey.length !== 64) {
     pubKey = Buffer.from(Point.fromHex(pubKey).toRawBytes(false).slice(1))
   }
@@ -286,7 +290,7 @@ export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false)
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return Buffer.from(keccak256(pubKey)).slice(-20)
+  return Buffer.from(keccak256(pubKey).slice(-20))
 }
 export const publicToAddress = pubToAddress
 
@@ -294,8 +298,8 @@ export const publicToAddress = pubToAddress
  * Returns the ethereum public key of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToPublic = function (privateKey: Buffer): Buffer {
-  assertIsBuffer(privateKey)
+export const privateToPublic = function (privateKey: Uint8Array): Buffer {
+  assertIsUint8Array(privateKey)
   // skip the type flag and use the X, Y points
   return Buffer.from(Point.fromPrivateKey(privateKey).toRawBytes(false).slice(1))
 }
@@ -304,19 +308,19 @@ export const privateToPublic = function (privateKey: Buffer): Buffer {
  * Returns the ethereum address of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToAddress = function (privateKey: Buffer): Buffer {
+export const privateToAddress = function (privateKey: Uint8Array): Buffer {
   return publicToAddress(privateToPublic(privateKey))
 }
 
 /**
  * Converts a public key to the Ethereum format.
  */
-export const importPublic = function (publicKey: Buffer): Buffer {
-  assertIsBuffer(publicKey)
+export const importPublic = function (publicKey: Uint8Array): Buffer {
+  assertIsUint8Array(publicKey)
   if (publicKey.length !== 64) {
     publicKey = Buffer.from(Point.fromHex(publicKey).toRawBytes(false).slice(1))
   }
-  return publicKey
+  return toBuffer(publicKey)
 }
 
 /**

@@ -3,7 +3,7 @@ import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
 
 import { bufferToBigInt, bufferToHex, bufferToInt, setLengthLeft, toBuffer } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBuffer } from './helpers'
+import { assertIsUint8Array } from './helpers'
 
 export interface ECDSASignature {
   v: bigint
@@ -187,7 +187,7 @@ export const isValidSignature = function (
  * used to produce the signature.
  */
 export const hashPersonalMessage = function (message: Buffer): Buffer {
-  assertIsBuffer(message)
+  assertIsUint8Array(message)
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
   return Buffer.from(keccak256(Buffer.concat([prefix, message])))
 }

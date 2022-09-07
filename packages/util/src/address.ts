@@ -10,11 +10,11 @@ import { bigIntToBuffer, bufferToBigInt, toBuffer, zeros } from './bytes'
 export class Address {
   public readonly buf: Buffer
 
-  constructor(buf: Buffer) {
+  constructor(buf: Uint8Array) {
     if (buf.length !== 20) {
       throw new Error('Invalid address length')
     }
-    this.buf = buf
+    this.buf = toBuffer(buf)
   }
 
   /**
@@ -39,7 +39,7 @@ export class Address {
    * Returns an address for a given public key.
    * @param pubKey The two points of an uncompressed key
    */
-  static fromPublicKey(pubKey: Buffer): Address {
+  static fromPublicKey(pubKey: Uint8Array): Address {
     if (!Buffer.isBuffer(pubKey)) {
       throw new Error('Public key should be Buffer')
     }
@@ -51,7 +51,7 @@ export class Address {
    * Returns an address for a given private key.
    * @param privateKey A private key must be 256 bits wide
    */
-  static fromPrivateKey(privateKey: Buffer): Address {
+  static fromPrivateKey(privateKey: Uint8Array): Address {
     if (!Buffer.isBuffer(privateKey)) {
       throw new Error('Private key should be Buffer')
     }
@@ -77,7 +77,7 @@ export class Address {
    * @param salt A salt
    * @param initCode The init code of the contract being created
    */
-  static generate2(from: Address, salt: Buffer, initCode: Buffer): Address {
+  static generate2(from: Address, salt: Buffer, initCode: Uint8Array): Address {
     if (!Buffer.isBuffer(salt)) {
       throw new Error('Expected salt to be a Buffer')
     }

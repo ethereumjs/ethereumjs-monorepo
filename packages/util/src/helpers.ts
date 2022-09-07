@@ -23,6 +23,17 @@ export const assertIsBuffer = function (input: Buffer): void {
 }
 
 /**
+ * Throws if input is not a `Uint8Array`
+ * @param {Buffer} input value to check
+ */
+export const assertIsUint8Array = function (input: Uint8Array): void {
+  if (!(input instanceof Uint8Array)) {
+    const msg = `This method only supports Buffer but input was: ${input}`
+    throw new Error(msg)
+  }
+}
+
+/**
  * Throws if input is not an array
  * @param {number[]} input value to check
  */

@@ -1,8 +1,7 @@
-import { assertIsArray, assertIsBuffer, assertIsHexString } from './helpers'
+import { assertIsArray, assertIsHexString, assertIsUint8Array } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
 
 import type {
-  NestedBufferArray,
   NestedUint8Array,
   PrefixedHexString,
   TransformableToArray,
@@ -72,7 +71,7 @@ const setLength = function (msg: Buffer, length: number, right: boolean) {
  * @return (Buffer)
  */
 export const setLengthLeft = function (msg: Buffer, length: number) {
-  assertIsBuffer(msg)
+  assertIsUint8Array(msg)
   return setLength(msg, length, false)
 }
 
@@ -84,7 +83,7 @@ export const setLengthLeft = function (msg: Buffer, length: number) {
  * @return (Buffer)
  */
 export const setLengthRight = function (msg: Buffer, length: number) {
-  assertIsBuffer(msg)
+  assertIsUint8Array(msg)
   return setLength(msg, length, true)
 }
 
@@ -107,8 +106,8 @@ const stripZeros = function (a: any): Buffer | number[] | string {
  * @param a (Buffer)
  * @return (Buffer)
  */
-export const unpadBuffer = function (a: Buffer): Buffer {
-  assertIsBuffer(a)
+export const unpadBuffer = function (a: Uint8Array): Buffer {
+  assertIsUint8Array(a)
   return stripZeros(a) as Buffer
 }
 
@@ -202,15 +201,15 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
  * Converts a `Buffer` into a `0x`-prefixed hex `String`.
  * @param buf `Buffer` object to convert
  */
-export const bufferToHex = function (buf: Buffer): string {
+export const bufferToHex = function (buf: Uint8Array): string {
   buf = toBuffer(buf)
-  return '0x' + buf.toString('hex')
+  return '0x' + Buffer.from(buf).toString('hex')
 }
 
 /**
  * Converts a {@link Buffer} to a {@link bigint}
  */
-export function bufferToBigInt(buf: Buffer) {
+export function bufferToBigInt(buf: Uint8Array) {
   const hex = bufferToHex(buf)
   if (hex === '0x') {
     return BigInt(0)
@@ -230,7 +229,7 @@ export function bigIntToBuffer(num: bigint) {
  * @param buf `Buffer` object to convert
  * @throws If the input number exceeds 53 bits.
  */
-export const bufferToInt = function (buf: Buffer): number {
+export const bufferToInt = function (buf: Uint8Array): number {
   const res = Number(bufferToBigInt(buf))
   if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
   return res
@@ -240,7 +239,7 @@ export const bufferToInt = function (buf: Buffer): number {
  * Interprets a `Buffer` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
  * @param num Signed integer value
  */
-export const fromSigned = function (num: Buffer): bigint {
+export const fromSigned = function (num: Uint8Array): bigint {
   return BigInt.asIntN(256, bufferToBigInt(num))
 }
 
@@ -346,12 +345,12 @@ export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer
 }
 
 /**
- * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
+ * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedUint8Array}
  */
 export function arrToBufArr(arr: Uint8Array): Buffer
-export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
+export function arrToBufArr(arr: NestedUint8Array): NestedUint8Array
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedUint8Array
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedUint8Array {
   if (!Array.isArray(arr)) {
     return Buffer.from(arr)
   }
@@ -359,12 +358,12 @@ export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | Nested
 }
 
 /**
- * Converts a {@link Buffer} or {@link NestedBufferArray} to {@link Uint8Array} or {@link NestedUint8Array}
+ * Converts a {@link Buffer} or {@link NestedUint8Array} to {@link Uint8Array} or {@link NestedUint8Array}
  */
-export function bufArrToArr(arr: Buffer): Uint8Array
-export function bufArrToArr(arr: NestedBufferArray): NestedUint8Array
-export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array
-export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array {
+export function bufArrToArr(arr: Uint8Array): Uint8Array
+export function bufArrToArr(arr: NestedUint8Array): NestedUint8Array
+export function bufArrToArr(arr: Uint8Array | NestedUint8Array): Uint8Array | NestedUint8Array
+export function bufArrToArr(arr: Uint8Array | NestedUint8Array): Uint8Array | NestedUint8Array {
   if (!Array.isArray(arr)) {
     return Uint8Array.from(arr ?? [])
   }
