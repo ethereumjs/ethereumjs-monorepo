@@ -80,7 +80,7 @@ tape('runTx tests', async (t) => {
  *  Note: Cloudflare only provides access to the last 128 blocks on these tests so will fail on these tests.
  */
 
-tape('runBlock test', async (t) => {
+tape.only('runBlock test', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider =
     process.env.PROVIDER !== undefined

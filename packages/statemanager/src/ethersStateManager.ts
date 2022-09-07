@@ -129,8 +129,9 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       [bufferToHex(key)],
       this.blockTag,
     ])
-    const rawData = accountData.accountProof
-    await this.trie.fromProof(rawData.map((e: string) => hexToBytes(e)))
+
+    const rawAccountProofData = accountData.accountProof
+    await this.trie.fromProof(rawAccountProofData.map((e: string) => hexToBytes(e)))
     // Only requesting a single slot at a time so the proof will always be the first item in the array
     const storageData = accountData.storageProof[0]
 
@@ -219,9 +220,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     if (account.isEmpty()) {
       // Get latest block (or block specified in `this.blockTag`)
       const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
+
       // Get merkle proof for `address` from provider
       const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
+
       const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+
       const trie = new Trie({ useKeyHashing: true })
       const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
       // if not verified (i.e. verifyProof returns null), account does not exist
@@ -252,6 +256,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       [],
       this.blockTag,
     ])
+
     const rawData = accountData.accountProof
 
     await this.trie.fromProof(rawData.map((e: string) => hexToBytes(e)))
@@ -349,11 +354,18 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   getBlockFromProvider = async (blockTag: string | bigint, common: Common) => {
     let blockData
-    if (typeof blockTag === 'bigint') {
+    if (typeof blockTag === 'string' && blockTag.length === 66) {
+      blockData = await this.provider.send('eth_getBlockByHash', [blockTag, true])
+    } else if (typeof blockTag === 'bigint') {
       blockData = await this.provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
     } else if (isHexPrefixed(blockTag)) {
-      blockData = await this.provider.send('eth_getBlockByHash', [blockTag, true])
+      blockData = await this.provider.send('eth_getBlockByNumber', [blockTag, true])
+    } else {
+      throw new Error(
+        `expected blockTag to be block hash, bigint, or hex prefixed string; got ${blockTag}`
+      )
     }
+
     const uncleHeaders = []
     if (blockData.uncles.length > 0) {
       for (let x = 0; x < blockData.uncles.length; x++) {
