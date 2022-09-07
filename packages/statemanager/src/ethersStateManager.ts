@@ -10,6 +10,7 @@ import {
   isHexPrefixed,
   toBuffer,
 } from '@ethereumjs/util'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -22,11 +23,10 @@ import type { StorageDump } from './interface'
 import type { StorageProof } from './stateManager'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import type { JsonRpcProvider } from '@ethersproject/providers'
 
 const log = debug('statemanager')
 export interface EthersStateManagerOpts {
-  provider: JsonRpcProvider
+  provider: string | JsonRpcProvider
   blockTag?: bigint | 'latest' | 'earliest'
 }
 
@@ -42,7 +42,14 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     super({})
     this.trie = new Trie({ useKeyHashing: true })
     this.storageTries = {}
-    this.provider = opts.provider
+    if (typeof opts.provider === 'string') {
+      this.provider = new JsonRpcProvider(opts.provider)
+    } else if (opts.provider instanceof JsonRpcProvider) {
+      this.provider = opts.provider
+    } else {
+      throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
+    }
+
     if (typeof opts.blockTag === 'bigint') {
       this.blockTag = bigIntToHex(opts.blockTag)
     } else {

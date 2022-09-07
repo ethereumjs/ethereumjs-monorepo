@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -10,6 +10,33 @@ import { EthersStateManager } from '../src/ethersStateManager'
 import { MockProvider } from './testdata/providerData/mockProvider'
 
 import type { Proof } from '../src'
+
+tape('Ethers State Manager initialization tests', (t) => {
+  const provider = new MockProvider()
+  let state = new EthersStateManager({ provider })
+  t.ok(
+    state instanceof EthersStateManager,
+    'was able to instantiate state manager with JsonRpcProvider subclass'
+  )
+  t.equal(
+    (state as any).blockTag,
+    'latest',
+    'State manager starts with default block tag of "latest"'
+  )
+
+  state = new EthersStateManager({ provider, blockTag: 1n })
+  t.equal((state as any).blockTag, '0x1', 'State Manager instantiated with predefined blocktag')
+
+  state = new EthersStateManager({ provider: 'http://localhost:8545' })
+  t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
+
+  const invalidProvider = new BaseProvider('mainnet')
+  t.throws(
+    () => new EthersStateManager({ provider: invalidProvider as any }),
+    'cannot instantiate state manager with invalid provider'
+  )
+  t.end()
+})
 
 tape('Ethers State Manager API tests', async (t) => {
   const provider =
@@ -45,6 +72,15 @@ tape('Ethers State Manager API tests', async (t) => {
   )
   t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
+  try {
+    await state.getBlockFromProvider('fakeBlockTag', {} as any)
+    t.fail('should have thrown')
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('expected blockTag to be block hash, bigint, or hex prefixed string'),
+      'threw with correct error when invalid blockTag provided'
+    )
+  }
   t.end()
 })
 
@@ -80,7 +116,7 @@ tape('runTx tests', async (t) => {
  *  Note: Cloudflare only provides access to the last 128 blocks on these tests so will fail on these tests.
  */
 
-tape.only('runBlock test', async (t) => {
+tape('runBlock test', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const provider =
     process.env.PROVIDER !== undefined
