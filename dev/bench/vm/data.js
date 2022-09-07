@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1662456696840,
+  "lastUpdate": 1662549713595,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2e9e493eab0e7a83ee7d9751d531dc9d462b4122",
-          "message": "Merge pull request #2227 from ethereumjs/big-messy-bunch\n\nTrie: Property Renaming & Visibility / Getter-Setter & Dependency Removals",
-          "timestamp": "2022-08-24T14:43:51+02:00",
-          "tree_id": "6d0b8ac2138d7d3286a80308cfb71cabb6c19a75",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2e9e493eab0e7a83ee7d9751d531dc9d462b4122"
-        },
-        "date": 1661345246977,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18672,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17824,
-            "range": "±4.38%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16935,
-            "range": "±6.65%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18952,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17906,
-            "range": "±2.48%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.18%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5ea6f4a070b45186ae9f420e01854a38bce8998b",
+          "message": "client: Fix snap protocol encoding decoding as per spec (#2269)",
+          "timestamp": "2022-09-07T16:41:16+05:30",
+          "tree_id": "f90b3d095a075c51971601dc43806fa1d26f5b71",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5ea6f4a070b45186ae9f420e01854a38bce8998b"
+        },
+        "date": 1662549712509,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18635,
+            "range": "±2.46%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17806,
+            "range": "±8.27%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17688,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16140,
+            "range": "±10.10%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18759,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
