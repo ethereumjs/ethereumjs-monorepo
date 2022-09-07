@@ -1,5 +1,5 @@
-import { CheckpointTrie, Trie } from '@ethereumjs/trie'
-import { convertSlimAccount, setLengthLeft } from '@ethereumjs/util'
+import { Trie } from '@ethereumjs/trie'
+import { accountBodyToRLP, setLengthLeft } from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 
@@ -48,7 +48,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /**
    * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
    */
-  accountTrie: CheckpointTrie
+  accountTrie: Trie
 
   /**
    * Create new block fetcher
@@ -56,7 +56,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   constructor(options: AccountFetcherOptions) {
     super(options)
 
-    this.accountTrie = new CheckpointTrie({ db: new LevelDB() })
+    this.accountTrie = new Trie({ db: new LevelDB() })
     this.maxRangeConcurrency = BigInt(12)
 
     this.root = options.root
@@ -116,7 +116,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // put account data into trie
       const { hash, body } = accounts[i]
       hashes.push(hash)
-      const value = convertSlimAccount(body)
+      const value = accountBodyToRLP(body)
       values.push(value)
     }
 
@@ -169,7 +169,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         const { hash, body } = result[i]
 
         // TODO can be optimized by converting from slim to full in request phase inside first loop
-        await this.accountTrie.put(hash, convertSlimAccount(body))
+        await this.accountTrie.put(hash, accountBodyToRLP(body))
       }
       // TODO add event emission if necessary
 
@@ -249,5 +249,15 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   peer(): Peer | undefined {
     return this.pool.idle((peer) => 'snap' in peer)
+  }
+
+  processStoreError(
+    error: Error,
+    _task: JobTask
+  ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
+    const stepBack = BigInt(0)
+    const destroyFetcher = !(error.message as string).includes(`InvalidRangeProof`)
+    const banPeer = true
+    return { destroyFetcher, banPeer, stepBack }
   }
 }
