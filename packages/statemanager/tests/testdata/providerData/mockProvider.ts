@@ -16,13 +16,13 @@ export class MockProvider extends JsonRpcProvider {
     }
   }
 
-  private getProofValues = (params: [address: string, _: [], blockTag: bigint | string]) => {
+  private getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
     const [address, _, blockTag] = params
-    const account = require(`./accounts/${address}.json`)
+    const account = await import(`./accounts/${address}.json`)
     return account[blockTag.toString() ?? 'latest']
   }
 
-  private getBlockValues = (params: [blockTag: string, _: boolean]) => {
+  private getBlockValues = async (params: [blockTag: string, _: boolean]) => {
     const [blockTag, _] = params
 
     if (blockTag.slice(0, 2) !== '0x')
@@ -30,7 +30,7 @@ export class MockProvider extends JsonRpcProvider {
         number: 'latest',
         stateRoot: '0x2ffb7ec5bbe8616c24a222737f0817f389d00ab9268f9574e0b7dfe251fbfa05',
       }
-    const block = require(`./blocks/block${blockTag.toString()}.json`)
+    const block = await import(`./blocks/block${blockTag.toString()}.json`)
     return block
   }
 }
