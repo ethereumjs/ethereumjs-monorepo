@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1662549713595,
+  "lastUpdate": 1662558037798,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8cc931c031798b7ccb5c927286ea17043db907b5",
-          "message": "Remove AsyncEventEmitter extension from EVM and VM (#2235)\n\n* vm/evm: remove event emitter dependency\r\n\r\nfix\r\n\r\n* evm: update interface\r\n\r\n* client: fix tests\r\n\r\n* evm: lint\r\n\r\n* evm: fix tests\r\n\r\n* vm: fix tests\r\nvm: lint\r\n\r\n* vm: remove double type EVMInterface | EVM\r\n\r\n* VM: casting and import cleanup\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-08-25T14:21:15+02:00",
-          "tree_id": "5d34654129ab12a67808657bcc754d6d851579ba",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8cc931c031798b7ccb5c927286ea17043db907b5"
-        },
-        "date": 1661430745962,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15086,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15055,
-            "range": "±4.44%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15440,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14252,
-            "range": "±8.51%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15698,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.71%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a6a2a1766c9c7d2625cbaa52a3964a33adfdbf97",
+          "message": "chore: enable `@typescript-eslint/return-await` rule for `eslint` (#2272)",
+          "timestamp": "2022-09-07T09:37:23-04:00",
+          "tree_id": "f51f57fbc9f1e8328ea6b0314724151aaac0297d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a6a2a1766c9c7d2625cbaa52a3964a33adfdbf97"
+        },
+        "date": 1662558035389,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15904,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15304,
+            "range": "±6.18%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16084,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15643,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14163,
+            "range": "±10.93%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
