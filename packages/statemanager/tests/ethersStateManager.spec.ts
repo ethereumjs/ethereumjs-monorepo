@@ -179,6 +179,10 @@ tape('runBlock test', async (t) => {
       blockTag: blockTag - 1n,
     })
 
+    // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
+    // blocks, also for post merge network, ttd should also be passed
+    common.setHardforkByBlockNumber(blockTag - 1n)
+
     const vm = await VM.create({ common, stateManager: state })
     const previousStateRoot = Buffer.from(
       (
