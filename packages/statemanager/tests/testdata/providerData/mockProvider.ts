@@ -9,6 +9,8 @@ export class MockProvider extends JsonRpcProvider {
         return this.getBlockValues(params as any)
       case 'eth_chainId': // Always pretends to be mainnet
         return 1
+      case 'eth_getTransactionByHash':
+        return this.getTransactionData(params as any)
       case 'eth_getCode':
         return 0
       default:
@@ -32,5 +34,11 @@ export class MockProvider extends JsonRpcProvider {
       }
     const block = await import(`./blocks/block${blockTag.toString()}.json`)
     return block
+  }
+
+  private getTransactionData = async (params: [txHash: string]) => {
+    const [txHash] = params
+    const txData = await import(`./transactions/${txHash}.json`)
+    return txData
   }
 }

@@ -1,3 +1,4 @@
+import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
@@ -95,7 +96,7 @@ tape('Ethers State Manager API tests', async (t) => {
   }
 })
 
-tape('runTx tests', async (t) => {
+tape('runTx custom transaction test', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -123,6 +124,35 @@ tape('runTx tests', async (t) => {
     })
 
     t.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
+    t.end()
+  }
+})
+
+tape('runTx test: replay mainnet transactions', async (t) => {
+  if (isBrowser() === true) {
+    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    t.end()
+  } else {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const provider =
+      process.env.PROVIDER !== undefined
+        ? new JsonRpcProvider(process.env.PROVIDER)
+        : new MockProvider()
+    const blockTag = 15496077n
+    const txData = await provider.send('eth_getTransactionByHash', [
+      '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0',
+    ])
+
+    const normedTx = normalizeTxParams(txData)
+    const state = new EthersStateManager({
+      provider,
+      // Set the state manager to look at the state of the chain before the block has been executed
+      blockTag: blockTag - 1n,
+    })
+    const vm = await VM.create({ common, stateManager: state })
+    const tx = FeeMarketEIP1559Transaction.fromTxData(normedTx, { common })
+    const res = await vm.runTx({ tx })
+    t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()
   }
 })
