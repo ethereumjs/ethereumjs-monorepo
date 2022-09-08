@@ -81,8 +81,19 @@ tape('Ethers State Manager API tests', async (t) => {
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(1n), 32)
     )
+
     t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
+    await state.putContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32),
+      Buffer.from('0xabcd')
+    )
+    const slotValue = await state.getContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32)
+    )
+    t.equal(slotValue.toString('hex'), 'abcd', 'should retrieve slot 2 value')
     try {
       await state.getBlockFromProvider('fakeBlockTag', {} as any)
       t.fail('should have thrown')
@@ -92,6 +103,29 @@ tape('Ethers State Manager API tests', async (t) => {
         'threw with correct error when invalid blockTag provided'
       )
     }
+
+    const newState = state.copy()
+
+    state.clearCache()
+
+    t.equal(
+      undefined,
+      (state as any).contractCache.get(UNIerc20ContractAddress),
+      'should not have any code for contract after cache is cleared'
+    )
+
+    t.ok(
+      Buffer.from([0]).equals(
+        (newState as any).contractCache.get(UNIerc20ContractAddress.toString())
+      ),
+      'should have code for contract after cache is cleared'
+    )
+
+    t.equal((state as any).blockTag, 'latest', 'blockTag defaults to latest')
+    state.setBlockTag(5n)
+    t.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+    state.setBlockTag('latest')
+    t.equal((state as any).blockTag, 'latest', 'blockTag set back to latest')
     t.end()
   }
 })

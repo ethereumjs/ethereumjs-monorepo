@@ -3,12 +3,12 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
-  arrToBufArr,
   bigIntToHex,
   bufferToHex,
   intToHex,
   isHexPrefixed,
   toBuffer,
+  unpadBuffer,
 } from '@ethereumjs/util'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
@@ -78,7 +78,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   copy(): EthersStateManager {
-    return new EthersStateManager({ provider: this.provider })
+    const newState = new EthersStateManager({ provider: this.provider })
+    ;(newState as any).trie = this.trie.copy(false)
+    ;(newState as any).contractCache = new Map(this.contractCache)
+    ;(newState as any).externallyRetrievedStorageKeys = new Map(this.externallyRetrievedStorageKeys)
+    ;(newState as any).storageTries = { ...this.storageTries }
+    return newState
   }
 
   /**
@@ -113,8 +118,10 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Buffer> {
+    let codeBuffer = this.contractCache.get(address.toString())
+    if (codeBuffer !== undefined) return codeBuffer
     const code = await this.provider.getCode(address.toString(), this.blockTag)
-    const codeBuffer = toBuffer(code)
+    codeBuffer = toBuffer(code)
     this.contractCache.set(address.toString(), codeBuffer)
     return codeBuffer
   }
@@ -145,7 +152,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
     const storageTrie = await this._getStorageTrie(address)
     const foundValue = await storageTrie.get(key)
-
     return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
   }
 
@@ -197,12 +203,21 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     const storageTrie = await this._getStorageTrie(address)
-    if (value.length > 0)
-      await storageTrie.put(
-        key,
-        arrToBufArr(RLP.encode(value.length > 0 ? value : Buffer.from([])))
-      )
-    else await storageTrie.del(key)
+
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Storage value cannot be longer than 32 bytes')
+    }
+
+    value = unpadBuffer(value)
+    const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
+    if (value.length > 0) {
+      await storageTrie.put(key, encodedValue)
+    } else await storageTrie.del(key)
+    this.storageTries[address.toString()] = storageTrie
 
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
