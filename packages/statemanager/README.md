@@ -60,9 +60,9 @@ console.log('Vitalik has a current ETH balance of ', account.balance)
 
 The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. It can be used in conjunction with the VM to run transactions against accounts sourced from the provider or to run blocks pulled from the provider.
 
-Refer to [this test script](./tests//ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-**WARNING** When running blocks in the VM with the `EthersStateManager`, there is an edge case where an account self destruct occurrs or a storage slot is deleted in which the block result produced by the VM when using the `EthersStateManager` will have a different state root than reported by the provider. Most blocks should execute successfully but this would be a prime suspect if the `vm` reports an invalid stateRoot reported after executing the block.
+**WARNING** When running blocks in the VM with the `EthersStateManager`, there is an edge case where an account self destruct occurs or a storage slot is deleted. In this case, the block result produced by the VM when using the `EthersStateManager` will have a different state root than reported by the provider. Most blocks should execute successfully but this would be a prime suspect if the `vm` reports an invalid stateRoot reported after executing the block.
 
 ## API
 
