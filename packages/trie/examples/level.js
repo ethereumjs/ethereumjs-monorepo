@@ -1,5 +1,4 @@
 const { Level } = require('level')
-const { isTruthy } = require('@ethereumjs/util')
 const { MemoryLevel } = require('memory-level')
 
 const { Trie } = require('../dist')
@@ -18,9 +17,9 @@ class LevelDB {
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error) {
-      if (isTruthy(error.notFound)) {
-        // not found, returning null
-      } else {
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
         throw error
       }
     }
