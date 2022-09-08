@@ -147,7 +147,7 @@ export async function fromEtherWallet(
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    const pr = await decrypt(Buffer.from(cipher.ciphertext), evp.key, evp.iv, 'aes-256-cbc')
+    const pr = await decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
     privateKey = Buffer.from(bytesToUtf8(pr), 'hex')
