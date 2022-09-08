@@ -1,10 +1,6 @@
-import { createDecipheriv } from 'crypto'
-import { toBuffer } from '@ethereumjs/util'
 import { decrypt } from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
-import { scrypt } from 'ethereum-cryptography/scrypt'
-import { sha256 } from 'ethereum-cryptography/sha256'
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as md5 from 'js-md5'
 import Wallet from './index'
@@ -172,80 +168,6 @@ export function fromEtherCamp(passphrase: string): Wallet {
 }
 
 /**
- * Third Party API: Import a wallet from a KryptoKit seed
- */
-export async function fromKryptoKit(entropy: string, password: string): Promise<Wallet> {
-  function kryptoKitBrokenScryptSeed(buf: Buffer) {
-    // js-scrypt calls `Buffer.from(String(salt), 'utf8')` on the seed even though it is a buffer
-    //
-    // The `buffer`` implementation used does the below transformation (doesn't matches the current version):
-    // https://github.com/feross/buffer/blob/67c61181b938b17d10dbfc0a545f713b8bd59de8/index.js
-
-    function decodeUtf8Char(str: string) {
-      try {
-        return decodeURIComponent(str)
-      } catch (err) {
-        return String.fromCharCode(0xfffd) // UTF 8 invalid char
-      }
-    }
-
-    let res = '',
-      tmp = ''
-    for (let i = 0; i < buf.length; i++) {
-      if (buf[i] <= 0x7f) {
-        res += decodeUtf8Char(tmp) + String.fromCharCode(buf[i])
-        tmp = ''
-      } else {
-        tmp += '%' + buf[i].toString(16)
-      }
-    }
-    return Buffer.from(res + decodeUtf8Char(tmp))
-  }
-
-  if (entropy[0] === '#') {
-    entropy = entropy.slice(1)
-  }
-
-  const type = entropy[0]
-  entropy = entropy.slice(1)
-
-  let privateKey: Buffer
-  if (type === 'd') {
-    privateKey = Buffer.from(sha256(toBuffer(entropy)))
-  } else if (type === 'q') {
-    if (typeof password !== 'string') {
-      throw new Error('Password required')
-    }
-
-    const encryptedSeed = sha256(Buffer.from(entropy.slice(0, 30)))
-    const checksum = entropy.slice(30, 46)
-
-    const salt = kryptoKitBrokenScryptSeed(Buffer.from(encryptedSeed))
-    const aesKey = await scrypt(Buffer.from(password, 'utf8'), salt, 16384, 1, 8, 32)
-
-    // NOTE: ECB doesn't use the IV, so it can be anything
-    const decipher = createDecipheriv('aes-256-ecb', aesKey, Buffer.from([]))
-    // FIXME: this is a clear abuse, but seems to match how ECB in aesjs works
-    privateKey = Buffer.concat([
-      Uint8Array.from(decipher.update(encryptedSeed)).slice(0, 16),
-      Uint8Array.from(decipher.update(encryptedSeed)).slice(0, 16),
-    ])
-
-    if (checksum.length > 0) {
-      const dsha = sha256(sha256(Uint8Array.from(privateKey))).slice(0, 8)
-      const curr = Buffer.from(dsha).toString('hex')
-      if (curr !== checksum) {
-        throw new Error('Failed to decrypt input - possibly invalid passphrase')
-      }
-    }
-  } else {
-    throw new Error('Unsupported or invalid entropy type')
-  }
-
-  return new Wallet(privateKey)
-}
-
-/**
  * Third Party API: Import a brain wallet used by Quorum Wallet
  */
 export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
@@ -264,7 +186,6 @@ export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
 const Thirdparty = {
   fromEtherWallet,
   fromEtherCamp,
-  fromKryptoKit,
   fromQuorumWallet,
 }
 

@@ -17,7 +17,7 @@ Motivations are:
 
 - be lightweight
 - work in a browser
-- use a single, maintained version of crypto library (and that should be in line with [`ethereumjs-util`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) and `@ethereumjs/tx`)
+- use a single, maintained version of crypto library (and that should be in line with [`@ethereumjs/util`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) and `@ethereumjs/tx`)
 - support import/export between various wallet formats
 - support BIP32 HD keys
 

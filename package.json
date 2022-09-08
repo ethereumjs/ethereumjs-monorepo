@@ -12,9 +12,9 @@
   ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-wallet",
   "dependencies": {
-    "@ethereumjs/util": "^8.0.0-beta.1",
+    "@ethereumjs/util": "^8.0.0",
     "@scure/base": "1.1.1",
-    "ethereum-cryptography": "1.1.0",
+    "ethereum-cryptography": "1.1.2",
     "js-md5": "0.7.3",
     "uuid": "8.3.2"
   },

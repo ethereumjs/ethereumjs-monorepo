@@ -784,21 +784,6 @@ describe('.fromEtherCamp()', function () {
   })
 })
 
-describe('.fromKryptoKit()', function () {
-  // it('should work with basic input (d-type)', function () {
-  //   const wallet = Thirdparty.fromKryptoKit('dBWfH8QZSGbg1sAYHLBhqE5R8VGAoM7')
-  //   assert.strictEqual(wallet.getAddressString(), '0x3611981ad2d6fc1d7579d6ce4c6bc37e272c369c')
-  // })
-  it('should work with encrypted input (q-type)', async function () {
-    const wallet = await Thirdparty.fromKryptoKit(
-      'qhah1VeT0RgTvff1UKrUrxtFViiQuki16dd353d59888c25',
-      'testtest'
-    )
-    this.timeout(0) // never
-    assert.strictEqual(wallet.getAddressString(), '0x3c753e27834db67329d1ec1fab67970ec1e27112')
-  })
-})
-
 describe('.fromQuorumWallet()', function () {
   it('should work', function () {
     const wallet = Thirdparty.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
