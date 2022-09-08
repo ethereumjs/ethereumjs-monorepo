@@ -73,18 +73,18 @@ function evp_kdf(data: Buffer, salt: Buffer, opts?: Partial<EvpKdfOpts>) {
   const tmp = Buffer.concat(ret)
 
   return {
-    key: tmp.slice(0, params.keysize),
-    iv: tmp.slice(params.keysize, params.keysize + params.ivsize),
+    key: tmp.subarray(0, params.keysize),
+    iv: tmp.subarray(params.keysize, params.keysize + params.ivsize),
   }
 }
 
 // http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
 function decodeCryptojsSalt(input: string): { ciphertext: Buffer; salt?: Buffer } {
   const ciphertext = Buffer.from(input, 'base64')
-  if (ciphertext.slice(0, 8).toString() === 'Salted__') {
+  if (ciphertext.subarray(0, 8).toString() === 'Salted__') {
     return {
-      salt: ciphertext.slice(8, 16),
-      ciphertext: ciphertext.slice(16),
+      salt: ciphertext.subarray(8, 16),
+      ciphertext: ciphertext.subarray(16),
     }
   }
   return { ciphertext }
@@ -148,7 +148,6 @@ export async function fromEtherWallet(
     const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
     const pr = await decrypt(Buffer.from(cipher.ciphertext), evp.key, evp.iv, 'aes-256-cbc')
-    // privateKey = runCipherBuffer(decipher, )
 
     // NOTE: yes, they've run it through UTF8
     privateKey = Buffer.from(bytesToUtf8(pr), 'hex')

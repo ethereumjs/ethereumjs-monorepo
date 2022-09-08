@@ -399,7 +399,6 @@ export default class Wallet {
       Buffer.from(json.Crypto.IV, 'hex'),
       'aes-128-cbc'
     )
-    // const seed = runCipherBuffer(decipher, ciphertext)
     return new Wallet(Buffer.from(seed))
   }
 
@@ -473,7 +472,7 @@ export default class Wallet {
   ): Promise<Wallet> {
     const json: EthSaleKeystore = typeof input === 'object' ? input : JSON.parse(input)
 
-    const encseed = Buffer.from(json.encseed, 'hex')
+    const encseed = Uint8Array.from(Buffer.from(json.encseed, 'hex'))
 
     // key derivation
     const pass = Buffer.from(password, 'utf8')
@@ -489,9 +488,8 @@ export default class Wallet {
       'aes-128-cbc',
       true
     )
-    // const seed = runCipherBuffer(decipher, encseed.slice(16))
 
-    const wallet = new Wallet(Buffer.from(keccak256(Buffer.from(seed))))
+    const wallet = new Wallet(Buffer.from(keccak256(seed)))
     if (wallet.getAddress().toString('hex') !== json.ethaddr) {
       throw new Error('Decoded key mismatch - possibly wrong passphrase')
     }
