@@ -114,7 +114,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   /**
    * Gets the code corresponding to the provided `address`.
    * @param address - Address to get the `code` for
-   * @returns {Promise<Buffer>} -  Resolves with the code corresponding to the provided address.
+   * @returns {Promise<Buffer>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Buffer> {
@@ -157,8 +157,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
   /**
    * Retrieves a storage slot from the provider and stores in the local trie
-   * @param address Address to be retrieved from provider
-   * @param key Key of storage slot to be returned
+   * @param address - Address to be retrieved from provider
+   * @param key - Key of storage slot to be returned
    * @private
    */
   private async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
@@ -227,7 +227,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
-   * @param address -  Address to clear the storage of
+   * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
     const storageTrie = await this._getStorageTrie(address)
@@ -241,7 +241,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
    * @param address - The address of the `account` to return storage for
    * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
-   * Keys are are the storage keys, values are the storage values as strings.
+   * Keys are the storage keys, values are the storage values as strings.
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
@@ -319,7 +319,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBuffer(accountData.codeHash),
-      storageRoot: accountData.storageHash,
+      storageRoot: toBuffer(accountData.storageHash),
     })
     return account
   }
@@ -412,11 +412,16 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       blockData = await this.provider.send('eth_getBlockByHash', [blockTag, true])
     } else if (typeof blockTag === 'bigint') {
       blockData = await this.provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
-    } else if (isHexPrefixed(blockTag)) {
+    } else if (
+      isHexPrefixed(blockTag) ||
+      blockTag === 'latest' ||
+      blockTag === 'earliest' ||
+      blockTag === 'pending'
+    ) {
       blockData = await this.provider.send('eth_getBlockByNumber', [blockTag, true])
     } else {
       throw new Error(
-        `expected blockTag to be block hash, bigint, or hex prefixed string; got ${blockTag}`
+        `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
       )
     }
 

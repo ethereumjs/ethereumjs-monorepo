@@ -99,7 +99,7 @@ tape('Ethers State Manager API tests', async (t) => {
       t.fail('should have thrown')
     } catch (err: any) {
       t.ok(
-        err.message.includes('expected blockTag to be block hash, bigint, or hex prefixed string'),
+        err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
         'threw with correct error when invalid blockTag provided'
       )
     }

@@ -172,6 +172,7 @@ export class Trie {
     }
 
     await this._lock.acquire()
+    console.log('key received', key, value)
     const appliedKey = this.appliedKey(key)
     if (this.root().equals(this.EMPTY_TRIE_ROOT)) {
       // If no root, initialize this trie
@@ -179,6 +180,7 @@ export class Trie {
     } else {
       // First try to find the given key or its nearest node
       const { remaining, stack } = await this.findPath(appliedKey)
+      console.log('found a stack', remaining, stack)
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
