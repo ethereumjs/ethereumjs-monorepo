@@ -25,21 +25,28 @@ import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const log = debug('statemanager')
+
+type blockTagType = bigint | 'latest' | 'earliest'
 export interface EthersStateManagerOpts {
   provider: string | JsonRpcProvider
-  blockTag?: bigint | 'latest' | 'earliest'
+  blockTag?: blockTagType
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageTries: { [key: string]: Trie }
+  // This map tracks which storage slots for each account have been retrieved from the provider.
+  // This ensures that slots retrieved from the provider aren't pulled again and overwrite updates
+  // that occur during the course of running EVM message calls.
   private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
   private blockTag: string
   private trie: Trie
 
   constructor(opts: EthersStateManagerOpts) {
     super({})
+    // useKeyHashing = true since the web3 api provides proof nodes which are hashed
+    // If there were direct api access to devp2p stack, a normal Trie could have been constructed
     this.trie = new Trie({ useKeyHashing: true })
     this.storageTries = {}
     if (typeof opts.provider === 'string') {
@@ -72,6 +79,31 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
   copy(): EthersStateManager {
     return new EthersStateManager({ provider: this.provider })
+  }
+
+  /**
+   * Sets the new block tag used when querying the provider and clears the
+   * internal cache.
+   * @param blockTag the new block tag to use when querying the provider
+   */
+  setBlockTag(blockTag: blockTagType): void {
+    if (typeof blockTag === 'bigint') {
+      this.blockTag = bigIntToHex(blockTag)
+    } else {
+      this.blockTag = blockTag
+    }
+    this.clearCache()
+  }
+
+  /**
+   * Clears the internal cache so all accounts, contract code, and storage slots will
+   * initially be retrieved from the provider
+   */
+  clearCache(): void {
+    this.contractCache.clear()
+    this._cache.clear()
+    this.storageTries = {}
+    this.externallyRetrievedStorageKeys.clear()
   }
 
   /**
@@ -292,7 +324,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @returns {Buffer} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Buffer> {
-    await this._cache.flush()
     return this.trie.root()
   }
 
@@ -302,7 +333,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {
-    this._cache.flush
+    await this._cache.flush()
     this.trie.root(stateRoot)
   }
 
