@@ -47,6 +47,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     super({})
     // useKeyHashing = true since the web3 api provides proof nodes which are hashed
     // If there were direct api access to devp2p stack, a normal Trie could have been constructed
+    // useKeyHashing = true since the web3 api provides proof nodes which are hashed
+    // If there were direct api access to devp2p stack, a normal Trie could have been constructed
     this.trie = new Trie({ useKeyHashing: true })
     this.storageTries = {}
     if (typeof opts.provider === 'string') {
