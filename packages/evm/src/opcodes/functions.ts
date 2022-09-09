@@ -662,7 +662,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, word] = runState.stack.popN(2)
       const buf = setLengthLeft(bigIntToBuffer(word), 32)
       const offsetNum = Number(offset)
-      runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
     },
   ],
@@ -674,7 +673,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const buf = bigIntToBuffer(byte & BigInt(0xff))
       const offsetNum = Number(offset)
-      runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
     },
   ],
