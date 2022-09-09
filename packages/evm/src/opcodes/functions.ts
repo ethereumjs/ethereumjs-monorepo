@@ -455,7 +455,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.interpreter.getCallData(), dataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const dataLengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, dataLengthNum)
         runState.memory.write(memOffsetNum, dataLengthNum, data)
       }
     },
@@ -477,7 +476,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.interpreter.getCode(), codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -505,7 +503,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -548,7 +545,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
