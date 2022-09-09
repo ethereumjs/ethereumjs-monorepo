@@ -10,7 +10,7 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -28,12 +28,12 @@ const log = debug('statemanager')
 
 type blockTagType = bigint | 'latest' | 'earliest'
 export interface EthersStateManagerOpts {
-  provider: string | JsonRpcProvider
+  provider: string | StaticJsonRpcProvider | JsonRpcProvider
   blockTag?: blockTagType
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
-  private provider: JsonRpcProvider
+  private provider: StaticJsonRpcProvider | JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageTries: { [key: string]: Trie }
   // This map tracks which storage slots for each account have been retrieved from the provider.
@@ -52,7 +52,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.trie = new Trie({ useKeyHashing: true })
     this.storageTries = {}
     if (typeof opts.provider === 'string') {
-      this.provider = new JsonRpcProvider(opts.provider)
+      this.provider = new StaticJsonRpcProvider(opts.provider)
     } else if (opts.provider instanceof JsonRpcProvider) {
       this.provider = opts.provider
     } else {
@@ -91,7 +91,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   /**
    * Sets the new block tag used when querying the provider and clears the
    * internal cache.
-   * @param blockTag the new block tag to use when querying the provider
+   * @param blockTag - the new block tag to use when querying the provider
    */
   setBlockTag(blockTag: blockTagType): void {
     if (typeof blockTag === 'bigint') {
