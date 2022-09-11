@@ -1,11 +1,5 @@
 import { Trie } from '@ethereumjs/trie'
-import {
-  accountBodyToRLP,
-  setLengthLeft,
-  bufferToBigInt,
-  bufferToHex,
-  AccountBodyBuffer,
-} from '@ethereumjs/util'
+import { accountBodyToRLP, bufferToBigInt, bufferToHex, setLengthLeft } from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 

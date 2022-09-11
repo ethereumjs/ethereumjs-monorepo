@@ -1,6 +1,7 @@
+import { bufferToHex } from '@ethereumjs/util'
+
 import { AccountFetcher } from './fetcher'
 import { Synchronizer } from './sync'
-import { bufferToHex } from '@ethereumjs/util'
 
 import type { Peer } from '../net/peer/peer'
 import type { SynchronizerOptions } from './sync'
