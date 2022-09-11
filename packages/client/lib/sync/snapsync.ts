@@ -1,5 +1,6 @@
 import { AccountFetcher } from './fetcher'
 import { Synchronizer } from './sync'
+import { bufferToHex } from '@ethereumjs/util'
 
 import type { Peer } from '../net/peer/peer'
 import type { SynchronizerOptions } from './sync'
@@ -114,7 +115,7 @@ export class SnapSynchronizer extends Synchronizer {
     // eslint-disable-next-line eqeqeq
     if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${latest.hash()}`)
+      this.config.logger.info(`New sync target height=${height} hash=${bufferToHex(latest.hash())}`)
     }
 
     this.fetcher = new AccountFetcher({

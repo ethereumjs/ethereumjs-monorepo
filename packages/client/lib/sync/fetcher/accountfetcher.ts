@@ -1,5 +1,11 @@
 import { Trie } from '@ethereumjs/trie'
-import { accountBodyToRLP, setLengthLeft } from '@ethereumjs/util'
+import {
+  accountBodyToRLP,
+  setLengthLeft,
+  bufferToBigInt,
+  bufferToHex,
+  AccountBodyBuffer,
+} from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
 
@@ -56,15 +62,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   constructor(options: AccountFetcherOptions) {
     super(options)
 
+    this.debug('inside accountfetcher.constructor')
+
     this.accountTrie = new Trie({ db: new LevelDB() })
-    this.maxRangeConcurrency = BigInt(12)
+    this.maxRangeConcurrency = BigInt(1)
 
     this.root = options.root
 
     this.bytes = options.bytes
 
     this.debug(
-      `Account fetcher instantiated root=${this.root} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
+      `Account fetcher instantiated root=${bufferToHex(this.root)} bytes=${
+        this.bytes
+      } destroyWhenDone=${this.destroyWhenDone}`
     )
   }
 
@@ -76,8 +86,25 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param peer
    */
   async request(job: Job<JobTask, AccountData[], AccountData>): Promise<AccountData[] | undefined> {
-    const { task, peer, partialResult: _partialResult } = job
-    const { origin, limit } = task
+    this.debug('inside accountfetcher.request')
+
+    const { task, peer, partialResult } = job
+    const limit = task.limit
+    let origin = task.origin
+
+    this.debug(`number of accounts in partial result is ${partialResult?.length}`)
+    if (partialResult) {
+      const lastAccountHash: Buffer = Buffer.from(
+        (bufferToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1)).toString(16),
+        'hex'
+      )
+      origin = lastAccountHash
+      this.debug(
+        `Partial result left off on account hash ${bufferToHex(
+          lastAccountHash
+        )} - Origin for request has been updated`
+      )
+    }
 
     const rangeResult = await peer!.snap!.getAccountRange({
       root: this.root,
@@ -155,7 +182,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>,
     result: AccountData[]
   ): AccountData[] | undefined {
-    return result
+    this.debug('inside accountfetcher.process')
+    this.debug(`result is ${result}`)
+
+    if (result.length === 0) {
+      // if no accounts have been returned, we have fetched all necessary accounts
+      // and can terminate task
+      return job.partialResult
+    }
+    job.partialResult = (job.partialResult ?? []).concat(result)
+    this.debug(
+      `hash is ${bufferToHex(result[result.length - 1].hash)} - body is ${bufferToHex(
+        result[result.length - 1].body as unknown as Buffer
+      )}`
+    )
+
+    return undefined
   }
 
   /**
@@ -183,9 +225,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   /**
-   * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
-   * remaining items apart from the tasks it pushes in the queue
-   *
    * Divides the full 256-bit range of hashes into @maxRangeConcurrency ranges
    * and turnes each range into a task for the fetcher
    */
@@ -194,6 +233,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     limit = BigInt(2) ** BigInt(256) - BigInt(1),
     _maxTasks = this.config.maxFetcherJobs
   ): JobTask[] {
+    this.debug('inside accountfetcher.tasks')
+
     // const max = this.config.maxPerRequest
     this.debug(`origin is ${origin.toString(16)}`)
     this.debug(`limit is ${limit.toString(16)}`)
@@ -231,8 +272,24 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   nextTasks(): void {
-    const tasks = this.tasks()
-    for (const task of tasks) {
+    this.debug('inside accountfetcher.nextTasks')
+
+    if (this.in.length === 0) {
+      // const tasks = this.tasks()
+      // for (const task of tasks) {
+      //   this.enqueueTask(task)
+      // }
+
+      const task: JobTask = {
+        origin: Buffer.from(
+          '0000000000000000000000000000000000000000000000000000000000000000',
+          'hex'
+        ),
+        limit: Buffer.from(
+          '000000000000000000000000000000000000000000000000000000000000ffff',
+          'hex'
+        ),
+      }
       this.enqueueTask(task)
     }
   }
