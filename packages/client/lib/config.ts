@@ -245,6 +245,10 @@ export interface ConfigOptions {
    * reset
    */
   skeletonSubchainMergeMinimum?: number
+
+  maxRangeBytes?: number
+
+  maxAccountRange?: bigint
 }
 
 export class Config {
@@ -269,6 +273,9 @@ export class Config {
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
+  public static readonly MAX_RANGE_BYTES = 50000
+  // This should get like 100 accounts in this range
+  public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -298,6 +305,9 @@ export class Config {
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
   public readonly skeletonSubchainMergeMinimum: number
+  public readonly maxRangeBytes: number
+  public readonly maxAccountRange: bigint
+
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
   // Just a development only flag, will/should be removed
@@ -342,6 +352,9 @@ export class Config {
       options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
+    this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
+    this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
+
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
 
