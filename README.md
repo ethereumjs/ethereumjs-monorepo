@@ -32,7 +32,7 @@ For information about the Wallet's API, please go to [./docs/classes/wallet.md](
 
 You can import the `Wallet` class like this
 
-Node.js / ES5:
+Node.js / ES6:
 
 ```js
 const Wallet = require('ethereumjs-wallet').default
