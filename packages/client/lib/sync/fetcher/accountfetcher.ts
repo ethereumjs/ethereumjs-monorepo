@@ -1,7 +1,8 @@
 import { Trie } from '@ethereumjs/trie'
-import { accountBodyToRLP, setLengthLeft } from '@ethereumjs/util'
+import { accountBodyToRLP, bigIntToBuffer, bufferToBigInt, setLengthLeft } from '@ethereumjs/util'
 
 import { LevelDB } from '../../execution/level'
+import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
 
@@ -9,6 +10,8 @@ import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
+
+type AccountDataResponse = AccountData[] & { completed?: boolean }
 
 /**
  * Implements an snap1 based account fetcher
@@ -18,8 +21,11 @@ export interface AccountFetcherOptions extends FetcherOptions {
   /** Root hash of the account trie to serve */
   root: Buffer
 
-  /** Per task limit of bytes to request from peer */
-  bytes: bigint
+  /** The origin to start account fetcher from */
+  first: bigint
+
+  /** Range to eventually fetch */
+  count?: bigint
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -27,28 +33,24 @@ export interface AccountFetcherOptions extends FetcherOptions {
 
 // root comes from block?
 export type JobTask = {
-  origin: Buffer
-  limit: Buffer
+  /** The origin to start account fetcher from */
+  first: bigint
+  /** Range to eventually fetch */
+  count: bigint
 }
 
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   /**
-   * Where the fetcher starts apart from the tasks already in the `in` queue.
+   * The stateRoot for the fetcher which sorts of pin it to a snapshot.
+   * This might eventually be removed as the snapshots are moving and not static
    */
   root: Buffer
-  /**
-   * Soft limit at which to stop returning data
-   */
-  bytes: bigint
-  /**
-   * Max concurrency for requesting ranges of data from peers
-   */
-  maxRangeConcurrency: bigint
 
-  /**
-   * MPT for storing account data with proofs - keys are hashed and data is in slim format (SNAPSHOT)
-   */
-  accountTrie: Trie
+  /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
+  first: bigint
+
+  /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
+  count: bigint
 
   /**
    * Create new block fetcher
@@ -56,16 +58,81 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   constructor(options: AccountFetcherOptions) {
     super(options)
 
-    this.accountTrie = new Trie({ db: new LevelDB() })
-    this.maxRangeConcurrency = BigInt(12)
-
     this.root = options.root
+    this.first = options.first
+    this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
 
-    this.bytes = options.bytes
+    const fullJob = { task: { first: this.first, count: this.count } } as Job<
+      JobTask,
+      AccountData[],
+      AccountData
+    >
+    const origin = this.getOrigin(fullJob)
+    const limit = this.getLimit(fullJob)
 
     this.debug(
-      `Account fetcher instantiated root=${this.root} bytes=${this.bytes} destroyWhenDone=${this.destroyWhenDone}`
+      `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
+        limit
+      )} destroyWhenDone=${this.destroyWhenDone}`
     )
+  }
+
+  private async verifyRangeProof(
+    stateRoot: Buffer,
+    origin: Buffer,
+    { accounts, proof }: { accounts: AccountData[]; proof: Buffer[] }
+  ): Promise<void> {
+    this.debug(
+      `verifyRangeProof accounts:${accounts.length} first=${short(accounts[0].hash)} last=${short(
+        accounts[accounts.length - 1].hash
+      )}`
+    )
+
+    for (let i = 0; i < accounts.length - 1; i++) {
+      // ensure the range is monotonically increasing
+      if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+        throw Error(
+          `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
+            accounts[i + 1].hash
+          }`
+        )
+      }
+    }
+
+    const trie = new Trie({ db: new LevelDB() })
+    const keys = accounts.map((acc: any) => acc.hash)
+    const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
+    // convert the request to the right values
+    await trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
+  }
+
+  private isMissingRightRange(
+    limit: Buffer,
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Buffer[] }
+  ): boolean {
+    if (accounts.length > 0 && accounts[accounts.length - 1]?.hash.compare(limit) >= 0) {
+      return false
+    } else {
+      // TODO: Check if there is a proof of missing limit in state
+      return true
+    }
+  }
+
+  private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+    const { task, partialResult } = job
+    const { first } = task
+    // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
+    const origin = partialResult
+      ? bigIntToBuffer(bufferToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
+      : bigIntToBuffer(first)
+    return setLengthLeft(origin, 32)
+  }
+
+  private getLimit(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+    const { task } = job
+    const { first, count } = task
+    const limit = bigIntToBuffer(first + BigInt(count) - BigInt(1))
+    return setLengthLeft(limit, 32)
   }
 
   /**
@@ -75,73 +142,51 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param job
    * @param peer
    */
-  async request(job: Job<JobTask, AccountData[], AccountData>): Promise<AccountData[] | undefined> {
-    const { task, peer, partialResult: _partialResult } = job
-    const { origin, limit } = task
+  async request(
+    job: Job<JobTask, AccountData[], AccountData>
+  ): Promise<AccountDataResponse | undefined> {
+    const { peer } = job
+    const origin = this.getOrigin(job)
+    const limit = this.getLimit(job)
 
     const rangeResult = await peer!.snap!.getAccountRange({
       root: this.root,
       origin,
       limit,
-      bytes: this.bytes,
+      bytes: BigInt(this.config.maxRangeBytes),
     })
 
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+
     // eslint-disable-next-line eqeqeq
-    if (rangeResult == null || rangeResult.accounts == null || rangeResult.proof == null) {
-      // catch occasional null, empty, or incomplete responses
-      this.debug(
-        `Peer ${peerInfo} returned incomplete account range response for origin=${origin} and limit=${limit}`
-      )
+    if (rangeResult === undefined) {
       return undefined
-    }
+    } else {
+      // validate the proof
+      try {
+        // verifyRangeProof will also verify validate there are no missed states between origin and
+        // response data
+        await this.verifyRangeProof(this.root, origin, rangeResult)
 
-    const trie = new Trie()
-    const { accounts, proof } = rangeResult
-    const hashes: Buffer[] = []
-    const values: Buffer[] = []
-
-    // convert the request to the right values
-    for (let i = 0; i < accounts.length; i++) {
-      // ensure the range is monotonically increasing
-      if (i !== accounts.length - 1) {
-        if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+        // Check if there is any pending data to be synced to the right
+        let completed: boolean
+        if (this.isMissingRightRange(limit, rangeResult)) {
           this.debug(
-            `Peer ${peerInfo} returned Account hashes not monotonically increasing: ${i} ${
-              accounts[i].hash
-            } vs ${i + 1} ${accounts[i + 1].hash}`
+            `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
+              rangeResult.accounts.length - 1
+            ].hash.toString('hex')} limit=${limit.toString('hex')}`
           )
+          completed = false
+        } else {
+          completed = true
         }
+        return Object.assign([], rangeResult.accounts, { completed })
+      } catch (err) {
+        throw Error(`InvalidAccountRange: ${err}`)
+        // this.debug(`Peer ${peerInfo} returned InvalidAccountRange: ${err}`)
+        // return undefined
       }
-      // put account data into trie
-      const { hash, body } = accounts[i]
-      hashes.push(hash)
-      const value = accountBodyToRLP(body)
-      values.push(value)
     }
-
-    // validate the proof
-    try {
-      // verify account data for account range received from peer using proof and state root
-      const checkRangeProof = await trie.verifyRangeProof(
-        setLengthLeft(this.root, 32),
-        setLengthLeft(origin, 32),
-        setLengthLeft(hashes[hashes.length - 1], 32),
-        hashes,
-        values,
-        proof
-      )
-      this.debug('Proof for account range found to be valid: ' + checkRangeProof)
-      if (!checkRangeProof) {
-        this.debug(`Proof-based verification failed`)
-        return undefined
-      }
-    } catch (err) {
-      this.debug(`Proof-based verification failed: ${err}`)
-      return undefined
-    }
-
-    return accounts
   }
 
   /**
@@ -153,9 +198,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   process(
     job: Job<JobTask, AccountData[], AccountData>,
-    result: AccountData[]
+    result: AccountDataResponse
   ): AccountData[] | undefined {
-    return result
+    const fullResult = (job.partialResult ?? []).concat(result)
+    job.partialResult = undefined
+    if (result.completed === true) {
+      return fullResult
+    } else {
+      // Save partial result to re-request missing items.
+      job.partialResult = fullResult
+    }
+    // Check here if the last of the account
   }
 
   /**
@@ -163,23 +216,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * @param result fetch result
    */
   async store(result: AccountData[]): Promise<void> {
-    this.debug('inside accountfetcher.store')
-    try {
-      for (let i = 0; i < result.length; i++) {
-        const { hash, body } = result[i]
-
-        // TODO can be optimized by converting from slim to full in request phase inside first loop
-        await this.accountTrie.put(hash, accountBodyToRLP(body))
-      }
-      // TODO add event emission if necessary
-
-      this.debug(`Stored ${result.length} accounts in account trie`)
-    } catch (err) {
-      this.debug(`Failed to store account data: ${err}`)
-    }
-
-    // for data capture
-    process.exit()
+    this.debug(`Stored ${result.length} accounts in account trie`)
   }
 
   /**
@@ -189,51 +226,56 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * Divides the full 256-bit range of hashes into @maxRangeConcurrency ranges
    * and turnes each range into a task for the fetcher
    */
-  tasks(
-    origin = BigInt(0),
-    limit = BigInt(2) ** BigInt(256) - BigInt(1),
-    _maxTasks = this.config.maxFetcherJobs
-  ): JobTask[] {
-    // const max = this.config.maxPerRequest
-    this.debug(`origin is ${origin.toString(16)}`)
-    this.debug(`limit is ${limit.toString(16)}`)
-    const tasks: JobTask[] = []
 
-    const countPerInterval = (limit - origin) / this.maxRangeConcurrency - BigInt(1)
-    let start = BigInt(0)
-    for (let i = 0; i < this.maxRangeConcurrency; i++) {
-      const end = start + countPerInterval
-      if (BigInt(i) === this.maxRangeConcurrency - BigInt(1)) {
-        // last interval should include hashes up to and including @limit
-        tasks.push({
-          origin: Buffer.from(start.toString(16), 'hex'),
-          limit: Buffer.from(limit.toString(16), 'hex'),
-        })
-        this.debug(
-          `Created new tasks num=${tasks.length} with origin=${start.toString(
-            16
-          )} and limit=${limit.toString(16)}`
-        )
-        break
-      }
-      tasks.push({
-        origin: Buffer.from(start.toString(16), 'hex'),
-        limit: Buffer.from(end.toString(16), 'hex'),
-      })
-      this.debug(
-        `Created new tasks num=${tasks.length} with origin=${start.toString(
-          16
-        )} and limit=${end.toString(16)}`
-      )
-      start = end + BigInt(1)
+  tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
+    const max = this.config.maxAccountRange
+    const tasks: JobTask[] = []
+    let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
+    let pushedCount = BigInt(0)
+    const startedWith = first
+
+    while (count >= BigInt(max) && tasks.length < maxTasks) {
+      tasks.push({ first, count: max })
+      first += BigInt(max)
+      count -= BigInt(max)
+      pushedCount += BigInt(max)
     }
+    if (count > BigInt(0) && tasks.length < maxTasks) {
+      tasks.push({ first, count })
+      first += BigInt(count)
+      pushedCount += count
+      count = BigInt(0)
+    }
+
+    // If we started with where this.first was, i.e. there are no gaps and hence
+    // we can move this.first to where its now, and reduce count by pushedCount
+    if (startedWith === this.first) {
+      this.first = first
+      this.count = this.count - pushedCount
+    }
+
+    debugStr += ` limit=${short(
+      setLengthLeft(bigIntToBuffer(startedWith + pushedCount - BigInt(1)), 32)
+    )}`
+    this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
   nextTasks(): void {
-    const tasks = this.tasks()
-    for (const task of tasks) {
-      this.enqueueTask(task)
+    if (this.in.length === 0 && this.count > BigInt(0)) {
+      const fullJob = { task: { first: this.first, count: this.count } } as Job<
+        JobTask,
+        AccountData[],
+        AccountData
+      >
+      const origin = this.getOrigin(fullJob)
+      const limit = this.getLimit(fullJob)
+
+      this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
+      const tasks = this.tasks()
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
     }
   }
 
@@ -256,8 +298,35 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BigInt(0)
-    const destroyFetcher = !(error.message as string).includes(`InvalidRangeProof`)
+    const destroyFetcher =
+      !(error.message as string).includes(`InvalidRangeProof`) &&
+      !(error.message as string).includes(`InvalidAccountRange`)
     const banPeer = true
     return { destroyFetcher, banPeer, stepBack }
+  }
+
+  /**
+   * Job log format helper.
+   * @param job
+   * @param withIndex pass true to additionally output job.index
+   */
+  jobStr(job: Job<JobTask, AccountData[], AccountData>, withIndex = false) {
+    let str = ''
+    if (withIndex) {
+      str += `index=${job.index} `
+    }
+
+    const origin = this.getOrigin(job)
+    const limit = this.getLimit(job)
+
+    let partialResult
+    if (job.partialResult) {
+      partialResult = ` partialResults=${job.partialResult.length}`
+    } else {
+      partialResult = ''
+    }
+
+    str += `origin=${short(origin)} limit=${short(limit)}${partialResult}`
+    return str
   }
 }

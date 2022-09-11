@@ -84,44 +84,22 @@ export class SnapSynchronizer extends Synchronizer {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
-    // Just a small snippet to test out the methods manually
-    // From/for g11tech:
-    //  Clean it up, once we have a full fetcher implemented, else let them
-    //  stay commented for easy reference and manual testing
-    //
     const stateRoot = latest.stateRoot
-
-    // console.log('stateRoot is ' + stateRoot)
-
-    // const rangeResult = await peer!.snap!.getAccountRange({
-    //   root: stateRoot,
-    //   origin: Buffer.from(
-    //     '594132d95eef77d0e84f52dddc93c9eddf8b3c7b91bd5050d245090591534f21',
-    //     'hex'
-    //   ),
-    //   limit: Buffer.from('f000000000000000000000000000000000000000000000000000000000000010', 'hex'),
-    //   bytes: BigInt(1000),
-    // })
-
-    // for (let i = 0; i < rangeResult.accounts.length; i++) {
-    //   console.log({
-    //     account: rangeResult?.accounts[i],
-    //     proof: rangeResult?.proof[i]
-    //    })
-    // }
-
     const height = latest.number
     // eslint-disable-next-line eqeqeq
     if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${latest.hash()}`)
+      this.config.logger.info(
+        `New sync target height=${height} hash=${latest.hash().toString('hex')}`
+      )
     }
 
     this.fetcher = new AccountFetcher({
       config: this.config,
       pool: this.pool,
       root: stateRoot,
-      bytes: BigInt(50000),
+      // This needs to be determined from the current state of the MPT dump
+      first: BigInt(1),
     })
 
     return true
