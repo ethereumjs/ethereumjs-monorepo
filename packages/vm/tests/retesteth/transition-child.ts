@@ -1,4 +1,5 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
@@ -46,7 +47,18 @@ async function runTransition(argsIn: any) {
 
   const common = getCommon(args.state.fork)
 
-  const vm = await VM.create({ common })
+  let blockchain
+  if (args.state.fork === 'Merged') {
+    const genesisBlockData = {
+      gasLimit: 5000,
+      difficulty: 0,
+      nonce: '0x0000000000000000',
+      extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
+    }
+    const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
+    blockchain = await Blockchain.create({ common, genesisBlock: genesis })
+  }
+  const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
   await setupPreConditions(<any>vm.eei, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
