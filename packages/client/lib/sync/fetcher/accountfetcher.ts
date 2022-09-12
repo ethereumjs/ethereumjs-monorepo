@@ -183,8 +183,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         return Object.assign([], rangeResult.accounts, { completed })
       } catch (err) {
         throw Error(`InvalidAccountRange: ${err}`)
-        // this.debug(`Peer ${peerInfo} returned InvalidAccountRange: ${err}`)
-        // return undefined
       }
     }
   }
@@ -208,7 +206,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // Save partial result to re-request missing items.
       job.partialResult = fullResult
     }
-    // Check here if the last of the account
   }
 
   /**
