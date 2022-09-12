@@ -220,7 +220,21 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
     if (value.length > 0) {
       await storageTrie.put(key, encodedValue)
-    } else await storageTrie.del(key)
+    } else {
+      try {
+        await storageTrie.del(key)
+      } catch (err: any) {
+        if (err.message !== 'Missing node in DB') {
+          throw err
+        } else {
+          throw new Error(
+            `This block cannot be run because 0x${key.toString(
+              'hex'
+            )} accesses a trie node that cannot be found in the state trie`
+          )
+        }
+      }
+    }
     this.storageTries[address.toString()] = storageTrie
 
     const contract = await this.getAccount(address)
