@@ -19,7 +19,7 @@ export class MockProvider extends JsonRpcProvider {
   }
 
   private getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
-    const [address, _, blockTag] = params
+    const [address, _slot, blockTag] = params
     const account = await import(`./accounts/${address}.json`)
     return account[blockTag.toString() ?? 'latest']
   }

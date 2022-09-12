@@ -47,8 +47,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     super({})
     // useKeyHashing = true since the web3 api provides proof nodes which are hashed
     // If there were direct api access to devp2p stack, a normal Trie could have been constructed
-    // useKeyHashing = true since the web3 api provides proof nodes which are hashed
-    // If there were direct api access to devp2p stack, a normal Trie could have been constructed
     this.trie = new Trie({ useKeyHashing: true })
     this.storageTries = {}
     if (typeof opts.provider === 'string') {
@@ -149,7 +147,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    // Retrieve storage slot from provider if not found in cache
+    // Ensure storage slot trie nodes have been retrieved from provider
     await this.getContractStorageFromProvider(address, key)
 
     const storageTrie = await this._getStorageTrie(address)
@@ -158,7 +156,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Retrieves a storage slot from the provider and stores in the local trie
+   * Retrieves a storage slot from the provider and stores the proof nodes in the local trie
    * @param address - Address to be retrieved from provider
    * @param key - Key of storage slot to be returned
    * @private
@@ -167,6 +165,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     if (this.externallyRetrievedStorageKeys.has(address.toString())) {
       const map = this.externallyRetrievedStorageKeys.get(address.toString())
       if (map?.get(key.toString('hex')) !== undefined) {
+        // Return early if slot has already been retrieved from provider
         return
       }
     }
@@ -179,8 +178,10 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
     const rawAccountProofData = accountData.accountProof
     await this.trie.fromProof(rawAccountProofData.map((e: string) => hexToBytes(e)))
-    // Only requesting a single slot at a time so the proof will always be the first item in the array
-    const storageData = accountData.storageProof[0]
+
+    const storageData = accountData.storageProof.find(
+      (el: any) => el.key === '0x' + key.toString('hex')
+    )
 
     const storageTrie = await this._getStorageTrie(address)
 
@@ -204,6 +205,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    await this.getContractStorageFromProvider(address, key)
     const storageTrie = await this._getStorageTrie(address)
 
     if (key.length !== 32) {
