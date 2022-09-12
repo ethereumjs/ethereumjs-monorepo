@@ -1,4 +1,4 @@
-import { TypeOutput, isFalsy, isHexString, toType } from '@ethereumjs/util'
+import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBuffer, HeaderData } from './types'
 
@@ -7,7 +7,7 @@ import type { BlockHeaderBuffer, HeaderData } from './types'
  * @param {string} input string to check, convert, and return
  */
 export const numberToHex = function (input?: string) {
-  if (isFalsy(input)) return undefined
+  if (input === undefined) return undefined
   if (!isHexString(input)) {
     const regex = new RegExp(/^\d+$/) // test to make sure input contains only digits
     if (!regex.test(input)) {

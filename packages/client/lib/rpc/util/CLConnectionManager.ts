@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { isTruthy } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { short, timeDiff } from '../../util'
@@ -152,7 +151,7 @@ export class CLConnectionManager {
     if (update.headBlock) {
       msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
     }
-    if (isTruthy(update.error)) {
+    if (update.error !== undefined) {
       msg += ` error=${update.error}`
     }
     return msg

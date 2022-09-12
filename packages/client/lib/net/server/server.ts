@@ -1,5 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
-
 import { parseKey, parseMultiaddrs } from '../../util/parse'
 
 import type { Config } from '../../config'
@@ -44,8 +42,8 @@ export class Server {
    */
   constructor(options: ServerOptions) {
     this.config = options.config
-    this.key = isTruthy(options.key) ? parseKey(options.key) : this.config.key
-    this.bootnodes = isTruthy(options.bootnodes) ? parseMultiaddrs(options.bootnodes) : []
+    this.key = options.key !== undefined ? parseKey(options.key) : this.config.key
+    this.bootnodes = options.bootnodes !== undefined ? parseMultiaddrs(options.bootnodes) : []
     this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000
 

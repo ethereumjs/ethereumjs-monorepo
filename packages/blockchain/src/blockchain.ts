@@ -309,7 +309,7 @@ export class Blockchain implements BlockchainInterface {
    * @param name - Optional name of the iterator head (default: 'vm')
    */
   async getIteratorHead(name = 'vm'): Promise<Block> {
-    return await this.runWithLock<Block>(async () => {
+    return this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
       const hash = this._heads[name] ?? this.genesisBlock.hash()
       const block = await this._getBlock(hash)
@@ -329,7 +329,7 @@ export class Blockchain implements BlockchainInterface {
    * on a first run)
    */
   async getHead(name = 'vm'): Promise<Block> {
-    return await this.runWithLock<Block>(async () => {
+    return this.runWithLock<Block>(async () => {
       // if the head is not found return the headHeader
       const hash = this._heads[name] ?? this._headBlockHash
       if (hash === undefined) throw new Error('No head found.')
@@ -342,7 +342,7 @@ export class Blockchain implements BlockchainInterface {
    * Returns the latest header in the canonical chain.
    */
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
-    return await this.runWithLock<BlockHeader>(async () => {
+    return this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) throw new Error('No head header set')
       const block = await this._getBlock(this._headHeaderHash)
       return block.header
@@ -703,7 +703,7 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return await this._getBlock(blockId)
+    return this._getBlock(blockId)
   }
 
   /**
@@ -737,7 +737,7 @@ export class Blockchain implements BlockchainInterface {
     skip: number,
     reverse: boolean
   ): Promise<Block[]> {
-    return await this.runWithLock<Block[]>(async () => {
+    return this.runWithLock<Block[]>(async () => {
       const blocks: Block[] = []
       let i = -1
 
@@ -754,7 +754,7 @@ export class Blockchain implements BlockchainInterface {
         i++
         const nextBlockNumber = block.header.number + BigInt(reverse ? -1 : 1)
         if (i !== 0 && skip && i % (skip + 1) !== 0) {
-          return await nextBlock(nextBlockNumber)
+          return nextBlock(nextBlockNumber)
         }
         blocks.push(block)
         if (blocks.length < maxBlocks) {
@@ -774,7 +774,7 @@ export class Blockchain implements BlockchainInterface {
    * @param hashes - Ordered array of hashes (ordered on `number`).
    */
   async selectNeededHashes(hashes: Array<Buffer>): Promise<Buffer[]> {
-    return await this.runWithLock<Buffer[]>(async () => {
+    return this.runWithLock<Buffer[]>(async () => {
       let max: number
       let mid: number
       let min: number
@@ -918,7 +918,7 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
-    return await this.runWithLock<number>(async (): Promise<number> => {
+    return this.runWithLock<number>(async (): Promise<number> => {
       const headHash = this._heads[name] ?? this.genesisBlock.hash()
 
       if (typeof maxBlocks === 'number' && maxBlocks < 0) {

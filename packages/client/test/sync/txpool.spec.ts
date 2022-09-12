@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, isFalsy, isTruthy, privateToAddress } from '@ethereumjs/util'
+import { Account, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Config } from '../../lib/config'
@@ -36,11 +36,11 @@ const handleTxs = async (
   stateManager?: StateManager,
   pool?: TxPool
 ) => {
-  if (isFalsy(pool)) {
+  if (pool === undefined) {
     pool = setup().pool
   }
   try {
-    if (isTruthy(stateManager)) {
+    if (stateManager !== undefined) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
     }
 

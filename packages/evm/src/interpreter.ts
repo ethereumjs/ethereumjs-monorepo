@@ -1,12 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import {
-  MAX_UINT64,
-  bigIntToHex,
-  bufferToBigInt,
-  intToHex,
-  isFalsy,
-  isTruthy,
-} from '@ethereumjs/util'
+import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -834,7 +827,7 @@ export class Interpreter {
 
     // Set return value
     if (
-      isTruthy(results.execResult.returnValue) &&
+      results.execResult.returnValue !== undefined &&
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
@@ -951,7 +944,7 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (isFalsy(this._result.selfdestruct[this._env.address.buf.toString('hex')])) {
+    if (this._result.selfdestruct[this._env.address.buf.toString('hex')] === undefined) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 

@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { getLogger } from '../lib/logging'
@@ -25,7 +24,7 @@ tape('[Logging]', (t) => {
   })
 
   t.test('should colorize key=value pairs', (st) => {
-    if (isTruthy(process.env.GITHUB_ACTION)) {
+    if (process.env.GITHUB_ACTION !== undefined) {
       st.skip('no color functionality in ci')
       return st.end()
     }
