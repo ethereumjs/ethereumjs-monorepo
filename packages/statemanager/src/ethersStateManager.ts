@@ -222,7 +222,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
         }
       }
     }
-    this.storageTries[address.toString()] = storageTrie
+    this.storageTries[address.buf.toString('hex')] = storageTrie
 
     const contract = await this.getAccount(address)
     contract.storageRoot = storageTrie.root()
