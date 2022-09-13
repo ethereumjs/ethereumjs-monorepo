@@ -14,8 +14,6 @@ import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers
 import { debug } from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import { Cache } from './cache'
-
 import { BaseStateManager } from '.'
 
 import type { Proof, StateManager } from '.'
@@ -65,16 +63,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
 
     this.contractCache = new Map()
     this.externallyRetrievedStorageKeys = new Map<string, Map<string, boolean>>()
-
-    this._cache = new Cache({
-      getCb: (address) => this.getAccountFromProvider(address),
-      putCb: async (keyBuf, accountRlp) => {
-        await this.trie.put(keyBuf, accountRlp)
-      },
-      deleteCb: async (keyBuf) => {
-        await this.trie.del(keyBuf)
-      },
-    })
   }
 
   copy(): EthersStateManager {
@@ -106,7 +94,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   clearCache(): void {
     this.contractCache.clear()
-    this._cache.clear()
     this.storageTries = {}
     this.externallyRetrievedStorageKeys.clear()
   }
@@ -288,22 +275,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   async accountExists(address: Address): Promise<boolean> {
     log(`Verify if ${address.toString()} exists`)
-    const account = this._cache.get(address)
-    if (account.isEmpty()) {
-      // Get latest block (or block specified in `this.blockTag`)
-      const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
 
-      // Get merkle proof for `address` from provider
-      const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
+    // Get latest block (or block specified in `this.blockTag`)
+    const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
 
-      const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+    // Get merkle proof for `address` from provider
+    const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
 
-      const trie = new Trie({ useKeyHashing: true })
-      const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
-      // if not verified (i.e. verifyProof returns null), account does not exist
-      if (verified === null) return false
-    }
-    return true
+    const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+
+    const trie = new Trie({ useKeyHashing: true })
+    const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
+    // if not verified (i.e. verifyProof returns null), account does not exist
+    return verified === null ? false : true
   }
 
   /**
@@ -313,7 +297,15 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
+    const accountBuffer = await this.trie.get(address.buf)
+    let account: Account
+
+    if (accountBuffer === null) {
+      account = await this.getAccountFromProvider(address)
+    } else {
+      account = Account.fromRlpSerializedAccount(accountBuffer)
+    }
+
     return account
   }
 
@@ -348,7 +340,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    this._cache.put(address, account, false)
+    await this.trie.put(address.buf, account.serialize())
   }
 
   /**
@@ -366,7 +358,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {
-    await this._cache.flush()
     this.trie.root(stateRoot)
   }
 

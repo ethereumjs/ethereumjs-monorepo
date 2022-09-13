@@ -1,7 +1,14 @@
 import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, bigIntToHex, bufferToHex, setLengthLeft } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBuffer,
+  bigIntToHex,
+  bufferToHex,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
@@ -56,10 +63,11 @@ tape('Ethers State Manager API tests', async (t) => {
 
     await state.putAccount(vitalikDotEth, account)
 
-    t.ok(
-      (state as any)._cache.get(vitalikDotEth).nonce > 0,
-      'Vitalik.eth is stored in accountCache'
+    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
+      await (state as any).trie.get(vitalikDotEth.buf)
     )
+
+    t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in trie')
     const doesThisAccountExist = await state.accountExists(
       Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
     )
