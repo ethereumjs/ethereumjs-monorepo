@@ -11,10 +11,7 @@ import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 export function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
-  txParams.gasLimit = toType(
-    txParams.gasLimit ?? txParams.gas,
-    TypeOutput.BigInt
-  )
+  txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // check and convert gasPrice and value params
