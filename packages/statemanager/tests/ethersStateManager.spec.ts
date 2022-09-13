@@ -11,6 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -101,6 +102,19 @@ tape('Ethers State Manager API tests', async (t) => {
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
     t.ok(slotValue.equals(Buffer.from('abcd')), 'should retrieve slot 2 value')
+
+    await state.putContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32),
+      Buffer.from('')
+    )
+
+    const deletedSlot = await state.getContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32)
+    )
+
+    t.equal(deletedSlot.length, 0, 'deleted slot from trie')
 
     try {
       await state.getBlockFromProvider('fakeBlockTag', {} as any)
