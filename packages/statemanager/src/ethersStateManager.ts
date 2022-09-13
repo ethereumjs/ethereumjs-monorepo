@@ -12,6 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { BaseStateManager } from '.'
@@ -276,16 +277,17 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   async accountExists(address: Address): Promise<boolean> {
     log(`Verify if ${address.toString()} exists`)
 
-    // Get latest block (or block specified in `this.blockTag`)
-    const block = await this.provider.send('eth_getBlockByNumber', [this.blockTag, false])
-
     // Get merkle proof for `address` from provider
-    const proof = await this.provider.send('eth_getProof', [address.toString(), [], block.number])
+    const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
 
     const trie = new Trie({ useKeyHashing: true })
-    const verified = await trie.verifyProof(toBuffer(block.stateRoot), address.buf, proofBuf)
+    const verified = await trie.verifyProof(
+      Buffer.from(keccak256(proofBuf[0])),
+      address.buf,
+      proofBuf
+    )
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }
@@ -476,5 +478,39 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       storageTrie = await this._lookupStorageTrie(address)
     }
     return storageTrie
+  }
+
+  /**
+   * Checkpoints the current state of the StateManager instance.
+   * State changes that follow can then be committed by calling
+   * `commit` or `reverted` by calling rollback.
+   */
+  async checkpoint(): Promise<void> {
+    this.trie.checkpoint()
+  }
+
+  /**
+   * Commits the current change-set to the instance since the
+   * last call to checkpoint.
+   */
+  async commit(): Promise<void> {
+    // setup cache checkpointing
+    await this.trie.commit()
+  }
+
+  /**
+   * Reverts the current change-set to the instance since the
+   * last call to checkpoint.
+   */
+  async revert(): Promise<void> {
+    // setup cache checkpointing
+    await this.trie.revert()
+  }
+
+  /**
+   * Dummy method needed by base state manager interface
+   */
+  async flush(): Promise<void> {
+    return Promise.resolve()
   }
 }
