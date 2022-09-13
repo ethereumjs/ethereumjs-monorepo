@@ -11,7 +11,6 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
