@@ -212,14 +212,17 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       try {
         await storageTrie.del(key)
       } catch (err: any) {
-        if (err.message !== 'Missing node in DB') {
-          throw err
-        } else {
+        if (
+          err.message === 'Missing node in DB' &&
+          (err.stack as string).includes('async Trie.del')
+        ) {
           throw new Error(
             `This block cannot be run because 0x${key.toString(
               'hex'
             )} accesses a trie node that cannot be found in the state trie`
           )
+        } else {
+          throw err
         }
       }
     }
