@@ -529,6 +529,7 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
+  // TODO incomplete
   t.test('TrieNodes should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
@@ -541,7 +542,10 @@ tape('[SnapProtocol]', (t) => {
       p.messages.filter((message) => message.name === 'GetTrieNodes')[0],
       getTrieNodesReq
     )
+
+    // TODO input byte is not showing up in `paths` {"reqId":"1","root":{"type":"Buffer","data":[98,240,149,47,40,139,178,207,88,205,237,83,210,35,6,191,38,58,18,76,157,98,192,92,91,117,247,46,243,232,164,131]},"paths":[[{}]],"bytes":"5000000"}
     console.log('JSON.stringify(raw): ' + JSON.stringify(raw))
+
     const { paths } = raw
     console.log('paths: ')
     console.log(paths)
