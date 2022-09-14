@@ -107,6 +107,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     const emptyAccessList: AccessList = []
 
+    BaseTransaction._validateNotArray({ chainId, v })
+
     return new AccessListEIP2930Transaction(
       {
         chainId: bufferToBigInt(chainId),
@@ -157,6 +159,11 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
     })
+
+    const notArray = { ...txData }
+    delete notArray.accessList
+
+    BaseTransaction._validateNotArray(notArray)
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')

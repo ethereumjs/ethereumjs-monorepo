@@ -451,6 +451,14 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
+  protected static _validateNotArray(values: { [key: string]: any }) {
+    for (const [key, value] of Object.entries(values)) {
+      if (Array.isArray(value)) {
+        throw new Error(`${key} cannot be an array`)
+      }
+    }
+  }
+
   /**
    * Return a compact error string representation of the object
    */

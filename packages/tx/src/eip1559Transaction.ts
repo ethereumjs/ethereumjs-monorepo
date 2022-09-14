@@ -119,6 +119,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
+    BaseTransaction._validateNotArray({ chainId, v })
+
     return new FeeMarketEIP1559Transaction(
       {
         chainId: bufferToBigInt(chainId),
@@ -173,6 +175,11 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
+
+    const notArray = { ...txData }
+    delete notArray.accessList
+
+    BaseTransaction._validateNotArray(notArray)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
