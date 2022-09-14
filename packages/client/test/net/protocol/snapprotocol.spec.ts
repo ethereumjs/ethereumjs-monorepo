@@ -542,23 +542,10 @@ tape('[SnapProtocol]', (t) => {
       getTrieNodesReq
     )
     console.log('JSON.stringify(raw): ' + JSON.stringify(raw))
-    // console.log("raw: " + JSON.stringify(raw))
     const { paths } = raw
     console.log('paths: ')
     console.log(paths)
-    // const accountPath = raw[0]
-    // console.log("accountPath: " + accountPath)
-    // const nodesRes = RLP.decode(Buffer.from(trieNodesRLP, 'hex')) as unknown
-    // console.log("nodesRes: " + nodesRes)
-    // const { nodes } = p.decode(
-    //   p.messages.filter((message) => message.name === 'TrieNodes')[0],
-    //   nodesRes
-    // )
-    // const node = nodes[0]
-    // t.ok(
-    //   Buffer.from(keccak256(node)).toString('hex') === accountPath.toString('hex'),
-    //   'Code should match the requested codeHash'
-    // )
+
     t.end()
   })
 })
