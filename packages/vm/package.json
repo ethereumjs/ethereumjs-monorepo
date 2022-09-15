@@ -69,7 +69,6 @@
     "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
   },

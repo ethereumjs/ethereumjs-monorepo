@@ -1,8 +1,10 @@
 import { Account } from '@ethereumjs/util'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import { OrderedMap } from 'js-sdsl'
 
 import type { Address } from '@ethereumjs/util'
-
-const Tree = require('functional-red-black-tree')
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { OrderedMapIterator } from 'js-sdsl'
 
 export type getCb = (address: Address) => Promise<Account | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
@@ -18,7 +20,8 @@ export interface CacheOpts {
  * @ignore
  */
 export class Cache {
-  _cache: any
+  _cache: OrderedMap<any, any>
+  _cacheEnd: OrderedMapIterator<any, any>
   _checkpoints: any[]
 
   _getCb: getCb
@@ -26,7 +29,8 @@ export class Cache {
   _deleteCb: deleteCb
 
   constructor(opts: CacheOpts) {
-    this._cache = Tree()
+    this._cache = new OrderedMap()
+    this._cacheEnd = this._cache.end()
     this._getCb = opts.getCb
     this._putCb = opts.putCb
     this._deleteCb = opts.deleteCb
@@ -60,10 +64,11 @@ export class Cache {
     const keyStr = key.buf.toString('hex')
 
     const it = this._cache.find(keyStr)
-    if (it.node !== null) {
-      const rlp = it.value.val
+    if (!it.equals(this._cacheEnd)) {
+      const value = it.pointer[1]
+      const rlp = value.val
       const account = Account.fromRlpSerializedAccount(rlp)
-      ;(account as any).virtual = it.value.virtual
+      ;(account as any).virtual = value.virtual
       return account
     }
   }
@@ -75,8 +80,8 @@ export class Cache {
   keyIsDeleted(key: Address): boolean {
     const keyStr = key.buf.toString('hex')
     const it = this._cache.find(keyStr)
-    if (it.node !== null) {
-      return it.value.deleted
+    if (!it.equals(this._cacheEnd)) {
+      return it.pointer[1].deleted
     }
     return false
   }
@@ -108,24 +113,22 @@ export class Cache {
    * and removing accounts that have been deleted.
    */
   async flush(): Promise<void> {
-    const it = this._cache.begin
-    let next = true
-    while (next) {
-      if (it.value?.modified === true) {
-        it.value.modified = false
-        const keyBuf = Buffer.from(it.key, 'hex')
-        if (it.value.deleted === false) {
-          const accountRlp = it.value.val
+    const it = this._cache.begin()
+    while (!it.equals(this._cacheEnd)) {
+      const value = it.pointer[1]
+      if (value.modified === true) {
+        value.modified = false
+        const keyBuf = Buffer.from(it.pointer[0], 'hex')
+        if (value.deleted === false) {
+          const accountRlp = value.val
           await this._putCb(keyBuf, accountRlp)
         } else {
-          it.value.deleted = true
-          it.value.virtual = true
-          it.value.val = new Account().serialize()
+          value.deleted = true
+          value.virtual = true
+          value.val = new Account().serialize()
           await this._deleteCb(keyBuf)
         }
       }
-
-      next = it.hasNext
       it.next()
     }
   }
@@ -135,7 +138,7 @@ export class Cache {
    * later on be reverted or commited.
    */
   checkpoint(): void {
-    this._checkpoints.push(this._cache)
+    this._checkpoints.push(new OrderedMap(this._cache))
   }
 
   /**
@@ -143,6 +146,7 @@ export class Cache {
    */
   revert(): void {
     this._cache = this._checkpoints.pop()
+    this._cacheEnd = this._cache.end()
   }
 
   /**
@@ -156,7 +160,7 @@ export class Cache {
    * Clears cache.
    */
   clear(): void {
-    this._cache = Tree()
+    this._cache.clear()
   }
 
   /**
@@ -184,12 +188,7 @@ export class Cache {
     virtual = false
   ): void {
     const keyHex = key.buf.toString('hex')
-    const it = this._cache.find(keyHex)
     const val = value.serialize()
-    if (it.node !== null) {
-      this._cache = it.update({ val, modified, deleted, virtual })
-    } else {
-      this._cache = this._cache.insert(keyHex, { val, modified, deleted, virtual })
-    }
+    this._cache.setElement(keyHex, { val, modified, deleted, virtual })
   }
 }
