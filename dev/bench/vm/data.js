@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663232448299,
+  "lastUpdate": 1663247498265,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "29068d8bd39bab7695657910a8c88fd1e0248b0f",
-          "message": "devp2p: rename tests to spec.ts suffix (#2231)\n\n* tx: suffix tests with .spec.ts\r\n\r\n* devp2p: suffix tests with .spec.ts\r\n\r\n* devp2p: remove test index files and adjust test script\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-08-25T20:43:39-04:00",
-          "tree_id": "fa463a40bfa061566f9308a85516881a610a22a8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/29068d8bd39bab7695657910a8c88fd1e0248b0f"
-        },
-        "date": 1661474834525,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10077,
-            "range": "±3.67%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9818,
-            "range": "±4.21%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 10407,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9716,
-            "range": "±6.39%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10563,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.63%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6744d6b30d59b73d2b12e3a153bb5f7dde77bc2c",
+          "message": "client: Fix Dockerfile build (#2288)",
+          "timestamp": "2022-09-15T15:09:01+02:00",
+          "tree_id": "af3e202da6a56e622aff7d1ad7093d4bff971cb0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6744d6b30d59b73d2b12e3a153bb5f7dde77bc2c"
+        },
+        "date": 1663247497194,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19301,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18663,
+            "range": "±3.71%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17793,
+            "range": "±6.13%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19201,
+            "range": "±1.22%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18696,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
