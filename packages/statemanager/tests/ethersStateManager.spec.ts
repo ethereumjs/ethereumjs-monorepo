@@ -211,7 +211,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
 
 /** To run the block test with an actual provider, you will need a provider URL (like alchemy or infura) that provides access to an archive node.
  *  Pass it in the PROVIDER=[provider url] npm run tape -- 'tests/ethersStateManager.spec.ts'
- *  Note: Cloudflare only provides access to the last 128 blocks on these tests so will fail on these tests.
+ *  Note: Cloudflare only provides access to the last 128 blocks so it will fail on these tests.
  */
 
 tape('runBlock test', async (t) => {

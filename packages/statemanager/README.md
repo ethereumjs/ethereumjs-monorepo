@@ -62,7 +62,7 @@ The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or on
 
 Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-**WARNING** When using the `EthersStateManager`, any time an account self destruct occurs or a storage slot is deleted while running transactions and blocks, do not be surprised to see an error due to a fundamental limitation of the `web3provider` interface whereby we are not able to retrieve all of the necessary trie nodes needed to update the parent node of a deleted leaf resulting from the storage slot deletion/account self destruct. Many blocks should execute successfully and report the correct updated state root but it is not possible to predict a head of time if any particular transaction will result in this error since all keys for values in the underlying trie are hashed.
+**WARNING** When using the `EthersStateManager`, any time an account self destruct occurs or a storage slot is deleted while running transactions and blocks, do not be surprised to see an error. This is due to a fundamental limitation of the `web3provider` interface whereby we are not able to retrieve all of the necessary trie nodes needed to update the parent node of a deleted leaf resulting from the storage slot deletion/account self destruct. Many blocks should execute successfully and report the correct updated state root. However, it is not possible to predict ahead of time if any particular transaction will result in this error since all keys for values in the underlying trie are hashed.
 
 ## API
 

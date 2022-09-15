@@ -24,9 +24,6 @@ export function normalizeTxParams(_txParams: any) {
       ? setLengthLeft(toBuffer(txParams.to), 20)
       : null
 
-  // v as raw signature value {0,1}
-  // v is the recovery bit and can be either {0,1} or {27,28}.
-  // https://ethereum.stackexchange.com/questions/40679/why-the-value-of-v-is-always-either-27-11011-or-28-11100
   txParams.v = toType(txParams.v, TypeOutput.BigInt)!
 
   return txParams
