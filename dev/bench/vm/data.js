@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1662926890533,
+  "lastUpdate": 1663232448299,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "193e9e974be30ec4528353fc0cbd87ed9160403a",
-          "message": "chore: rename `Semaphore` to `Lock` (#2234)",
-          "timestamp": "2022-08-25T16:04:48+02:00",
-          "tree_id": "7d130c5f00f8a47d626ca1b375e2a9614997c8b0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/193e9e974be30ec4528353fc0cbd87ed9160403a"
-        },
-        "date": 1661436577887,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19612,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18917,
-            "range": "±4.21%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18120,
-            "range": "±5.43%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19651,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19002,
-            "range": "±1.66%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.70%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "59038614+ZLY201@users.noreply.github.com",
+            "name": "Zilong Yao",
+            "username": "ZLY201"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cfa99af6ad7d78920aa9e3433466e9592fdea4e4",
+          "message": "perf: migrate rbtree to js-sdsl (#2285)\n\n* perf: migrate rbtree to js-sdsl\r\n\r\n* chore: remove functional red black tree\r\n\r\nCo-authored-by: yaozilong.msy <yaozilong.msy@bytedance.com>",
+          "timestamp": "2022-09-15T10:57:44+02:00",
+          "tree_id": "13cb622999af1fc2b2ad070e7ebd126ddab5552f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cfa99af6ad7d78920aa9e3433466e9592fdea4e4"
+        },
+        "date": 1663232446114,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 14595,
+            "range": "±3.81%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14133,
+            "range": "±4.62%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 13152,
+            "range": "±8.32%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15840,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15090,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
