@@ -58,11 +58,11 @@ const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
 ```
 
-The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. It can be used in conjunction with the VM to run transactions against accounts sourced from the provider or to run blocks pulled from the provider.
+The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider and also can compute correct updated global state roots in many instances.
 
 Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-**WARNING** When running blocks in the VM with the `EthersStateManager`, there is an edge case where an account self destruct occurs or a storage slot is deleted. In this case, the block result produced by the VM when using the `EthersStateManager` will have a different state root than reported by the provider. Most blocks should execute successfully but this would be a prime suspect if the `vm` reports an invalid stateRoot reported after executing the block.
+**WARNING** When using the `EthersStateManager`, any time an account self destruct occurs or a storage slot is deleted while running transactions and blocks, do not be surprised to see an error due to a fundamental limitation of the `web3provider` interface whereby we are not able to retrieve all of the necessary trie nodes needed to update the parent node of a deleted leaf resulting from the storage slot deletion/account self destruct. Many blocks should execute successfully and report the correct updated state root but it is not possible to predict a head of time if any particular transaction will result in this error since all keys for values in the underlying trie are hashed.
 
 ## API
 
