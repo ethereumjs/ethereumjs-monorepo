@@ -65,7 +65,7 @@ export class BlockBuilder {
   /**
    * Calculates and returns the transactionsTrie for the block.
    */
-  private async transactionsTrie() {
+  public async transactionsTrie() {
     const trie = new Trie()
     for (const [i, tx] of this.transactions.entries()) {
       await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
@@ -76,7 +76,7 @@ export class BlockBuilder {
   /**
    * Calculates and returns the logs bloom for the block.
    */
-  private logsBloom() {
+  public logsBloom() {
     const bloom = new Bloom()
     for (const txResult of this.transactionResults) {
       // Combine blooms via bitwise OR
@@ -88,7 +88,7 @@ export class BlockBuilder {
   /**
    * Calculates and returns the receiptTrie for the block.
    */
-  private async receiptTrie() {
+  public async receiptTrie() {
     const receiptTrie = new Trie()
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
