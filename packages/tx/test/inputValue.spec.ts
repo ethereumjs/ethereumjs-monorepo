@@ -2,8 +2,18 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Transaction } from '../src'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TransactionFactory,
+} from '../src'
 
+import type {
+  AccessListEIP2930ValuesArray,
+  FeeMarketEIP1559ValuesArray,
+  TxValuesArray,
+} from '../src'
 import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
@@ -135,4 +145,31 @@ tape('[Transaction Input Values]', function (t) {
     }
     st.end()
   })
+})
+
+tape('[Invalid Array Input values]', (t) => {
+  const txTypes = [0x0, 0x1, 0x2]
+  for (const txType of txTypes) {
+    const tx = TransactionFactory.fromTxData({ type: txType })
+    const rawValues = tx.raw()
+    for (let x = 0; x < rawValues.length; x++) {
+      rawValues[0] = <any>[1, 2, 3]
+      switch (txType) {
+        case 0:
+          t.throws(() => Transaction.fromValuesArray(rawValues as TxValuesArray))
+          break
+        case 1:
+          t.throws(() =>
+            AccessListEIP2930Transaction.fromValuesArray(rawValues as AccessListEIP2930ValuesArray)
+          )
+          break
+        case 2:
+          t.throws(() =>
+            FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+          )
+          break
+      }
+    }
+  }
+  t.end()
 })
