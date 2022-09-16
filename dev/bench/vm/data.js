@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663267563711,
+  "lastUpdate": 1663330226495,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8d394cc41c2fac4ab8f85642c53406656d7dd015",
-          "message": "Monorepo RC 1 Releases (#2237)\n\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (RLP v4.0.0-rc.1)\r\n\r\n* Minor\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Util v8.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Common v3.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Trie v5.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Tx v4.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Block v4.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Blockchain v6.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Ethash v2.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (StateManager v1.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Devp2p v5.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (EVM v1.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (VM v6.0.0-rc.1)\r\n\r\n* New CHANGELOG entry, bumped library version (Client v0.6.2)",
-          "timestamp": "2022-08-26T15:16:45+02:00",
-          "tree_id": "9129511ae257a2ba3a10f68b8f47f5c0a3da4b95",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8d394cc41c2fac4ab8f85642c53406656d7dd015"
-        },
-        "date": 1661519997308,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10628,
-            "range": "±3.36%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10752,
-            "range": "±3.83%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 11069,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10854,
-            "range": "±2.49%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10107,
-            "range": "±9.08%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 17578,
             "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0f57ec0f0e7e5e2371a80f9fc6972a018822c129",
+          "message": "statemanager: remove eslint-disable from imports (#2289)",
+          "timestamp": "2022-09-16T14:07:44+02:00",
+          "tree_id": "4316ac110f67991fe261791a08f7c2b30ae6884b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0f57ec0f0e7e5e2371a80f9fc6972a018822c129"
+        },
+        "date": 1663330225889,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 17938,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17880,
+            "range": "±6.09%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16558,
+            "range": "±7.65%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18504,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17724,
+            "range": "±1.98%",
             "unit": "ops/sec",
             "extra": "83 samples"
           }
