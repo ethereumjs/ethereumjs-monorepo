@@ -1,9 +1,7 @@
 import { Account } from '@ethereumjs/util'
-// eslint-disable-next-line implicit-dependencies/no-implicit
 import { OrderedMap } from 'js-sdsl'
 
 import type { Address } from '@ethereumjs/util'
-// eslint-disable-next-line implicit-dependencies/no-implicit
 import type { OrderedMapIterator } from 'js-sdsl'
 
 export type getCb = (address: Address) => Promise<Account | undefined>
