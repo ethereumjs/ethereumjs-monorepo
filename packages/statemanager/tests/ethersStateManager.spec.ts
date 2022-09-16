@@ -1,6 +1,6 @@
 import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -202,7 +202,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
       blockTag: blockTag - 1n,
     })
     const vm = await VM.create({ common, stateManager: state })
-    const tx = FeeMarketEIP1559Transaction.fromTxData(normedTx, { common })
+    const tx = TransactionFactory.fromTxData(normedTx, { common })
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()

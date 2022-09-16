@@ -25,10 +25,10 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const log = debug('statemanager')
 
-type blockTagType = bigint | 'latest' | 'earliest'
+type BlockTagType = bigint | 'latest' | 'earliest' | 'pending'
 export interface EthersStateManagerOpts {
   provider: string | StaticJsonRpcProvider | JsonRpcProvider
-  blockTag?: blockTagType
+  blockTag?: BlockTagType
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
@@ -56,11 +56,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
     }
 
-    if (typeof opts.blockTag === 'bigint') {
-      this.blockTag = bigIntToHex(opts.blockTag)
-    } else {
-      this.blockTag = opts.blockTag ?? 'latest'
-    }
+    this.blockTag =
+      typeof opts.blockTag === 'bigint' ? bigIntToHex(opts.blockTag) : opts.blockTag ?? 'latest'
 
     this.contractCache = new Map()
     this.externallyRetrievedStorageKeys = new Map<string, Map<string, boolean>>()
@@ -80,7 +77,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * internal cache.
    * @param blockTag - the new block tag to use when querying the provider
    */
-  setBlockTag(blockTag: blockTagType): void {
+  setBlockTag(blockTag: BlockTagType): void {
     if (typeof blockTag === 'bigint') {
       this.blockTag = bigIntToHex(blockTag)
     } else {
@@ -219,7 +216,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
           throw new Error(
             `This block cannot be run because 0x${key.toString(
               'hex'
-            )} accesses a trie node that cannot be found in the state trie`
+            )} accesses a trie node that cannot be found in the state trie. ${err.toString()}`
           )
         } else {
           throw err
@@ -409,7 +406,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       nonce: bigIntToHex(account.nonce),
       storageHash: bufferToHex(account.storageRoot),
       accountProof,
-      storageProof: [],
+      storageProof,
     }
     return returnValue
   }
@@ -450,7 +447,9 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       }
     }
 
-    return blockFromRpc(blockData, uncleHeaders, { common, hardforkByBlockNumber: true })
+    return blockFromRpc(blockData, uncleHeaders, {
+      common,
+    })
   }
 
   /**

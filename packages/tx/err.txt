@@ -1,0 +1,1026 @@
+  vm:tx New tx run hash=8558c3b2c03c43453b7a76a79662e4759cfd0016b385456321608b0610773258 sender=0x18d175958209bd4b5c8b806f30f920fe290d7c97 +6ms
+  vm:tx:gas Subtracting base fee (21064) from gasLimit (-> 158936) +8ms
+  vm:tx Update fromAccount (caller) balance(-> 5021645896355913744) +2ms
+  vm:tx Running tx=0x8558c3b2c03c43453b7a76a79662e4759cfd0016b385456321608b0610773258 with caller=0x18d175958209bd4b5c8b806f30f920fe290d7c97 gasLimit=158936 to=0x7bc25283a29a3888cab4555ea86ff1a8c18cc90a value=0 data=0x1249c58b +0ms
+  vm:state ---------------------------------------------------------------------------------------------------- +8ms
+  vm:state message checkpoint +0ms
+  evm:ops:PUSH1 {"pc":0,"op":"PUSH1","gas":"0x26cd8","gasCost":"0x3","stack":[],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158933) +16ms
+  evm:ops:PUSH1 {"pc":2,"op":"PUSH1","gas":"0x26cd5","gasCost":"0x3","stack":["0x80"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158930) +0ms
+  evm:ops:MSTORE {"pc":4,"op":"MSTORE","gas":"0x26cd2","gasCost":"0x3","stack":["0x80","0x40"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 12 gas (-> 158918) +0ms
+  evm:ops:CALLVALUE {"pc":5,"op":"CALLVALUE","gas":"0x26cc6","gasCost":"0x2","stack":[],"depth":0} +0ms
+  evm:eei:gas CALLVALUE fee: used 2 gas (-> 158916) +0ms
+  evm:ops:DUP1 {"pc":6,"op":"DUP1","gas":"0x26cc4","gasCost":"0x3","stack":["0x0"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158913) +0ms
+  evm:ops:ISZERO {"pc":7,"op":"ISZERO","gas":"0x26cc1","gasCost":"0x3","stack":["0x0","0x0"],"depth":0} +0ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 158910) +0ms
+  evm:ops:PUSH2 {"pc":8,"op":"PUSH2","gas":"0x26cbe","gasCost":"0x3","stack":["0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158907) +1ms
+  evm:ops:JUMPI {"pc":11,"op":"JUMPI","gas":"0x26cbb","gasCost":"0xa","stack":["0x0","0x1","0x10"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158897) +0ms
+  evm:ops:JUMPDEST {"pc":16,"op":"JUMPDEST","gas":"0x26cb1","gasCost":"0x1","stack":["0x0"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158896) +0ms
+  evm:ops:POP {"pc":17,"op":"POP","gas":"0x26cb0","gasCost":"0x2","stack":["0x0"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 158894) +0ms
+  evm:ops:PUSH1 {"pc":18,"op":"PUSH1","gas":"0x26cae","gasCost":"0x3","stack":[],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158891) +0ms
+  evm:ops:CALLDATASIZE {"pc":20,"op":"CALLDATASIZE","gas":"0x26cab","gasCost":"0x2","stack":["0x4"],"depth":0} +0ms
+  evm:eei:gas CALLDATASIZE fee: used 2 gas (-> 158889) +0ms
+  evm:ops:LT {"pc":21,"op":"LT","gas":"0x26ca9","gasCost":"0x3","stack":["0x4","0x4"],"depth":0} +0ms
+  evm:eei:gas LT fee: used 3 gas (-> 158886) +0ms
+  evm:ops:PUSH2 {"pc":22,"op":"PUSH2","gas":"0x26ca6","gasCost":"0x3","stack":["0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158883) +0ms
+  evm:ops:JUMPI {"pc":25,"op":"JUMPI","gas":"0x26ca3","gasCost":"0xa","stack":["0x0","0x320"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158873) +0ms
+  evm:ops:PUSH1 {"pc":26,"op":"PUSH1","gas":"0x26c99","gasCost":"0x3","stack":[],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158870) +0ms
+  evm:ops:CALLDATALOAD {"pc":28,"op":"CALLDATALOAD","gas":"0x26c96","gasCost":"0x3","stack":["0x0"],"depth":0} +0ms
+  evm:eei:gas CALLDATALOAD fee: used 3 gas (-> 158867) +0ms
+  evm:ops:PUSH1 {"pc":29,"op":"PUSH1","gas":"0x26c93","gasCost":"0x3","stack":["0x1249c58b00000000000000000000000000000000000000000000000000000000"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158864) +0ms
+  evm:ops:SHR {"pc":31,"op":"SHR","gas":"0x26c90","gasCost":"0x3","stack":["0x1249c58b00000000000000000000000000000000000000000000000000000000","0xe0"],"depth":0} +0ms
+  evm:eei:gas SHR fee: used 3 gas (-> 158861) +0ms
+  evm:ops:DUP1 {"pc":32,"op":"DUP1","gas":"0x26c8d","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +1ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158858) +0ms
+  evm:ops:PUSH4 {"pc":33,"op":"PUSH4","gas":"0x26c8a","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158855) +0ms
+  evm:ops:GT {"pc":38,"op":"GT","gas":"0x26c87","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x70cb12a6"],"depth":0} +0ms
+  evm:eei:gas GT fee: used 3 gas (-> 158852) +0ms
+  evm:ops:PUSH2 {"pc":39,"op":"PUSH2","gas":"0x26c84","gasCost":"0x3","stack":["0x1249c58b","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158849) +0ms
+  evm:ops:JUMPI {"pc":42,"op":"JUMPI","gas":"0x26c81","gasCost":"0xa","stack":["0x1249c58b","0x1","0x1a7"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158839) +0ms
+  evm:ops:JUMPDEST {"pc":423,"op":"JUMPDEST","gas":"0x26c77","gasCost":"0x1","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158838) +0ms
+  evm:ops:DUP1 {"pc":424,"op":"DUP1","gas":"0x26c76","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158835) +0ms
+  evm:ops:PUSH4 {"pc":425,"op":"PUSH4","gas":"0x26c73","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158832) +0ms
+  evm:ops:GT {"pc":430,"op":"GT","gas":"0x26c70","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x2f745c59"],"depth":0} +0ms
+  evm:eei:gas GT fee: used 3 gas (-> 158829) +0ms
+  evm:ops:PUSH2 {"pc":431,"op":"PUSH2","gas":"0x26c6d","gasCost":"0x3","stack":["0x1249c58b","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158826) +0ms
+  evm:ops:JUMPI {"pc":434,"op":"JUMPI","gas":"0x26c6a","gasCost":"0xa","stack":["0x1249c58b","0x1","0x26b"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158816) +0ms
+  evm:ops:JUMPDEST {"pc":619,"op":"JUMPDEST","gas":"0x26c60","gasCost":"0x1","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158815) +0ms
+  evm:ops:DUP1 {"pc":620,"op":"DUP1","gas":"0x26c5f","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158812) +0ms
+  evm:ops:PUSH4 {"pc":621,"op":"PUSH4","gas":"0x26c5c","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158809) +0ms
+  evm:ops:GT {"pc":626,"op":"GT","gas":"0x26c59","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x18160ddd"],"depth":0} +0ms
+  evm:eei:gas GT fee: used 3 gas (-> 158806) +0ms
+  evm:ops:PUSH2 {"pc":627,"op":"PUSH2","gas":"0x26c56","gasCost":"0x3","stack":["0x1249c58b","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158803) +0ms
+  evm:ops:JUMPI {"pc":630,"op":"JUMPI","gas":"0x26c53","gasCost":"0xa","stack":["0x1249c58b","0x1","0x2cd"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158793) +0ms
+  evm:ops:JUMPDEST {"pc":717,"op":"JUMPDEST","gas":"0x26c49","gasCost":"0x1","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158792) +0ms
+  evm:ops:DUP1 {"pc":718,"op":"DUP1","gas":"0x26c48","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158789) +0ms
+  evm:ops:PUSH4 {"pc":719,"op":"PUSH4","gas":"0x26c45","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158786) +0ms
+  evm:ops:GT {"pc":724,"op":"GT","gas":"0x26c42","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x95ea7b3"],"depth":0} +0ms
+  evm:eei:gas GT fee: used 3 gas (-> 158783) +0ms
+  evm:ops:PUSH2 {"pc":725,"op":"PUSH2","gas":"0x26c3f","gasCost":"0x3","stack":["0x1249c58b","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158780) +1ms
+  evm:ops:JUMPI {"pc":728,"op":"JUMPI","gas":"0x26c3c","gasCost":"0xa","stack":["0x1249c58b","0x0","0x2fe"],"depth":0} +1ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158770) +0ms
+  evm:ops:DUP1 {"pc":729,"op":"DUP1","gas":"0x26c32","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +1ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158767) +0ms
+  evm:ops:PUSH4 {"pc":730,"op":"PUSH4","gas":"0x26c2f","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158764) +0ms
+  evm:ops:EQ {"pc":735,"op":"EQ","gas":"0x26c2c","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x95ea7b3"],"depth":0} +0ms
+  evm:eei:gas EQ fee: used 3 gas (-> 158761) +0ms
+  evm:ops:PUSH2 {"pc":736,"op":"PUSH2","gas":"0x26c29","gasCost":"0x3","stack":["0x1249c58b","0x0"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158758) +0ms
+  evm:ops:JUMPI {"pc":739,"op":"JUMPI","gas":"0x26c26","gasCost":"0xa","stack":["0x1249c58b","0x0","0x38d"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158748) +0ms
+  evm:ops:DUP1 {"pc":740,"op":"DUP1","gas":"0x26c1c","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158745) +0ms
+  evm:ops:PUSH4 {"pc":741,"op":"PUSH4","gas":"0x26c19","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158742) +0ms
+  evm:ops:EQ {"pc":746,"op":"EQ","gas":"0x26c16","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0xa18f511"],"depth":0} +0ms
+  evm:eei:gas EQ fee: used 3 gas (-> 158739) +0ms
+  evm:ops:PUSH2 {"pc":747,"op":"PUSH2","gas":"0x26c13","gasCost":"0x3","stack":["0x1249c58b","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158736) +0ms
+  evm:ops:JUMPI {"pc":750,"op":"JUMPI","gas":"0x26c10","gasCost":"0xa","stack":["0x1249c58b","0x0","0x3a2"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158726) +0ms
+  evm:ops:DUP1 {"pc":751,"op":"DUP1","gas":"0x26c06","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 158723) +0ms
+  evm:ops:PUSH4 {"pc":752,"op":"PUSH4","gas":"0x26c03","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158720) +0ms
+  evm:ops:EQ {"pc":757,"op":"EQ","gas":"0x26c00","gasCost":"0x3","stack":["0x1249c58b","0x1249c58b","0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas EQ fee: used 3 gas (-> 158717) +0ms
+  evm:ops:PUSH2 {"pc":758,"op":"PUSH2","gas":"0x26bfd","gasCost":"0x3","stack":["0x1249c58b","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158714) +0ms
+  evm:ops:JUMPI {"pc":761,"op":"JUMPI","gas":"0x26bfa","gasCost":"0xa","stack":["0x1249c58b","0x1","0x3aa"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158704) +0ms
+  evm:ops:JUMPDEST {"pc":938,"op":"JUMPDEST","gas":"0x26bf0","gasCost":"0x1","stack":["0x1249c58b"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158703) +0ms
+  evm:ops:PUSH2 {"pc":939,"op":"PUSH2","gas":"0x26bef","gasCost":"0x3","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158700) +0ms
+  evm:ops:PUSH2 {"pc":942,"op":"PUSH2","gas":"0x26bec","gasCost":"0x3","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158697) +0ms
+  evm:ops:JUMP {"pc":945,"op":"JUMP","gas":"0x26be9","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x97d"],"depth":0} +0ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 158689) +0ms
+  evm:ops:JUMPDEST {"pc":2429,"op":"JUMPDEST","gas":"0x26be1","gasCost":"0x1","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158688) +0ms
+  evm:ops:CALLER {"pc":2430,"op":"CALLER","gas":"0x26be0","gasCost":"0x2","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas CALLER fee: used 2 gas (-> 158686) +0ms
+  evm:ops:ORIGIN {"pc":2431,"op":"ORIGIN","gas":"0x26bde","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas ORIGIN fee: used 2 gas (-> 158684) +0ms
+  evm:ops:EQ {"pc":2432,"op":"EQ","gas":"0x26bdc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas EQ fee: used 3 gas (-> 158681) +0ms
+  evm:ops:PUSH2 {"pc":2433,"op":"PUSH2","gas":"0x26bd9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158678) +0ms
+  evm:ops:JUMPI {"pc":2436,"op":"JUMPI","gas":"0x26bd6","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x1","0x9cc"],"depth":0} +5ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 158668) +5ms
+  evm:ops:JUMPDEST {"pc":2508,"op":"JUMPDEST","gas":"0x26bcc","gasCost":"0x1","stack":["0x1249c58b","0x3a0"],"depth":0} +5ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158667) +0ms
+  evm:ops:PUSH2 {"pc":2509,"op":"PUSH2","gas":"0x26bcb","gasCost":"0x3","stack":["0x1249c58b","0x3a0"],"depth":0} +5ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158664) +0ms
+  evm:ops:PUSH2 {"pc":2512,"op":"PUSH2","gas":"0x26bc8","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158661) +0ms
+  evm:ops:JUMP {"pc":2515,"op":"JUMP","gas":"0x26bc5","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x9d4","0xa9b"],"depth":0} +5ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 158653) +0ms
+  evm:ops:JUMPDEST {"pc":2715,"op":"JUMPDEST","gas":"0x26bbd","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x9d4"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 158652) +0ms
+  evm:ops:PUSH1 {"pc":2716,"op":"PUSH1","gas":"0x26bbc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4"],"depth":0} +6ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158649) +0ms
+  evm:ops:PUSH1 {"pc":2718,"op":"PUSH1","gas":"0x26bb9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 158646) +1ms
+  evm:ops:SLOAD {"pc":2720,"op":"SLOAD","gas":"0x26bb6","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0xc"],"depth":0} +0ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 156546) +0ms
+  evm:ops:PUSH1 {"pc":2721,"op":"PUSH1","gas":"0x26382","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322a340"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 156543) +1ms
+  evm:ops:EQ {"pc":2723,"op":"EQ","gas":"0x2637f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322a340","0x0"],"depth":0} +7ms
+  evm:eei:gas EQ fee: used 3 gas (-> 156540) +0ms
+  evm:ops:ISZERO {"pc":2724,"op":"ISZERO","gas":"0x2637c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x0"],"depth":0} +9ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 156537) +0ms
+  evm:ops:PUSH2 {"pc":2725,"op":"PUSH2","gas":"0x26379","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x1"],"depth":0} +2ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 156534) +0ms
+  evm:ops:JUMPI {"pc":2728,"op":"JUMPI","gas":"0x26376","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x1","0xaae"],"depth":0} +2ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 156524) +0ms
+  evm:ops:JUMPDEST {"pc":2734,"op":"JUMPDEST","gas":"0x2636c","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x9d4","0x0"],"depth":0} +2ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 156523) +0ms
+  evm:ops:PUSH1 {"pc":2735,"op":"PUSH1","gas":"0x2636b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 156520) +0ms
+  evm:ops:SLOAD {"pc":2737,"op":"SLOAD","gas":"0x26368","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0xc"],"depth":0} +1ms
+  evm:eei:gas SLOAD fee: used 100 gas (-> 156420) +0ms
+  evm:ops:TIMESTAMP {"pc":2738,"op":"TIMESTAMP","gas":"0x26304","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322a340"],"depth":0} +0ms
+  evm:eei:gas TIMESTAMP fee: used 2 gas (-> 156418) +0ms
+  evm:ops:SWAP1 {"pc":2739,"op":"SWAP1","gas":"0x26302","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322a340","0x6322d027"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 156415) +0ms
+  evm:ops:DUP2 {"pc":2740,"op":"DUP2","gas":"0x262ff","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x6322a340"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 156412) +0ms
+  evm:ops:LT {"pc":2741,"op":"LT","gas":"0x262fc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x6322a340","0x6322d027"],"depth":0} +8ms
+  evm:eei:gas LT fee: used 3 gas (-> 156409) +0ms
+  evm:ops:DUP1 {"pc":2742,"op":"DUP1","gas":"0x262f9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0"],"depth":0} +7ms
+  evm:eei:gas DUP fee: used 3 gas (-> 156406) +0ms
+  evm:ops:ISZERO {"pc":2743,"op":"ISZERO","gas":"0x262f6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0","0x0"],"depth":0} +0ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 156403) +0ms
+  evm:ops:SWAP1 {"pc":2744,"op":"SWAP1","gas":"0x262f3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 156400) +0ms
+  evm:ops:PUSH2 {"pc":2745,"op":"PUSH2","gas":"0x262f0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 156397) +0ms
+  evm:ops:JUMPI {"pc":2748,"op":"JUMPI","gas":"0x262ed","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1","0x0","0xac2"],"depth":0} +0ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 156387) +0ms
+  evm:ops:POP {"pc":2749,"op":"POP","gas":"0x262e3","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1"],"depth":0} +8ms
+  evm:eei:gas POP fee: used 2 gas (-> 156385) +0ms
+  evm:ops:PUSH1 {"pc":2750,"op":"PUSH1","gas":"0x262e1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 156382) +0ms
+  evm:ops:SLOAD {"pc":2752,"op":"SLOAD","gas":"0x262de","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0xd"],"depth":0} +0ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 154282) +7ms
+  evm:ops:ISZERO {"pc":2753,"op":"ISZERO","gas":"0x25aaa","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0"],"depth":0} +8ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 154279) +1ms
+  evm:ops:JUMPDEST {"pc":2754,"op":"JUMPDEST","gas":"0x25aa7","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1"],"depth":0} +8ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 154278) +0ms
+  evm:ops:ISZERO {"pc":2755,"op":"ISZERO","gas":"0x25aa6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1"],"depth":0} +0ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 154275) +0ms
+  evm:ops:PUSH2 {"pc":2756,"op":"PUSH2","gas":"0x25aa3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0"],"depth":0} +8ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 154272) +0ms
+  evm:ops:JUMPI {"pc":2759,"op":"JUMPI","gas":"0x25aa0","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x0","0xacf"],"depth":0} +8ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 154262) +0ms
+  evm:ops:PUSH1 {"pc":2760,"op":"PUSH1","gas":"0x25a96","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 154259) +1ms
+  evm:ops:SWAP2 {"pc":2762,"op":"SWAP2","gas":"0x25a93","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x0","0x6322d027","0x1"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 154256) +0ms
+  evm:ops:POP {"pc":2763,"op":"POP","gas":"0x25a90","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x9d4","0x1","0x6322d027","0x0"],"depth":0} +9ms
+  evm:eei:gas POP fee: used 2 gas (-> 154254) +0ms
+  evm:ops:POP {"pc":2764,"op":"POP","gas":"0x25a8e","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x9d4","0x1","0x6322d027"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 154252) +0ms
+  evm:ops:SWAP1 {"pc":2765,"op":"SWAP1","gas":"0x25a8c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x9d4","0x1"],"depth":0} +9ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 154249) +0ms
+  evm:ops:JUMP {"pc":2766,"op":"JUMP","gas":"0x25a89","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x1","0x9d4"],"depth":0} +11ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 154241) +0ms
+  evm:ops:JUMPDEST {"pc":2516,"op":"JUMPDEST","gas":"0x25a81","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x1"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 154240) +0ms
+  evm:ops:PUSH2 {"pc":2517,"op":"PUSH2","gas":"0x25a80","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x1"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 154237) +0ms
+  evm:ops:JUMPI {"pc":2520,"op":"JUMPI","gas":"0x25a7d","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x1","0xa20"],"depth":0} +1ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 154227) +0ms
+  evm:ops:JUMPDEST {"pc":2592,"op":"JUMPDEST","gas":"0x25a73","gasCost":"0x1","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 154226) +0ms
+  evm:ops:PUSH2 {"pc":2593,"op":"PUSH2","gas":"0x25a72","gasCost":"0x3","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 154223) +0ms
+  evm:ops:PUSH1 {"pc":2596,"op":"PUSH1","gas":"0x25a6f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0xa2e"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 154220) +0ms
+  evm:ops:DUP1 {"pc":2598,"op":"DUP1","gas":"0x25a6c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0xa2e","0xb"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 154217) +0ms
+  evm:ops:SLOAD {"pc":2599,"op":"SLOAD","gas":"0x25a69","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0xa2e","0xb","0xb"],"depth":0} +9ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 152117) +0ms
+  evm:ops:PUSH1 {"pc":2600,"op":"PUSH1","gas":"0x25235","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0xa2e","0xb","0x2091"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 152114) +1ms
+  evm:ops:ADD {"pc":2602,"op":"ADD","gas":"0x25232","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0xa2e","0xb","0x2091","0x1"],"depth":0} +0ms
+  evm:eei:gas ADD fee: used 3 gas (-> 152111) +0ms
+  evm:ops:SWAP1 {"pc":2603,"op":"SWAP1","gas":"0x2522f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0xa2e","0xb","0x2092"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 152108) +0ms
+  evm:ops:SSTORE {"pc":2604,"op":"SSTORE","gas":"0x2522c","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0xa2e","0x2092","0xb"],"depth":0} +0ms
+  evm:eei:gas SSTORE fee: used 2900 gas (-> 149208) +0ms
+  evm:ops:JUMP {"pc":2605,"op":"JUMP","gas":"0x246d8","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0xa2e"],"depth":0} +1ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 149200) +0ms
+  evm:ops:JUMPDEST {"pc":2606,"op":"JUMPDEST","gas":"0x246d0","gasCost":"0x1","stack":["0x1249c58b","0x3a0"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 149199) +0ms
+  evm:ops:PUSH1 {"pc":2607,"op":"PUSH1","gas":"0x246cf","gasCost":"0x3","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149196) +0ms
+  evm:ops:PUSH2 {"pc":2609,"op":"PUSH2","gas":"0x246cc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x0"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149193) +0ms
+  evm:ops:PUSH1 {"pc":2612,"op":"PUSH1","gas":"0x246c9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x0","0xa39"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149190) +0ms
+  evm:ops:SLOAD {"pc":2614,"op":"SLOAD","gas":"0x246c6","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x0","0xa39","0xb"],"depth":0} +1ms
+  evm:eei:gas SLOAD fee: used 100 gas (-> 149090) +0ms
+  evm:ops:SWAP1 {"pc":2615,"op":"SWAP1","gas":"0x24662","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x0","0xa39","0x2092"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 149087) +1ms
+  evm:ops:JUMP {"pc":2616,"op":"JUMP","gas":"0x2465f","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x0","0x2092","0xa39"],"depth":0} +1ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 149079) +5ms
+  evm:ops:JUMPDEST {"pc":2617,"op":"JUMPDEST","gas":"0x24657","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x0","0x2092"],"depth":0} +7ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 149078) +1ms
+  evm:ops:SWAP1 {"pc":2618,"op":"SWAP1","gas":"0x24656","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x0","0x2092"],"depth":0} +6ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 149075) +0ms
+  evm:ops:POP {"pc":2619,"op":"POP","gas":"0x24653","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0x0"],"depth":0} +8ms
+  evm:eei:gas POP fee: used 2 gas (-> 149073) +0ms
+  evm:ops:PUSH1 {"pc":2620,"op":"PUSH1","gas":"0x24651","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092"],"depth":0} +7ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149070) +0ms
+  evm:ops:MLOAD {"pc":2622,"op":"MLOAD","gas":"0x2464e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x40"],"depth":0} +0ms
+  evm:eei:gas MLOAD fee: used 3 gas (-> 149067) +0ms
+  evm:ops:DUP1 {"pc":2623,"op":"DUP1","gas":"0x2464b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80"],"depth":0} +8ms
+  evm:eei:gas DUP fee: used 3 gas (-> 149064) +0ms
+  evm:ops:PUSH1 {"pc":2624,"op":"PUSH1","gas":"0x24648","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149061) +0ms
+  evm:ops:ADD {"pc":2626,"op":"ADD","gas":"0x24645","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80","0x40"],"depth":0} +7ms
+  evm:eei:gas ADD fee: used 3 gas (-> 149058) +0ms
+  evm:ops:PUSH1 {"pc":2627,"op":"PUSH1","gas":"0x24642","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xc0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149055) +0ms
+  evm:ops:MSTORE {"pc":2629,"op":"MSTORE","gas":"0x2463f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xc0","0x40"],"depth":0} +26ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 149052) +0ms
+  evm:ops:DUP1 {"pc":2630,"op":"DUP1","gas":"0x2463c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 149049) +0ms
+  evm:ops:NUMBER {"pc":2631,"op":"NUMBER","gas":"0x24639","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80"],"depth":0} +0ms
+  evm:eei:gas NUMBER fee: used 2 gas (-> 149047) +0ms
+  evm:ops:DUP2 {"pc":2632,"op":"DUP2","gas":"0x24637","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80","0xed157f"],"depth":0} +17ms
+  evm:eei:gas DUP fee: used 3 gas (-> 149044) +0ms
+  evm:ops:MSTORE {"pc":2633,"op":"MSTORE","gas":"0x24634","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80","0xed157f","0x80"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 9 gas (-> 149035) +0ms
+  evm:ops:PUSH1 {"pc":2634,"op":"PUSH1","gas":"0x2462b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149032) +0ms
+  evm:ops:ADD {"pc":2636,"op":"ADD","gas":"0x24628","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x80","0x20"],"depth":0} +0ms
+  evm:eei:gas ADD fee: used 3 gas (-> 149029) +0ms
+  evm:ops:PUSH2 {"pc":2637,"op":"PUSH2","gas":"0x24625","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0"],"depth":0} +7ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149026) +0ms
+  evm:ops:PUSH9 {"pc":2640,"op":"PUSH9","gas":"0x24622","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0xa5e"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 149023) +0ms
+  evm:ops:DIFFICULTY {"pc":2650,"op":"DIFFICULTY","gas":"0x2461f","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0xa5e","0x10000000000000000"],"depth":0} +0ms
+  evm:eei:gas DIFFICULTY fee: used 2 gas (-> 149021) +0ms
+  evm:ops:GT {"pc":2651,"op":"GT","gas":"0x2461d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0xa5e","0x10000000000000000","0x0"],"depth":0} +25ms
+  evm:eei:gas GT fee: used 3 gas (-> 149018) +0ms
+  evm:ops:SWAP1 {"pc":2652,"op":"SWAP1","gas":"0x2461a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0xa5e","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 149015) +0ms
+  evm:ops:JUMP {"pc":2653,"op":"JUMP","gas":"0x24617","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0x0","0xa5e"],"depth":0} +6ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 149007) +0ms
+  evm:ops:JUMPDEST {"pc":2654,"op":"JUMPDEST","gas":"0x2460f","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0x0"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 149006) +0ms
+  evm:ops:ISZERO {"pc":2655,"op":"ISZERO","gas":"0x2460e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0x0"],"depth":0} +9ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 149003) +0ms
+  evm:ops:ISZERO {"pc":2656,"op":"ISZERO","gas":"0x2460b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0x1"],"depth":0} +0ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 149000) +0ms
+  evm:ops:SWAP1 {"pc":2657,"op":"SWAP1","gas":"0x24608","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0xa0","0x0"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 148997) +1ms
+  evm:ops:MSTORE {"pc":2658,"op":"MSTORE","gas":"0x24605","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0xa0"],"depth":0} +1ms
+  evm:eei:gas MSTORE fee: used 6 gas (-> 148991) +0ms
+  evm:ops:PUSH1 {"pc":2659,"op":"PUSH1","gas":"0x245ff","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 148988) +0ms
+  evm:ops:DUP3 {"pc":2661,"op":"DUP3","gas":"0x245fc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 148985) +0ms
+  evm:ops:DUP2 {"pc":2662,"op":"DUP2","gas":"0x245f9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x2092"],"depth":0} +1ms
+  evm:eei:gas DUP fee: used 3 gas (-> 148982) +0ms
+  evm:ops:MSTORE {"pc":2663,"op":"MSTORE","gas":"0x245f6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 148979) +8ms
+  evm:ops:PUSH1 {"pc":2664,"op":"PUSH1","gas":"0x245f3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0"],"depth":0} +8ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 148976) +0ms
+  evm:ops:PUSH1 {"pc":2666,"op":"PUSH1","gas":"0x245f0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0xe"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 148973) +0ms
+  evm:ops:SWAP1 {"pc":2668,"op":"SWAP1","gas":"0x245ed","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0xe","0x20"],"depth":0} +8ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 148970) +0ms
+  evm:ops:DUP2 {"pc":2669,"op":"DUP2","gas":"0x245ea","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x20","0xe"],"depth":0} +8ms
+  evm:eei:gas DUP fee: used 3 gas (-> 148967) +0ms
+  evm:ops:MSTORE {"pc":2670,"op":"MSTORE","gas":"0x245e7","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x20","0xe","0x20"],"depth":0} +8ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 148964) +0ms
+  evm:ops:PUSH1 {"pc":2671,"op":"PUSH1","gas":"0x245e4","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x20"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 148961) +0ms
+  evm:ops:SWAP1 {"pc":2673,"op":"SWAP1","gas":"0x245e1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x20","0x40"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 148958) +0ms
+  evm:ops:SWAP2 {"pc":2674,"op":"SWAP2","gas":"0x245de","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x0","0x40","0x20"],"depth":0} +17ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 148955) +0ms
+  evm:ops:SHA3 {"pc":2675,"op":"SHA3","gas":"0x245db","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0x40","0x0"],"depth":0} +0ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 148913) +0ms
+  evm:ops:DUP3 {"pc":2676,"op":"DUP3","gas":"0x245b1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790"],"depth":0} +8ms
+  evm:eei:gas DUP fee: used 3 gas (-> 148910) +0ms
+  evm:ops:MLOAD {"pc":2677,"op":"MLOAD","gas":"0x245ae","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0x80"],"depth":0} +9ms
+  evm:eei:gas MLOAD fee: used 3 gas (-> 148907) +0ms
+  evm:ops:DUP2 {"pc":2678,"op":"DUP2","gas":"0x245ab","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0xed157f"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 148904) +0ms
+  evm:ops:SSTORE {"pc":2679,"op":"SSTORE","gas":"0x245a8","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0xed157f","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790"],"depth":0} +18ms
+  evm:eei:gas SSTORE fee: used 22100 gas (-> 126804) +2ms
+  evm:ops:SWAP2 {"pc":2680,"op":"SWAP2","gas":"0x1ef54","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x80","0x20","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790"],"depth":0} +3ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 126801) +1ms
+  evm:ops:ADD {"pc":2681,"op":"ADD","gas":"0x1ef51","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0x20","0x80"],"depth":0} +12ms
+  evm:eei:gas ADD fee: used 3 gas (-> 126798) +0ms
+  evm:ops:MLOAD {"pc":2682,"op":"MLOAD","gas":"0x1ef4e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0xa0"],"depth":0} +3ms
+  evm:eei:gas MLOAD fee: used 3 gas (-> 126795) +0ms
+  evm:ops:PUSH1 {"pc":2683,"op":"PUSH1","gas":"0x1ef4b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0x0"],"depth":0} +3ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 126792) +0ms
+  evm:ops:SWAP1 {"pc":2685,"op":"SWAP1","gas":"0x1ef48","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0x0","0x1"],"depth":0} +3ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 126789) +0ms
+  evm:ops:SWAP2 {"pc":2686,"op":"SWAP2","gas":"0x1ef45","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790","0x1","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 126786) +0ms
+  evm:ops:ADD {"pc":2687,"op":"ADD","gas":"0x1ef42","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0x1","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7790"],"depth":0} +0ms
+  evm:eei:gas ADD fee: used 3 gas (-> 126783) +0ms
+  evm:ops:DUP1 {"pc":2688,"op":"DUP1","gas":"0x1ef3f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791"],"depth":0} +12ms
+  evm:eei:gas DUP fee: used 3 gas (-> 126780) +0ms
+  evm:ops:SLOAD {"pc":2689,"op":"SLOAD","gas":"0x1ef3c","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791"],"depth":0} +19ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 124680) +1ms
+  evm:ops:PUSH1 {"pc":2690,"op":"PUSH1","gas":"0x1e708","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +2ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124677) +1ms
+  evm:ops:NOT {"pc":2692,"op":"NOT","gas":"0x1e705","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0","0xff"],"depth":0} +0ms
+  evm:eei:gas NOT fee: used 3 gas (-> 124674) +0ms
+  evm:ops:AND {"pc":2693,"op":"AND","gas":"0x1e702","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0","0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00"],"depth":0} +0ms
+  evm:eei:gas AND fee: used 3 gas (-> 124671) +0ms
+  evm:ops:SWAP2 {"pc":2694,"op":"SWAP2","gas":"0x1e6ff","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124668) +0ms
+  evm:ops:ISZERO {"pc":2695,"op":"ISZERO","gas":"0x1e6fc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +14ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 124665) +0ms
+  evm:ops:ISZERO {"pc":2696,"op":"ISZERO","gas":"0x1e6f9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x1"],"depth":0} +0ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 124662) +0ms
+  evm:ops:SWAP2 {"pc":2697,"op":"SWAP2","gas":"0x1e6f6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124659) +0ms
+  evm:ops:SWAP1 {"pc":2698,"op":"SWAP1","gas":"0x1e6f3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124656) +0ms
+  evm:ops:SWAP2 {"pc":2699,"op":"SWAP2","gas":"0x1e6f0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0x0","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124653) +0ms
+  evm:ops:OR {"pc":2700,"op":"OR","gas":"0x1e6ed","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0","0x0"],"depth":0} +0ms
+  evm:eei:gas OR fee: used 3 gas (-> 124650) +0ms
+  evm:ops:SWAP1 {"pc":2701,"op":"SWAP1","gas":"0x1e6ea","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124647) +0ms
+  evm:ops:SSTORE {"pc":2702,"op":"SSTORE","gas":"0x1e6e7","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0x0","0xda3f67420deaeb9830ef63ea22c9c2e76def871a8c297daf0dfc26ff391a7791"],"depth":0} +4ms
+  evm:eei:gas SSTORE fee: used 100 gas (-> 124547) +8ms
+  evm:ops:PUSH2 {"pc":2703,"op":"PUSH2","gas":"0x1e683","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092"],"depth":0} +22ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124544) +0ms
+  evm:ops:CALLER {"pc":2706,"op":"CALLER","gas":"0x1e680","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98"],"depth":0} +46ms
+  evm:eei:gas CALLER fee: used 2 gas (-> 124542) +0ms
+  evm:ops:DUP3 {"pc":2707,"op":"DUP3","gas":"0x1e67e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +13ms
+  evm:eei:gas DUP fee: used 3 gas (-> 124539) +0ms
+  evm:ops:PUSH2 {"pc":2708,"op":"PUSH2","gas":"0x1e67b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124536) +0ms
+  evm:ops:JUMP {"pc":2711,"op":"JUMP","gas":"0x1e678","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x19eb"],"depth":0} +22ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 124528) +0ms
+  evm:ops:JUMPDEST {"pc":6635,"op":"JUMPDEST","gas":"0x1e670","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +22ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 124527) +0ms
+  evm:ops:PUSH1 {"pc":6636,"op":"PUSH1","gas":"0x1e66f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +8ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124524) +0ms
+  evm:ops:PUSH1 {"pc":6638,"op":"PUSH1","gas":"0x1e66c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124521) +1ms
+  evm:ops:PUSH1 {"pc":6640,"op":"PUSH1","gas":"0x1e669","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124518) +0ms
+  evm:ops:SHL {"pc":6642,"op":"SHL","gas":"0x1e666","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1","0xa0"],"depth":0} +0ms
+  evm:eei:gas SHL fee: used 3 gas (-> 124515) +0ms
+  evm:ops:SUB {"pc":6643,"op":"SUB","gas":"0x1e663","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +0ms
+  evm:eei:gas SUB fee: used 3 gas (-> 124512) +0ms
+  evm:ops:DUP3 {"pc":6644,"op":"DUP3","gas":"0x1e660","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +1ms
+  evm:eei:gas DUP fee: used 3 gas (-> 124509) +0ms
+  evm:ops:AND {"pc":6645,"op":"AND","gas":"0x1e65d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas AND fee: used 3 gas (-> 124506) +0ms
+  evm:ops:PUSH2 {"pc":6646,"op":"PUSH2","gas":"0x1e65a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124503) +0ms
+  evm:ops:JUMPI {"pc":6649,"op":"JUMPI","gas":"0x1e657","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1a41"],"depth":0} +31ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 124493) +0ms
+  evm:ops:JUMPDEST {"pc":6721,"op":"JUMPDEST","gas":"0x1e64d","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 124492) +0ms
+  evm:ops:PUSH1 {"pc":6722,"op":"PUSH1","gas":"0x1e64c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124489) +0ms
+  evm:ops:DUP2 {"pc":6724,"op":"DUP2","gas":"0x1e649","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +14ms
+  evm:eei:gas DUP fee: used 3 gas (-> 124486) +0ms
+  evm:ops:DUP2 {"pc":6725,"op":"DUP2","gas":"0x1e646","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2092"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 124483) +0ms
+  evm:ops:MSTORE {"pc":6726,"op":"MSTORE","gas":"0x1e643","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2092","0x0"],"depth":0} +14ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 124480) +0ms
+  evm:ops:PUSH1 {"pc":6727,"op":"PUSH1","gas":"0x1e640","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124477) +0ms
+  evm:ops:PUSH1 {"pc":6729,"op":"PUSH1","gas":"0x1e63d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124474) +0ms
+  evm:ops:MSTORE {"pc":6731,"op":"MSTORE","gas":"0x1e63a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 124471) +8ms
+  evm:ops:PUSH1 {"pc":6732,"op":"PUSH1","gas":"0x1e637","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +8ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 124468) +0ms
+  evm:ops:SWAP1 {"pc":6734,"op":"SWAP1","gas":"0x1e634","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40"],"depth":0} +17ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 124465) +0ms
+  evm:ops:SHA3 {"pc":6735,"op":"SHA3","gas":"0x1e631","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x40","0x0"],"depth":0} +22ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 124423) +0ms
+  evm:ops:SLOAD {"pc":6736,"op":"SLOAD","gas":"0x1e607","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453"],"depth":0} +20ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 122323) +1ms
+  evm:ops:PUSH1 {"pc":6737,"op":"PUSH1","gas":"0x1ddd3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +2ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122320) +1ms
+  evm:ops:PUSH1 {"pc":6739,"op":"PUSH1","gas":"0x1ddd0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122317) +0ms
+  evm:ops:PUSH1 {"pc":6741,"op":"PUSH1","gas":"0x1ddcd","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122314) +0ms
+  evm:ops:SHL {"pc":6743,"op":"SHL","gas":"0x1ddca","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x1","0xa0"],"depth":0} +10ms
+  evm:eei:gas SHL fee: used 3 gas (-> 122311) +0ms
+  evm:ops:SUB {"pc":6744,"op":"SUB","gas":"0x1ddc7","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +10ms
+  evm:eei:gas SUB fee: used 3 gas (-> 122308) +0ms
+  evm:ops:AND {"pc":6745,"op":"AND","gas":"0x1ddc4","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +10ms
+  evm:eei:gas AND fee: used 3 gas (-> 122305) +0ms
+  evm:ops:ISZERO {"pc":6746,"op":"ISZERO","gas":"0x1ddc1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +19ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 122302) +0ms
+  evm:ops:PUSH2 {"pc":6747,"op":"PUSH2","gas":"0x1ddbe","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +10ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122299) +0ms
+  evm:ops:JUMPI {"pc":6750,"op":"JUMPI","gas":"0x1ddbb","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1aa6"],"depth":0} +10ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 122289) +0ms
+  evm:ops:JUMPDEST {"pc":6822,"op":"JUMPDEST","gas":"0x1ddb1","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +10ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 122288) +0ms
+  evm:ops:PUSH2 {"pc":6823,"op":"PUSH2","gas":"0x1ddb0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122285) +0ms
+  evm:ops:PUSH1 {"pc":6826,"op":"PUSH1","gas":"0x1ddad","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122282) +0ms
+  evm:ops:DUP4 {"pc":6828,"op":"DUP4","gas":"0x1ddaa","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 122279) +0ms
+  evm:ops:DUP4 {"pc":6829,"op":"DUP4","gas":"0x1dda7","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 122276) +0ms
+  evm:ops:PUSH2 {"pc":6830,"op":"PUSH2","gas":"0x1dda4","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122273) +0ms
+  evm:ops:JUMP {"pc":6833,"op":"JUMP","gas":"0x1dda1","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x202f"],"depth":0} +11ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 122265) +0ms
+  evm:ops:JUMPDEST {"pc":8239,"op":"JUMPDEST","gas":"0x1dd99","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 122264) +0ms
+  evm:ops:PUSH1 {"pc":8240,"op":"PUSH1","gas":"0x1dd98","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122261) +0ms
+  evm:ops:PUSH1 {"pc":8242,"op":"PUSH1","gas":"0x1dd95","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122258) +0ms
+  evm:ops:PUSH1 {"pc":8244,"op":"PUSH1","gas":"0x1dd92","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122255) +7ms
+  evm:ops:SHL {"pc":8246,"op":"SHL","gas":"0x1dd8f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1","0xa0"],"depth":0} +7ms
+  evm:eei:gas SHL fee: used 3 gas (-> 122252) +0ms
+  evm:ops:SUB {"pc":8247,"op":"SUB","gas":"0x1dd8c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +7ms
+  evm:eei:gas SUB fee: used 3 gas (-> 122249) +0ms
+  evm:ops:DUP4 {"pc":8248,"op":"DUP4","gas":"0x1dd89","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +7ms
+  evm:eei:gas DUP fee: used 3 gas (-> 122246) +0ms
+  evm:ops:AND {"pc":8249,"op":"AND","gas":"0x1dd86","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff","0x0"],"depth":0} +7ms
+  evm:eei:gas AND fee: used 3 gas (-> 122243) +0ms
+  evm:ops:PUSH2 {"pc":8250,"op":"PUSH2","gas":"0x1dd83","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +7ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122240) +0ms
+  evm:ops:JUMPI {"pc":8253,"op":"JUMPI","gas":"0x1dd80","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x208a"],"depth":0} +7ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 122230) +0ms
+  evm:ops:PUSH2 {"pc":8254,"op":"PUSH2","gas":"0x1dd76","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122227) +1ms
+  evm:ops:DUP2 {"pc":8257,"op":"DUP2","gas":"0x1dd73","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085"],"depth":0} +18ms
+  evm:eei:gas DUP fee: used 3 gas (-> 122224) +0ms
+  evm:ops:PUSH1 {"pc":8258,"op":"PUSH1","gas":"0x1dd70","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092"],"depth":0} +8ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 122221) +0ms
+  evm:ops:DUP1 {"pc":8260,"op":"DUP1","gas":"0x1dd6d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8"],"depth":0} +29ms
+  evm:eei:gas DUP fee: used 3 gas (-> 122218) +0ms
+  evm:ops:SLOAD {"pc":8261,"op":"SLOAD","gas":"0x1dd6a","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x8"],"depth":0} +9ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 120118) +0ms
+  evm:ops:PUSH1 {"pc":8262,"op":"PUSH1","gas":"0x1d536","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 120115) +1ms
+  evm:ops:DUP4 {"pc":8264,"op":"DUP4","gas":"0x1d533","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0"],"depth":0} +2ms
+  evm:eei:gas DUP fee: used 3 gas (-> 120112) +0ms
+  evm:ops:DUP2 {"pc":8265,"op":"DUP2","gas":"0x1d530","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x2092"],"depth":0} +1ms
+  evm:eei:gas DUP fee: used 3 gas (-> 120109) +0ms
+  evm:ops:MSTORE {"pc":8266,"op":"MSTORE","gas":"0x1d52d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x2092","0x0"],"depth":0} +19ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 120106) +0ms
+  evm:ops:PUSH1 {"pc":8267,"op":"PUSH1","gas":"0x1d52a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 120103) +0ms
+  evm:ops:PUSH1 {"pc":8269,"op":"PUSH1","gas":"0x1d527","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x9"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 120100) +0ms
+  evm:ops:MSTORE {"pc":8271,"op":"MSTORE","gas":"0x1d524","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x9","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 120097) +0ms
+  evm:ops:PUSH1 {"pc":8272,"op":"PUSH1","gas":"0x1d521","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 120094) +0ms
+  evm:ops:DUP2 {"pc":8274,"op":"DUP2","gas":"0x1d51e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x40"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 120091) +0ms
+  evm:ops:SHA3 {"pc":8275,"op":"SHA3","gas":"0x1d51b","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x40","0x0"],"depth":0} +11ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 120049) +0ms
+  evm:ops:DUP3 {"pc":8276,"op":"DUP3","gas":"0x1d4f1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x85b2251692e418773350e15748f912098954354dfff11f62c84ab0406920df4e"],"depth":0} +19ms
+  evm:eei:gas DUP fee: used 3 gas (-> 120046) +7ms
+  evm:ops:SWAP1 {"pc":8277,"op":"SWAP1","gas":"0x1d4ee","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x85b2251692e418773350e15748f912098954354dfff11f62c84ab0406920df4e","0x2091"],"depth":0} +18ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 120043) +0ms
+  evm:ops:SSTORE {"pc":8278,"op":"SSTORE","gas":"0x1d4eb","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x2091","0x85b2251692e418773350e15748f912098954354dfff11f62c84ab0406920df4e"],"depth":0} +35ms
+  evm:eei:gas SSTORE fee: used 22100 gas (-> 97943) +2ms
+  evm:ops:PUSH1 {"pc":8279,"op":"PUSH1","gas":"0x17e97","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 97940) +0ms
+  evm:ops:DUP3 {"pc":8281,"op":"DUP3","gas":"0x17e94","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x1"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 97937) +0ms
+  evm:ops:ADD {"pc":8282,"op":"ADD","gas":"0x17e91","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x1","0x2091"],"depth":0} +39ms
+  evm:eei:gas ADD fee: used 3 gas (-> 97934) +0ms
+  evm:ops:DUP4 {"pc":8283,"op":"DUP4","gas":"0x17e8e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x2092"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 97931) +0ms
+  evm:ops:SSTORE {"pc":8284,"op":"SSTORE","gas":"0x17e8b","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0","0x2092","0x8"],"depth":0} +1ms
+  evm:eei:gas SSTORE fee: used 2900 gas (-> 95031) +0ms
+  evm:ops:SWAP2 {"pc":8285,"op":"SWAP2","gas":"0x17337","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x8","0x2091","0x0"],"depth":0} +37ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 95028) +0ms
+  evm:ops:SWAP1 {"pc":8286,"op":"SWAP1","gas":"0x17334","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x0","0x2091","0x8"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 95025) +0ms
+  evm:ops:SWAP2 {"pc":8287,"op":"SWAP2","gas":"0x17331","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x0","0x8","0x2091"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 95022) +0ms
+  evm:ops:MSTORE {"pc":8288,"op":"MSTORE","gas":"0x1732e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x2091","0x8","0x0"],"depth":0} +9ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 95019) +0ms
+  evm:ops:PUSH32 {"pc":8289,"op":"PUSH32","gas":"0x1732b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x2091"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 95016) +0ms
+  evm:ops:ADD {"pc":8322,"op":"ADD","gas":"0x17328","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0x2091","0xf3f7a9fe364faab93b216da50a3214154f22a0a2b415b23a84c8169e8b636ee3"],"depth":0} +0ms
+  evm:eei:gas ADD fee: used 3 gas (-> 95013) +0ms
+  evm:ops:SSTORE {"pc":8323,"op":"SSTORE","gas":"0x17325","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085","0x2092","0xf3f7a9fe364faab93b216da50a3214154f22a0a2b415b23a84c8169e8b638f74"],"depth":0} +1ms
+  evm:eei:gas SSTORE fee: used 22100 gas (-> 72913) +1ms
+  evm:ops:JUMP {"pc":8324,"op":"JUMP","gas":"0x11cd1","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2085"],"depth":0} +19ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 72905) +0ms
+  evm:ops:JUMPDEST {"pc":8325,"op":"JUMPDEST","gas":"0x11cc9","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +19ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72904) +1ms
+  evm:ops:PUSH2 {"pc":8326,"op":"PUSH2","gas":"0x11cc8","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +12ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72901) +0ms
+  evm:ops:JUMP {"pc":8329,"op":"JUMP","gas":"0x11cc5","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x20ad"],"depth":0} +1ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 72893) +0ms
+  evm:ops:JUMPDEST {"pc":8365,"op":"JUMPDEST","gas":"0x11cbd","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72892) +0ms
+  evm:ops:PUSH1 {"pc":8366,"op":"PUSH1","gas":"0x11cbc","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +2ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72889) +5ms
+  evm:ops:PUSH1 {"pc":8368,"op":"PUSH1","gas":"0x11cb9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +5ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72886) +0ms
+  evm:ops:PUSH1 {"pc":8370,"op":"PUSH1","gas":"0x11cb6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72883) +0ms
+  evm:ops:SHL {"pc":8372,"op":"SHL","gas":"0x11cb3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1","0xa0"],"depth":0} +18ms
+  evm:eei:gas SHL fee: used 3 gas (-> 72880) +1ms
+  evm:ops:SUB {"pc":8373,"op":"SUB","gas":"0x11cb0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +19ms
+  evm:eei:gas SUB fee: used 3 gas (-> 72877) +0ms
+  evm:ops:DUP3 {"pc":8374,"op":"DUP3","gas":"0x11cad","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +8ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72874) +0ms
+  evm:ops:AND {"pc":8375,"op":"AND","gas":"0x11caa","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +19ms
+  evm:eei:gas AND fee: used 3 gas (-> 72871) +0ms
+  evm:ops:PUSH2 {"pc":8376,"op":"PUSH2","gas":"0x11ca7","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +6ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72868) +0ms
+  evm:ops:JUMPI {"pc":8379,"op":"JUMPI","gas":"0x11ca4","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x20c4"],"depth":0} +19ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 72858) +0ms
+  evm:ops:JUMPDEST {"pc":8388,"op":"JUMPDEST","gas":"0x11c9a","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +6ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72857) +0ms
+  evm:ops:DUP3 {"pc":8389,"op":"DUP3","gas":"0x11c99","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72854) +0ms
+  evm:ops:PUSH1 {"pc":8390,"op":"PUSH1","gas":"0x11c96","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72851) +0ms
+  evm:ops:PUSH1 {"pc":8392,"op":"PUSH1","gas":"0x11c93","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72848) +0ms
+  evm:ops:PUSH1 {"pc":8394,"op":"PUSH1","gas":"0x11c90","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72845) +0ms
+  evm:ops:SHL {"pc":8396,"op":"SHL","gas":"0x11c8d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x1","0xa0"],"depth":0} +1ms
+  evm:eei:gas SHL fee: used 3 gas (-> 72842) +0ms
+  evm:ops:SUB {"pc":8397,"op":"SUB","gas":"0x11c8a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +0ms
+  evm:eei:gas SUB fee: used 3 gas (-> 72839) +0ms
+  evm:ops:AND {"pc":8398,"op":"AND","gas":"0x11c87","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +0ms
+  evm:eei:gas AND fee: used 3 gas (-> 72836) +0ms
+  evm:ops:DUP3 {"pc":8399,"op":"DUP3","gas":"0x11c84","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72833) +0ms
+  evm:ops:PUSH1 {"pc":8400,"op":"PUSH1","gas":"0x11c81","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72830) +0ms
+  evm:ops:PUSH1 {"pc":8402,"op":"PUSH1","gas":"0x11c7e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72827) +0ms
+  evm:ops:PUSH1 {"pc":8404,"op":"PUSH1","gas":"0x11c7b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72824) +8ms
+  evm:ops:SHL {"pc":8406,"op":"SHL","gas":"0x11c78","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x1","0xa0"],"depth":0} +9ms
+  evm:eei:gas SHL fee: used 3 gas (-> 72821) +1ms
+  evm:ops:SUB {"pc":8407,"op":"SUB","gas":"0x11c75","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +9ms
+  evm:eei:gas SUB fee: used 3 gas (-> 72818) +0ms
+  evm:ops:AND {"pc":8408,"op":"AND","gas":"0x11c72","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +9ms
+  evm:eei:gas AND fee: used 3 gas (-> 72815) +0ms
+  evm:ops:EQ {"pc":8409,"op":"EQ","gas":"0x11c6f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +85ms
+  evm:eei:gas EQ fee: used 3 gas (-> 72812) +0ms
+  evm:ops:PUSH2 {"pc":8410,"op":"PUSH2","gas":"0x11c6c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72809) +0ms
+  evm:ops:JUMPI {"pc":8413,"op":"JUMPI","gas":"0x11c69","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x8ea"],"depth":0} +9ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 72799) +0ms
+  evm:ops:PUSH2 {"pc":8414,"op":"PUSH2","gas":"0x11c5f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72796) +0ms
+  evm:ops:DUP3 {"pc":8417,"op":"DUP3","gas":"0x11c5c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72793) +0ms
+  evm:ops:DUP3 {"pc":8418,"op":"DUP3","gas":"0x11c59","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72790) +0ms
+  evm:ops:PUSH2 {"pc":8419,"op":"PUSH2","gas":"0x11c56","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72787) +0ms
+  evm:ops:JUMP {"pc":8422,"op":"JUMP","gas":"0x11c53","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2396"],"depth":0} +15ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 72779) +0ms
+  evm:ops:JUMPDEST {"pc":9110,"op":"JUMPDEST","gas":"0x11c4b","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +9ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72778) +0ms
+  evm:ops:PUSH1 {"pc":9111,"op":"PUSH1","gas":"0x11c4a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72775) +0ms
+  evm:ops:PUSH2 {"pc":9113,"op":"PUSH2","gas":"0x11c47","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72772) +0ms
+  evm:ops:DUP4 {"pc":9116,"op":"DUP4","gas":"0x11c44","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1"],"depth":0} +17ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72769) +0ms
+  evm:ops:PUSH2 {"pc":9117,"op":"PUSH2","gas":"0x11c41","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72766) +0ms
+  evm:ops:JUMP {"pc":9120,"op":"JUMP","gas":"0x11c3e","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1092"],"depth":0} +0ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 72758) +0ms
+  evm:ops:JUMPDEST {"pc":4242,"op":"JUMPDEST","gas":"0x11c36","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72757) +0ms
+  evm:ops:PUSH1 {"pc":4243,"op":"PUSH1","gas":"0x11c35","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72754) +0ms
+  evm:ops:PUSH1 {"pc":4245,"op":"PUSH1","gas":"0x11c32","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72751) +9ms
+  evm:ops:PUSH1 {"pc":4247,"op":"PUSH1","gas":"0x11c2f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x1"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72748) +0ms
+  evm:ops:PUSH1 {"pc":4249,"op":"PUSH1","gas":"0x11c2c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72745) +0ms
+  evm:ops:SHL {"pc":4251,"op":"SHL","gas":"0x11c29","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x1","0x1","0xa0"],"depth":0} +9ms
+  evm:eei:gas SHL fee: used 3 gas (-> 72742) +0ms
+  evm:ops:SUB {"pc":4252,"op":"SUB","gas":"0x11c26","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +9ms
+  evm:eei:gas SUB fee: used 3 gas (-> 72739) +0ms
+  evm:ops:DUP3 {"pc":4253,"op":"DUP3","gas":"0x11c23","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72736) +0ms
+  evm:ops:AND {"pc":4254,"op":"AND","gas":"0x11c20","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas AND fee: used 3 gas (-> 72733) +0ms
+  evm:ops:PUSH2 {"pc":4255,"op":"PUSH2","gas":"0x11c1d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72730) +0ms
+  evm:ops:JUMPI {"pc":4258,"op":"JUMPI","gas":"0x11c1a","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1110"],"depth":0} +9ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 72720) +0ms
+  evm:ops:JUMPDEST {"pc":4368,"op":"JUMPDEST","gas":"0x11c10","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +9ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 72719) +0ms
+  evm:ops:POP {"pc":4369,"op":"POP","gas":"0x11c0f","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +77ms
+  evm:eei:gas POP fee: used 2 gas (-> 72717) +0ms
+  evm:ops:PUSH1 {"pc":4370,"op":"PUSH1","gas":"0x11c0d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72714) +0ms
+  evm:ops:PUSH1 {"pc":4372,"op":"PUSH1","gas":"0x11c0a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72711) +0ms
+  evm:ops:PUSH1 {"pc":4374,"op":"PUSH1","gas":"0x11c07","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72708) +0ms
+  evm:ops:SHL {"pc":4376,"op":"SHL","gas":"0x11c04","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x1","0xa0"],"depth":0} +0ms
+  evm:eei:gas SHL fee: used 3 gas (-> 72705) +0ms
+  evm:ops:SUB {"pc":4377,"op":"SUB","gas":"0x11c01","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +0ms
+  evm:eei:gas SUB fee: used 3 gas (-> 72702) +0ms
+  evm:ops:AND {"pc":4378,"op":"AND","gas":"0x11bfe","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +0ms
+  evm:eei:gas AND fee: used 3 gas (-> 72699) +0ms
+  evm:ops:PUSH1 {"pc":4379,"op":"PUSH1","gas":"0x11bfb","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72696) +9ms
+  evm:ops:SWAP1 {"pc":4381,"op":"SWAP1","gas":"0x11bf8","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +35ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 72693) +0ms
+  evm:ops:DUP2 {"pc":4382,"op":"DUP2","gas":"0x11bf5","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +44ms
+  evm:eei:gas DUP fee: used 3 gas (-> 72690) +0ms
+  evm:ops:MSTORE {"pc":4383,"op":"MSTORE","gas":"0x11bf2","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +35ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 72687) +0ms
+  evm:ops:PUSH1 {"pc":4384,"op":"PUSH1","gas":"0x11bef","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72684) +0ms
+  evm:ops:PUSH1 {"pc":4386,"op":"PUSH1","gas":"0x11bec","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0","0x3"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72681) +0ms
+  evm:ops:MSTORE {"pc":4388,"op":"MSTORE","gas":"0x11be9","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0","0x3","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 72678) +0ms
+  evm:ops:PUSH1 {"pc":4389,"op":"PUSH1","gas":"0x11be6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 72675) +0ms
+  evm:ops:SWAP1 {"pc":4391,"op":"SWAP1","gas":"0x11be3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0","0x40"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 72672) +0ms
+  evm:ops:SHA3 {"pc":4392,"op":"SHA3","gas":"0x11be0","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x40","0x0"],"depth":0} +44ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 72630) +0ms
+  evm:ops:SLOAD {"pc":4393,"op":"SLOAD","gas":"0x11bb6","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7"],"depth":0} +45ms
+  evm:eei:gas SLOAD fee: used 2100 gas (-> 70530) +0ms
+  evm:ops:SWAP1 {"pc":4394,"op":"SWAP1","gas":"0x11382","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x23a1","0x0"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70527) +1ms
+  evm:ops:JUMP {"pc":4395,"op":"JUMP","gas":"0x1137f","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0x23a1"],"depth":0} +19ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 70519) +1ms
+  evm:ops:JUMPDEST {"pc":9121,"op":"JUMPDEST","gas":"0x11377","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0"],"depth":0} +11ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 70518) +0ms
+  evm:ops:PUSH1 {"pc":9122,"op":"PUSH1","gas":"0x11376","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0"],"depth":0} +2ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70515) +0ms
+  evm:ops:PUSH1 {"pc":9124,"op":"PUSH1","gas":"0x11373","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70512) +0ms
+  evm:ops:PUSH1 {"pc":9126,"op":"PUSH1","gas":"0x11370","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70509) +0ms
+  evm:ops:SHL {"pc":9128,"op":"SHL","gas":"0x1136d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0x1","0x1","0xa0"],"depth":0} +11ms
+  evm:eei:gas SHL fee: used 3 gas (-> 70506) +0ms
+  evm:ops:SUB {"pc":9129,"op":"SUB","gas":"0x1136a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +11ms
+  evm:eei:gas SUB fee: used 3 gas (-> 70503) +7ms
+  evm:ops:SWAP1 {"pc":9130,"op":"SWAP1","gas":"0x11367","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +8ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70500) +0ms
+  evm:ops:SWAP4 {"pc":9131,"op":"SWAP4","gas":"0x11364","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0xffffffffffffffffffffffffffffffffffffffff","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70497) +0ms
+  evm:ops:AND {"pc":9132,"op":"AND","gas":"0x11361","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +18ms
+  evm:eei:gas AND fee: used 3 gas (-> 70494) +0ms
+  evm:ops:PUSH1 {"pc":9133,"op":"PUSH1","gas":"0x1135e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +7ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70491) +0ms
+  evm:ops:SWAP1 {"pc":9135,"op":"SWAP1","gas":"0x1135b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70488) +0ms
+  evm:ops:DUP2 {"pc":9136,"op":"DUP2","gas":"0x11358","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70485) +0ms
+  evm:ops:MSTORE {"pc":9137,"op":"MSTORE","gas":"0x11355","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +9ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 70482) +0ms
+  evm:ops:PUSH1 {"pc":9138,"op":"PUSH1","gas":"0x11352","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70479) +0ms
+  evm:ops:PUSH1 {"pc":9140,"op":"PUSH1","gas":"0x1134f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x6"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70476) +0ms
+  evm:ops:SWAP1 {"pc":9142,"op":"SWAP1","gas":"0x1134c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x6","0x20"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70473) +0ms
+  evm:ops:DUP2 {"pc":9143,"op":"DUP2","gas":"0x11349","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x6"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70470) +0ms
+  evm:ops:MSTORE {"pc":9144,"op":"MSTORE","gas":"0x11346","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x6","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 70467) +0ms
+  evm:ops:PUSH1 {"pc":9145,"op":"PUSH1","gas":"0x11343","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 70464) +0ms
+  evm:ops:DUP1 {"pc":9147,"op":"DUP1","gas":"0x11340","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40"],"depth":0} +54ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70461) +0ms
+  evm:ops:DUP4 {"pc":9148,"op":"DUP4","gas":"0x1133d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x40"],"depth":0} +27ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70458) +0ms
+  evm:ops:SHA3 {"pc":9149,"op":"SHA3","gas":"0x1133a","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x40","0x0"],"depth":0} +9ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 70416) +0ms
+  evm:ops:DUP7 {"pc":9150,"op":"DUP7","gas":"0x11310","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x48007fbbf9d41dfd2c1da59f1e56cbeb60d65367f65a72b07219ba2554f5362b"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70413) +0ms
+  evm:ops:DUP5 {"pc":9151,"op":"DUP5","gas":"0x1130d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x48007fbbf9d41dfd2c1da59f1e56cbeb60d65367f65a72b07219ba2554f5362b","0x0"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70410) +9ms
+  evm:ops:MSTORE {"pc":9152,"op":"MSTORE","gas":"0x1130a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x48007fbbf9d41dfd2c1da59f1e56cbeb60d65367f65a72b07219ba2554f5362b","0x0","0x0"],"depth":0} +9ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 70407) +0ms
+  evm:ops:DUP3 {"pc":9153,"op":"DUP3","gas":"0x11307","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x48007fbbf9d41dfd2c1da59f1e56cbeb60d65367f65a72b07219ba2554f5362b"],"depth":0} +27ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70404) +0ms
+  evm:ops:MSTORE {"pc":9154,"op":"MSTORE","gas":"0x11304","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x48007fbbf9d41dfd2c1da59f1e56cbeb60d65367f65a72b07219ba2554f5362b","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 70401) +0ms
+  evm:ops:DUP1 {"pc":9155,"op":"DUP1","gas":"0x11301","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70398) +0ms
+  evm:ops:DUP4 {"pc":9156,"op":"DUP4","gas":"0x112fe","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x40"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70395) +0ms
+  evm:ops:SHA3 {"pc":9157,"op":"SHA3","gas":"0x112fb","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x40","0x0"],"depth":0} +9ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 70353) +0ms
+  evm:ops:DUP6 {"pc":9158,"op":"DUP6","gas":"0x112d1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0xb6be9a6d5dc88a1026bf1e2660982c52c25c9785ddb1b07b5d37c4a2255ab538"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 70350) +0ms
+  evm:ops:SWAP1 {"pc":9159,"op":"SWAP1","gas":"0x112ce","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0xb6be9a6d5dc88a1026bf1e2660982c52c25c9785ddb1b07b5d37c4a2255ab538","0x2092"],"depth":0} +9ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 70347) +0ms
+  evm:ops:SSTORE {"pc":9160,"op":"SSTORE","gas":"0x112cb","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40","0x2092","0xb6be9a6d5dc88a1026bf1e2660982c52c25c9785ddb1b07b5d37c4a2255ab538"],"depth":0} +53ms
+  evm:eei:gas SSTORE fee: used 22100 gas (-> 48247) +1ms
+  evm:ops:SWAP4 {"pc":9161,"op":"SWAP4","gas":"0xbc77","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x2092","0x0","0x0","0x20","0x40"],"depth":0} +11ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48244) +1ms
+  evm:ops:DUP3 {"pc":9162,"op":"DUP3","gas":"0xbc74","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0","0x20","0x2092"],"depth":0} +2ms
+  evm:eei:gas DUP fee: used 3 gas (-> 48241) +0ms
+  evm:ops:MSTORE {"pc":9163,"op":"MSTORE","gas":"0xbc71","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0","0x20","0x2092","0x0"],"depth":0} +2ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 48238) +0ms
+  evm:ops:PUSH1 {"pc":9164,"op":"PUSH1","gas":"0xbc6e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0","0x20"],"depth":0} +11ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 48235) +0ms
+  evm:ops:SWAP1 {"pc":9166,"op":"SWAP1","gas":"0xbc6b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0","0x20","0x7"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48232) +0ms
+  evm:ops:MSTORE {"pc":9167,"op":"MSTORE","gas":"0xbc68","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0","0x7","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 48229) +0ms
+  evm:ops:SWAP2 {"pc":9168,"op":"SWAP2","gas":"0xbc65","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x40","0x0","0x0"],"depth":0} +55ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48226) +0ms
+  evm:ops:SWAP1 {"pc":9169,"op":"SWAP1","gas":"0xbc62","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x0","0x0","0x40"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48223) +2ms
+  evm:ops:SWAP2 {"pc":9170,"op":"SWAP2","gas":"0xbc5f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x0","0x40","0x0"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48220) +0ms
+  evm:ops:SHA3 {"pc":9171,"op":"SHA3","gas":"0xbc5c","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x0","0x40","0x0"],"depth":0} +4ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 48178) +0ms
+  evm:ops:SWAP2 {"pc":9172,"op":"SWAP2","gas":"0xbc32","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x0","0x856286866ed28f5a8c21e150fb62fe6886a1d03b793134ea5ec8d794eecb8816"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48175) +0ms
+  evm:ops:SWAP1 {"pc":9173,"op":"SWAP1","gas":"0xbc2f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x856286866ed28f5a8c21e150fb62fe6886a1d03b793134ea5ec8d794eecb8816","0x0","0x0"],"depth":0} +2ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48172) +0ms
+  evm:ops:SWAP2 {"pc":9174,"op":"SWAP2","gas":"0xbc2c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x856286866ed28f5a8c21e150fb62fe6886a1d03b793134ea5ec8d794eecb8816","0x0","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 48169) +0ms
+  evm:ops:SSTORE {"pc":9175,"op":"SSTORE","gas":"0xbc29","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0","0x0","0x856286866ed28f5a8c21e150fb62fe6886a1d03b793134ea5ec8d794eecb8816"],"depth":0} +5ms
+  evm:eei:gas SSTORE fee: used 2200 gas (-> 45969) +2ms
+  evm:ops:POP {"pc":9176,"op":"POP","gas":"0xb391","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea","0x0"],"depth":0} +33ms
+  evm:eei:gas POP fee: used 2 gas (-> 45967) +0ms
+  evm:ops:JUMP {"pc":9177,"op":"JUMP","gas":"0xb38f","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x8ea"],"depth":0} +23ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 45959) +0ms
+  evm:ops:JUMPDEST {"pc":2282,"op":"JUMPDEST","gas":"0xb387","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +22ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 45958) +7ms
+  evm:ops:POP {"pc":2283,"op":"POP","gas":"0xb386","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +7ms
+  evm:eei:gas POP fee: used 2 gas (-> 45956) +0ms
+  evm:ops:POP {"pc":2284,"op":"POP","gas":"0xb384","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 45954) +0ms
+  evm:ops:POP {"pc":2285,"op":"POP","gas":"0xb382","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2","0x0"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 45952) +0ms
+  evm:ops:JUMP {"pc":2286,"op":"JUMP","gas":"0xb380","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1ab2"],"depth":0} +7ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 45944) +0ms
+  evm:ops:JUMPDEST {"pc":6834,"op":"JUMPDEST","gas":"0xb378","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +7ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 45943) +0ms
+  evm:ops:PUSH1 {"pc":6835,"op":"PUSH1","gas":"0xb377","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +11ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45940) +0ms
+  evm:ops:PUSH1 {"pc":6837,"op":"PUSH1","gas":"0xb374","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45937) +0ms
+  evm:ops:PUSH1 {"pc":6839,"op":"PUSH1","gas":"0xb371","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1"],"depth":0} +1ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45934) +1ms
+  evm:ops:SHL {"pc":6841,"op":"SHL","gas":"0xb36e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x1","0xa0"],"depth":0} +30ms
+  evm:eei:gas SHL fee: used 3 gas (-> 45931) +0ms
+  evm:ops:SUB {"pc":6842,"op":"SUB","gas":"0xb36b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +30ms
+  evm:eei:gas SUB fee: used 3 gas (-> 45928) +0ms
+  evm:ops:DUP3 {"pc":6843,"op":"DUP3","gas":"0xb368","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +12ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45925) +0ms
+  evm:ops:AND {"pc":6844,"op":"AND","gas":"0xb365","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +23ms
+  evm:eei:gas AND fee: used 3 gas (-> 45922) +0ms
+  evm:ops:PUSH1 {"pc":6845,"op":"PUSH1","gas":"0xb362","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45919) +0ms
+  evm:ops:SWAP1 {"pc":6847,"op":"SWAP1","gas":"0xb35f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +10ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45916) +0ms
+  evm:ops:DUP2 {"pc":6848,"op":"DUP2","gas":"0xb35c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +23ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45913) +0ms
+  evm:ops:MSTORE {"pc":6849,"op":"MSTORE","gas":"0xb359","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +12ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 45910) +0ms
+  evm:ops:PUSH1 {"pc":6850,"op":"PUSH1","gas":"0xb356","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45907) +0ms
+  evm:ops:PUSH1 {"pc":6852,"op":"PUSH1","gas":"0xb353","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x3"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45904) +0ms
+  evm:ops:MSTORE {"pc":6854,"op":"MSTORE","gas":"0xb350","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x3","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 45901) +0ms
+  evm:ops:PUSH1 {"pc":6855,"op":"PUSH1","gas":"0xb34d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45898) +0ms
+  evm:ops:DUP2 {"pc":6857,"op":"DUP2","gas":"0xb34a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45895) +0ms
+  evm:ops:SHA3 {"pc":6858,"op":"SHA3","gas":"0xb347","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x0"],"depth":0} +10ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 45853) +0ms
+  evm:ops:DUP1 {"pc":6859,"op":"DUP1","gas":"0xb31d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7"],"depth":0} +14ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45850) +8ms
+  evm:ops:SLOAD {"pc":6860,"op":"SLOAD","gas":"0xb31a","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7"],"depth":0} +40ms
+  evm:eei:gas SLOAD fee: used 100 gas (-> 45750) +0ms
+  evm:ops:PUSH1 {"pc":6861,"op":"PUSH1","gas":"0xb2b6","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45747) +1ms
+  evm:ops:SWAP3 {"pc":6863,"op":"SWAP3","gas":"0xb2b3","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45744) +0ms
+  evm:ops:SWAP1 {"pc":6864,"op":"SWAP1","gas":"0xb2b0","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x0"],"depth":0} +9ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45741) +0ms
+  evm:ops:PUSH2 {"pc":6865,"op":"PUSH2","gas":"0xb2ad","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x0"],"depth":0} +50ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45738) +0ms
+  evm:ops:SWAP1 {"pc":6868,"op":"SWAP1","gas":"0xb2aa","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x0","0x1adb"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45735) +0ms
+  evm:ops:DUP5 {"pc":6869,"op":"DUP5","gas":"0xb2a7","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x0"],"depth":0} +32ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45732) +0ms
+  evm:ops:SWAP1 {"pc":6870,"op":"SWAP1","gas":"0xb2a4","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45729) +0ms
+  evm:ops:PUSH2 {"pc":6871,"op":"PUSH2","gas":"0xb2a1","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45726) +0ms
+  evm:ops:JUMP {"pc":6874,"op":"JUMP","gas":"0xb29e","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x2b54"],"depth":0} +10ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 45718) +0ms
+  evm:ops:JUMPDEST {"pc":11092,"op":"JUMPDEST","gas":"0xb296","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0"],"depth":0} +10ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 45717) +0ms
+  evm:ops:PUSH1 {"pc":11093,"op":"PUSH1","gas":"0xb295","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45714) +0ms
+  evm:ops:DUP3 {"pc":11095,"op":"DUP3","gas":"0xb292","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45711) +0ms
+  evm:ops:NOT {"pc":11096,"op":"NOT","gas":"0xb28f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0x1"],"depth":0} +113ms
+  evm:eei:gas NOT fee: used 3 gas (-> 45708) +0ms
+  evm:ops:DUP3 {"pc":11097,"op":"DUP3","gas":"0xb28c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 45705) +0ms
+  evm:ops:GT {"pc":11098,"op":"GT","gas":"0xb289","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe","0x0"],"depth":0} +127ms
+  evm:eei:gas GT fee: used 3 gas (-> 45702) +0ms
+  evm:ops:ISZERO {"pc":11099,"op":"ISZERO","gas":"0xb286","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0x0"],"depth":0} +94ms
+  evm:eei:gas ISZERO fee: used 3 gas (-> 45699) +0ms
+  evm:ops:PUSH2 {"pc":11100,"op":"PUSH2","gas":"0xb283","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 45696) +0ms
+  evm:ops:JUMPI {"pc":11103,"op":"JUMPI","gas":"0xb280","gasCost":"0xa","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0","0x1","0x2b67"],"depth":0} +50ms
+  evm:eei:gas JUMPI fee: used 10 gas (-> 45686) +8ms
+  evm:ops:JUMPDEST {"pc":11111,"op":"JUMPDEST","gas":"0xb276","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0"],"depth":0} +8ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 45685) +0ms
+  evm:ops:POP {"pc":11112,"op":"POP","gas":"0xb275","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0","0x0"],"depth":0} +18ms
+  evm:eei:gas POP fee: used 2 gas (-> 45683) +0ms
+  evm:ops:ADD {"pc":11113,"op":"ADD","gas":"0xb273","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1","0x0"],"depth":0} +84ms
+  evm:eei:gas ADD fee: used 3 gas (-> 45680) +0ms
+  evm:ops:SWAP1 {"pc":11114,"op":"SWAP1","gas":"0xb270","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1adb","0x1"],"depth":0} +8ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45677) +0ms
+  evm:ops:JUMP {"pc":11115,"op":"JUMP","gas":"0xb26d","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1","0x1adb"],"depth":0} +8ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 45669) +0ms
+  evm:ops:JUMPDEST {"pc":6875,"op":"JUMPDEST","gas":"0xb265","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1"],"depth":0} +1ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 45668) +1ms
+  evm:ops:SWAP1 {"pc":6876,"op":"SWAP1","gas":"0xb264","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x0","0x1"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45665) +0ms
+  evm:ops:SWAP2 {"pc":6877,"op":"SWAP2","gas":"0xb261","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7","0x1","0x0"],"depth":0} +28ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 45662) +0ms
+  evm:ops:SSTORE {"pc":6878,"op":"SSTORE","gas":"0xb25e","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x0","0x1","0x583d0d490039fadac7f8d9c63a5cb989842d7a33b85810e62e7b61cba8b1b1c7"],"depth":0} +26ms
+  evm:eei:gas SSTORE fee: used 20000 gas (-> 25662) +0ms
+  evm:ops:POP {"pc":6879,"op":"POP","gas":"0x643e","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1","0x0"],"depth":0} +1ms
+  evm:eei:gas POP fee: used 2 gas (-> 25660) +0ms
+  evm:ops:POP {"pc":6880,"op":"POP","gas":"0x643c","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x1"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 25658) +0ms
+  evm:ops:PUSH1 {"pc":6881,"op":"PUSH1","gas":"0x643a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25655) +0ms
+  evm:ops:DUP2 {"pc":6883,"op":"DUP2","gas":"0x6437","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +18ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25652) +0ms
+  evm:ops:DUP2 {"pc":6884,"op":"DUP2","gas":"0x6434","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2092"],"depth":0} +0ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25649) +0ms
+  evm:ops:MSTORE {"pc":6885,"op":"MSTORE","gas":"0x6431","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2092","0x0"],"depth":0} +18ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 25646) +0ms
+  evm:ops:PUSH1 {"pc":6886,"op":"PUSH1","gas":"0x642e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25643) +0ms
+  evm:ops:PUSH1 {"pc":6888,"op":"PUSH1","gas":"0x642b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25640) +0ms
+  evm:ops:MSTORE {"pc":6890,"op":"MSTORE","gas":"0x6428","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x2","0x20"],"depth":0} +0ms
+  evm:eei:gas MSTORE fee: used 3 gas (-> 25637) +0ms
+  evm:ops:PUSH1 {"pc":6891,"op":"PUSH1","gas":"0x6425","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25634) +0ms
+  evm:ops:DUP1 {"pc":6893,"op":"DUP1","gas":"0x6422","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40"],"depth":0} +18ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25631) +0ms
+  evm:ops:DUP3 {"pc":6894,"op":"DUP3","gas":"0x641f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x40"],"depth":0} +9ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25628) +0ms
+  evm:ops:SHA3 {"pc":6895,"op":"SHA3","gas":"0x641c","gasCost":"0x1e","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x40","0x0"],"depth":0} +18ms
+  evm:eei:gas SHA3 fee: used 42 gas (-> 25586) +8ms
+  evm:ops:DUP1 {"pc":6896,"op":"DUP1","gas":"0x63f2","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453"],"depth":0} +8ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25583) +0ms
+  evm:ops:SLOAD {"pc":6897,"op":"SLOAD","gas":"0x63ef","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453"],"depth":0} +19ms
+  evm:eei:gas SLOAD fee: used 100 gas (-> 25483) +1ms
+  evm:ops:PUSH1 {"pc":6898,"op":"PUSH1","gas":"0x638b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0"],"depth":0} +9ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25480) +0ms
+  evm:ops:PUSH1 {"pc":6900,"op":"PUSH1","gas":"0x6388","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25477) +0ms
+  evm:ops:PUSH1 {"pc":6902,"op":"PUSH1","gas":"0x6385","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25474) +0ms
+  evm:ops:SHL {"pc":6904,"op":"SHL","gas":"0x6382","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x1","0xa0"],"depth":0} +27ms
+  evm:eei:gas SHL fee: used 3 gas (-> 25471) +0ms
+  evm:ops:SUB {"pc":6905,"op":"SUB","gas":"0x637f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +27ms
+  evm:eei:gas SUB fee: used 3 gas (-> 25468) +0ms
+  evm:ops:NOT {"pc":6906,"op":"NOT","gas":"0x637c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +18ms
+  evm:eei:gas NOT fee: used 3 gas (-> 25465) +0ms
+  evm:ops:AND {"pc":6907,"op":"AND","gas":"0x6379","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0xffffffffffffffffffffffff0000000000000000000000000000000000000000"],"depth":0} +27ms
+  evm:eei:gas AND fee: used 3 gas (-> 25462) +0ms
+  evm:ops:PUSH1 {"pc":6908,"op":"PUSH1","gas":"0x6376","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25459) +0ms
+  evm:ops:PUSH1 {"pc":6910,"op":"PUSH1","gas":"0x6373","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25456) +0ms
+  evm:ops:PUSH1 {"pc":6912,"op":"PUSH1","gas":"0x6370","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x1"],"depth":0} +0ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 25453) +0ms
+  evm:ops:SHL {"pc":6914,"op":"SHL","gas":"0x636d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x1","0xa0"],"depth":0} +0ms
+  evm:eei:gas SHL fee: used 3 gas (-> 25450) +0ms
+  evm:ops:SUB {"pc":6915,"op":"SUB","gas":"0x636a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x1","0x10000000000000000000000000000000000000000"],"depth":0} +0ms
+  evm:eei:gas SUB fee: used 3 gas (-> 25447) +0ms
+  evm:ops:DUP7 {"pc":6916,"op":"DUP7","gas":"0x6367","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0xffffffffffffffffffffffffffffffffffffffff"],"depth":0} +50ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25444) +0ms
+  evm:ops:AND {"pc":6917,"op":"AND","gas":"0x6364","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0xffffffffffffffffffffffffffffffffffffffff","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas AND fee: used 3 gas (-> 25441) +0ms
+  evm:ops:SWAP1 {"pc":6918,"op":"SWAP1","gas":"0x6361","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +9ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 25438) +4ms
+  evm:ops:DUP2 {"pc":6919,"op":"DUP2","gas":"0x635e","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0"],"depth":0} +13ms
+  evm:eei:gas DUP fee: used 3 gas (-> 25435) +0ms
+  evm:ops:OR {"pc":6920,"op":"OR","gas":"0x635b","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +135ms
+  evm:eei:gas OR fee: used 3 gas (-> 25432) +0ms
+  evm:ops:SWAP1 {"pc":6921,"op":"SWAP1","gas":"0x6358","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +4ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 25429) +0ms
+  evm:ops:SWAP2 {"pc":6922,"op":"SWAP2","gas":"0x6355","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +13ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 25426) +0ms
+  evm:ops:SSTORE {"pc":6923,"op":"SSTORE","gas":"0x6352","gasCost":"0x0","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x7c2b9c7491724990cd223358664c1c49003688a8ad8e83f1f1f332f287c4a453"],"depth":0} +13ms
+  evm:eei:gas SSTORE fee: used 20000 gas (-> 5426) +0ms
+  evm:ops:SWAP1 {"pc":6924,"op":"SWAP1","gas":"0x1532","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x40","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 5423) +0ms
+  evm:ops:MLOAD {"pc":6925,"op":"MLOAD","gas":"0x152f","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x40"],"depth":0} +137ms
+  evm:eei:gas MLOAD fee: used 3 gas (-> 5420) +0ms
+  evm:ops:DUP4 {"pc":6926,"op":"DUP4","gas":"0x152c","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0xc0"],"depth":0} +45ms
+  evm:eei:gas DUP fee: used 3 gas (-> 5417) +0ms
+  evm:ops:SWAP3 {"pc":6927,"op":"SWAP3","gas":"0x1529","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x0","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0xc0","0x2092"],"depth":0} +22ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 5414) +0ms
+  evm:ops:SWAP1 {"pc":6928,"op":"SWAP1","gas":"0x1526","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0xc0","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 5411) +0ms
+  evm:ops:PUSH32 {"pc":6929,"op":"PUSH32","gas":"0x1523","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xc0"],"depth":0} +99ms
+  evm:eei:gas PUSH fee: used 3 gas (-> 5408) +1ms
+  evm:ops:SWAP1 {"pc":6962,"op":"SWAP1","gas":"0x1520","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xc0","0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],"depth":0} +1ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 5405) +0ms
+  evm:ops:DUP3 {"pc":6963,"op":"DUP3","gas":"0x151d","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0xc0"],"depth":0} +14ms
+  evm:eei:gas DUP fee: used 3 gas (-> 5402) +0ms
+  evm:ops:SWAP1 {"pc":6964,"op":"SWAP1","gas":"0x151a","gasCost":"0x3","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0xc0","0x0"],"depth":0} +0ms
+  evm:eei:gas SWAP fee: used 3 gas (-> 5399) +0ms
+  evm:ops:LOG4 {"pc":6965,"op":"LOG4","gas":"0x1517","gasCost":"0x177","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092","0x2092","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x0","0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0","0xc0"],"depth":0} +0ms
+  evm:eei:gas LOG fee: used 1875 gas (-> 3524) +0ms
+  evm:ops:POP {"pc":6966,"op":"POP","gas":"0xdc4","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97","0x2092"],"depth":0} +14ms
+  evm:eei:gas POP fee: used 2 gas (-> 3522) +8ms
+  evm:ops:POP {"pc":6967,"op":"POP","gas":"0xdc2","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092","0xa98","0x18d175958209bd4b5c8b806f30f920fe290d7c97"],"depth":0} +8ms
+  evm:eei:gas POP fee: used 2 gas (-> 3520) +0ms
+  evm:ops:JUMP {"pc":6968,"op":"JUMP","gas":"0xdc0","gasCost":"0x8","stack":["0x1249c58b","0x3a0","0x2092","0xa98"],"depth":0} +23ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 3512) +0ms
+  evm:ops:JUMPDEST {"pc":2712,"op":"JUMPDEST","gas":"0xdb8","gasCost":"0x1","stack":["0x1249c58b","0x3a0","0x2092"],"depth":0} +22ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 3511) +0ms
+  evm:ops:POP {"pc":2713,"op":"POP","gas":"0xdb7","gasCost":"0x2","stack":["0x1249c58b","0x3a0","0x2092"],"depth":0} +0ms
+  evm:eei:gas POP fee: used 2 gas (-> 3509) +0ms
+  evm:ops:JUMP {"pc":2714,"op":"JUMP","gas":"0xdb5","gasCost":"0x8","stack":["0x1249c58b","0x3a0"],"depth":0} +0ms
+  evm:eei:gas JUMP fee: used 8 gas (-> 3501) +0ms
+  evm:ops:JUMPDEST {"pc":928,"op":"JUMPDEST","gas":"0xdad","gasCost":"0x1","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas JUMPDEST fee: used 1 gas (-> 3500) +0ms
+  evm:ops:STOP {"pc":929,"op":"STOP","gas":"0xdac","gasCost":"0x0","stack":["0x1249c58b"],"depth":0} +0ms
+  evm:eei:gas STOP fee: used 0 gas (-> 3500) +0ms
+  vm:state message checkpoint committed +189ms
+  vm:tx Update fromAccount (caller) nonce (-> 2709) +190ms
+  vm:tx ---------------------------------------------------------------------------------------------------- +0ms
+  vm:tx Received tx execResult: [ executionGasUsed=155436 exceptionError=none returnValue=0x gasRefund=0 ] +0ms
+  vm:tx Generated tx bloom with logs=1 +0ms
+  vm:tx:gas tx add baseFee 21064 to totalGasSpent (-> 176500) +192ms
+  vm:tx No tx gasRefund +0ms
+  vm:tx Refunded txCostDiff (238435073947000) to fromAccount (caller) balance (-> 5021884331429860744) +1ms
+  vm:tx tx update miner account (0x388c818ca8b9251b393131c08a736a67ccb19297) balance (-> 4560751633720383100) +0ms
+  vm:tx Generate tx receipt transactionType=0 cumulativeBlockGasUsed=1209202 bitvector=10000200000000081000000000000000000000000800000000… (256 bytes) logs=1 +0ms
+  vm:state message checkpoint reverted +3ms
+  vm:tx tx checkpoint reverted +1ms
+  vm:state message checkpoint reverted +0ms
+  vm:block block checkpoint reverted +201ms
