@@ -29,6 +29,11 @@ export * from './bytes'
 export * from './types'
 
 /**
+ * Helper function for working with compact encoding
+ */
+export * from './encoding'
+
+/**
  * Export ethjs-util methods
  */
 export {
