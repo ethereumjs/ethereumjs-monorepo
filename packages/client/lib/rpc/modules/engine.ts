@@ -491,6 +491,7 @@ export class Engine {
    *        INVALID
    *        SYNCING
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
+   *   3. headBlock: Block|undefined - Block corresponding to headBlockHash if found
    */
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
