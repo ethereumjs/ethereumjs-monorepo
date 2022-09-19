@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663597819779,
+  "lastUpdate": 1663600535898,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "de21d490e60999f667733625a49cc72dc23f21b8",
-          "message": "evm: add error which triggers if code size deposit exceeds the maximum size (#2239)\n\n* evm: add error which triggers if code size deposit exceeds the maximum size\r\n\r\n* evm: add test comment",
-          "timestamp": "2022-08-29T17:11:32+02:00",
-          "tree_id": "b3ebc267a7a9f8a6bf7458c0aee8abbadef66bbe",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/de21d490e60999f667733625a49cc72dc23f21b8"
-        },
-        "date": 1661786106645,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9708,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9587,
-            "range": "±3.27%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9444,
-            "range": "±5.91%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9697,
-            "range": "±2.40%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9628,
-            "range": "±2.63%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.56%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3d7472c22038a12530bd04f38c242488dfdfe78d",
+          "message": "client: Abstract out cl manager from the engine methods impl (#2293)\n\n* client: Abstract out cl manager from the engine methods impl\r\n\r\n* add comment about optional headBlock in fcU method",
+          "timestamp": "2022-09-19T20:42:55+05:30",
+          "tree_id": "36c9cac907da07f48b591569f94dde0914cb2051",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3d7472c22038a12530bd04f38c242488dfdfe78d"
+        },
+        "date": 1663600535175,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18085,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17390,
+            "range": "±5.29%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16478,
+            "range": "±7.07%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16989,
+            "range": "±8.83%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17577,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
