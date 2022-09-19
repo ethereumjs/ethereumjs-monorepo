@@ -19,13 +19,13 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 To build the `dist/` directory, run:
 
-```
+```shell
 npm run build
 ```
 
 You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
 
-```
+```shell
 node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
@@ -36,7 +36,7 @@ and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
-```
+```typescript
 dpt.on('peer:added', (peer) => {
   // Do something...
 })
@@ -72,19 +72,19 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 
 Create your peer table:
 
-```
+```typescript
 const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
-    tcpPort: null
-  }
+    tcpPort: null,
+  },
 })
 ```
 
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
-```
+```typescript
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
 
@@ -225,7 +225,7 @@ Upper layer protocol for exchanging Ethereum network data like block headers or 
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```
+```typescript
 eth.once('status', () => {
   // Send an initial message
   eth.sendMessage()
@@ -234,7 +234,7 @@ eth.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```
+```typescript
 eth.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
@@ -294,7 +294,7 @@ Upper layer protocol used by light clients, see [./src/les/](./src/les/).
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```
+```typescript
 les.once('status', () => {
   // Send an initial message
   les.sendMessage()
@@ -303,7 +303,7 @@ les.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```
+```typescript
 les.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
@@ -373,7 +373,7 @@ While it's possible to bundle this package for the browser, some features do not
 
 There are unit tests in the `test/` directory which can be run with:
 
-```
+```shell
 npm run test
 ```
 
