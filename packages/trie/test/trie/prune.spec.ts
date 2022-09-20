@@ -234,7 +234,7 @@ tape('Pruned trie tests', function (tester) {
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
-      st.ok(dbKeys === 0, 'db is empty')
+      st.ok(dbKeys === 1, 'db is empty')
     }
   })
 })
