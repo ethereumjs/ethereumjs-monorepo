@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663600535898,
+  "lastUpdate": 1663681551611,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "80117772+rodrigoherrerai@users.noreply.github.com",
-            "name": "Rodrigo Herrera Itie",
-            "username": "rodrigoherrerai"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2d60261422437c2353e5b547dbde610494d37c5e",
-          "message": "Invalid README examples (#2247)\n\n* Invalid README examples\n\n1. Blockchain cannot be used to initiate an EVM, it is not \"EVMOpts\". \r\n2. \"gasUsed\" is not of type \"ExecResult\"\n\n* Update README.md",
-          "timestamp": "2022-08-29T16:43:13-04:00",
-          "tree_id": "a75c018e71027241a6ab661a3216a1d9b3caa9ea",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2d60261422437c2353e5b547dbde610494d37c5e"
-        },
-        "date": 1661805956343,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19365,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18706,
-            "range": "±5.12%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17942,
-            "range": "±5.25%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19472,
-            "range": "±1.39%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18490,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.10%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hello@basecode.sh",
+            "name": "Brian Faust",
+            "username": "faustbrian"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5ca079fa468fb55ec1227e7bcb33b3ae51da0fee",
+          "message": "fix(trie): handle root key and value during pruned integrity verification (#2296)\n\n* fix(trie): handle root key and value during pruned integrity verification\r\n\r\n* Update packages/trie/test/trie/prune.spec.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Update packages/trie/src/trie/trie.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2022-09-20T15:42:27+02:00",
+          "tree_id": "413428274a96bbb66519e17c07be9ea3b4fe46ae",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5ca079fa468fb55ec1227e7bcb33b3ae51da0fee"
+        },
+        "date": 1663681549376,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10424,
+            "range": "±2.97%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10067,
+            "range": "±6.13%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 10572,
+            "range": "±2.26%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10044,
+            "range": "±2.77%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9414,
+            "range": "±8.58%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
           }
         ]
       }
