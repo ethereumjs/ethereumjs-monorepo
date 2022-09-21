@@ -2,11 +2,13 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { toBuffer } from '@ethereumjs/util'
+import { bufferToHex, toBuffer } from '@ethereumjs/util'
 
-import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+import { EEI } from '../../../../vm/src/eei/eei'
+import { EVM } from '../../../src'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../util'
+
+import { runTxAlt } from './runTxAlt'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import type * as tape from 'tape'
@@ -19,7 +21,6 @@ function parseTestCases(
   value: string | undefined
 ) {
   let testCases = []
-
   if (testData['post'][forkConfigTestSuite] !== undefined) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       const testIndexes = testCase['indexes']
@@ -66,17 +67,8 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
-  }
   const begin = Date.now()
   const common = options.common
-
-  // Have to create a blockchain with empty block as genesisBlock for Merge
-  // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true })
@@ -84,10 +76,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     trie: state,
   })
   const eei = new EEI(stateManager, common, blockchain)
-  const evm = new EVM({ common, eei })
-  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
+  const evm: EVM = new EVM({ common, eei })
 
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(eei, testData)
 
   let execInfo = ''
   let tx
@@ -101,9 +92,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   if (tx) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
-
       if (options.jsontrace === true) {
-        vm.evm.events.on('step', function (e: InterpreterStep) {
+        evm.events.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
             return '0x' + item.toString(16)
@@ -121,15 +111,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
           t.comment(JSON.stringify(opTrace))
         })
-        vm.events.on('afterTx', async () => {
-          const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
-          }
-          t.comment(JSON.stringify(stateRoot))
-        })
       }
       try {
-        await vm.runTx({ tx, block })
+        await runTxAlt(evm, block, tx)
         execInfo = 'successful tx run'
       } catch (e: any) {
         execInfo = `tx runtime error :${e.message}`
@@ -139,14 +123,15 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  const stateManagerStateRoot = vm.stateManager._trie.root()
+  const stateManagerStateRoot = await evm.eei.getStateRoot()
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
-  const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
-
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
-
-  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  t.equal(
+    bufferToHex(stateManagerStateRoot),
+    bufferToHex(testDataPostStateRoot),
+    `[ ${timeSpent} ] the state roots should match (${execInfo})`
+  )
   return parseFloat(timeSpent)
 }
 
