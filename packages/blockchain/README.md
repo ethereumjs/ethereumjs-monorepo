@@ -88,13 +88,8 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
 
 // Load geth genesis json file into lets say `gethGenesisJson`
-const chainParams = await parseGethGenesis(gethGenesisJson, 'customChain')
-const common = new Common({
-  chain: 'customChain',
-  customChains: [chainParams],
-})
-
-const genesisState = await parseGethGenesisState(gethGenesisJson)
+const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
+const genesisState = parseGethGenesisState(gethGenesisJson)
 const blockchain = await Blockchain.create({
   genesisState,
   common,
