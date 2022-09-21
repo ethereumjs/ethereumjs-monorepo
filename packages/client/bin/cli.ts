@@ -14,7 +14,7 @@ import * as readline from 'readline'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
-import { parseMultiaddrs, setCommonForkHashes } from '../lib/util'
+import { parseMultiaddrs } from '../lib/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
@@ -384,7 +384,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       validateBlocks: true,
       validateConsensus,
     })
-    setCommonForkHashes(config.chainCommon, blockchain.genesisBlock.hash())
+    config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
   const client = new EthereumClient({

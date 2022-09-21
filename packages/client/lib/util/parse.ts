@@ -2,7 +2,6 @@ import { Multiaddr, multiaddr } from 'multiaddr'
 import { URL } from 'url'
 
 import type { MultiaddrLike } from '../types'
-import type { Common } from '@ethereumjs/common'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -80,21 +79,4 @@ export function parseKey(input: string | Buffer) {
     return input
   }
   return Buffer.from(input, 'hex')
-}
-
-/**
- * Sets any missing forkHashes on the passed-in {@link Common} instance
- * @param common The {@link Common} to set the forkHashes for
- * @param genesisHash The genesis block hash
- */
-export function setCommonForkHashes(common: Common, genesisHash: Buffer) {
-  for (const hf of (common as any)._chainParams.hardforks) {
-    if (
-      (hf.forkHash === null || hf.forkhash === undefined) &&
-      typeof hf.block !== 'undefined' &&
-      (hf.block !== null || typeof hf.td !== 'undefined')
-    ) {
-      hf.forkHash = common.forkHash(hf.name, genesisHash)
-    }
-  }
 }

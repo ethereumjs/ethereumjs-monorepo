@@ -700,6 +700,23 @@ export class Common extends EventEmitter {
   }
 
   /**
+   * Sets any missing forkHashes on the passed-in {@link Common} instance
+   * @param common The {@link Common} to set the forkHashes for
+   * @param genesisHash The genesis block hash
+   */
+  setForkHashes(genesisHash: Buffer) {
+    for (const hf of this.hardforks()) {
+      if (
+        (hf.forkHash === null || hf.forkHash === undefined) &&
+        typeof hf.block !== 'undefined' &&
+        (hf.block !== null || typeof hf.ttd !== 'undefined')
+      ) {
+        hf.forkHash = this.forkHash(hf.name, genesisHash)
+      }
+    }
+  }
+
+  /**
    * Returns the Genesis parameters of the current chain
    * @returns Genesis dictionary
    */
