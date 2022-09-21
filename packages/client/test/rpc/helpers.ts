@@ -199,7 +199,7 @@ export async function baseRequest(
  */
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
-  const genesisState = await parseGethGenesisState(genesisFile)
+  const genesisState = parseGethGenesisState(genesisFile)
 
   const common = new Common({
     chain: chainName,

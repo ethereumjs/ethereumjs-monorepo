@@ -5,7 +5,7 @@ import type { GenesisState } from './genesisStates'
  * Parses the geth genesis state into Blockchain {@link GenesisState}
  * @param json representing the `alloc` key in a Geth genesis file
  */
-export async function parseGethGenesisState(json: any) {
+export function parseGethGenesisState(json: any) {
   const state: GenesisState = {}
   for (let address of Object.keys(json.alloc)) {
     let { balance, code, storage } = json.alloc[address]

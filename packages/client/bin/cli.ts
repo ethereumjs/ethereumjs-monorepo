@@ -458,7 +458,7 @@ async function setupDevnet(prefundAddress: Address) {
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
   const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
-  const customGenesisState = await parseGethGenesisState(chainData)
+  const customGenesisState = parseGethGenesisState(chainData)
   return { common, customGenesisState }
 }
 
@@ -608,7 +608,7 @@ async function run() {
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     common = Common.fromGethGenesis(genesisFile, { chain: chainName })
-    customGenesisState = await parseGethGenesisState(genesisFile)
+    customGenesisState = parseGethGenesisState(genesisFile)
   }
 
   if (args.mine === true && accounts.length === 0) {
