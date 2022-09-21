@@ -1,5 +1,6 @@
 import * as tape from 'tape'
 
+import { Common } from '../src/common'
 import { parseGethGenesis } from '../src/utils'
 
 tape('[Utils/Parse]', (t) => {
@@ -47,6 +48,7 @@ tape('[Utils/Parse]', (t) => {
       t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
     }
   )
+
   t.test('should successfully parse genesis file with no extraData', async (st) => {
     st.plan(2)
     const json = require(`../../client/test/testdata/geth-genesis/no-extra-data.json`)
@@ -54,4 +56,34 @@ tape('[Utils/Parse]', (t) => {
     st.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
     st.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })
+
+  t.test('should successfully parse kiln genesis and set forkhash', async (st) => {
+    const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
+    const common = Common.fromGethGenesis(json, {
+      chain: 'customChain',
+      genesisHash: Buffer.from(
+        '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
+        'hex'
+      ),
+    })
+    for (const hf of common.hardforks()) {
+      /* eslint-disable @typescript-eslint/no-use-before-define */
+      st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
+    }
+  })
 })
+
+const kilnForkHashes: any = {
+  chainstart: '0xbcadf543',
+  homestead: '0xbcadf543',
+  tangerineWhistle: '0xbcadf543',
+  spuriousDragon: '0xbcadf543',
+  byzantium: '0xbcadf543',
+  constantinople: '0xbcadf543',
+  petersburg: '0xbcadf543',
+  istanbul: '0xbcadf543',
+  berlin: '0xbcadf543',
+  london: '0xbcadf543',
+  mergeForkIdTransition: '0x013fd1b5',
+  merge: '0x013fd1b5',
+}

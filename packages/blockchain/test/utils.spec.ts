@@ -5,7 +5,7 @@ import { Blockchain } from '../src/blockchain'
 import { parseGethGenesisState } from '../src/utils'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
-  const common = Common.fromGethGenesis(gethGenesis, { chain: 'customChain' })
+  const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
   const blockchain = await Blockchain.create({
     genesisState,
@@ -23,7 +23,7 @@ tape('[Utils/Parse]', (t) => {
 
     t.equal(
       genesisHash.toString('hex'),
-      '4b5a404c07ee216ee79f8896ad79c30d68c5b7aaa9499c404ae1460005041106',
+      '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
       'kiln genesis hash matches'
     )
   })
