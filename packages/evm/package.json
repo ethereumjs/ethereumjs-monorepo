@@ -43,6 +43,11 @@
     "tape": "tape -r ts-node/register --stack-size=1500",
     "test": "npm run tape -- './tests/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js",
+    "tester": "ts-node ./tests/tester --stack-size=1500",
+    "test:state": "npm run tester -- --state",
+    "test:state:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
+    "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg Berlin London' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
+    "test:state:slow": "npm run test:state -- --runSkipped=slow",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
