@@ -202,18 +202,13 @@ has both config specification for the chain as well as the genesis state specifi
 common from such configuration in the following manner:
 
 ```typescript
-import { Common, parseGethGenesis } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 
-// Load geth genesis json file into lets say `gethGenesisJson`
-const chainParams = await parseGethGenesis(gethGenesisJson, 'customChain')
-const common = new Common({
-  chain: 'customChain',
-  customChains: [chainParams],
-})
-
-// You either have genesis block hash or calculate it from using the geth state via `blockchain` module
-// const genesisBlockHash = ...
-common.setForkHashes(genesisBlockHash)
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// post calculating it via `blockchain`)
+common.setForkHashes(genesisHash)
 ```
 
 ### Hardforks

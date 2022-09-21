@@ -43,7 +43,7 @@ tape('[CLConnectionManager]', (t) => {
     manager.stop()
     st.ok(!manager.running, 'should stop')
     ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = await parseGethGenesis(genesisJSON, 'post-merge')
+    const params = parseGethGenesis(genesisJSON, 'post-merge')
     let common = new Common({
       chain: params.name,
       customChains: [params],

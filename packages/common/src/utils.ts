@@ -22,7 +22,7 @@ function formatNonce(nonce: string): string {
  * @param json object representing the Geth genesis file
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-async function parseGethParams(json: any) {
+function parseGethParams(json: any) {
   const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp, nonce } = json
   const { chainId } = config
@@ -116,7 +116,7 @@ async function parseGethParams(json: any) {
  * @param name optional chain name
  * @returns parsed params
  */
-export async function parseGethGenesis(json: any, name?: string) {
+export function parseGethGenesis(json: any, name?: string) {
   try {
     if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
       throw new Error('Invalid format, expected geth genesis fields missing')
@@ -124,7 +124,7 @@ export async function parseGethGenesis(json: any, name?: string) {
     if (name !== undefined) {
       json.name = name
     }
-    return await parseGethParams(json)
+    return parseGethParams(json)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

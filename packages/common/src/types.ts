@@ -113,3 +113,9 @@ export interface CustomCommonOpts extends BaseOpts {
    */
   baseChain?: string | number | Chain | bigint
 }
+
+export interface GethConfigOpts {
+  chain?: string
+  hardfork?: string | Hardfork
+  genesisHash?: Buffer
+}

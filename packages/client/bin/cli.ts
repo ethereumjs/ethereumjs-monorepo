@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
-import { Chain, Common, ConsensusAlgorithm, Hardfork, parseGethGenesis } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
@@ -457,13 +457,8 @@ async function setupDevnet(prefundAddress: Address) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const chainParams = await parseGethGenesis(chainData, 'devnet')
+  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
   const customGenesisState = await parseGethGenesisState(chainData)
-  const common = new Common({
-    chain: 'devnet',
-    customChains: [chainParams],
-    hardfork: Hardfork.London,
-  })
   return { common, customGenesisState }
 }
 
@@ -612,11 +607,7 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    const genesisParams = await parseGethGenesis(genesisFile, chainName)
-    common = new Common({
-      chain: genesisParams.name,
-      customChains: [genesisParams],
-    })
+    common = Common.fromGethGenesis(genesisFile, { chain: chainName })
     customGenesisState = await parseGethGenesisState(genesisFile)
   }
 

@@ -198,7 +198,7 @@ export async function baseRequest(
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
-  const genesisParams = await parseGethGenesis(genesisFile, chainName)
+  const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = await parseGethGenesisState(genesisFile)
 
   const common = new Common({
