@@ -20,7 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import type { VmState } from '../src/eei/vmState'
+import type { VmState } from '../../../vm/src/eei/vmState'
 import type { BlockOptions } from '@ethereumjs/block'
 import type { TxOptions } from '@ethereumjs/tx'
 import type * as tape from 'tape'

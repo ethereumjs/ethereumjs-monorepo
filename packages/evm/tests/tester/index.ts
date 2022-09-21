@@ -12,7 +12,6 @@ import {
   getSkipTests,
   getTestDirs,
 } from './config'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner'
 import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
@@ -47,14 +46,11 @@ import type { Common } from '@ethereumjs/common'
 const argv = minimist(process.argv.slice(2))
 
 async function runTests() {
-  let name: 'GeneralStateTests' | 'BlockchainTests'
+  let name: 'GeneralStateTests'
   let runner: any
   if ((argv.state as boolean) === true) {
     name = 'GeneralStateTests'
     runner = runStateTest
-  } else if ((argv.blockchain as boolean) === true) {
-    name = 'BlockchainTests'
-    runner = runBlockchainTest
   } else {
     console.log(`Test type not supported or provided`)
     process.exit(1)
@@ -165,7 +161,7 @@ async function runTests() {
   const formattedRunnerArgs = formatArgs(runnerArgs)
 
   console.log(`+${'-'.repeat(width)}+`)
-  console.log(`| VM -> ${name} `.padEnd(fillWidth) + ' |')
+  console.log(`| EVM -> ${name} `.padEnd(fillWidth) + ' |')
   console.log(delimiter)
   console.log(`| TestGetterArgs`.padEnd(fillWidth) + ' |')
   for (const [key, value] of Object.entries(formattedGetterArgs)) {

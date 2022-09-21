@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as dir from 'node-dir'
 import * as path from 'path'
 
-import { DEFAULT_TESTS_PATH } from './config'
+const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 
 const falsePredicate = () => false
 
@@ -113,12 +113,6 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
 
   skipFn = (name: string) => {
     return skipTest(name, args.skipTests)
-  }
-  if (new RegExp(`BlockchainTests`).test(testType)) {
-    const forkFilter = new RegExp(`${args.forkConfig}$`)
-    skipFn = (name: string, test: any) => {
-      return forkFilter.test(test.network) === false || skipTest(name, args.skipTests)
-    }
   }
   if (new RegExp(`GeneralStateTests`).test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`)
