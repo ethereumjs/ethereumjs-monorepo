@@ -203,11 +203,14 @@ common from such configuration in the following manner:
 
 ```typescript
 import { Common, parseGethGenesis } from '@ethereumjs/common'
-const chainParams = await parseGethGenesis(chainData, 'customChain')
+
+// Load geth genesis json file into lets say `gethGenesisJson`
+const chainParams = await parseGethGenesis(gethGenesisJson, 'customChain')
 const common = new Common({
   chain: 'customChain',
   customChains: [chainParams],
 })
+
 // You either have genesis block hash or calculate it from using the geth state via `blockchain` module
 // const genesisBlockHash = ...
 common.setForkHashes(genesisBlockHash)
