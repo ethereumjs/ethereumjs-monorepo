@@ -1,10 +1,9 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Event } from '../../lib/types'
-import { parseCustomParams } from '../../lib/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
@@ -12,7 +11,7 @@ import { destroy, setup, wait } from './util'
 const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 tape('[Integration:BeaconSync]', async (t) => {
-  const params = await parseCustomParams(genesisJSON, 'post-merge')
+  const params = await parseGethGenesis(genesisJSON, 'post-merge')
   const common = new Common({
     chain: params.name,
     customChains: [params],

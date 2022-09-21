@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -7,7 +7,6 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
-import { parseCustomParams } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -316,7 +315,7 @@ tape('[Skeleton]', async (t) => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const params = await parseCustomParams(genesis, 'merge-not-set')
+    const params = await parseGethGenesis(genesis, 'merge-not-set')
     const common = new Common({
       chain: params.name,
       customChains: [params],
@@ -480,7 +479,7 @@ tape('[Skeleton]', async (t) => {
         extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
+      const params = await parseGethGenesis(genesis, 'post-merge')
       const common = new Common({
         chain: params.name,
         customChains: [params],
@@ -590,7 +589,7 @@ tape('[Skeleton]', async (t) => {
         extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
+      const params = await parseGethGenesis(genesis, 'post-merge')
       const common = new Common({
         chain: params.name,
         customChains: [params],
@@ -656,7 +655,7 @@ tape('[Skeleton]', async (t) => {
         },
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
+      const params = await parseGethGenesis(genesis, 'post-merge')
       const common = new Common({
         chain: params.name,
         customChains: [params],

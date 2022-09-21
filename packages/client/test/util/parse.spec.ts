@@ -1,7 +1,8 @@
+import { parseGethGenesis } from '@ethereumjs/common'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
 
-import { parseCustomParams, parseMultiaddrs, parseTransports } from '../../lib/util'
+import { parseMultiaddrs, parseTransports } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
@@ -60,7 +61,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should parse geth params file', async (t) => {
     const json = require('../testdata/geth-genesis/testnet.json')
-    const params = await parseCustomParams(json, 'rinkeby')
+    const params = await parseGethGenesis(json, 'rinkeby')
     t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
   })
 
@@ -68,7 +69,7 @@ tape('[Util/Parse]', (t) => {
     t.plan(1)
     const json = require('../testdata/geth-genesis/invalid-spurious-dragon.json')
     try {
-      await parseCustomParams(json, 'bad_params')
+      await parseGethGenesis(json, 'bad_params')
       t.fail('should have thrown')
     } catch {
       t.pass('should throw')
@@ -78,7 +79,7 @@ tape('[Util/Parse]', (t) => {
   t.test('should import poa network params correctly', async (t) => {
     t.plan(3)
     const json = require('../testdata/geth-genesis/poa.json')
-    let params = await parseCustomParams(json, 'poa')
+    let params = await parseGethGenesis(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     t.deepEquals(
       params.consensus,
@@ -86,7 +87,7 @@ tape('[Util/Parse]', (t) => {
       'consensus config matches'
     )
     json.nonce = '00'
-    params = await parseCustomParams(json, 'poa')
+    params = await parseGethGenesis(json, 'poa')
     t.equals(
       params.genesis.nonce,
       '0x0000000000000000',
@@ -98,14 +99,14 @@ tape('[Util/Parse]', (t) => {
     'should generate expected hash with london block zero and base fee per gas defined',
     async (t) => {
       const json = require('../testdata/geth-genesis/post-merge.json')
-      const params = await parseCustomParams(json, 'post-merge')
+      const params = await parseGethGenesis(json, 'post-merge')
       t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
     }
   )
   t.test('should successfully parse genesis file with no extraData', async (st) => {
     st.plan(2)
     const json = require('../testdata/geth-genesis/no-extra-data.json')
-    const params = await parseCustomParams(json, 'noExtraData')
+    const params = await parseGethGenesis(json, 'noExtraData')
     st.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
     st.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })

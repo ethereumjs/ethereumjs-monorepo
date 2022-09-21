@@ -1,11 +1,10 @@
-import { Common } from '@ethereumjs/common'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-import { parseCustomParams } from '../../lib/util'
 import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
 
 import type { Log } from '@ethereumjs/evm/dist/types'
@@ -195,7 +194,7 @@ tape('[FullEthereumService]', async (t) => {
   })
 
   t.test('should start on beacon sync when past merge', async (t) => {
-    const params = await parseCustomParams(genesisJSON, 'post-merge')
+    const params = await parseGethGenesis(genesisJSON, 'post-merge')
     const common = new Common({ chain: params.name, customChains: [params] })
     common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
     const config = new Config({ transports: [], common })

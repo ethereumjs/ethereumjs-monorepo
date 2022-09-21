@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Chain, Common, ConsensusAlgorithm, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
@@ -14,12 +14,7 @@ import * as readline from 'readline'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
-import {
-  parseCustomParams,
-  parseGenesisState,
-  parseMultiaddrs,
-  setCommonForkHashes,
-} from '../lib/util'
+import { parseMultiaddrs, setCommonForkHashes } from '../lib/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
@@ -462,8 +457,8 @@ async function setupDevnet(prefundAddress: Address) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const chainParams = await parseCustomParams(chainData, 'devnet')
-  const customGenesisState = await parseGenesisState(chainData)
+  const chainParams = await parseGethGenesis(chainData, 'devnet')
+  const customGenesisState = await parseGethGenesisState(chainData)
   const common = new Common({
     chain: 'devnet',
     customChains: [chainParams],
@@ -617,12 +612,12 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    const genesisParams = await parseCustomParams(genesisFile, chainName)
+    const genesisParams = await parseGethGenesis(genesisFile, chainName)
     common = new Common({
       chain: genesisParams.name,
       customChains: [genesisParams],
     })
-    customGenesisState = await parseGenesisState(genesisFile)
+    customGenesisState = await parseGethGenesisState(genesisFile)
   }
 
   if (args.mine === true && accounts.length === 0) {
