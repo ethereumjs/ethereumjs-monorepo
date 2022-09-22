@@ -2,6 +2,7 @@ import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src/blockchain'
+import { genesisStateRoot } from '../src/genesisStates'
 import { parseGethGenesisState } from '../src/utils'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
@@ -15,7 +16,19 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 }
 
 tape('[Utils/Parse]', (t) => {
-  t.test('should parse geth params file', async (t) => {
+  t.test('should properly parse gensis state from gethGenesis', async (t) => {
+    // kiln genesis with deposit contract storage set
+    const json = require(`./testdata/geth-genesis-kiln.json`)
+    const genesisState = parseGethGenesisState(json)
+    const stateRoot = await genesisStateRoot(genesisState)
+    t.equal(
+      stateRoot.toString('hex'),
+      '52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
+      'kiln stateRoot matches'
+    )
+  })
+
+  t.test('should initialize blockchain from gethGenesis', async (t) => {
     // kiln genesis with deposit contract storage set
     const json = require(`./testdata/geth-genesis-kiln.json`)
     const blockchain = await getBlockchain(json)
