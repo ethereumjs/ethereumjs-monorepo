@@ -19,8 +19,8 @@ import { precompile0f } from './0f-bls12-g2multiexp'
 import { precompile10 } from './10-bls12-pairing'
 import { precompile11 } from './11-bls12-map-fp-to-g1'
 import { precompile12 } from './12-bls12-map-fp2-to-g2'
-import { PrecompileFunc, PrecompileInput } from './types'
 
+import type { PrecompileFunc, PrecompileInput } from './types'
 import type { Common } from '@ethereumjs/common'
 
 interface Precompiles {
@@ -200,13 +200,6 @@ function getActivePrecompiles(
   return precompileMap
 }
 
-export {
-  AddPrecompile,
-  CustomPrecompile,
-  DeletePrecompile,
-  getActivePrecompiles,
-  PrecompileFunc,
-  PrecompileInput,
-  precompiles,
-  ripemdPrecompileAddress,
-}
+export { getActivePrecompiles, precompiles, ripemdPrecompileAddress }
+
+export type { AddPrecompile, CustomPrecompile, DeletePrecompile, PrecompileFunc, PrecompileInput }
