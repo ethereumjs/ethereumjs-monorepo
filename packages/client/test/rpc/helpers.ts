@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common } from '@ethereumjs/common'
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
@@ -13,12 +13,7 @@ import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { TxPool } from '../../lib/service/txpool'
 import { Event } from '../../lib/types'
-import {
-  createRPCServerListener,
-  createWsRPCServerListener,
-  parseCustomParams,
-  parseGenesisState,
-} from '../../lib/util'
+import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
 
 import { mockBlockchain } from './mockBlockchain'
 
@@ -203,8 +198,8 @@ export async function baseRequest(
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
-  const genesisParams = await parseCustomParams(genesisFile, chainName)
-  const genesisState = await parseGenesisState(genesisFile)
+  const genesisParams = parseGethGenesis(genesisFile, chainName)
+  const genesisState = parseGethGenesisState(genesisFile)
 
   const common = new Common({
     chain: chainName,
