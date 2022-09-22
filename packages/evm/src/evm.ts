@@ -930,7 +930,7 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy() {
+  public copy(): EVMInterface {
     const opts = {
       ...this._optsCached,
       common: this._common.copy(),
