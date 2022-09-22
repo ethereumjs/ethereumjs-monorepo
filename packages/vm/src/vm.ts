@@ -3,7 +3,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, TypeOutput, toType } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
+import * as AsyncEventEmitter from 'async-eventemitter'
 import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
