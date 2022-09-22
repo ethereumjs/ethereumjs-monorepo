@@ -36,7 +36,7 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         account.codeHash = Buffer.from(keccak256(toBuffer(code)))
       }
       if (storage !== undefined) {
-        const storageTrie = new Trie()
+        const storageTrie = new Trie({ useKeyHashing: true })
         for (const [k, val] of storage) {
           const storageKey = isHexPrefixed(k) ? toBuffer(k) : Buffer.from(k, 'hex')
           const storageVal = Buffer.from(
