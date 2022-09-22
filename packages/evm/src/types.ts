@@ -5,6 +5,7 @@ import type { OpHandler } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type AsyncEventEmitter from 'async-eventemitter'
+import type { EventMap } from 'async-eventemitter'
 
 /**
  * API of the EVM
@@ -213,7 +214,7 @@ interface NewContractEvent {
   code: Buffer
 }
 
-export type EVMEvents = {
+export type EVMEvents = EventMap & {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
