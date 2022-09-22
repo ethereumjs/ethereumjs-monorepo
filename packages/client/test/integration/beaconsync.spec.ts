@@ -4,7 +4,6 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Event } from '../../lib/types'
-import { parseCustomParams } from '../../lib/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
@@ -12,11 +11,7 @@ import { destroy, setup, wait } from './util'
 const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 tape('[Integration:BeaconSync]', async (t) => {
-  const params = await parseCustomParams(genesisJSON, 'post-merge')
-  const common = new Common({
-    chain: params.name,
-    customChains: [params],
-  })
+  const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
 
   t.test('should sync blocks', async (t) => {

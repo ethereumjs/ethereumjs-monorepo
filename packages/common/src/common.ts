@@ -10,6 +10,7 @@ import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips'
 import { Chain, CustomChain, Hardfork } from './enums'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
+import { parseGethGenesis } from './utils'
 
 import type { ConsensusAlgorithm, ConsensusType } from './enums'
 import type {
@@ -23,6 +24,7 @@ import type {
   CustomCommonOpts,
   EthashConfig,
   GenesisBlockConfig,
+  GethConfigOpts,
   HardforkConfig,
 } from './types'
 import type { BigIntLike } from '@ethereumjs/util'
@@ -150,6 +152,28 @@ export class Common extends EventEmitter {
       }
       throw new Error(`Custom chain ${chainParamsOrName} not supported`)
     }
+  }
+
+  /**
+   * Static method to load and set common from a geth genesis json
+   * @param genesisJson json of geth configuration
+   * @param { chain, genesisHash, hardfork } to futher configure the common instance
+   * @returns Common
+   */
+  static fromGethGenesis(
+    genesisJson: any,
+    { chain, genesisHash, hardfork }: GethConfigOpts
+  ): Common {
+    const genesisParams = parseGethGenesis(genesisJson, chain)
+    const common = new Common({
+      chain: genesisParams.name,
+      customChains: [genesisParams],
+      hardfork,
+    })
+    if (genesisHash !== undefined) {
+      common.setForkHashes(genesisHash)
+    }
+    return common
   }
 
   /**
@@ -697,6 +721,23 @@ export class Common extends EventEmitter {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
+  }
+
+  /**
+   * Sets any missing forkHashes on the passed-in {@link Common} instance
+   * @param common The {@link Common} to set the forkHashes for
+   * @param genesisHash The genesis block hash
+   */
+  setForkHashes(genesisHash: Buffer) {
+    for (const hf of this.hardforks()) {
+      if (
+        (hf.forkHash === null || hf.forkHash === undefined) &&
+        typeof hf.block !== 'undefined' &&
+        (hf.block !== null || typeof hf.ttd !== 'undefined')
+      ) {
+        hf.forkHash = this.forkHash(hf.name, genesisHash)
+      }
+    }
   }
 
   /**
