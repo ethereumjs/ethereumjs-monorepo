@@ -1,11 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { Trie, decodeNode } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
   bigIntToBuffer,
   setLengthLeft,
+  keybytesToHex,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -502,7 +503,7 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('TrieNodes should encode/decode correctly', async (t) => {
+  t.test('TrieNodes should encode/decode correctly with real sample', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new SnapProtocol({ config, chain })
@@ -516,6 +517,14 @@ tape('[SnapProtocol]', (t) => {
     t.ok(reqId === BigInt(1), 'reqId should be 1')
     t.ok(nodes.length > 0, 'nodes should be present in response')
 
+    // check that raw node data that exists is valid
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+      if (node) {
+        t.ok(decodeNode(node), 'raw node data should decode without error')
+      }
+    }
+
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'TrieNodes')[0], {
         reqId,
@@ -526,6 +535,7 @@ tape('[SnapProtocol]', (t) => {
       trieNodesRLP === Buffer.from(payload).toString('hex'),
       'Re-encoded payload should match with original'
     )
+
     t.end()
   })
 })
