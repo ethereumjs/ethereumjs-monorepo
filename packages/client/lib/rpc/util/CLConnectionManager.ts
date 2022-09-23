@@ -281,3 +281,24 @@ export class CLConnectionManager {
     }
   }
 }
+
+/**
+ * This middleware can wrap a methodFn to process its response for connection manager by
+ * specifying an appropriate handler
+ */
+export function middleware(
+  methodFn: (params: any[]) => Promise<any>,
+  handler: (params: any[], response: any, errormsg: any) => void
+): any {
+  return function (params: any[] = []) {
+    return methodFn(params)
+      .then((response) => {
+        handler(params, response, undefined)
+        return response
+      })
+      .catch((e) => {
+        handler(params, undefined, e.message)
+        throw e
+      })
+  }
+}
