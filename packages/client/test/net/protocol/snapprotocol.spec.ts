@@ -535,7 +535,6 @@ tape('[SnapProtocol]', (t) => {
       trieNodesRLP === Buffer.from(payload).toString('hex'),
       'Re-encoded payload should match with original'
     )
-
     t.end()
   })
 })
