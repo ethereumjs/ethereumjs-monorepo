@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -7,7 +8,6 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
-import { Lock } from './lock'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -911,33 +911,47 @@ export class Blockchain implements BlockchainInterface {
    * @param maxBlocks - How many blocks to run. By default, run all unprocessed blocks in the canonical chain.
    * @returns number of blocks actually iterated
    */
-  async iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
-    return this._iterator(name, onBlock, maxBlocks)
-  }
-
-  /**
-   * @hidden
-   */
-  private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
+  async iterator(
+    name: string,
+    onBlock: OnBlock,
+    maxBlocks?: number,
+    releaseLockOnCallback?: boolean
+  ): Promise<number> {
     return this.runWithLock<number>(async (): Promise<number> => {
-      const headHash = this._heads[name] ?? this.genesisBlock.hash()
+      let headHash = this._heads[name] ?? this.genesisBlock.hash()
 
       if (typeof maxBlocks === 'number' && maxBlocks < 0) {
         throw 'If maxBlocks is provided, it has to be a non-negative number'
       }
 
-      const headBlockNumber = await this.dbManager.hashToNumber(headHash)
+      let headBlockNumber = await this.dbManager.hashToNumber(headHash)
       let nextBlockNumber = headBlockNumber + BigInt(1)
       let blocksRanCounter = 0
       let lastBlock: Block | undefined
 
       while (maxBlocks !== blocksRanCounter) {
         try {
-          const nextBlock = await this._getBlock(nextBlockNumber)
+          let nextBlock = await this._getBlock(nextBlockNumber)
+          const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          if (reorg) {
+            // If reorg has happened, the _heads must have been updated so lets reload the counters
+            headHash = this._heads[name] ?? this.genesisBlock.hash()
+            headBlockNumber = await this.dbManager.hashToNumber(headHash)
+            nextBlockNumber = headBlockNumber + BigInt(1)
+            nextBlock = await this._getBlock(nextBlockNumber)
+          }
           this._heads[name] = nextBlock.hash()
-          const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
           lastBlock = nextBlock
-          await onBlock(nextBlock, reorg)
+          if (releaseLockOnCallback === true) {
+            this._lock.release()
+          }
+          try {
+            await onBlock(nextBlock, reorg)
+          } finally {
+            if (releaseLockOnCallback === true) {
+              await this._lock.acquire()
+            }
+          }
           nextBlockNumber++
           blocksRanCounter++
         } catch (error: any) {
