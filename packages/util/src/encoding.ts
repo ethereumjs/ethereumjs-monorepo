@@ -32,10 +32,10 @@ export const compactToHex = (compact: Uint8Array) => {
   let base = keybytesToHex(compact)
   // delete terminator flag
   if (base[0] < 2) {
-    base = base.subarray(0, base.length - 2)
+    base = base.subarray(0, base.length - 1)
   }
   // apply odd flag
-  const chop = (2 - base[0]) & 1
+  const chop = 2 - (base[0] & 1)
   return base.subarray(chop)
 }
 
