@@ -50,3 +50,18 @@ export const keybytesToHex = (str: Uint8Array) => {
   nibbles[l - 1] = 16
   return nibbles
 }
+
+/**
+ * Provides a path to a trie node. Currently, only supports paths to nodes in an account
+ * trie. Used for requesting trie node data for SNAP sync.
+ *
+ * @param l byte index to generate path to
+ * @param key account key to generate trie node path for
+ * @returns an array containing one buffer indicating account trie node path. Will include storage node paths starting at index 1 (0-indexed) when this is implemented
+ */
+export const pathTo = (l: number, key: Buffer) => {
+  const hex = keybytesToHex(key).subarray(0, l)
+  hex[hex.length - 1] = 0 // remove term flag
+  const hKey = hexToCompact(hex)
+  return [Buffer.from(hKey)]
+}
