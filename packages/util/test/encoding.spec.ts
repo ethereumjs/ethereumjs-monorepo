@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import { hexToCompact, compactToHex, keybytesToHex } from '@ethereumjs/util'
 
 tape('encoding', function (t) {
-  t.test('hexToCompact should encode hex data correctly', function (t) {
+  t.test('hexToCompact and compactToHex should encode hex data correctly', function (t) {
     const tests = [
       { hex: new Uint8Array(), compact: new Uint8Array(Buffer.from('00', 'hex')) },
       { hex: new Uint8Array([16]), compact: new Uint8Array(Buffer.from('20', 'hex')) },
