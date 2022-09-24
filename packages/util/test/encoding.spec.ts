@@ -42,7 +42,7 @@ tape('encoding', function (t) {
         hexOut: new Uint8Array([1, 2, 3, 4, 5, 6, 16]),
       },
       {
-        key: new Uint8Array(Buffer.from('12345', 'hex')),
+        key: new Uint8Array(Buffer.from('123405', 'hex')),
         hexOut: new Uint8Array([1, 2, 3, 4, 0, 5, 16]),
       },
       {
