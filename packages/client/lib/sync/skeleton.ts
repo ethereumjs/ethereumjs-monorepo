@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import { arrToBufArr, bigIntToBuffer, bufferToBigInt, zeros } from '@ethereumjs/util'
 
 import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
@@ -58,6 +58,7 @@ export const errReorgDenied = new Error('non-forced head reorg denied')
  */
 export const errSyncMerged = new Error('sync merged')
 
+const zeroBlockHash = zeros(32)
 /**
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.
@@ -100,6 +101,12 @@ export class Skeleton extends MetaDBManager {
       )} force=${force}`
     )
     const reorged = await this.processNewHead(head, force)
+
+    // Put this block irrespective of the force
+    await this.putBlock(head)
+    if (force) {
+      await this.writeSyncStatus()
+    }
 
     // If linked, fill the canonical chain.
     if (force && (await this.isLinked())) {
@@ -200,6 +207,27 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * Try fast forwarding the chain head to the number
+   */
+  async fastForwardHead(lastchain: SkeletonSubchain, target: bigint) {
+    const head = lastchain.head
+    let headBlock = await this.getBlock(head, true)
+    if (headBlock === undefined) {
+      return
+    }
+
+    for (let newHead = head + BigInt(1); newHead <= target; newHead += BigInt(1)) {
+      const newBlock = await this.getBlock(newHead, true)
+      if (newBlock === undefined || !newBlock.header.parentHash.equals(headBlock.hash())) {
+        // Head can't be updated forward
+        break
+      }
+      headBlock = newBlock
+    }
+    lastchain.head = headBlock.header.number
+  }
+
+  /**
    * processNewHead does the internal shuffling for a new head marker and either
    * accepts and integrates it into the skeleton or requests a reorg. Upon reorg,
    * the syncer will tear itself down and restart with a fresh head. It is simpler
@@ -217,15 +245,7 @@ export class Skeleton extends MetaDBManager {
       this.config.logger.warn(`Skeleton reorged and cleaned, no current subchain newHead=${number}`)
       return true
     }
-    if (lastchain.tail >= number) {
-      // If the chain is down to a single beacon header, and it is re-announced
-      // once more, ignore it instead of tearing down sync for a noop.
-      if (lastchain.head === lastchain.tail) {
-        const block = await this.getBlock(number)
-        if (block?.hash().equals(head.hash()) === true) {
-          return false
-        }
-      }
+    if (lastchain.tail > number) {
       // Not a noop / double head announce, abort with a reorg
       if (force) {
         this.config.logger.warn(
@@ -233,13 +253,48 @@ export class Skeleton extends MetaDBManager {
         )
       }
       return true
-    }
-
-    if (lastchain.head + BigInt(1) < number) {
+    } else if (lastchain.head >= number) {
       if (force) {
-        this.config.logger.warn(`Beacon chain gapped head=${lastchain.head} newHead=${number}`)
+        // Check if its duplicate announcement, if not trim the head and let the match run
+        // post this if block
+        const mayBeDupBlock = await this.getBlock(number, true)
+        if (mayBeDupBlock !== undefined && mayBeDupBlock.header.hash().equals(head.hash())) {
+          this.config.logger.debug(
+            `Skeleton duplicate annoucement tail=${lastchain.tail} head=${
+              lastchain.head
+            } number=${number} hash=${short(head.hash())}`
+          )
+          return false
+        } else {
+          // Since its not a dup block, so there is reorg in the chain or atleast in the head
+          // which we will let it get addressed post this if else block
+          this.config.logger.debug(
+            `Skeleton differing annoucement tail=${lastchain.tail} head=${
+              lastchain.head
+            } number=${number} expected=${short(
+              mayBeDupBlock?.hash() ?? zeroBlockHash
+            )} actual=${short(head.hash())}`
+          )
+        }
+      } else {
+        this.config.logger.debug(
+          `Skeleton stale annoucement tail=${lastchain.tail} head=${lastchain.head} number=${number}`
+        )
+        return true
       }
-      return true
+    } else if (lastchain.head + BigInt(1) < number) {
+      if (force) {
+        await this.fastForwardHead(lastchain, number - BigInt(1))
+        // If its still less than number then its gapped head
+        if (lastchain.head + BigInt(1) < number) {
+          return true
+        }
+      } else {
+        this.config.logger.debug(
+          `Beacon chain gapped annoucement head=${lastchain.head} newHead=${number}`
+        )
+        return true
+      }
     }
     const parent = await this.getBlock(number - BigInt(1))
     if (parent && !parent.hash().equals(head.header.parentHash)) {
@@ -252,16 +307,9 @@ export class Skeleton extends MetaDBManager {
       }
       return true
     }
-
-    // Update the database with the new sync stats and insert the new
-    // head header. We won't delete any trimmed skeleton headers since
-    // those will be outside the index space of the many subchains and
-    // the database space will be reclaimed eventually when processing
-    // blocks above the current head.
-    await this.putBlock(head)
-    lastchain.head = number
-    await this.writeSyncStatus()
-
+    if (force) {
+      lastchain.head = number
+    }
     return false
   }
 

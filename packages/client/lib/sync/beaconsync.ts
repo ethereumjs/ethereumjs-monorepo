@@ -1,3 +1,5 @@
+import { Lock } from '@ethereumjs/util'
+
 import { Event } from '../types'
 import { short } from '../util'
 
@@ -26,6 +28,7 @@ interface BeaconSynchronizerOptions extends SynchronizerOptions {
  */
 export class BeaconSynchronizer extends Synchronizer {
   skeleton: Skeleton
+  private _lock = new Lock()
   private execution: VMExecution
 
   public running = false
@@ -118,13 +121,9 @@ export class BeaconSynchronizer extends Synchronizer {
    * Start synchronizer.
    * If passed a block, will initialize sync starting from the block.
    */
-  async start(block?: Block): Promise<void> {
+  async start(): Promise<void> {
     if (this.running) return
     this.running = true
-
-    if (block) {
-      await this.skeleton.initSync(block)
-    }
 
     const timeout = setTimeout(() => {
       this.forceSync = true
@@ -152,58 +151,75 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   /**
+   * Run a function after acquiring a lock. It is implied that we have already
+   * initialized the module (or we are calling this from the init function, like
+   * `_setCanonicalGenesisBlock`)
+   * @param action - function to run after acquiring a lock
+   * @hidden
+   */
+  private async runWithLock<T>(action: () => Promise<T>): Promise<T> {
+    try {
+      await this._lock.acquire()
+      const value = await action()
+      return value
+    } finally {
+      this._lock.release()
+    }
+  }
+
+  /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
-    if (!this.opened) return false
-    try {
-      if (!this.running) {
-        void this.start(block)
-      } else {
+    return this.runWithLock<boolean>(async () => {
+      if (!this.opened) return false
+      // We will run/stop skeleton on setHead not in extendChange query
+      try {
         await this.skeleton.setHead(block)
+        return true
+      } catch (error) {
+        return false
       }
-      return true
-    } catch (error) {
-      if (this.running) {
-        void this.stop()
-      }
-      return false
-    }
+    })
   }
 
   /**
    * Sets the new head of the skeleton chain.
    */
   async setHead(block: Block): Promise<boolean> {
-    if (!this.opened) return false
-    // New head announced, start syncing to it if we are not already.
-    // If this causes a reorg, we will tear down the fetcher and start
-    // from the new head.
-    try {
-      if (!this.running) {
-        void this.start(block)
-      } else {
-        await this.skeleton.setHead(block, true)
-      }
-      this.config.logger.debug(
-        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-      )
-      return true
-    } catch (error) {
-      if (error === errSyncReorged) {
+    return this.runWithLock<boolean>(async () => {
+      if (!this.opened) return false
+      // New head announced, start syncing to it if we are not already.
+      // If this causes a reorg, we will tear down the fetcher and start
+      // from the new head.
+      try {
+        if (!this.running) {
+          await this.skeleton.initSync(block)
+          void this.start()
+        } else {
+          await this.skeleton.setHead(block, true)
+        }
         this.config.logger.debug(
-          `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-            block.header.hash()
-          )}`
+          `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
         )
-        // Tear down fetcher and start from new head
-        await this.stop()
-        void this.start(block)
         return true
-      } else {
-        throw error
+      } catch (error) {
+        if (error === errSyncReorged) {
+          this.config.logger.debug(
+            `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+              block.header.hash()
+            )}`
+          )
+          // Tear down fetcher and start from new head
+          await this.stop()
+          await this.skeleton.initSync(block)
+          void this.start()
+          return true
+        } else {
+          throw error
+        }
       }
-    }
+    })
   }
 
   /**
