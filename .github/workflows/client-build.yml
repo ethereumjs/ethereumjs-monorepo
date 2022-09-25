@@ -55,7 +55,7 @@ jobs:
       - run: npm run lint
 
   test-client-dockerfile:
-    name: Build and test client docker file
+    name: test client docker file
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
