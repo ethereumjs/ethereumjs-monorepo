@@ -306,7 +306,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
-      void this.execution.run(false, shouldRunOnlyBatched)
+      void this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 
