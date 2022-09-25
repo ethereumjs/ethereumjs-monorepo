@@ -73,11 +73,6 @@ jobs:
           --build-arg COMMIT=$(git rev-parse HEAD)
         working-directory: ${{github.workspace}}
 
-      - run: docker run ethereumjs:local --help
-      # Display history to know byte size of each layer
-      # Image is available only because of the previous `docker run` command
-      - run: docker image history ethereumjs:local
-
   test-client-cli:
     runs-on: ubuntu-latest
     strategy:
