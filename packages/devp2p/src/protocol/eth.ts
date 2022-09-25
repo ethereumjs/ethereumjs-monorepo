@@ -18,6 +18,7 @@ import type { SendMethod } from './protocol'
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null = null
   _peerStatus: ETH.StatusMsg | null = null
+  DEBUG: boolean = false
 
   // Eth64
   _hardfork: string = 'chainstart'
@@ -39,6 +40,11 @@ export class ETH extends Protocol {
       // Next fork block number or 0 if none available
       this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? BigInt(0)
     }
+
+    // Safeguard if "process" is not available (browser)
+    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
+      this.DEBUG = true
+    }
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
@@ -47,29 +53,33 @@ export class ETH extends Protocol {
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
 
+  
+
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
     const messageName = this.getMsgPrefix(code)
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+    const debugMsg = this.DEBUG ?  `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}` : undefined;
 
-    if (code !== ETH.MESSAGE_CODES.STATUS) {
+    if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
       const logData = formatLogData(data.toString('hex'), this._verbose)
       this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS: {
-        assertEq(
-          this._peerStatus,
-          null,
-          'Uncontrolled status message',
-          this.debug.bind(this),
-          'STATUS'
-        )
-        this._peerStatus = payload as ETH.StatusMsg
-        const peerStatusMsg = `${
-          this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
-        }`
-        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+        if (this.DEBUG) {
+          assertEq(
+            this._peerStatus,
+            null,
+            'Uncontrolled status message',
+            this.debug.bind(this),
+            'STATUS'
+          )
+          this._peerStatus = payload as ETH.StatusMsg
+          const peerStatusMsg = `${
+            this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
+          }`
+          this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+        }
         this._handleStatus()
         break
       }
@@ -127,7 +137,9 @@ export class ETH extends Protocol {
     const peerFork: any = c.hardforkForForkHash(peerForkHash)
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
-      this.debug('STATUS', msg)
+      if (this.DEBUG) {
+        this.debug('STATUS', msg)
+      }
       throw new Error(msg)
     }
 
@@ -139,7 +151,9 @@ export class ETH extends Protocol {
         nextHardforkBlock !== peerNextFork
       ) {
         const msg = 'Outdated fork status, remote needs software update'
-        this.debug('STATUS', msg)
+        if (this.DEBUG) {
+          this.debug('STATUS', msg)
+        }
         throw new Error(msg)
       }
     }
@@ -257,12 +271,14 @@ export class ETH extends Protocol {
       this._status.push([forkHashB, nextForkB])
     }
 
-    this.debug(
-      'STATUS',
-      `Send STATUS message to ${this._peer._socket.remoteAddress}:${
-        this._peer._socket.remotePort
-      } (eth${this._version}): ${this._getStatusString(this._status)}`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        'STATUS',
+        `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+          this._peer._socket.remotePort
+        } (eth${this._version}): ${this._getStatusString(this._status)}`
+      )
+    }
 
     let payload = Buffer.from(RLP.encode(bufArrToArr(this._status)))
 
@@ -276,14 +292,16 @@ export class ETH extends Protocol {
   }
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    const messageName = this.getMsgPrefix(code)
     const logData = formatLogData(
       Buffer.from(RLP.encode(bufArrToArr(payload))).toString('hex'),
       this._verbose
     )
-    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
+    if (this.DEBUG) {
+      const messageName = this.getMsgPrefix(code)
+      const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
-    this.debug(messageName, debugMsg)
+      this.debug(messageName, debugMsg)
+    }
 
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
