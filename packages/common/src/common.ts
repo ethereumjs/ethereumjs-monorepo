@@ -286,9 +286,14 @@ export class Common extends EventEmitter {
    *
    * @param blockNumber
    * @param td
+   * @param strictTDCheck optional param to strickly validate td against postmerge hardforks
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
+  getHardforkByBlockNumber(
+    blockNumber: BigIntLike,
+    td?: BigIntLike,
+    strictTDCheck?: boolean
+  ): string {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
@@ -314,7 +319,7 @@ export class Common extends EventEmitter {
           if (
             hf.ttd !== null &&
             hf.ttd !== undefined &&
-            (td === null || td === undefined || td < BigInt(hf.ttd))
+            ((strictTDCheck === true && (td === null || td === undefined)) || td < BigInt(hf.ttd))
           ) {
             throw new Error(
               `Invalid td=${td} at hardfork=${hf.name} block=${hf.block} ttd=${hf.ttd}`
