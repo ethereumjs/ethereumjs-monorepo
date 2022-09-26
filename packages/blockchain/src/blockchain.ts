@@ -312,7 +312,7 @@ export class Blockchain implements BlockchainInterface {
     return this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
       const hash = this._heads[name] ?? this.genesisBlock.hash()
-      const block = await this._getBlock(hash)
+      const block = await this.getBlock(hash)
       return block
     })
   }
@@ -333,7 +333,7 @@ export class Blockchain implements BlockchainInterface {
       // if the head is not found return the headHeader
       const hash = this._heads[name] ?? this._headBlockHash
       if (hash === undefined) throw new Error('No head found.')
-      const block = await this._getBlock(hash)
+      const block = await this.getBlock(hash)
       return block
     })
   }
@@ -344,7 +344,7 @@ export class Blockchain implements BlockchainInterface {
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) throw new Error('No head header set')
-      const block = await this._getBlock(this._headHeaderHash)
+      const block = await this.getBlock(this._headHeaderHash)
       return block.header
     })
   }
@@ -355,7 +355,7 @@ export class Blockchain implements BlockchainInterface {
   async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
       if (!this._headBlockHash) throw new Error('No head block set')
-      return this._getBlock(this._headBlockHash)
+      return this.getBlock(this._headBlockHash)
     })
   }
 
@@ -704,13 +704,6 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this._getBlock(blockId)
-  }
-
-  /**
-   * @hidden
-   */
-  private async _getBlock(blockId: Buffer | number | bigint) {
     return this.dbManager.getBlock(blockId)
   }
 
@@ -745,7 +738,7 @@ export class Blockchain implements BlockchainInterface {
       const nextBlock = async (blockId: Buffer | bigint | number): Promise<any> => {
         let block
         try {
-          block = await this._getBlock(blockId)
+          block = await this.getBlock(blockId)
         } catch (error: any) {
           if (error.code !== 'LEVEL_NOT_FOUND') {
             throw error
@@ -931,14 +924,14 @@ export class Blockchain implements BlockchainInterface {
 
       while (maxBlocks !== blocksRanCounter) {
         try {
-          let nextBlock = await this._getBlock(nextBlockNumber)
+          let nextBlock = await this.getBlock(nextBlockNumber)
           const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock.header.parentHash) : false
           if (reorg) {
             // If reorg has happened, the _heads must have been updated so lets reload the counters
             headHash = this._heads[name] ?? this.genesisBlock.hash()
             headBlockNumber = await this.dbManager.hashToNumber(headHash)
             nextBlockNumber = headBlockNumber + BigInt(1)
-            nextBlock = await this._getBlock(nextBlockNumber)
+            nextBlock = await this.getBlock(nextBlockNumber)
           }
           this._heads[name] = nextBlock.hash()
           lastBlock = nextBlock
@@ -991,7 +984,7 @@ export class Blockchain implements BlockchainInterface {
     if (!this._headHeaderHash) throw new Error('No head header set')
     const ancestorHeaders = new Set<BlockHeader>()
 
-    let { header } = await this._getBlock(this._headHeaderHash)
+    let { header } = await this.getBlock(this._headHeaderHash)
     if (header.number > newHeader.number) {
       header = await this.getCanonicalHeader(newHeader.number)
       ancestorHeaders.add(header)
