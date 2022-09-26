@@ -43,3 +43,4 @@ export {
   stripHexPrefix,
   toAscii,
 } from './internal'
+export * from './lock'
