@@ -114,6 +114,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     if (codeBuffer !== undefined) return codeBuffer
     const code = await this.provider.getCode(address.toString(), this.blockTag)
     codeBuffer = toBuffer(code)
+    if (codeBuffer === undefined || codeBuffer.length === 0) return Buffer.from([])
     this.contractCache.set(address.toString(), codeBuffer)
     return codeBuffer
   }
@@ -160,7 +161,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Adds value to the state trie for the `account`
+   * Adds value to the cache for the `account`
    * corresponding to `address` at the provided `key`.
    * @param address - Address to set a storage value for
    * @param key - Key to set the value at. Must be 32 bytes long.
@@ -169,7 +170,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    // Cache retrieved storage slot
     let accountStorage = this.storageCache.get(address.toString())
     if (accountStorage === undefined) {
       this.storageCache.set(address.toString(), new Map<string, Buffer>())
@@ -212,6 +212,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   async accountExists(address: Address): Promise<boolean> {
     log(`Verify if ${address.toString()} exists`)
 
+    const localAccount = this._cache.get(address)
+    if (!localAccount.isEmpty()) return false
     // Get merkle proof for `address` from provider
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
@@ -234,12 +236,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account> {
-    let account = this._cache.get(address)
-
-    if (account.isEmpty()) {
-      account = await this.getAccountFromProvider(address)
-      this._cache.put(address, account)
-    }
+    const account = this._cache.getOrLoad(address)
 
     return account
   }
@@ -275,7 +272,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Get an EIP-1186 proof
+   * Get an EIP-1186 proof from the provider
    * @param address address to get proof of
    * @param storageSlots storage slots to get proof of
    * @returns an EIP-1186 formatted proof

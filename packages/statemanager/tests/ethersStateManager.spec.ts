@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -13,6 +13,9 @@ import { MockProvider } from './testdata/providerData/mockProvider'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
+// To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
+// from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
+// `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run ape -- 'tests/ethersStateManager.spec.ts'
 tape('Ethers State Manager initialization tests', (t) => {
   const provider = new MockProvider()
   let state = new EthersStateManager({ provider })
@@ -46,7 +49,9 @@ tape('Ethers State Manager API tests', async (t) => {
     t.end()
   } else {
     const provider =
-      process.env.PROVIDER !== undefined ? new CloudflareProvider() : new MockProvider()
+      process.env.PROVIDER !== undefined
+        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        : new MockProvider()
     const state = new EthersStateManager({ provider })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
@@ -56,7 +61,7 @@ tape('Ethers State Manager API tests', async (t) => {
 
     const retrievedVitalikAccount = (state as any)._cache.get(vitalikDotEth)
 
-    t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in trie')
+    t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const doesThisAccountExist = await state.accountExists(
       Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
     )
@@ -144,7 +149,9 @@ tape('runTx custom transaction test', async (t) => {
   } else {
     const common = new Common({ chain: Chain.Mainnet })
     const provider =
-      process.env.PROVIDER !== undefined ? new CloudflareProvider() : new MockProvider()
+      process.env.PROVIDER !== undefined
+        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        : new MockProvider()
     const state = new EthersStateManager({ provider })
     const vm = await VM.create({ common, stateManager: state })
 
