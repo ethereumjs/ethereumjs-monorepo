@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663857827333,
+  "lastUpdate": 1664193401132,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "39158443+xdrkush@users.noreply.github.com",
-            "name": "drkush",
-            "username": "xdrkush"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "52d59618df319184f129422904df0cb2f1d4fe8b",
-          "message": "Update: README.md -> Graph (#2242)",
-          "timestamp": "2022-08-30T17:52:58+02:00",
-          "tree_id": "283dca6b3a9b83f3ba890eb00833b0f47b8df049",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/52d59618df319184f129422904df0cb2f1d4fe8b"
-        },
-        "date": 1661875034658,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19362,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19018,
-            "range": "±5.08%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18430,
-            "range": "±4.82%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19113,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19028,
-            "range": "±1.81%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.99%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "be6449aa26fac92e3f8e620029105ffe3ad2c2cc",
+          "message": "Various doc updates (#2305)",
+          "timestamp": "2022-09-26T13:53:57+02:00",
+          "tree_id": "97eb93cf0ae83aa649ad48677b180d5c3c07b7cc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/be6449aa26fac92e3f8e620029105ffe3ad2c2cc"
+        },
+        "date": 1664193400555,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18225,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17564,
+            "range": "±5.26%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16641,
+            "range": "±8.54%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18395,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17417,
+            "range": "±1.90%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
