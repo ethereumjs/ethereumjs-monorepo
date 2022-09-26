@@ -64,6 +64,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
+    if (this.opened) return
     await super.open()
     await this.chain.open()
     await this.pool.open()
@@ -71,6 +72,17 @@ export class BeaconSynchronizer extends Synchronizer {
 
     this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+
+    const { height: number, td } = this.chain.blocks
+    const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
+    this.config.chainCommon.setHardforkByBlockNumber(number, td)
+
+    this.config.logger.info(
+      `Latest local block number=${Number(number)} td=${td} hash=${hash.toString(
+        'hex'
+      )} hardfork=${this.config.chainCommon.hardfork()}`
+    )
 
     const subchain = this.skeleton.bounds()
     if (subchain !== undefined) {
