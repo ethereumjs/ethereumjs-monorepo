@@ -81,11 +81,14 @@
       "forkHash": "0xfe3366e7"
     },
     {
+      "//_comment": "Post merge forks should always have ttd set with block to distinguish that they come post merge hf (block = null)",
       "name": "mergeForkIdTransition",
       "block": 1735371,
+      "ttd": "17000000000000000",
       "forkHash": "0xb96cbd13"
     },
     {
+      "//_comment": "Post merge forks should always have ttd set with block to distinguish that they come post merge hf (block = null)",
       "name": "shanghai",
       "block": null,
       "forkHash": null

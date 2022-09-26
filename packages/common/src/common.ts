@@ -292,50 +292,78 @@ export class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
-    let hardfork = Hardfork.Chainstart
-    let minTdHF
-    let maxTdHF
-    let previousHF
-    for (const hf of this.hardforks()) {
-      // Skip comparison for not applied HFs
-      if (hf.block === null) {
-        if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
+    let hardfork: HardforkConfig | undefined = undefined
+    let previousHF: HardforkConfig | undefined = undefined
+    const hardforks = this.hardforks()
+
+    for (const hf of hardforks) {
+      let candidate = false
+      if (hf.block === null && (hf.ttd === undefined || hf.ttd === null)) {
+        // Not a hardfork which has been scheduled yet so just skip
+        continue
+      } else if (hf.block === null && !(hf.ttd === undefined || hf.ttd === null)) {
+        // If the block number is null and its here, means it has ttd and is the first hf on/after ttd (merge)
+        if (td !== null && td !== undefined) {
           if (td >= BigInt(hf.ttd)) {
-            return hf.name
+            candidate = true
           }
         }
-        continue
+      } else if (hf.block !== null) {
+        // hf.block is not null here
+        if (blockNumber >= BigInt(hf.block)) {
+          if (
+            hf.ttd !== null &&
+            hf.ttd !== undefined &&
+            (td === null || td === undefined || td < BigInt(hf.ttd))
+          ) {
+            throw new Error(
+              `Invalid td=${td} at hardfork=${hf.name} block=${hf.block} ttd=${hf.ttd}`
+            )
+          }
+          candidate = true
+        }
+      } else {
+        throw new Error(`Internal Error in hardfork eval`)
       }
-      if (blockNumber >= BigInt(hf.block)) {
-        hardfork = hf.name as Hardfork
-      }
-      if (td && (typeof hf.ttd === 'string' || typeof hf.ttd === 'bigint')) {
-        if (td >= BigInt(hf.ttd)) {
-          minTdHF = hf.name
-        } else {
-          maxTdHF = previousHF
+      if (candidate) {
+        let update = false
+        if (previousHF === undefined) {
+          hardfork = hf
+          previousHF = hf
+        } else if (previousHF.block === null) {
+          // The previous HF is the merge hf and can only be updated by post merge hfs
+          if (hf.ttd !== null && hf.ttd !== undefined) {
+            update = true
+          }
+        } else if (previousHF.ttd === null || previousHF.ttd === undefined) {
+          if (hf.ttd !== null && hf.ttd !== undefined) {
+            if (hf.block !== null && BigInt(hf.block) < BigInt(previousHF.block)) {
+              throw new Error(
+                `Invalid post merge hardfork=${hf.name} block=${hf.block} before pre merge hardfork=${previousHF.name}`
+              )
+            } else {
+              update = true
+            }
+          } else {
+            if (hf.block === null) {
+              throw new Error(
+                `Invalid hardfork=${hf.name} with unspecified block,tdd selected as candidate`
+              )
+            } else if (BigInt(hf.block) >= BigInt(previousHF.block)) {
+              update = true
+            }
+          }
+        }
+        if (update) {
+          previousHF = hardfork
+          hardfork = hf
         }
       }
-      previousHF = hf.name
     }
-    if (td) {
-      let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
-      if (minTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
-          const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
-          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
-        }
-      }
-      if (maxTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
-          const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
-          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
-        }
-      }
+    if (hardfork === undefined) {
+      throw new Error(`No hardfork found, invalid hardfork configuration`)
     }
-    return hardfork
+    return hardfork.name
   }
 
   /**

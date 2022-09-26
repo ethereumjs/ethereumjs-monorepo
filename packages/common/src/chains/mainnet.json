@@ -88,17 +88,19 @@
       "forkHash": "0xf0afd0e3"
     },
     {
-      "name": "mergeForkIdTransition",
-      "block": null,
-      "forkHash": null
-    },
-    {
       "name": "merge",
       "ttd": "58750000000000000000000",
       "block": null,
       "forkHash": null
     },
     {
+      "//_comment": "Post merge forks should always have ttd set with block to distinguish that they come post merge hf (block = null)",
+      "name": "mergeForkIdTransition",
+      "block": null,
+      "forkHash": null
+    },
+    {
+      "//_comment": "Post merge forks should always have ttd set with block to distinguish that they come post merge hf (block = null)",
       "name": "shanghai",
       "block": null,
       "forkHash": null
