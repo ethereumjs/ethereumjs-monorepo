@@ -691,7 +691,8 @@ export class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Gets a block by its hash.
+   * Gets a block by its hash or number.  If a number is provided, the returned
+   * block will be the canonical block at that number in the chain
    *
    * @param blockId - The block's hash or number. If a hash is provided, then
    * this will be immediately looked up, otherwise it will wait until we have
@@ -1006,7 +1007,7 @@ export class Blockchain implements BlockchainInterface {
 
   /**
    * Pushes DB operations to delete canonical number assignments for specified
-   * block number and above This only deletes `NumberToHash` references, and not
+   * block number and above. This only deletes `NumberToHash` references and not
    * the blocks themselves. Note: this does not write to the DB but only pushes
    * to a DB operations list.
    * @param blockNumber - the block number from which we start deleting
@@ -1033,9 +1034,7 @@ export class Blockchain implements BlockchainInterface {
       // executed block) blocks to verify the chain up to the current, actual,
       // head.
       for (const name of Object.keys(this._heads)) {
-        if (this._heads[name].equals(<Buffer>hash)) {
-          // explicitly cast as Buffer: it is not possible that `hash` is false
-          // here, but TypeScript does not understand this.
+        if (this._heads[name].equals(hash)) {
           this._heads[name] = headHash
         }
       }
@@ -1056,12 +1055,12 @@ export class Blockchain implements BlockchainInterface {
    * into `ops`. This walks the supplied `header` backwards. It is thus assumed
    * that this header should be canonical header. For each header the
    * corresponding hash corresponding to the current canonical chain in the DB
-   * is checked If the number => hash reference does not correspond to the
+   * is checked. If the number => hash reference does not correspond to the
    * reference in the DB, we overwrite this reference with the implied number =>
    * hash reference Also, each `_heads` member is checked; if these point to a
    * stale hash, then the hash which we terminate the loop (i.e. the first hash
    * which matches the number => hash of the implied chain) is put as this stale
-   * head hash The same happens to _headBlockHash
+   * head hash. The same happens to _headBlockHash.
    * @param header - The canonical header.
    * @param ops - The database operations list.
    * @hidden
@@ -1096,7 +1095,7 @@ export class Blockchain implements BlockchainInterface {
       })
 
       // mark each key `_heads` which is currently set to the hash in the DB as
-      // stale to overwrite this later.
+      // stale to overwrite later in `_deleteCanonicalChainReferences`.
       for (const name of Object.keys(this._heads)) {
         if (staleHash && this._heads[name].equals(staleHash)) {
           staleHeads.push(name)
@@ -1117,8 +1116,8 @@ export class Blockchain implements BlockchainInterface {
         break
       }
     }
-    // the stale hash is equal to the blockHash set stale heads to last
-    // previously valid canonical block
+    // When the stale hash is equal to the blockHash of the provided header,
+    // set stale heads to last previously valid canonical block
     for (const name of staleHeads) {
       this._heads[name] = currentCanonicalHash
     }
