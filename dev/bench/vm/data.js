@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1664197667677,
+  "lastUpdate": 1664211497210,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "742514acac7fa96c0da65698381435b4d604f515",
-          "message": "common: remove isTruthy and isFalsy (#2255)",
-          "timestamp": "2022-08-30T13:36:01-04:00",
-          "tree_id": "1ebbb533278c53071713cbc05823a6a98606694a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/742514acac7fa96c0da65698381435b4d604f515"
-        },
-        "date": 1661881119763,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18790,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18313,
-            "range": "±4.80%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17122,
-            "range": "±8.22%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18907,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18255,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.34%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a44518df8d368e1ed3a02c594a605db083bc15b2",
+          "message": "blockchain: remove duplicate _getBlock method (#2314)",
+          "timestamp": "2022-09-26T22:24:54+05:30",
+          "tree_id": "edfd83316cc3850b68e90d23d57cce8fff2080d0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a44518df8d368e1ed3a02c594a605db083bc15b2"
+        },
+        "date": 1664211496578,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 9806,
+            "range": "±4.50%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 9794,
+            "range": "±3.98%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 9153,
+            "range": "±4.97%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 9300,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9811,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
