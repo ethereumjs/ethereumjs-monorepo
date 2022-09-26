@@ -79,7 +79,24 @@ Starting with v6 responsibility for setting up a custom genesis state moved from
 
 A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
 
-TODO: add code example here!
+### Custom genesis from a Geth genesis config
+
+For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
+
+```typescript
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
+
+// Load geth genesis json file into lets say `gethGenesisJson`
+const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
+const genesisState = parseGethGenesisState(gethGenesisJson)
+const blockchain = await Blockchain.create({
+  genesisState,
+  common,
+})
+const genesisBlockHash = blockchain.genesisBlock.hash()
+common.setForkHashes(genesisBlockHash)
+```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
 

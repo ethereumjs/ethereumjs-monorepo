@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -7,7 +8,6 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
-import { Lock } from './lock'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -691,7 +691,8 @@ export class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Gets a block by its hash.
+   * Gets a block by its hash or number.  If a number is provided, the returned
+   * block will be the canonical block at that number in the chain
    *
    * @param blockId - The block's hash or number. If a hash is provided, then
    * this will be immediately looked up, otherwise it will wait until we have
@@ -910,33 +911,47 @@ export class Blockchain implements BlockchainInterface {
    * @param maxBlocks - How many blocks to run. By default, run all unprocessed blocks in the canonical chain.
    * @returns number of blocks actually iterated
    */
-  async iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
-    return this._iterator(name, onBlock, maxBlocks)
-  }
-
-  /**
-   * @hidden
-   */
-  private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
+  async iterator(
+    name: string,
+    onBlock: OnBlock,
+    maxBlocks?: number,
+    releaseLockOnCallback?: boolean
+  ): Promise<number> {
     return this.runWithLock<number>(async (): Promise<number> => {
-      const headHash = this._heads[name] ?? this.genesisBlock.hash()
+      let headHash = this._heads[name] ?? this.genesisBlock.hash()
 
       if (typeof maxBlocks === 'number' && maxBlocks < 0) {
         throw 'If maxBlocks is provided, it has to be a non-negative number'
       }
 
-      const headBlockNumber = await this.dbManager.hashToNumber(headHash)
+      let headBlockNumber = await this.dbManager.hashToNumber(headHash)
       let nextBlockNumber = headBlockNumber + BigInt(1)
       let blocksRanCounter = 0
       let lastBlock: Block | undefined
 
       while (maxBlocks !== blocksRanCounter) {
         try {
-          const nextBlock = await this._getBlock(nextBlockNumber)
+          let nextBlock = await this._getBlock(nextBlockNumber)
+          const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          if (reorg) {
+            // If reorg has happened, the _heads must have been updated so lets reload the counters
+            headHash = this._heads[name] ?? this.genesisBlock.hash()
+            headBlockNumber = await this.dbManager.hashToNumber(headHash)
+            nextBlockNumber = headBlockNumber + BigInt(1)
+            nextBlock = await this._getBlock(nextBlockNumber)
+          }
           this._heads[name] = nextBlock.hash()
-          const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
           lastBlock = nextBlock
-          await onBlock(nextBlock, reorg)
+          if (releaseLockOnCallback === true) {
+            this._lock.release()
+          }
+          try {
+            await onBlock(nextBlock, reorg)
+          } finally {
+            if (releaseLockOnCallback === true) {
+              await this._lock.acquire()
+            }
+          }
           nextBlockNumber++
           blocksRanCounter++
         } catch (error: any) {
@@ -1006,7 +1021,7 @@ export class Blockchain implements BlockchainInterface {
 
   /**
    * Pushes DB operations to delete canonical number assignments for specified
-   * block number and above This only deletes `NumberToHash` references, and not
+   * block number and above. This only deletes `NumberToHash` references and not
    * the blocks themselves. Note: this does not write to the DB but only pushes
    * to a DB operations list.
    * @param blockNumber - the block number from which we start deleting
@@ -1033,9 +1048,7 @@ export class Blockchain implements BlockchainInterface {
       // executed block) blocks to verify the chain up to the current, actual,
       // head.
       for (const name of Object.keys(this._heads)) {
-        if (this._heads[name].equals(<Buffer>hash)) {
-          // explicitly cast as Buffer: it is not possible that `hash` is false
-          // here, but TypeScript does not understand this.
+        if (this._heads[name].equals(hash)) {
           this._heads[name] = headHash
         }
       }
@@ -1056,12 +1069,12 @@ export class Blockchain implements BlockchainInterface {
    * into `ops`. This walks the supplied `header` backwards. It is thus assumed
    * that this header should be canonical header. For each header the
    * corresponding hash corresponding to the current canonical chain in the DB
-   * is checked If the number => hash reference does not correspond to the
+   * is checked. If the number => hash reference does not correspond to the
    * reference in the DB, we overwrite this reference with the implied number =>
    * hash reference Also, each `_heads` member is checked; if these point to a
    * stale hash, then the hash which we terminate the loop (i.e. the first hash
    * which matches the number => hash of the implied chain) is put as this stale
-   * head hash The same happens to _headBlockHash
+   * head hash. The same happens to _headBlockHash.
    * @param header - The canonical header.
    * @param ops - The database operations list.
    * @hidden
@@ -1096,7 +1109,7 @@ export class Blockchain implements BlockchainInterface {
       })
 
       // mark each key `_heads` which is currently set to the hash in the DB as
-      // stale to overwrite this later.
+      // stale to overwrite later in `_deleteCanonicalChainReferences`.
       for (const name of Object.keys(this._heads)) {
         if (staleHash && this._heads[name].equals(staleHash)) {
           staleHeads.push(name)
@@ -1117,8 +1130,8 @@ export class Blockchain implements BlockchainInterface {
         break
       }
     }
-    // the stale hash is equal to the blockHash set stale heads to last
-    // previously valid canonical block
+    // When the stale hash is equal to the blockHash of the provided header,
+    // set stale heads to last previously valid canonical block
     for (const name of staleHeads) {
       this._heads[name] = currentCanonicalHash
     }

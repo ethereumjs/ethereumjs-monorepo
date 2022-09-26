@@ -24,7 +24,7 @@ export function normalizeTxParams(_txParams: any) {
       ? setLengthLeft(toBuffer(txParams.to), 20)
       : null
 
-  txParams.v = toType(txParams.v, TypeOutput.BigInt)!
+  txParams.v = toType(txParams.v, TypeOutput.BigInt)
 
   return txParams
 }

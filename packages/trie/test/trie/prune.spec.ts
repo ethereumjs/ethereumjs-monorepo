@@ -176,4 +176,65 @@ tape('Pruned trie tests', function (tester) {
     await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
     st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
   })
+
+  it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async (st) => {
+    for (let testID = 0; testID < 1; testID++) {
+      const trie = await Trie.create({ useNodePruning: true, useRootPersistence: true })
+      const keys: string[] = []
+      for (let i = 0; i < 100; i++) {
+        keys.push(crypto.randomBytes(32))
+      }
+      const values: string[] = []
+      for (let i = 0; i < 1000; i++) {
+        let val = Math.floor(Math.random() * 16384)
+        while (values.includes(val.toString(16))) {
+          val = Math.floor(Math.random() * 16384)
+        }
+        values.push(val.toString(16))
+      }
+      // Fill trie with items
+      for (let i = 0; i < keys.length; i++) {
+        const idx = Math.floor(Math.random() * keys.length)
+        const key = keys[idx]
+        await trie.put(Buffer.from(key), Buffer.from(values[i]))
+      }
+
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+
+      // Randomly delete keys
+      for (let i = 0; i < 20; i++) {
+        const idx = Math.floor(Math.random() * keys.length)
+        await trie.del(Buffer.from(keys[idx]))
+      }
+
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+
+      // Fill trie with items or randomly delete them
+      for (let i = 0; i < keys.length; i++) {
+        const idx = Math.floor(Math.random() * keys.length)
+        const key = keys[idx]
+        if (Math.random() < 0.5) {
+          await trie.put(Buffer.from(key), Buffer.from(values[i]))
+        } else {
+          await trie.del(Buffer.from(key))
+        }
+      }
+
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+
+      // Delete all keys
+      for (let idx = 0; idx < 100; idx++) {
+        await trie.del(Buffer.from(keys[idx]))
+      }
+
+      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
+
+      let dbKeys = 0
+      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
+        dbKeys++
+      }
+      st.ok(dbKeys === 1, 'db is empty')
+    }
+  })
 })

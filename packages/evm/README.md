@@ -75,7 +75,7 @@ void main()
 This projects contain the following examples:
 
 1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
-1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
+1. [./examples/runCode](./examples/runCode.ts): Show how to use this library in a browser.
 
 All of the examples have their own `README.md` explaining how to run them.
 

@@ -202,9 +202,9 @@ export class VMExecution extends Execution {
           // determine starting state for block run
           // if we are just starting or if a chain reorg has happened
           if (!headBlock || reorg) {
-            const parentBlock = await blockchain.getBlock(block.header.parentHash)
+            const headBlock = await blockchain.getBlock(block.header.parentHash)
             if (headBlock === null) throw new Error('No parent block found')
-            parentState = parentBlock!.header.stateRoot
+            parentState = headBlock.header.stateRoot
           }
           // run block, update head if valid
           try {
@@ -244,6 +244,7 @@ export class VMExecution extends Execution {
             txCounter += block.transactions.length
             // set as new head block
             headBlock = block
+            parentState = block.header.stateRoot
           } catch (error: any) {
             // TODO: determine if there is a way to differentiate between the cases
             // a) a bad block is served by a bad peer -> delete the block and restart sync
@@ -290,7 +291,9 @@ export class VMExecution extends Execution {
             errorBlock = block
           }
         },
-        this.NUM_BLOCKS_PER_ITERATION
+        this.NUM_BLOCKS_PER_ITERATION,
+        // release lock on this callback so other blockchain ops can happen while this block is being executed
+        true
       )
       numExecuted = await this.vmPromise
 

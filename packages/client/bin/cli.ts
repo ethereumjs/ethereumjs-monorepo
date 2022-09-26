@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
@@ -14,12 +14,7 @@ import * as readline from 'readline'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
-import {
-  parseCustomParams,
-  parseGenesisState,
-  parseMultiaddrs,
-  setCommonForkHashes,
-} from '../lib/util'
+import { parseMultiaddrs } from '../lib/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
@@ -389,7 +384,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       validateBlocks: true,
       validateConsensus,
     })
-    setCommonForkHashes(config.chainCommon, blockchain.genesisBlock.hash())
+    config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
   const client = new EthereumClient({
@@ -462,13 +457,8 @@ async function setupDevnet(prefundAddress: Address) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const chainParams = await parseCustomParams(chainData, 'devnet')
-  const customGenesisState = await parseGenesisState(chainData)
-  const common = new Common({
-    chain: 'devnet',
-    customChains: [chainParams],
-    hardfork: Hardfork.London,
-  })
+  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+  const customGenesisState = parseGethGenesisState(chainData)
   return { common, customGenesisState }
 }
 
@@ -617,12 +607,8 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    const genesisParams = await parseCustomParams(genesisFile, chainName)
-    common = new Common({
-      chain: genesisParams.name,
-      customChains: [genesisParams],
-    })
-    customGenesisState = await parseGenesisState(genesisFile)
+    common = Common.fromGethGenesis(genesisFile, { chain: chainName })
+    customGenesisState = parseGethGenesisState(genesisFile)
   }
 
   if (args.mine === true && accounts.length === 0) {

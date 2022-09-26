@@ -1,10 +1,9 @@
-import { Common } from '@ethereumjs/common'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Config } from '../../../lib'
 import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
 import { Event } from '../../../lib/types'
-import { parseCustomParams } from '../../../lib/util'
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 
 const payload = {
@@ -44,7 +43,7 @@ tape('[CLConnectionManager]', (t) => {
     manager.stop()
     st.ok(!manager.running, 'should stop')
     ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = await parseCustomParams(genesisJSON, 'post-merge')
+    const params = parseGethGenesis(genesisJSON, 'post-merge')
     let common = new Common({
       chain: params.name,
       customChains: [params],
