@@ -13,6 +13,8 @@ export class MockProvider extends JsonRpcProvider {
         return this.getTransactionData(params as any)
       case 'eth_getCode':
         return 0
+      case 'eth_getStorageAt':
+        return '0xabcd'
       default:
         throw new Error(`method ${method} not implemented`)
     }

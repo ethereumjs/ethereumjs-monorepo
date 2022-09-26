@@ -1,14 +1,7 @@
 import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  bigIntToBuffer,
-  bigIntToHex,
-  bufferToHex,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, CloudflareProvider, JsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
@@ -16,8 +9,6 @@ import * as tape from 'tape'
 import { EthersStateManager } from '../src/ethersStateManager'
 
 import { MockProvider } from './testdata/providerData/mockProvider'
-
-import type { Proof } from '../src'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -63,9 +54,7 @@ tape('Ethers State Manager API tests', async (t) => {
 
     await state.putAccount(vitalikDotEth, account)
 
-    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
-      await (state as any).trie.get(vitalikDotEth.buf)
-    )
+    const retrievedVitalikAccount = (state as any)._cache.get(vitalikDotEth)
 
     t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in trie')
     const doesThisAccountExist = await state.accountExists(
@@ -205,76 +194,6 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     const tx = TransactionFactory.fromTxData(normedTx, { common })
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
-    t.end()
-  }
-})
-
-/** To run the block test with an actual provider, you will need a provider URL (like alchemy or infura) that provides access to an archive node.
- *  Pass it in the PROVIDER=[provider url] npm run tape -- 'tests/ethersStateManager.spec.ts'
- *  Note: Cloudflare only provides access to the last 128 blocks so it will fail on these tests.
- */
-
-tape('runBlock test', async (t) => {
-  if (isBrowser() === true) {
-    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
-    t.end()
-  } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const provider =
-      process.env.PROVIDER !== undefined
-        ? new JsonRpcProvider(process.env.PROVIDER)
-        : new MockProvider()
-    const blockTag = 500000n
-    const state = new EthersStateManager({
-      provider,
-      // Set the state manager to look at the state of the chain before the block has been executed
-      blockTag: blockTag - 1n,
-    })
-
-    // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
-    // blocks, also for post merge network, ttd should also be passed
-    common.setHardforkByBlockNumber(blockTag - 1n)
-
-    const vm = await VM.create({ common, stateManager: state })
-    const previousStateRoot = Buffer.from(
-      (
-        await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])
-      ).stateRoot.slice(2),
-      'hex'
-    )
-
-    const block = await state.getBlockFromProvider(blockTag, common)
-    try {
-      const res = await vm.runBlock({
-        block,
-        root: previousStateRoot,
-        generate: true,
-        skipHeaderValidation: true,
-      })
-
-      t.equal(
-        bufferToHex(res.stateRoot),
-        bufferToHex(block.header.stateRoot),
-        'was able to run block and computed correct state root'
-      )
-    } catch (err: any) {
-      t.fail(`should have successfully ran block; got error ${err.message}`)
-    }
-
-    const proof = (await provider.send('eth_getProof', [
-      block.header.coinbase.toString(),
-      [],
-      bigIntToHex(block.header.number),
-    ])) as Proof
-    const localproof = await state.getProof(block.header.coinbase)
-
-    for (let j = 0; j < proof.accountProof.length; j++) {
-      t.deepEqual(
-        localproof.accountProof[j],
-        proof.accountProof[j],
-        'proof nodes for account match proof from provider'
-      )
-    }
     t.end()
   }
 })

@@ -1,27 +1,27 @@
 import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
-import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
+  bufferToBigInt,
   bufferToHex,
   intToHex,
   isHexPrefixed,
   toBuffer,
-  unpadBuffer,
 } from '@ethereumjs/util'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+
+import { Cache } from './cache'
 
 import { BaseStateManager } from '.'
 
 import type { Proof, StateManager } from '.'
+import type { getCb, putCb } from './cache'
 import type { StorageDump } from './interface'
-import type { StorageProof } from './stateManager'
 import type { Common } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
 
@@ -34,20 +34,12 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager extends BaseStateManager implements StateManager {
   private provider: StaticJsonRpcProvider | JsonRpcProvider
   private contractCache: Map<string, Buffer>
-  private storageTries: { [key: string]: Trie }
-  // This map tracks which storage slots for each account have been retrieved from the provider.
-  // This ensures that slots retrieved from the provider aren't pulled again and overwrite updates
-  // that occur during the course of running EVM message calls.
-  private externallyRetrievedStorageKeys: Map<string, Map<string, boolean>>
+  private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
-  private trie: Trie
+  _cache: Cache
 
   constructor(opts: EthersStateManagerOpts) {
     super({})
-    // useKeyHashing = true since the web3 api provides proof nodes which are hashed
-    // If there were direct api access to devp2p stack, a normal Trie could have been constructed
-    this.trie = new Trie({ useKeyHashing: true })
-    this.storageTries = {}
     if (typeof opts.provider === 'string') {
       this.provider = new StaticJsonRpcProvider(opts.provider)
     } else if (opts.provider instanceof JsonRpcProvider) {
@@ -60,15 +52,30 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       typeof opts.blockTag === 'bigint' ? bigIntToHex(opts.blockTag) : opts.blockTag ?? 'latest'
 
     this.contractCache = new Map()
-    this.externallyRetrievedStorageKeys = new Map<string, Map<string, boolean>>()
+    this.storageCache = new Map()
+
+    /*
+     * For a custom StateManager implementation adopt these
+     * callbacks passed to the `Cache` instantiated to perform
+     * the `get`, `put` and `delete` operations with the
+     * desired backend.
+     */
+    const getCb: getCb = async (address) => {
+      return this.getAccountFromProvider(address)
+    }
+    const putCb: putCb = async (_keyBuf, _accountRlp) => {
+      return Promise.resolve()
+    }
+    const deleteCb = async (_keyBuf: Buffer) => {
+      return Promise.resolve()
+    }
+    this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
   copy(): EthersStateManager {
     const newState = new EthersStateManager({ provider: this.provider })
-    ;(newState as any).trie = this.trie.copy(false)
     ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).externallyRetrievedStorageKeys = new Map(this.externallyRetrievedStorageKeys)
-    ;(newState as any).storageTries = { ...this.storageTries }
+    ;(newState as any).storageCache = new Map(this.storageCache)
     return newState
   }
 
@@ -92,8 +99,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   clearCache(): void {
     this.contractCache.clear()
-    this.storageTries = {}
-    this.externallyRetrievedStorageKeys.clear()
+    this.storageCache.clear()
+    this._cache.clear()
   }
 
   /**
@@ -132,52 +139,24 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    // Ensure storage slot trie nodes have been retrieved from provider
-    await this.getContractStorageFromProvider(address, key)
-
-    const storageTrie = await this._getStorageTrie(address)
-    const foundValue = await storageTrie.get(key)
-    return Buffer.from(RLP.decode(Uint8Array.from(foundValue ?? [])) as Uint8Array)
-  }
-
-  /**
-   * Retrieves a storage slot from the provider and stores the proof nodes in the local trie
-   * @param address - Address to be retrieved from provider
-   * @param key - Key of storage slot to be returned
-   * @private
-   */
-  private async getContractStorageFromProvider(address: Address, key: Buffer): Promise<void> {
-    if (this.externallyRetrievedStorageKeys.has(address.toString())) {
-      const map = this.externallyRetrievedStorageKeys.get(address.toString())
-      if (map?.get(key.toString('hex')) !== undefined) {
-        // Return early if slot has already been retrieved from provider
-        return
+    // Check storage slot in cache
+    const accountStorage: Map<string, Buffer> | undefined = this.storageCache.get(
+      address.toString()
+    )
+    let storage: Buffer | string | undefined
+    if (accountStorage !== undefined) {
+      storage = accountStorage.get(key.toString('hex'))
+      if (storage !== undefined) {
+        return storage
       }
     }
 
-    const accountData = await this.provider.send('eth_getProof', [
-      address.toString(),
-      [bufferToHex(key)],
-      this.blockTag,
-    ])
+    // Retrieve storage slot from provider if not found in cache
+    storage = await this.provider.getStorageAt(address.toString(), bufferToBigInt(key))
+    const value = toBuffer(storage)
 
-    const rawAccountProofData = accountData.accountProof
-    await this.trie.fromProof(rawAccountProofData.map((e: string) => hexToBytes(e)))
-
-    const storageData = accountData.storageProof.find(
-      (el: any) => el.key === '0x' + key.toString('hex')
-    )
-
-    const storageTrie = await this._getStorageTrie(address)
-
-    await storageTrie.fromProof(storageData.proof.map((e: string) => hexToBytes(e)))
-
-    let map = this.externallyRetrievedStorageKeys.get(address.toString())
-    if (!map) {
-      this.externallyRetrievedStorageKeys.set(address.toString(), new Map())
-      map = this.externallyRetrievedStorageKeys.get(address.toString())!
-    }
-    map.set(key.toString('hex'), true)
+    await this.putContractStorage(address, key, value)
+    return value
   }
 
   /**
@@ -190,45 +169,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    await this.getContractStorageFromProvider(address, key)
-    const storageTrie = await this._getStorageTrie(address)
-
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+    // Cache retrieved storage slot
+    let accountStorage = this.storageCache.get(address.toString())
+    if (accountStorage === undefined) {
+      this.storageCache.set(address.toString(), new Map<string, Buffer>())
+      accountStorage = this.storageCache.get(address.toString())
     }
-
-    if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
-    }
-
-    value = unpadBuffer(value)
-    const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
-    if (value.length > 0) {
-      await storageTrie.put(key, encodedValue)
-    } else {
-      try {
-        await storageTrie.del(key)
-      } catch (err: any) {
-        if (
-          err.message === 'Missing node in DB' &&
-          (err.stack as string).includes('async Trie.del')
-        ) {
-          throw new Error(
-            `This block cannot be run because 0x${key.toString(
-              'hex'
-            )} accesses a trie node that cannot be found in the state trie. ${err.toString()}`
-          )
-        } else {
-          throw err
-        }
-      }
-    }
-    this.storageTries[address.buf.toString('hex')] = storageTrie
-
-    const contract = await this.getAccount(address)
-    contract.storageRoot = storageTrie.root()
-
-    await this.putAccount(address, contract)
+    accountStorage?.set(key.toString('hex'), value)
   }
 
   /**
@@ -236,11 +183,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const storageTrie = await this._getStorageTrie(address)
-    storageTrie.root(this.trie.EMPTY_TRIE_ROOT)
-    const contract = await this.getAccount(address)
-    contract.storageRoot = storageTrie.root()
-    await this.putAccount(address, contract)
+    this.storageCache.delete(address.toString())
   }
 
   /**
@@ -251,23 +194,15 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
-    return new Promise((resolve, reject) => {
-      this._getStorageTrie(address)
-        .then((trie) => {
-          const storage: StorageDump = {}
-          const stream = trie.createReadStream()
-
-          stream.on('data', (val: any) => {
-            storage['0x' + val.key.toString('hex')] = '0x' + val.value.toString('hex')
-          })
-          stream.on('end', () => {
-            resolve(storage)
-          })
-        })
-        .catch((e) => {
-          reject(e)
-        })
-    })
+    const addressStorage = this.storageCache.get(address.toString())
+    if (addressStorage === undefined) {
+      return Promise.resolve({} as StorageDump)
+    }
+    const dump: StorageDump = {}
+    for (const slot of addressStorage) {
+      dump[slot[0]] = bufferToHex(slot[1])
+    }
+    return Promise.resolve(dump)
   }
 
   /**
@@ -299,13 +234,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account> {
-    const accountBuffer = await this.trie.get(address.buf)
-    let account: Account
+    let account = this._cache.get(address)
 
-    if (accountBuffer === null) {
+    if (account.isEmpty()) {
       account = await this.getAccountFromProvider(address)
-    } else {
-      account = Account.fromRlpSerializedAccount(accountBuffer)
+      this._cache.put(address, account)
     }
 
     return account
@@ -323,10 +256,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       this.blockTag,
     ])
 
-    const rawData = accountData.accountProof
-
-    await this.trie.fromProof(rawData.map((e: string) => hexToBytes(e)))
-
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
@@ -342,33 +271,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    await this.trie.put(address.buf, account.serialize())
-  }
-
-  /**
-   * Gets the state-root of the Merkle-Patricia trie representation
-   * of the state of this StateManager.
-   * @returns {Buffer} - Returns the state-root of the `StateManager`
-   */
-  async getStateRoot(): Promise<Buffer> {
-    return this.trie.root()
-  }
-
-  /**
-   * Sets the state of the instance to that represented
-   * by the provided `stateRoot`.
-   * @param stateRoot - The state-root to reset the instance to
-   */
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
-    this.trie.root(stateRoot)
-  }
-
-  /**
-   * Checks whether there is a state corresponding to a stateRoot
-   */
-  async hasStateRoot(root: Buffer): Promise<boolean> {
-    const hasRoot = await this.trie.checkRoot(root)
-    return hasRoot
+    this._cache.put(address, account)
   }
 
   /**
@@ -378,37 +281,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @returns an EIP-1186 formatted proof
    */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
-    const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (await this.trie.createProof(address.buf)).map((p) =>
-      bufferToHex(p)
-    )
-    const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address)
+    const proof = await this.provider.send('eth_getProof', [
+      address.toString(),
+      [storageSlots.map((slot) => bufferToHex(slot))],
+      this.blockTag,
+    ])
 
-    for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
-      let value = bufferToHex(await this.getContractStorage(address, storageKey))
-      if (value === '0x') {
-        value = '0x0'
-      }
-      const proofItem: StorageProof = {
-        key: bufferToHex(storageKey),
-        value,
-        proof,
-      }
-      storageProof.push(proofItem)
-    }
-
-    const returnValue: Proof = {
-      address: address.toString(),
-      balance: bigIntToHex(account.balance),
-      codeHash: bufferToHex(account.codeHash),
-      nonce: bigIntToHex(account.nonce),
-      storageHash: bufferToHex(account.storageRoot),
-      accountProof,
-      storageProof,
-    }
-    return returnValue
+    return proof
   }
 
   /**
@@ -453,66 +332,51 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Creates a storage trie from the primary storage trie
-   * for an account and saves this in the storage cache.
-   * @private
-   */
-  private async _lookupStorageTrie(address: Address): Promise<Trie> {
-    // from state trie
-    const account = await this.getAccount(address)
-    const storageTrie = this.trie.copy(false)
-    storageTrie.root(account.storageRoot)
-    storageTrie.flushCheckpoints()
-    return storageTrie
-  }
-
-  /**
-   * Gets the storage trie for an account from the storage
-   * cache or does a lookup.
-   * @private
-   */
-  private async _getStorageTrie(address: Address): Promise<Trie> {
-    // from storage cache
-    const addressHex = address.buf.toString('hex')
-    let storageTrie = this.storageTries[addressHex]
-    if (storageTrie === undefined || storageTrie === null) {
-      // lookup from state
-      storageTrie = await this._lookupStorageTrie(address)
-    }
-    return storageTrie
-  }
-
-  /**
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
+   *
+   * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this.trie.checkpoint()
+    this._cache.checkpoint()
   }
 
   /**
    * Commits the current change-set to the instance since the
    * last call to checkpoint.
+   *
+   * Partial implementation, called from the subclass.
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
-    await this.trie.commit()
+    this._cache.commit()
   }
 
   /**
    * Reverts the current change-set to the instance since the
    * last call to checkpoint.
+   *
+   * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
     // setup cache checkpointing
-    await this.trie.revert()
+    this._cache.revert()
   }
 
-  /**
-   * Dummy method needed by base state manager interface
-   */
   async flush(): Promise<void> {
-    return Promise.resolve()
+    await this._cache.flush()
+  }
+
+  getStateRoot = () => {
+    throw new Error('function not implemented')
+  }
+
+  setStateRoot = () => {
+    throw new Error('function not implemented')
+  }
+
+  hasStateRoot = () => {
+    throw new Error('function not implemented')
   }
 }
