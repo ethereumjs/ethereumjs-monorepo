@@ -155,7 +155,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     }
 
     // Retrieve storage slot from provider if not found in cache
-    storage = await this.provider.getStorageAt(address.toString(), bufferToBigInt(key))
+    storage = await this.provider.getStorageAt(
+      address.toString(),
+      bufferToBigInt(key),
+      this.blockTag
+    )
     const value = toBuffer(storage)
 
     await this.putContractStorage(address, key, value)
