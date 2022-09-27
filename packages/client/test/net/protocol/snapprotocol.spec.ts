@@ -593,6 +593,8 @@ const byteCodesRLP =
 //   ],
 //   bytes: BigInt(5000000),
 // })
+// TODO getTrieNodesRLP is currently unused
+//@ts-ignore
 const getTrieNodesRLP =
   'eb01a004157502e6177a76ca4dbf7784e5ec1a926049db6a91e13efb70a095a72a45d9c4c100c100834c4b40'
 const trieNodesRLP =
