@@ -92,7 +92,7 @@
       "name": "merge",
       "ttd": "58750000000000000000000",
       "block": null,
-      "forkHash": "0xf0afd0e3"
+      "forkHash": null
     },
     {
       "name": "mergeForkIdTransition",
