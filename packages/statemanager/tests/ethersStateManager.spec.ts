@@ -205,7 +205,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
   }
 })
 
-tape.only('runBlock test', async (t) => {
+tape('runBlock test', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -215,7 +215,7 @@ tape.only('runBlock test', async (t) => {
       process.env.PROVIDER !== undefined
         ? new JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
-    const blockTag = 2000004n
+    const blockTag = 500000n
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
@@ -235,7 +235,6 @@ tape.only('runBlock test', async (t) => {
     )
     await state.setStateRoot(previousStateRoot)
     const block = await state.getBlockFromProvider(blockTag, common)
-    console.log(vm._common.hardfork())
     try {
       const res = await vm.runBlock({
         block,
@@ -243,7 +242,7 @@ tape.only('runBlock test', async (t) => {
         generate: true,
         skipHeaderValidation: true,
       })
-      console.log(res)
+      t.equal(res.gasUsed, block.header.gasUsed, 'should compute correct cumulative gas for block')
     } catch (err: any) {
       t.fail(`should have successfully ran block; got error ${err.message}`)
     }
