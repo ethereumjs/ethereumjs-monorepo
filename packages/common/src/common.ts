@@ -308,26 +308,31 @@ export class Common extends EventEmitter {
         continue
       }
 
-      if (hf.ttd !== undefined && hf.ttd !== null) {
-        // Only one hardfork merge is based on ttd, if mergeTTDSeen already seen than throw error
-        if (passedMergeHF !== undefined) {
-          throw new Error(
-            `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}, previous seen at hardfork=${passedMergeHF.name} ttd=${passedMergeHF.ttd}`
-          )
-        }
+      if (hf.ttd !== undefined && hf.ttd !== null && preMergeHF === undefined) {
+        // Ok, this is the hardfork with ttd
         preMergeHF = hardfork
       }
 
-      // If merge hardfork has block null set, we will make determination of that hardfork if no future hardforks qualify
+      // If merge hardfork has block null set, we will make determination if this is merge hardfork or preMergeHF
+      //  - if no future hardforks qualify by block number
+      // So we assume it to quality for now to move to check future post merge hardfork qualitfication
+      //
+      // For the hardforks with block specified we check for qualification
       if (hf.block !== null) {
         if (blockNumber < BigInt(hf.block)) {
           break
         }
       }
 
-      // Move the candidate hardfork pointer to this hf else we would have broken out of loop
+      // hf qualifies else we would have broken out of the loop till now
       if (hardfork?.ttd !== undefined && hardfork?.ttd !== null) {
         passedMergeHF = hardfork!
+      }
+      // If passedMergeHF, the next hardforks can't have ttd specified
+      if (passedMergeHF !== undefined && hf.ttd !== undefined && hf.ttd !== null) {
+        throw new Error(
+          `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}, previous seen at hardfork=${passedMergeHF.name} ttd=${passedMergeHF.ttd}`
+        )
       }
       hardfork = hf
     }
