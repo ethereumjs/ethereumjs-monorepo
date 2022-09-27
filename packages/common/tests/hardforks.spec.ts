@@ -88,20 +88,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     } catch (error) {
       st.pass('throws error as specified td < merge ttd for a post merge hardfork')
     }
-    try {
-      st.equal(
-        c.getHardforkByBlockNumber(1760410, undefined, true),
-        Hardfork.MergeForkIdTransition,
-        msg
-      )
-      st.fail(
-        'should have thrown as a post merge block provided without providing td with strick td checks enabled'
-      )
-    } catch (error) {
-      st.pass(
-        'throws error as a post merge block provided without providing td with strick td checks enabled'
-      )
-    }
 
     msg = 'should set HF correctly'
 
@@ -125,20 +111,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       st.fail('should have thrown as specified td < merge ttd for a post merge hardfork')
     } catch (error) {
       st.pass('throws error as specified td < merge ttd for a post merge hardfork')
-    }
-    try {
-      st.equal(
-        c.setHardforkByBlockNumber(1760410, undefined, true),
-        Hardfork.MergeForkIdTransition,
-        msg
-      )
-      st.fail(
-        'should have thrown as a post merge block provided without providing td with strick td checks enabled'
-      )
-    } catch (error) {
-      st.pass(
-        'throws error as a post merge block provided without providing td with strick td checks enabled'
-      )
     }
 
     st.end()

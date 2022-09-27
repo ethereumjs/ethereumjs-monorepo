@@ -286,87 +286,78 @@ export class Common extends EventEmitter {
    *
    * @param blockNumber
    * @param td
-   * @param strictTDCheck optional param to strickly validate td against postmerge hardforks
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    strictTDCheck?: boolean
-  ): string {
+  getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
+    /** The hardfork config seen at hardfork before the merge */
+    let preMergeHF: HardforkConfig | undefined = undefined
+    /** Merge hardfork config if we passed the merge hardfork because next hardfork's block <= blockNumber */
+    let passedMergeHF: HardforkConfig | undefined = undefined
+    /** Candiate hardfork */
     let hardfork: HardforkConfig | undefined = undefined
-    let previousHF: HardforkConfig | undefined = undefined
-    const hardforks = this.hardforks()
 
-    for (const hf of hardforks) {
-      let candidate = false
+    // Hardforks specified are strickly in the order of application, so we can make some intelligent decisions
+    // based on that especially regarding the merge hardfork where block might not be specified
+    for (const hf of this.hardforks()) {
+      // Check if hf can be applied, if not then break and the last hardfork set is the response
       if (hf.block === null && (hf.ttd === undefined || hf.ttd === null)) {
         // Not a hardfork which has been scheduled yet so just skip
         continue
-      } else if (hf.block === null && !(hf.ttd === undefined || hf.ttd === null)) {
-        // If the block number is null and its here, means it has ttd and is the first hf on/after ttd (merge)
-        if (td !== null && td !== undefined) {
-          if (td >= BigInt(hf.ttd)) {
-            candidate = true
-          }
+      }
+
+      if (hf.ttd !== undefined && hf.ttd !== null) {
+        // Only one hardfork merge is based on ttd, if mergeTTDSeen already seen than throw error
+        if (passedMergeHF !== undefined) {
+          throw new Error(
+            `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}, previous seen at hardfork=${passedMergeHF.name} ttd=${passedMergeHF.ttd}`
+          )
         }
-      } else if (hf.block !== null) {
-        // hf.block is not null here
-        if (blockNumber >= BigInt(hf.block)) {
-          if (
-            hf.ttd !== null &&
-            hf.ttd !== undefined &&
-            ((strictTDCheck === true && (td === null || td === undefined)) || td < BigInt(hf.ttd))
-          ) {
-            throw new Error(
-              `Invalid td=${td} at hardfork=${hf.name} block=${hf.block} ttd=${hf.ttd}`
-            )
-          }
-          candidate = true
+        preMergeHF = hardfork
+      }
+
+      // If merge hardfork has block null set, we will make determination of that hardfork if no future hardforks qualify
+      if (hf.block !== null) {
+        if (blockNumber < BigInt(hf.block)) {
+          break
+        }
+      }
+
+      // Move the candidate hardfork pointer to this hf else we would have broken out of loop
+      if (hardfork?.ttd !== undefined && hardfork?.ttd !== null) {
+        passedMergeHF = hardfork!
+      }
+      hardfork = hf
+    }
+
+    // We will not throw here on undefined because we can still end up assigning preMergeHF which could also be
+    // undefined. So we will throw post this if hardfork turns out to be undefined
+    if (hardfork !== undefined) {
+      if (hardfork.block === null) {
+        if (hardfork.ttd === undefined || hardfork.ttd === null) {
+          throw Error(`Selected a not yet scheduled hardfork=${hardfork.name}`)
+        }
+        if (td === undefined || td === null || td < BigInt(hardfork.ttd)) {
+          hardfork = preMergeHF
         }
       } else {
-        throw new Error(`Internal Error in hardfork eval`)
-      }
-      if (candidate) {
-        let update = false
-        if (previousHF === undefined) {
-          hardfork = hf
-          previousHF = hf
-        } else if (previousHF.block === null) {
-          // The previous HF is the merge hf and can only be updated by post merge hfs
-          if (hf.ttd !== null && hf.ttd !== undefined) {
-            update = true
+        if (passedMergeHF !== undefined && td !== undefined && td !== null) {
+          if (passedMergeHF.ttd === undefined || passedMergeHF.ttd === null) {
+            throw new Error(`Internal error: passedMergeHF=${passedMergeHF.name} should have ttd`)
           }
-        } else if (previousHF.ttd === null || previousHF.ttd === undefined) {
-          if (hf.ttd !== null && hf.ttd !== undefined) {
-            if (hf.block !== null && BigInt(hf.block) < BigInt(previousHF.block)) {
-              throw new Error(
-                `Invalid post merge hardfork=${hf.name} block=${hf.block} before pre merge hardfork=${previousHF.name}`
-              )
-            } else {
-              update = true
-            }
-          } else {
-            if (hf.block === null) {
-              throw new Error(
-                `Invalid hardfork=${hf.name} with unspecified block,tdd selected as candidate`
-              )
-            } else if (BigInt(hf.block) >= BigInt(previousHF.block)) {
-              update = true
-            }
+          if (td < BigInt(passedMergeHF.ttd)) {
+            throw Error(
+              `Invalid td for a post merge selected hardfork td=${td} hardfork=${hardfork.name} ttd=${passedMergeHF.ttd}`
+            )
           }
-        }
-        if (update) {
-          previousHF = hardfork
-          hardfork = hf
         }
       }
     }
+
     if (hardfork === undefined) {
-      throw new Error(`No hardfork found, invalid hardfork configuration`)
+      throw Error(`Invalid hardfork config, no hardfork found`)
     }
     return hardfork.name
   }
@@ -383,12 +374,8 @@ export class Common extends EventEmitter {
    * @param td
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    strictTDCheck?: boolean
-  ): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, strictTDCheck)
+  setHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     this.setHardfork(hardfork)
     return hardfork
   }
