@@ -294,9 +294,12 @@ export class Common extends EventEmitter {
 
     /** The hardfork config seen at hardfork before the merge */
     let preMergeHF: HardforkConfig | undefined = undefined
-    /** Merge hardfork config if we passed the merge hardfork because next hardfork's block <= blockNumber */
+    /**
+     * Merge hardfork config if we have passed the merge hardfork while finding hardfork
+     * because next hardfork's block <= blockNumber
+     */
     let passedMergeHF: HardforkConfig | undefined = undefined
-    /** Candiate hardfork */
+    /** Candiate hardfork config, updated as we iterate amongst the hardforks */
     let hardfork: HardforkConfig | undefined = undefined
 
     // Hardforks specified are strickly in the order of application, so we can make some intelligent decisions
