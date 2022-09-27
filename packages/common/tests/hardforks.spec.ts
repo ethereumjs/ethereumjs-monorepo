@@ -114,6 +114,17 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test(
+    'should generate expected hash with london block zero and base fee per gas defined',
+    async (st) => {
+      const json = require(`../../client/test/testdata/geth-genesis/post-merge.json`)
+      const c = Common.fromGethGenesis(json, { chain: 'post-merge' })
+      const msg = 'should get HF correctly'
+      st.equal(c.getHardforkByBlockNumber(0), Hardfork.London, msg)
+      st.equal(c.getHardforkByBlockNumber(0, BigInt(0)), Hardfork.Merge, msg)
+    }
+  )
+
   t.test('setHardfork(): hardforkChanged event', function (st) {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     c.on('hardforkChanged', (hardfork: string) => {
