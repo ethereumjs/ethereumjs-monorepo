@@ -72,7 +72,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(1450409), Hardfork.London, msg)
     st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
     st.equal(c.getHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
-    st.equal(c.getHardforkByBlockNumber(1735371, undefined), Hardfork.MergeForkIdTransition, msg)
     st.equal(
       c.getHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
       Hardfork.MergeForkIdTransition,
@@ -96,7 +95,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
     st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
-    st.equal(c.setHardforkByBlockNumber(1735371, undefined), Hardfork.MergeForkIdTransition, msg)
     st.equal(
       c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
       Hardfork.MergeForkIdTransition,
