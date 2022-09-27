@@ -285,7 +285,7 @@ export class Common extends EventEmitter {
    * will be thrown).
    *
    * @param blockNumber
-   * @param td
+   * @param td : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf)
    * @returns The name of the HF
    */
   getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
