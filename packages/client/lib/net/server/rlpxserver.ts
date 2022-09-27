@@ -104,6 +104,9 @@ export class RlpxServer extends Server {
       }
     }
     const id = this.rlpx._id.toString('hex')
+    const address = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
+      ? `${this.ip}:${this.config.port}`
+      : `[${this.ip}]:${this.config.port}`
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,

@@ -25,7 +25,12 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import type {
+  FeeMarketEIP1559Transaction,
+  JsonRpcTx,
+  Transaction,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -341,6 +346,8 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.feeHistory = middleware(this.feeHistory.bind(this), 0, [])
 
     this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
@@ -1033,5 +1040,17 @@ export class Eth {
     }
 
     return bigIntToHex(gasPrice)
+}
+
+  async feeHistory(_params = []) {
+    const latest = await this._chain.getCanonicalHeadHeader()
+    return {
+      baseFeePerGas: [
+        '0x' + latest.baseFeePerGas?.toString(16),
+        '0x' + latest.baseFeePerGas?.toString(16),
+      ],
+      oldestBlock: '0x' + latest.number.toString(16),
+      gasUsedRatio: [0.5],
+    }
   }
 }

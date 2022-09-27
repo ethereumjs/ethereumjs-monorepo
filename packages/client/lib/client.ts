@@ -1,3 +1,5 @@
+import { writeFileSync } from 'fs'
+
 import { version as packageVersion } from '../package.json'
 
 import { Chain } from './blockchain'
@@ -110,6 +112,9 @@ export class EthereumClient {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
+      const networkDir = this.config.getNetworkDirectory()
+      // Write the transport into a file
+      writeFileSync(`${networkDir}/${details.transport}`, details.url)
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`
       )

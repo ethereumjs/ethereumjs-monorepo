@@ -12,6 +12,7 @@ export const hardforks = {
   berlin: require('./berlin.json'),
   london: require('./london.json'),
   shanghai: require('./shanghai.json'),
+  shandong: require('./shandong.json'),
   arrowGlacier: require('./arrowGlacier.json'),
   grayGlacier: require('./grayGlacier.json'),
   mergeForkIdTransition: require('./mergeForkIdTransition.json'),
