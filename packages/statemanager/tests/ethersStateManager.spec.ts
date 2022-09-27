@@ -1,7 +1,7 @@
 import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBuffer, bigIntToHex, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
@@ -202,5 +202,50 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()
+  }
+})
+
+tape.only('runBlock test', async (t) => {
+  if (isBrowser() === true) {
+    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    t.end()
+  } else {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const provider =
+      process.env.PROVIDER !== undefined
+        ? new JsonRpcProvider(process.env.PROVIDER)
+        : new MockProvider()
+    const blockTag = 2000004n
+    const state = new EthersStateManager({
+      provider,
+      // Set the state manager to look at the state of the chain before the block has been executed
+      blockTag: blockTag - 1n,
+    })
+
+    // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
+    // blocks, also for post merge network, ttd should also be passed
+    common.setHardforkByBlockNumber(blockTag - 1n)
+
+    const vm = await VM.create({ common, stateManager: state })
+    const previousStateRoot = Buffer.from(
+      (
+        await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])
+      ).stateRoot.slice(2),
+      'hex'
+    )
+    await state.setStateRoot(previousStateRoot)
+    const block = await state.getBlockFromProvider(blockTag, common)
+    console.log(vm._common.hardfork())
+    try {
+      const res = await vm.runBlock({
+        block,
+        root: previousStateRoot,
+        generate: true,
+        skipHeaderValidation: true,
+      })
+      console.log(res)
+    } catch (err: any) {
+      t.fail(`should have successfully ran block; got error ${err.message}`)
+    }
   }
 })

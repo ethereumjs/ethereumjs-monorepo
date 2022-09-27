@@ -7,6 +7,7 @@ import {
   bufferToHex,
   intToHex,
   isHexPrefixed,
+  setLengthLeft,
   toBuffer,
 } from '@ethereumjs/util'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -36,6 +37,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
+  private stateRoot: Buffer | undefined
   _cache: Cache
 
   constructor(opts: EthersStateManagerOpts) {
@@ -365,12 +367,13 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     await this._cache.flush()
   }
 
-  getStateRoot = () => {
-    throw new Error('function not implemented')
+  getStateRoot = async () => {
+    return this.stateRoot !== undefined ? this.stateRoot : setLengthLeft(Buffer.from([]), 32)
   }
 
-  setStateRoot = () => {
-    throw new Error('function not implemented')
+  setStateRoot = async (root: Buffer) => {
+    if (root.length !== 32) throw new Error('Root must contain 32 bytes')
+    this.stateRoot = root
   }
 
   hasStateRoot = () => {
