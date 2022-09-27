@@ -311,8 +311,14 @@ export class Common extends EventEmitter {
         continue
       }
 
-      if (hf.ttd !== undefined && hf.ttd !== null && preMergeHF === undefined) {
+      if (hf.ttd !== undefined && hf.ttd !== null) {
         // Ok, this is the hardfork with ttd
+        // If preMergeHF assigned, we have already seen merge hardfork
+        if (preMergeHF !== undefined) {
+          throw new Error(
+            `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}`
+          )
+        }
         preMergeHF = hardfork
       }
 
@@ -330,12 +336,6 @@ export class Common extends EventEmitter {
       // hf qualifies else we would have broken out of the loop till now
       if (hardfork?.ttd !== undefined && hardfork?.ttd !== null) {
         passedMergeHF = hardfork!
-      }
-      // If passedMergeHF, the next hardforks can't have ttd specified
-      if (passedMergeHF !== undefined && hf.ttd !== undefined && hf.ttd !== null) {
-        throw new Error(
-          `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}, previous seen at hardfork=${passedMergeHF.name} ttd=${passedMergeHF.ttd}`
-        )
       }
       hardfork = hf
     }
