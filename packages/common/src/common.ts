@@ -383,8 +383,12 @@ export class Common extends EventEmitter {
    * @param td
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
+  setHardforkByBlockNumber(
+    blockNumber: BigIntLike,
+    td?: BigIntLike,
+    strictTDCheck?: boolean
+  ): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, strictTDCheck)
     this.setHardfork(hardfork)
     return hardfork
   }

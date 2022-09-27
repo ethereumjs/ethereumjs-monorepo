@@ -63,6 +63,87 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('test post merge hardforks using Sepolia', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Sepolia })
+    let msg = 'should get HF correctly'
+
+    st.equal(c.getHardforkByBlockNumber(0), Hardfork.London, msg)
+    //using Hardfork.London even though Merge is expected after terminal block 1450408
+    st.equal(c.getHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.getHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    st.equal(c.getHardforkByBlockNumber(1735371, undefined), Hardfork.MergeForkIdTransition, msg)
+    st.equal(
+      c.getHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      Hardfork.MergeForkIdTransition,
+      msg
+    )
+    try {
+      st.equal(
+        c.getHardforkByBlockNumber(1735371, BigInt('15000000000000000')),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail('should have thrown as specified td < merge ttd for a post merge hardfork')
+    } catch (error) {
+      st.pass('throws error as specified td < merge ttd for a post merge hardfork')
+    }
+    try {
+      st.equal(
+        c.getHardforkByBlockNumber(1760410, undefined, true),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail(
+        'should have thrown as a post merge block provided without providing td with strick td checks enabled'
+      )
+    } catch (error) {
+      st.pass(
+        'throws error as a post merge block provided without providing td with strick td checks enabled'
+      )
+    }
+
+    msg = 'should set HF correctly'
+
+    st.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
+    //using Hardfork.London even though Merge is expected after terminal block 1450408
+    st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    st.equal(c.setHardforkByBlockNumber(1735371, undefined), Hardfork.MergeForkIdTransition, msg)
+    st.equal(
+      c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      Hardfork.MergeForkIdTransition,
+      msg
+    )
+    try {
+      st.equal(
+        c.setHardforkByBlockNumber(1735371, BigInt('15000000000000000')),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail('should have thrown as specified td < merge ttd for a post merge hardfork')
+    } catch (error) {
+      st.pass('throws error as specified td < merge ttd for a post merge hardfork')
+    }
+    try {
+      st.equal(
+        c.setHardforkByBlockNumber(1760410, undefined, true),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail(
+        'should have thrown as a post merge block provided without providing td with strick td checks enabled'
+      )
+    } catch (error) {
+      st.pass(
+        'throws error as a post merge block provided without providing td with strick td checks enabled'
+      )
+    }
+
+    st.end()
+  })
+
   t.test('setHardfork(): hardforkChanged event', function (st) {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     c.on('hardforkChanged', (hardfork: string) => {
