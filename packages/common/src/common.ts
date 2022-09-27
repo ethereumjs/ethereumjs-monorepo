@@ -318,7 +318,7 @@ export class Common extends EventEmitter {
 
       // If merge hardfork has block null set, we will make determination if this is merge hardfork or preMergeHF
       //  - if no future hardforks qualify by block number
-      // So we assume it to quality for now to move to check future post merge hardfork qualitfication
+      // So we assume it to qualify for now to move to check future post merge hardfork qualitfication
       //
       // For the hardforks with block specified we check for qualification
       if (hf.block !== null) {
