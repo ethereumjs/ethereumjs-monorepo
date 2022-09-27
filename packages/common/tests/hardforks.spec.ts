@@ -114,19 +114,23 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('should reject two hardforks  with ttd specified', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Sepolia })
-    c.hardforks().filter((hf) => hf.name === 'mergeForkIdTransition')[0]!['ttd'] =
-      '17000000000000000'
+  t.test(
+    'should throw if encounters a double ttd hardfork specification',
+    function (st: tape.Test) {
+      const c = new Common({ chain: Chain.Sepolia })
+      // Add the ttd to mergeForkIdTransition which occurs post merge in sepolia
+      c.hardforks().filter((hf) => hf.name === 'mergeForkIdTransition')[0]!['ttd'] =
+        '17000000000000000'
 
-    try {
-      c.setHardforkByBlockNumber(1735371)
-      st.fail('should have thrown as two hardforks with ttd specified')
-    } catch (error) {
-      st.pass('throws error as two hardforks with ttd specified')
+      try {
+        c.setHardforkByBlockNumber(1735371)
+        st.fail('should have thrown as two hardforks with ttd specified')
+      } catch (error) {
+        st.pass('throws error as two hardforks with ttd specified')
+      }
+      st.end()
     }
-    st.end()
-  })
+  )
 
   t.test(
     'should generate expected hash with london block zero and base fee per gas defined',
