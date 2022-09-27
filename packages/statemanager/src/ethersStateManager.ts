@@ -75,9 +75,15 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   copy(): EthersStateManager {
-    const newState = new EthersStateManager({ provider: this.provider })
+    const newState = new EthersStateManager({
+      provider: this.provider,
+      blockTag: isHexPrefixed(this.blockTag)
+        ? BigInt(this.blockTag)
+        : (this.blockTag as BlockTagType),
+    })
     ;(newState as any).contractCache = new Map(this.contractCache)
     ;(newState as any).storageCache = new Map(this.storageCache)
+    ;(newState as any)._cache = this._cache
     return newState
   }
 
@@ -116,7 +122,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     if (codeBuffer !== undefined) return codeBuffer
     const code = await this.provider.getCode(address.toString(), this.blockTag)
     codeBuffer = toBuffer(code)
-    if (codeBuffer === undefined || codeBuffer.length === 0) return Buffer.from([])
     this.contractCache.set(address.toString(), codeBuffer)
     return codeBuffer
   }
