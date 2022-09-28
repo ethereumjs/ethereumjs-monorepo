@@ -39,9 +39,7 @@ import type {
   Log,
 } from './types'
 import type { Account } from '@ethereumjs/util'
-
-const debug = createDebugLogger('evm')
-const debugGas = createDebugLogger('evm:gas')
+import type { Debugger } from 'debug'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -201,15 +199,10 @@ export class EVM implements EVMInterface {
    */
   public readonly _mcl: any //
 
-  /**
-   * EVM is run in DEBUG mode (default: false)
-   * Taken from DEBUG environment variable
-   *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
-   * @hidden
-   */
-  readonly DEBUG: boolean = false
+  private debug: { evm: Debugger; evmGas: Debugger } = {
+    evm: createDebugLogger('evm'),
+    evmGas: createDebugLogger('evm:gas'),
+  }
 
   /**
    * EVM async constructor. Creates engine instance and initializes it.
