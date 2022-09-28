@@ -313,7 +313,7 @@ export class Common extends EventEmitter {
 
       if (hf.ttd !== undefined && hf.ttd !== null) {
         // This is the merge hardfork since only merge can have TTD
-        // If preMergeHF assigned, we have already seen merge hardfork
+        // If preMergeHF assigned, we have already seen merge hardfork and assigned preMergeHF
         if (preMergeHF !== undefined) {
           throw new Error(
             `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}`
@@ -322,15 +322,15 @@ export class Common extends EventEmitter {
         preMergeHF = hardfork
       }
 
-      // If merge hardfork has block null set, we will make determination if this is merge hardfork or preMergeHF
-      //  - if no future hardforks qualify by block number
-      // So we assume it to qualify for now to move to check future post merge hardfork qualitfication
-      //
-      // For the hardforks with block specified we check for qualification
+      // For the hardforks with block specified we check easily for qualification
       if (hf.block !== null) {
         if (blockNumber < BigInt(hf.block)) {
           break
         }
+      } else {
+        // If merge hardfork has block null set, we will make determination if this is merge hardfork or preMergeHF
+        //  - if no future hardforks qualify by block number
+        // So we assume it to qualify for now to move to check future post merge hardfork qualitfication
       }
 
       // hf qualifies else we would have broken out of the loop till now
@@ -343,6 +343,8 @@ export class Common extends EventEmitter {
     // We will not throw here on undefined because we can still end up assigning preMergeHF which could also be
     // undefined. So we will throw post this if hardfork turns out to be undefined
     if (hardfork !== undefined) {
+      // If this a merge hadfork i.e. we couldn't assign any post merge hardforks, we now have to determine
+      // if the final hardfork is the merge one or the preMergeHF
       if (hardfork.block === null) {
         if (hardfork.ttd === undefined || hardfork.ttd === null) {
           throw Error(`Selected a not yet scheduled hardfork=${hardfork.name}`)
@@ -350,7 +352,9 @@ export class Common extends EventEmitter {
         if (td === undefined || td === null || td < BigInt(hardfork.ttd)) {
           hardfork = preMergeHF
         }
-      } else {
+      }
+      // If chosen hardfork is post merge, and td has been specified, we should validate if td >= ttd
+      else {
         if (passedMergeHF !== undefined && td !== undefined && td !== null) {
           if (passedMergeHF.ttd === undefined || passedMergeHF.ttd === null) {
             throw new Error(`Internal error: passedMergeHF=${passedMergeHF.name} should have ttd`)
