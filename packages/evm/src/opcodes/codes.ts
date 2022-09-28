@@ -101,7 +101,7 @@ const opcodes: OpcodeEntry = {
   0x41: { name: 'COINBASE', isAsync: true, dynamicGas: false },
   0x42: { name: 'TIMESTAMP', isAsync: true, dynamicGas: false },
   0x43: { name: 'NUMBER', isAsync: true, dynamicGas: false },
-  0x44: { name: 'DIFFICULTY', isAsync: true, dynamicGas: false },
+  0x44: { name: 'PREVRANDAO', isAsync: true, dynamicGas: false },
   0x45: { name: 'GASLIMIT', isAsync: true, dynamicGas: false },
 
   // 0x50 range - 'storage' and execution
