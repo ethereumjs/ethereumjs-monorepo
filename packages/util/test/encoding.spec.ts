@@ -1,5 +1,5 @@
+import { compactToHex, hexToCompact, keybytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
-import { hexToCompact, compactToHex, keybytesToHex } from '@ethereumjs/util'
 
 tape('encoding', function (t) {
   t.test('hexToCompact and compactToHex should encode hex data correctly', function (t) {
