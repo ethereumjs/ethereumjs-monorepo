@@ -204,10 +204,12 @@ export class EVM implements EVMInterface {
    */
   public readonly _mcl: any //
 
-  private debug: { evm: Debugger; evmGas: Debugger } = {
-    evm: createDebugLogger('evm'),
-    evmGas: createDebugLogger('evm:gas'),
-  }
+  private debug?: { evm: Debugger; evmGas: Debugger }
+
+  /**
+   * EVM is run in DEBUG mode (default: false)
+   */
+  readonly DEBUG: boolean = false
 
   /**
    * EVM async constructor. Creates engine instance and initializes it.
@@ -293,9 +295,13 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Silence debugger if debug option not enabled
-    if (opts.debug !== true) {
-      createDebugLogger.disable()
+    if (opts.debug === true) {
+      this.debug = {
+        evm: createDebugLogger('evm'),
+        evmGas: createDebugLogger('evm:gas'),
+      }
+      createDebugLogger.enable('evm, evm:gas')
+      this.DEBUG = true
     }
 
     // We cache this promisified function as it's called from the main execution loop, and
