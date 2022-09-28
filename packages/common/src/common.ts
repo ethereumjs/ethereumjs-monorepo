@@ -312,7 +312,7 @@ export class Common extends EventEmitter {
       }
 
       if (hf.ttd !== undefined && hf.ttd !== null) {
-        // Ok, this is the hardfork with ttd
+        // This is the merge hardfork since only merge can have TTD
         // If preMergeHF assigned, we have already seen merge hardfork
         if (preMergeHF !== undefined) {
           throw new Error(
