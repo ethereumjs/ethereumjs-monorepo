@@ -142,6 +142,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
 
       try {
         c.setHardforkByBlockNumber(16, 4999)
+        st.fail(`should have thrown td < ttd validation error`)
       } catch (e: any) {
         msg = 'block number > last HF block number set, TD set and smaller (should throw)'
         const eMsg = 'Maximum HF determined by total difficulty is lower than the block number HF'
@@ -149,6 +150,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       }
       try {
         c.setHardforkByBlockNumber(14, 5000)
+        st.fail(`should have thrown td > ttd validation error`)
       } catch (e: any) {
         msg = 'block number < last HF block number set, TD set and higher (should throw)'
         const eMsg = 'HF determined by block number is lower than the minimum total difficulty HF'

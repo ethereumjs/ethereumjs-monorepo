@@ -324,7 +324,7 @@ export class Common extends EventEmitter {
     let hardfork
     if (hfs[hfIndex].block === null) {
       // We're on the merge hardfork.  Let's check the TTD
-      if (td === undefined || (td === null && BigInt(hfs[hfIndex].ttd!) > td)) {
+      if (td === undefined || td === null || BigInt(hfs[hfIndex].ttd!) > td) {
         // Merge ttd greater than current td so we're on hardfork before merge
         hardfork = hfs[hfIndex - 1]
       } else {
@@ -332,9 +332,11 @@ export class Common extends EventEmitter {
         hardfork = hfs[hfIndex]
       }
     } else {
-      if (mergeIndex >= 0 && hfIndex >= mergeIndex) {
-        if (td !== undefined && td !== null && BigInt(hfs[mergeIndex].ttd!) > td) {
-          throw Error(`not ttd`)
+      if (mergeIndex >= 0 && td !== undefined && td !== null) {
+        if (hfIndex >= mergeIndex && BigInt(hfs[mergeIndex].ttd!) > td) {
+          throw Error('Maximum HF determined by total difficulty is lower than the block number HF')
+        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) <= td) {
+          throw Error('HF determined by block number is lower than the minimum total difficulty HF')
         }
       }
       hardfork = hfs[hfIndex]
