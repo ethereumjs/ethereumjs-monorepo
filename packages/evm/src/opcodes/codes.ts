@@ -79,7 +79,7 @@ const opcodes: OpcodeEntry = {
   0x1a: { name: 'BYTE', isAsync: false, dynamicGas: false },
 
   // 0x20 range - crypto
-  0x20: { name: 'SHA3', isAsync: false, dynamicGas: true },
+  0x20: { name: 'KECCAK256', isAsync: false, dynamicGas: true },
 
   // 0x30 range - closure state
   0x30: { name: 'ADDRESS', isAsync: true, dynamicGas: false },
