@@ -292,84 +292,52 @@ export class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
-    /** The hardfork config seen at hardfork before the merge */
-    let preMergeHF: HardforkConfig | undefined = undefined
-    /**
-     * Merge hardfork config if we have passed the merge hardfork while finding hardfork
-     * because next hardfork's block <= blockNumber
-     */
-    let passedMergeHF: HardforkConfig | undefined = undefined
-    /** Candiate hardfork config, updated as we iterate amongst the hardforks */
-    let hardfork: HardforkConfig | undefined = undefined
-
-    // Hardforks specified are strictly in the order of application, so we can make some intelligent decisions
-    // based on that, specifically regarding the merge hardfork where only TTD and not block might be specified
-    for (const hf of this.hardforks()) {
-      // Check if hf can be applied, if not then break and the last hardfork set is the response
-      if (hf.block === null && (hf.ttd === undefined || hf.ttd === null)) {
-        // Not a hardfork which has been scheduled yet so just skip
-        continue
+    // Filter out hardforks with no block number and no ttd (i.e. unapplied hardforks)
+    const hfs = this.hardforks().filter(
+      (hf) => hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined)
+    )
+    const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    if (mergeIndex >= 0) {
+      const doubleTTDHF = hfs
+        .slice(mergeIndex + 1)
+        .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+      if (doubleTTDHF >= 0) {
+        throw Error(`Double ttd`)
       }
+    }
 
-      if (hf.ttd !== undefined && hf.ttd !== null) {
-        // This is the merge hardfork since only merge can have TTD
-        // If preMergeHF assigned, we have already seen merge hardfork and assigned preMergeHF
-        if (preMergeHF !== undefined) {
-          throw new Error(
-            `Invalid hardfork config with repeat ttd hardfork=${hf.name} ttd=${hf.ttd}`
-          )
-        }
-        preMergeHF = hardfork
-      }
+    // The first hardfork which we can't apply by blockNumber, enables us to see beyond merge hardfork
+    // which might not have block set.
+    let hfIndex = hfs.findIndex((hf) => hf.block !== null && hf.block > blockNumber)
 
-      // For the hardforks with block specified we check easily for qualification
-      if (hf.block !== null) {
-        if (blockNumber < BigInt(hf.block)) {
-          break
-        }
+    // Move hfIndex one back to arrive at candidate hardfork
+    if (hfIndex === -1) {
+      // all hardforks apply, set hfIndex to the last one as thats the candidate
+      hfIndex = hfs.length - 1
+    } else if (hfIndex === 0) {
+      // Cant move back, ideally we should throw??
+    } else {
+      // The previous hardfork is the candidate here
+      hfIndex = hfIndex - 1
+    }
+
+    let hardfork
+    if (hfs[hfIndex].block === null) {
+      // We're on the merge hardfork.  Let's check the TTD
+      if (td === undefined || (td === null && BigInt(hfs[hfIndex].ttd!) > td)) {
+        // Merge ttd greater than current td so we're on hardfork before merge
+        hardfork = hfs[hfIndex - 1]
       } else {
-        // If merge hardfork has block null set, we will make determination if this is merge hardfork or preMergeHF
-        //  - if no future hardforks qualify by block number
-        // So we assume it to qualify for now to move to check future post merge hardfork qualitfication
+        // Merge ttd equal or less than current td so we're on merge hardfork
+        hardfork = hfs[hfIndex]
       }
-
-      // hf qualifies else we would have broken out of the loop till now
-      if (hardfork?.ttd !== undefined && hardfork?.ttd !== null) {
-        passedMergeHF = hardfork!
-      }
-      hardfork = hf
-    }
-
-    // We will not throw here on undefined because we can still end up assigning preMergeHF which could also be
-    // undefined. So we will throw post this if hardfork turns out to be undefined
-    if (hardfork !== undefined) {
-      // If this a merge hadfork i.e. we couldn't assign any post merge hardforks, we now have to determine
-      // if the final hardfork is the merge one or the preMergeHF
-      if (hardfork.block === null) {
-        if (hardfork.ttd === undefined || hardfork.ttd === null) {
-          throw Error(`Selected a not yet scheduled hardfork=${hardfork.name}`)
-        }
-        if (td === undefined || td === null || td < BigInt(hardfork.ttd)) {
-          hardfork = preMergeHF
+    } else {
+      if (mergeIndex >= 0 && hfIndex >= mergeIndex) {
+        if (td !== undefined && td !== null && BigInt(hfs[mergeIndex].ttd!) > td) {
+          throw Error(`not ttd`)
         }
       }
-      // If chosen hardfork is post merge, and td has been specified, we should validate if td >= ttd
-      else {
-        if (passedMergeHF !== undefined && td !== undefined && td !== null) {
-          if (passedMergeHF.ttd === undefined || passedMergeHF.ttd === null) {
-            throw new Error(`Internal error: passedMergeHF=${passedMergeHF.name} should have ttd`)
-          }
-          if (td < BigInt(passedMergeHF.ttd)) {
-            throw Error(
-              `Invalid td for a post merge selected hardfork td=${td} hardfork=${hardfork.name} ttd=${passedMergeHF.ttd}`
-            )
-          }
-        }
-      }
-    }
-
-    if (hardfork === undefined) {
-      throw Error(`Invalid hardfork config, no hardfork found`)
+      hardfork = hfs[hfIndex]
     }
     return hardfork.name
   }
