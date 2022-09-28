@@ -302,8 +302,8 @@ export class Common extends EventEmitter {
     /** Candiate hardfork config, updated as we iterate amongst the hardforks */
     let hardfork: HardforkConfig | undefined = undefined
 
-    // Hardforks specified are strickly in the order of application, so we can make some intelligent decisions
-    // based on that especially regarding the merge hardfork where block might not be specified
+    // Hardforks specified are strictly in the order of application, so we can make some intelligent decisions
+    // based on that, specifically regarding the merge hardfork where only TTD and not block might be specified
     for (const hf of this.hardforks()) {
       // Check if hf can be applied, if not then break and the last hardfork set is the response
       if (hf.block === null && (hf.ttd === undefined || hf.ttd === null)) {
