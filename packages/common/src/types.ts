@@ -115,7 +115,7 @@ export interface CustomCommonOpts extends BaseOpts {
 }
 
 export interface GethConfigOpts {
-  chain: string
+  chain?: string
   hardfork?: string | Hardfork
   genesisHash?: Buffer
 }
