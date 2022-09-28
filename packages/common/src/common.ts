@@ -297,13 +297,11 @@ export class Common extends EventEmitter {
       (hf) => hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined)
     )
     const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
-    if (mergeIndex >= 0) {
-      const doubleTTDHF = hfs
-        .slice(mergeIndex + 1)
-        .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
-      if (doubleTTDHF >= 0) {
-        throw Error(`Double ttd`)
-      }
+    const doubleTTDHF = hfs
+      .slice(mergeIndex + 1)
+      .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    if (doubleTTDHF >= 0) {
+      throw Error(`Double ttd`)
     }
 
     // The first hardfork which we can't apply by blockNumber, enables us to see beyond merge hardfork
