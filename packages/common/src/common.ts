@@ -157,7 +157,7 @@ export class Common extends EventEmitter {
   /**
    * Static method to load and set common from a geth genesis json
    * @param genesisJson json of geth configuration
-   * @param { chain, genesisHash, hardfork } to futher configure the common instance, mandatory option: `chain` representing custom chain name`
+   * @param { chain, genesisHash, hardfork } to futher configure the common instance
    * @returns Common
    */
   static fromGethGenesis(
