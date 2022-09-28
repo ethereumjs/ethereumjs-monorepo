@@ -127,6 +127,11 @@ export interface EVMOpts {
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
   eei: EEIInterface
+
+  /*
+   * Activate EVM debugging.
+   */
+  debug?: boolean
 }
 
 /**
@@ -288,9 +293,9 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
+    // Silence debugger if debug option not enabled
+    if (opts.debug !== true) {
+      createDebugLogger.disable()
     }
 
     // We cache this promisified function as it's called from the main execution loop, and
