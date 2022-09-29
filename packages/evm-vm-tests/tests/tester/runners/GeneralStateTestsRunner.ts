@@ -68,9 +68,9 @@ function parseTestCases(
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
   if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
+    ;({ VM } = require('@ethereumjs/vm/dist'))
   } else {
-    ;({ VM } = require('../../../src'))
+    ;({ VM } = require('@ethereumjs/vm/src'))
   }
   const begin = Date.now()
   const common = options.common
@@ -98,8 +98,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     execInfo = 'tx instantiation exception'
   }
 
-  if (tx) {
-    if (tx.validate()) {
+  if (tx !== undefined) {
+    if (tx.validate() === true) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
