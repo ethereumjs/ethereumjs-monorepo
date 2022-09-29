@@ -676,11 +676,17 @@ export class Common extends EventEmitter {
     let hfBuffer = Buffer.alloc(0)
     let prevBlock = 0
     for (const hf of this.hardforks()) {
-      const block = hf.block
+      const { block, ttd } = hf
 
       // Skip for chainstart (0), not applied HFs (null) and
       // when already applied on same block number HFs
-      if (typeof block === 'number' && block !== 0 && block !== prevBlock) {
+      // and on the merge since forkhash doesn't change on merge hf
+      if (
+        typeof block === 'number' &&
+        block !== 0 &&
+        block !== prevBlock &&
+        (ttd === null || ttd === undefined)
+      ) {
         const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
         hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
       }
