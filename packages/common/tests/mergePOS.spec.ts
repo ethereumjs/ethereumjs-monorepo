@@ -208,10 +208,13 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     const prevMergeBlockVal = mergeHf.block
     mergeHf.block = null
 
-    //using Hardfork.London even though Merge is expected after terminal block 1450408
+    // should get Hardfork.London even though happened with 1450408 as terminal as config doesn't have that info
     st.equal(c.getHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    // however with correct td in input it should select merge
     st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    // should select MergeForkIdTransition even without td specified as the block is set for this hardfork
     st.equal(c.getHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    // also with td specified
     st.equal(
       c.getHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
       Hardfork.MergeForkIdTransition,
@@ -231,7 +234,6 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     msg = 'should set HF correctly'
 
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
-    //using Hardfork.London even though Merge is expected after terminal block 1450408
     st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
     st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
@@ -264,9 +266,11 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
 
       const mergeHf = c.hardforks().filter((hf) => hf.ttd !== undefined && hf.ttd !== null)[0]
       const prevMergeBlockVal = mergeHf.block
+      // the terminal block on sepolia is 1450408
       mergeHf.block = 1450409
       const msg = 'should get HF correctly'
 
+      // should get merge even without td supplied as the merge hf now has the block specified
       st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.Merge, msg)
       st.equal(
         c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')),
