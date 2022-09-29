@@ -190,6 +190,14 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('should get the correct merge hardfork at genesis', async (st) => {
+    const json = require(`../../client/test/testdata/geth-genesis/post-merge.json`)
+    const c = Common.fromGethGenesis(json, { chain: 'post-merge' })
+    const msg = 'should get HF correctly'
+    st.equal(c.getHardforkByBlockNumber(0), Hardfork.London, msg)
+    st.equal(c.getHardforkByBlockNumber(0, BigInt(0)), Hardfork.Merge, msg)
+  })
+
   t.test('test post merge hardforks using Sepolia with block null', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Sepolia })
     let msg = 'should get HF correctly'
