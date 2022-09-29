@@ -313,8 +313,9 @@ export class Common extends EventEmitter {
       // all hardforks apply, set hfIndex to the last one as thats the candidate
       hfIndex = hfs.length - 1
     } else if (hfIndex === 0) {
-      // Cant move back, ideally we should throw??
-      throw Error('No hardfork qualitifies')
+      // cannot have a case where a block number is before all applied hardforks
+      // since the chain has to start with a hardfork
+      throw Error('Must have at least one hardfork at block 0')
     } else {
       // The previous hardfork is the candidate here
       hfIndex = hfIndex - 1

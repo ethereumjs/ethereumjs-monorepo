@@ -82,7 +82,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     try {
       c.getHardforkByBlockNumber(0)
-      t.fail('should have thrown since no hardfork should quality')
+      t.fail('should have thrown since no hardfork should qualify')
     } catch (e) {
       t.pass('throw since no hardfork qualifies')
     }
