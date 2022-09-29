@@ -3,18 +3,18 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
+import { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-import { VM } from '../../src'
-import { BlockBuilder } from '../../src/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../src'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedBufferArray } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt } from '@ethereumjs/vm'
 
 const yargs = require('yargs/yargs')
 
