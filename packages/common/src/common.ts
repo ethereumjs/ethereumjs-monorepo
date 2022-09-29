@@ -304,7 +304,7 @@ export class Common extends EventEmitter {
       throw Error(`More than one merge hardforks found with ttd specified`)
     }
 
-    // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since 
+    // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since
     // it cannot have a block number specified).
     let hfIndex = hfs.findIndex((hf) => hf.block !== null && hf.block > blockNumber)
 
