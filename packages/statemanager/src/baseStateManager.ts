@@ -19,7 +19,7 @@ import type { Debugger } from 'debug'
  * and we cannot guarantee a stable interface yet.
  */
 export abstract class BaseStateManager {
-  _debug: Debugger
+  _debug?: Debugger
   _cache!: Cache
 
   /**
@@ -37,10 +37,17 @@ export abstract class BaseStateManager {
    */
   constructor(_opts: DefaultStateManagerOpts) {
     // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
+    if (_opts.debug === true) {
+      this._debug = createDebugLogger('statemanager')
+      createDebugLogger.enable('statemanager')
       this.DEBUG = true
+    } else if (process.env.DEBUG !== undefined) {
+      if (process.env.DEBUG.includes('statemanager')) {
+        this._debug = createDebugLogger('statemanager')
+        createDebugLogger.enable(process.env.DEBUG)
+        this.DEBUG = true
+      }
     }
-    this._debug = createDebugLogger('statemanager:statemanager')
   }
 
   /**
@@ -58,7 +65,7 @@ export abstract class BaseStateManager {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(
         `Save account address=${address} nonce=${account.nonce} balance=${
           account.balance
@@ -89,7 +96,7 @@ export abstract class BaseStateManager {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(`Delete account ${address}`)
     }
     this._cache.del(address)

@@ -61,6 +61,11 @@ export interface DefaultStateManagerOpts {
    * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
    */
   prefixCodeHashes?: boolean
+
+  /**
+   * Activate StateManager debugging
+   */
+  debug?: boolean
 }
 
 /**
@@ -139,7 +144,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // @ts-expect-error
     await this._trie._db.put(key, value)
 
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
     await this.modifyAccountFields(address, { codeHash })
@@ -265,13 +270,13 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       if (Buffer.isBuffer(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
-        if (this.DEBUG) {
+        if (this._debug) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
         await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
-        if (this.DEBUG) {
+        if (this._debug) {
           this._debug(`Delete contract storage for account`)
         }
         await storageTrie.del(key)
