@@ -314,6 +314,7 @@ export class Common extends EventEmitter {
       hfIndex = hfs.length - 1
     } else if (hfIndex === 0) {
       // Cant move back, ideally we should throw??
+      throw Error('No hardfork qualitifies')
     } else {
       // The previous hardfork is the candidate here
       hfIndex = hfIndex - 1
