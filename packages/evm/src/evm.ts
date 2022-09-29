@@ -204,7 +204,7 @@ export class EVM implements EVMInterface {
    */
   public readonly _mcl: any //
 
-  private debug?: { evm: Debugger; evmGas: Debugger }
+  private debug?: Debugger
 
   /**
    * EVM is run in DEBUG mode (default: false)
@@ -296,12 +296,16 @@ export class EVM implements EVMInterface {
     }
 
     if (opts.debug === true) {
-      this.debug = {
-        evm: createDebugLogger('evm'),
-        evmGas: createDebugLogger('evm:gas'),
-      }
-      createDebugLogger.enable('evm, evm:gas')
+      this.debug = createDebugLogger('evm')
+      createDebugLogger.enable('evm*')
       this.DEBUG = true
+    }
+    if (process.env.DEBUG !== undefined) {
+      if (process.env.DEBUG.includes('evm')) {
+        this.debug = createDebugLogger('evm')
+        createDebugLogger.enable(process.env.DEBUG)
+        this.DEBUG = true
+      }
     }
 
     // We cache this promisified function as it's called from the main execution loop, and
@@ -371,13 +375,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Exit early on no code`)
+        this.debug(`Exit early on no code`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Exit early on value transfer overflowed`)
+        this.debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -394,7 +398,7 @@ export class EVM implements EVMInterface {
     let result: ExecResult
     if (message.isCompiled) {
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Run precompile`)
+        this.debug(`Run precompile`)
       }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
@@ -404,7 +408,7 @@ export class EVM implements EVMInterface {
       result.gasRefund = message.gasRefund
     } else {
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Start bytecode processing...`)
+        this.debug(`Start bytecode processing...`)
       }
       result = await this.runInterpreter(message)
     }
@@ -440,7 +444,7 @@ export class EVM implements EVMInterface {
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
     if (this.DEBUG && this.debug) {
-      this.debug.evm(`Generated CREATE contract address ${message.to}`)
+      this.debug(`Generated CREATE contract address ${message.to}`)
     }
     let toAccount = await this.eei.getAccount(message.to)
 
@@ -450,7 +454,7 @@ export class EVM implements EVMInterface {
       !toAccount.codeHash.equals(KECCAK256_NULL)
     ) {
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Returning on address collision`)
+        this.debug(`Returning on address collision`)
       }
       return {
         createdAddress: message.to,
@@ -489,13 +493,13 @@ export class EVM implements EVMInterface {
     if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Exit early on no code`)
+        this.debug(`Exit early on no code`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Exit early on value transfer overflowed`)
+        this.debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -511,7 +515,7 @@ export class EVM implements EVMInterface {
     }
 
     if (this.DEBUG && this.debug) {
-      this.debug.evm(`Start bytecode processing...`)
+      this.debug(`Start bytecode processing...`)
     }
 
     let result = await this.runInterpreter(message)
@@ -523,7 +527,9 @@ export class EVM implements EVMInterface {
         BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
       if (this.DEBUG && this.debug) {
-        this.debug.evmGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
+        this.debug.extend('gas')(
+          `Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`
+        )
       }
     }
 
@@ -577,13 +583,13 @@ export class EVM implements EVMInterface {
     } else {
       if (this._common.gteHardfork(Hardfork.Homestead)) {
         if (this.DEBUG && this.debug) {
-          this.debug.evm(`Not enough gas or code size not allowed (>= Homestead)`)
+          this.debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
         result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
         if (this.DEBUG && this.debug) {
-          this.debug.evm(`Not enough gas or code size not allowed (Frontier)`)
+          this.debug(`Not enough gas or code size not allowed (Frontier)`)
         }
         if (totalGas - returnFee <= message.gasLimit) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
@@ -603,7 +609,7 @@ export class EVM implements EVMInterface {
     ) {
       await this.eei.putContractCode(message.to, result.returnValue)
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Code saved on new contract creation`)
+        this.debug(`Code saved on new contract creation`)
       }
     } else if (CodestoreOOG) {
       // This only happens at Frontier. But, let's do a sanity check;
@@ -740,14 +746,14 @@ export class EVM implements EVMInterface {
     await this.eei.checkpoint()
     this._transientStorage.checkpoint()
     if (this.DEBUG && this.debug) {
-      this.debug.evm('-'.repeat(100))
-      this.debug.evm(`message checkpoint`)
+      this.debug('-'.repeat(100))
+      this.debug(`message checkpoint`)
     }
 
     let result
     if (this.DEBUG && this.debug) {
       const { caller, gasLimit, to, value, delegatecall } = message
-      this.debug.evm(
+      this.debug(
         `New message caller=${caller} gasLimit=${gasLimit} to=${
           to?.toString() ?? 'none'
         } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
@@ -755,18 +761,18 @@ export class EVM implements EVMInterface {
     }
     if (message.to) {
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Message CALL execution (to: ${message.to})`)
+        this.debug(`Message CALL execution (to: ${message.to})`)
       }
       result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`Message CREATE execution (to undefined)`)
+        this.debug(`Message CREATE execution (to undefined)`)
       }
       result = await this._executeCreate(message)
     }
     if (this.DEBUG && this.debug) {
       const { executionGasUsed, exceptionError, returnValue } = result.execResult
-      this.debug.evm(
+      this.debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
         } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
@@ -788,7 +794,7 @@ export class EVM implements EVMInterface {
         await this.eei.revert()
         this._transientStorage.revert()
         if (this.DEBUG && this.debug) {
-          this.debug.evm(`message checkpoint reverted`)
+          this.debug(`message checkpoint reverted`)
         }
       } else {
         // we are in chainstart and the error was the code deposit error
@@ -796,14 +802,14 @@ export class EVM implements EVMInterface {
         await this.eei.commit()
         this._transientStorage.commit()
         if (this.DEBUG && this.debug) {
-          this.debug.evm(`message checkpoint committed`)
+          this.debug(`message checkpoint committed`)
         }
       }
     } else {
       await this.eei.commit()
       this._transientStorage.commit()
       if (this.DEBUG && this.debug) {
-        this.debug.evm(`message checkpoint committed`)
+        this.debug(`message checkpoint committed`)
       }
     }
     await this._emit('afterMessage', result)
@@ -816,6 +822,10 @@ export class EVM implements EVMInterface {
    * shouldn't be used directly from the evm class
    */
   async runCode(opts: EVMRunCodeOpts): Promise<ExecResult> {
+    if (this.DEBUG && this.debug) {
+      this.debug('Testing one')
+      this.debug.extend('gas')('Testing one')
+    }
     this._block = opts.block ?? defaultBlock()
 
     this._tx = {
@@ -903,7 +913,7 @@ export class EVM implements EVMInterface {
     }
     const result = this.eei.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG && this.debug) {
-      this.debug.evm(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
+      this.debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
     return result
   }
@@ -917,7 +927,7 @@ export class EVM implements EVMInterface {
     // putAccount as the nonce may have changed for contract creation
     const result = this.eei.putAccount(message.to, toAccount)
     if (this.DEBUG && this.debug) {
-      this.debug.evm(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
+      this.debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
     return result
   }
