@@ -1,11 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
+import { EEI } from '@ethereumjs/vm'
 
-import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
