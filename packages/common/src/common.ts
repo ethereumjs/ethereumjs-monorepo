@@ -304,8 +304,8 @@ export class Common extends EventEmitter {
       throw Error(`Double ttd`)
     }
 
-    // The first hardfork which we can't apply by blockNumber, enables us to see beyond merge hardfork
-    // which might not have block set.
+    // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since 
+    // it cannot have a block number specified).
     let hfIndex = hfs.findIndex((hf) => hf.block !== null && hf.block > blockNumber)
 
     // Move hfIndex one back to arrive at candidate hardfork
