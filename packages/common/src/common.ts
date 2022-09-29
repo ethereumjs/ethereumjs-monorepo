@@ -166,7 +166,7 @@ export class Common extends EventEmitter {
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain)
     const common = new Common({
-      chain: genesisParams.name,
+      chain: genesisParams.name ?? 'custom',
       customChains: [genesisParams],
       hardfork,
     })
