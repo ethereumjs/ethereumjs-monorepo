@@ -12,7 +12,7 @@ type AddressHex = string
 
 export class VmState implements EVMStateAccess {
   protected _common: Common
-  protected _debug: Debugger
+  protected _debug?: Debugger
 
   protected _checkpointCount: number
   protected _stateManager: StateManager
@@ -48,10 +48,9 @@ export class VmState implements EVMStateAccess {
     this._accessedStorageReverted = [new Map()]
 
     // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
+    if (createDebugLogger('vm:state').enabled) {
+      this._debug = createDebugLogger('vm:state')
     }
-    this._debug = createDebugLogger('vm:state')
   }
 
   /**
@@ -67,7 +66,7 @@ export class VmState implements EVMStateAccess {
     await this._stateManager.checkpoint()
     this._checkpointCount++
 
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug('-'.repeat(100))
       this._debug(`message checkpoint`)
     }
@@ -89,7 +88,7 @@ export class VmState implements EVMStateAccess {
       this._clearOriginalStorageCache()
     }
 
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(`message checkpoint committed`)
     }
   }
@@ -127,7 +126,7 @@ export class VmState implements EVMStateAccess {
       this._clearOriginalStorageCache()
     }
 
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(`message checkpoint reverted`)
     }
   }
@@ -239,7 +238,7 @@ export class VmState implements EVMStateAccess {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
-    if (this.DEBUG) {
+    if (this._debug) {
       this._debug(`Save genesis state into the state trie`)
     }
     const addresses = Object.keys(initState)
@@ -280,7 +279,7 @@ export class VmState implements EVMStateAccess {
         const empty = await this.accountIsEmpty(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)
-          if (this.DEBUG) {
+          if (this._debug) {
             this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
           }
         }

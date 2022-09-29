@@ -139,6 +139,11 @@ export interface VMOpts {
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
+
+  /**
+   * Activate VM debug logging
+   */
+  debug?: boolean
 }
 
 /**

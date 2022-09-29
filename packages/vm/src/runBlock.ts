@@ -19,8 +19,6 @@ import type {
 import type { VM } from './vm'
 import type { EVMStateAccess } from '@ethereumjs/evm'
 
-const debug = createDebugLogger('vm:block')
-
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
@@ -29,6 +27,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
   const state = this.eei
   const { root } = opts
   let { block } = opts
@@ -54,7 +53,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     )
   }
 
-  if (this.DEBUG) {
+  if (debug) {
     debug('-'.repeat(100))
     debug(
       `Running block hash=${block.hash().toString('hex')} number=${
@@ -65,7 +64,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // Set state root if provided
   if (root) {
-    if (this.DEBUG) {
+    if (debug) {
       debug(`Set provided state root ${root.toString('hex')}`)
     }
     await state.setStateRoot(root)
@@ -76,7 +75,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
     block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
   ) {
-    if (this.DEBUG) {
+    if (debug) {
       debug(`Apply DAO hardfork`)
     }
     await _applyDAOHardfork(state)
@@ -84,14 +83,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // Checkpoint state
   await state.checkpoint()
-  if (this.DEBUG) {
+  if (debug) {
     debug(`block checkpoint`)
   }
 
   let result
   try {
     result = await applyBlock.bind(this)(block, opts)
-    if (this.DEBUG) {
+    if (debug) {
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
           result.bloom.bitvector.length
@@ -102,7 +101,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
   } catch (err: any) {
     await state.revert()
-    if (this.DEBUG) {
+    if (debug) {
       debug(`block checkpoint reverted`)
     }
     throw err
@@ -110,7 +109,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // Persist state
   await state.commit()
-  if (this.DEBUG) {
+  if (debug) {
     debug(`block checkpoint committed`)
   }
 
@@ -132,7 +131,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
     if (result.receiptsRoot.equals(block.header.receiptTrie) === false) {
-      if (this.DEBUG) {
+      if (debug) {
         debug(
           `Invalid receiptTrie received=${result.receiptsRoot.toString(
             'hex'
@@ -143,7 +142,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       throw new Error(msg)
     }
     if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
-      if (this.DEBUG) {
+      if (debug) {
         debug(
           `Invalid bloom received=${result.bloom.bitvector.toString(
             'hex'
@@ -154,14 +153,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       throw new Error(msg)
     }
     if (result.gasUsed !== block.header.gasUsed) {
-      if (this.DEBUG) {
+      if (debug) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
       const msg = _errorMsg('invalid gasUsed', this, block)
       throw new Error(msg)
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
-      if (this.DEBUG) {
+      if (debug) {
         debug(
           `Invalid stateRoot received=${stateRoot.toString(
             'hex'
@@ -192,7 +191,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    * @property {AfterBlockEvent} result emits the results of processing a block
    */
   await this._emit('afterBlock', afterBlockEvent)
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `Running block finished hash=${block.hash().toString('hex')} number=${
         block.header.number
@@ -212,13 +211,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
  * @param {RunBlockOpts} opts
  */
 async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
       const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
       throw new Error(msg)
     } else {
-      if (this.DEBUG) {
+      if (debug) {
         debug(`Validate block`)
       }
       // TODO: decide what block validation method is appropriate here
@@ -233,7 +233,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     }
   }
   // Apply transactions
-  if (this.DEBUG) {
+  if (debug) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
@@ -252,6 +252,8 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
  * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
+
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BigInt(0)
@@ -288,13 +290,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       blockGasUsed: gasUsed,
     })
     txResults.push(txRes)
-    if (this.DEBUG) {
+    if (debug) {
       debug('-'.repeat(100))
     }
 
     // Add to total block gas usage
     gasUsed += txRes.totalGasSpent
-    if (this.DEBUG) {
+    if (debug) {
       debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
@@ -321,7 +323,9 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
  * the updated balances of their accounts to state.
  */
 async function assignBlockRewards(this: VM, block: Block): Promise<void> {
-  if (this.DEBUG) {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
+
+  if (debug) {
     debug(`Assign block rewards`)
   }
   const state = this.eei
@@ -331,14 +335,14 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
     const account = await rewardAccount(state, ommer.coinbase, reward)
-    if (this.DEBUG) {
+    if (debug) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
     }
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
   const account = await rewardAccount(state, block.header.coinbase, reward)
-  if (this.DEBUG) {
+  if (debug) {
     debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
   }
 }

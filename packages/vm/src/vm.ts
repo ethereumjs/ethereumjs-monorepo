@@ -4,6 +4,7 @@ import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, TypeOutput, toType } from '@ethereumjs/util'
 import AsyncEventEmitter = require('async-eventemitter')
+import debug from 'debug'
 import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
@@ -147,9 +148,13 @@ export class VM {
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
+    // Activate debugging from options or process.env
+    if (opts.debug === true) {
       this.DEBUG = true
+      debug.enable('vm*')
+    } else if (process.env.DEBUG !== undefined && process.env.DEBUG.includes('vm')) {
+      this.DEBUG = true
+      debug.enable(process.env.DEBUG)
     }
 
     // We cache this promisified function as it's called from the main execution loop, and

@@ -23,13 +23,11 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 
-const debug = createDebugLogger('vm:tx')
-const debugGas = createDebugLogger('vm:tx:gas')
-
 /**
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  const debug = this.DEBUG ? createDebugLogger('vm:tx') : undefined
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
@@ -56,7 +54,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   await state.checkpoint()
-  if (this.DEBUG) {
+  if (debug) {
     debug('-'.repeat(100))
     debug(`tx checkpoint`)
   }
@@ -115,7 +113,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   try {
     const result = await _runTx.bind(this)(opts)
     await state.commit()
-    if (this.DEBUG) {
+    if (debug) {
       debug(`tx checkpoint committed`)
     }
     if (this._common.isActivatedEIP(2929) === true && opts.reportAccessList === true) {
@@ -135,7 +133,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     return result
   } catch (e: any) {
     await state.revert()
-    if (this.DEBUG) {
+    if (debug) {
       debug(`tx checkpoint reverted`)
     }
     throw e
@@ -147,6 +145,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
   const state = this.eei
 
   const { tx, block } = opts
@@ -165,7 +164,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this._emit('beforeTx', tx)
 
   const caller = tx.getSenderAddress()
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `New tx run hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
@@ -197,8 +196,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
   gasLimit -= txBaseFee
-  if (this.DEBUG) {
-    debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
+  if (debug) {
+    debug.extend('gas')(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (this._common.isActivatedEIP(1559) === true) {
@@ -308,7 +307,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     fromAccount.balance = BigInt(0)
   }
   await state.putAccount(caller, fromAccount)
-  if (this.DEBUG) {
+  if (debug) {
     debug(`Update fromAccount (caller) balance(-> ${fromAccount.balance})`)
   }
 
@@ -317,7 +316,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const { value, data, to } = tx
 
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
@@ -342,11 +341,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   acc.nonce++
   await state.putAccount(caller, acc)
 
-  if (this.DEBUG) {
+  if (debug) {
     debug(`Update fromAccount (caller) nonce (-> ${fromAccount.nonce})`)
   }
 
-  if (this.DEBUG) {
+  if (debug) {
     const { executionGasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
@@ -361,14 +360,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
-  if (this.DEBUG) {
+  if (debug) {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
   // Calculate the total gas used
   results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
-  if (this.DEBUG) {
-    debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
+  if (debug) {
+    debug.extend('gas')(
+      `tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`
+    )
   }
 
   // Process any gas refund
@@ -379,11 +380,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
     results.totalGasSpent -= gasRefund
-    if (this.DEBUG) {
+    if (debug) {
       debug(`Subtract tx gasRefund (${gasRefund}) from totalGasSpent (-> ${results.totalGasSpent})`)
     }
   } else {
-    if (this.DEBUG) {
+    if (debug) {
       debug(`No tx gasRefund`)
     }
   }
@@ -395,7 +396,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
   await state.putAccount(caller, fromAccount)
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
     )
@@ -421,7 +422,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(miner, minerAccount)
-  if (this.DEBUG) {
+  if (debug) {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
@@ -433,7 +434,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     for (const k of keys) {
       const address = new Address(Buffer.from(k, 'hex'))
       await state.deleteAccount(address)
-      if (this.DEBUG) {
+      if (debug) {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
@@ -456,7 +457,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const event: AfterTxEvent = { transaction: tx, ...results }
   await this._emit('afterTx', event)
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `tx run finished hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
@@ -501,6 +502,7 @@ export async function generateTxReceipt(
   txResult: RunTxResult,
   cumulativeGasUsed: bigint
 ): Promise<TxReceipt> {
+  const debug = this.DEBUG ? createDebugLogger('vm:block') : undefined
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
     bitvector: txResult.bloom.bitvector,
@@ -508,7 +510,7 @@ export async function generateTxReceipt(
   }
 
   let receipt
-  if (this.DEBUG) {
+  if (debug) {
     debug(
       `Generate tx receipt transactionType=${
         tx.type
