@@ -74,7 +74,7 @@
       "forkHash": "0xfe3366e7"
     },
     {
-      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://sepolia.etherscan.io/block/1450408",
       "name": "merge",
       "ttd": "17000000000000000",
       "block": null,

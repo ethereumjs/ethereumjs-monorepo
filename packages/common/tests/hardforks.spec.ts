@@ -63,6 +63,36 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('should throw if no hardfork qualifies', function (st) {
+    const hardforks = [
+      {
+        name: 'homestead',
+        block: 3,
+      },
+      {
+        name: 'tangerineWhistle',
+        block: 3,
+      },
+      {
+        name: 'spuriousDragon',
+        block: 3,
+      },
+    ]
+    const c = Common.custom({ hardforks }, { baseChain: Chain.Sepolia })
+
+    try {
+      c.getHardforkByBlockNumber(0)
+      t.fail('should have thrown since no hardfork should qualify')
+    } catch (e) {
+      t.pass('throw since no hardfork qualifies')
+    }
+
+    const msg = 'should return correct value'
+    st.equal(c.setHardforkByBlockNumber(3), Hardfork.SpuriousDragon, msg)
+
+    t.end()
+  })
+
   t.test('setHardfork(): hardforkChanged event', function (st) {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     c.on('hardforkChanged', (hardfork: string) => {

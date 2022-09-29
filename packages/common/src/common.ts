@@ -285,57 +285,63 @@ export class Common extends EventEmitter {
    * will be thrown).
    *
    * @param blockNumber
-   * @param td
+   * @param td : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf)
    * @returns The name of the HF
    */
   getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
 
-    let hardfork = Hardfork.Chainstart
-    let minTdHF
-    let maxTdHF
-    let previousHF
-    for (const hf of this.hardforks()) {
-      // Skip comparison for not applied HFs
-      if (hf.block === null) {
-        if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
-          if (td >= BigInt(hf.ttd)) {
-            return hf.name
-          }
-        }
-        continue
-      }
-      if (blockNumber >= BigInt(hf.block)) {
-        hardfork = hf.name as Hardfork
-      }
-      if (td && (typeof hf.ttd === 'string' || typeof hf.ttd === 'bigint')) {
-        if (td >= BigInt(hf.ttd)) {
-          minTdHF = hf.name
-        } else {
-          maxTdHF = previousHF
-        }
-      }
-      previousHF = hf.name
+    // Filter out hardforks with no block number and no ttd (i.e. unapplied hardforks)
+    const hfs = this.hardforks().filter(
+      (hf) => hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined)
+    )
+    const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    const doubleTTDHF = hfs
+      .slice(mergeIndex + 1)
+      .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    if (doubleTTDHF >= 0) {
+      throw Error(`More than one merge hardforks found with ttd specified`)
     }
-    if (td) {
-      let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
-      if (minTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
-          const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
-          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
-        }
-      }
-      if (maxTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
-          const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
-          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
-        }
-      }
+
+    // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since
+    // it cannot have a block number specified).
+    let hfIndex = hfs.findIndex((hf) => hf.block !== null && hf.block > blockNumber)
+
+    // Move hfIndex one back to arrive at candidate hardfork
+    if (hfIndex === -1) {
+      // all hardforks apply, set hfIndex to the last one as thats the candidate
+      hfIndex = hfs.length - 1
+    } else if (hfIndex === 0) {
+      // cannot have a case where a block number is before all applied hardforks
+      // since the chain has to start with a hardfork
+      throw Error('Must have at least one hardfork at block 0')
+    } else {
+      // The previous hardfork is the candidate here
+      hfIndex = hfIndex - 1
     }
-    return hardfork
+
+    let hardfork
+    if (hfs[hfIndex].block === null) {
+      // We're on the merge hardfork.  Let's check the TTD
+      if (td === undefined || td === null || BigInt(hfs[hfIndex].ttd!) > td) {
+        // Merge ttd greater than current td so we're on hardfork before merge
+        hardfork = hfs[hfIndex - 1]
+      } else {
+        // Merge ttd equal or less than current td so we're on merge hardfork
+        hardfork = hfs[hfIndex]
+      }
+    } else {
+      if (mergeIndex >= 0 && td !== undefined && td !== null) {
+        if (hfIndex >= mergeIndex && BigInt(hfs[mergeIndex].ttd!) > td) {
+          throw Error('Maximum HF determined by total difficulty is lower than the block number HF')
+        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) <= td) {
+          throw Error('HF determined by block number is lower than the minimum total difficulty HF')
+        }
+      }
+      hardfork = hfs[hfIndex]
+    }
+    return hardfork.name
   }
 
   /**

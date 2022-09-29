@@ -53,6 +53,7 @@ tape('[CLConnectionManager]', (t) => {
     manager = new CLConnectionManager({ config })
     st.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
     manager.stop()
+    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = 10
     common = new Common({
       chain: params.name,
@@ -69,6 +70,8 @@ tape('[CLConnectionManager]', (t) => {
     })
     config.events.emit(Event.CHAIN_UPDATED)
     config.events.emit(Event.CLIENT_SHUTDOWN)
+    // reset prevMergeForkBlock as it seems to be polluting other tests
+    ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
   })
 
   t.test('Status updates', async (st) => {
