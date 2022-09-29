@@ -301,7 +301,7 @@ export class Common extends EventEmitter {
       .slice(mergeIndex + 1)
       .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
     if (doubleTTDHF >= 0) {
-      throw Error(`Double ttd`)
+      throw Error(`More than one merge hardforks found with ttd specified`)
     }
 
     // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since 

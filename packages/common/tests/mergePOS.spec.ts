@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { Common, Hardfork } from '../src'
+import { Chain, Common, Hardfork } from '../src'
 
 import * as testnetMerge from './data/merge/testnetMerge.json'
 import * as testnetPOS from './data/merge/testnetPOS.json'
@@ -189,4 +189,110 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(5, 0), 'shanghai', msg)
     st.end()
   })
+
+  t.test('test post merge hardforks using Sepolia with block null', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Sepolia })
+    let msg = 'should get HF correctly'
+
+    st.equal(c.getHardforkByBlockNumber(0), Hardfork.London, msg)
+    // Make it null manually as config could be updated later
+    const mergeHf = c.hardforks().filter((hf) => hf.ttd !== undefined && hf.ttd !== null)[0]
+    const prevMergeBlockVal = mergeHf.block
+    mergeHf.block = null
+
+    //using Hardfork.London even though Merge is expected after terminal block 1450408
+    st.equal(c.getHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.getHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    st.equal(
+      c.getHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      Hardfork.MergeForkIdTransition,
+      msg
+    )
+    try {
+      st.equal(
+        c.getHardforkByBlockNumber(1735371, BigInt('15000000000000000')),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail('should have thrown as specified td < merge ttd for a post merge hardfork')
+    } catch (error) {
+      st.pass('throws error as specified td < merge ttd for a post merge hardfork')
+    }
+
+    msg = 'should set HF correctly'
+
+    st.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
+    //using Hardfork.London even though Merge is expected after terminal block 1450408
+    st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    st.equal(
+      c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      Hardfork.MergeForkIdTransition,
+      msg
+    )
+    try {
+      st.equal(
+        c.setHardforkByBlockNumber(1735371, BigInt('15000000000000000')),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      st.fail('should have thrown as specified td < merge ttd for a post merge hardfork')
+    } catch (error) {
+      st.pass('throws error as specified td < merge ttd for a post merge hardfork')
+    }
+
+    // restore value
+    mergeHf.block = prevMergeBlockVal
+
+    st.end()
+  })
+
+  t.test(
+    'should get correct merge and post merge hf with merge block specified ',
+    function (st: tape.Test) {
+      const c = new Common({ chain: Chain.Sepolia })
+
+      const mergeHf = c.hardforks().filter((hf) => hf.ttd !== undefined && hf.ttd !== null)[0]
+      const prevMergeBlockVal = mergeHf.block
+      mergeHf.block = 1450409
+      const msg = 'should get HF correctly'
+
+      st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.Merge, msg)
+      st.equal(
+        c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')),
+        Hardfork.Merge,
+        msg
+      )
+      st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+      st.equal(
+        c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+        Hardfork.MergeForkIdTransition,
+        msg
+      )
+      // restore value
+      mergeHf.block = prevMergeBlockVal
+
+      st.end()
+    }
+  )
+
+  t.test(
+    'should throw if encounters a double ttd hardfork specification',
+    function (st: tape.Test) {
+      const c = new Common({ chain: Chain.Sepolia })
+      // Add the ttd to mergeForkIdTransition which occurs post merge in sepolia
+      c.hardforks().filter((hf) => hf.name === 'mergeForkIdTransition')[0]!['ttd'] =
+        '17000000000000000'
+
+      try {
+        c.setHardforkByBlockNumber(1735371)
+        st.fail('should have thrown as two hardforks with ttd specified')
+      } catch (error) {
+        st.pass('throws error as two hardforks with ttd specified')
+      }
+      st.end()
+    }
+  )
 })
