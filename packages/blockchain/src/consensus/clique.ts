@@ -7,8 +7,7 @@ import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-
-const debug = createDebugLogger('blockchain:clique')
+import type { Debugger } from 'debug'
 
 // Magic nonce number to vote on adding a new signer
 export const CLIQUE_NONCE_AUTH = Buffer.from('ffffffffffffffff', 'hex')
@@ -98,8 +97,23 @@ export class CliqueConsensus implements Consensus {
    */
   public _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
-  constructor() {
+  private debug?: Debugger
+
+  constructor(debug: boolean = false) {
     this.algorithm = ConsensusAlgorithm.Clique
+    if (debug === true) {
+      this.debug = createDebugLogger('blockchain:clique')
+      createDebugLogger.enable('blockchain:clique')
+    } else if (process.env.DEBUG !== undefined) {
+      if (
+        process.env.DEBUG.includes('blockchain:*') ||
+        process.env.DEBUG.includes('blockchain*') ||
+        process.env.DEBUG.includes('blockchain:clique')
+      ) {
+        this.debug = createDebugLogger('blockchain:clique')
+        createDebugLogger.enable('blockchain:clique')
+      }
+    }
   }
 
   /**
@@ -203,7 +217,9 @@ export class CliqueConsensus implements Consensus {
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
-    debug(`[Block 0] Genesis block -> update signer states`)
+    if (this.debug) {
+      this.debug(`[Block 0] Genesis block -> update signer states`)
+    }
     await this.cliqueUpdateVotes()
   }
 
@@ -245,7 +261,10 @@ export class CliqueConsensus implements Consensus {
     // Output active signers for debugging purposes
     let i = 0
     for (const signer of this.cliqueActiveSigners()) {
-      debug(`Clique signer [${i}]: ${signer}`)
+      if (this.debug) {
+        this.debug(`Clique signer [${i}]: ${signer}`)
+      }
+
       i++
     }
   }
@@ -310,7 +329,10 @@ export class CliqueConsensus implements Consensus {
           this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
             (vote) => !vote[1][1].equals(beneficiary)
           )
-          debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
+
+          if (this.debug) {
+            this.debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
+          }
         }
         // DROP vote
         votes = this._cliqueLatestVotes.filter((vote) => {
@@ -344,27 +366,33 @@ export class CliqueConsensus implements Consensus {
             // Discard votes from removed signer and for removed signer
             (vote) => !vote[1][0].equals(beneficiary) && !vote[1][1].equals(beneficiary)
           )
-          debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
+          if (this.debug) {
+            this.debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
+          }
         }
         if (round === 1) {
           // Always add the latest vote to the history no matter if already voted
           // the same vote or not
           this._cliqueLatestVotes.push(latestVote)
-          debug(
-            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
-              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
-            }`
-          )
+          if (this.debug) {
+            this.debug(
+              `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
+                nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+              }`
+            )
+          }
         }
         if (consensus) {
-          if (round === 1) {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`
-            )
-          } else {
-            debug(
-              `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`
-            )
+          if (this.debug) {
+            if (round === 1) {
+              this.debug(
+                `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`
+              )
+            } else {
+              this.debug(
+                `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`
+              )
+            }
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState)
