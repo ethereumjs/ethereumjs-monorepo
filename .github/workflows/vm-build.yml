@@ -56,6 +56,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:selectedForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
@@ -73,6 +74,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
   vm-benchmarks:
     runs-on: ubuntu-latest
