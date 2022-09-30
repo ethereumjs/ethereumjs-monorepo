@@ -7,9 +7,15 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['tests/util.ts', 'tests/tester/**/*.ts'],
+      files: ['tests/**/*.ts'],
       rules: {
         'no-console': 'off',
+      },
+    },
+    {
+      files: ['./tests/retesteth/clients/ethereumjs/genesis/correctMiningReward.json'],
+      rules: {
+        'no-dupe-keys': 'off',
       },
     },
   ],
