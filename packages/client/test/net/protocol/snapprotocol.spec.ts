@@ -518,7 +518,7 @@ tape('[SnapProtocol]', (t) => {
 
     // check that raw node data that exists is valid
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
+      const node: Buffer = nodes[i]
       if (node) {
         t.ok(decodeNode(node), 'raw node data should decode without error')
       }
