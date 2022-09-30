@@ -33,7 +33,7 @@ jobs:
       - run: npm run test:API
       - run: npm run test:API:browser
 
-  test-vm-state:
+  evm-vm-test-state:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -54,8 +54,10 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:allForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  test-vm-blockchain:
+
+  evm-vm-test-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -76,9 +78,9 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain:allForks
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  test-vm-slow:
+  evm-vm-test-slow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -99,3 +101,5 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:slow
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+

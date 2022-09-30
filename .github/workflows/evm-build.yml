@@ -46,3 +46,20 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: evm
         if: ${{ matrix.node-version == 16 }}
+  evm-vm-test-state:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:selectedForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests

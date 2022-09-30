@@ -40,7 +40,7 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-  test-vm-state:
+  evm-vm-test-state:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
       - run: npm run test:state:selectedForks
         working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  test-vm-blockchain:
+  evm-vm-test-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
