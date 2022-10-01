@@ -72,10 +72,10 @@
       "forkHash": "0xb8c6299d"
     },
     {
-      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://goerli.etherscan.io/block/7382818",
       "name": "merge",
       "ttd": "10790000",
-      "block": null,
+      "block": 7382819,
       "forkHash": "0xb8c6299d"
     },
     {
