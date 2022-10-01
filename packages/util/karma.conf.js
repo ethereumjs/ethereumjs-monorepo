@@ -8,6 +8,9 @@ module.exports = function (config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
+        acornOptions: {
+          ecmaVersion: 11,
+        },
       },
       tsconfig: './tsconfig.json',
     },
