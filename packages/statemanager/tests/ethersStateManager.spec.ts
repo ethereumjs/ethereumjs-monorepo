@@ -1,7 +1,7 @@
 import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, bigIntToHex, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
