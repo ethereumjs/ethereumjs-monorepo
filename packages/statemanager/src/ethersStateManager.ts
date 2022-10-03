@@ -7,7 +7,6 @@ import {
   bufferToHex,
   intToHex,
   isHexPrefixed,
-  setLengthLeft,
   toBuffer,
 } from '@ethereumjs/util'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -26,10 +25,9 @@ import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
 
-type BlockTagType = bigint | 'latest' | 'earliest' | 'pending'
 export interface EthersStateManagerOpts {
   provider: string | StaticJsonRpcProvider | JsonRpcProvider
-  blockTag?: BlockTagType
+  blockTag: bigint
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
@@ -37,7 +35,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
-  private stateRoot: Buffer | undefined
   _cache: Cache
 
   constructor(opts: EthersStateManagerOpts) {
@@ -50,8 +47,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
     }
 
-    this.blockTag =
-      typeof opts.blockTag === 'bigint' ? bigIntToHex(opts.blockTag) : opts.blockTag ?? 'latest'
+    this.blockTag = bigIntToHex(opts.blockTag)
 
     this.contractCache = new Map()
     this.storageCache = new Map()
@@ -71,9 +67,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   copy(): EthersStateManager {
     const newState = new EthersStateManager({
       provider: this.provider,
-      blockTag: isHexPrefixed(this.blockTag)
-        ? BigInt(this.blockTag)
-        : (this.blockTag as BlockTagType),
+      blockTag: BigInt(this.blockTag),
     })
     ;(newState as any).contractCache = new Map(this.contractCache)
     ;(newState as any).storageCache = new Map(this.storageCache)
@@ -86,7 +80,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * internal cache.
    * @param blockTag - the new block tag to use when querying the provider
    */
-  setBlockTag(blockTag: BlockTagType): void {
+  setBlockTag(blockTag: bigint): void {
     if (typeof blockTag === 'bigint') {
       this.blockTag = bigIntToHex(blockTag)
     } else {
@@ -370,12 +364,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   getStateRoot = async () => {
-    return this.stateRoot ?? setLengthLeft(Buffer.from([]), 32)
+    throw new Error('function not implemented')
   }
 
-  setStateRoot = async (root: Buffer) => {
-    if (root.length !== 32) throw new Error('Root must contain 32 bytes')
-    this.stateRoot = root
+  setStateRoot = async (_root: Buffer) => {
+    throw new Error('function not implemented')
   }
 
   hasStateRoot = () => {
