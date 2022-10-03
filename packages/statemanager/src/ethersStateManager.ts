@@ -7,6 +7,7 @@ import {
   bufferToHex,
   intToHex,
   isHexPrefixed,
+  setLengthLeft,
   toBuffer,
 } from '@ethereumjs/util'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -250,7 +251,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       [],
       this.blockTag,
     ])
-
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
@@ -363,14 +363,21 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     await this._cache.flush()
   }
 
+  /**
+   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   */
   getStateRoot = async () => {
-    throw new Error('function not implemented')
+    return setLengthLeft(Buffer.from([]), 32)
   }
 
-  setStateRoot = async (_root: Buffer) => {
-    throw new Error('function not implemented')
-  }
+  /**
+   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   */
+  setStateRoot = async (_root: Buffer) => {}
 
+  /**
+   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   */
   hasStateRoot = () => {
     throw new Error('function not implemented')
   }

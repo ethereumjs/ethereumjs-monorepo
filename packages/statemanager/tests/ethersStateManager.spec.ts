@@ -18,26 +18,22 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'tests/ethersStateManager.spec.ts'
 tape('Ethers State Manager initialization tests', (t) => {
   const provider = new MockProvider()
-  let state = new EthersStateManager({ provider })
+  let state = new EthersStateManager({ provider, blockTag: 1n })
   t.ok(
     state instanceof EthersStateManager,
     'was able to instantiate state manager with JsonRpcProvider subclass'
   )
-  t.equal(
-    (state as any).blockTag,
-    'latest',
-    'State manager starts with default block tag of "latest"'
-  )
+  t.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
 
   state = new EthersStateManager({ provider, blockTag: 1n })
   t.equal((state as any).blockTag, '0x1', 'State Manager instantiated with predefined blocktag')
 
-  state = new EthersStateManager({ provider: 'http://localhost:8545' })
+  state = new EthersStateManager({ provider: 'http://localhost:8545', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
 
   const invalidProvider = new BaseProvider('mainnet')
   t.throws(
-    () => new EthersStateManager({ provider: invalidProvider as any }),
+    () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
     'cannot instantiate state manager with invalid provider'
   )
   t.end()
@@ -52,7 +48,7 @@ tape('Ethers State Manager API tests', async (t) => {
       process.env.PROVIDER !== undefined
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
-    const state = new EthersStateManager({ provider })
+    const state = new EthersStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
     t.ok(account.nonce > 0n, 'Vitalik.eth returned a valid nonce')
@@ -133,11 +129,9 @@ tape('Ethers State Manager API tests', async (t) => {
       'state manager copy should have code for contract after cache is cleared on original state manager'
     )
 
-    t.equal((state as any).blockTag, 'latest', 'blockTag defaults to latest')
+    t.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
     state.setBlockTag(5n)
     t.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
-    state.setBlockTag('latest')
-    t.equal((state as any).blockTag, 'latest', 'blockTag set back to latest')
     t.end()
   }
 })
@@ -152,7 +146,7 @@ tape('runTx custom transaction test', async (t) => {
       process.env.PROVIDER !== undefined
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
-    const state = new EthersStateManager({ provider })
+    const state = new EthersStateManager({ provider, blockTag: 1n })
     const vm = await VM.create({ common, stateManager: state })
 
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -227,18 +221,10 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const previousStateRoot = Buffer.from(
-      (
-        await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag - 1n), true])
-      ).stateRoot.slice(2),
-      'hex'
-    )
-    await state.setStateRoot(previousStateRoot)
     const block = await state.getBlockFromProvider(blockTag, common)
     try {
       const res = await vm.runBlock({
         block,
-        root: previousStateRoot,
         generate: true,
         skipHeaderValidation: true,
       })
