@@ -52,18 +52,22 @@ import { EthersStateManager } from '@ethereumjs/statemanager'
 import { ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
-const stateManager = new EthersStateManager({ provider })
+const stateManager = new EthersStateManager({ provider, blockTag: `latest` })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
 ```
 
-The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider and also can compute correct updated global state roots in many instances.
+The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
-Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+#### Points on usage:
 
-**WARNING** When using the `EthersStateManager`, any time an account self destruct occurs or a storage slot is deleted while running transactions and blocks, do not be surprised to see an error. This is due to a fundamental limitation of the `web3provider` interface whereby we are not able to retrieve all of the necessary trie nodes needed to update the parent node of a deleted leaf resulting from the storage slot deletion/account self destruct as the keys in the underlying trie _backing_ this statemanager are hashed.
-However, many blocks should execute successfully and report the correct updated state root.
+- If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
+- If you plan to leverage data from historical blocks, please ensure your provider supports retrieving state values from that block. Otherwise, you will encounter RPC errors trying when using this state manager.
+- If you update the block tag (block number or `latest`/`earliest`/`pending`) using `stateManager.setBlockTag()`, the cached accounts/storage/contract code will be cleared and retrieved from the provider at the specified block tag.
+- If you are using the `latest`/`pending` block tag in your use case, ensure you clear the state manager cache between execution runs using `stateManager.clearCache()` to ensure the state manager retrieves correct values for accounts/contract/storage.
+- The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
+  Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## API
 
