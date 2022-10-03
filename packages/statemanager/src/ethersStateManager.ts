@@ -56,12 +56,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.contractCache = new Map()
     this.storageCache = new Map()
 
-    /*
-     * For a custom StateManager implementation adopt these
-     * callbacks passed to the `Cache` instantiated to perform
-     * the `get`, `put` and `delete` operations with the
-     * desired backend.
-     */
     const getCb: getCb = async (address) => {
       return this.getAccountFromProvider(address)
     }
@@ -206,12 +200,11 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   dumpStorage(address: Address): Promise<StorageDump> {
     const addressStorage = this.storageCache.get(address.toString())
-    if (addressStorage === undefined) {
-      return Promise.resolve({} as StorageDump)
-    }
     const dump: StorageDump = {}
-    for (const slot of addressStorage) {
-      dump[slot[0]] = bufferToHex(slot[1])
+    if (addressStorage !== undefined) {
+      for (const slot of addressStorage) {
+        dump[slot[0]] = bufferToHex(slot[1])
+      }
     }
     return Promise.resolve(dump)
   }
@@ -377,7 +370,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   getStateRoot = async () => {
-    return this.stateRoot !== undefined ? this.stateRoot : setLengthLeft(Buffer.from([]), 32)
+    return this.stateRoot ?? setLengthLeft(Buffer.from([]), 32)
   }
 
   setStateRoot = async (root: Buffer) => {
