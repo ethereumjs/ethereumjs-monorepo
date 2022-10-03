@@ -46,7 +46,10 @@
     "tester": "ts-node ./tests/tester --stack-size=1500",
     "tsc": "../../config/cli/ts-compile.sh"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ethereumjs/vm": "6.0.0",
+    "@ethereumjs/evm": "1.0.0"
+  },
   "devDependencies": {
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
