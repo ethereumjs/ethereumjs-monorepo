@@ -7,7 +7,7 @@ import type {
   JsonTx,
   TxData,
 } from '@ethereumjs/tx'
-import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -75,6 +75,10 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 }
 
+export interface VerkleState {
+  [key: PrefixedHexString]: PrefixedHexString
+}
+
 /**
  * A block header's data.
  */
@@ -95,6 +99,12 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
+  /**
+   * Verkle Proof Data (experimental)
+   * Fake-EIP 999001 (see Common library)
+   */
+  verkleProof?: PrefixedHexString
+  verkleState?: VerkleState
 }
 
 /**

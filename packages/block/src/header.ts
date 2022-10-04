@@ -22,8 +22,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { valuesArrayToHeaderData } from './helpers'
 
-import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader, VerkleState } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -51,6 +52,12 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
+  /**
+   * Verkle Proof Data (experimental)
+   * Fake-EIP 999001 (see Common library)
+   */
+  public readonly verkleProof?: PrefixedHexString
+  public readonly verkleState?: VerkleState
 
   public readonly _common: Common
 
@@ -154,6 +161,8 @@ export class BlockHeader {
       mixHash: zeros(32),
       nonce: zeros(8),
       baseFeePerGas: undefined,
+      verkleProof: undefined,
+      verkleState: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -176,6 +185,9 @@ export class BlockHeader {
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
     let baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
+    const verkleProof =
+      toType(headerData.verkleProof, TypeOutput.PrefixedHexString) ?? defaults.verkleProof
+    const verkleState = headerData.verkleState ?? defaults.verkleState
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -214,6 +226,8 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
+    this.verkleProof = verkleProof
+    this.verkleState = verkleState
 
     this._genericFormatValidation()
     this._validateDAOExtraData()
