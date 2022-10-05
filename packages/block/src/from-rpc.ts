@@ -1,14 +1,24 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bigIntToHex,
+  intToHex,
+  isHexPrefixed,
+  setLengthLeft,
+  toBuffer,
+  toType,
+} from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 
 import { Block } from './index'
 
 import type { BlockOptions, JsonRpcBlock } from './index'
+import type { Common } from '@ethereumjs/common'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
+import type { ethers } from 'ethers'
 
-export function normalizeTxParams(_txParams: any) {
+function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
   txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
@@ -54,4 +64,49 @@ export function blockFromRpc(
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
   return Block.fromBlockData({ header, transactions, uncleHeaders }, options)
+}
+
+/**
+ * Helper method to retrieve a block from the provider to use in the VM
+ * @param blockTag block hash or block number to be run
+ * @param common Common instance used in VM
+ * @returns the block specified by `blockTag`
+ */
+export const getBlockFromProvider = async (
+  provider: ethers.providers.JsonRpcProvider,
+  blockTag: string | bigint,
+  common: Common
+) => {
+  let blockData
+  if (typeof blockTag === 'string' && blockTag.length === 66) {
+    blockData = await provider.send('eth_getBlockByHash', [blockTag, true])
+  } else if (typeof blockTag === 'bigint') {
+    blockData = await provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+  } else if (
+    isHexPrefixed(blockTag) ||
+    blockTag === 'latest' ||
+    blockTag === 'earliest' ||
+    blockTag === 'pending'
+  ) {
+    blockData = await provider.send('eth_getBlockByNumber', [blockTag, true])
+  } else {
+    throw new Error(
+      `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
+    )
+  }
+
+  const uncleHeaders = []
+  if (blockData.uncles.length > 0) {
+    for (let x = 0; x < blockData.uncles.length; x++) {
+      const headerData = await provider.send('eth_getUncleByBlockHashAndIndex', [
+        blockData.hash,
+        intToHex(x),
+      ])
+      uncleHeaders.push(headerData)
+    }
+  }
+
+  return blockFromRpc(blockData, uncleHeaders, {
+    common,
+  })
 }

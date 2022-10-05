@@ -286,47 +286,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   }
 
   /**
-   * Helper method to retrieve a block from the provider to use in the VM
-   * @param blockTag block hash or block number to be run
-   * @param common Common instance used in VM
-   * @returns the block specified by `blockTag`
-   */
-  getBlockFromProvider = async (blockTag: string | bigint, common: Common) => {
-    let blockData
-    if (typeof blockTag === 'string' && blockTag.length === 66) {
-      blockData = await this.provider.send('eth_getBlockByHash', [blockTag, true])
-    } else if (typeof blockTag === 'bigint') {
-      blockData = await this.provider.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
-    } else if (
-      isHexPrefixed(blockTag) ||
-      blockTag === 'latest' ||
-      blockTag === 'earliest' ||
-      blockTag === 'pending'
-    ) {
-      blockData = await this.provider.send('eth_getBlockByNumber', [blockTag, true])
-    } else {
-      throw new Error(
-        `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
-      )
-    }
-
-    const uncleHeaders = []
-    if (blockData.uncles.length > 0) {
-      for (let x = 0; x < blockData.uncles.length; x++) {
-        const headerData = await this.provider.send('eth_getUncleByBlockHashAndIndex', [
-          blockData.hash,
-          intToHex(x),
-        ])
-        uncleHeaders.push(headerData)
-      }
-    }
-
-    return blockFromRpc(blockData, uncleHeaders, {
-      common,
-    })
-  }
-
-  /**
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.

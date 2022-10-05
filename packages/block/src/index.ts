@@ -1,4 +1,6 @@
 export { Block } from './block'
+export { blockFromRpc, getBlockFromProvider } from './from-rpc'
 export { BlockHeader } from './header'
+export { blockHeaderFromRpc } from './header-from-rpc'
 export { getDifficulty, valuesArrayToHeaderData } from './helpers'
 export * from './types'

@@ -1,4 +1,4 @@
-import { normalizeTxParams } from '@ethereumjs/block/dist/from-rpc'
+import { getBlockFromProvider } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
@@ -106,7 +106,7 @@ tape('Ethers State Manager API tests', async (t) => {
     t.equal(deletedSlot.length, 0, 'deleted slot from trie')
 
     try {
-      await state.getBlockFromProvider('fakeBlockTag', {} as any)
+      await getBlockFromProvider(provider, 'fakeBlockTag', {} as any)
       t.fail('should have thrown')
     } catch (err: any) {
       t.ok(
@@ -185,14 +185,15 @@ tape('runTx test: replay mainnet transactions', async (t) => {
       '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0',
     ])
 
-    const normedTx = normalizeTxParams(txData)
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
       blockTag: blockTag - 1n,
     })
+    // RPC returns `gasLimit` as `gas` so reassign to correct property name so test will pass
+    txData.gasLimit = txData.gas
     const vm = await VM.create({ common, stateManager: state })
-    const tx = TransactionFactory.fromTxData(normedTx, { common })
+    const tx = TransactionFactory.fromTxData(txData, { common })
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()
@@ -221,7 +222,7 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = await state.getBlockFromProvider(blockTag, common)
+    const block = await getBlockFromProvider(provider, blockTag, common)
     try {
       const res = await vm.runBlock({
         block,
