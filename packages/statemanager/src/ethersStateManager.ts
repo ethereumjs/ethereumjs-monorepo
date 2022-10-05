@@ -1,18 +1,15 @@
-import { blockFromRpc } from '@ethereumjs/block/dist/from-rpc'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
   bufferToBigInt,
   bufferToHex,
-  intToHex,
-  isHexPrefixed,
   setLengthLeft,
   toBuffer,
 } from '@ethereumjs/util'
-import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { ethers } from 'ethers'
 
 import { Cache } from './cache'
 
@@ -21,18 +18,17 @@ import { BaseStateManager } from '.'
 import type { Proof, StateManager } from '.'
 import type { getCb, putCb } from './cache'
 import type { StorageDump } from './interface'
-import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
 
 export interface EthersStateManagerOpts {
-  provider: string | StaticJsonRpcProvider | JsonRpcProvider
+  provider: string | ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   blockTag: bigint
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
-  private provider: StaticJsonRpcProvider | JsonRpcProvider
+  private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
@@ -41,8 +37,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   constructor(opts: EthersStateManagerOpts) {
     super({})
     if (typeof opts.provider === 'string') {
-      this.provider = new StaticJsonRpcProvider(opts.provider)
-    } else if (opts.provider instanceof JsonRpcProvider) {
+      this.provider = new ethers.providers.StaticJsonRpcProvider(opts.provider)
+    } else if (opts.provider instanceof ethers.providers.JsonRpcProvider) {
       this.provider = opts.provider
     } else {
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
