@@ -67,7 +67,8 @@ export function blockFromRpc(
 }
 
 /**
- * Helper method to retrieve a block from the provider to use in the VM
+ *  method to retrieve a block from the provider to use in the VM
+ * @param provider an Ethers JsonRPCProvider
  * @param blockTag block hash or block number to be run
  * @param common Common instance used in VM
  * @returns the block specified by `blockTag`
