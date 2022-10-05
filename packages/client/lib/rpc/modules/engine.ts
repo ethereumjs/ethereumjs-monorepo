@@ -8,7 +8,7 @@ import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { CLConnectionManager } from '../util/CLConnectionManager'
+import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
 import type { Chain } from '../../blockchain'
@@ -284,52 +284,68 @@ export class Engine {
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
 
-    this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
-      [
-        validators.object({
-          parentHash: validators.blockHash,
-          feeRecipient: validators.address,
-          stateRoot: validators.hex,
-          receiptsRoot: validators.hex,
-          logsBloom: validators.hex,
-          prevRandao: validators.hex,
-          blockNumber: validators.hex,
-          gasLimit: validators.hex,
-          gasUsed: validators.hex,
-          timestamp: validators.hex,
-          extraData: validators.hex,
-          baseFeePerGas: validators.hex,
-          blockHash: validators.blockHash,
-          transactions: validators.array(validators.hex),
-        }),
-      ],
-    ])
-
-    this.forkchoiceUpdatedV1 = middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
-      [
-        validators.object({
-          headBlockHash: validators.blockHash,
-          safeBlockHash: validators.blockHash,
-          finalizedBlockHash: validators.blockHash,
-        }),
-      ],
-      [
-        validators.optional(
+    this.newPayloadV1 = cmMiddleware(
+      middleware(this.newPayloadV1.bind(this), 1, [
+        [
           validators.object({
-            timestamp: validators.hex,
+            parentHash: validators.blockHash,
+            feeRecipient: validators.address,
+            stateRoot: validators.hex,
+            receiptsRoot: validators.hex,
+            logsBloom: validators.hex,
             prevRandao: validators.hex,
-            suggestedFeeRecipient: validators.address,
-          })
-        ),
-      ],
-    ])
+            blockNumber: validators.hex,
+            gasLimit: validators.hex,
+            gasUsed: validators.hex,
+            timestamp: validators.hex,
+            extraData: validators.hex,
+            baseFeePerGas: validators.hex,
+            blockHash: validators.blockHash,
+            transactions: validators.array(validators.hex),
+          }),
+        ],
+      ]),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
 
-    this.getPayloadV1 = middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]])
+    this.forkchoiceUpdatedV1 = cmMiddleware(
+      middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
+        [
+          validators.object({
+            headBlockHash: validators.blockHash,
+            safeBlockHash: validators.blockHash,
+            finalizedBlockHash: validators.blockHash,
+          }),
+        ],
+        [
+          validators.optional(
+            validators.object({
+              timestamp: validators.hex,
+              prevRandao: validators.hex,
+              suggestedFeeRecipient: validators.address,
+            })
+          ),
+        ],
+      ]),
+      ([state], response, error) => {
+        this.connectionManager.lastForkchoiceUpdate({
+          state,
+          response,
+          headBlock: response?.headBlock,
+          error,
+        })
+        // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
+        delete response?.headBlock
+      }
+    )
 
-    this.exchangeTransitionConfigurationV1 = middleware(
-      this.exchangeTransitionConfigurationV1.bind(this),
-      1,
-      [
+    this.getPayloadV1 = cmMiddleware(
+      middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.exchangeTransitionConfigurationV1 = cmMiddleware(
+      middleware(this.exchangeTransitionConfigurationV1.bind(this), 1, [
         [
           validators.object({
             terminalTotalDifficulty: validators.hex,
@@ -337,7 +353,8 @@ export class Engine {
             terminalBlockNumber: validators.hex,
           }),
         ],
-      ]
+      ]),
+      () => this.connectionManager.updateStatus()
     )
   }
 
@@ -371,7 +388,6 @@ export class Engine {
         const latestValidHash = await validHash(toBuffer(payload.parentHash), this.chain)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
-      this.connectionManager.lastNewPayload({ payload, response })
       return response
     }
 
@@ -384,7 +400,6 @@ export class Engine {
           latestValidHash: blockHash,
           validationError: null,
         }
-        this.connectionManager.lastNewPayload({ payload: params[0], response })
         return response
       }
     }
@@ -404,7 +419,6 @@ export class Engine {
             validationError: null,
             latestValidHash: bufferToHex(zeros(32)),
           }
-          this.connectionManager.lastNewPayload({ payload: params[0], response })
           return response
         }
       }
@@ -421,7 +435,6 @@ export class Engine {
         this.remoteBlocks.set(block.hash().toString('hex'), block)
       }
       const response = { status, validationError: null, latestValidHash: null }
-      this.connectionManager.lastNewPayload({ payload: params[0], response })
       return response
     }
 
@@ -431,7 +444,6 @@ export class Engine {
       blocks = await recursivelyFindParents(vmHead.hash(), block.header.parentHash, this.chain)
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
-      this.connectionManager.lastNewPayload({ payload: params[0], response })
       return response
     }
 
@@ -452,7 +464,6 @@ export class Engine {
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
-      this.connectionManager.lastNewPayload({ payload: params[0], response })
       return response
     }
 
@@ -461,7 +472,6 @@ export class Engine {
       latestValidHash: bufferToHex(block.hash()),
       validationError: null,
     }
-    this.connectionManager.lastNewPayload({ payload: params[0], response })
     return response
   }
 
@@ -481,10 +491,11 @@ export class Engine {
    *        INVALID
    *        SYNCING
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
+   *   3. headBlock: Block|undefined - Block corresponding to headBlockHash if found
    */
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
-  ): Promise<ForkchoiceResponseV1> {
+  ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
@@ -506,10 +517,6 @@ export class Engine {
           validationError: null,
         }
         const response = { payloadStatus, payloadId: null }
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response,
-        })
         return response
       } else {
         this.config.logger.debug(
@@ -536,10 +543,6 @@ export class Engine {
           },
           payloadId: null,
         }
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response,
-        })
         return response
       }
     }
@@ -566,10 +569,6 @@ export class Engine {
             validationError: null,
           }
           const response = { payloadStatus, payloadId: null }
-          this.connectionManager.lastForkchoiceUpdate({
-            state: params[0],
-            response,
-          })
           return response
         }
       }
@@ -603,11 +602,6 @@ export class Engine {
         await this.chain.getBlock(safe)
       } catch (error) {
         const message = 'safe block not available'
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response: undefined,
-          error: message,
-        })
         throw {
           code: INVALID_PARAMS,
           message,
@@ -639,23 +633,13 @@ export class Engine {
       })
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bufferToHex(payloadId) }
-      this.connectionManager.lastForkchoiceUpdate({
-        state: params[0],
-        response,
-        headBlock,
-      })
+      const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
       return response
     }
 
     const latestValidHash = await validHash(headBlock.hash(), this.chain)
     const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-    const response = { payloadStatus, payloadId: null }
-    this.connectionManager.lastForkchoiceUpdate({
-      state: params[0],
-      response,
-      headBlock,
-    })
+    const response = { payloadStatus, payloadId: null, headBlock }
     return response
   }
 
@@ -668,7 +652,6 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   async getPayloadV1(params: [string]) {
-    this.connectionManager.updateStatus()
     const payloadId = toBuffer(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -697,7 +680,6 @@ export class Engine {
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
-    this.connectionManager.updateStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
     if (ttd === undefined || ttd === null) {

@@ -47,6 +47,6 @@
     "@ethereumjs/util": "^8.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "functional-red-black-tree": "^1.0.1"
+    "js-sdsl": "^4.1.4"
   }
 }

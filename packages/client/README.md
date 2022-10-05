@@ -69,6 +69,8 @@ To see a help page with the full list of client options available run:
 ethereumjs --help
 ```
 
+For the networks that have transitioned to PoS aka **merged** (all Ethereum networks have been _merged_), checkout how to [run Ethereumjs in the PoS configuration](docs/usage/RunAsElClient.md).
+
 ### Supported Networks
 
 The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library and supports all networks support by `Common`.
