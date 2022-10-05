@@ -103,11 +103,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    this._validateNotArray({ chainId, v })
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
     const emptyAccessList: AccessList = []
-
-    BaseTransaction._validateNotArray({ chainId, v })
 
     return new AccessListEIP2930Transaction(
       {

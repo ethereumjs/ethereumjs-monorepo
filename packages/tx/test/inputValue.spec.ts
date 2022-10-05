@@ -149,25 +149,104 @@ tape('[Transaction Input Values]', function (t) {
 
 tape('[Invalid Array Input values]', (t) => {
   const txTypes = [0x0, 0x1, 0x2]
-  for (const txType of txTypes) {
-    const tx = TransactionFactory.fromTxData({ type: txType })
-    const rawValues = tx.raw()
-    for (let x = 0; x < rawValues.length; x++) {
-      rawValues[0] = <any>[1, 2, 3]
-      switch (txType) {
-        case 0:
-          t.throws(() => Transaction.fromValuesArray(rawValues as TxValuesArray))
-          break
-        case 1:
-          t.throws(() =>
-            AccessListEIP2930Transaction.fromValuesArray(rawValues as AccessListEIP2930ValuesArray)
-          )
-          break
-        case 2:
-          t.throws(() =>
-            FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
-          )
-          break
+  for (const signed of [false, true]) {
+    for (const txType of txTypes) {
+      let tx = TransactionFactory.fromTxData({ type: txType })
+      if (signed) {
+        tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+      }
+      const rawValues = tx.raw()
+      for (let x = 0; x < rawValues.length; x++) {
+        rawValues[x] = <any>[1, 2, 3]
+        switch (txType) {
+          case 0:
+            t.throws(() => Transaction.fromValuesArray(rawValues as TxValuesArray))
+            break
+          case 1:
+            t.throws(() =>
+              AccessListEIP2930Transaction.fromValuesArray(
+                rawValues as AccessListEIP2930ValuesArray
+              )
+            )
+            break
+          case 2:
+            t.throws(() =>
+              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+            )
+            break
+        }
+      }
+    }
+  }
+  t.end()
+})
+
+tape('[Invalid Access Lists]', (t) => {
+  const txTypes = [0x1, 0x2]
+  const invalidAccessLists = [
+    [[]], // does not have an address and does not have slots
+    [[[], []]], // the address is an array
+    [['0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae']], // there is no storage slot array
+    [
+      [
+        '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+        ['0x0000000000000000000000000000000000000000000000000000000000000003', []],
+      ],
+    ], // one of the slots is an array
+    [
+      [
+        '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+        ['0x0000000000000000000000000000000000000000000000000000000000000003'],
+        '0xab',
+      ],
+    ], // extra field
+    [
+      '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+      ['0x0000000000000000000000000000000000000000000000000000000000000003'],
+    ], // account/slot needs to be encoded in a deeper array layer
+  ]
+  for (const signed of [false, true]) {
+    for (const txType of txTypes) {
+      for (const invalidAccessListItem of invalidAccessLists) {
+        let tx: any
+        try {
+          tx = TransactionFactory.fromTxData({
+            type: txType,
+            accessList: <any>invalidAccessListItem,
+          })
+          if (signed) {
+            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+          }
+          t.fail('did not fail on `fromTxData`')
+        } catch (e: any) {
+          t.pass('failed ok on decoding in `fromTxData`')
+          tx = TransactionFactory.fromTxData({ type: txType })
+          if (signed) {
+            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+          }
+        }
+        const rawValues = tx!.raw()
+
+        if (txType === 1 && rawValues[7].length === 0) {
+          rawValues[7] = invalidAccessListItem
+        } else if (txType === 2 && rawValues[8].length === 0) {
+          rawValues[8] = invalidAccessListItem
+        }
+
+        switch (txType) {
+          case 1:
+            t.throws(() =>
+              AccessListEIP2930Transaction.fromValuesArray(
+                rawValues as AccessListEIP2930ValuesArray
+              )
+            )
+            break
+          case 2:
+            t.throws(() =>
+              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+            )
+            break
+        }
       }
     }
   }

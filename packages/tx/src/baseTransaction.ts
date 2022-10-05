@@ -453,6 +453,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   protected static _validateNotArray(values: { [key: string]: any }) {
     const txDataKeys = [
+      'nonce',
       'gasPrice',
       'gasLimit',
       'to',
@@ -464,9 +465,10 @@ export abstract class BaseTransaction<TransactionObject> {
       'type',
       'baseFee',
       'maxFeePerGas',
+      'chainId',
     ]
     for (const [key, value] of Object.entries(values)) {
-      if (key in txDataKeys) {
+      if (txDataKeys.includes(key)) {
         if (Array.isArray(value)) {
           throw new Error(`${key} cannot be an array`)
         }

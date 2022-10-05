@@ -117,9 +117,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       s,
     ] = values
 
+    this._validateNotArray({ chainId, v })
     validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
-
-    BaseTransaction._validateNotArray({ chainId, v })
 
     return new FeeMarketEIP1559Transaction(
       {
