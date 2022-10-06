@@ -395,4 +395,78 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     st.end()
   })
+
+  t.test('Should correctly apply hardfork changes', function (st: tape.Test) {
+    // For sepolia MergeForkIdTransition happens AFTER merge
+    let c = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
+    st.equal(
+      c['HARDFORK_CHANGES'][11][0],
+      Hardfork.Merge,
+      'should correctly apply hardfork changes'
+    )
+    st.equal(
+      c['HARDFORK_CHANGES'][12][0],
+      Hardfork.MergeForkIdTransition,
+      'should correctly apply hardfork changes'
+    )
+
+    // Should give correct ConsensusType pre and post merge
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfWork,
+      'should provide the correct initial chain consensus type'
+    )
+    c.setHardfork(Hardfork.Merge)
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfStake,
+      `should switch to ProofOfStake consensus on merge`
+    )
+    c.setHardfork(Hardfork.MergeForkIdTransition)
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfStake,
+      `should stay on ProofOfStake consensus post merge`
+    )
+
+    // For kiln MergeForkIdTransition happens BEFORE Merge
+    const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
+    c = Common.fromGethGenesis(json, {
+      chain: 'kiln',
+    })
+
+    // MergeForkIdTransition change should be before Merge
+    st.equal(
+      c['HARDFORK_CHANGES'][10][0],
+      Hardfork.MergeForkIdTransition,
+      'should correctly apply hardfork changes'
+    )
+    st.equal(
+      c['HARDFORK_CHANGES'][11][0],
+      Hardfork.Merge,
+      'should correctly apply hardfork changes'
+    )
+
+    // Should give correct ConsensusType pre and post merge
+    c.setHardfork(Hardfork.London)
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfWork,
+      'should provide the correct initial chain consensus type'
+    )
+    c.setHardfork(Hardfork.Merge)
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfStake,
+      `should switch to ProofOfStake consensus on merge`
+    )
+    c.setHardfork(Hardfork.MergeForkIdTransition)
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfWork,
+      `should give pow consensus as MergeForkIdTransition is pre-merge`
+    )
+
+    st.end()
+  })
 })
