@@ -14,9 +14,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
+import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-
-import { blockFromRpc } from '.'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
 import type { Common } from '@ethereumjs/common'
