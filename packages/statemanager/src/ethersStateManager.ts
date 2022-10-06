@@ -78,11 +78,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param blockTag - the new block tag to use when querying the provider
    */
   setBlockTag(blockTag: bigint): void {
-    if (typeof blockTag === 'bigint') {
-      this.blockTag = bigIntToHex(blockTag)
-    } else {
-      this.blockTag = blockTag
-    }
+    this.blockTag = bigIntToHex(blockTag)
     this.clearCache()
   }
 

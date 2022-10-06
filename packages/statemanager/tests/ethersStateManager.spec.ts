@@ -39,7 +39,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   t.end()
 })
 
-tape('Ethers State Manager API tests', async (t) => {
+tape.only('Ethers State Manager API tests', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -104,6 +104,9 @@ tape('Ethers State Manager API tests', async (t) => {
     )
 
     t.equal(deletedSlot.length, 0, 'deleted slot from trie')
+
+    await state.deleteAccount(vitalikDotEth)
+    t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
 
     try {
       await Block.fromEthersProvider(provider, 'fakeBlockTag', {} as any)
