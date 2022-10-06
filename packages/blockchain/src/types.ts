@@ -37,7 +37,12 @@ export interface BlockchainInterface {
    * @param maxBlocks - optional maximum number of blocks to iterate through
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number>
+  iterator(
+    name: string,
+    onBlock: OnBlock,
+    maxBlocks?: number,
+    releaseLockOnCallback?: boolean
+  ): Promise<number>
 
   /**
    * Returns a copy of the blockchain
