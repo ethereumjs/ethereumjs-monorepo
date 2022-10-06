@@ -63,11 +63,14 @@ The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or on
 #### Points on usage:
 
 - If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
+- Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+
+#### Potential gotchas to watch out for
+
 - If you plan to leverage data from historical blocks, please ensure your provider supports retrieving state values from that block. Otherwise, you will encounter RPC errors trying when using this state manager.
-- If you update the block tag (block number or `latest`/`earliest`/`pending`) using `stateManager.setBlockTag()`, the cached accounts/storage/contract code will be cleared and retrieved from the provider at the specified block tag.
-- If you are using the `latest`/`pending` block tag in your use case, ensure you clear the state manager cache between execution runs using `stateManager.clearCache()` to ensure the state manager retrieves correct values for accounts/contract/storage.
 - The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
-  Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+- You cannot use `latest`/`earliest`/`pending` as a block tag and must specify an exact block number for the provider.
+- If you are replaying mainnet transactions and an account is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
 
 ## API
 
