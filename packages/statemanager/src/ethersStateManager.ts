@@ -208,7 +208,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     log(`Verify if ${address.toString()} exists`)
 
     const localAccount = this._cache.get(address)
-    if (!localAccount.isEmpty()) return false
+    if (!localAccount.isEmpty()) return true
     // Get merkle proof for `address` from provider
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 

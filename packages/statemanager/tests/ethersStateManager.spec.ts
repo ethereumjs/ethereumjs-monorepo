@@ -182,9 +182,9 @@ tape('runTx test: replay mainnet transactions', async (t) => {
         ? new JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
 
-    const blockTag = 15496077n
+    const blockTag = 2000004n
     common.setHardforkByBlockNumber(blockTag)
-    const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
+    const txHash = '0x3e7cd21c60548a666c3e01ccee8c504046eb9877a6e26d61446abedde0da687d'
     const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
     const state = new EthersStateManager({
       provider,
@@ -231,5 +231,9 @@ tape('runBlock test', async (t) => {
     } catch (err: any) {
       t.fail(`should have successfully ran block; got error ${err.message}`)
     }
+    const account = await state.accountExists(
+      Address.fromString('0xfa52274dd61e1643d2205169732f29114bc240b3')
+    )
+    console.log(account)
   }
 })
