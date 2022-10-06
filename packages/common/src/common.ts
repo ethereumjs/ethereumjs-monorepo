@@ -9,7 +9,7 @@ import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips'
 import { Chain, CustomChain, Hardfork } from './enums'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
+import { hardforks as HARDFORK_SPECS } from './hardforks'
 import { parseGethGenesis } from './utils'
 
 import type { ConsensusAlgorithm, ConsensusType } from './enums'
@@ -29,6 +29,8 @@ import type {
 } from './types'
 import type { BigIntLike } from '@ethereumjs/util'
 
+type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
+type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -44,6 +46,8 @@ export class Common extends EventEmitter {
   private _hardfork: string | Hardfork
   private _eips: number[] = []
   private _customChains: ChainConfig[]
+
+  private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -214,6 +218,11 @@ export class Common extends EventEmitter {
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
+    // Assign hardfork changes in the sequence of the applied hardforks
+    this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
+      hf.name as HardforkSpecKeys,
+      HARDFORK_SPECS[hf.name as HardforkSpecKeys],
+    ])
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -262,7 +271,7 @@ export class Common extends EventEmitter {
    */
   setHardfork(hardfork: string | Hardfork): void {
     let existing = false
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
@@ -432,7 +441,7 @@ export class Common extends EventEmitter {
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
@@ -504,7 +513,7 @@ export class Common extends EventEmitter {
     if (this.eips().includes(eip)) {
       return true
     }
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
       if (this.gteHardfork(hf['name']) && 'eips' in hf) {
         if ((hf['eips'] as number[]).includes(eip)) {
@@ -591,7 +600,7 @@ export class Common extends EventEmitter {
    * @returns Block number or null if unscheduled
    */
   eipBlock(eip: number): bigint | null {
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -834,7 +843,7 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['type']
       }
@@ -856,7 +865,7 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['algorithm']
       }
@@ -883,7 +892,7 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
         value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
