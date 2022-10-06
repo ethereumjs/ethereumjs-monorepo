@@ -1,11 +1,6 @@
 import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
 
-import { TransactionFactory } from './transactionFactory'
-
-import type { TxOptions } from './types'
-import type { ethers } from 'ethers'
-
-const normalizeTxParams = (_txParams: any) => {
+export const normalizeTxParams = (_txParams: any) => {
   const txParams = Object.assign({}, _txParams)
 
   txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
@@ -24,14 +19,4 @@ const normalizeTxParams = (_txParams: any) => {
   txParams.v = toType(txParams.v, TypeOutput.BigInt)
 
   return txParams
-}
-
-export const txFromRpc = async (
-  provider: ethers.providers.JsonRpcProvider,
-  txHash: string,
-  txOpts?: TxOptions
-) => {
-  const txData = await provider.send('eth_getTransactionByHash', [txHash])
-  const normedTx = normalizeTxParams(txData)
-  return TransactionFactory.fromTxData(normedTx, txOpts)
 }

@@ -1,22 +1,12 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  TypeOutput,
-  bigIntToHex,
-  intToHex,
-  isHexPrefixed,
-  setLengthLeft,
-  toBuffer,
-  toType,
-} from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 
 import { Block } from './index'
 
 import type { BlockOptions, JsonRpcBlock } from './index'
-import type { Common } from '@ethereumjs/common'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
-import type { ethers } from 'ethers'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
