@@ -24,7 +24,7 @@ const log = debug('statemanager')
 
 export interface EthersStateManagerOpts {
   provider: string | ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
-  blockTag: bigint
+  blockTag: bigint | 'earliest'
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
@@ -44,7 +44,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
     }
 
-    this.blockTag = bigIntToHex(opts.blockTag)
+    this.blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
     this.contractCache = new Map()
     this.storageCache = new Map()
@@ -77,8 +77,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * internal cache.
    * @param blockTag - the new block tag to use when querying the provider
    */
-  setBlockTag(blockTag: bigint): void {
-    this.blockTag = bigIntToHex(blockTag)
+  setBlockTag(blockTag: bigint | 'earliest'): void {
+    this.blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
     this.clearCache()
   }
 

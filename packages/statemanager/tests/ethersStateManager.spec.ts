@@ -39,7 +39,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   t.end()
 })
 
-tape.only('Ethers State Manager API tests', async (t) => {
+tape('Ethers State Manager API tests', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -135,6 +135,8 @@ tape.only('Ethers State Manager API tests', async (t) => {
     t.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
     state.setBlockTag(5n)
     t.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+    state.setBlockTag('earliest')
+    t.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
     t.end()
   }
 })
@@ -223,7 +225,7 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = await Block.fromEthersProvider(provider, blockTag, common)
+    const block = await Block.fromEthersProvider(provider, blockTag, { common })
     try {
       const res = await vm.runBlock({
         block,
