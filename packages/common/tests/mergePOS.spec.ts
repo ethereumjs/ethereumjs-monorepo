@@ -181,12 +181,23 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
 
   t.test('Pure POS testnet', function (st: tape.Test) {
     const customChains = [testnetPOS]
-    const c = new Common({ chain: 'testnetPOS', hardfork: Hardfork.Istanbul, customChains })
+    const c = new Common({ chain: 'testnetPOS', hardfork: Hardfork.Chainstart, customChains })
 
     st.equal(c.hardforkTTD(Hardfork.Chainstart), BigInt(0), 'should get the HF total difficulty')
 
     const msg = 'block number > last HF block number set, TD set (0) and equal'
     st.equal(c.getHardforkByBlockNumber(5, 0), 'shanghai', msg)
+    st.end()
+  })
+
+  t.test('Should fail setting invalid hardfork', function (st: tape.Test) {
+    const customChains = [testnetPOS]
+    try {
+      new Common({ chain: 'testnetPOS', hardfork: Hardfork.Istanbul, customChains })
+      st.fail(`should have failed setting absent hardfork instanbul`)
+    } catch (e) {
+      st.pass(`failed setting absent hardfork instanbul`)
+    }
     st.end()
   })
 
