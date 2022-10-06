@@ -17,7 +17,7 @@ import { ethers } from 'ethers'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -154,21 +154,21 @@ export class Block {
    * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
    * @param options - An object describing the blockchain
    */
-  public static fromRPC(blockData: any, uncles?: any[], opts?: BlockOptions) {
+  public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
     return blockFromRpc(blockData, uncles, opts)
   }
 
   /**
-   *  method to retrieve a block from the provider to use in the VM
+   *  Method to retrieve a block from the provider and format as a {@link Block}
    * @param provider an Ethers JsonRPCProvider
    * @param blockTag block hash or block number to be run
-   * @param common Common instance used in VM
+   * @param opts {@link BlockOptions}
    * @returns the block specified by `blockTag`
    */
   public static fromEthersProvider = async (
     provider: ethers.providers.JsonRpcProvider | string,
     blockTag: string | bigint,
-    common: Common
+    opts: BlockOptions
   ) => {
     let blockData
     const prov =
@@ -201,9 +201,7 @@ export class Block {
       }
     }
 
-    return blockFromRpc(blockData, uncleHeaders, {
-      common,
-    })
+    return blockFromRpc(blockData, uncleHeaders, opts)
   }
 
   /**
