@@ -175,10 +175,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    const notArray = { ...txData }
-    delete notArray.accessList
-
-    BaseTransaction._validateNotArray(notArray)
+    BaseTransaction._validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')

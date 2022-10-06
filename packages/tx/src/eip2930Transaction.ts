@@ -159,10 +159,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
       gasPrice: this.gasPrice,
     })
 
-    const notArray = { ...txData }
-    delete notArray.accessList
-
-    BaseTransaction._validateNotArray(notArray)
+    BaseTransaction._validateNotArray(txData)
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
