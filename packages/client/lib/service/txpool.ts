@@ -638,7 +638,7 @@ export class TxPool {
    *
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(baseFee?: bigint) {
+  async txsByPriceAndNonce(vm: VM, baseFee?: bigint) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
@@ -647,7 +647,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await this.vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      const { nonce } = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
