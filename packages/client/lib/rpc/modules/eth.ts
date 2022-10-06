@@ -550,6 +550,7 @@ export class Eth {
       console.log(block.transactions)
       return bigIntToHex(BigInt(block.transactions.length))
     } catch (err) {
+      console.log(err)
       return err
     }
   }
