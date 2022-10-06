@@ -65,7 +65,6 @@
     "@ethereumjs/trie": "^5.0.0",
     "@ethereumjs/tx": "^4.0.0",
     "@ethereumjs/util": "^8.0.0",
-    "@types/async-eventemitter": "^0.2.1",
     "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",

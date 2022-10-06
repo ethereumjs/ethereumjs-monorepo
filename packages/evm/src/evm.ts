@@ -9,7 +9,7 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import * as AsyncEventEmitter from 'async-eventemitter'
+import { AsyncEventEmitter } from 'async-eventemitter'
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
