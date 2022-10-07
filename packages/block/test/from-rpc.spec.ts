@@ -167,7 +167,7 @@ tape('[fromEthersProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const provider = new MockProvider()
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
-  const block = await Block.fromEthersProvider(provider, blockHash, common)
+  const block = await Block.fromEthersProvider(provider, blockHash, { common })
   t.equal(
     '0x' + block.hash().toString('hex'),
     blockHash,
