@@ -1,6 +1,8 @@
 import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
 
-export const normalizeTxParams = (_txParams: any) => {
+import type { TxData } from './types'
+
+export const normalizeTxParams = (_txParams: any): TxData => {
   const txParams = Object.assign({}, _txParams)
 
   txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
