@@ -2,7 +2,7 @@ module.exports = function (config) {
   config.set({
     browserNoActivityTimeout: 60000,
     frameworks: ['karma-typescript', 'tap'],
-    files: ['./tests/**/*.ts', './src/**/*.ts'],
+    files: ['./test/**/*.ts', './src/**/*.ts'],
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
     },
