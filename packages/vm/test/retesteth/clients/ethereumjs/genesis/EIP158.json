@@ -1,0 +1,7 @@
+{
+  "params": {
+    "fork": "EIP158",
+    "homesteadForkBlock": "0x00"
+  },
+  "accounts": {}
+}
