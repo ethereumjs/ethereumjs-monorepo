@@ -92,18 +92,44 @@ tape('Ethers State Manager API tests', async (t) => {
     )
     t.ok(slotValue.equals(Buffer.from('abcd')), 'should retrieve slot 2 value')
 
+    // Verify that provider is not called for cached data
+    ;(provider as any).getStorageAt = function () {
+      throw new Error('should not be called!')
+    }
+
+    t.doesNotThrow(
+      async () =>
+        state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBuffer(2n), 32)),
+      'should not call provider.getStorageAt'
+    )
+
     await state.putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(2n), 32),
       Buffer.from('')
     )
 
+    // Verify that provider is not called
+    ;(state as any).getAccountFromProvider = function () {
+      throw new Error('should not have called this!')
+    }
+    t.doesNotThrow(
+      async () => state.getAccount(vitalikDotEth),
+      'does not call getAccountFromProvider'
+    )
+
+    try {
+      await state.getAccount(Address.fromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
+    } catch (err) {
+      t.pass('calls getAccountFromProvider for non-cached account')
+    }
+
     const deletedSlot = await state.getContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
 
-    t.equal(deletedSlot.length, 0, 'deleted slot from trie')
+    t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
     t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
