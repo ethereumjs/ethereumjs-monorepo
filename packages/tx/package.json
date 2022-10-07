@@ -46,7 +46,7 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser && npm run test:txTests",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts",
+    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts'",
     "test:txTests": "tape -r ts-node/register ./test/transactionRunner.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
