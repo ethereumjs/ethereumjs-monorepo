@@ -26,6 +26,8 @@
   ],
   "scripts": {
     "clean": "../../config/cli/clean-package.sh",
+    "coverage": "c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run coverage:test",
+    "coverage:test": "npm run test:API",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -33,6 +35,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "tape": "tape -r ts-node/register --stack-size=1500",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
+    "test:API": "npm run tape -- './test/api/**/*.spec.ts'",
     "test:blockchain": "npm run tester -- --blockchain",
     "test:blockchain:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
     "test:blockchain:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
