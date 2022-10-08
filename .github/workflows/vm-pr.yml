@@ -40,7 +40,7 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-  vm-state:
+  evm-vm-tests-state:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -60,8 +60,9 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  vm-state-extended:
+  evm-vm-tests-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
     runs-on: ubuntu-latest
     strategy:
@@ -97,7 +98,7 @@ jobs:
         working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
 
-  vm-blockchain:
+  evm-vm-tests-blockchain:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -134,7 +135,7 @@ jobs:
       - run: npm run test:blockchain -- ${{ matrix.args }}
         working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  vm-blockchain-extended:
+  evm-vm-tests-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
     runs-on: ubuntu-latest
     strategy:
