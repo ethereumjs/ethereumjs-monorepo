@@ -5,7 +5,7 @@ import { Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
+import { EEI } from '../../../../vm/src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
@@ -68,9 +68,9 @@ function parseTestCases(
 async function runTestCase(options: any, testData: any, t: tape.Test) {
   let VM
   if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
+    ;({ VM } = require('../../../../vm/dist'))
   } else {
-    ;({ VM } = require('../../../src'))
+    ;({ VM } = require('../../../../vm/src'))
   }
   const begin = Date.now()
   const common = options.common

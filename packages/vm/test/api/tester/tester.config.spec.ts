@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 
-import { getCommon } from '../../tester/config'
+import { getCommon } from '../../../../evm-vm-tests/test/tester/config'
 
 tape('bloom', (t: tape.Test) => {
   t.test('should initialize common with the right hardfork', (st) => {
