@@ -20,4 +20,4 @@ Configure and run `retesteth`:
 
 `./retesteth -t GeneralStateTests -- --testpath $ETHEREUM_TESTPATH --datadir $RETESTETH_CLIENTS --clients "ethereumjs"`
 
-Here `$ETHEREUM_TESTPATH` should be set to where `ethereum/tests` root folder is installed (so after cloning it). `$RETESTETH_CLIENTS` should be set to `[ethereumjs-monorepo root]/packages/vm/tests/retesteth/clients` (use the absolute path from root when running retesteth from another folder).
+Here `$ETHEREUM_TESTPATH` should be set to where `ethereum/tests` root folder is installed (so after cloning it). `$RETESTETH_CLIENTS` should be set to `[ethereumjs-monorepo root]/packages/vm/test/retesteth/clients` (use the absolute path from root when running retesteth from another folder).
