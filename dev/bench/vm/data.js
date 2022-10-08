@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1665216460034,
+  "lastUpdate": 1665254389677,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1e0de28380e5e73e92be47895f6c79ffc90392c4",
-          "message": "Final Breaking Releases (#2270)\n\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (RLP v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Util v8.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Common v3.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Trie v5.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Tx v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Block v4.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Blockchain v6.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Ethash v2.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (StateManager v1.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (Devp2p v5.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (EVM v1.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version, updated upstream dependency versions (VM v6.0.0)\r\n\r\n* New CHANGELOG entry, bumped library version (Client v0.6.3)\r\n\r\n* Updated package-lock.json",
-          "timestamp": "2022-09-06T11:28:30+02:00",
-          "tree_id": "ee6a5e88b9a3f6d8b80026a176de0667a4054e0f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1e0de28380e5e73e92be47895f6c79ffc90392c4"
-        },
-        "date": 1662456695732,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 11785,
-            "range": "±3.63%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12035,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 11597,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 11271,
-            "range": "±7.90%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12201,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 18747,
             "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "113477227+ryptdec@users.noreply.github.com",
+            "name": "Rypt Dec",
+            "username": "ryptdec"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eeca0cb1f534031cfd4a3c71866cd6d4c2475165",
+          "message": "Fixing a typo in example3b.js and Readme.md for merkle_patricia_trees (#2340)\n\n* fix(trie): changing trie.root v4 => trie.root() >= v5\r\n\r\n* fix(trie): changing trie.root v4 => trie.root() >= v5\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2022-10-08T14:32:55-04:00",
+          "tree_id": "88a21db0d4afb7e48181899e7f9ecb208ae999ca",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eeca0cb1f534031cfd4a3c71866cd6d4c2475165"
+        },
+        "date": 1665254389029,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18558,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17892,
+            "range": "±5.22%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17223,
+            "range": "±6.85%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17927,
+            "range": "±6.99%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17776,
+            "range": "±2.17%",
             "unit": "ops/sec",
             "extra": "83 samples"
           }
