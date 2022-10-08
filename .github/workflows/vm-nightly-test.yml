@@ -54,6 +54,8 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:allForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
@@ -76,7 +78,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain:allForks
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
   test-vm-slow:
     runs-on: ubuntu-latest

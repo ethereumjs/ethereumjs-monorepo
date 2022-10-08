@@ -1,0 +1,155 @@
+
+Skip to content
+Pulls
+Issues
+Marketplace
+Explore
+@ScottyPoi
+ethereumjs /
+ethereumjs-monorepo
+Public
+
+Code
+Issues 98
+Pull requests 43
+Discussions
+Actions
+Projects
+Security
+
+More
+evm-vm-tests #2317
+Open
+ScottyPoi wants to merge 22 commits into master from evm-vm-tests
++1,189 −185
+Conversation 8
+Commits 22
+Checks 38
+Files changed 74
+Show file tree
+Hide file tree
+File filter
+Edit github workflow to run state and blockchain tests from evm-vm-tests
+
+    evm-vm-tests (#2317) 
+
+@ScottyPoi
+ScottyPoi committed 7 days ago
+commit e5d1cd8a9e66970fa54681138b679f8d7a37febd
+51
+.github/workflows/evm-vm-tests-build.yml
+@@ -0,0 +1,51 @@
+name: evm-vm-tests
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+
+env:
+  cwd: ${{github.workspace}}/packages/evm-vm-tests
+
+defaults:
+  run:
+    working-directory: packages/evm-vm-tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test-vm-state:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:selectedForks
+
+  test-vm-blockchain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:blockchain
+2
+.github/workflows/vm-build.yml
+@@ -56,6 +56,7 @@ jobs:
+        working-directory: ${{github.workspace}}
+        working-directory: ${{github.workspace}}
+
+
+      - run: npm run test:state:selectedForks
+      - run: npm run test:state:selectedForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+
+
+  test-vm-blockchain:
+  test-vm-blockchain:
+    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+@@ -73,6 +74,7 @@ jobs:
+        working-directory: ${{github.workspace}}
+        working-directory: ${{github.workspace}}
+
+
+      - run: npm run test:blockchain
+      - run: npm run test:blockchain
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+
+
+  vm-benchmarks:
+  vm-benchmarks:
+    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+1
+.github/workflows/vm-pr.yml
+@@ -94,6 +94,7 @@ jobs:
+        working-directory: ${{github.workspace}}
+        working-directory: ${{github.workspace}}
+
+
+      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+
+
+  vm-blockchain:
+  vm-blockchain:
+    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+    Contact GitHub
+    Pricing
+    API
+    Training
+    Blog
+    About
+
+evm-vm-tests by ScottyPoi · Pull Request #2317 · ethereumjs/ethereumjs-monorepo

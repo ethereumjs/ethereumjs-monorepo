@@ -94,6 +94,8 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
+
 
   vm-blockchain:
     runs-on: ubuntu-latest
@@ -130,6 +132,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
   vm-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -171,6 +174,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
   vm-benchmarks:
     runs-on: ubuntu-latest
