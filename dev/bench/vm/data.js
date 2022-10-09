@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1665254389677,
+  "lastUpdate": 1665333839398,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5ea6f4a070b45186ae9f420e01854a38bce8998b",
-          "message": "client: Fix snap protocol encoding decoding as per spec (#2269)",
-          "timestamp": "2022-09-07T16:41:16+05:30",
-          "tree_id": "f90b3d095a075c51971601dc43806fa1d26f5b71",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5ea6f4a070b45186ae9f420e01854a38bce8998b"
-        },
-        "date": 1662549712509,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18635,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17806,
-            "range": "±8.27%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17688,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16140,
-            "range": "±10.10%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18759,
-            "range": "±1.71%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.17%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "12867336+HelloRickey@users.noreply.github.com",
+            "name": "rickey",
+            "username": "HelloRickey"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f5821adda073be023c336a41954fe41e864732b2",
+          "message": "Update README.md (#2342)\n\nUpdated link for Recursive Length Prefix",
+          "timestamp": "2022-10-09T12:41:27-04:00",
+          "tree_id": "eeda33b34fcf362a4d7d88dd526708713525c375",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5821adda073be023c336a41954fe41e864732b2"
+        },
+        "date": 1665333838400,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19301,
+            "range": "±2.77%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18802,
+            "range": "±4.73%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17438,
+            "range": "±7.24%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19395,
+            "range": "±1.29%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18745,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
