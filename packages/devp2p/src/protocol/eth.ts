@@ -53,12 +53,12 @@ export class ETH extends Protocol {
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
 
-  
-
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
     const messageName = this.getMsgPrefix(code)
-    const debugMsg = this.DEBUG ?  `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}` : undefined;
+    const debugMsg = this.DEBUG
+      ? `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+      : undefined
 
     if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
       const logData = formatLogData(data.toString('hex'), this._verbose)
@@ -66,18 +66,18 @@ export class ETH extends Protocol {
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS: {
+        assertEq(
+          this._peerStatus,
+          null,
+          'Uncontrolled status message',
+          this.debug.bind(this),
+          'STATUS'
+        )
+        this._peerStatus = payload as ETH.StatusMsg
+        const peerStatusMsg = `${
+          this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
+        }`
         if (this.DEBUG) {
-          assertEq(
-            this._peerStatus,
-            null,
-            'Uncontrolled status message',
-            this.debug.bind(this),
-            'STATUS'
-          )
-          this._peerStatus = payload as ETH.StatusMsg
-          const peerStatusMsg = `${
-            this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
-          }`
           this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         }
         this._handleStatus()
@@ -129,7 +129,9 @@ export class ETH extends Protocol {
       if (peerNextFork > BigInt(0)) {
         if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
-          this.debug('STATUS', msg)
+          if (this.DEBUG) {
+            this.debug('STATUS', msg)
+          }
           throw new Error(msg)
         }
       }
