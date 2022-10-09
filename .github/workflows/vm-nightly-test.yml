@@ -57,7 +57,7 @@ jobs:
         working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
 
-  test-vm-blockchain:
+  evm-vm-tests-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -94,7 +94,7 @@ jobs:
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
+      - run: npm run clean
         working-directory: ${{github.workspace}}
 
       - run: npm i
