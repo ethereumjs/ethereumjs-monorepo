@@ -1,11 +1,10 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address } from 'ethereumjs-util'
+import { Address } from '@ethereumjs/util'
 import tape from 'tape'
 
-import VM from '../../../src'
-import StatelessVerkleStateManager from '../../../src/state/statelessVerkleStateManager'
+import { StatelessVerkleStateManager } from '../src'
 import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
