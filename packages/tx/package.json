@@ -54,7 +54,8 @@
     "@ethereumjs/common": "^3.0.0",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/util": "^8.0.0",
-    "ethereum-cryptography": "^1.1.2"
+    "ethereum-cryptography": "^1.1.2",
+    "ethers": "^5.7.1"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

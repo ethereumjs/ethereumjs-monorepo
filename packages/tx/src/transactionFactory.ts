@@ -1,7 +1,9 @@
 import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import { ethers } from 'ethers'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
+import { normalizeTxParams } from './fromRpc'
 import { Transaction } from './legacyTransaction'
 
 import type {
@@ -92,5 +94,17 @@ export class TransactionFactory {
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
     }
+  }
+
+  public static async fromEthersProvider(
+    provider: string | ethers.providers.JsonRpcProvider,
+    txHash: string,
+    txOpts?: TxOptions
+  ) {
+    const prov =
+      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
+    const txData = await prov.send('eth_getTransactionByHash', [txHash])
+    const normedTx = normalizeTxParams(txData)
+    return TransactionFactory.fromTxData(normedTx, txOpts)
   }
 }

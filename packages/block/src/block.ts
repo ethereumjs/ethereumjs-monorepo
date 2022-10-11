@@ -2,12 +2,22 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Capability, TransactionFactory } from '@ethereumjs/tx'
-import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  arrToBufArr,
+  bigIntToHex,
+  bufArrToArr,
+  bufferToHex,
+  intToHex,
+  isHexPrefixed,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { ethers } from 'ethers'
 
+import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -135,6 +145,63 @@ export class Block {
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
+  }
+
+  /**
+   * Creates a new block object from Ethereum JSON RPC.
+   *
+   * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
+   * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
+   * @param options - An object describing the blockchain
+   */
+  public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
+    return blockFromRpc(blockData, uncles, opts)
+  }
+
+  /**
+   *  Method to retrieve a block from the provider and format as a {@link Block}
+   * @param provider an Ethers JsonRPCProvider
+   * @param blockTag block hash or block number to be run
+   * @param opts {@link BlockOptions}
+   * @returns the block specified by `blockTag`
+   */
+  public static fromEthersProvider = async (
+    provider: ethers.providers.JsonRpcProvider | string,
+    blockTag: string | bigint,
+    opts: BlockOptions
+  ) => {
+    let blockData
+    const prov =
+      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
+    if (typeof blockTag === 'string' && blockTag.length === 66) {
+      blockData = await prov.send('eth_getBlockByHash', [blockTag, true])
+    } else if (typeof blockTag === 'bigint') {
+      blockData = await prov.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+    } else if (
+      isHexPrefixed(blockTag) ||
+      blockTag === 'latest' ||
+      blockTag === 'earliest' ||
+      blockTag === 'pending'
+    ) {
+      blockData = await prov.send('eth_getBlockByNumber', [blockTag, true])
+    } else {
+      throw new Error(
+        `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
+      )
+    }
+
+    const uncleHeaders = []
+    if (blockData.uncles.length > 0) {
+      for (let x = 0; x < blockData.uncles.length; x++) {
+        const headerData = await prov.send('eth_getUncleByBlockHashAndIndex', [
+          blockData.hash,
+          intToHex(x),
+        ])
+        uncleHeaders.push(headerData)
+      }
+    }
+
+    return blockFromRpc(blockData, uncleHeaders, opts)
   }
 
   /**
