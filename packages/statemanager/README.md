@@ -69,7 +69,7 @@ The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or on
 
 - If you plan to leverage data from historical blocks, please ensure your provider supports retrieving state values from that block. Otherwise, you will encounter RPC errors trying when using this state manager.
 - The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
-- You cannot use `latest`/`earliest`/`pending` as a block tag and must specify an exact block number for the provider.
+- You cannot use `latest`/`pending` as a block tag and must specify an exact block number for the provider.
 - If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
 
 ## API
