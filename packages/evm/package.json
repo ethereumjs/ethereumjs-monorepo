@@ -41,7 +41,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
     "tape": "tape -r ts-node/register --stack-size=1500",
-    "test": "npm run tape -- './tests/**/*.spec.ts'",
+    "test": "npm run tape -- './test/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js",
     "tsc": "../../config/cli/ts-compile.sh"
   },

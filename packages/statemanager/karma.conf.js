@@ -1,7 +1,16 @@
 module.exports = function (config) {
   config.set({
     frameworks: ['karma-typescript', 'tap'],
-    files: ['./src/**/*.ts', './tests/**/*.ts'],
+
+    // list of files / patterns to load in the browser
+    files: ['./src/**/*.ts', './test/**/*.ts'],
+
+    // list of files / patterns to exclude
+    exclude: [],
+
+    // preprocess matching files before serving them to the browser
+    // available preprocessors: https://www.npmjs.com/browse/keyword/karma-preprocessor
+
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
     },
