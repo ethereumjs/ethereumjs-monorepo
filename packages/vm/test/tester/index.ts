@@ -187,8 +187,8 @@ async function runTests() {
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
     tape(name, (t) => {
-      getTestFromSource(fileName, async (err: string | undefined, test: any) => {
-        if (err !== undefined) {
+      getTestFromSource(fileName, async (err: string | null, test: any) => {
+        if (err !== null) {
           return t.fail(err)
         }
         t.comment(`file: ${fileName} test: ${test.testName}`)
