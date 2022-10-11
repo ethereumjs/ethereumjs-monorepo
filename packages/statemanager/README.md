@@ -52,7 +52,7 @@ import { EthersStateManager } from '@ethereumjs/statemanager'
 import { ethers } from 'ethers'
 
 const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
-const stateManager = new EthersStateManager({ provider, blockTag: `latest` })
+const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
@@ -60,17 +60,29 @@ console.log('Vitalik has a current ETH balance of ', account.balance)
 
 The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
-#### Points on usage:
+### Points on usage:
+
+#### Provider selection
 
 - If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
-- Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+- The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
+- Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
 
-#### Potential gotchas to watch out for
+#### Block Tag selection
 
-- If you plan to leverage data from historical blocks, please ensure your provider supports retrieving state values from that block. Otherwise, you will encounter RPC errors trying when using this state manager.
+- You have to pass a block number or `earliest` in the constructor that specifies the block height you want to pull state from.
+- The `latest`/`pending` values supported by the Ethereum JSON-RPC are not supported as longer running scripts run the risk of state values changing as blocks are mined while your script is running.
+- If using a very recent block as your block tag, be aware that reorgs could occur and potentially alter the state you are interacting with.
+- If you want to rerun transactions from block X or run block X, you need to specify the block tag as X-1 in the state manager constructor to ensure you are pulling the state values at the point in time the transactions or block was run.
+
+#### Potential gotchas
+
 - The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
-- You cannot use `latest`/`pending` as a block tag and must specify an exact block number for the provider.
 - If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
+
+#### Further reference
+
+Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## API
 
