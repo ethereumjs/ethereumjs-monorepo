@@ -95,7 +95,10 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
+  withdrawalsRoot?: BufferLike
 }
+
+export type Withdrawal = [BigIntLike, AddressLike, BigIntLike]
 
 /**
  * A block's data.
@@ -107,16 +110,20 @@ export interface BlockData {
   header?: HeaderData
   transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
   uncleHeaders?: Array<HeaderData>
+  withdrawals?: Array<Withdrawal>
 }
 
-export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type BlockBuffer =
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer]
 export type BlockHeaderBuffer = Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer?]
 /**
  * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
  */
 export type TransactionsBuffer = Buffer[][] | Buffer[]
 export type UncleHeadersBuffer = Buffer[][]
+export type WithdrawalBuffer = Buffer[][]
 
 /**
  * An object with the block's data represented as strings.
