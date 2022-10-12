@@ -153,7 +153,7 @@ export interface JsonHeader {
 }
 
 /*
- * Based on https://eth.wiki/json-rpc/API
+ * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
 export interface JsonRpcBlock {
   number: string // the block number. null when pending block.
