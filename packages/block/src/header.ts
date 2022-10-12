@@ -327,6 +327,19 @@ export class BlockHeader {
         }
       }
     }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      if (this.withdrawalsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
+        throw new Error(msg)
+      }
+      if (this.withdrawalsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
+      }
+    }
   }
 
   /**

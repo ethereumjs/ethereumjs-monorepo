@@ -258,7 +258,7 @@ export class Block {
 
     if (this._common.isActivatedEIP(4895) && withdrawals === undefined) {
       throw new Error('Need a withdrawals field if EIP 4895 is active')
-    } else if (withdrawals !== undefined) {
+    } else if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
