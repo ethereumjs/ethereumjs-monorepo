@@ -11,6 +11,7 @@ import {
 
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
+import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { Common } from '@ethereumjs/common'
 import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
@@ -117,6 +118,7 @@ export type TypedTransaction =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
+  | BlobEIP4844Transaction
 
 /**
  * Legacy {@link Transaction} Data
@@ -206,6 +208,16 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The maximum total fee
    */
   maxFeePerGas?: BigIntLike
+}
+
+/**
+ * {@link BlobEip4844Transaction} data.
+ */
+export interface BlobEip4844TxData extends FeeMarketEIP1559TxData {
+  /**
+   * The versioned hashes used to validate the blobs attached to a transaction
+   */
+  versionedHashes: Buffer[]
 }
 
 /**
