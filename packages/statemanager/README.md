@@ -82,7 +82,7 @@ The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or on
 
 #### Further reference
 
-Refer to [this test script](./tests/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+Refer to [this test script](./test/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## API
 
