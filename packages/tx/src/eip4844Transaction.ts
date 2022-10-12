@@ -1,6 +1,5 @@
 import { BaseTransaction } from './baseTransaction'
 
-import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type {
   AccessListEIP2930ValuesArray,
   FeeMarketEIP1559ValuesArray,
@@ -10,7 +9,7 @@ import type {
 
 const TRANSACTION_TYPE = 0x05
 
-export class Blob4844Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
+export class Blob4844Transaction extends BaseTransaction<Blob4844Transaction> {
   getUpfrontCost(): bigint {
     throw new Error('Method not implemented.')
   }
@@ -37,7 +36,7 @@ export class Blob4844Transaction extends BaseTransaction<FeeMarketEIP1559Transac
   toJSON(): JsonTx {
     throw new Error('Method not implemented.')
   }
-  protected _processSignature(v: bigint, r: Buffer, s: Buffer): FeeMarketEIP1559Transaction {
+  protected _processSignature(v: bigint, r: Buffer, s: Buffer): Blob4844Transaction {
     throw new Error('Method not implemented.')
   }
   public errorStr(): string {

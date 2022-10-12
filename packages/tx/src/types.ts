@@ -1,3 +1,14 @@
+import {
+  BooleanType,
+  ByteListType,
+  ByteVectorType,
+  ContainerType,
+  ListCompositeType,
+  NoneType,
+  UintBigintType,
+  UnionType,
+} from '@chainsafe/ssz'
+
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { Transaction } from './legacyTransaction'
@@ -288,3 +299,45 @@ export interface JsonRpcTx {
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
 }
+
+/** EIP4844 constants */
+
+export const MAX_CALLDATA_SIZE = 2 ** 24
+export const MAX_ACCESS_LIST_SIZE = 2 ** 24
+export const MAX_VERSIONED_HASHES_LIST_SIZE = 2 ** 24
+
+/** EIP4844 types */
+export const AddressType = new ByteVectorType(20) // SSZ encoded address
+
+// SSZ encoded container for address and storage keys
+export const AccesTupleType = new ContainerType({
+  address: AddressType,
+  storageKeys: new ListCompositeType(new ByteVectorType(32), MAX_VERSIONED_HASHES_LIST_SIZE),
+})
+
+// SSZ encoded blob transaction
+export const BlobTransactionType = new ContainerType({
+  chainId: new UintBigintType(32),
+  nonce: new UintBigintType(32),
+  priorityFeePerGas: new UintBigintType(32),
+  maxFeePerGas: new UintBigintType(32),
+  gas: new UintBigintType(8),
+  to: new UnionType([new NoneType(), AddressType]),
+  value: new UintBigintType(32),
+  data: new ByteListType(MAX_CALLDATA_SIZE),
+  accessList: new ListCompositeType(AccesTupleType, MAX_ACCESS_LIST_SIZE),
+  blobVersionedHash: new ListCompositeType(new ByteVectorType(32), MAX_VERSIONED_HASHES_LIST_SIZE),
+})
+
+// SSZ encoded ECDSA Signature
+export const ECDSASignatureType = new ContainerType({
+  yParity: new BooleanType(),
+  r: new UintBigintType(32),
+  s: new UintBigintType(32),
+})
+
+// SSZ encoded signed blob transaction
+export const SignedBlobTransactionType = new ContainerType({
+  message: BlobTransactionType,
+  signature: ECDSASignatureType,
+})
