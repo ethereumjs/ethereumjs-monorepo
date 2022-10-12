@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import tape from 'tape'
 
@@ -11,9 +11,12 @@ import { createAccount, getTransaction } from '../utils'
 import * as verkleBlockJSON from './testdata/verkleBlock.json'
 
 tape('StatelessVerkleStateManager', (t) => {
+  const common = new Common({ chain: Chain.Mainnet, eips: [999001] })
+  const block = Block.fromBlockData(verkleBlockJSON, { common })
+
   t.test('should instantiate', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
-    // st.equal(stateManager., 'it has default hardfork')
+    // st.equal(stateManager, 'it has default hardfork')
   })
 
   t.test('initPreState()', async (st) => {
@@ -36,7 +39,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('should run verkle block', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    const vm = new VM({ stateManager, common })
+    // const vm = VM.create({ stateManager, common })
 
     // Temporarily skip block validation
     // Tx root not correct, 2022-02-17
