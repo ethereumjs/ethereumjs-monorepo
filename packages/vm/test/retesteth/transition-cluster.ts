@@ -3,7 +3,7 @@ import { resolve } from 'path'
 const fork = require('child_process').fork
 const http = require('http')
 
-const program = resolve('tests/retesteth/transition-child.ts')
+const program = resolve('test/retesteth/transition-child.ts')
 const parameters: any = []
 const options = {
   //stdio: ['pipe', 'pipe', 'pipe', 'ipc'],

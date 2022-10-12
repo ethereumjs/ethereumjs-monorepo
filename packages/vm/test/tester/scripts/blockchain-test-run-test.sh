@@ -3,9 +3,9 @@
 # Manual test file for blockchain test runner option sanity checks
 #
 # Evoke from repository root with
-# ./tests/tester/scripts/blockchain-test-run-test.sh
+# ./test/tester/scripts/blockchain-test-run-test.sh
 ##################################################################
 
-ts-node ./tests/tester --blockchain --file='randomStatetest303'
+ts-node ./test/tester --blockchain --file='randomStatetest303'
 # Test that uses the expectException properties in BlockchainTests test files
-ts-node ./tests/tester --blockchain --file='GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast'
+ts-node ./test/tester --blockchain --file='GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast'

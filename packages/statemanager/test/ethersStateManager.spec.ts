@@ -15,7 +15,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
-// `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'tests/ethersStateManager.spec.ts'
+// `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
 tape('Ethers State Manager initialization tests', (t) => {
   const provider = new MockProvider()
   let state = new EthersStateManager({ provider, blockTag: 1n })
