@@ -1,0 +1,13 @@
+{
+  "name": "EIP-4844",
+  "number": 4844,
+  "comment": "Shard Blob Transactions",
+  "url": "https://eips.ethereum.org/EIPS/eip-4844",
+  "status": "Draft",
+  "minimumHardfork": "shanghai",
+  "requiredEIPs": [1559, 2718, 2930],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
