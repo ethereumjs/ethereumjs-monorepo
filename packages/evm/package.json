@@ -31,7 +31,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run coverage:test",
-    "coverage:test": "npm run test; cd ../vm; npm run tester -- --state",
+    "coverage:test": "npm run test; cd ../evm-vm-tests; npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
     "formatTest": "node ./scripts/formatTest",

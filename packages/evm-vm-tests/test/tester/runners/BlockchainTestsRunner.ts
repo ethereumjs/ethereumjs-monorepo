@@ -72,9 +72,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   let VM
   if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
+    ;({ VM } = require('../../../../vm/dist'))
   } else {
-    ;({ VM } = require('../../../src'))
+    ;({ VM } = require('../../../../vm/src'))
   }
 
   const begin = Date.now()

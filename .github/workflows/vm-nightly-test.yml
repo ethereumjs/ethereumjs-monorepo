@@ -33,7 +33,7 @@ jobs:
       - run: npm run test:API
       - run: npm run test:API:browser
 
-  test-vm-state:
+  evm-vm-tests-state:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -54,8 +54,10 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:allForks
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  test-vm-blockchain:
+
+  evm-vm-tests-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -76,9 +78,9 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain:allForks
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests
 
-  test-vm-slow:
+  evm-vm-tests-slow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -92,10 +94,11 @@ jobs:
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
+      - run: npm run clean
         working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:slow
+        working-directory: ${{github.workspace}}/packages/evm-vm-tests

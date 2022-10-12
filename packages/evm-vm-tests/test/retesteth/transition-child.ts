@@ -7,12 +7,12 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-import { VM } from '../../src'
-import { BlockBuilder } from '../../src/buildBlock'
+import { VM } from '../../../vm/src'
+import { BlockBuilder } from '../../../vm/src/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../src'
+import type { PostByzantiumTxReceipt } from '../../../vm/src'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedBufferArray } from '@ethereumjs/util'
 
