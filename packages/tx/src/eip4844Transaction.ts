@@ -2,7 +2,7 @@ import { toHexString } from '@chainsafe/ssz'
 import { Address, MAX_INTEGER, bufferToBigInt, toBuffer } from '@ethereumjs/util'
 
 import { BaseTransaction } from './baseTransaction'
-import { BlobTransactionType } from './types'
+import { BLOB_COMMITMENT_VERSION_KZG, BlobTransactionType, MAX_BLOBS_PER_TX } from './types'
 import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
@@ -77,6 +77,21 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     if (this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
+    }
+
+    for (const hash of txData.versionedHashes) {
+      if (hash.length !== 32) {
+        const msg = this._errorMsg('versioned hash is invalid length')
+        throw new Error(msg)
+      }
+      if (hash[0] !== BLOB_COMMITMENT_VERSION_KZG) {
+        const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
+        throw new Error(msg)
+      }
+    }
+    if (txData.versionedHashes.length > MAX_BLOBS_PER_TX) {
+      const msg = this._errorMsg(`tx can contain at most ${MAX_BLOBS_PER_TX} blobs`)
+      throw new Error(msg)
     }
 
     this.versionedHashes = txData.versionedHashes
@@ -161,10 +176,22 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   _processSignature(_v: bigint, _r: Buffer, _s: Buffer): BlobEIP4844Transaction {
     throw new Error('Method not implemented.')
   }
-  public errorStr(): string {
-    throw new Error('Method not implemented.')
+  /**
+   * Return a compact error string representation of the object
+   */
+  public errorStr() {
+    let errorStr = this._getSharedErrorPostfix()
+    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
+    return errorStr
   }
-  _errorMsg(_msg: string): string {
-    throw new Error('Method not implemented.')
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `${msg} (${this.errorStr()})`
   }
 }

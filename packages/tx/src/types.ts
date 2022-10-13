@@ -314,9 +314,12 @@ export interface JsonRpcTx {
 
 /** EIP4844 constants */
 
+// TODO: Decide which of these should be in the hardfork params instead of hardcoded as constants here
+export const BLOB_COMMITMENT_VERSION_KZG = 0x01
 export const MAX_CALLDATA_SIZE = 2 ** 24
 export const MAX_ACCESS_LIST_SIZE = 2 ** 24
 export const MAX_VERSIONED_HASHES_LIST_SIZE = 2 ** 24
+export const MAX_BLOBS_PER_TX = 2
 
 /** EIP4844 types */
 export const AddressType = new ByteVectorType(20) // SSZ encoded address
