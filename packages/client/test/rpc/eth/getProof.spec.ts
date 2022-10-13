@@ -53,7 +53,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-  // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat
+  // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
   /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;

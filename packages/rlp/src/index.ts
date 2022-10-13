@@ -8,7 +8,7 @@ export interface Decoded {
 }
 
 /**
- * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp
+ * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  * This function takes in data, converts it to Uint8Array if not,
  * and adds a length for recursion.
  * @param input Will be converted to Uint8Array

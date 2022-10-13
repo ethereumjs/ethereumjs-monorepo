@@ -46,7 +46,7 @@ export function createSuite(db: DB) {
     }
 
     // References:
-    // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22
+    // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22/
     for (const samples of [100, 500, 1000, 5000]) {
       await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
         checkpointTrie.checkpoint()
