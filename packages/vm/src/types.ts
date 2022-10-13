@@ -6,7 +6,6 @@ import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike } from '@ethereumjs/util'
-import type { EventMap } from 'async-eventemitter'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -49,7 +48,7 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   status: 0 | 1
 }
 
-export type VMEvents = EventMap & {
+export type VMEvents = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
   beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
