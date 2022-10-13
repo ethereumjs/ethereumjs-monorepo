@@ -1,30 +1,98 @@
 import { toHexString } from '@chainsafe/ssz'
-import { Address } from '@ethereumjs/util'
+import { Address, MAX_INTEGER, bufferToBigInt, toBuffer } from '@ethereumjs/util'
 
-import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
+import { BaseTransaction } from './baseTransaction'
 import { BlobTransactionType } from './types'
+import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
+  AccessList,
   AccessListBuffer,
   AccessListBufferItem,
-  BlobEip4844TxData,
+  BlobEIP4844TxData,
   JsonTx,
   TxOptions,
+  TxValuesArray,
 } from './types'
+import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0x05
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
-export class BlobEIP4844Transaction extends FeeMarketEIP1559Transaction {
+export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
+  public readonly chainId: bigint
+  public readonly accessList: AccessListBuffer
+  public readonly AccessListJSON: AccessList
+  public readonly maxPriorityFeePerGas: bigint
+  public readonly maxFeePerGas: bigint
+
+  public readonly common: Common
   private versionedHashes: Buffer[]
 
-  constructor(txData: BlobEip4844TxData, opts?: TxOptions) {
+  constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainId()
+
+    if (this.common.isActivatedEIP(1559) === false) {
+      throw new Error('EIP-1559 not enabled on Common')
+    }
+    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
+
+    // Populate the access list fields
+    const accessListData = AccessLists.getAccessListData(accessList ?? [])
+    this.accessList = accessListData.accessList
+    this.AccessListJSON = accessListData.AccessListJSON
+    // Verify the access list format.
+    AccessLists.verifyAccessList(this.accessList)
+
+    this.maxFeePerGas = bufferToBigInt(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = bufferToBigInt(
+      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
+    )
+
+    this._validateCannotExceedMaxInteger({
+      maxFeePerGas: this.maxFeePerGas,
+      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+    })
+
+    BaseTransaction._validateNotArray(txData)
+
+    if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
+      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      throw new Error(msg)
+    }
+
+    if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
+      const msg = this._errorMsg(
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+      )
+      throw new Error(msg)
+    }
+
+    this._validateYParity()
+    this._validateHighS()
+
+    if (this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
+    }
+
     this.versionedHashes = txData.versionedHashes
+
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
+  }
+
+  public static fromTxData(txData: BlobEIP4844TxData, opts?: TxOptions) {
+    return new BlobEIP4844Transaction(txData, opts)
   }
 
   public static fromSerializedTx(serialized: Buffer, opts?: TxOptions): BlobEIP4844Transaction {
-    const decodedTx = BlobTransactionType.deserialize(serialized)
+    const decodedTx = BlobTransactionType.deserialize(serialized.slice(1))
     const versionedHashes = decodedTx.blobVersionedHash.map((el) => Buffer.from(el))
     const accessList: AccessListBuffer = []
     for (const listItem of decodedTx.accessList) {
@@ -42,7 +110,12 @@ export class BlobEIP4844Transaction extends FeeMarketEIP1559Transaction {
     }
     return new BlobEIP4844Transaction(txData, opts)
   }
+
   getUpfrontCost(): bigint {
+    throw new Error('Method not implemented.')
+  }
+
+  raw(): TxValuesArray {
     throw new Error('Method not implemented.')
   }
 

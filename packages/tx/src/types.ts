@@ -213,7 +213,7 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 /**
  * {@link BlobEip4844Transaction} data.
  */
-export interface BlobEip4844TxData extends FeeMarketEIP1559TxData {
+export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
