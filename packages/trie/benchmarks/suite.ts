@@ -18,7 +18,6 @@ export function createSuite(db: DB) {
     // Test ID is defined as: `pair_count`-`era_size`-`key_size`-`value_type`
     // where value_type = symmetric ? 'mir' : 'ran'
     // The standard secure-trie test is `1k-9-32-ran`
-    // https://eth.wiki/en/fundamentals/benchmarks#results-1
 
     for (const [title, eraSize, symmetric] of [
       ['1k-3-32-ran', 3, false],
@@ -47,8 +46,7 @@ export function createSuite(db: DB) {
     }
 
     // References:
-    // https://eth.wiki/en/fundamentals/benchmarks#the-trie
-    // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22
+    // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22/
     for (const samples of [100, 500, 1000, 5000]) {
       await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
         checkpointTrie.checkpoint()
