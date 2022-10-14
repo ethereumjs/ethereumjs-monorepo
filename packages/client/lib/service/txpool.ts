@@ -282,6 +282,9 @@ export class TxPool {
         `Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit} (exceeds last block gas limit)`
       )
     }
+
+    // Set state root to latest block so that account balance is correct when doing balance check
+    await this.vm.stateManager.setStateRoot(block.stateRoot)
     const account = await this.vm.stateManager.getAccount(senderAddress)
     if (account.nonce > tx.nonce) {
       throw new Error(
