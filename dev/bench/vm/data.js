@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1665662089701,
+  "lastUpdate": 1665766420738,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "dacosta.pereirafabio@gmail.com",
-            "name": "strykerin",
-            "username": "strykerin"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "43dfe1ea604cbae74341ae931f80165b5506d955",
-          "message": "fix link to old code example on evm package (#2291)",
-          "timestamp": "2022-09-19T12:45:18+02:00",
-          "tree_id": "33cdbfe3a212b81a9749639a6dbd0071e88bddc5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/43dfe1ea604cbae74341ae931f80165b5506d955"
-        },
-        "date": 1663584513951,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10581,
-            "range": "±4.40%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10350,
-            "range": "±5.51%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 10672,
-            "range": "±2.55%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10369,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9484,
-            "range": "±8.96%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.42%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6eb5a85a48c3b6027ccf1d59a177c4103eaca0b1",
+          "message": "client: fix validation logic for optional params in rpc (#2358)",
+          "timestamp": "2022-10-14T12:50:59-04:00",
+          "tree_id": "9c6b78b2760a138722ed771d1a1bb9b5fac09be9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6eb5a85a48c3b6027ccf1d59a177c4103eaca0b1"
+        },
+        "date": 1665766420109,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 17457,
+            "range": "±4.42%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17809,
+            "range": "±2.02%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16942,
+            "range": "±6.31%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17170,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16899,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
