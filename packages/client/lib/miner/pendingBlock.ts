@@ -69,7 +69,7 @@ export class PendingBlock {
     this.pendingPayloads.push([payloadId, builder])
 
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(vm, baseFeePerGas)
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
@@ -122,11 +122,10 @@ export class PendingBlock {
       return
     }
     const builder = payload[1]
+    const { vm, headerData } = builder as any
 
     // Add new txs that the pool received
-    const txs = (
-      await this.txPool.txsByPriceAndNonce((builder as any).headerData.baseFeePerGas)
-    ).filter(
+    const txs = (await this.txPool.txsByPriceAndNonce(vm, headerData.baseFeePerGas)).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash())) ===
         false

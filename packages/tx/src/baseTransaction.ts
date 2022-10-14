@@ -451,6 +451,31 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
+  protected static _validateNotArray(values: { [key: string]: any }) {
+    const txDataKeys = [
+      'nonce',
+      'gasPrice',
+      'gasLimit',
+      'to',
+      'value',
+      'data',
+      'v',
+      'r',
+      's',
+      'type',
+      'baseFee',
+      'maxFeePerGas',
+      'chainId',
+    ]
+    for (const [key, value] of Object.entries(values)) {
+      if (txDataKeys.includes(key)) {
+        if (Array.isArray(value)) {
+          throw new Error(`${key} cannot be an array`)
+        }
+      }
+    }
+  }
+
   /**
    * Return a compact error string representation of the object
    */

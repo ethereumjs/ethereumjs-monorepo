@@ -8,7 +8,7 @@ export interface Decoded {
 }
 
 /**
- * RLP Encoding based on https://eth.wiki/en/fundamentals/rlp
+ * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  * This function takes in data, converts it to Uint8Array if not,
  * and adds a length for recursion.
  * @param input Will be converted to Uint8Array
@@ -66,7 +66,7 @@ function encodeLength(len: number, offset: number): Uint8Array {
 }
 
 /**
- * RLP Decoding based on https://eth.wiki/en/fundamentals/rlp
+ * RLP Decoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  * @param input Will be converted to Uint8Array
  * @param stream Is the input a stream (false by default)
  * @returns decoded Array of Uint8Arrays containing the original message

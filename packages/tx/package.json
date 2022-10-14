@@ -44,16 +44,18 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "npm run test:node && npm run test:browser && npm run test:txTests",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register ./test/index.ts",
+    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts'",
+    "test:txTests": "tape -r ts-node/register ./test/transactionRunner.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/common": "^3.0.0",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/util": "^8.0.0",
-    "ethereum-cryptography": "^1.1.2"
+    "ethereum-cryptography": "^1.1.2",
+    "ethers": "^5.7.1"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

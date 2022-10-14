@@ -679,8 +679,8 @@ Using our already trusted information, we can be confident that Marie (node 1) i
 Note that we also could have compared the root hashes of the trees and compared them to a trusted tree root. This is possible because each distinct tree will produce a distinct hash!
 
 ```jsx
-console.log(trie1.root)
-console.log(trie2.root)
+console.log(trie1.root())
+console.log(trie2.root())
 
 <Buffer 46 7a 64 dd e5 de 0a 37 0a 35 75 03 42 a5 2d 80 1f 0b 9b 22 59 03 10 b4 1d 0b ab 7d 3d e0 a3 5e>
 <Buffer 38 b0 a5 74 1a f3 61 14 1e 7a 29 b6 f2 9d ab 22 75 7b 7d 64 73 90 f6 e3 55 e5 2e 2b ea c1 e3 04>

@@ -43,7 +43,8 @@
     "@ethereumjs/trie": "^5.0.0",
     "@ethereumjs/tx": "^4.0.0",
     "@ethereumjs/util": "^8.0.0",
-    "ethereum-cryptography": "^1.1.2"
+    "ethereum-cryptography": "^1.1.2",
+    "ethers": "^5.7.1"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0"

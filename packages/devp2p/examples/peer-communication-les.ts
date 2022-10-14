@@ -3,7 +3,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-import ms from 'ms'
+import ms = require('ms')
 
 import * as devp2p from '../src/index'
 import { LES, Peer } from '../src/index'
