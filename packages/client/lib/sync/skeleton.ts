@@ -487,34 +487,38 @@ export class Skeleton extends MetaDBManager {
   }
 
   private async backStep(): Promise<bigint | null> {
-    if (this.config.skeletonFillCanonicalBackStep <= 0) return null
-    const { head, tail } = this.bounds()
+    try {
+      if (this.config.skeletonFillCanonicalBackStep <= 0) return null
+      const { head, tail } = this.bounds()
 
-    let tailBlock
-    let newTail: bigint | null = tail
-    do {
-      newTail = newTail + BigInt(this.config.skeletonFillCanonicalBackStep)
-      tailBlock = await this.getBlock(newTail, true)
-    } while (!tailBlock && newTail <= head)
-    if (newTail > head) {
-      newTail = head
-      tailBlock = await this.getBlock(newTail, true)
-    }
+      let tailBlock
+      let newTail: bigint | null = tail
+      do {
+        newTail = newTail + BigInt(this.config.skeletonFillCanonicalBackStep)
+        tailBlock = await this.getBlock(newTail, true)
+      } while (!tailBlock && newTail <= head)
+      if (newTail > head) {
+        newTail = head
+        tailBlock = await this.getBlock(newTail, true)
+      }
 
-    if (tailBlock && newTail) {
-      this.config.logger.info(`Backstepped skeleton head=${head} tail=${newTail}`)
-      this.status.progress.subchains[0].tail = tailBlock.header.number
-      this.status.progress.subchains[0].next = tailBlock.header.parentHash
-      await this.writeSyncStatus()
-      return newTail
-    } else {
-      // we need a new head, emptying the subchains
-      this.status.progress.subchains = []
-      await this.writeSyncStatus()
-      this.config.logger.warn(
-        `Couldn't backStep subchain 0, dropping subchains for new head signal`
-      )
-      return null
+      if (tailBlock && newTail) {
+        this.config.logger.info(`Backstepped skeleton head=${head} tail=${newTail}`)
+        this.status.progress.subchains[0].tail = tailBlock.header.number
+        this.status.progress.subchains[0].next = tailBlock.header.parentHash
+        await this.writeSyncStatus()
+        return newTail
+      } else {
+        // we need a new head, emptying the subchains
+        this.status.progress.subchains = []
+        await this.writeSyncStatus()
+        this.config.logger.warn(
+          `Couldn't backStep subchain 0, dropping subchains for new head signal`
+        )
+        return null
+      }
+    } finally {
+      this.linked = await this.checkLinked()
     }
   }
 
@@ -592,8 +596,9 @@ export class Skeleton extends MetaDBManager {
             `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
           )
         }
-
-        await this.backStep()
+        await this.runWithLock<void>(async () => {
+          await this.backStep()
+        })
         break
       }
       canonicalHead += BigInt(numBlocksInserted)
