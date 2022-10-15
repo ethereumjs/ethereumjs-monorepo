@@ -31,6 +31,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export class VM {
+  private _lock = new Lock()
   /**
    * The StateManager used by the VM
    */

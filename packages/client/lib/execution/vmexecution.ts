@@ -144,7 +144,6 @@ export class VMExecution extends Execution {
         )}`
       )
     }
-    await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
     await this.chain.putBlocks(blocks, true)
     for (const block of blocks) {
       const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
@@ -153,6 +152,7 @@ export class VMExecution extends Execution {
         this.pendingReceipts?.delete(block.hash().toString('hex'))
       }
     }
+    await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
   }
 
   /**
@@ -297,6 +297,8 @@ export class VMExecution extends Execution {
       )
       numExecuted = await this.vmPromise
 
+      // TODO: one should update the iterator head later as this is dangerous for the blockchain and can cause
+      // problems in concurrent execution
       if (errorBlock !== undefined) {
         await this.chain.blockchain.setIteratorHead(
           'vm',

@@ -222,7 +222,7 @@ export abstract class Synchronizer {
     }
     this.clearFetcher()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
-    await new Promise((resolve) => setTimeout(resolve, this.interval))
+    // await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     this.config.logger.info('Stopped synchronization.')
     return true

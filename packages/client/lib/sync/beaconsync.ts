@@ -1,10 +1,7 @@
-import { Lock } from '@ethereumjs/util'
-
 import { Event } from '../types'
 import { short } from '../util'
 
 import { ReverseBlockFetcher } from './fetcher'
-import { errSyncReorged } from './skeleton'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
@@ -28,7 +25,6 @@ interface BeaconSynchronizerOptions extends SynchronizerOptions {
  */
 export class BeaconSynchronizer extends Synchronizer {
   skeleton: Skeleton
-  private _lock = new Lock()
   private execution: VMExecution
 
   public running = false
@@ -88,6 +84,8 @@ export class BeaconSynchronizer extends Synchronizer {
     if (subchain !== undefined) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
+      const headBlock = await this.skeleton.getBlock(head)
+      await this.skeleton.setHead(headBlock!, true, true)
     }
   }
 
@@ -140,8 +138,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    const isLinked = await this.skeleton.isLinked()
-    if (!isLinked) {
+    if (!this.skeleton.isLinked()) {
       while (this.running) {
         try {
           await this.sync()
@@ -163,75 +160,51 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   /**
-   * Run a function after acquiring a lock. It is implied that we have already
-   * initialized the module (or we are calling this from the init function, like
-   * `_setCanonicalGenesisBlock`)
-   * @param action - function to run after acquiring a lock
-   * @hidden
-   */
-  private async runWithLock<T>(action: () => Promise<T>): Promise<T> {
-    try {
-      await this._lock.acquire()
-      const value = await action()
-      return value
-    } finally {
-      this._lock.release()
-    }
-  }
-
-  /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
-    return this.runWithLock<boolean>(async () => {
-      if (!this.opened) return false
-      // We will run/stop skeleton on setHead not in extendChange query
-      try {
-        await this.skeleton.setHead(block)
-        return true
-      } catch (error) {
-        return false
-      }
-    })
+    if (!this.opened) return false
+    const reorg = await this.skeleton.setHead(block, false)
+    if (!reorg) {
+      this.config.logger.debug(
+        `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
+    } else {
+      this.config.logger.debug(
+        `Block can not extend Beacon sync skeleton number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
+    }
+    return !reorg
   }
 
   /**
    * Sets the new head of the skeleton chain.
    */
   async setHead(block: Block): Promise<boolean> {
-    return this.runWithLock<boolean>(async () => {
-      if (!this.opened) return false
-      // New head announced, start syncing to it if we are not already.
-      // If this causes a reorg, we will tear down the fetcher and start
-      // from the new head.
-      try {
-        if (!this.running) {
-          await this.skeleton.initSync(block)
-          void this.start()
-        } else {
-          await this.skeleton.setHead(block, true)
-        }
-        this.config.logger.debug(
-          `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-        )
-        return true
-      } catch (error) {
-        if (error === errSyncReorged) {
-          this.config.logger.debug(
-            `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-              block.header.hash()
-            )}`
-          )
-          // Tear down fetcher and start from new head
-          await this.stop()
-          await this.skeleton.initSync(block)
-          void this.start()
-          return true
-        } else {
-          throw error
-        }
-      }
-    })
+    if (!this.opened) return false
+    // New head announced, start syncing to it if we are not already.
+    // If this causes a reorg, we will tear down the fetcher and start
+    // from the new head.
+    const reorg = await this.skeleton.setHead(block, true, !this.running)
+    if (reorg) {
+      // Clean the current fetcher, later this.start will start it again
+      await this.stop()
+      this.config.logger.debug(
+        `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
+    } else {
+      this.config.logger.debug(
+        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
+      )
+    }
+    void this.start()
+    return true
   }
 
   /**
@@ -240,7 +213,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.bounds() === undefined || (await this.skeleton.isLinked())) {
+    if (this.skeleton.bounds() === undefined || this.skeleton.isLinked()) {
       this.clearFetcher()
       return false
     }

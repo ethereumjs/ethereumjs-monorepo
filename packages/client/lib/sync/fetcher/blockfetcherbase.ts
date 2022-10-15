@@ -94,7 +94,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count > BigInt(0)) {
+    if (this.in.length === 0 && this.count > BigInt(0) && this.processed - this.finished < 5) {
       this.debug(
         `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
       )
@@ -103,6 +103,10 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         this.enqueueTask(task)
       }
       this.debug(`Enqueued num=${tasks.length} tasks`)
+    } else {
+      this.debug(
+        `Fetcher skipping nextTasks in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`
+      )
     }
   }
 
