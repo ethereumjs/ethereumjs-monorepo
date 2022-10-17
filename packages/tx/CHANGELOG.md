@@ -23,6 +23,10 @@ const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genes
 common.setForkHashes(genesisHash)
 ```
 
+### New Ethers Static Constructor
+
+There is a new static constructor `TransactionFactory.fromEthersProvider()` which has been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315). The new constructor allows for an easy instantiation of a fitting transaction object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura.
+
 ### Other Changes and Fixes
 
 - Disallow tx initialization with values incorrectly passed in as arrays, PR [#2284](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2284)

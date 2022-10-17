@@ -96,15 +96,22 @@ export class TransactionFactory {
     }
   }
 
+  /**
+   *  Method to retrieve a transaction from the provider
+   * @param provider - An Ethers JsonRPCProvider
+   * @param txHash - Transaction hash
+   * @param txOptions - The transaction options
+   * @returns the transaction specified by `txHash`
+   */
   public static async fromEthersProvider(
     provider: string | ethers.providers.JsonRpcProvider,
     txHash: string,
-    txOpts?: TxOptions
+    txOptions?: TxOptions
   ) {
     const prov =
       typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
     const txData = await prov.send('eth_getTransactionByHash', [txHash])
     const normedTx = normalizeTxParams(txData)
-    return TransactionFactory.fromTxData(normedTx, txOpts)
+    return TransactionFactory.fromTxData(normedTx, txOptions)
   }
 }

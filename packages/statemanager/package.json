@@ -49,7 +49,7 @@
     "js-sdsl": "^4.1.4"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^4.0.0",
+    "@ethereumjs/block": "^4.0.1",
     "@ethereumjs/trie": "^5.0.1",
     "@ethereumjs/util": "^8.0.0",
     "@types/node": "^16.11.7",
