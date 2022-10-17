@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666002801522,
+  "lastUpdate": 1666030698254,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3d7472c22038a12530bd04f38c242488dfdfe78d",
-          "message": "client: Abstract out cl manager from the engine methods impl (#2293)\n\n* client: Abstract out cl manager from the engine methods impl\r\n\r\n* add comment about optional headBlock in fcU method",
-          "timestamp": "2022-09-19T20:42:55+05:30",
-          "tree_id": "36c9cac907da07f48b591569f94dde0914cb2051",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3d7472c22038a12530bd04f38c242488dfdfe78d"
-        },
-        "date": 1663600535175,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18085,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17390,
-            "range": "±5.29%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16478,
-            "range": "±7.07%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16989,
-            "range": "±8.83%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17577,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.31%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f8c731c687f0e67f9cf45856d975cb0596dd3def",
+          "message": "common: Ignore merge hf in nextHardforkBlock (#2364)\n\n* common: Ignore merge hf in nextHardforkBlock\r\n\r\n* handle nextHardforkBlock for merge block and add tests",
+          "timestamp": "2022-10-17T20:16:17+02:00",
+          "tree_id": "f2170374b8dfa9e66b44cc3e89db9eaf834a66a8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f8c731c687f0e67f9cf45856d975cb0596dd3def"
+        },
+        "date": 1666030697547,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18255,
+            "range": "±4.38%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18781,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17094,
+            "range": "±8.04%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18786,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18112,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
