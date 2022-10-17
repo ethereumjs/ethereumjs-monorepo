@@ -19,7 +19,7 @@ import { Common } from '@ethereumjs/common'
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
 const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
 // If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
-// post calculating it via `blockchain`)
+// post calculating it, e.g. by using the `@ethereumjs/blockchain` package)
 common.setForkHashes(genesisHash)
 ```
 
