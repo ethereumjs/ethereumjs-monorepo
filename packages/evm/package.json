@@ -49,10 +49,9 @@
     "@ethereumjs/common": "^3.0.0",
     "@ethereumjs/util": "^8.0.0",
     "@ethersproject/providers": "^5.7.1",
-    "@types/async-eventemitter": "^0.2.1",
-    "async-eventemitter": "^0.2.4",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
+    "eventemitter2": "^6.4.9",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
   },

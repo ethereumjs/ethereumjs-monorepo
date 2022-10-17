@@ -41,7 +41,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    * @type {Object}
    * @property {Block} block emits the block that is about to be processed
    */
-  await this._emit('beforeBlock', block)
+  await this.events.emitAsync('beforeBlock', block)
 
   if (
     this._hardforkByBlockNumber ||
@@ -191,7 +191,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    * @type {AfterBlockEvent}
    * @property {AfterBlockEvent} result emits the results of processing a block
    */
-  await this._emit('afterBlock', afterBlockEvent)
+  await this.events.emitAsync('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
       `Running block finished hash=${block.hash().toString('hex')} number=${

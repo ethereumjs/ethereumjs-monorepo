@@ -9,9 +9,8 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
-import { promisify } from 'util'
+import { EventEmitter2 as AsyncEventEmitter } from 'eventemitter2'
 
 import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
@@ -30,7 +29,6 @@ import type {
   Block,
   CustomOpcode,
   EEIInterface,
-  EVMEvents,
   EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
@@ -150,7 +148,7 @@ export class EVM implements EVMInterface {
 
   public readonly _transientStorage: TransientStorage
 
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  public readonly events: AsyncEventEmitter
 
   /**
    * This opcode data is always set since `getActiveOpcodes()` is called in the constructor
@@ -188,13 +186,6 @@ export class EVM implements EVMInterface {
   protected _isInitialized: boolean = false
 
   /**
-   * Cached emit() function, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _emit: (topic: string, data: any) => Promise<void>
-
-  /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
@@ -223,7 +214,7 @@ export class EVM implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    this.events = new AsyncEventEmitter<EVMEvents>()
+    this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
 
@@ -299,12 +290,6 @@ export class EVM implements EVMInterface {
     if (typeof process?.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
-
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>(
-      promisify(this.events.emit.bind(this.events))
-    )
   }
 
   protected async init(): Promise<void> {
@@ -465,7 +450,7 @@ export class EVM implements EVMInterface {
       code: message.code,
     }
 
-    await this._emit('newContract', newContractEvent)
+    await this.events.emitAsync('newContract', newContractEvent)
 
     toAccount = await this.eei.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
@@ -726,7 +711,7 @@ export class EVM implements EVMInterface {
       })
     }
 
-    await this._emit('beforeMessage', message)
+    await this.events.emitAsync('beforeMessage', message)
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
@@ -802,7 +787,7 @@ export class EVM implements EVMInterface {
         debug(`message checkpoint committed`)
       }
     }
-    await this._emit('afterMessage', result)
+    await this.events.emitAsync('afterMessage', result)
 
     return result
   }
@@ -930,7 +915,7 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy() {
+  public copy(): EVMInterface {
     const opts = {
       ...this._optsCached,
       common: this._common.copy(),
