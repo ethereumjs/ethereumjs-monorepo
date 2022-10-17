@@ -19,7 +19,10 @@ const setup = () => {
     },
     execution: {
       vm: {
-        stateManager: { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) },
+        stateManager: {
+          getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
+          setStateRoot: async (_root: Buffer) => {},
+        },
       },
     },
   }
@@ -42,6 +45,7 @@ const handleTxs = async (
   try {
     if (stateManager !== undefined) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
+      ;(<any>pool).service.execution.vm.stateManager.setStateRoot = async (_root: Buffer) => {}
     }
 
     pool.open()
@@ -165,7 +169,7 @@ tape('[TxPool]', async (t) => {
     const peer2: any = {
       id: '2',
       eth: {
-        send: () => {
+        request: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
@@ -398,7 +402,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
+      await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
       'successfully rejected unsigned tx'
     )
   })
