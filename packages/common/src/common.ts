@@ -646,7 +646,17 @@ export class Common extends EventEmitter {
    */
   nextHardforkBlock(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
-    const hfBlock = this.hardforkBlock(hardfork)
+    let hfBlock = this.hardforkBlock(hardfork)
+    // If this is a merge hardfork with block not set, then we fallback to previous hardfork
+    // to find the nextHardforkBlock
+    if (hfBlock === null && hardfork === Hardfork.Merge) {
+      const hfs = this.hardforks()
+      const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+      if (mergeIndex < 0) {
+        throw Error(`Merge hardfork should have been found`)
+      }
+      hfBlock = this.hardforkBlock(hfs[mergeIndex - 1].name)
+    }
     if (hfBlock === null) {
       return null
     }
@@ -655,8 +665,12 @@ export class Common extends EventEmitter {
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
     const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkConfig) => {
-      const block = BigInt(typeof hf.block !== 'number' ? 0 : hf.block)
-      return block > hfBlock && acc === null ? block : acc
+      // We need to ignore the merge block in our next hardfork calc
+      const block = BigInt(
+        hf.block === null || (hf.ttd !== undefined && hf.ttd !== null) ? 0 : hf.block
+      )
+      // Typescript can't seem to follow that the hfBlock is not null at this point
+      return block > hfBlock! && acc === null ? block : acc
     }, null)
     return nextHfBlock
   }

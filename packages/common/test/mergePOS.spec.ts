@@ -231,6 +231,19 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       Hardfork.MergeForkIdTransition,
       msg
     )
+
+    // Check nextHardforkBlock should be MergeForkIdTransition's block on london and merge both
+    st.equal(
+      c.nextHardforkBlock(Hardfork.London),
+      1735371n,
+      `should get nextHardforkBlock correctly`
+    )
+    st.equal(
+      c.nextHardforkBlock(Hardfork.Merge),
+      1735371n,
+      `should get nextHardforkBlock correctly`
+    )
+
     try {
       st.equal(
         c.getHardforkByBlockNumber(1735371, BigInt('15000000000000000')),
@@ -294,6 +307,19 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
         Hardfork.MergeForkIdTransition,
         msg
       )
+
+      // Check nextHardforkBlock should be MergeForkIdTransition's block on london and merge both
+      st.equal(
+        c.nextHardforkBlock(Hardfork.London),
+        1735371n,
+        `should get nextHardforkBlock correctly`
+      )
+      st.equal(
+        c.nextHardforkBlock(Hardfork.Merge),
+        1735371n,
+        `should get nextHardforkBlock correctly`
+      )
+
       // restore value
       mergeHf.block = prevMergeBlockVal
 
