@@ -1,5 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -37,7 +38,10 @@ const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berli
 const config = new Config({ transports: [], common })
 
 const setup = () => {
-  const stateManager = { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) }
+  const stateManager = {
+    getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
+    setStateRoot: async () => {},
+  }
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -184,6 +188,7 @@ tape('[PendingBlock]', async (t) => {
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
+
     t.end()
   })
 })

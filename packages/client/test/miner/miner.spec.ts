@@ -48,12 +48,12 @@ tape('[Miner]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
+  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
-  // doesn't existin fakeChain state anyway
+  // doesn't exist in fakeChain state anyway
   const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   class FakeChain {
     open() {}
