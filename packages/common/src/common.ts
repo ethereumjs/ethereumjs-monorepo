@@ -655,7 +655,7 @@ export class Common extends EventEmitter {
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
     const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkConfig) => {
-      const block = BigInt(typeof hf.block !== 'number' ? 0 : hf.block)
+      const block = BigInt(hf.block === null || hf.ttd !== undefined ? 0 : hf.block)
       return block > hfBlock && acc === null ? block : acc
     }, null)
     return nextHfBlock
