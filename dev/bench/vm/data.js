@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666030698254,
+  "lastUpdate": 1666081020585,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5ca079fa468fb55ec1227e7bcb33b3ae51da0fee",
-          "message": "fix(trie): handle root key and value during pruned integrity verification (#2296)\n\n* fix(trie): handle root key and value during pruned integrity verification\r\n\r\n* Update packages/trie/test/trie/prune.spec.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Update packages/trie/src/trie/trie.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2022-09-20T15:42:27+02:00",
-          "tree_id": "413428274a96bbb66519e17c07be9ea3b4fe46ae",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5ca079fa468fb55ec1227e7bcb33b3ae51da0fee"
-        },
-        "date": 1663681549376,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10424,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10067,
-            "range": "±6.13%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 10572,
-            "range": "±2.26%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10044,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9414,
-            "range": "±8.58%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.88%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e8b1cfd8542e549949f134871fc05d7c34a678b",
+          "message": "New Releases (#2361)\n\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Common v3.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Tx v4.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Trie v5.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Block v4.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (StateManager v1.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Devp2p v5.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Blockchain v6.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (EVM v1.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (VM v6.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Client v0.6.4)\r\n\r\n* Monorepo: Updated package-lock.json\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* EVM: added getActiveOpcodes() as an optional method to EVMInterface\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-10-18T10:14:31+02:00",
+          "tree_id": "490c00bede4928b3be01f986f59b2ed4bc8162de",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2e8b1cfd8542e549949f134871fc05d7c34a678b"
+        },
+        "date": 1666081018358,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15534,
+            "range": "±3.72%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 16387,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14469,
+            "range": "±10.26%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15490,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14204,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
