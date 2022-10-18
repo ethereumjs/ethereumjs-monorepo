@@ -12,7 +12,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter2 as AsyncEventEmitter } from 'eventemitter2'
 
-import { EOF } from './eof'
+import { EOF, getEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -858,6 +858,9 @@ export class EVM implements EVMInterface {
       } else {
         message.code = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
+        if (this._common.isActivatedEIP(3540)) {
+          message.code = getEOFCode(message.code)
+        }
       }
     }
   }
