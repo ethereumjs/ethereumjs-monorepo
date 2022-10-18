@@ -14,8 +14,8 @@ There is a new dedicated state manager `EthersStateManager` added to the library
 
 There are some caveats and therefore the new state manager is marked as `experimental` for now:
 
-- No `stateRoot` calculation for now, only secondary measurs like `gasUsed`
-- Performance is rather slow, particularly for more recent `mainnet` blocks
+- No `stateRoot` calculation for now, only secondary measures like `gasUsed`
+- Performance is rather slow (when using a remote provider for state data), particularly for more recent `mainnet` blocks
 - The API of this new state manager might change in future (bugfix or minor) releases
 
 This should nevertheless be useful for a certain number of use cases, if there is e.g. the need for some quick analysis of certain mainnet (EVM) behavior e.g.. The `StateManager` package [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#ethersstatemanager) contains a new dedicated section on how to use the new state manager.
