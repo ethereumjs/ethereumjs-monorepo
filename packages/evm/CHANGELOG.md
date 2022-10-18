@@ -33,6 +33,7 @@ The significant parts of the API of both the old and the new libraries are the s
 
 - Moved `EIP-4399` state to non-experimental (docs only), PR [#2355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2355)
 - Memory extend optimization in `write()` function, PR [#2276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2276)
+- Added `getActiveOpcodes?(): OpcodeList` as an optional method to `EVMInterface`, PR [#2361](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2361)
 
 ## 1.0.0 - 2022-09-06
 
