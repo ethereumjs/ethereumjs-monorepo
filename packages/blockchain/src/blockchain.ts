@@ -902,6 +902,7 @@ export class Blockchain implements BlockchainInterface {
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
    * @param maxBlocks - How many blocks to run. By default, run all unprocessed blocks in the canonical chain.
+   * @param releaseLockOnCallback - Do not lock the blockchain for running the callback (default: `false`)
    * @returns number of blocks actually iterated
    */
   async iterator(

@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.1 - 2022-10-18
+
+### Support for Geth genesis.json Genesis Format
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a [Geth genesis.json config](https://geth.ethereum.org/docs/interface/private-network) which has both config specification for the chain as well as the genesis state specification.
+
+`Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// calculating it afterwards by using the `@ethereumjs/blockchain` package)
+common.setForkHashes(genesisHash)
+```
+
+### New RPC and Ethers Static Constructors
+
+Two new static constructos have been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315) `Block.fromEthersProvider()` allows for an easy instantiation of a `Block` object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura. The `Block.fromRPC()` static constructor can be used for a straight-forward block instantiation if the block data is coming from an RPC request. This static constructor replaces the old standalong `blockFromRPC()` method which is now marked as `deprecated`.
+
+### Other Changes and Fixes
+
+- Adressed several typing issues in the `blockFromRPC()` method, PR [#2302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2302)
+
 ## 4.0.0 - 2022-09-06
 
 Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/CHANGELOG.md)).

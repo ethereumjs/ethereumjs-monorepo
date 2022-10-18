@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.1.0 - 2022-10-18
+
+### Support for Geth genesis.json Genesis Format
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a [Geth genesis.json config](https://geth.ethereum.org/docs/interface/private-network) which has both config specification for the chain as well as the genesis state specification.
+
+`Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// calculating it afterwards by using the `@ethereumjs/blockchain` package)
+common.setForkHashes(genesisHash)
+```
+
+### New Async Event Emitter: async-eventemitter -> eventemitter2
+
+Along some deeper investigation of build errors related to the usage of the `async-eventemitter` package we finally decided to completely switch to a new async event emitter package for VM/EVM events, see PR [#2303](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2303). The old [async-eventemitter](https://github.com/ahultgren/async-eventemitter) package hasn't been updated for several years and the new [eventemitter2](https://github.com/EventEmitter2/EventEmitter2) package is more modern and maintained as well as substantially more used and therefore a future-proof choice for an async event emitter library to build the VM/EVM event emitting system upon.
+
+The significant parts of the API of both the old and the new libraries are the same and the switch shouldn't cause too much hazzle for people upgrading. In case you nevertheless stumble upon upgrading problems regarding the event emitter package switch please feel free to open an issue, we'll be there to assist you on the upgrade!
+
+### Other Changes and Fixes
+
+- Moved `EIP-4399` state to non-experimental (docs only), PR [#2355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2355)
+- Memory extend optimization in `write()` function, PR [#2276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2276)
+- Added `getActiveOpcodes?(): OpcodeList` as an optional method to `EVMInterface`, PR [#2361](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2361)
+
 ## 1.0.0 - 2022-09-06
 
 Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)).

@@ -60,6 +60,8 @@ console.log('Vitalik has a current ETH balance of ', account.balance)
 
 The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
+**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
+
 ### Points on usage:
 
 #### Provider selection

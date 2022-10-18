@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.4 - 2022-10-18
+
+- Fixed reorg handling in the underlying `@ethereumjs/blockchain` library `iterator()` function, PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
+- Fixed a bug leading to exclusion of subsequent transactions build on top of previous ones, PR [#2333](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2333)
+- Fixed a bug in the `eth_estimateGas` RPC call where the parameter logic was being applied to an optional parameter when the optional parameter didn't exist, PR [#2358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2358)
+
 ## 0.6.3 - 2022-09-06
 
 This is the official Merge-ready release for the EthereumJS client! 🎉 Note that it is not possible yet to run EthereumJS client on mainnet though. This release nevertheless implements all final Merge specifications and includes Merge-related configuration parameters and is ready for current (`Sepolia`) and future Merge related testnets and development networks.

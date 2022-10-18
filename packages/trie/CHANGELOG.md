@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.1 - 2022-10-18
+
+- Fixed a dependency issue when using `TrieReadStream`, PR [#2318](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2318)
+- Fixed a pruning verification issue for a case where only the root key is present as a key but not the root value, PR [#2296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2296)
+
 ## 5.0.0 - 2022-09-06
 
 Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/CHANGELOG.md)).
