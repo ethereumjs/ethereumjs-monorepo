@@ -202,7 +202,11 @@ async function runTests() {
       const failingTests: Record<string, string[] | undefined> = {}
 
       ;(t as any).on('result', (o: any) => {
-        if (typeof o.ok !== 'undefined' && o.ok !== null && (o.ok === '' || o.ok === 0)) {
+        if (
+          typeof o.ok !== 'undefined' &&
+          o.ok !== null &&
+          (o.ok === '' || o.ok === 0 || o.ok === false)
+        ) {
           if (failingTests[testIdentifier] !== undefined) {
             ;(failingTests[testIdentifier] as string[]).push(o.name)
           } else {
