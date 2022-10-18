@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666081020585,
+  "lastUpdate": 1666093649387,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3712a1b4c0338a28c77df0f83d923fdb3cc311ba",
-          "message": "common: Relocate geth genesis, state parsers to common, blockchain respectively (#2300)\n\n* common: Relocate geth genesis, state parsers to common, blockchain respectively\r\n\r\n* lint utils\r\n\r\n* relocate setForkHashes\r\n\r\n* update readme\r\n\r\n* use Common.fromGethGenesis wherever possible\r\n\r\n* relocate parseGethGenesis tests\r\n\r\n* remove unnecessary await\r\n\r\n* fix tests access across common and client\r\n\r\n* provide abs path\r\n\r\n* add test for parseGethGenesisState\r\n\r\n* add test cases for setcommon hashes and correct kiln genesis root\r\n\r\n* add stateroot match test\r\n\r\n* fix the storage trie to also use key hashing",
-          "timestamp": "2022-09-22T13:05:13+02:00",
-          "tree_id": "ca701d939d3d16990573e95791afba54401e6925",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3712a1b4c0338a28c77df0f83d923fdb3cc311ba"
-        },
-        "date": 1663844892832,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 14861,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14277,
-            "range": "±5.05%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14832,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 13404,
-            "range": "±8.82%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15151,
-            "range": "±2.29%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.83%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "843265639073d8b7e6f3f4d15efa6108ea4a0ce8",
+          "message": "vm/tests: print failing tests (#2367)",
+          "timestamp": "2022-10-18T13:45:19+02:00",
+          "tree_id": "1435f657f3abae499222a00a966f923382b3d29b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/843265639073d8b7e6f3f4d15efa6108ea4a0ce8"
+        },
+        "date": 1666093647951,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16180,
+            "range": "±4.26%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 16843,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15817,
+            "range": "±7.06%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16727,
+            "range": "±2.15%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16196,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
