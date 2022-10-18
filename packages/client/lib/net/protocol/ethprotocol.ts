@@ -103,11 +103,13 @@ export class EthProtocol extends Protocol {
         }
         return serializedTxs
       },
-      decode: ([txs]: [Buffer[]]) => {
-        // TODO: add proper Common instance (problem: service not accessible)
-        //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.config.syncTargetHeight, this.chain.headers.td)
-        return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
+      decode: (txs: Buffer[]) => {
+        const common = this.config.chainCommon.copy()
+        common.setHardforkByBlockNumber(
+          this.config.syncTargetHeight ?? BigInt(0),
+          this.chain.headers.td
+        )
+        return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
     },
     {
@@ -192,6 +194,10 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
+      encode: ({ hashes }: { hashes: Buffer[] }) => [hashes],
+      decode: ([hashes]: [Buffer[]]) => {
+        hashes
+      },
     },
     {
       name: 'GetPooledTransactions',
