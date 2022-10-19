@@ -37,6 +37,10 @@ export class MapDB implements DB {
     }
   }
 
+  async keys(): Promise<string[]> {
+    return [...this._database.keys()]
+  }
+
   copy(): DB {
     return new MapDB(this._database)
   }

@@ -65,6 +65,23 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
+  async keys(): Promise<string[]> {
+    const keys: string[] = []
+
+    for (const key of await this._leveldb.keys().all()) {
+      if (key instanceof Buffer) {
+        keys.push(key.toString('hex'))
+      } else {
+        keys.push(key)
+      }
+    }
+
+    return keys
+  }
+
+  /**
+   * @inheritDoc
+   */
   copy(): DB {
     return new LevelDB(this._leveldb)
   }

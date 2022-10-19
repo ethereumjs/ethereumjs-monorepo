@@ -110,6 +110,11 @@ export interface DB {
   batch(opStack: BatchDBOp[]): Promise<void>
 
   /**
+   * Returns all keys as hex strings.
+   */
+  keys(): Promise<string[]>
+
+  /**
    * Returns a copy of the DB instance, with a reference
    * to the **same** underlying leveldb instance.
    */

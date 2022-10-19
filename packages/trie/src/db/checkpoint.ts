@@ -154,6 +154,13 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
+  async keys(): Promise<string[]> {
+    return this.db.keys()
+  }
+
+  /**
+   * @inheritDoc
+   */
   copy(): CheckpointDB {
     return new CheckpointDB(this.db)
   }

@@ -39,6 +39,14 @@ export class LMDB implements DB {
     }
   }
 
+  async keys(): Promise<string[]> {
+    const keys: string[] = []
+
+    this._database.getKeys().forEach((key) => keys.push(key.toString()))
+
+    return keys
+  }
+
   copy(): DB {
     return new LMDB(this._path)
   }
