@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.5 - 2022-10-19
+
+- Fixes broken release v0.6.4 (wrong @ethereumjs/util dependency)
+
 ## 0.6.4 - 2022-10-18
+
+[ BROKEN] (wrong @ethereumjs/util dependency)
 
 - Fixed reorg handling in the underlying `@ethereumjs/blockchain` library `iterator()` function, PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
 - Fixed a bug leading to exclusion of subsequent transactions build on top of previous ones, PR [#2333](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2333)
