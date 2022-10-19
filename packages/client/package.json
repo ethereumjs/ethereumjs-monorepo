@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "EthereumJS client implementation",
   "keywords": [
     "ethereum",
@@ -60,13 +60,13 @@
     "@ethereumjs/blockchain": "6.0.1",
     "@ethereumjs/common": "3.0.1",
     "@ethereumjs/devp2p": "5.0.1",
-    "@ethereumjs/ethash": "2.0.0",
+    "@ethereumjs/ethash": "2.0.1",
     "@ethereumjs/evm": "1.1.0",
     "@ethereumjs/rlp": "4.0.0",
     "@ethereumjs/statemanager": "1.0.1",
     "@ethereumjs/trie": "5.0.1",
     "@ethereumjs/tx": "4.0.1",
-    "@ethereumjs/util": "8.0.0",
+    "@ethereumjs/util": "8.0.1",
     "@ethereumjs/vm": "6.1.0",
     "abstract-level": "^1.0.3",
     "body-parser": "^1.19.2",

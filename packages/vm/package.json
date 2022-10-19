@@ -64,7 +64,7 @@
     "@ethereumjs/statemanager": "^1.0.1",
     "@ethereumjs/trie": "^5.0.1",
     "@ethereumjs/tx": "^4.0.1",
-    "@ethereumjs/util": "^8.0.0",
+    "@ethereumjs/util": "^8.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "eventemitter2": "^6.4.9",
