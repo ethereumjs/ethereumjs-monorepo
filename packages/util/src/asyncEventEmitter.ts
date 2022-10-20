@@ -1,3 +1,12 @@
+/**
+ * Ported to Typescript from original implementation below:
+ * https://github.com/ahultgren/async-eventemitter -- MIT licensed
+ *
+ * Type Definitions based on work by: patarapolw <https://github.com/patarapolw> -- MIT licensed
+ * that was contributed to Definitely Typed below:
+ * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/async-eventemitter
+ */
+
 import { eachSeries } from 'async'
 import { EventEmitter } from 'events'
 type AsyncListener<T, R> =
