@@ -69,17 +69,17 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
     // Hack to support set arity
     if (listener.length >= 2) {
       g = function (e: any, next: any) {
-        self.removeListener(event, g)
+        self.removeListener(event, g as any)
         void listener(e, next)
       }
     } else {
       g = function (e) {
-        self.removeListener(event, g)
+        self.removeListener(event, g as any)
         void listener(e, g)
       }
     }
 
-    self.on(event, g)
+    self.on(event, g as any)
 
     return self
   }
