@@ -31,6 +31,7 @@ export * from './types'
 /**
  * Export ethjs-util methods
  */
+export * from './asyncEventEmitter'
 export {
   arrayContainsArray,
   fromAscii,

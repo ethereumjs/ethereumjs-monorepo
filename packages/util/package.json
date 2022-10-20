@@ -84,6 +84,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.0-beta.2",
+    "async": "^3.2.4",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {

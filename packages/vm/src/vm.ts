@@ -2,8 +2,8 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, TypeOutput, toType } from '@ethereumjs/util'
-import { EventEmitter2 as AsyncEventEmitter } from 'eventemitter2'
+import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
+import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
 import { EEI } from './eei/eei'
@@ -17,6 +17,7 @@ import type {
   RunBlockResult,
   RunTxOpts,
   RunTxResult,
+  VMEvents,
   VMOpts,
 } from './types'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
@@ -42,7 +43,7 @@ export class VM {
 
   readonly _common: Common
 
-  readonly events: AsyncEventEmitter
+  readonly events: AsyncEventEmitter<VMEvents>
   /**
    * The EVM used for bytecode execution
    */
@@ -54,6 +55,13 @@ export class VM {
 
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTTD?: bigint
+
+  /**
+   * Cached emit() function, not for public usage
+   * set to public due to implementation internals
+   * @hidden
+   */
+  public readonly _emit: (topic: string, data: any) => Promise<void>
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -85,7 +93,7 @@ export class VM {
    * @param opts
    */
   protected constructor(opts: VMOpts = {}) {
-    this.events = new AsyncEventEmitter()
+    this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
 
@@ -136,6 +144,12 @@ export class VM {
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
+
+    // We cache this promisified function as it's called from the main execution loop, and
+    // promisifying each time has a huge performance impact.
+    this._emit = <(topic: string, data: any) => Promise<void>>(
+      promisify(this.events.emit.bind(this.events))
+    )
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
