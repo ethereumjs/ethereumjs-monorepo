@@ -22,14 +22,10 @@ const main = async () => {
   // Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
   const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
 
-  evm.events.on(
-    'step',
-    function (data) {
-      // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
-      console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
-    },
-    { promisify: true }
-  )
+  evm.events.on('step', function (data) {
+    // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
+    console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+  })
 
   evm
     .runCode({

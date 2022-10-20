@@ -3,8 +3,7 @@ import type { InterpreterStep } from './interpreter'
 import type { Message } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-import type { EventEmitter2 as AsyncEventEmitter } from 'eventemitter2'
+import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * API of the EVM
@@ -16,7 +15,7 @@ export interface EVMInterface {
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
   eei: EEIInterface
-  events?: AsyncEventEmitter
+  events?: AsyncEventEmitter<EVMEvents>
 }
 
 /**
