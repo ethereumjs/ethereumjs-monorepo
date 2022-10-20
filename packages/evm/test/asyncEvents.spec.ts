@@ -16,7 +16,7 @@ tape.only('async events', async (t) => {
     const startTime = Date.now()
     setTimeout(() => {
       t.ok(Date.now() > startTime, 'evm paused on step function for one second')
-      next()
+      next?.()
     }, 1000)
   })
   const runCallArgs = {
