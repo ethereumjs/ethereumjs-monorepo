@@ -1,8 +1,8 @@
 import { eachSeries } from 'async'
 import { EventEmitter } from 'events'
 type AsyncListener<T, R> =
-  | ((data: T, callback: (result?: R) => void) => Promise<R>)
-  | ((data: T, callback: (result?: R) => void) => void)
+  | ((data: T, callback?: (result?: R) => void) => Promise<R>)
+  | ((data: T, callback?: (result?: R) => void) => void)
 export interface EventMap {
   [event: string]: AsyncListener<any, any>
 }
@@ -27,7 +27,7 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
         fn: callback,
       }
 
-      callback = undefined as any
+      callback = undefined
     }
 
     // A single listener is just a function not an array...
@@ -68,18 +68,18 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
 
     // Hack to support set arity
     if (listener.length >= 2) {
-      g = function (e: any, next: any) {
-        self.removeListener(event, g as any)
+      g = function (e: E, next: any) {
+        self.removeListener(event, g as T[E])
         void listener(e, next)
       }
     } else {
-      g = function (e) {
-        self.removeListener(event, g as any)
+      g = function (e: E) {
+        self.removeListener(event, g as T[E])
         void listener(e, g)
       }
     }
 
-    self.on(event, g as any)
+    self.on(event, g as T[E])
 
     return self
   }
