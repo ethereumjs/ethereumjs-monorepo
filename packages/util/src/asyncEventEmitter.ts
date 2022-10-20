@@ -57,4 +57,30 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
 
     return self.listenerCount(event) > 0
   }
+
+  once<E extends keyof T>(event: E & string, listener: T[E]): this {
+    const self = this
+    let g: (...args: any[]) => void
+
+    if (typeof listener !== 'function') {
+      throw new TypeError('listener must be a function')
+    }
+
+    // Hack to support set arity
+    if (listener.length >= 2) {
+      g = function (e: any, next: any) {
+        self.removeListener(event, g)
+        void listener(e, next)
+      }
+    } else {
+      g = function (e) {
+        self.removeListener(event, g)
+        void listener(e, g)
+      }
+    }
+
+    self.on(event, g)
+
+    return self
+  }
 }
