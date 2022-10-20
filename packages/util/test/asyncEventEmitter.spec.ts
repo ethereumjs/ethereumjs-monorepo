@@ -9,7 +9,7 @@ tape('async event emit/on test', (t) => {
     t.equal(data, 'eventData', 'Received data from an event')
     setTimeout(() => {
       t.ok(Date.now() > startTime, 'some time passed before event resolved')
-      next()
+      next?.()
     }, 1000)
   })
   emitter.emit('event', 'eventData', t.end)
@@ -18,7 +18,7 @@ tape('async event emit/on test', (t) => {
 tape('async event emit/once test', (t) => {
   const emitter = new AsyncEventEmitter()
   emitter.once('event', async (data, next) => {
-    setTimeout(next, 1000)
+    setTimeout(next!, 1000)
   })
   t.equal(emitter.listenerCount('event'), 1, 'emitter has one event listener')
   emitter.emit('event', 'eventData', () => {

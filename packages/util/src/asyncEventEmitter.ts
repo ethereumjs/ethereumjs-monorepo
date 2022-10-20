@@ -1,8 +1,8 @@
 import { eachSeries } from 'async'
 import { EventEmitter } from 'events'
 type AsyncListener<T, R> =
-  | ((data: T, callback: (result?: R) => void) => Promise<R>)
-  | ((data: T, callback: (result?: R) => void) => void)
+  | ((data: T, callback?: (result?: R) => void) => Promise<R>)
+  | ((data: T, callback?: (result?: R) => void) => void)
 export interface EventMap {
   [event: string]: AsyncListener<any, any>
 }
@@ -27,7 +27,7 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
         fn: callback,
       }
 
-      callback = undefined as any
+      callback = undefined
     }
 
     // A single listener is just a function not an array...
