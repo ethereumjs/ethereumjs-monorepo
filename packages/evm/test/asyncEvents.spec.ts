@@ -6,7 +6,7 @@ import { EVM } from '../src'
 
 import { getEEI } from './utils'
 
-tape.only('async events', async (t) => {
+tape('async events', async (t) => {
   t.plan(2)
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
