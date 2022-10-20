@@ -15,7 +15,7 @@ tape.only('async events', async (t) => {
   evm.events.on('step', async (event, next) => {
     const startTime = Date.now()
     setTimeout(() => {
-      t.ok(Date.now() > startTime, 'evm paused on step function for one second')
+      t.ok(Date.now() > (startTime + 999), 'evm paused on step function for one second')
       next?.()
     }, 1000)
   })
