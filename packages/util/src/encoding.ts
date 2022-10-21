@@ -17,7 +17,7 @@ export const hexToCompact = (hex: Uint8Array) => {
   let terminator = 0
   if (hasTerm(hex)) {
     terminator = 1
-    hex = hex.subarray(0, hex.length - 1) //hex.subarray(1, hex.length-1)
+    hex = hex.subarray(0, hex.length - 1)
   }
   const buf = new Uint8Array(hex.length / 2 + 1)
   buf[0] = terminator << 5
