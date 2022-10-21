@@ -139,6 +139,14 @@ export interface VMOpts {
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
+
+  /**
+   * Disable command line debugging.
+   * This setting will override DEBUG environment variables
+   *
+   * Default: 'undefined'
+   */
+  disableCLDebug?: boolean
 }
 
 /**
