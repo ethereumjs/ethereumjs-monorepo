@@ -85,7 +85,9 @@ export class BeaconSynchronizer extends Synchronizer {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
       const headBlock = await this.skeleton.getBlock(head)
-      await this.skeleton.setHead(headBlock!, true, true)
+      if (headBlock !== undefined) {
+        await this.skeleton.initSync(headBlock)
+      }
     }
   }
 
