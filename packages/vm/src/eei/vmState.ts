@@ -55,8 +55,8 @@ export class VmState implements EVMStateAccess {
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
+    // Skip debug() calls if
+    if (!disableCLDebug && typeof process.env.DEBUG !== 'undefined') {
       this.DEBUG = true
     }
     this._debug = createDebugLogger('vm:state')
