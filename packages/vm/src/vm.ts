@@ -145,16 +145,15 @@ export class VM {
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
+    if (typeof process.env.DEBUG !== 'undefined' && opts.disableCLDebug !== true) {
+      this.DEBUG = true
+    }
+
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
-
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
   }
 
   async init(): Promise<void> {
