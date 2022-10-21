@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^3.0.1",
-    "@ethereumjs/util": "^8.0.1",
+    "@ethereumjs/util": "^8.0.2",
     "@ethersproject/providers": "^5.7.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
