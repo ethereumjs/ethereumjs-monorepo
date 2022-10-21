@@ -298,16 +298,16 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // Optimize performance by skipping debug() calls when debugging has been deactivated
+    if (typeof process?.env.DEBUG !== 'undefined' && opts.disableCLDebug !== true) {
+      this.DEBUG = true
+    }
+
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
-
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
   }
 
   protected async init(): Promise<void> {
