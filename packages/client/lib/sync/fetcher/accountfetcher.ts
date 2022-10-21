@@ -81,7 +81,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     stateRoot: Buffer,
     origin: Buffer,
     { accounts, proof }: { accounts: AccountData[]; proof: Buffer[] }
-  ): Promise<void> {
+  ): Promise<boolean> {
     this.debug(
       `verifyRangeProof accounts:${accounts.length} first=${short(accounts[0].hash)} last=${short(
         accounts[accounts.length - 1].hash
@@ -103,19 +103,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    await trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
-  }
-
-  private isMissingRightRange(
-    limit: Buffer,
-    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Buffer[] }
-  ): boolean {
-    if (accounts.length > 0 && accounts[accounts.length - 1]?.hash.compare(limit) >= 0) {
-      return false
-    } else {
-      // TODO: Check if there is a proof of missing limit in state
-      return true
-    }
+    return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Buffer {
@@ -165,12 +153,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // validate the proof
       try {
         // verifyRangeProof will also verify validate there are no missed states between origin and
-        // response data
-        await this.verifyRangeProof(this.root, origin, rangeResult)
+        // response data and returns a boolean indiciating if there are more accounts remaining to fetch
+        // in the specified range
+        const isMissingRightRange: boolean = await this.verifyRangeProof(
+          this.root,
+          origin,
+          rangeResult
+        )
 
         // Check if there is any pending data to be synced to the right
         let completed: boolean
-        if (this.isMissingRightRange(limit, rangeResult)) {
+        if (isMissingRightRange) {
           this.debug(
             `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
               rangeResult.accounts.length - 1
