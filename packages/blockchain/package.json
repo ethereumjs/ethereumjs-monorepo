@@ -43,7 +43,7 @@
     "@ethereumjs/ethash": "^2.0.1",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/trie": "^5.0.1",
-    "@ethereumjs/util": "^8.0.1",
+    "@ethereumjs/util": "^8.0.2",
     "abstract-level": "^1.0.3",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
