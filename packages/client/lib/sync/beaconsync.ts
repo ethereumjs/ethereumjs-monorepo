@@ -143,6 +143,7 @@ export class BeaconSynchronizer extends Synchronizer {
         try {
           await this.sync()
         } catch (error: any) {
+          this.config.logger.error(`Beacon sync error: ${error.message}`)
           this.config.events.emit(Event.SYNC_ERROR, error)
         }
         await new Promise((resolve) => setTimeout(resolve, this.interval))
@@ -246,7 +247,13 @@ export class BeaconSynchronizer extends Synchronizer {
 
     if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
       this.config.logger.debug(
-        `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
+        `syncWithPeer - new ReverseBlockFetcher peer=${
+          peer?.id
+        } subChainTail=${tail} first=${first} count=${count} chainHeight=${
+          this.chain.blocks.height
+        } ${
+          this.fetcher === null ? '' : 'previous fetcher errored=' + this.fetcher.errored?.message
+        }`
       )
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
