@@ -129,6 +129,14 @@ export interface EVMOpts {
    * The External Interface Factory, used to build an External Interface when this is necessary
    */
   eei: EEIInterface
+
+  /**
+   * Option to disable command line debugging
+   * Will take precedence over process.env.DEBUG variable usage
+   * Default: `false`
+   * Set to `true` to disable debugging.
+   */
+  disableCLDebug?: boolean
 }
 
 /**
