@@ -627,6 +627,7 @@ export class EVM implements EVMInterface {
       contract: await this.eei.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
+      containerCode: message.containerCode,
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
@@ -856,10 +857,12 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.eei.getContractCode(message.codeAddress)
+        message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
         if (this._common.isActivatedEIP(3540)) {
-          message.code = getEOFCode(message.code)
+          message.code = getEOFCode(message.containerCode)
+        } else {
+          message.code = message.containerCode
         }
       }
     }

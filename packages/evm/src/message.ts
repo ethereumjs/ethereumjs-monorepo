@@ -46,6 +46,7 @@ export class Message {
   isStatic: boolean
   isCompiled: boolean
   salt?: Buffer
+  containerCode?: Buffer /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
   /**
    * Map of addresses to selfdestruct. Key is the unprefixed address.
    * Value is a boolean when marked for destruction and replaced with a Buffer containing the address where the remaining funds are sent.

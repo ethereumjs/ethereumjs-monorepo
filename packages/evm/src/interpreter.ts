@@ -47,6 +47,7 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
+  containerCode?: Buffer /** Full container code for EOF1 contracts */
 }
 
 export interface RunState {
@@ -572,14 +573,14 @@ export class Interpreter {
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.code.length)
+    return BigInt(this._env.containerCode ? this._env.containerCode.length : this._env.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Buffer {
-    return this._env.code
+    return this._env.containerCode ?? this._env.code
   }
 
   /**
