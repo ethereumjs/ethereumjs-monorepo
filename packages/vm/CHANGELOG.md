@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.2.0 - 2022-10-21
+
+This release replaces the `v6.1.0` release from a couple of days ago which now becomes deprecated. The async event emitter library switch from the `async-eventemitter` package to the `eventemitter2` package turned out to be breaking along parts of the functionality.
+
+This release therefore switches back to a modernized version of the `async-eventemitter` package - now also solving previous import problems - which has been internalized and integrated into the `@ethereumjs/util` package, see PR [#2376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2376).
+
 ## 6.1.0 - 2022-10-18
+
+[ DEPRECATED ]: Async event emitter library switch turned out to be breaking. If you have got problems, please update to v6.2.0 or above.
 
 ### Support for Geth genesis.json Genesis Format
 
