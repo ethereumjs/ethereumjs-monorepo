@@ -1,3 +1,8 @@
+/**
+ *
+ * @param s byte sequence
+ * @returns boolean indicating if input byte sequence contains an optional terminating character
+ */
 export const hasTerm = (s: Uint8Array) => {
   return s.length > 0 && s[s.length - 1] === 16
 }
