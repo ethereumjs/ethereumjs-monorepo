@@ -67,8 +67,9 @@ export class VM {
    * VM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
+   * debug() calls can be skipped when to optimize performance
+   * By setting VMOpts.disableCLDebug: true
+   * This setting will override the environment variable
    * @hidden
    */
   readonly DEBUG: boolean = false

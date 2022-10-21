@@ -206,8 +206,7 @@ export class EVM implements EVMInterface {
    * EVM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
+   * debug() calls can be deactivated with deactivateCLDebug
    * @hidden
    */
   readonly DEBUG: boolean = false
