@@ -37,7 +37,15 @@ export class VmState implements EVMStateAccess {
 
   protected readonly DEBUG: boolean = false
 
-  constructor({ common, stateManager }: { common?: Common; stateManager: StateManager }) {
+  constructor({
+    common,
+    stateManager,
+    disableCLDebug = false,
+  }: {
+    common?: Common
+    stateManager: StateManager
+    disableCLDebug?: boolean
+  }) {
     this._checkpointCount = 0
     this._stateManager = stateManager
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
