@@ -105,26 +105,6 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
-  /**
-   * Run a function which acquires a lock from within other function which runs inside lock,
-   * i.e. support nested locking. This utility releases the lock so that the called nested
-   * `action` can aquire it immediately, and reaquires the lock when the called nested
-   * `action` releases it. The release/aquiring process happens one after another so its
-   * not possible for any other process to aquire the lock between the boundaries.
-   *
-   * @param action - function to run after acquiring a lock
-   * @hidden
-   */
-  private async runWithUnLock<T>(action: () => Promise<T>): Promise<T> {
-    try {
-      this._lock.release()
-      const value = await action()
-      return value
-    } finally {
-      await this._lock.acquire()
-    }
-  }
-
   async open() {
     await this.runWithLock<void>(async () => {
       await this.getSyncStatus()
