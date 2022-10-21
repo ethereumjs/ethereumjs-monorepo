@@ -34,6 +34,21 @@ tape('vmState', (t) => {
     }
   )*/
 
+  t.test('Should default to DEBUG: true', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet })
+    const stateManager = new StateManager({})
+    const vmState = new VmState({ common, stateManager })
+    st.notok((vmState as any).DEBUG, 'DEBUG set to true')
+    st.end()
+  })
+  t.test('DEBUG should be disabled by constructor option', (st) => {
+    const common = new Common({ chain: Chain.Mainnet })
+    const stateManager = new StateManager({})
+    const vmState = new VmState({ common, stateManager, disableCLDebug: true })
+    st.notok((vmState as any).DEBUG, 'DEBUG set to false')
+    st.end()
+  })
+
   t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
