@@ -290,7 +290,7 @@ export default class Wallet {
    *
    * @param icapDirect setting this to `true` will generate an address suitable for the `ICAP Direct mode`
    */
-  public static generate(icapDirect: boolean = false): Wallet {
+  public static generate(icapDirect = false): Wallet {
     if (icapDirect) {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
@@ -329,7 +329,7 @@ export default class Wallet {
    * This method only accepts uncompressed Ethereum-style public keys, unless
    * the `nonStrict` flag is set to true.
    */
-  public static fromPublicKey(publicKey: Buffer, nonStrict: boolean = false): Wallet {
+  public static fromPublicKey(publicKey: Buffer, nonStrict = false): Wallet {
     if (nonStrict) {
       publicKey = importPublic(publicKey)
     }
@@ -411,7 +411,7 @@ export default class Wallet {
   public static async fromV3(
     input: string | V3Keystore,
     password: string,
-    nonStrict: boolean = false
+    nonStrict = false
   ): Promise<Wallet> {
     const json: V3Keystore =
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
