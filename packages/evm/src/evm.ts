@@ -13,7 +13,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF } from './eof'
+import { EOF, getEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -637,6 +637,7 @@ export class EVM implements EVMInterface {
       contract: await this.eei.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
+      containerCode: message.containerCode,
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
@@ -866,8 +867,13 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.eei.getContractCode(message.codeAddress)
+        message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
+        if (this._common.isActivatedEIP(3540)) {
+          message.code = getEOFCode(message.containerCode)
+        } else {
+          message.code = message.containerCode
+        }
       }
     }
   }

@@ -354,6 +354,12 @@ export class Eth {
       [validators.array(validators.hex)],
       [validators.blockOption],
     ])
+
+    this.getBlockTransactionCountByNumber = middleware(
+      this.getBlockTransactionCountByNumber.bind(this),
+      1,
+      [[validators.blockOption]]
+    )
   }
 
   /**
@@ -969,5 +975,16 @@ export class Eth {
     }
 
     return { startingBlock, currentBlock, highestBlock }
+  }
+
+  /**
+   * Returns the transaction count for a block given by the block number.
+   * @param params An array of one paramater:
+   *  1. integer of a block number, or the string "latest", "earliest" or "pending"
+   */
+  async getBlockTransactionCountByNumber(params: [string]) {
+    const [blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
+    return intToHex(block.transactions.length)
   }
 }
