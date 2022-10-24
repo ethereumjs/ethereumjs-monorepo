@@ -157,6 +157,11 @@ export interface ConfigOptions {
   maxFetcherJobs?: number
 
   /**
+   * Max outgoing multi-peer requests by the fetcher at any given time
+   */
+  maxFetcherRequests?: number
+
+  /**
    * Number of peers needed before syncing
    *
    * Default: `1`
@@ -262,6 +267,7 @@ export class Config {
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
+  public static readonly MAXFETCHERREQUESTS_DEFAULT = 5
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
@@ -285,6 +291,7 @@ export class Config {
   public readonly txLookupLimit: number
   public readonly maxPerRequest: number
   public readonly maxFetcherJobs: number
+  public readonly maxFetcherRequests: number
   public readonly minPeers: number
   public readonly maxPeers: number
   public readonly dnsAddr: string
@@ -330,6 +337,7 @@ export class Config {
     this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.maxFetcherJobs = options.maxFetcherJobs ?? Config.MAXFETCHERJOBS_DEFAULT
+    this.maxFetcherRequests = options.maxPerRequest ?? Config.MAXFETCHERREQUESTS_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT

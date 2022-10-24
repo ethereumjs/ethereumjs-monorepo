@@ -15,6 +15,11 @@ tape('[BeaconSynchronizer]', async (t) => {
     close() {}
     idle() {}
     ban(_peer: any) {}
+    peers: any[]
+
+    constructor(_opts = undefined) {
+      this.peers = []
+    }
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
@@ -155,6 +160,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
+    const head = Block.fromBlockData({ header: { number: BigInt(15) } })
+    await skeleton['putBlock'](head)
     ;(skeleton as any).status.progress.subchains = [
       {
         head: BigInt(15),
@@ -162,7 +169,7 @@ tape('[BeaconSynchronizer]', async (t) => {
       },
     ]
     await sync.open()
-    const block = Block.fromBlockData({ header: { number: BigInt(16) } })
+    const block = Block.fromBlockData({ header: { number: BigInt(16), parentHash: head.hash() } })
     t.ok(await sync.extendChain(block), 'should extend chain successfully')
     t.ok(await sync.setHead(block), 'should set head successfully')
     t.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
@@ -181,7 +188,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton.isLinked = async () => true // stub
+    skeleton.isLinked = () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     await sync.open()
     t.equal(

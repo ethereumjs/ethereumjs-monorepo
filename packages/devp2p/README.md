@@ -142,7 +142,7 @@ Events emitted:
 
 ### Reference
 
-- [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+- [Node discovery protocol](https://ethereum.org/en/developers/docs/networking-layer/#discovery)
 - [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
 - [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
 
