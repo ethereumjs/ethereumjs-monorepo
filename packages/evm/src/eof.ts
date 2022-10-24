@@ -92,4 +92,14 @@ export const validOpcodes = (code: Buffer) => {
   return true
 }
 
+export const getEOFCode = (code: Buffer) => {
+  const sectionSizes = codeAnalysis(code)
+  if (sectionSizes === undefined) {
+    return code
+  } else {
+    const codeStart = sectionSizes.data > 0 ? 10 : 7
+    return code.slice(codeStart, codeStart + sectionSizes.code)
+  }
+}
+
 export const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }
