@@ -15,6 +15,11 @@ tape('[BeaconSynchronizer]', async (t) => {
     close() {}
     idle() {}
     ban(_peer: any) {}
+    peers: any[]
+
+    constructor(_opts = undefined) {
+      this.peers = []
+    }
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
