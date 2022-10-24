@@ -216,7 +216,7 @@ export class Skeleton extends MetaDBManager {
           )
         } else {
           this.config.logger.debug(
-            `Skeleton stale annoucement tail=${lastchain.tail} head=${lastchain.head} number=${number}`
+            `Skeleton stale announcement tail=${lastchain.tail} head=${lastchain.head} number=${number}`
           )
         }
         return true
