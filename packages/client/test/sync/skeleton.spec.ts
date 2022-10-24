@@ -6,7 +6,9 @@ import * as td from 'testdouble'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
+import { getLogger } from '../../lib/logging'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
+import { short } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -24,140 +26,175 @@ const block50 = Block.fromBlockData(
   { header: { number: 50, parentHash: block49.hash() } },
   { common }
 )
+const block50B = Block.fromBlockData(
+  { header: { number: 50, parentHash: block49.hash(), gasLimit: 999 } },
+  { common }
+)
 const block51 = Block.fromBlockData(
   { header: { number: 51, parentHash: block50.hash() } },
   { common }
 )
 
-tape('[Skeleton]', async (t) => {
+tape('[Skeleton] / initSync', async (t) => {
   // Tests various sync initializations based on previous leftovers in the database
   // and announced heads.
-  t.test('should pass sync init test cases', async (st) => {
-    interface TestCase {
-      blocks?: Block[] /** Database content (besides the genesis) */
-      oldState?: Subchain[] /** Old sync state with various interrupted subchains */
-      head: Block /** New head header to announce to reorg to */
-      newState: Subchain[] /** Expected sync state after the reorg */
-    }
-    const testCases: TestCase[] = [
-      // Completely empty database with only the genesis set. The sync is expected
-      // to create a single subchain with the requested head.
-      {
-        head: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(50) }],
-      },
-      // Empty database with only the genesis set with a leftover empty sync
-      // progress. This is a synthetic case, just for the sake of covering things.
-      { oldState: [], head: block50, newState: [{ head: BigInt(50), tail: BigInt(50) }] },
-      // A single leftover subchain is present, older than the new head. The
-      // old subchain should be left as is and a new one appended to the sync
-      // status.
-      {
-        oldState: [{ head: BigInt(10), tail: BigInt(5) }],
-        head: block50,
-        newState: [
-          { head: BigInt(50), tail: BigInt(50) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-      },
-      // Multiple leftover subchains are present, older than the new head. The
-      // old subchains should be left as is and a new one appended to the sync
-      // status.
-      {
-        oldState: [
-          { head: BigInt(20), tail: BigInt(15) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-        head: block50,
-        newState: [
-          { head: BigInt(50), tail: BigInt(50) },
-          { head: BigInt(20), tail: BigInt(15) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-      },
-      // A single leftover subchain is present, newer than the new head. The
-      // newer subchain should be deleted and a fresh one created for the head.
-      {
-        oldState: [{ head: BigInt(65), tail: BigInt(60) }],
-        head: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(50) }],
-      },
-      // Multiple leftover subchain is present, newer than the new head. The
-      // newer subchains should be deleted and a fresh one created for the head.
-      {
-        oldState: [
-          { head: BigInt(75), tail: BigInt(70) },
-          { head: BigInt(65), tail: BigInt(60) },
-        ],
-        head: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(50) }],
-      },
-      // Two leftover subchains are present, one fully older and one fully
-      // newer than the announced head. The head should delete the newer one,
-      // keeping the older one.
-      {
-        oldState: [
-          { head: BigInt(65), tail: BigInt(60) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-        head: block50,
-        newState: [
-          { head: BigInt(50), tail: BigInt(50) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-      },
-      // Multiple leftover subchains are present, some fully older and some
-      // fully newer than the announced head. The head should delete the newer
-      // ones, keeping the older ones.
-      {
-        oldState: [
-          { head: BigInt(75), tail: BigInt(70) },
-          { head: BigInt(65), tail: BigInt(60) },
-          { head: BigInt(20), tail: BigInt(15) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-        head: block50,
-        newState: [
-          { head: BigInt(50), tail: BigInt(50) },
-          { head: BigInt(20), tail: BigInt(15) },
-          { head: BigInt(10), tail: BigInt(5) },
-        ],
-      },
-      // A single leftover subchain is present and the new head is extending
-      // it with one more header. We expect the subchain head to be pushed
-      // forward.
-      {
-        blocks: [block49],
-        oldState: [{ head: BigInt(49), tail: BigInt(5) }],
-        head: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(5) }],
-      },
-      // A single leftover subchain is present. A new head is announced that
-      // links into the middle of it, correctly anchoring into an existing
-      // header. We expect the old subchain to be truncated and extended with
-      // the new head.
-      {
-        blocks: [block49],
-        oldState: [{ head: BigInt(100), tail: BigInt(5) }],
-        head: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(5) }],
-      },
-      // A single leftover subchain is present. A new head is announced that
-      // links into the middle of it, but does not anchor into an existing
-      // header. We expect the old subchain to be truncated and a new chain
-      // be created for the dangling head.
-      {
-        blocks: [block49B],
-        oldState: [{ head: BigInt(100), tail: BigInt(5) }],
-        head: block50,
-        newState: [
-          { head: BigInt(50), tail: BigInt(50) },
-          { head: BigInt(49), tail: BigInt(5) },
-        ],
-      },
-    ]
-    for (const [testCaseIndex, testCase] of testCases.entries()) {
-      const config = new Config({ common, transports: [] })
+  interface TestCase {
+    name: string
+    blocks?: Block[] /** Database content (besides the genesis) */
+    oldState?: Subchain[] /** Old sync state with various interrupted subchains */
+    head: Block /** New head header to announce to reorg to */
+    newState: Subchain[] /** Expected sync state after the reorg */
+  }
+  const testCases: TestCase[] = [
+    // Completely empty database with only the genesis set. The sync is expected
+    // to create a single subchain with the requested head.
+    {
+      name: 'Completely empty database with only the genesis set',
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
+    // Empty database with only the genesis set with a leftover empty sync
+    // progress. This is a synthetic case, just for the sake of covering things.
+    {
+      name: 'Empty database with only the genesis set with a leftover empty sync',
+      oldState: [],
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
+    // A single leftover subchain is present, older than the new head. The
+    // old subchain should be left as is and a new one appended to the sync
+    // status.
+    {
+      name: 'A single leftover subchain is present, older than the new head',
+      oldState: [{ head: BigInt(10), tail: BigInt(5) }],
+      head: block50,
+      newState: [
+        { head: BigInt(50), tail: BigInt(50) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+    },
+    // Multiple leftover subchains are present, older than the new head. The
+    // old subchains should be left as is and a new one appended to the sync
+    // status.
+    {
+      name: 'Multiple leftover subchains are present, older than the new head',
+      oldState: [
+        { head: BigInt(20), tail: BigInt(15) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+      head: block50,
+      newState: [
+        { head: BigInt(50), tail: BigInt(50) },
+        { head: BigInt(20), tail: BigInt(15) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+    },
+    // A single leftover subchain is present, newer than the new head. The
+    // newer subchain should be deleted and a fresh one created for the head.
+    {
+      name: 'A single leftover subchain is present, newer than the new head.',
+      oldState: [{ head: BigInt(65), tail: BigInt(60) }],
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
+    // Multiple leftover subchain is present, newer than the new head. The
+    // newer subchains should be deleted and a fresh one created for the head.
+    {
+      name: 'Multiple leftover subchain is present, newer than the new head',
+      oldState: [
+        { head: BigInt(75), tail: BigInt(70) },
+        { head: BigInt(65), tail: BigInt(60) },
+      ],
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
+    // Two leftover subchains are present, one fully older and one fully
+    // newer than the announced head. The head should delete the newer one,
+    // keeping the older one.
+    {
+      name: 'Two leftover subchains are present, one fully older and one fully newer',
+      oldState: [
+        { head: BigInt(65), tail: BigInt(60) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+      head: block50,
+      newState: [
+        { head: BigInt(50), tail: BigInt(50) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+    },
+    // Multiple leftover subchains are present, some fully older and some
+    // fully newer than the announced head. The head should delete the newer
+    // ones, keeping the older ones.
+    {
+      name: 'Multiple leftover subchains are present, some fully older and some fully newer',
+      oldState: [
+        { head: BigInt(75), tail: BigInt(70) },
+        { head: BigInt(65), tail: BigInt(60) },
+        { head: BigInt(20), tail: BigInt(15) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+      head: block50,
+      newState: [
+        { head: BigInt(50), tail: BigInt(50) },
+        { head: BigInt(20), tail: BigInt(15) },
+        { head: BigInt(10), tail: BigInt(5) },
+      ],
+    },
+    // A single leftover subchain is present and the new head is extending
+    // it with one more header. We expect the subchain head to be pushed
+    // forward.
+    {
+      name: 'A single leftover subchain is present and the new head is extending',
+      blocks: [block49],
+      oldState: [{ head: BigInt(49), tail: BigInt(5) }],
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(5) }],
+    },
+    // A single leftover subchain is present. A new head is announced that
+    // links into the middle of it, correctly anchoring into an existing
+    // header. We expect the old subchain to be truncated and extended with
+    // the new head.
+    {
+      name: 'Duplicate annoucement should not modify subchain',
+      blocks: [block49, block50],
+      oldState: [{ head: BigInt(100), tail: BigInt(5) }],
+      head: block50,
+      newState: [{ head: BigInt(100), tail: BigInt(5) }],
+    },
+    // A single leftover subchain is present. A new head is announced that
+    // links into the middle of it, correctly anchoring into an existing
+    // header. We expect the old subchain to be truncated and extended with
+    // the new head.
+    {
+      name: 'A new alternate head is announced in the middle should truncate subchain',
+      blocks: [block49, block50],
+      oldState: [{ head: BigInt(100), tail: BigInt(5) }],
+      head: block50B,
+      newState: [{ head: BigInt(50), tail: BigInt(5) }],
+    },
+    // A single leftover subchain is present. A new head is announced that
+    // links into the middle of it, but does not anchor into an existing
+    // header. We expect the old subchain to be truncated and a new chain
+    // be created for the dangling head.
+    {
+      name: 'The old subchain to be truncated and a new chain be created for the dangling head',
+      blocks: [block49B],
+      oldState: [{ head: BigInt(100), tail: BigInt(5) }],
+      head: block50,
+      newState: [
+        { head: BigInt(50), tail: BigInt(50) },
+        { head: BigInt(49), tail: BigInt(5) },
+      ],
+    },
+  ]
+  for (const [testCaseIndex, testCase] of testCases.entries()) {
+    t.test(`${testCase.name}`, async (st) => {
+      const config = new Config({
+        common,
+        transports: [],
+        logger: getLogger({ loglevel: 'debug' }),
+      })
       const chain = new Chain({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
@@ -191,78 +228,98 @@ tape('[Skeleton]', async (t) => {
           st.pass(`test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
-    }
-  })
-
+    })
+  }
+})
+tape('[Skeleton] / setHead', async (t) => {
   // Tests that a running skeleton sync can be extended with properly linked up
   // headers but not with side chains.
-  t.test('should pass sync extend test cases', async (st) => {
-    interface TestCase {
-      head: Block /** New head header to announce to reorg to */
-      extend: Block /** New head header to announce to extend with */
-      newState: Subchain[] /** Expected sync state after the reorg */
-      err?: Error /** Whether extension succeeds or not */
-    }
-    const testCases: TestCase[] = [
-      // Initialize a sync and try to extend it with a subsequent block.
-      {
-        head: block49,
-        extend: block50,
-        newState: [{ head: BigInt(50), tail: BigInt(49) }],
-      },
-      // Initialize a sync and try to extend it with the existing head block.
-      {
-        head: block49,
-        extend: block49,
-        newState: [{ head: BigInt(49), tail: BigInt(49) }],
-      },
-      // Initialize a sync and try to extend it with a sibling block.
-      {
-        head: block49,
-        extend: block49B,
-        newState: [{ head: BigInt(49), tail: BigInt(49) }],
-        err: errReorgDenied,
-      },
-      // Initialize a sync and try to extend it with a number-wise sequential
-      // header, but a hash wise non-linking one.
-      {
-        head: block49B,
-        extend: block50,
-        newState: [{ head: BigInt(49), tail: BigInt(49) }],
-        err: errReorgDenied,
-      },
-      // Initialize a sync and try to extend it with a non-linking future block.
-      {
-        head: block49,
-        extend: block51,
-        newState: [{ head: BigInt(49), tail: BigInt(49) }],
-        err: errReorgDenied,
-      },
-      // Initialize a sync and try to extend it with a past canonical block.
-      {
-        head: block50,
-        extend: block49,
-        newState: [{ head: BigInt(50), tail: BigInt(50) }],
-        err: errReorgDenied,
-      },
-      // Initialize a sync and try to extend it with a past sidechain block.
-      {
-        head: block50,
-        extend: block49B,
-        newState: [{ head: BigInt(50), tail: BigInt(50) }],
-        err: errReorgDenied,
-      },
-    ]
-    for (const [testCaseIndex, testCase] of testCases.entries()) {
-      const config = new Config({ common, transports: [] })
+  interface TestCase {
+    name: string
+    blocks?: Block[] /** Database content (besides the genesis) */
+    head: Block /** New head header to announce to reorg to */
+    extend: Block /** New head header to announce to extend with */
+    force?: boolean /** To force set head not just to extend */
+    newState: Subchain[] /** Expected sync state after the reorg */
+    err?: Error /** Whether extension succeeds or not */
+  }
+  const testCases: TestCase[] = [
+    // Initialize a sync and try to extend it with a subsequent block.
+    {
+      name: 'Initialize a sync and try to extend it with a subsequent block',
+      head: block49,
+      extend: block50,
+      force: true,
+      newState: [{ head: BigInt(50), tail: BigInt(49) }],
+    },
+    // Initialize a sync and try to extend it with the existing head block.
+    {
+      name: 'Initialize a sync and try to extend it with the existing head block',
+      blocks: [block49],
+      head: block49,
+      extend: block49,
+      newState: [{ head: BigInt(49), tail: BigInt(49) }],
+    },
+    // Initialize a sync and try to extend it with a sibling block.
+    {
+      name: 'Initialize a sync and try to extend it with a sibling block',
+      head: block49,
+      extend: block49B,
+      newState: [{ head: BigInt(49), tail: BigInt(49) }],
+      err: errReorgDenied,
+    },
+    // Initialize a sync and try to extend it with a number-wise sequential
+    // header, but a hash wise non-linking one.
+    {
+      name: 'Initialize a sync and try to extend it with a number-wise sequential alternate block',
+      head: block49B,
+      extend: block50,
+      newState: [{ head: BigInt(49), tail: BigInt(49) }],
+      err: errReorgDenied,
+    },
+    // Initialize a sync and try to extend it with a non-linking future block.
+    {
+      name: 'Initialize a sync and try to extend it with a non-linking future block',
+      head: block49,
+      extend: block51,
+      newState: [{ head: BigInt(49), tail: BigInt(49) }],
+      err: errReorgDenied,
+    },
+    // Initialize a sync and try to extend it with a past canonical block.
+    {
+      name: 'Initialize a sync and try to extend it with a past canonical block',
+      head: block50,
+      extend: block49,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+      err: errReorgDenied,
+    },
+    // Initialize a sync and try to extend it with a past sidechain block.
+    {
+      name: 'Initialize a sync and try to extend it with a past sidechain block',
+      head: block50,
+      extend: block49B,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+      err: errReorgDenied,
+    },
+  ]
+  for (const [testCaseIndex, testCase] of testCases.entries()) {
+    t.test(`${testCase.name}`, async (st) => {
+      const config = new Config({
+        common,
+        transports: [],
+        logger: getLogger({ loglevel: 'debug' }),
+      })
       const chain = new Chain({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
+      for (const block of testCase.blocks ?? []) {
+        await (skeleton as any).putBlock(block)
+      }
 
       await skeleton.initSync(testCase.head)
 
       try {
-        await skeleton.setHead(testCase.extend)
+        await skeleton.setHead(testCase.extend, testCase.force ?? false, false, true)
         if (testCase.err) {
           st.fail(`test ${testCaseIndex}: should have failed`)
         } else {
@@ -275,7 +332,9 @@ tape('[Skeleton]', async (t) => {
         ) {
           st.pass(`test ${testCaseIndex}: passed with correct error`)
         } else {
-          st.fail(`test ${testCaseIndex}: received wrong error`)
+          st.fail(
+            `test ${testCaseIndex}: received wrong error expected=${testCase.err?.message} actual=${error.message}`
+          )
         }
       }
 
@@ -298,8 +357,8 @@ tape('[Skeleton]', async (t) => {
           st.pass(`test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
-    }
-  })
+    })
+  }
 
   t.test(`skeleton init should throw error if merge not set`, async (st) => {
     st.plan(1)
@@ -378,16 +437,19 @@ tape('[Skeleton]', async (t) => {
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
+
     for (const block of [block1, block2, block3, block4, block5]) {
       st.equal(
-        await skeleton.getBlock(block.header.number, true),
+        (await skeleton.getBlock(block.header.number, true))?.hash(),
         undefined,
-        `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+        `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`
       )
       st.equal(
-        await skeleton.getBlockByHash(block.hash()),
+        (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
         undefined,
-        `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+        `skeleton block hash=${short(
+          block.hash()
+        )} should be cleaned up after filling canonical chain`
       )
     }
   })
@@ -448,14 +510,16 @@ tape('[Skeleton]', async (t) => {
       )
       for (const block of [block3, block4, block5]) {
         st.equal(
-          await skeleton.getBlock(block.header.number, true),
+          (await skeleton.getBlock(block.header.number, true))?.hash(),
           undefined,
-          `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+          `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`
         )
         st.equal(
-          await skeleton.getBlockByHash(block.hash()),
+          (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
           undefined,
-          `skeleton block ${block.header.number} should be cleaned up after filling canonical chain`
+          `skeleton block hash=${short(
+            block.hash()
+          )} should be cleaned up after filling canonical chain`
         )
       }
     }
@@ -560,7 +624,7 @@ tape('[Skeleton]', async (t) => {
         chain.headers.latest?.hash().equals(block4PoS.hash()),
         'canonical height should now be at head with correct chain'
       )
-      await skeleton.setHead(block5, false)
+      await skeleton.setHead(block5, true)
       await wait(200)
       st.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
     }
@@ -647,11 +711,21 @@ tape('[Skeleton]', async (t) => {
       const config = new Config({
         transports: [],
         common,
+        logger: getLogger({ loglevel: 'debug' }),
       })
 
       const chain = new Chain({ config })
-      ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
+      // Only add td validations to the validateBlock
+      chain.blockchain.validateBlock = async (block: Block) => {
+        if (!(block.header._common.consensusType() === 'pos') && block.header.difficulty === 0n) {
+          throw Error(
+            `Invalid header difficulty=${
+              block.header.difficulty
+            } for consensus=${block.header._common.consensusType()}`
+          )
+        }
+      }
 
       const originalValidate = BlockHeader.prototype._consensusFormatValidation
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
@@ -681,6 +755,7 @@ tape('[Skeleton]', async (t) => {
 
       await skeleton.initSync(block2PoS)
       await skeleton.putBlocks([block1])
+
       await wait(200)
       st.equal(
         chain.blocks.height,

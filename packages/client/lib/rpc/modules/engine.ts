@@ -391,6 +391,12 @@ export class Engine {
       return response
     }
 
+    // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
+    // been intialized here but a batch of blocks new payloads arrive, most likely during sync
+    // We still can't switch to beacon sync here especially if the chain is pre merge and there
+    // is pow block which this client would like to mint and attempt proposing it
+    const optimisticLookup = await this.service.beaconSync?.extendChain(block)
+
     const blockExists = await validBlock(toBuffer(blockHash), this.chain)
     if (blockExists) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
@@ -406,11 +412,6 @@ export class Engine {
 
     try {
       const parent = await this.chain.getBlock(toBuffer(parentHash))
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
-      // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
-      if (!isBlockExecuted) {
-        throw new Error(`Parent block not yet executed number=${parent.header.number}`)
-      }
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
@@ -422,14 +423,15 @@ export class Engine {
           return response
         }
       }
-    } catch (error: any) {
-      if (!this.service.beaconSync && !this.config.disableBeaconSync) {
-        await this.service.switchToBeaconSync()
+      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+      // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
+      if (!isBlockExecuted) {
+        throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
+    } catch (error: any) {
       const status =
-        (await this.service.beaconSync?.extendChain(block)) === true
-          ? Status.SYNCING
-          : Status.ACCEPTED
+        // If the transitioned to beacon sync and this block can extend beacon chain then
+        optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
       if (status === Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
         this.remoteBlocks.set(block.hash().toString('hex'), block)
@@ -499,6 +501,13 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
+    // It is possible that newPayload didnt start beacon sync as the payload it was asked to
+    // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
+    // starts from a bit behind like how lodestar does
+    if (!this.service.beaconSync && !this.config.disableBeaconSync) {
+      await this.service.switchToBeaconSync()
+    }
+
     /*
      * Process head block
      */
@@ -519,15 +528,18 @@ export class Engine {
         const response = { payloadStatus, payloadId: null }
         return response
       } else {
-        this.config.logger.debug(
-          `Forkchoice requested sync to new head number=${headBlock.header.number} hash=${short(
-            headBlock.hash()
-          )}`
-        )
-        await this.service.beaconSync?.setHead(headBlock)
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }
+
+    // Always keep beaconSync skeleton updated so that it stays updated with any skeleton sync
+    // requirements that might come later because of reorg or CL restarts
+    this.config.logger.debug(
+      `Forkchoice requested update to new head number=${headBlock.header.number} hash=${short(
+        headBlock.hash()
+      )}`
+    )
+    await this.service.beaconSync?.setHead(headBlock)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
@@ -547,16 +559,23 @@ export class Engine {
       }
     }
 
+    const isHeadExecuted = await this.vm.stateManager.hasStateRoot(headBlock.header.stateRoot)
+    if (!isHeadExecuted) {
+      // execution has not yet caught up, so lets just return sync
+      const payloadStatus = {
+        status: Status.SYNCING,
+        latestValidHash: null,
+        validationError: null,
+      }
+      const response = { payloadStatus, payloadId: null }
+      return response
+    }
+
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
-          const parent = await this.chain.getBlock(toBuffer(headBlock.header.parentHash))
-          const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
-          if (!isBlockExecuted) {
-            throw new Error(`Parent block not yet executed number=${parent.header.number}`)
-          }
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,

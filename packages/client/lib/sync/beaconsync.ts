@@ -2,7 +2,6 @@ import { Event } from '../types'
 import { short } from '../util'
 
 import { ReverseBlockFetcher } from './fetcher'
-import { errSyncReorged } from './skeleton'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
@@ -61,6 +60,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
+    if (this.opened) return
     await super.open()
     await this.chain.open()
     await this.pool.open()
@@ -69,10 +69,25 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
     this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
+    const { height: number, td } = this.chain.blocks
+    const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
+    this.config.chainCommon.setHardforkByBlockNumber(number, td)
+
+    this.config.logger.info(
+      `Latest local block number=${Number(number)} td=${td} hash=${hash.toString(
+        'hex'
+      )} hardfork=${this.config.chainCommon.hardfork()}`
+    )
+
     const subchain = this.skeleton.bounds()
     if (subchain !== undefined) {
       const { head, tail, next } = subchain
       this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
+      const headBlock = await this.skeleton.getBlock(head)
+      if (headBlock !== undefined) {
+        await this.skeleton.initSync(headBlock)
+      }
     }
   }
 
@@ -118,23 +133,19 @@ export class BeaconSynchronizer extends Synchronizer {
    * Start synchronizer.
    * If passed a block, will initialize sync starting from the block.
    */
-  async start(block?: Block): Promise<void> {
+  async start(): Promise<void> {
     if (this.running) return
     this.running = true
-
-    if (block) {
-      await this.skeleton.initSync(block)
-    }
 
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    const isLinked = await this.skeleton.isLinked()
-    if (!isLinked) {
+    if (!this.skeleton.isLinked()) {
       while (this.running) {
         try {
           await this.sync()
         } catch (error: any) {
+          this.config.logger.error(`Beacon sync error: ${error.message}`)
           this.config.events.emit(Event.SYNC_ERROR, error)
         }
         await new Promise((resolve) => setTimeout(resolve, this.interval))
@@ -156,19 +167,21 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
-    try {
-      if (!this.running) {
-        void this.start(block)
-      } else {
-        await this.skeleton.setHead(block)
-      }
-      return true
-    } catch (error) {
-      if (this.running) {
-        void this.stop()
-      }
-      return false
+    const reorg = await this.skeleton.setHead(block, false)
+    if (reorg === false) {
+      this.config.logger.debug(
+        `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
+    } else {
+      this.config.logger.debug(
+        `Block can not extend Beacon sync skeleton number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
     }
+    return !reorg
   }
 
   /**
@@ -179,31 +192,22 @@ export class BeaconSynchronizer extends Synchronizer {
     // New head announced, start syncing to it if we are not already.
     // If this causes a reorg, we will tear down the fetcher and start
     // from the new head.
-    try {
-      if (!this.running) {
-        void this.start(block)
-      } else {
-        await this.skeleton.setHead(block, true)
-      }
+    const reorg = await this.skeleton.setHead(block, true, !this.running)
+    if (reorg) {
+      // Clean the current fetcher, later this.start will start it again
+      await this.stop()
+      this.config.logger.debug(
+        `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+          block.header.hash()
+        )}`
+      )
+    } else {
       this.config.logger.debug(
         `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
       )
-      return true
-    } catch (error) {
-      if (error === errSyncReorged) {
-        this.config.logger.debug(
-          `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-            block.header.hash()
-          )}`
-        )
-        // Tear down fetcher and start from new head
-        await this.stop()
-        void this.start(block)
-        return true
-      } else {
-        throw error
-      }
     }
+    void this.start()
+    return true
   }
 
   /**
@@ -212,7 +216,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.bounds() === undefined || (await this.skeleton.isLinked())) {
+    if (this.skeleton.bounds() === undefined || this.skeleton.isLinked()) {
       this.clearFetcher()
       return false
     }
@@ -245,7 +249,13 @@ export class BeaconSynchronizer extends Synchronizer {
 
     if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
       this.config.logger.debug(
-        `syncWithPeer - new ReverseBlockFetcher peer=${peer?.id} subChainTail=${tail} first=${first} count=${count} chainHeight=${this.chain.blocks.height} `
+        `syncWithPeer - new ReverseBlockFetcher peer=${
+          peer?.id
+        } subChainTail=${tail} first=${first} count=${count} chainHeight=${
+          this.chain.blocks.height
+        } ${
+          this.fetcher === null ? '' : 'previous fetcher errored=' + this.fetcher.errored?.message
+        }`
       )
       this.fetcher = new ReverseBlockFetcher({
         config: this.config,
@@ -290,7 +300,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
-      void this.execution.run(false, shouldRunOnlyBatched)
+      void this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 
