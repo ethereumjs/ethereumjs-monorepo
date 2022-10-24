@@ -273,7 +273,7 @@ export class Skeleton extends MetaDBManager {
       )
       const reorg = await this.processNewHead(head, force)
       if (force && reorg) {
-        // It could just be a reorg at his head with previous tail preserved
+        // It could just be a reorg at this head with previous tail preserved
         const subchain = this.status.progress.subchains[0]
         const parent = await this.getBlock(head.header.number - BigInt(1))
         if (
