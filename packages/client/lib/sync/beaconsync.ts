@@ -168,7 +168,7 @@ export class BeaconSynchronizer extends Synchronizer {
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
     const reorg = await this.skeleton.setHead(block, false)
-    if (!reorg) {
+    if (reorg === false) {
       this.config.logger.debug(
         `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
           block.header.hash()
