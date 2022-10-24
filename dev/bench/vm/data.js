@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666368266539,
+  "lastUpdate": 1666623651700,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8608602f3dadf4344a5a8dfa914d264d8268f05d",
-          "message": "client: Reorg client build and usage docs (#2310)\n\n* client: Reorg client build and usage docs\r\n\r\n* add docker build test\r\n\r\n* fix heading\r\n\r\n* use main dockerfile\r\n\r\n* remove image history as it seems to connecting with dockerhub\r\n\r\n* remove push\r\n\r\n* remove layer log as it requires ethereumjs to be pushed to a registry",
-          "timestamp": "2022-09-26T18:27:46+05:30",
-          "tree_id": "461f0a111d78c38ce5cb5ba039c15318a12ae3cc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8608602f3dadf4344a5a8dfa914d264d8268f05d"
-        },
-        "date": 1664197665218,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10082,
-            "range": "±2.87%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9945,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9937,
-            "range": "±6.59%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9737,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9834,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.11%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dacosta.pereirafabio@gmail.com",
+            "name": "strykerin",
+            "username": "strykerin"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e6c2f6c1e96c431b3fa0f29ba899f05ef9f2a728",
+          "message": "Fix devp2p link and specify language on code blocks (#2378)\n\n* specify language on code blocks on README.md for devp2p\r\n\r\n* fix link on devp2p packages to Node discovery protocol\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-10-24T10:58:36-04:00",
+          "tree_id": "01dc66a41fb224c1159b33d33f68456bbf3c66f8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6c2f6c1e96c431b3fa0f29ba899f05ef9f2a728"
+        },
+        "date": 1666623650471,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15282,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15023,
+            "range": "±4.29%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14474,
+            "range": "±7.10%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14476,
+            "range": "±11.66%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15408,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
