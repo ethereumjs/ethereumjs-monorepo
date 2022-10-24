@@ -204,7 +204,7 @@ export class Skeleton extends MetaDBManager {
         )
         return false
       } else {
-        // Since its not a dup block, so there is reorg in the chain or atleast in the head
+        // Since its not a dup block, so there is reorg in the chain or at least in the head
         // which we will let it get addressed post this if else block
         if (force) {
           this.config.logger.debug(
