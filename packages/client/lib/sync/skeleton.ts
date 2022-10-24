@@ -268,7 +268,7 @@ export class Skeleton extends MetaDBManager {
    * @params reorgthrow - Flag to indicate if we would actually like to throw if there is a reorg
    *         instead of just returning the boolean
    *
-   * @returns if the new head causes a reorg.
+   * @returns True if the head (will) cause a reorg in the canonical skeleton subchain
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
     return this.runWithLock<boolean>(async () => {
@@ -334,7 +334,7 @@ export class Skeleton extends MetaDBManager {
    * @params reorgthrow - If we would like the function to throw instead of silently
    *         return if there is reorg of the skeleon head
    *
-   * @returns If the skeleton was reorged trying to init
+   * @returns True if the skeleton was reorged trying to init else false
    */
   async initSync(head: Block, reorgthrow = false): Promise<boolean> {
     return this.setHead(head, true, true, reorgthrow)
