@@ -262,6 +262,12 @@ export class Skeleton extends MetaDBManager {
 
   /**
    * Announce and integrate a new head.
+   * @params head - The block being attempted as a new head
+   * @params force - Flag to indicate if this is just a check of worthiness or a actually new head
+   * @params init - Flag this is the first time since the beacon sync start to perform additional tasks
+   * @params reorgthrow - Flag to indicate if we would actually like to throw if there is a reorg
+   *         instead of just returning the boolean
+   *
    * @returns if the new head causes a reorg.
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
@@ -324,7 +330,11 @@ export class Skeleton extends MetaDBManager {
 
   /**
    * Setup the skeleton to init sync with head
-   * @returns if the skeleton was reorged trying to init
+   * @params head - The block with which we want to init the skeleton head
+   * @params reorgthrow - If we would like the function to throw instead of silently
+   *         return if there is reorg of the skeleon head
+   *
+   * @returns If the skeleton was reorged trying to init
    */
   async initSync(head: Block, reorgthrow = false): Promise<boolean> {
     return this.setHead(head, true, true, reorgthrow)
