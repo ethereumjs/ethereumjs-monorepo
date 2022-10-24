@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666625710145,
+  "lastUpdate": 1666637972115,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hello@basecode.sh",
-            "name": "Brian Faust",
-            "username": "faustbrian"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9d885c9ba19fdf0a4db7b732dcb7446c1289bca1",
-          "message": "chore(trie): make `@types/readable-stream` a prod dependency (#2318)",
-          "timestamp": "2022-09-28T14:45:27+02:00",
-          "tree_id": "51dd474992d979c129cd54b787e11e20c7b83fe8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d885c9ba19fdf0a4db7b732dcb7446c1289bca1"
-        },
-        "date": 1664369291685,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18395,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17688,
-            "range": "±5.44%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17074,
-            "range": "±2.57%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15658,
-            "range": "±11.30%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18065,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.74%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "72a0736b17c0241f2e9d0d23ad30bbd0ff9bddd9",
+          "message": "client: Enhance skeleton sync to process batches of new payloads and fcUs (#2309)\n\n* client: Enhance skeleton sync to process batches of new payloads and fcUs\r\n\r\n* beacon sync run loop as now block execution callback is outside lock\r\n\r\n* set chain hardfork and log chain head\r\n\r\n* make flow concurrency safe\r\n\r\n* reset linked on backstep\r\n\r\n* fix skeleton specs\r\n\r\n* remove run with unlock\r\n\r\n* move locking to execution from vm\r\n\r\n* handle edge case\r\n\r\n* Stub out peers in peerpool\r\n\r\n* improve condition check\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* incorporate feedback\r\n\r\n* restore waiting for interval clearing\r\n\r\n* clearify return value\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-10-25T00:27:31+05:30",
+          "tree_id": "a9a380f9a7aaaa2301ec109e69148e1a340718fa",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/72a0736b17c0241f2e9d0d23ad30bbd0ff9bddd9"
+        },
+        "date": 1666637971468,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19413,
+            "range": "±3.01%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19764,
+            "range": "±1.19%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18806,
+            "range": "±5.43%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19300,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18711,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
