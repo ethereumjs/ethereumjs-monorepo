@@ -208,7 +208,7 @@ export class Skeleton extends MetaDBManager {
         // which we will let it get addressed post this if else block
         if (force) {
           this.config.logger.debug(
-            `Skeleton differing annoucement tail=${lastchain.tail} head=${
+            `Skeleton differing announcement tail=${lastchain.tail} head=${
               lastchain.head
             } number=${number} expected=${short(
               mayBeDupBlock?.hash() ?? zeroBlockHash
