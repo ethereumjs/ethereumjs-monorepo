@@ -5,8 +5,8 @@ import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { arrToBufArr } from '@ethereumjs/util'
 import chalk from 'chalk'
-import LRUCache from 'lru-cache'
-import ms from 'ms'
+import * as LRUCache from 'lru-cache'
+import ms = require('ms')
 
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'

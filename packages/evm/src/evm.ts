@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  AsyncEventEmitter,
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBuffer,
@@ -9,7 +10,6 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
@@ -78,7 +78,7 @@ export interface EVMOpts {
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
@@ -188,13 +188,6 @@ export class EVM implements EVMInterface {
   protected _isInitialized: boolean = false
 
   /**
-   * Cached emit() function, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _emit: (topic: string, data: any) => Promise<void>
-
-  /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
@@ -211,6 +204,8 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+
   /**
    * EVM async constructor. Creates engine instance and initializes it.
    *
@@ -223,7 +218,7 @@ export class EVM implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    this.events = new AsyncEventEmitter<EVMEvents>()
+    this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
 
@@ -295,16 +290,16 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
-
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
+
+    // Safeguard if "process" is not available (browser)
+    if (typeof process?.env.DEBUG !== 'undefined') {
+      this.DEBUG = true
+    }
   }
 
   protected async init(): Promise<void> {
@@ -930,7 +925,7 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy() {
+  public copy(): EVMInterface {
     const opts = {
       ...this._optsCached,
       common: this._common.copy(),

@@ -103,6 +103,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    this._validateNotArray({ chainId, v })
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
     const emptyAccessList: AccessList = []
@@ -157,6 +158,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
     })
+
+    BaseTransaction._validateNotArray(txData)
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')

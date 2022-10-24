@@ -265,7 +265,7 @@ export class Eth {
 
     this.chainId = middleware(this.chainId.bind(this), 0, [])
 
-    this.estimateGas = middleware(this.estimateGas.bind(this), 2, [
+    this.estimateGas = middleware(this.estimateGas.bind(this), 1, [
       [validators.transaction()],
       [validators.blockOption],
     ])

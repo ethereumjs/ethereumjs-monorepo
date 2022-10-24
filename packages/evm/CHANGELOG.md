@@ -6,6 +6,43 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.2.0 - 2022-10-21
+
+This release replaces the `v1.1.0` release from a couple of days ago which now becomes deprecated. The async event emitter library switch from the `async-eventemitter` package to the `eventemitter2` package turned out to be breaking along parts of the functionality.
+
+This release therefore switches back to a modernized version of the `async-eventemitter` package - now also solving previous import problems - which has been internalized and integrated into the `@ethereumjs/util` package, see PR [#2376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2376).
+
+## 1.1.0 - 2022-10-18
+
+[ DEPRECATED ]: Async event emitter library switch turned out to be breaking. If you have got problems, please update to v1.2.0 or above.
+
+### Support for Geth genesis.json Genesis Format
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a [Geth genesis.json config](https://geth.ethereum.org/docs/interface/private-network) which has both config specification for the chain as well as the genesis state specification.
+
+`Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// calculating it afterwards by using the `@ethereumjs/blockchain` package)
+common.setForkHashes(genesisHash)
+```
+
+### New Async Event Emitter: async-eventemitter -> eventemitter2
+
+Along some deeper investigation of build errors related to the usage of the `async-eventemitter` package we finally decided to completely switch to a new async event emitter package for VM/EVM events, see PR [#2303](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2303). The old [async-eventemitter](https://github.com/ahultgren/async-eventemitter) package hasn't been updated for several years and the new [eventemitter2](https://github.com/EventEmitter2/EventEmitter2) package is more modern and maintained as well as substantially more used and therefore a future-proof choice for an async event emitter library to build the VM/EVM event emitting system upon.
+
+The significant parts of the API of both the old and the new libraries are the same and the switch shouldn't cause too much hazzle for people upgrading. In case you nevertheless stumble upon upgrading problems regarding the event emitter package switch please feel free to open an issue, we'll be there to assist you on the upgrade!
+
+### Other Changes and Fixes
+
+- Moved `EIP-4399` state to non-experimental (docs only), PR [#2355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2355)
+- Memory extend optimization in `write()` function, PR [#2276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2276)
+- Added `getActiveOpcodes?(): OpcodeList` as an optional method to `EVMInterface`, PR [#2361](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2361)
+
 ## 1.0.0 - 2022-09-06
 
 Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md)).
@@ -1733,7 +1770,7 @@ Changes related to Constantinople:
 
 ### Consensus Conformity
 
-This release is making a huge leap forward regarding consensus conformity, and even if you are not interested in `Constantinople` support at all, you should upgrade just for this reason. Some context: we couldn't run blockchain tests for a long time on a steady basis due to performance constraints and when we re-triggered a test run after quite some time with PR [#341](https://github.com/ethereumjs/ethereumjs-monorepo/pull/341) the result was a bit depressing with over 300 failing tests. Thanks to joined efforts from the community and core team members we could bring this down far quicker than expected and this is the first release for a long time which practically comes with complete consensus conformity - with just three recently added tests failing (see `skipBroken` list in `tests/tester.js`) and otherwise passing all blockchain tests and all state tests for both `Constantinople` and `Byzantium` rules. 🏆 🏆 🏆
+This release is making a huge leap forward regarding consensus conformity, and even if you are not interested in `Constantinople` support at all, you should upgrade just for this reason. Some context: we couldn't run blockchain tests for a long time on a steady basis due to performance constraints and when we re-triggered a test run after quite some time with PR [#341](https://github.com/ethereumjs/ethereumjs-monorepo/pull/341) the result was a bit depressing with over 300 failing tests. Thanks to joined efforts from the community and core team members we could bring this down far quicker than expected and this is the first release for a long time which practically comes with complete consensus conformity - with just three recently added tests failing (see `skipBroken` list in `test/tester.js`) and otherwise passing all blockchain tests and all state tests for both `Constantinople` and `Byzantium` rules. 🏆 🏆 🏆
 
 Consensus Conformity related changes:
 
@@ -1767,7 +1804,7 @@ Change related to the new `StateManager` interface:
 
 ### Testing and Documentation
 
-Beyond the reintegrated blockchain tests there is now a separate test suite to test the API of the library, see `tests/api`. This should largely reduce the risk of introducing new bugs on the API level on future changes, generally ease the development process by being able to develop against the specific tests and also allows using the tests as a reference for examples on how to use the API.
+Beyond the reintegrated blockchain tests there is now a separate test suite to test the API of the library, see `test/api`. This should largely reduce the risk of introducing new bugs on the API level on future changes, generally ease the development process by being able to develop against the specific tests and also allows using the tests as a reference for examples on how to use the API.
 
 On the documentation side the API documentation has also been consolidated and there is now a unified and auto-generated [API documentation](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/docs/index.md) (previously being manually edited (and too often forgotten) in `README`).
 

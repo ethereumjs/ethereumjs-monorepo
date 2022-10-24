@@ -70,7 +70,8 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 
 export const generateConsecutiveBlock = (
   parentBlock: Block,
-  difficultyChangeFactor: number
+  difficultyChangeFactor: number,
+  gasLimit: bigint = BigInt(8000000)
 ): Block => {
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
@@ -87,7 +88,7 @@ export const generateConsecutiveBlock = (
     {
       number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),
-      gasLimit: BigInt(8000000),
+      gasLimit,
       timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
       difficulty: tmpHeader.ethashCanonicalDifficulty(parentBlock.header),
     },

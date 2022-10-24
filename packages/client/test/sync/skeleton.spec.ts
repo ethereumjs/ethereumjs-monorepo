@@ -7,7 +7,6 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
-import { parseCustomParams } from '../../lib/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -316,11 +315,7 @@ tape('[Skeleton]', async (t) => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const params = await parseCustomParams(genesis, 'merge-not-set')
-    const common = new Common({
-      chain: params.name,
-      customChains: [params],
-    })
+    const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
     ;(chain.blockchain as any)._validateBlocks = false
@@ -480,12 +475,7 @@ tape('[Skeleton]', async (t) => {
         extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
-      const common = new Common({
-        chain: params.name,
-        customChains: [params],
-      })
-
+      const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
       const config = new Config({
         transports: [],
@@ -590,11 +580,7 @@ tape('[Skeleton]', async (t) => {
         extraData: '0x00000000000000000',
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
-      const common = new Common({
-        chain: params.name,
-        customChains: [params],
-      })
+      const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
       const config = new Config({
         transports: [],
@@ -656,11 +642,7 @@ tape('[Skeleton]', async (t) => {
         },
         difficulty: '0x1',
       }
-      const params = await parseCustomParams(genesis, 'post-merge')
-      const common = new Common({
-        chain: params.name,
-        customChains: [params],
-      })
+      const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
       common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
       const config = new Config({
         transports: [],

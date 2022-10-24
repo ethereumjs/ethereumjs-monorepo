@@ -195,6 +195,22 @@ const common1 = new Common({
 
 Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
+#### Initialize using Geth's genesis json
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a genesis json config which
+has both config specification for the chain as well as the genesis state specification. You can derive the
+common from such configuration in the following manner:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// post calculating it via `blockchain`)
+common.setForkHashes(genesisHash)
+```
+
 ### Hardforks
 
 The `hardfork` can be set in constructor like this:
