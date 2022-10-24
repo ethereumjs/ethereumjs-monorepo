@@ -233,7 +233,7 @@ export class Skeleton extends MetaDBManager {
         }
       } else {
         this.config.logger.debug(
-          `Beacon chain gapped annoucement head=${lastchain.head} newHead=${number}`
+          `Beacon chain gapped announcement head=${lastchain.head} newHead=${number}`
         )
         return true
       }
