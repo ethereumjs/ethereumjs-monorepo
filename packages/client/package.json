@@ -57,11 +57,11 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^4.1.1",
     "@ethereumjs/block": "4.0.1",
-    "@ethereumjs/blockchain": "6.0.1",
+    "@ethereumjs/blockchain": "6.0.2",
     "@ethereumjs/common": "3.0.1",
     "@ethereumjs/devp2p": "5.0.1",
     "@ethereumjs/ethash": "2.0.1",
-    "@ethereumjs/evm": "1.2.0",
+    "@ethereumjs/evm": "1.2.1",
     "@ethereumjs/rlp": "4.0.0",
     "@ethereumjs/statemanager": "1.0.1",
     "@ethereumjs/trie": "5.0.1",

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
