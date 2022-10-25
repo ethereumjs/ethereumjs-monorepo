@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -9,6 +10,9 @@ import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 
 import type { StateManager } from '@ethereumjs/statemanager'
+
+const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+DefaultStateManager.prototype.setStateRoot = (): any => {}
 
 const setup = () => {
   const config = new Config({ transports: [] })
@@ -75,6 +79,7 @@ const handleTxs = async (
   } catch (e: any) {
     pool.stop()
     pool.close()
+
     // Return false if the error message contains the fail message
     return !(e.message as string).includes(failMessage)
   }
@@ -169,7 +174,7 @@ tape('[TxPool]', async (t) => {
     const peer2: any = {
       id: '2',
       eth: {
-        request: () => {
+        send: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
@@ -402,7 +407,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
+      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
       'successfully rejected unsigned tx'
     )
   })
@@ -754,3 +759,5 @@ tape('[TxPool]', async (t) => {
     pool.close()
   })
 })
+
+DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
