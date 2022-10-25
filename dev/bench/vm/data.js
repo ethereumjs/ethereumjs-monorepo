@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666701621503,
+  "lastUpdate": 1666719311367,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7fb9ad8f81f2c631510bc79c52d62396e98e7788",
-          "message": "common: Refactor and update common.getHardforkByBlockNumber to address post merge hfs (#2313)\n\n* common: Refactor and update the hardfork cal to address post merge hfs\r\n\r\n* make strick check optional for post merge hardforks\r\n\r\n* add tests for post merge hardforks using sepolia\r\n\r\n* simplify getHardforkByBlockNumber\r\n\r\n* remove duplicate hf\r\n\r\n* clarify comment\r\n\r\n* add post merge hf\r\n\r\n* further simplify the fn and add test to enhance coverage\r\n\r\n* update comments\r\n\r\n* remove hash to add it as a separate pr to not pollute this one\r\n\r\n* fix typo\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* comment improvement\r\n\r\n* undo mainnet json changes\r\n\r\n* simplify dup ttd check\r\n\r\n* fix spec\r\n\r\n* fix typo\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix typo\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve clarity\r\n\r\n* simpilfy futher based on acolytec3s logic\r\n\r\n* fix some more validations\r\n\r\n* remove extra if\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* move spec, add test for merge hf with block num\r\n\r\n* relocate test\r\n\r\n* relocate test\r\n\r\n* lint\r\n\r\n* add merge block numbers\r\n\r\n* add merge forkhash\r\n\r\n* handle no hardfork found case\r\n\r\n* Fix nits\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-09-29T20:31:12+05:30",
-          "tree_id": "fe4097ca32972e2ab1e4f6d3fcd2bef2d60725d6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7fb9ad8f81f2c631510bc79c52d62396e98e7788"
-        },
-        "date": 1664463830949,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18854,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18639,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17630,
-            "range": "±6.17%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19080,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18392,
-            "range": "±1.61%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.47%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a85081e4f7c93d6a02986dc1387dccdec3905b67",
+          "message": "evm/vm: fix EIP3540 header lookalike parsing (#2381)",
+          "timestamp": "2022-10-25T13:31:39-04:00",
+          "tree_id": "8aa3578cd4285e252399715a73e2eec030891b54",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a85081e4f7c93d6a02986dc1387dccdec3905b67"
+        },
+        "date": 1666719309916,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 9565,
+            "range": "±3.37%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 9446,
+            "range": "±4.15%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 9726,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 9253,
+            "range": "±6.23%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9803,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
