@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -10,6 +11,10 @@ import { checkError } from '../util'
 import type { FullEthereumService } from '../../../lib/service'
 
 const method = 'eth_sendRawTransaction'
+
+// Disable stateroot validation in TxPool since valid state root isn't available
+const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+DefaultStateManager.prototype.setStateRoot = (): any => {}
 
 tape(`${method}: call with valid arguments`, async (t) => {
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
@@ -153,4 +158,7 @@ tape(`${method}: call with no peers`, async (t) => {
 
   const expectRes = checkError(t, INTERNAL_ERROR, 'no peer connection available')
   await baseRequest(t, server, req, 200, expectRes)
+
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })

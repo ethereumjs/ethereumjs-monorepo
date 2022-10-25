@@ -758,6 +758,5 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
   })
+  DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
 })
-
-DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
