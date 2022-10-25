@@ -21,7 +21,7 @@ export const codeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[1] !== MAGIC || container[2] !== VERSION)
+  if (container[0] !== FORMAT || container[1] !== MAGIC || container[2] !== VERSION)
     // Bytecode does not contain EOF1 "magic" or version number in expected positions
     return
 
