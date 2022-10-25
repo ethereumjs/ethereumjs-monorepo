@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.2.1 - 2022-10-25
+
+- Various [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) EVM Object Format (EOF) related fixes, PR [#2368](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2368)
+
 ## 1.2.0 - 2022-10-21
 
 This release replaces the `v1.1.0` release from a couple of days ago which now becomes deprecated. The async event emitter library switch from the `async-eventemitter` package to the `eventemitter2` package turned out to be breaking along parts of the functionality.
