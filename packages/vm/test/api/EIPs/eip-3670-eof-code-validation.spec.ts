@@ -88,4 +88,74 @@ tape('EIP 3670 tests', (t) => {
       'deposited code does not end with terminating instruction'
     )
   })
+
+  t.test('ensure invalid eof headers are rejected when calling', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Merge,
+      eips: [3540, 3670],
+    })
+    const vm = await VM.create({ common })
+
+    // Valid EOF code
+    const codeValid = Buffer.from(
+      'ef000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421',
+      'hex'
+    )
+    // Invalid EOF code: code is exactly the same except the byte at the zero-index is not the FORMAT magic
+    // This thus runs into opcode 0xED which is unassigned and thus invalid
+    const codeInvalid = Buffer.from(
+      'ed000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421',
+      'hex'
+    )
+
+    const codes = [codeValid, codeInvalid]
+    const returnValues = [
+      Buffer.from('000000000000000000000000000000000000000000000000000000000000002a', 'hex'),
+      Buffer.from(''),
+    ]
+    const expectedErrors = [false, true]
+
+    let nonce = 0n
+
+    for (let i = 0; i < codes.length; i++) {
+      const calldata = Buffer.from('f8a8fd6d', 'hex')
+
+      const addr = new Address(Buffer.from('20'.repeat(20), 'hex'))
+      const pkey = Buffer.from('42'.repeat(32), 'hex')
+
+      const code = codes[i]
+
+      await vm.stateManager.putContractCode(addr, code)
+
+      const tx = FeeMarketEIP1559Transaction.fromTxData({
+        to: addr,
+        data: calldata,
+        gasLimit: 100000,
+        maxFeePerGas: 10,
+        maxPriorityFeePerGas: 10,
+        nonce,
+      }).sign(pkey)
+
+      const sender = tx.getSenderAddress()
+
+      const acc = await vm.stateManager.getAccount(sender)
+      acc.balance = 1000000000n
+
+      await vm.stateManager.putAccount(sender, acc)
+
+      const ret = await vm.runTx({ tx })
+      nonce++
+
+      const expectReturn = returnValues[i]
+      const expectError = expectedErrors[i]
+
+      st.ok(ret.execResult.returnValue.equals(expectReturn), 'return value ok')
+      if (expectError) {
+        st.ok(ret.execResult.exceptionError !== undefined, 'threw error')
+      } else {
+        st.ok(ret.execResult.exceptionError === undefined, 'did not throw error')
+      }
+    }
+  })
 })
