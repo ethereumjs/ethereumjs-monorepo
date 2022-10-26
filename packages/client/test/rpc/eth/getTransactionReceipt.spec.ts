@@ -33,7 +33,6 @@ tape(`${method}: call with legacy tx`, async (t) => {
   // get the tx
   const req = params(method, [bufferToHex(tx.hash())])
   const expectRes = (res: any) => {
-    console.log(res.body)
     const msg = 'should return the correct tx'
     t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
   }
