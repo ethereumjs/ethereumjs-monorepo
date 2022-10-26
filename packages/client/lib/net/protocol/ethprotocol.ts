@@ -104,10 +104,13 @@ export class EthProtocol extends Protocol {
         return serializedTxs
       },
       decode: (txs: Buffer[]) => {
+        if (!this.config.synchronized) return
         const common = this.config.chainCommon.copy()
         common.setHardforkByBlockNumber(
-          this.config.syncTargetHeight ?? BigInt(0),
-          this.chain.headers.td
+          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+            this.config.syncTargetHeight ?? // Use sync target height if available OR
+            common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
+            BigInt(0) // Use chainstart
         )
         return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
