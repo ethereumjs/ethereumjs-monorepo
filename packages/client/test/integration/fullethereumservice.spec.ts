@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -15,6 +16,9 @@ import { destroy } from './util'
 const config = new Config()
 
 tape('[Integration:FullEthereumService]', async (t) => {
+  // Stub out setStateRoot since correct state root doesn't exist in mock state.
+  const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
   async function setup(): Promise<[MockServer, FullEthereumService]> {
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
@@ -28,6 +32,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
       config: serviceConfig,
       chain,
     })
+
     await service.open()
     await server.start()
     await service.start()
@@ -105,5 +110,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
       'handled GetBlockHeaders'
     )
     await destroy(server, service)
+
+    // unstub setStateRoot
+    DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
   })
 })
