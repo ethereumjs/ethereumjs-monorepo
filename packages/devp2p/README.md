@@ -287,7 +287,7 @@ Events emitted:
 
 ## Light Ethereum Subprotocol (LES)
 
-Upper layer protocol used by light clients, see [./src/les/](./src/les/).
+Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
 
 ### Usage
 
