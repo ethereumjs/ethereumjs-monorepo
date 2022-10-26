@@ -513,15 +513,15 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
-      const empty = (await runState.eei.getAccount(address)).isEmpty()
-      if (empty) {
+      const account = await runState.eei.getAccount(address)
+      const empty = account.isEmpty()
+      const origin = runState.interpreter.getTxOrigin()
+      if (empty && origin !== addressBigInt) {
         runState.stack.push(BigInt(0))
         return
       }
 
-      const codeHash = (await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt))))
-        .codeHash
-      runState.stack.push(BigInt('0x' + codeHash.toString('hex')))
+      runState.stack.push(BigInt('0x' + account.codeHash.toString('hex')))
     },
   ],
   // 0x3d: RETURNDATASIZE
