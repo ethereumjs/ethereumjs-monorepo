@@ -196,7 +196,6 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, service })
       const { txPool } = service
       const { vm } = service.execution
-
       txPool.start()
       miner.start()
 
@@ -253,7 +252,6 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
 
@@ -303,7 +301,6 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
 
@@ -350,7 +347,6 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = service
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
 

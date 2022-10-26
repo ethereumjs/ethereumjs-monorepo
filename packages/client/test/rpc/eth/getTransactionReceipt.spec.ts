@@ -20,7 +20,11 @@ tape(`${method}: call with legacy tx`, async (t) => {
 
   // construct tx
   const tx = Transaction.fromTxData(
-    { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
+    {
+      gasLimit: 2000000,
+      gasPrice: 100,
+      to: '0x0000000000000000000000000000000000000000',
+    },
     { common }
   ).sign(dummy.privKey)
 
@@ -29,6 +33,7 @@ tape(`${method}: call with legacy tx`, async (t) => {
   // get the tx
   const req = params(method, [bufferToHex(tx.hash())])
   const expectRes = (res: any) => {
+    console.log(res.body)
     const msg = 'should return the correct tx'
     t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
   }
