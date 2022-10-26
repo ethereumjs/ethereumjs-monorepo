@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, MAX_INTEGER } from '@ethereumjs/util'
+import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -680,3 +680,105 @@ tape('runTx() -> skipBalance behavior', async (t) => {
     t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }
 })
+
+tape(
+  'Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no balance and zero nonce (but it did exist)',
+  async (t) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const vm = await VM.create({ common })
+
+    const pkey = Buffer.alloc(32, 1)
+
+    // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
+    // Puts EXTCODEHASH of CALLER into slot 0
+    const code = Buffer.from('333F60005500', 'hex')
+    const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+    await vm.stateManager.putContractCode(codeAddr, code)
+
+    const tx: Transaction = Transaction.fromTxData({
+      gasLimit: 100000,
+      gasPrice: 1,
+      to: codeAddr,
+    }).sign(pkey)
+
+    const addr = Address.fromPrivateKey(pkey)
+    const acc = await vm.eei.getAccount(addr)
+    acc.balance = BigInt(tx.gasLimit * tx.gasPrice)
+    await vm.eei.putAccount(addr, acc)
+    await vm.runTx({ tx })
+
+    const hash = await vm.stateManager.getContractStorage(
+      codeAddr,
+      Buffer.from('00'.repeat(32), 'hex')
+    )
+    t.ok(hash.equals(KECCAK256_NULL), 'hash ok')
+
+    t.end()
+  }
+)
+
+tape(
+  'Validate CALL does not charge new account gas when calling CALLER and caller is non-empty',
+  async (t) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const vm = await VM.create({ common })
+
+    const pkey = Buffer.alloc(32, 1)
+
+    // PUSH 0 DUP DUP DUP
+    // CALLVALUE CALLER GAS
+    // CALL
+    // STOP
+
+    // Calls CALLER and sends back the ETH just sent with the transaction
+    const code = Buffer.from('600080808034335AF100', 'hex')
+    const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+    await vm.stateManager.putContractCode(codeAddr, code)
+
+    const tx: Transaction = Transaction.fromTxData({
+      gasLimit: 100000,
+      gasPrice: 1,
+      value: 1,
+      to: codeAddr,
+    }).sign(pkey)
+
+    const addr = Address.fromPrivateKey(pkey)
+    const acc = await vm.eei.getAccount(addr)
+    acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
+    await vm.eei.putAccount(addr, acc)
+    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(27818), 'did not charge callNewAccount')
+
+    t.end()
+  }
+)
+
+tape(
+  'Validate SELFDESTRUCT does not charge new account gas when calling CALLER and caller is non-empty',
+  async (t) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const vm = await VM.create({ common })
+
+    const pkey = Buffer.alloc(32, 1)
+
+    // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
+    // Puts EXTCODEHASH of CALLER into slot 0
+    const code = Buffer.from('33FF', 'hex')
+    const codeAddr = Address.fromString('0x' + '20'.repeat(20))
+    await vm.stateManager.putContractCode(codeAddr, code)
+
+    const tx: Transaction = Transaction.fromTxData({
+      gasLimit: 100000,
+      gasPrice: 1,
+      value: 1,
+      to: codeAddr,
+    }).sign(pkey)
+
+    const addr = Address.fromPrivateKey(pkey)
+    const acc = await vm.eei.getAccount(addr)
+    acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
+    await vm.eei.putAccount(addr, acc)
+    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(13001), 'did not charge callNewAccount')
+
+    t.end()
+  }
+)
