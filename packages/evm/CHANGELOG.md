@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 1.2.2 - 2022-10-26
 
-- Fixed `EIP-3540` bug where an EOF header combination was not rejected when calling, PR [#2381](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2381)
+- Fixed `EIP-3540` bug where EOF header validation was incorrectly applied to legacy contract code in EVM calls, PR [#2381](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2381)
 - Various non-empty "empty" account bugfixes, PR [#2383](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2383)
 
 ## 1.2.1 - 2022-10-25
