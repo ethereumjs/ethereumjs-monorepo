@@ -11,9 +11,6 @@ import { TxPool } from '../../lib/service/txpool'
 
 import type { StateManager } from '@ethereumjs/statemanager'
 
-const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-DefaultStateManager.prototype.setStateRoot = (): any => {}
-
 const setup = () => {
   const config = new Config({ transports: [] })
   const service: any = {
@@ -27,6 +24,7 @@ const setup = () => {
           getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
           setStateRoot: async (_root: Buffer) => {},
         },
+        copy: () => service.execution.vm,
       },
     },
   }
@@ -86,6 +84,9 @@ const handleTxs = async (
 }
 
 tape('[TxPool]', async (t) => {
+  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
+
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
