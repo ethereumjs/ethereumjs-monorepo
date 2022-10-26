@@ -283,8 +283,9 @@ export class TxPool {
       )
     }
 
+    const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
-    await this.vm.stateManager.setStateRoot(block.stateRoot)
+    await vmCopy.stateManager.setStateRoot(block.stateRoot)
     const account = await this.vm.stateManager.getAccount(senderAddress)
     if (account.nonce > tx.nonce) {
       throw new Error(
