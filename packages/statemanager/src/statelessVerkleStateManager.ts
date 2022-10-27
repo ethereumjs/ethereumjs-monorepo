@@ -12,7 +12,7 @@ import type { StorageDump } from './interface'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
-const wasm = require('../../../rust-verkle-wasm/rust_verkle_wasm')
+const wasm = require('../../rust-verkle-wasm/rust_verkle_wasm')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString
@@ -28,16 +28,6 @@ export interface StatelessVerkleStateManagerOpts {}
  */
 const BALANCE_LEAF_KEY = 1
 
-/**
- * Default StateManager implementation for the VM.
- *
- * The state manager abstracts from the underlying data store
- * by providing higher level access to accounts, contract code
- * and storage slots.
- *
- * The default state manager implementation uses a
- * `merkle-patricia-tree` trie as a data backend.
- */
 export class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   private _proof: PrefixedHexString = '0x'
 

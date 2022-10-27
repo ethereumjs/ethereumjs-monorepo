@@ -57,7 +57,7 @@ export class BlockHeader {
    * Fake-EIP 999001 (see Common library)
    */
   public readonly verkleProof?: PrefixedHexString
-  public readonly verkleState?: VerkleState
+  public readonly verklePreState?: VerkleState
 
   public readonly _common: Common
 
@@ -162,7 +162,7 @@ export class BlockHeader {
       nonce: zeros(8),
       baseFeePerGas: undefined,
       verkleProof: undefined,
-      verkleState: undefined,
+      verklePreState: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -187,7 +187,7 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
     const verkleProof =
       toType(headerData.verkleProof, TypeOutput.PrefixedHexString) ?? defaults.verkleProof
-    const verkleState = headerData.verkleState ?? defaults.verkleState
+    const verklePreState = headerData.verklePreState ?? defaults.verklePreState
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -227,7 +227,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.verkleProof = verkleProof
-    this.verkleState = verkleState
+    this.verklePreState = verklePreState
 
     this._genericFormatValidation()
     this._validateDAOExtraData()

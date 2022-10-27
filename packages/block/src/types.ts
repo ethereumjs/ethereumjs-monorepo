@@ -104,7 +104,7 @@ export interface HeaderData {
    * Fake-EIP 999001 (see Common library)
    */
   verkleProof?: PrefixedHexString
-  verkleState?: VerkleState
+  verklePreState?: VerkleState
 }
 
 /**
