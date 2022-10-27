@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666856936703,
+  "lastUpdate": 1666878532803,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a7bb5ba8284894044bbb19f91f3804e901e6d2a0",
-          "message": "common: Fix hardfork changes (#2331)\n\n* common: Fix hardfork changes\r\n\r\n* fix the spec hfs",
-          "timestamp": "2022-10-06T11:27:56+02:00",
-          "tree_id": "abee90fee7d51f42c93b816821300be728e81cc0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a7bb5ba8284894044bbb19f91f3804e901e6d2a0"
-        },
-        "date": 1665048984152,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19285,
-            "range": "±1.52%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18711,
-            "range": "±3.80%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17876,
-            "range": "±6.08%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19344,
-            "range": "±1.27%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18478,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.51%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dacosta.pereirafabio@gmail.com",
+            "name": "strykerin",
+            "username": "strykerin"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e0ea425aaae00c606f85db3eb3a3ddc09e3e45ad",
+          "message": "fix devp2p README.md reference to `les.ts` (#2387)",
+          "timestamp": "2022-10-27T15:41:36+02:00",
+          "tree_id": "d073a67fb16185d8647330c91df6e08525c68b04",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e0ea425aaae00c606f85db3eb3a3ddc09e3e45ad"
+        },
+        "date": 1666878531763,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16536,
+            "range": "±4.27%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17072,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16568,
+            "range": "±5.94%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16890,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16408,
+            "range": "±2.18%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
           }
         ]
       }
