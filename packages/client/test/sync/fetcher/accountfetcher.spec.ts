@@ -130,48 +130,6 @@ tape('[AccountFetcher]', async (t) => {
     t.end()
   })
 
-  t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [] })
-    const pool = new PeerPool() as any
-    const fetcher = new AccountFetcher({
-      config,
-      pool,
-      root: Buffer.from(''),
-      first: BigInt(1),
-      count: BigInt(3),
-    })
-    const partialResult: any = [
-      [
-        {
-          hash: Buffer.from(''),
-          body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
-        },
-        {
-          hash: Buffer.from(''),
-          body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
-        },
-      ],
-    ]
-
-    const task = { count: 3, first: BigInt(1) }
-    const peer = {
-      snap: { getAccountRange: td.func<any>() },
-      id: 'random',
-      address: 'random',
-    }
-    const job = { peer, partialResult, task }
-    await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getAccountRange({
-        root: Buffer.from(''),
-        origin: Buffer.from('1'),
-        limit: Buffer.from('3'),
-        bytes: BigInt(50000),
-      })
-    )
-    t.end()
-  })
-
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
