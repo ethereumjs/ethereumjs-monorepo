@@ -2,44 +2,58 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { StatelessVerkleStateManager } from '../src'
-import { createAccount, getTransaction } from '../utils'
+// import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
 import * as verkleBlockJSON from './testdata/verkleBlock.json'
 
 tape('StatelessVerkleStateManager', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, eips: [999001] })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
   const block = Block.fromBlockData(verkleBlockJSON, { common })
 
-  t.test('should instantiate', async (st) => {
-    const stateManager = new StatelessVerkleStateManager()
-    // st.equal(stateManager, 'it has default hardfork')
-  })
-
   t.test('initPreState()', async (st) => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verkleState!)
+    const stateManager = new StatelessVerkleStateManager()
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const proofStart = '0x00000000030000000a'
     st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
+    st.ok(
+      Object.keys((stateManager as any)._preState).length !== 0,
+      'should initialize with preState'
+    )
+    st.ok(Object.keys((stateManager as any)._state).length !== 0, 'should initialize with state')
   })
 
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verkleState!)
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const account2 = await stateManager.getAccount(
       Address.fromString('0x0102030000000000000000000000000000000000')
     )
-    st.pass('Something worked.')
+    st.equal(account2.balance, 0n, 'should have correct balance')
+    st.equal(account2.nonce, 0n, 'should have correct nonce')
+    st.equal(
+      account2.storageRoot.toString('hex'),
+      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      'should have correct storageRoot'
+    )
+    st.equal(
+      account2.codeHash.toString('hex'),
+      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      'should have correct codeHash'
+    )
   })
 
   t.test('should run verkle block', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
     // const vm = VM.create({ stateManager, common })
+
+    // Check that preState does not update
+    // Check that state updates
 
     // Temporarily skip block validation
     // Tx root not correct, 2022-02-17
