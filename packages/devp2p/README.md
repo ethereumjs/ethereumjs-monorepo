@@ -359,7 +359,7 @@ Events emitted:
 
 ### Reference
 
-- [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
+- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
 
 ## Browser
 
