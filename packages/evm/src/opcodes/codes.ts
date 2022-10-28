@@ -273,6 +273,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 2330,
+    opcodes: {
+      0x5c: { name: 'EXTSLOAD', isAsync: true, dynamicGas: true },
+    },
+  },
+  {
     eip: 3198,
     opcodes: {
       0x48: { name: 'BASEFEE', isAsync: false, dynamicGas: false },

@@ -1,0 +1,13 @@
+{
+  "name": "EIP-2330",
+  "number": 2330,
+  "comment": "EXTSLOAD",
+  "url": "https://eips.ethereum.org/EIPS/eip-2330",
+  "status": "Draft",
+  "minimumHardfork": "chainstart",
+  "requiredEIPs": [],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
