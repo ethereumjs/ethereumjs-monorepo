@@ -218,7 +218,7 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/).
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/protocol/eth/](./src/protocol/eth/).
 
 ### Usage
 
