@@ -11,11 +11,11 @@ tape('[VerkleBlock]: Verkle Block Functionality (Fake-EIP-999001)', function (t)
 
     const block = Block.fromBlockData(verkleBlockJSON, { common })
 
-    const key = '0x6c99a3a0427cab63b7ab24f0683da88a1c5ed53f7b072b9e4efebd5dc412fd03'
-    const value = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+    const key = '0x695921dca3b16c5cc850e94cdd63f573c467669e89cec88935d03474d6bdf901'
+    const value = '0xe703c84e676dc11b000000000000000000000000000000000000000000000000'
     st.equal(block.header.verklePreState![key], value, 'should read in the verkle state')
 
-    const proofStart = '0x00000000030000000a'
+    const proofStart = '0x000000000600000008'
     st.equal(block.header.verkleProof!.slice(0, 20), proofStart, 'should read in the verkle proof')
     st.end()
   })
