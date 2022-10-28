@@ -324,6 +324,19 @@ export class BlockHeader {
         }
       }
     }
+
+    // Validation for Verkle blocks
+    if (this._common.isActivatedEIP(999001) === true) {
+      // check if verkleProof is present
+      if (this.verkleProof === undefined) {
+        throw new Error(`Invalid block: verkle proof missing`)
+      }
+
+      // check if verklePreState is present
+      if (this.verklePreState === undefined) {
+        throw new Error(`Invalid block: verkle preState missing`)
+      }
+    }
   }
 
   /**

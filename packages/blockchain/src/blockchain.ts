@@ -594,19 +594,6 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
       }
     }
-
-    // check blockchain dependant Verkle tries EIP values
-    if (header._common.isActivatedEIP(999001) === true) {
-      // check if verkleProof is present
-      if (header.verkleProof === undefined) {
-        throw new Error(`Invalid block: verkle proof missing`)
-      }
-
-      // check if verklePreState is present
-      if (header.verklePreState === undefined) {
-        throw new Error(`Invalid block: verkle preState missing`)
-      }
-    }
   }
 
   /**
