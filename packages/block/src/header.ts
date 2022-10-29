@@ -185,9 +185,9 @@ export class BlockHeader {
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
     let baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
-    const verkleProof =
+    let verkleProof =
       toType(headerData.verkleProof, TypeOutput.PrefixedHexString) ?? defaults.verkleProof
-    const verklePreState = headerData.verklePreState ?? defaults.verklePreState
+    let verklePreState = headerData.verklePreState ?? defaults.verklePreState
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -207,6 +207,15 @@ export class BlockHeader {
     } else {
       if (baseFeePerGas) {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+      }
+    }
+
+    if (this._common.isActivatedEIP(999001) === true) {
+      if (verkleProof === undefined) {
+        verkleProof = '0x'
+      }
+      if (verklePreState === undefined) {
+        verklePreState = {}
       }
     }
 
