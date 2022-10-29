@@ -51,10 +51,6 @@ tape('[Synchronizer]', async (t) => {
   })
 
   t.test('should finish syncing when all fetchers are done', async (t) => {
-    // const config = new Config({ transports: [] })
-    // const pool = new PeerPool() as any
-    // const chain = new Chain({ config })
-
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
