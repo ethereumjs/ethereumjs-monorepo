@@ -95,11 +95,7 @@ export class EthProtocol extends Protocol {
       encode: (txs: TypedTransaction[]) => {
         const serializedTxs = []
         for (const tx of txs) {
-          if (tx.type === 0) {
-            serializedTxs.push(tx.raw())
-          } else {
-            serializedTxs.push(tx.serialize())
-          }
+          serializedTxs.push(tx.serialize())
         }
         return serializedTxs
       },
@@ -197,10 +193,6 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
-      encode: ({ hashes }: { hashes: Buffer[] }) => [hashes],
-      decode: ([hashes]: [Buffer[]]) => {
-        hashes
-      },
     },
     {
       name: 'GetPooledTransactions',
