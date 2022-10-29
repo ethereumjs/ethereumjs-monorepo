@@ -18,7 +18,7 @@ tape('StatelessVerkleStateManager', (t) => {
     const stateManager = new StatelessVerkleStateManager()
     await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-    const proofStart = '0x00000000030000000a'
+    const proofStart = '0x000000000600000008'
     st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
     st.ok(
       Object.keys((stateManager as any)._preState).length !== 0,
@@ -27,42 +27,60 @@ tape('StatelessVerkleStateManager', (t) => {
     st.ok(Object.keys((stateManager as any)._state).length !== 0, 'should initialize with state')
   })
 
+  // Test data from https://github.com/gballet/verkle-block-sample/tree/master#block-content
+  t.test('getTreeKey()', async (st) => {
+    const stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+
+    const balanceKey = await (stateManager as any).getTreeKeyForBalance(
+      Address.fromString('0x0000000000000000000000000000000000000000')
+    )
+    st.equal(
+      balanceKey.toString('hex'),
+      '695921dca3b16c5cc850e94cdd63f573c467669e89cec88935d03474d6bdf901'
+    )
+  })
+
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-    const account2 = await stateManager.getAccount(
-      Address.fromString('0x0102030000000000000000000000000000000000')
+    const account = await stateManager.getAccount(
+      Address.fromString('0x0000000000000000000000000000000000000000')
     )
-    st.equal(account2.balance, 0n, 'should have correct balance')
-    st.equal(account2.nonce, 0n, 'should have correct nonce')
+    st.equal(account.balance, 2000000000000000999n, 'should have correct balance')
+    st.equal(account.nonce, 0n, 'should have correct nonce')
     st.equal(
-      account2.storageRoot.toString('hex'),
+      account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     st.equal(
-      account2.codeHash.toString('hex'),
+      account.codeHash.toString('hex'),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
   })
 
-  t.test('should run verkle block', async (st) => {
+  t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    // const vm = VM.create({ stateManager, common })
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-    // Check that preState does not update
-    // Check that state updates
-
-    // Temporarily skip block validation
-    // Tx root not correct, 2022-02-17
-    // Calculated root: 32faa11cc84a972f9720942bbde9ee4899ef6569876c8f53e05b60de56bc0ab3
-    // Block header root: 6e9e81e95ca097bee7400db0b4942090566e69f84688a5f1c08a67fa4874ee72
-    // All other (non parent-depending) block validations pass though
-    //await vm.runBlock({ block, skipBlockValidation: true })
-
-    st.pass('Whew. Initialized.')
+    const account = await stateManager.getAccount(
+      Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
+    )
+    st.equal(account.balance, 999913024999998002n, 'should have correct balance')
+    st.equal(account.nonce, 3n, 'should have correct nonce')
+    st.equal(
+      account.storageRoot.toString('hex'),
+      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      'should have correct storageRoot'
+    )
+    st.equal(
+      account.codeHash.toString('hex'),
+      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      'should have correct codeHash'
+    )
   })
 
   /**t.test('initPreState()', async (st) => {

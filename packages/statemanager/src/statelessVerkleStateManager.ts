@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
-import { arrToBufArr, setLengthRight, toBuffer } from '@ethereumjs/util'
+import { Account, arrToBufArr, bufferToHex, setLengthRight, toBuffer } from '@ethereumjs/util'
 
 import { Cache } from './cache'
 
@@ -26,7 +26,11 @@ export interface StatelessVerkleStateManagerOpts {}
 /**
  * Tree key constants.
  */
+const VERSION_LEAF_KEY = 0
 const BALANCE_LEAF_KEY = 1
+const NONCE_LEAF_KEY = 2
+const CODE_KECCAK_LEAF_KEY = 3
+const CODE_SIZE_LEAF_KEY = 4
 
 export class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   private _proof: PrefixedHexString = '0x'
@@ -53,7 +57,6 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
      * desired backend.
      */
     const getCb: getCb = async (address) => {
-      console.log(`Calling get_tree_key_for_balance() on address ${address.toString()}`)
       this.getTreeKeyForBalance(address)
       return undefined
     }
@@ -73,51 +76,55 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
   private pedersenHash(input: Buffer) {
     // max length 255 * 16
     if (input.length > 4080) {
-      throw new Error(
-        'Input buffer for perdersonHash calculation in verkle state manager too long.'
-      )
+      throw new Error('Input buffer for pedersenHash calculation in verkle state manager too long.')
     }
     const extInput = setLengthRight(input, 4080)
-    console.log(`ext_input (byte length: ${extInput.length})`)
 
-    console.log(`${extInput.toString('hex').substring(0, 100)}...`)
     const ints: Array<number | ArrayBufferLike> = [2 + 256 * input.length]
-    console.log(`Value for ints[0]: ${ints[0]}`)
+
     for (let i = 0; i <= 254; i++) {
       const from = 16 * i
       const to = 16 * (i + 1)
       const newInt = extInput.slice(from, to)
       ints.push(newInt)
     }
-    console.log(`ints Length: ${ints.length}`)
-    console.log(`Value for ints[1] (Buffer): 0x${(ints[1] as Buffer).toString('hex')}`)
-    console.log(`Value for ints[2] (Buffer): 0x${(ints[2] as Buffer).toString('hex')}`)
+
     const pedersenHash = wasm.pedersen_hash(ints)
-    console.log(
-      `Value for pederson_hash() (compute_commitment_root(ints).serialize()): ${arrToBufArr(
-        pedersenHash
-      ).toString('hex')}`
-    )
+
     return arrToBufArr(pedersenHash)
   }
 
   private getTreeKey(address: Address, treeIndex: number, subIndex: number) {
-    console.log(
-      `get_tree_key() called with address=${address.toString()} tree_index=${treeIndex} sub_index=${subIndex}`
-    )
+    const address32 = setLengthRight(address.toBuffer(), 32)
+
     const treeIndexB = Buffer.alloc(32)
     treeIndexB.writeInt32LE(treeIndex)
 
-    const input = Buffer.concat([address.toBuffer(), treeIndexB])
-    console.log(`Input to perderson_hash() call (address + tree_index.to_bytes(32, 'little')):`)
-    console.log(input.toString('hex'))
-    const ret = Buffer.concat([this.pedersenHash(input).slice(0, 31), toBuffer(subIndex)])
-    console.log(`Return value for getTreeKey() (Buffer): 0x${ret.toString('hex')}`)
-    return ret
+    const input = Buffer.concat([address32, treeIndexB])
+
+    const treeKey = Buffer.concat([this.pedersenHash(input).slice(0, 31), toBuffer(subIndex)])
+
+    return treeKey
+  }
+
+  private getTreeKeyForVersion(address: Address) {
+    return this.getTreeKey(address, 0, VERSION_LEAF_KEY)
   }
 
   private getTreeKeyForBalance(address: Address) {
     return this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
+  }
+
+  private getTreeKeyForNonce(address: Address) {
+    return this.getTreeKey(address, 0, NONCE_LEAF_KEY)
+  }
+
+  private getTreeKeyForCodeHash(address: Address) {
+    return this.getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
+  }
+
+  private getTreeKeyForCodeSize(address: Address) {
+    return this.getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
   }
 
   /**
@@ -174,6 +181,23 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {}
+
+  async getAccount(address: Address): Promise<Account> {
+    // Retrieve treeKeys from account address
+    const balanceKey = this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
+    const nonceKey = this.getTreeKey(address, 0, NONCE_LEAF_KEY)
+    const codeHashKey = this.getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
+
+    const balanceLE = toBuffer(this._state[bufferToHex(balanceKey)])
+    const nonceLE = toBuffer(this._state[bufferToHex(nonceKey)])
+    const codeHash = this._state[bufferToHex(codeHashKey)]
+
+    return Account.fromAccountData({
+      balance: balanceLE.length > 0 ? balanceLE.readBigInt64LE() : 0n,
+      codeHash,
+      nonce: nonceLE.length > 0 ? nonceLE.readBigInt64LE() : 0n,
+    })
+  }
 
   /**
    * Checkpoints the current state of the StateManager instance.
