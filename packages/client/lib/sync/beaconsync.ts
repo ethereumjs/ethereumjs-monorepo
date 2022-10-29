@@ -48,12 +48,12 @@ export class BeaconSynchronizer extends Synchronizer {
   get fetcher(): ReverseBlockFetcher | null {
     if (
       this._fetchers !== null &&
-      this._fetchers.length > 0 &&
+      this._fetchers.length === 1 &&
       !(this._fetchers[0] instanceof ReverseBlockFetcher)
     ) {
       throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
-    if (this._fetchers !== null) {
+    if (this._fetchers !== null && this._fetchers.length === 1) {
       return this._fetchers![0] as ReverseBlockFetcher
     }
     return null
@@ -61,7 +61,7 @@ export class BeaconSynchronizer extends Synchronizer {
 
   set fetcher(fetcher: ReverseBlockFetcher | null) {
     if (fetcher !== null) {
-      if (this._fetchers != null) {
+      if (this._fetchers !== null) {
         this._fetchers.push(fetcher)
       } else {
         this._fetchers = [fetcher]

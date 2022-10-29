@@ -58,12 +58,12 @@ export class FullSynchronizer extends Synchronizer {
   get fetcher(): BlockFetcher | null {
     if (
       this._fetchers !== null &&
-      this._fetchers.length > 0 &&
+      this._fetchers.length === 1 &&
       !(this._fetchers[0] instanceof BlockFetcher)
     ) {
       throw Error(`Invalid Fetcher, expected BlockFetcher`)
     }
-    if (this._fetchers !== null) {
+    if (this._fetchers !== null && this._fetchers!.length === 1) {
       return this._fetchers![0] as BlockFetcher
     }
     return null
@@ -71,7 +71,7 @@ export class FullSynchronizer extends Synchronizer {
 
   set fetcher(fetcher: BlockFetcher | null) {
     if (fetcher !== null) {
-      if (this._fetchers != null) {
+      if (this._fetchers !== null) {
         this._fetchers.push(fetcher)
       } else {
         this._fetchers = [fetcher]
