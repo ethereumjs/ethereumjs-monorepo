@@ -709,7 +709,6 @@ export class Eth {
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
-
       // Run tx through copied vm to get tx gasUsed and createdAddress
       const runBlockResult = await (
         await this._vm!.copy()

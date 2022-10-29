@@ -95,19 +95,20 @@ export class EthProtocol extends Protocol {
       encode: (txs: TypedTransaction[]) => {
         const serializedTxs = []
         for (const tx of txs) {
-          if (tx.type === 0) {
-            serializedTxs.push(tx.raw())
-          } else {
-            serializedTxs.push(tx.serialize())
-          }
+          serializedTxs.push(tx.serialize())
         }
         return serializedTxs
       },
-      decode: ([txs]: [Buffer[]]) => {
-        // TODO: add proper Common instance (problem: service not accessible)
-        //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.config.syncTargetHeight, this.chain.headers.td)
-        return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
+      decode: (txs: Buffer[]) => {
+        if (!this.config.synchronized) return
+        const common = this.config.chainCommon.copy()
+        common.setHardforkByBlockNumber(
+          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+            this.config.syncTargetHeight ?? // Use sync target height if available OR
+            common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
+            BigInt(0) // Use chainstart
+        )
+        return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
     },
     {

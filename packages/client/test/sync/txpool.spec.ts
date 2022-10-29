@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -19,7 +20,11 @@ const setup = () => {
     },
     execution: {
       vm: {
-        stateManager: { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) },
+        stateManager: {
+          getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
+          setStateRoot: async (_root: Buffer) => {},
+        },
+        copy: () => service.execution.vm,
       },
     },
   }
@@ -42,6 +47,7 @@ const handleTxs = async (
   try {
     if (stateManager !== undefined) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
+      ;(<any>pool).service.execution.vm.stateManager.setStateRoot = async (_root: Buffer) => {}
     }
 
     pool.open()
@@ -71,12 +77,16 @@ const handleTxs = async (
   } catch (e: any) {
     pool.stop()
     pool.close()
+
     // Return false if the error message contains the fail message
     return !(e.message as string).includes(failMessage)
   }
 }
 
 tape('[TxPool]', async (t) => {
+  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
+
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
@@ -749,4 +759,5 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
   })
+  DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
 })

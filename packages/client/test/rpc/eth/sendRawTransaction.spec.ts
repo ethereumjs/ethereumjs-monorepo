@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -12,6 +13,9 @@ import type { FullEthereumService } from '../../../lib/service'
 const method = 'eth_sendRawTransaction'
 
 tape(`${method}: call with valid arguments`, async (t) => {
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server, client } = baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -38,9 +42,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
     )
   }
   await baseRequest(t, server, req, 200, expectRes)
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })
 
 tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -61,9 +70,15 @@ tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
     )
   }
   await baseRequest(t, server, req, 200, expectRes)
+
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })
 
 tape(`${method}: call with invalid arguments: not enough balance`, async (t) => {
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -74,6 +89,9 @@ tape(`${method}: call with invalid arguments: not enough balance`, async (t) => 
   const req = params(method, [txData])
   const expectRes = checkError(t, INVALID_PARAMS, 'insufficient balance')
   await baseRequest(t, server, req, 200, expectRes)
+
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })
 
 tape(`${method}: call with sync target height not set yet`, async (t) => {
@@ -128,6 +146,9 @@ tape(`${method}: call with unsigned tx`, async (t) => {
 })
 
 tape(`${method}: call with no peers`, async (t) => {
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
   const syncTargetHeight = common.hardforkBlock(Hardfork.London)
@@ -153,4 +174,7 @@ tape(`${method}: call with no peers`, async (t) => {
 
   const expectRes = checkError(t, INTERNAL_ERROR, 'no peer connection available')
   await baseRequest(t, server, req, 200, expectRes)
+
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })

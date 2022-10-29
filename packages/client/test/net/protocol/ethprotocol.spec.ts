@@ -1,7 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain/chain'
@@ -193,5 +194,59 @@ tape('[EthProtocol]', (t) => {
     })
     t.deepEqual(res[1], receiptsWithoutTxType, 'receipts correctly decoded')
     t.end()
+  })
+
+  t.test('verify that Transactions handler encodes/decodes correctly', (st) => {
+    const config = new Config({
+      transports: [],
+      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+    })
+    config.synchronized = true
+    const chain = new Chain({ config })
+    const p = new EthProtocol({ config, chain })
+
+    const legacyTx = TransactionFactory.fromTxData({ type: 0 })
+    const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
+    const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
+    const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
+      legacyTx,
+      eip2929Tx,
+      eip1559Tx,
+    ])
+    st.deepEqual(res[0], legacyTx.serialize(), 'legacy tx correctly encoded')
+    st.deepEqual(res[1], eip2929Tx.serialize(), 'EIP29292 tx correctly encoded')
+    st.deepEqual(res[2], eip1559Tx.serialize(), 'EIP1559 tx correctly encoded')
+
+    const decoded = p.decode(
+      p.messages.filter((message) => message.name === 'Transactions')[0],
+      res
+    )
+    st.deepEqual(decoded[0].type, legacyTx.type, 'decoded legacy tx correctly')
+    st.deepEqual(decoded[1].type, eip2929Tx.type, 'decoded eip2929 tx correctly')
+    st.deepEqual(decoded[2].type, eip1559Tx.type, 'decoded EIP1559 tx correctly')
+    st.end()
+  })
+
+  t.test('verify that NewPooledTransactionHashes encodes/decodes correctly', (st) => {
+    const config = new Config({
+      transports: [],
+      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+    })
+    const chain = new Chain({ config })
+    const p = new EthProtocol({ config, chain })
+    const fakeHash = randomBytes(32)
+    const res = p.encode(
+      p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
+      [fakeHash]
+    )
+    st.deepEqual(res[0], fakeHash, 'encoded hash correctly')
+
+    const decoded = p.decode(
+      p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
+      res
+    )
+
+    st.deepEqual(decoded[0], fakeHash, 'decoded hash correctly')
+    st.end()
   })
 })
