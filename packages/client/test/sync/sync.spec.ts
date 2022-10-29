@@ -4,14 +4,12 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Synchronizer } from '../../lib/sync/sync'
+import { BlockFetcher } from '../../lib/sync/fetcher'
 import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {
     return true
-  }
-  async sync() {
-    return false
   }
   async best() {
     return undefined
@@ -50,6 +48,42 @@ tape('[Synchronizer]', async (t) => {
     }
     config.events.emit(Event.CHAIN_UPDATED)
     await new Promise(() => {}) // resolves once t.end() is called
+  })
+
+  t.test('should finish syncing when all fetchers are done', async (t) => {
+    // const config = new Config({ transports: [] })
+    // const pool = new PeerPool() as any
+    // const chain = new Chain({ config })
+
+    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new SynchronizerTest({ config, pool, chain })
+
+    config.syncTargetHeight = BigInt(1)
+
+    const firstFetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: BigInt(1),
+      count: BigInt(10),
+      timeout: 5,
+    })
+    const secondFetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: BigInt(1),
+      count: BigInt(10),
+      timeout: 5,
+    })
+    firstFetcher.fetch = td.func<any>()
+    td.when(firstFetcher.fetch()).thenResolve(false)
+    secondFetcher.fetch = td.func<any>()
+    td.when(secondFetcher.fetch()).thenResolve(false)
+    ;(sync as any).fetchers = [firstFetcher, secondFetcher]
+    t.ok(await sync.sync(), 'should resolve when all fetchers resolve')
   })
 
   t.test('should reset td', (t) => {
