@@ -30,14 +30,27 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   get fetcher(): HeaderFetcher | null {
-    if (this._fetcher !== null && !(this._fetcher instanceof HeaderFetcher)) {
+    if (
+      this._fetchers !== null &&
+      this._fetchers.length > 0 &&
+      !(this._fetchers[0] instanceof HeaderFetcher)
+    ) {
       throw Error(`Invalid Fetcher, expected HeaderFetcher`)
     }
-    return this._fetcher
+    if (this._fetchers !== null) {
+      return this._fetchers![0] as HeaderFetcher
+    }
+    return null
   }
 
   set fetcher(fetcher: HeaderFetcher | null) {
-    this._fetcher = fetcher
+    if (fetcher !== null) {
+      if (this._fetchers != null) {
+        this._fetchers.push(fetcher)
+      } else {
+        this._fetchers = [fetcher]
+      }
+    }
   }
 
   /**
