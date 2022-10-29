@@ -56,14 +56,27 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   get fetcher(): BlockFetcher | null {
-    if (this._fetcher !== null && !(this._fetcher instanceof BlockFetcher)) {
+    if (
+      this._fetchers !== null &&
+      this._fetchers.length > 0 &&
+      !(this._fetchers[0] instanceof BlockFetcher)
+    ) {
       throw Error(`Invalid Fetcher, expected BlockFetcher`)
     }
-    return this._fetcher
+    if (this._fetchers !== null) {
+      return this._fetchers![0] as BlockFetcher
+    }
+    return null
   }
 
   set fetcher(fetcher: BlockFetcher | null) {
-    this._fetcher = fetcher
+    if (fetcher !== null) {
+      if (this._fetchers != null) {
+        this._fetchers.push(fetcher)
+      } else {
+        this._fetchers = [fetcher]
+      }
+    }
   }
 
   /**
@@ -201,7 +214,7 @@ export class FullSynchronizer extends Synchronizer {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
         this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-        this.clearFetcher()
+        this.clearFetchers()
       }
     }
 
