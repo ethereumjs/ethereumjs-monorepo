@@ -46,14 +46,27 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   get fetcher(): ReverseBlockFetcher | null {
-    if (this._fetcher !== null && !(this._fetcher instanceof ReverseBlockFetcher)) {
+    if (
+      this._fetchers !== null &&
+      this._fetchers.length > 0 &&
+      !(this._fetchers[0] instanceof ReverseBlockFetcher)
+    ) {
       throw Error(`Invalid Fetcher, expected ReverseBlockFetcher`)
     }
-    return this._fetcher
+    if (this._fetchers !== null) {
+      return this._fetchers![0] as ReverseBlockFetcher
+    }
+    return null
   }
 
   set fetcher(fetcher: ReverseBlockFetcher | null) {
-    this._fetcher = fetcher
+    if (fetcher !== null) {
+      if (this._fetchers != null) {
+        this._fetchers.push(fetcher)
+      } else {
+        this._fetchers = [fetcher]
+      }
+    }
   }
 
   /**
@@ -217,7 +230,7 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (this.skeleton.bounds() === undefined || this.skeleton.isLinked()) {
-      this.clearFetcher()
+      this.clearFetchers()
       return false
     }
 
