@@ -3,8 +3,8 @@ import * as td from 'testdouble'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
-import { Synchronizer } from '../../lib/sync/sync'
 import { BlockFetcher } from '../../lib/sync/fetcher'
+import { Synchronizer } from '../../lib/sync/sync'
 import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
