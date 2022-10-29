@@ -37,14 +37,22 @@ const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berli
 const config = new Config({ transports: [], common })
 
 const setup = () => {
-  const stateManager = { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) }
+  const stateManager = {
+    getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
+    setStateRoot: async () => {},
+  }
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
     execution: {
-      vm: { stateManager, eei: { getAccount: () => stateManager.getAccount() } },
+      vm: {
+        stateManager,
+        eei: { getAccount: () => stateManager.getAccount() },
+        copy: () => service.execution.vm,
+        setStateRoot: () => {},
+      },
     },
   }
   const txPool = new TxPool({ config, service })
@@ -184,6 +192,7 @@ tape('[PendingBlock]', async (t) => {
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
+
     t.end()
   })
 })
