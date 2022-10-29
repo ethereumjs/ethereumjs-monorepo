@@ -40,7 +40,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public _fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetchers: (BlockFetcher | HeaderFetcher | ReverseBlockFetcher)[] | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -57,7 +57,7 @@ export abstract class Synchronizer {
 
     this.pool = options.pool
     this.chain = options.chain
-    this._fetcher = null
+    this._fetchers = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.opened = false
@@ -83,12 +83,12 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
-    return this._fetcher
+  get fetchers(): (BlockFetcher | HeaderFetcher | ReverseBlockFetcher)[] | null {
+    return this._fetchers
   }
 
-  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
-    this._fetcher = fetcher
+  set fetchers(fetchers: (BlockFetcher | HeaderFetcher | ReverseBlockFetcher)[] | null) {
+    this._fetchers = fetchers
   }
 
   /**
@@ -180,23 +180,28 @@ export abstract class Synchronizer {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const resolveSync = (height?: number) => {
-        this.clearFetcher()
+        this.clearFetchers()
         resolve(true)
         const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
+        this.config.logger.info(`Finishing up sync with the current fetchers ${heightStr}`)
       }
       this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
       try {
-        if (this._fetcher) {
-          await this._fetcher.fetch()
+        if (this._fetchers) {
+          const fetcherPromises = []
+          for (let i = 0; i < this._fetchers.length; i++) {
+            const fetcher = this._fetchers[i]
+            fetcherPromises.push(fetcher.fetch())
+          }
+          await Promise.all(fetcherPromises)
         }
-        this.config.logger.debug(`Fetcher finished fetching...`)
+        this.config.logger.debug(`Fetchers finished fetching...`)
         resolveSync()
       } catch (error: any) {
         this.config.logger.error(
           `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
         )
-        this.clearFetcher()
+        this.clearFetchers()
         reject(error)
       }
     })
@@ -205,11 +210,14 @@ export abstract class Synchronizer {
   /**
    * Clears and removes the fetcher.
    */
-  clearFetcher() {
-    if (this._fetcher) {
-      this._fetcher.clear()
-      this._fetcher.destroy()
-      this._fetcher = null
+  clearFetchers() {
+    if (this._fetchers) {
+      for (let i = 0; i < this._fetchers.length; i++) {
+        const fetcher = this._fetchers[i]
+        fetcher.clear()
+        fetcher.destroy()
+      }
+      this._fetchers = null
     }
   }
 
@@ -220,7 +228,7 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
-    this.clearFetcher()
+    this.clearFetchers()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
