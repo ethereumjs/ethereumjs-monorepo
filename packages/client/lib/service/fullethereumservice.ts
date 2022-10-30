@@ -313,8 +313,6 @@ export class FullEthereumService extends EthereumService {
         peer.eth?.send('Receipts', { reqId, receipts })
         break
       }
-      default:
-        return
     }
   }
 
