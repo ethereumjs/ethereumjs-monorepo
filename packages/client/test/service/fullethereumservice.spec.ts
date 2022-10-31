@@ -1,5 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -295,6 +296,29 @@ tape('[FullEthereumService]', async (t) => {
       },
       'eth',
       undefined as any
+    )
+  })
+
+  t.test('should handle GetPooledTransactions', async (st) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const service = new FullEthereumService({ config, chain })
+    ;(service.txPool as any).validate = () => {}
+
+    const tx = TransactionFactory.fromTxData({ type: 2 }).sign(randomBytes(32))
+    await service.txPool.add(tx)
+
+    await service.handle(
+      { name: 'GetPooledTransactions', data: { reqId: 1, hashes: [tx.hash()] } },
+      'eth',
+      {
+        eth: {
+          send: (_: string, data: any): any => {
+            st.ok(data.txs[0].hash().equals(tx.hash()), 'handled getPooledTransactions')
+            st.end()
+          },
+        } as any,
+      } as any
     )
   })
 
