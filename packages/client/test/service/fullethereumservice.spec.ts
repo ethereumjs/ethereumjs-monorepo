@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -155,6 +155,19 @@ tape('[FullEthereumService]', async (t) => {
       t.end()
     }
   )
+
+  t.test('should ban peer for sending NewBlock after merge', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Merge })
+    const config = new Config({ common, transports: [] })
+    const chain = new Chain({ config })
+    const service = new FullEthereumService({ config, chain })
+    service.pool.ban = () => {
+      t.pass('banned peer when NewBlock announced after Merge')
+      t.end()
+    }
+
+    await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', { id: 1 } as any)
+  })
 
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
