@@ -7,6 +7,7 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm/dist/types'
 
 tape('[FullEthereumService]', async (t) => {
@@ -61,7 +62,7 @@ tape('[FullEthereumService]', async (t) => {
   }
   td.replace('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
-
+  /*
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
@@ -126,7 +127,55 @@ tape('[FullEthereumService]', async (t) => {
     t.notOk(await service.stop(), 'already stopped')
     t.end()
   })
+*/
+  t.test('should correctly handle GetBlockHeaders', async (t) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    chain.getHeaders = () => [{ number: 1n }] as any
+    const service = new FullEthereumService({ config, chain })
+    await service.handle(
+      {
+        name: 'GetBlockHeaders',
+        data: { reqId: 1, block: 5n, max: 1, skip: false, reverse: true },
+      },
+      'eth',
+      {
+        eth: {
+          send: (title: string, msg: any) => {
+            t.ok(
+              title === 'BlockHeaders' && msg.headers.length === 0,
+              'sent empty headers when block height is too high'
+            )
+          },
+        } as any,
+      } as any
+    )
+    ;(service.chain as any)._headers = {
+      height: 5n,
+      td: null,
+      latest: 5n,
+    }
 
+    await service.handle(
+      {
+        name: 'GetBlockHeaders',
+        data: { reqId: 1, block: 1n, max: 1, skip: false, reverse: false },
+      },
+      'eth',
+      {
+        eth: {
+          send: (title: string, msg: any) => {
+            t.ok(
+              title === 'BlockHeaders' && msg.headers.length === 1,
+              'sent 1 header when requested'
+            )
+            t.end()
+          },
+        } as any,
+      } as any
+    )
+  })
+  /*
   t.test(
     'should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes',
     async (t) => {
@@ -217,7 +266,7 @@ tape('[FullEthereumService]', async (t) => {
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     t.notOk(service.beaconSync, 'beacon sync should not be available')
   })
-
+*/
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
