@@ -1,4 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -7,7 +8,6 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
 
-import type { BlockHeader } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm/dist/types'
 
 tape('[FullEthereumService]', async (t) => {
@@ -205,17 +205,18 @@ tape('[FullEthereumService]', async (t) => {
     }
   )
 
-  t.test('should ban peer for sending NewBlock after merge', async (t) => {
+  t.test('should ban peer for sending NewBlock/NewBlockHashes after merge', async (t) => {
+    t.plan(2)
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Merge })
     const config = new Config({ common, transports: [] })
     const chain = new Chain({ config })
     const service = new FullEthereumService({ config, chain })
     service.pool.ban = () => {
-      t.pass('banned peer when NewBlock announced after Merge')
-      t.end()
+      t.pass('banned peer when NewBlock/NewBlockHashes announced after Merge')
     }
 
     await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', { id: 1 } as any)
+    await service.handle({ name: 'NewBlockHashes', data: [] }, 'eth', { id: 1 } as any)
   })
 
   t.test('should send Receipts on GetReceipts', async (t) => {
@@ -253,6 +254,48 @@ tape('[FullEthereumService]', async (t) => {
     await service.handle({ name: 'GetReceipts', data: [BigInt(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: BigInt(1), receipts }))
     t.end()
+  })
+
+  t.test('should handle Transactions', async (st) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const service = new FullEthereumService({ config, chain })
+    service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
+      st.deepEqual(
+        msg[0],
+        TransactionFactory.fromTxData({ type: 2 }),
+        'handled Transactions message'
+      )
+      st.end()
+    }
+
+    await service.handle(
+      {
+        name: 'Transactions',
+        data: [TransactionFactory.fromTxData({ type: 2 })],
+      },
+      'eth',
+      undefined as any
+    )
+  })
+
+  t.test('should handle NewPooledTransactionHashes', async (st) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const service = new FullEthereumService({ config, chain })
+    service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
+      st.deepEqual(msg[0], Buffer.from('0xabcd', 'hex'), 'handled NewPooledTransactionhashes')
+      st.end()
+    }
+
+    await service.handle(
+      {
+        name: 'NewPooledTransactionHashes',
+        data: [Buffer.from('0xabcd', 'hex')],
+      },
+      'eth',
+      undefined as any
+    )
   })
 
   t.test('should start on beacon sync when past merge', async (t) => {
