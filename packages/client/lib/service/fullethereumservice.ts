@@ -226,75 +226,93 @@ export class FullEthereumService extends EthereumService {
    * @param peer peer
    */
   async handleEth(message: any, peer: Peer): Promise<void> {
-    if (message.name === 'GetBlockHeaders') {
-      const { reqId, block, max, skip, reverse } = message.data
-      if (typeof block === 'bigint') {
-        if (
-          (reverse === true && block > this.chain.headers.height) ||
-          (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
-        ) {
-          // Respond with an empty list in case the header is higher than the current height
-          // This is to ensure Geth does not disconnect with "useless peer"
-          // TODO: in batch queries filter out the headers we do not have and do not send
-          // the empty list in case one or more headers are not available
-          peer.eth!.send('BlockHeaders', { reqId, headers: [] })
-          return
+    switch (message.name) {
+      case 'GetBlockHeaders': {
+        const { reqId, block, max, skip, reverse } = message.data
+        if (typeof block === 'bigint') {
+          if (
+            (reverse === true && block > this.chain.headers.height) ||
+            (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
+          ) {
+            // Respond with an empty list in case the header is higher than the current height
+            // This is to ensure Geth does not disconnect with "useless peer"
+            // TODO: in batch queries filter out the headers we do not have and do not send
+            // the empty list in case one or more headers are not available
+            peer.eth!.send('BlockHeaders', { reqId, headers: [] })
+            return
+          }
         }
+        const headers = await this.chain.getHeaders(block, max, skip, reverse)
+        peer.eth!.send('BlockHeaders', { reqId, headers })
+        break
       }
-      const headers = await this.chain.getHeaders(block, max, skip, reverse)
-      peer.eth!.send('BlockHeaders', { reqId, headers })
-    } else if (message.name === 'GetBlockBodies') {
-      const { reqId, hashes } = message.data
-      const blocks: Block[] = await Promise.all(
-        hashes.map((hash: Buffer) => this.chain.getBlock(hash))
-      )
-      const bodies = blocks.map((block) => block.raw().slice(1))
-      peer.eth!.send('BlockBodies', { reqId, bodies })
-    } else if (message.name === 'NewBlockHashes') {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
-        this.config.logger.debug(
-          `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
+
+      case 'GetBlockBodies': {
+        const { reqId, hashes } = message.data
+        const blocks: Block[] = await Promise.all(
+          hashes.map((hash: Buffer) => this.chain.getBlock(hash))
         )
-        this.pool.ban(peer, 9000000)
-      } else if (this.synchronizer instanceof FullSynchronizer) {
-        this.synchronizer.handleNewBlockHashes(message.data)
+        const bodies = blocks.map((block) => block.raw().slice(1))
+        peer.eth!.send('BlockBodies', { reqId, bodies })
+        break
       }
-    } else if (message.name === 'Transactions') {
-      await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
-    } else if (message.name === 'NewBlock') {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
-        this.config.logger.debug(
-          `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
-        )
-        this.pool.ban(peer, 9000000)
-      } else if (this.synchronizer instanceof FullSynchronizer) {
-        await this.synchronizer.handleNewBlock(message.data[0], peer)
-      }
-    } else if (message.name === 'NewPooledTransactionHashes') {
-      await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
-    } else if (message.name === 'GetPooledTransactions') {
-      const { reqId, hashes } = message.data
-      const txs = this.txPool.getByHash(hashes)
-      // Always respond, also on an empty list
-      peer.eth?.send('PooledTransactions', { reqId, txs })
-    } else if (message.name === 'GetReceipts') {
-      const [reqId, hashes] = message.data
-      const { receiptsManager } = this.execution
-      if (!receiptsManager) return
-      const receipts = []
-      let receiptsSize = 0
-      for (const hash of hashes) {
-        const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
-        if (blockReceipts === undefined) continue
-        receipts.push(...blockReceipts)
-        const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
-        receiptsSize += Buffer.byteLength(receiptsBuffer)
-        // From spec: The recommended soft limit for Receipts responses is 2 MiB.
-        if (receiptsSize >= 2097152) {
-          break
+      case 'NewBlockHashes': {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+          this.config.logger.debug(
+            `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
+          )
+          this.pool.ban(peer, 9000000)
+        } else if (this.synchronizer instanceof FullSynchronizer) {
+          this.synchronizer.handleNewBlockHashes(message.data)
         }
+        break
       }
-      peer.eth?.send('Receipts', { reqId, receipts })
+      case 'Transactions': {
+        await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
+        break
+      }
+      case 'NewBlock': {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+          this.config.logger.debug(
+            `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
+          )
+          this.pool.ban(peer, 9000000)
+        } else if (this.synchronizer instanceof FullSynchronizer) {
+          await this.synchronizer.handleNewBlock(message.data[0], peer)
+        }
+        break
+      }
+      case 'NewPooledTransactionHashes': {
+        await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
+        break
+      }
+      case 'GetPooledTransactions': {
+        const { reqId, hashes } = message.data
+        const txs = this.txPool.getByHash(hashes)
+        // Always respond, also on an empty list
+        peer.eth?.send('PooledTransactions', { reqId, txs })
+        break
+      }
+      case 'GetReceipts': {
+        const [reqId, hashes] = message.data
+        const { receiptsManager } = this.execution
+        if (!receiptsManager) return
+        const receipts = []
+        let receiptsSize = 0
+        for (const hash of hashes) {
+          const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
+          if (blockReceipts === undefined) continue
+          receipts.push(...blockReceipts)
+          const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
+          receiptsSize += Buffer.byteLength(receiptsBuffer)
+          // From spec: The recommended soft limit for Receipts responses is 2 MiB.
+          if (receiptsSize >= 2097152) {
+            break
+          }
+        }
+        peer.eth?.send('Receipts', { reqId, receipts })
+        break
+      }
     }
   }
 
