@@ -62,7 +62,7 @@ tape('[FullEthereumService]', async (t) => {
   }
   td.replace('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
-  /*
+
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
@@ -127,7 +127,7 @@ tape('[FullEthereumService]', async (t) => {
     t.notOk(await service.stop(), 'already stopped')
     t.end()
   })
-*/
+
   t.test('should correctly handle GetBlockHeaders', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
@@ -175,7 +175,7 @@ tape('[FullEthereumService]', async (t) => {
       } as any
     )
   })
-  /*
+
   t.test(
     'should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes',
     async (t) => {
@@ -266,7 +266,7 @@ tape('[FullEthereumService]', async (t) => {
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     t.notOk(service.beaconSync, 'beacon sync should not be available')
   })
-*/
+
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
