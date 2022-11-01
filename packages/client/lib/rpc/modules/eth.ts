@@ -1016,8 +1016,6 @@ export class Eth {
           txCount++
           if (txCount >= 500) break
         }
-
-        if (txCount >= 500) break
       }
 
       if (txCount > 0) {
