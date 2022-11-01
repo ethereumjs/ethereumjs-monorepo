@@ -978,7 +978,8 @@ export class Eth {
 
   /**
    * Gas price oracle.
-   * Returns a suggested gas price based on the last few blocks median gas price.
+   *
+   * Returns a suggested gas price.
    * @returns a hex code of an integer representing the current gas price in wei.
    */
   async gasPrice() {
