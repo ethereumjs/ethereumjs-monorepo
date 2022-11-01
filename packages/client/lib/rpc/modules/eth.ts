@@ -333,6 +333,8 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -972,5 +974,58 @@ export class Eth {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
     return intToHex(block.transactions.length)
+  }
+
+  /**
+   * Gas price oracle.
+   * Returns a suggested gas price based on the last few blocks median gas price.
+   * @returns a hex code of an integer representing the current gas price in wei.
+   */
+  async gasPrice() {
+    let gasPrice = BigInt(0)
+    const latest = await this._chain.getCanonicalHeadHeader()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      const baseFee = latest.calcNextBaseFee()
+      let priorityFee = BigInt(0)
+      const block = await this._chain.getBlock(latest.number)
+      const blockTransactionsLength = block.transactions.length
+      if (blockTransactionsLength > 0) {
+        for (const tx of block.transactions) {
+          const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+          priorityFee += maxPriorityFeePerGas
+        }
+      }
+      priorityFee =
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(blockTransactionsLength) : BigInt(1)
+      gasPrice = baseFee + priorityFee
+    } else {
+      // For chains that don't support EIP-1559 we iterate over the last 20
+      // blocks to get an average gas price. We cap the tx lookup to 500.
+      const blockIterations = 20 < latest.number ? 20 : latest.number
+      let txCount = 0
+      for (let i = 0; i < blockIterations; i++) {
+        const block = await this._chain.getBlock(latest.number - BigInt(i))
+        if (block.transactions.length === 0) {
+          continue
+        }
+
+        for (const tx of block.transactions) {
+          const txGasPrice = (tx as Transaction).gasPrice
+          gasPrice += txGasPrice
+          txCount++
+          if (txCount >= 500) break
+        }
+
+        if (txCount >= 500) break
+      }
+
+      if (txCount > 0) {
+        gasPrice = gasPrice / BigInt(txCount)
+      } else {
+        gasPrice = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+      }
+    }
+
+    return bigIntToHex(gasPrice)
   }
 }
