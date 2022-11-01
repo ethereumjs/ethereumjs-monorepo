@@ -9,7 +9,6 @@ import { BaseStateManager } from '.'
 import type { StateManager } from '.'
 import type { getCb, putCb } from './cache'
 import type { StorageDump } from './interface'
-import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const wasm = require('../../rust-verkle-wasm/rust_verkle_wasm')
@@ -35,9 +34,6 @@ const CODE_SIZE_LEAF_KEY = 4
 export class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   private _proof: PrefixedHexString = '0x'
 
-  // Pre-state (should not change)
-  private _preState: VerkleState = {}
-
   // State along execution (should update)
   private _state: VerkleState = {}
 
@@ -57,7 +53,6 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
      * desired backend.
      */
     const getCb: getCb = async (address) => {
-      this.getTreeKeyForBalance(address)
       return undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {}
@@ -65,10 +60,8 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
-  public async initPreState(proof: PrefixedHexString, preState: VerkleState) {
+  public initPreState(proof: PrefixedHexString, preState: VerkleState) {
     this._proof = proof
-    // Set new pre-state
-    this._preState = preState
     // Initialize the state with the pre-state
     this._state = preState
   }
@@ -133,7 +126,9 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * checkpoints were reverted.
    */
   copy(): StateManager {
-    return new StatelessVerkleStateManager({})
+    const stateManager = new StatelessVerkleStateManager()
+    stateManager.initPreState(this._proof, this._state)
+    return stateManager
   }
 
   /**
@@ -184,9 +179,9 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
 
   async getAccount(address: Address): Promise<Account> {
     // Retrieve treeKeys from account address
-    const balanceKey = this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
-    const nonceKey = this.getTreeKey(address, 0, NONCE_LEAF_KEY)
-    const codeHashKey = this.getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
+    const balanceKey = this.getTreeKeyForBalance(address)
+    const nonceKey = this.getTreeKeyForNonce(address)
+    const codeHashKey = this.getTreeKeyForCodeHash(address)
 
     const balanceLE = toBuffer(this._state[bufferToHex(balanceKey)])
     const nonceLE = toBuffer(this._state[bufferToHex(nonceKey)])
@@ -197,6 +192,22 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
       codeHash,
       nonce: nonceLE.length > 0 ? nonceLE.readBigInt64LE() : 0n,
     })
+  }
+
+  async putAccount(address: Address, account: Account): Promise<void> {
+    // Retrieve treeKeys from account address
+    const balanceKey = this.getTreeKeyForBalance(address)
+    const nonceKey = this.getTreeKeyForNonce(address)
+    const codeHashKey = this.getTreeKeyForCodeHash(address)
+
+    const balanceBuf = Buffer.alloc(32, 0)
+    balanceBuf.writeBigInt64LE(account.balance)
+    const nonceBuf = Buffer.alloc(32)
+    nonceBuf.writeBigInt64LE(account.nonce)
+
+    this._state[bufferToHex(balanceKey)] = bufferToHex(balanceBuf)
+    this._state[bufferToHex(nonceKey)] = bufferToHex(nonceBuf)
+    this._state[bufferToHex(codeHashKey)] = bufferToHex(codeHashKey)
   }
 
   /**
@@ -247,7 +258,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
 
   /**
    * TODO: needed?
-   * Maybe in this contex: reset to original pre state suffice
+   * Maybe in this context: reset to original pre state suffice
    * @param stateRoot - The verkle root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {}
