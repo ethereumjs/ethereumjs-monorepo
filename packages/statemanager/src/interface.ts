@@ -9,25 +9,26 @@ export interface StorageDump {
 }
 
 export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountId = Address | Buffer
 
 export interface StateAccess {
-  accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account>
-  putAccount(address: Address, account: Account): Promise<void>
-  accountIsEmpty(address: Address): Promise<boolean>
-  deleteAccount(address: Address): Promise<void>
-  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Buffer): Promise<void>
-  getContractCode(address: Address): Promise<Buffer>
-  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
+  accountExists(address: AccountId): Promise<boolean>
+  getAccount(address: AccountId): Promise<Account>
+  putAccount(address: AccountId, account: Account): Promise<void>
+  accountIsEmpty(address: AccountId): Promise<boolean>
+  deleteAccount(address: AccountId): Promise<void>
+  modifyAccountFields(address: AccountId, accountFields: AccountFields): Promise<void>
+  putContractCode(address: AccountId, value: Buffer): Promise<void>
+  getContractCode(address: AccountId): Promise<Buffer>
+  getContractStorage(address: AccountId, key: Buffer): Promise<Buffer>
+  putContractStorage(address: AccountId, key: Buffer, value: Buffer): Promise<void>
+  clearContractStorage(address: AccountId): Promise<void>
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
   getStateRoot(): Promise<Buffer>
   setStateRoot(stateRoot: Buffer): Promise<void>
-  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  getProof?(address: AccountId, storageSlots: Buffer[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
   hasStateRoot(root: Buffer): Promise<boolean>
 }
@@ -35,5 +36,5 @@ export interface StateAccess {
 export interface StateManager extends StateAccess {
   copy(): StateManager
   flush(): Promise<void>
-  dumpStorage(address: Address): Promise<StorageDump>
+  dumpStorage(address: AccountId): Promise<StorageDump>
 }

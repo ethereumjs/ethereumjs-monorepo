@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
-import type { AccountFields } from './interface'
+import type { AccountFields, AccountId } from './interface'
 import type { DefaultStateManagerOpts } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -47,7 +47,7 @@ export abstract class BaseStateManager {
    * Gets the account associated with `address`. Returns an empty account if the account does not exist.
    * @param address - Address of the `account` to get
    */
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: AccountId): Promise<Account> {
     const account = await this._cache.getOrLoad(address)
     return account
   }
@@ -57,7 +57,7 @@ export abstract class BaseStateManager {
    * @param address - Address under which to store `account`
    * @param account - The account to store
    */
-  async putAccount(address: Address, account: Account): Promise<void> {
+  async putAccount(address: AccountId, account: Account): Promise<void> {
     if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account.nonce} balance=${
@@ -75,7 +75,7 @@ export abstract class BaseStateManager {
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
-  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+  async modifyAccountFields(address: AccountId, accountFields: AccountFields): Promise<void> {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance

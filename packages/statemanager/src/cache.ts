@@ -4,7 +4,9 @@ import { OrderedMap } from 'js-sdsl'
 import type { Address } from '@ethereumjs/util'
 import type { OrderedMapIterator } from 'js-sdsl'
 
-export type getCb = (address: Address) => Promise<Account | undefined>
+import type { AccountId } from './interface'
+
+export type getCb = (address: AccountId) => Promise<Account | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
 export type deleteCb = (keyBuf: Buffer) => Promise<void>
 
@@ -40,7 +42,7 @@ export class Cache {
    * @param key - Address of account
    * @param val - Account
    */
-  put(key: Address, val: Account, fromTrie: boolean = false): void {
+  put(key: AccountId, val: Account, fromTrie: boolean = false): void {
     const modified = !fromTrie
     this._update(key, val, modified, false)
   }
@@ -49,7 +51,7 @@ export class Cache {
    * Returns the queried account or an empty account.
    * @param key - Address of account
    */
-  get(key: Address): Account {
+  get(key: AccountId): Account {
     const account = this.lookup(key)
     return account ?? new Account()
   }
@@ -58,8 +60,8 @@ export class Cache {
    * Returns the queried account or undefined.
    * @param key - Address of account
    */
-  lookup(key: Address): Account | undefined {
-    const keyStr = key.buf.toString('hex')
+  lookup(key: AccountId): Account | undefined {
+    const keyStr = ((key as any).buf ?? key).toString('hex')
 
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
@@ -75,8 +77,8 @@ export class Cache {
    * Returns true if the key was deleted and thus existed in the cache earlier
    * @param key - trie key to lookup
    */
-  keyIsDeleted(key: Address): boolean {
-    const keyStr = key.buf.toString('hex')
+  keyIsDeleted(key: AccountId): boolean {
+    const keyStr = ((key as any).buf ?? key).toString('hex')
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
       return it.pointer[1].deleted
@@ -89,7 +91,7 @@ export class Cache {
    * in the underlying trie.
    * @param key - Address of account
    */
-  async getOrLoad(address: Address): Promise<Account> {
+  async getOrLoad(address: AccountId): Promise<Account> {
     let account = this.lookup(address)
 
     if (!account) {
@@ -179,13 +181,13 @@ export class Cache {
    * @param virtual - Account doesn't exist in the underlying trie
    */
   _update(
-    key: Address,
+    key: AccountId,
     value: Account,
     modified: boolean,
     deleted: boolean,
     virtual = false
   ): void {
-    const keyHex = key.buf.toString('hex')
+    const keyHex = ((key as any).buf ?? key).toString('hex')
     const val = value.serialize()
     this._cache.setElement(keyHex, { val, modified, deleted, virtual })
   }
