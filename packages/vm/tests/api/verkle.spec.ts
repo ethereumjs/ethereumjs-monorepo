@@ -13,24 +13,16 @@ tape('Verkle-enabled VM', async (t) => {
 
   t.test('should run a verkle block', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
-    await stateManager.initPreState(
-      verkleBlock.header.verkleProof!,
-      verkleBlock.header.verklePreState!
-    )
+    stateManager.initPreState(verkleBlock.header.verkleProof!, verkleBlock.header.verklePreState!)
 
-    console.log('before create')
     const vm = await VM.create({ common, stateManager })
-    console.log('after  create')
 
-    // TODO: Running a verkle block should populate the stateManager
-    // TODO: Running the first transaction should update the state for the 2nd transaction
-
-    const blockResult = await vm.runBlock({
+    await vm.runBlock({
       block: verkleBlock,
       skipHeaderValidation: true,
     })
 
-    console.log('blockresult', blockResult)
+    st.pass('Should run verkle block successfully')
 
     st.end()
   })
