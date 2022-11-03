@@ -62,7 +62,13 @@ tape('EIP4895 tests', (t) => {
 
     let index = 0
     for (let i = 0; i < addresses.length; i++) {
-      withdrawals.push([index, new Address(Buffer.from(addresses[i], 'hex')), amounts[i]])
+      // Just assign any number to validatorIndex as its just for CL convinience
+      withdrawals.push({
+        index,
+        validatorIndex: index,
+        address: new Address(Buffer.from(addresses[i], 'hex')),
+        amount: amounts[i],
+      })
       index++
     }
     const block = Block.fromBlockData(
@@ -70,7 +76,7 @@ tape('EIP4895 tests', (t) => {
         header: {
           baseFeePerGas: BigInt(7),
           withdrawalsRoot: Buffer.from(
-            'ce1a547d8d3f9fb59537841ee03c67701bed2d8637e908e31a09711b1918a836',
+            'c6595e35232ab8ccf2d9af2a1223446c2e60a01667f348ee156608c8dab7795d',
             'hex'
           ),
           transactionsTrie: Buffer.from(
