@@ -481,6 +481,10 @@ export class Engine {
     return this.newPayload(params)
   }
 
+  async newPayloadV2(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    return this.newPayload(params)
+  }
+
   /**
    * Propagates the change in the fork choice to the execution client.
    *
@@ -499,7 +503,7 @@ export class Engine {
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    *   3. headBlock: Block|undefined - Block corresponding to headBlockHash if found
    */
-  async forkchoiceUpdatedV1(
+  private async forkchoiceUpdated(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
@@ -666,6 +670,18 @@ export class Engine {
     return response
   }
 
+  private async forkchoiceUpdatedV1(
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+  ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    return this.forkchoiceUpdated(params)
+  }
+
+  private async forkchoiceUpdatedV2(
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+  ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    return this.forkchoiceUpdated(params)
+  }
+
   /**
    * Given payloadId, returns the most recent version of an execution payload
    * that is available by the time of the call or responds with an error.
@@ -674,7 +690,7 @@ export class Engine {
    *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
-  async getPayloadV1(params: [string]) {
+  private async getPayload(params: [string]) {
     const payloadId = toBuffer(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -693,6 +709,13 @@ export class Engine {
     }
   }
 
+  async getPayloadV1(params: [string]) {
+    return this.getPayload(params)
+  }
+
+  async getPayloadV2(params: [string]) {
+    return this.getPayload(params)
+  }
   /**
    * Compare transition configuration parameters.
    *
