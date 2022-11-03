@@ -140,48 +140,48 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this._common })
-  } else {
-    // TODO: Investigate why these 3 checks fail
-    // if (result.receiptsRoot.equals(block.header.receiptTrie) === false) {
-    //   if (this.DEBUG) {
-    //     debug(
-    //       `Invalid receiptTrie received=${result.receiptsRoot.toString(
-    //         'hex'
-    //       )} expected=${block.header.receiptTrie.toString('hex')}`
-    //     )
-    //   }
-    //   const msg = _errorMsg('invalid receiptTrie', this, block)
-    //   throw new Error(msg)
-    // }
-    // if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
-    //   if (this.DEBUG) {
-    //     debug(
-    //       `Invalid bloom received=${result.bloom.bitvector.toString(
-    //         'hex'
-    //       )} expected=${block.header.logsBloom.toString('hex')}`
-    //     )
-    //   }
-    //   const msg = _errorMsg('invalid bloom', this, block)
-    //   throw new Error(msg)
-    // }
-    // if (result.gasUsed !== block.header.gasUsed) {
-    //   if (this.DEBUG) {
-    //     debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-    //   }
-    //   const msg = _errorMsg('invalid gasUsed', this, block)
-    //   throw new Error(msg)
-    // }
-    // if (!stateRoot.equals(block.header.stateRoot)) {
-    //   if (this.DEBUG) {
-    //     debug(
-    //       `Invalid stateRoot received=${stateRoot.toString(
-    //         'hex'
-    //       )} expected=${block.header.stateRoot.toString('hex')}`
-    //     )
-    //   }
-    //   const msg = _errorMsg('invalid block stateRoot', this, block)
-    //   throw new Error(msg)
-    // }
+  } else if (!this._common.isActivatedEIP(999001)) {
+    // Only validate the following headers if verkle blocks aren't activated
+    if (result.receiptsRoot.equals(block.header.receiptTrie) === false) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid receiptTrie received=${result.receiptsRoot.toString(
+            'hex'
+          )} expected=${block.header.receiptTrie.toString('hex')}`
+        )
+      }
+      const msg = _errorMsg('invalid receiptTrie', this, block)
+      throw new Error(msg)
+    }
+    if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid bloom received=${result.bloom.bitvector.toString(
+            'hex'
+          )} expected=${block.header.logsBloom.toString('hex')}`
+        )
+      }
+      const msg = _errorMsg('invalid bloom', this, block)
+      throw new Error(msg)
+    }
+    if (result.gasUsed !== block.header.gasUsed) {
+      if (this.DEBUG) {
+        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      }
+      const msg = _errorMsg('invalid gasUsed', this, block)
+      throw new Error(msg)
+    }
+    if (!stateRoot.equals(block.header.stateRoot)) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid stateRoot received=${stateRoot.toString(
+            'hex'
+          )} expected=${block.header.stateRoot.toString('hex')}`
+        )
+      }
+      const msg = _errorMsg('invalid block stateRoot', this, block)
+      throw new Error(msg)
+    }
   }
 
   const results: RunBlockResult = {
