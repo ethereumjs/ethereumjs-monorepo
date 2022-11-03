@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667493817471,
+  "lastUpdate": 1667508858163,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "113477227+ryptdec@users.noreply.github.com",
-            "name": "Rypt Dec",
-            "username": "ryptdec"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "eeca0cb1f534031cfd4a3c71866cd6d4c2475165",
-          "message": "Fixing a typo in example3b.js and Readme.md for merkle_patricia_trees (#2340)\n\n* fix(trie): changing trie.root v4 => trie.root() >= v5\r\n\r\n* fix(trie): changing trie.root v4 => trie.root() >= v5\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2022-10-08T14:32:55-04:00",
-          "tree_id": "88a21db0d4afb7e48181899e7f9ecb208ae999ca",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eeca0cb1f534031cfd4a3c71866cd6d4c2475165"
-        },
-        "date": 1665254389029,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18558,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17892,
-            "range": "±5.22%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17223,
-            "range": "±6.85%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17927,
-            "range": "±6.99%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17776,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.56%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4d8bbd10847659f885ccf489246b74b92f1c0066",
+          "message": "Implement EIP4895: Beacon Chain withdrawals (#2353)\n\n* common: add eip 4895\r\n\r\n* block: implement EIP4895\r\n\r\n* vm: add EIP4895\r\n\r\n* block: eip4895 tests\r\n\r\n* vm: add eip4895 tests\r\n\r\n* block: fix trest\r\n\r\n* vm: fix tests\r\n\r\n* change withdrawal type to object format and add validator index\r\n\r\n* fix vm withdrawal spec\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2022-11-04T02:20:56+05:30",
+          "tree_id": "ba26c5d6e0728e5afc4db1fe913fb27bd83af9de",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4d8bbd10847659f885ccf489246b74b92f1c0066"
+        },
+        "date": 1667508856437,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 9704,
+            "range": "±3.74%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10131,
+            "range": "±2.68%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 9628,
+            "range": "±5.31%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 9876,
+            "range": "±2.66%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9928,
+            "range": "±2.39%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
