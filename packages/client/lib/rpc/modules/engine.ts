@@ -375,7 +375,7 @@ export class Engine {
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
-  async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+  private async newPayload(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const [payload] = params
     const { parentHash, blockHash } = payload
 
@@ -475,6 +475,10 @@ export class Engine {
       validationError: null,
     }
     return response
+  }
+
+  async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    return this.newPayload(params)
   }
 
   /**
