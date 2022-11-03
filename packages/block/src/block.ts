@@ -3,12 +3,10 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
-  Address,
   KECCAK256_RLP,
   arrToBufArr,
   bigIntToHex,
   bufArrToArr,
-  bufferToBigInt,
   bufferToHex,
   intToHex,
   isHexPrefixed,
@@ -20,7 +18,14 @@ import { ethers } from 'ethers'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock, Withdrawal } from './types'
+import type {
+  BlockBuffer,
+  BlockData,
+  BlockOptions,
+  JsonBlock,
+  JsonRpcBlock,
+  Withdrawal,
+} from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -28,6 +33,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { Address } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -157,11 +163,8 @@ export class Block {
     if (withdrawalsData) {
       withdrawals = <Withdrawal[]>[]
       for (const withdrawal of withdrawalsData) {
-        withdrawals.push([
-          bufferToBigInt(withdrawal[0]),
-          new Address(withdrawal[1]),
-          bufferToBigInt(withdrawal[2]),
-        ])
+        const [index, validatorIndex, address, amount] = withdrawal
+        withdrawals.push({ index, validatorIndex, address, amount })
       }
     }
 
@@ -275,8 +278,8 @@ export class Block {
    * @param withdrawal the withdrawal to convert
    * @returns buffer array of the withdrawal
    */
-  private withdrawalToBufferArray(withdrawal: Withdrawal): [Buffer, Buffer, Buffer] {
-    const [index, address, amount] = withdrawal
+  private withdrawalToBufferArray(withdrawal: Withdrawal): [Buffer, Buffer, Buffer, Buffer] {
+    const { index, validatorIndex, address, amount } = withdrawal
     let addressBuffer: Buffer
     if (typeof address === 'string') {
       addressBuffer = Buffer.from(address.slice(2))
@@ -285,7 +288,7 @@ export class Block {
     } else {
       addressBuffer = (<Address>address).buf
     }
-    return [toBuffer(index), addressBuffer, toBuffer(amount)]
+    return [toBuffer(index), toBuffer(validatorIndex), addressBuffer, toBuffer(amount)]
   }
 
   /**

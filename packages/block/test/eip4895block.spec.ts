@@ -120,16 +120,18 @@ tape('EIP1559 tests', function (t) {
     )
     st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate withdrawals root')
 
-    const withdrawal = <Withdrawal>[
-      BigInt(0),
-      new Address(Buffer.from('20'.repeat(20), 'hex')),
-      BigInt(1000),
-    ]
+    const withdrawal = <Withdrawal>{
+      index: BigInt(0),
+      validatorIndex: BigInt(0),
+      address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+      amount: BigInt(1000),
+    }
+
     const validBlockWithWithdrawal = Block.fromBlockData(
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            'a79e0925486f9feb040a0012903daa54441bb4c110f5fb032da89fad87210bbd',
+            '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
             'hex'
           ),
         },
@@ -144,16 +146,18 @@ tape('EIP1559 tests', function (t) {
       'should validate withdrawals root'
     )
 
-    const withdrawal2 = <Withdrawal>[
-      BigInt(1),
-      new Address(Buffer.from('30'.repeat(20), 'hex')),
-      BigInt(2000),
-    ]
+    const withdrawal2 = <Withdrawal>{
+      index: BigInt(1),
+      validatorIndex: BigInt(11),
+      address: new Address(Buffer.from('30'.repeat(20), 'hex')),
+      amount: BigInt(2000),
+    }
+
     const validBlockWithWithdrawal2 = Block.fromBlockData(
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            'b585d5dd1099993b8d634387f6289b6442a473af56c34f331c7292441904b3ab',
+            'cb1accdf466a644291e7b5f0374a3d490d7c5545f9a346f8652f65b3960e720e',
             'hex'
           ),
         },

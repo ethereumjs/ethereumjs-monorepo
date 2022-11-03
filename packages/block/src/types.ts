@@ -98,7 +98,12 @@ export interface HeaderData {
   withdrawalsRoot?: BufferLike
 }
 
-export type Withdrawal = [BigIntLike, AddressLike, BigIntLike]
+export type Withdrawal = {
+  index: BigIntLike
+  validatorIndex: BigIntLike
+  address: AddressLike
+  amount: BigIntLike
+}
 
 /**
  * A block's data.
@@ -135,6 +140,7 @@ export interface JsonBlock {
   header?: JsonHeader
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
+  withdrawals?: JsonRpcWithdrawal[]
 }
 
 /**
@@ -157,6 +163,14 @@ export interface JsonHeader {
   mixHash?: string
   nonce?: string
   baseFeePerGas?: string
+  withdrawalsRoot?: string
+}
+
+export interface JsonRpcWithdrawal {
+  index: string // QUANTITY - bigint 8 bytes
+  validatorIndex: string // QUANTITY - bigint 8 bytes
+  address: string // DATA, 20 Bytes  address to withdraw to
+  amount: string // QUANTITY - bigint amount in wei 32 bytes
 }
 
 /*
@@ -184,4 +198,5 @@ export interface JsonRpcBlock {
   transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
 }
