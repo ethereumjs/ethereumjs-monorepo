@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667239993853,
+  "lastUpdate": 1667493817471,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5738e2762b260df279a26d924d12348ce8a9d3ce",
-          "message": "Unifies test directory naming (#2339)\n\n* common: move tests to test\r\n\r\n* evm: move tests to test\r\n\r\n* statemanager: move tests to test\r\n\r\n* vm: move tests to test\r\n\r\n* Fix paths in package.json\r\n\r\n* Fix tsconfig references\r\n\r\n* Fix karma config\r\n\r\n* Update doc references",
-          "timestamp": "2022-10-08T13:35:07+05:30",
-          "tree_id": "7c522c3e50a0bb2feaf4bbf4594a2f0671676b62",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5738e2762b260df279a26d924d12348ce8a9d3ce"
-        },
-        "date": 1665216459125,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19391,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18831,
-            "range": "±4.62%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18196,
-            "range": "±6.03%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19432,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18747,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.82%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cd551ec3fae34518319437023848050b8e8ef7cd",
+          "message": "evm: fix 3860 implementation + tests (#2397)\n\n* evm: fix 3860 implementation + tests\r\n\r\n* Adapt original EIP-3860 tests from vm\r\n\r\n* add test for Create2\r\n\r\n* Add test for CREATE\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-11-03T12:41:01-04:00",
+          "tree_id": "ce3bb5d7e832c8c2d800826777ceb905516b205c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cd551ec3fae34518319437023848050b8e8ef7cd"
+        },
+        "date": 1667493816281,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19265,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19298,
+            "range": "±1.33%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18783,
+            "range": "±5.51%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19124,
+            "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18724,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
