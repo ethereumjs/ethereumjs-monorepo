@@ -2,7 +2,15 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBuffer,
+  bufArrToArr,
+  intToBuffer,
+  short,
+  toBuffer,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -237,6 +245,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
+  if (this._common.isActivatedEIP(4895)) {
+    await assignWithdrawals.bind(this)(block)
+  }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
@@ -313,6 +324,19 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receiptsRoot: receiptTrie.root(),
     receipts,
     results: txResults,
+  }
+}
+
+async function assignWithdrawals(this: VM, block: Block): Promise<void> {
+  const state = this.eei
+  const withdrawals = block.withdrawals!
+  for (const withdrawal of withdrawals) {
+    const { address: addressData, amount: amountData } = withdrawal
+    const address = new Address(toBuffer(addressData))
+    const amount = Buffer.isBuffer(amountData)
+      ? BigInt('0x' + amountData.toString('hex'))
+      : BigInt(amountData)
+    await rewardAccount(state, address, amount)
   }
 }
 
