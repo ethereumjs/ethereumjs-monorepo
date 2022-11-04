@@ -390,7 +390,7 @@ export class Engine {
     )
 
     this.forkchoiceUpdatedV2 = cmMiddleware(
-      middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
+      middleware(this.forkchoiceUpdatedV2.bind(this), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV2))],
       ]),
