@@ -7,7 +7,7 @@ import type {
   JsonTx,
   TxData,
 } from '@ethereumjs/tx'
-import type { Address, AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BufferLike, WithdrawalData } from '@ethereumjs/util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -97,20 +97,6 @@ export interface HeaderData {
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BufferLike
-}
-
-export type WithdrawalData = {
-  index: BigIntLike
-  validatorIndex: BigIntLike
-  address: AddressLike
-  amount: BigIntLike
-}
-
-export type Withdrawal = {
-  index: bigint
-  validatorIndex: bigint
-  address: Address
-  amount: bigint
 }
 
 /**

@@ -5,7 +5,7 @@ import * as tape from 'tape'
 import { Block } from '../src/block'
 import { BlockHeader } from '../src/header'
 
-import type { Withdrawal } from '../src'
+import type { WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
   eips: [4895],
@@ -120,7 +120,7 @@ tape('EIP1559 tests', function (t) {
     )
     st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate empty withdrawals root')
 
-    const withdrawal = <Withdrawal>{
+    const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
       address: new Address(Buffer.from('20'.repeat(20), 'hex')),
@@ -146,7 +146,7 @@ tape('EIP1559 tests', function (t) {
       'should validate withdrawals root'
     )
 
-    const withdrawal2 = <Withdrawal>{
+    const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
       address: new Address(Buffer.from('30'.repeat(20), 'hex')),

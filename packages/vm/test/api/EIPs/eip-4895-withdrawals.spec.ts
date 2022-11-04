@@ -6,7 +6,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { Withdrawal } from '@ethereumjs/block'
+import type { WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -19,7 +19,7 @@ tape('EIP4895 tests', (t) => {
   t.test('EIP4895: withdrawals execute as expected', async (st) => {
     const vm = await VM.create({ common })
     vm._common.setEIPs([4895])
-    const withdrawals = <Withdrawal[]>[]
+    const withdrawals = <WithdrawalData[]>[]
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
 
@@ -64,8 +64,8 @@ tape('EIP4895 tests', (t) => {
     for (let i = 0; i < addresses.length; i++) {
       // Just assign any number to validatorIndex as its just for CL convinience
       withdrawals.push({
-        index: BigInt(index),
-        validatorIndex: BigInt(index),
+        index,
+        validatorIndex: index,
         address: new Address(Buffer.from(addresses[i], 'hex')),
         amount: amounts[i],
       })
