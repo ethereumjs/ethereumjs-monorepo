@@ -37,9 +37,10 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
+    withdrawalsRoot,
   ] = values
 
-  if (values.length > 16) {
+  if (values.length > 17) {
     throw new Error('invalid header. More values than expected were received')
   }
   if (values.length < 15) {
@@ -63,6 +64,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
+    withdrawalsRoot,
   }
 }
 

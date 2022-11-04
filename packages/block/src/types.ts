@@ -95,6 +95,14 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
+  withdrawalsRoot?: BufferLike
+}
+
+export type Withdrawal = {
+  index: BigIntLike
+  validatorIndex: BigIntLike
+  address: AddressLike
+  amount: BigIntLike
 }
 
 /**
@@ -107,16 +115,20 @@ export interface BlockData {
   header?: HeaderData
   transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
   uncleHeaders?: Array<HeaderData>
+  withdrawals?: Array<Withdrawal>
 }
 
-export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type BlockBuffer =
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer]
 export type BlockHeaderBuffer = Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer?]
 /**
  * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
  */
 export type TransactionsBuffer = Buffer[][] | Buffer[]
 export type UncleHeadersBuffer = Buffer[][]
+export type WithdrawalBuffer = Buffer[][]
 
 /**
  * An object with the block's data represented as strings.
@@ -128,6 +140,7 @@ export interface JsonBlock {
   header?: JsonHeader
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
+  withdrawals?: JsonRpcWithdrawal[]
 }
 
 /**
@@ -150,6 +163,14 @@ export interface JsonHeader {
   mixHash?: string
   nonce?: string
   baseFeePerGas?: string
+  withdrawalsRoot?: string
+}
+
+export interface JsonRpcWithdrawal {
+  index: string // QUANTITY - bigint 8 bytes
+  validatorIndex: string // QUANTITY - bigint 8 bytes
+  address: string // DATA, 20 Bytes  address to withdraw to
+  amount: string // QUANTITY - bigint amount in wei 32 bytes
 }
 
 /*
@@ -177,4 +198,5 @@ export interface JsonRpcBlock {
   transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
 }

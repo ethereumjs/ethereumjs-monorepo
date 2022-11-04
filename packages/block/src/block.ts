@@ -10,6 +10,7 @@ import {
   bufferToHex,
   intToHex,
   isHexPrefixed,
+  toBuffer,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
@@ -17,7 +18,14 @@ import { ethers } from 'ethers'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
+import type {
+  BlockBuffer,
+  BlockData,
+  BlockOptions,
+  JsonBlock,
+  JsonRpcBlock,
+  Withdrawal,
+} from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -25,6 +33,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { Address } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -33,6 +42,7 @@ export class Block {
   public readonly header: BlockHeader
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
+  public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
   public readonly _common: Common
 
@@ -43,7 +53,12 @@ export class Block {
    * @param opts
    */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
-    const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
+    const {
+      header: headerData,
+      transactions: txsData,
+      uncleHeaders: uhsData,
+      withdrawals,
+    } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -78,7 +93,7 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
   /**
@@ -104,11 +119,11 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
-    if (values.length > 3) {
+    if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
 
-    const [headerData, txsData, uhsData] = values
+    const [headerData, txsData, uhsData, withdrawalsData] = values
 
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
@@ -144,7 +159,16 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    let withdrawals
+    if (withdrawalsData) {
+      withdrawals = <Withdrawal[]>[]
+      for (const withdrawal of withdrawalsData) {
+        const [index, validatorIndex, address, amount] = withdrawal
+        withdrawals.push({ index, validatorIndex, address, amount })
+      }
+    }
+
+    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
   /**
@@ -212,7 +236,8 @@ export class Block {
     header?: BlockHeader,
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
-    opts: BlockOptions = {}
+    opts: BlockOptions = {},
+    withdrawals?: Withdrawal[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
@@ -234,6 +259,14 @@ export class Block {
       }
     }
 
+    if (this._common.isActivatedEIP(4895) && withdrawals === undefined) {
+      throw new Error('Need a withdrawals field if EIP 4895 is active')
+    } else if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+    }
+
+    this.withdrawals = withdrawals
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -241,16 +274,40 @@ export class Block {
   }
 
   /**
+   * Convert a withdrawal to a buffer array
+   * @param withdrawal the withdrawal to convert
+   * @returns buffer array of the withdrawal
+   */
+  private withdrawalToBufferArray(withdrawal: Withdrawal): [Buffer, Buffer, Buffer, Buffer] {
+    const { index, validatorIndex, address, amount } = withdrawal
+    let addressBuffer: Buffer
+    if (typeof address === 'string') {
+      addressBuffer = Buffer.from(address.slice(2))
+    } else if (Buffer.isBuffer(address)) {
+      addressBuffer = address
+    } else {
+      addressBuffer = (<Address>address).buf
+    }
+    return [toBuffer(index), toBuffer(validatorIndex), addressBuffer, toBuffer(amount)]
+  }
+
+  /**
    * Returns a Buffer Array of the raw Buffers of this block, in order.
    */
   raw(): BlockBuffer {
-    return [
+    const bufferArray = <BlockBuffer>[
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
+    if (this.withdrawals) {
+      for (const withdrawal of this.withdrawals) {
+        bufferArray.push(this.withdrawalToBufferArray(withdrawal))
+      }
+    }
+    return bufferArray
   }
 
   /**
@@ -369,6 +426,11 @@ export class Block {
       const msg = this._errorMsg('invalid uncle hash')
       throw new Error(msg)
     }
+
+    if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
+      const msg = this._errorMsg('invalid withdrawals trie')
+      throw new Error(msg)
+    }
   }
 
   /**
@@ -378,6 +440,23 @@ export class Block {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(bufArrToArr(uncles))
     return Buffer.from(keccak256(raw)).equals(this.header.uncleHash)
+  }
+
+  /**
+   * Validates the withdrawal root
+   */
+  async validateWithdrawalsTrie(): Promise<boolean> {
+    if (!this._common.isActivatedEIP(4895)) {
+      throw new Error('EIP 4895 is not activated')
+    }
+    const trie = new Trie()
+    let index = 0
+    for (const withdrawal of this.withdrawals!) {
+      const withdrawalRLP = RLP.encode(this.withdrawalToBufferArray(withdrawal))
+      await trie.put(Buffer.from('0x' + index.toString(16)), arrToBufArr(withdrawalRLP))
+      index++
+    }
+    return trie.root().equals(this.header.withdrawalsRoot!)
   }
 
   /**

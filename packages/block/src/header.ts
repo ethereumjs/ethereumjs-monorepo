@@ -51,6 +51,7 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
+  public readonly withdrawalsRoot?: Buffer
 
   public readonly _common: Common
 
@@ -154,6 +155,7 @@ export class BlockHeader {
       mixHash: zeros(32),
       nonce: zeros(8),
       baseFeePerGas: undefined,
+      withdrawalsRoot: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -176,6 +178,8 @@ export class BlockHeader {
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
     let baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -198,6 +202,18 @@ export class BlockHeader {
       }
     }
 
+    if (this._common.isActivatedEIP(4895)) {
+      if (withdrawalsRoot === defaults.withdrawalsRoot) {
+        throw new Error('invalid header. withdrawalsRoot should be provided')
+      }
+    } else {
+      if (withdrawalsRoot !== undefined) {
+        throw new Error(
+          'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
+        )
+      }
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -214,6 +230,7 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
+    this.withdrawalsRoot = withdrawalsRoot
 
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -308,6 +325,19 @@ export class BlockHeader {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
+      }
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      if (this.withdrawalsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
+        throw new Error(msg)
+      }
+      if (this.withdrawalsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
       }
     }
   }
