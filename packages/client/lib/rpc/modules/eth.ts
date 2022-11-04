@@ -989,19 +989,17 @@ export class Eth {
       const baseFee = latest.calcNextBaseFee()
       let priorityFee = BigInt(0)
       const block = await this._chain.getBlock(latest.number)
-      const blockTransactionsLength = block.transactions.length
-      if (blockTransactionsLength > 0) {
-        for (const tx of block.transactions) {
-          const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-          priorityFee += maxPriorityFeePerGas
-        }
+      for (const tx of block.transactions) {
+        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        priorityFee += maxPriorityFeePerGas
       }
+
       priorityFee =
-        priorityFee !== BigInt(0) ? priorityFee / BigInt(blockTransactionsLength) : BigInt(1)
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
       gasPrice = baseFee + priorityFee
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
-      // blocks to get an average gas price. We cap the tx lookup to 500.
+      // blocks to get an average gas price. We cap the total tx lookup to 500.
       const blockIterations = 20 < latest.number ? 20 : latest.number
       let txCount = 0
       for (let i = 0; i < blockIterations; i++) {
@@ -1016,6 +1014,7 @@ export class Eth {
           txCount++
           if (txCount >= 500) break
         }
+        if (txCount >= 500) break
       }
 
       if (txCount > 0) {
