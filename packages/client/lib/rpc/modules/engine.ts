@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
+import { Withdrawal, arrToBufArr, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -18,6 +18,7 @@ import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { WithdrawalData } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
@@ -190,6 +191,20 @@ const txsTrieRoot = async (txs: TypedTransaction[]) => {
 }
 
 /**
+ * Returns the txs trie root for the block.
+ */
+const withdrawalsTrieRoot = async (wts: WithdrawalData[]) => {
+  const trie = new Trie()
+  for (const [i, wt] of wts.entries()) {
+    await trie.put(
+      Buffer.from(RLP.encode(i)),
+      arrToBufArr(RLP.encode(Withdrawal.toBufferArray(wt)))
+    )
+  }
+  return trie.root()
+}
+
+/**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
 const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => {
@@ -233,7 +248,7 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
  * If errors, returns {@link PayloadStatusV1}
  */
 const assembleBlock = async (
-  payload: ExecutionPayloadV1,
+  payload: ExecutionPayload,
   chain: Chain
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const {
@@ -242,6 +257,7 @@ const assembleBlock = async (
     prevRandao: mixHash,
     feeRecipient: coinbase,
     transactions,
+    withdrawals,
   } = payload
   const { config } = chain
   const common = config.chainCommon.copy()
@@ -265,11 +281,13 @@ const assembleBlock = async (
   }
 
   const transactionsTrie = await txsTrieRoot(txs)
+  const withdrawalsRoot = withdrawals ? await withdrawalsTrieRoot(withdrawals) : undefined
   const header: HeaderData = {
     ...payload,
     number,
     receiptTrie,
     transactionsTrie,
+    withdrawalsRoot,
     mixHash,
     coinbase,
   }
@@ -278,7 +296,7 @@ const assembleBlock = async (
   try {
     // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
     // correctly set to the correct hf
-    block = Block.fromBlockData({ header, transactions: txs }, { common })
+    block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
 
     // Verify blockHash matches payload
     if (!block.hash().equals(toBuffer(payload.blockHash))) {
