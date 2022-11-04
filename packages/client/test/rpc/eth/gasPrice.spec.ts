@@ -153,3 +153,49 @@ tape(`${method}: call with multiple 1559 transactions`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: compute average gas price for 21 blocks`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(pow, 'pow')
+  const iterations = BigInt(21)
+  const gasPrice = BigInt(20)
+  const firstBlockGasPrice = BigInt(11111111111111)
+  let tx: Transaction
+  for (let i = 0; i < iterations; i++) {
+    if (i === 0) {
+      tx = Transaction.fromTxData(
+        {
+          nonce: i,
+          gasLimit: 21000,
+          gasPrice: firstBlockGasPrice,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      ).sign(dummy.privKey)
+    } else {
+      tx = Transaction.fromTxData(
+        {
+          nonce: i,
+          gasLimit: 21000,
+          gasPrice,
+          to: '0x0000000000000000000000000000000000000000',
+        },
+        { common }
+      ).sign(dummy.privKey)
+    }
+    await runBlockWithTxs(chain, execution, [tx!])
+  }
+
+  const latest = await chain.getCanonicalHeadHeader()
+  const blockNumber = latest.number
+
+  // Should be block number 21
+  t.equal(blockNumber, 21n)
+
+  const req = params(method, [])
+  const expectRes = (res: any) => {
+    const msg = 'should return the correct gas price for 21 blocks'
+    t.equal(res.body.result, bigIntToHex(gasPrice), msg)
+  }
+
+  await baseRequest(t, server, req, 200, expectRes)
+})
