@@ -3,5 +3,5 @@
   "comment": "Next feature hardfork after the merge hardfork",
   "url": "https://github.com/ethereum/pm/issues/356",
   "status": "Pre-Draft",
-  "eips": []
+  "eips": [4895]
 }
