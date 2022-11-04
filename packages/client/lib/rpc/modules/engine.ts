@@ -28,7 +28,14 @@ export enum Status {
   VALID = 'VALID',
 }
 
-export type ExecutionPayloadV1 = {
+export type WithdrawalV1 = {
+  index: string // Quantity, 8 Bytes
+  validatorIndex: string // Quantity, 8 bytes
+  address: string // DATA, 20 bytes
+  amount: string // Quantity, 32 bytes
+}
+
+export type ExecutionPayload = {
   parentHash: string // DATA, 32 Bytes
   feeRecipient: string // DATA, 20 Bytes
   stateRoot: string // DATA, 32 Bytes
@@ -42,11 +49,11 @@ export type ExecutionPayloadV1 = {
   extraData: string // DATA, 0 to 32 Bytes
   baseFeePerGas: string // QUANTITY, 256 Bits
   blockHash: string // DATA, 32 Bytes
-  transactions: string[] // Array of DATA - Array of transaction objects,
-  // each object is a byte list (DATA) representing
-  // TransactionType || TransactionPayload or LegacyTransaction
-  // as defined in EIP-2718.
+  transactions: string[] // Array of DATA - Array of transaction rlp strings,
+  withdrawals?: WithdrawalV1[] // Array of withdrawal objects
 }
+export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals'>
+export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: string
@@ -54,11 +61,14 @@ export type ForkchoiceStateV1 = {
   finalizedBlockHash: string
 }
 
-type PayloadAttributesV1 = {
+type PayloadAttributes = {
   timestamp: string
   prevRandao: string
   suggestedFeeRecipient: string
+  withdrawals?: WithdrawalV1[]
 }
+type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals'>
+type PayloadAttributesV2 = PayloadAttributes & { withdrawals: WithdrawalV1[] }
 
 export type PayloadStatusV1 = {
   status: Status
@@ -84,13 +94,52 @@ const EngineError = {
   },
 }
 
+const executionPayloadV1FieldValidators = {
+  parentHash: validators.blockHash,
+  feeRecipient: validators.address,
+  stateRoot: validators.hex,
+  receiptsRoot: validators.hex,
+  logsBloom: validators.hex,
+  prevRandao: validators.hex,
+  blockNumber: validators.hex,
+  gasLimit: validators.hex,
+  gasUsed: validators.hex,
+  timestamp: validators.hex,
+  extraData: validators.hex,
+  baseFeePerGas: validators.hex,
+  blockHash: validators.blockHash,
+  transactions: validators.array(validators.hex),
+}
+const executionPayloadV2FieldValidators = {
+  ...executionPayloadV1FieldValidators,
+  withdrawals: validators.array(validators.withdrawal),
+}
+
+const forkchoiceFieldValidators = {
+  headBlockHash: validators.blockHash,
+  safeBlockHash: validators.blockHash,
+  finalizedBlockHash: validators.blockHash,
+}
+
+const payloadAttributesFieldValidatorsV1 = {
+  timestamp: validators.hex,
+  prevRandao: validators.hex,
+  suggestedFeeRecipient: validators.address,
+}
+const payloadAttributesFieldValidatorsV2 = {
+  ...payloadAttributesFieldValidatorsV1,
+  withdrawals: validators.array(validators.withdrawal),
+}
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
 const blockToExecutionPayload = (block: Block) => {
-  const header = block.toJSON().header!
+  const blockJson = block.toJSON()
+  const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
-  const payload: ExecutionPayloadV1 = {
+  const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+
+  const payload: ExecutionPayload = {
     blockNumber: header.number!,
     parentHash: header.parentHash!,
     feeRecipient: header.coinbase!,
@@ -105,6 +154,7 @@ const blockToExecutionPayload = (block: Block) => {
     blockHash: bufferToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
+    ...withdrawalsArr,
   }
   return payload
 }
@@ -286,61 +336,56 @@ export class Engine {
 
     this.newPayloadV1 = cmMiddleware(
       middleware(this.newPayloadV1.bind(this), 1, [
-        [
-          validators.object({
-            parentHash: validators.blockHash,
-            feeRecipient: validators.address,
-            stateRoot: validators.hex,
-            receiptsRoot: validators.hex,
-            logsBloom: validators.hex,
-            prevRandao: validators.hex,
-            blockNumber: validators.hex,
-            gasLimit: validators.hex,
-            gasUsed: validators.hex,
-            timestamp: validators.hex,
-            extraData: validators.hex,
-            baseFeePerGas: validators.hex,
-            blockHash: validators.blockHash,
-            transactions: validators.array(validators.hex),
-          }),
-        ],
+        [validators.object(executionPayloadV1FieldValidators)],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
+    this.newPayloadV2 = cmMiddleware(
+      middleware(this.newPayloadV2.bind(this), 1, [
+        [validators.object(executionPayloadV2FieldValidators)],
+      ]),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
+    const forkchoiceUpdatedResponseCMHandler = (
+      [state]: ForkchoiceStateV1[],
+      response?: ForkchoiceResponseV1 & { headBlock?: Block },
+      error?: string
+    ) => {
+      this.connectionManager.lastForkchoiceUpdate({
+        state,
+        response,
+        headBlock: response?.headBlock,
+        error,
+      })
+      // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
+      delete response?.headBlock
+    }
+
     this.forkchoiceUpdatedV1 = cmMiddleware(
       middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
-        [
-          validators.object({
-            headBlockHash: validators.blockHash,
-            safeBlockHash: validators.blockHash,
-            finalizedBlockHash: validators.blockHash,
-          }),
-        ],
-        [
-          validators.optional(
-            validators.object({
-              timestamp: validators.hex,
-              prevRandao: validators.hex,
-              suggestedFeeRecipient: validators.address,
-            })
-          ),
-        ],
+        [validators.object(forkchoiceFieldValidators)],
+        [validators.optional(validators.object(payloadAttributesFieldValidatorsV1))],
       ]),
-      ([state], response, error) => {
-        this.connectionManager.lastForkchoiceUpdate({
-          state,
-          response,
-          headBlock: response?.headBlock,
-          error,
-        })
-        // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
-        delete response?.headBlock
-      }
+      forkchoiceUpdatedResponseCMHandler
+    )
+
+    this.forkchoiceUpdatedV2 = cmMiddleware(
+      middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
+        [validators.object(forkchoiceFieldValidators)],
+        [validators.optional(validators.object(payloadAttributesFieldValidatorsV2))],
+      ]),
+      forkchoiceUpdatedResponseCMHandler
     )
 
     this.getPayloadV1 = cmMiddleware(
       middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadV2 = cmMiddleware(
+      middleware(this.getPayloadV2.bind(this), 1, [[validators.hex]]),
       () => this.connectionManager.updateStatus()
     )
 
@@ -375,7 +420,7 @@ export class Engine {
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
-  private async newPayload(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+  private async newPayload(params: [ExecutionPayload]): Promise<PayloadStatusV1> {
     const [payload] = params
     const { parentHash, blockHash } = payload
 
@@ -481,7 +526,7 @@ export class Engine {
     return this.newPayload(params)
   }
 
-  async newPayloadV2(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+  async newPayloadV2(params: [ExecutionPayloadV2]): Promise<PayloadStatusV1> {
     return this.newPayload(params)
   }
 
@@ -504,7 +549,7 @@ export class Engine {
    *   3. headBlock: Block|undefined - Block corresponding to headBlockHash if found
    */
   private async forkchoiceUpdated(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributes | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
@@ -677,7 +722,7 @@ export class Engine {
   }
 
   private async forkchoiceUpdatedV2(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV2 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     return this.forkchoiceUpdated(params)
   }
