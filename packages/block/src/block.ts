@@ -3,14 +3,16 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
+  Address,
   KECCAK256_RLP,
+  TypeOutput,
   arrToBufArr,
   bigIntToHex,
   bufArrToArr,
   bufferToHex,
   intToHex,
   isHexPrefixed,
-  toBuffer,
+  toType,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
@@ -25,6 +27,7 @@ import type {
   JsonBlock,
   JsonRpcBlock,
   Withdrawal,
+  WithdrawalData,
 } from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -33,7 +36,21 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { Address } from '@ethereumjs/util'
+
+function fromWithdrawalData(withdrawalData: WithdrawalData): Withdrawal {
+  const {
+    index: indexData,
+    validatorIndex: validatorIndexData,
+    address: addressData,
+    amount: amountData,
+  } = withdrawalData
+  const index = toType(indexData, TypeOutput.BigInt)
+  const validatorIndex = toType(validatorIndexData, TypeOutput.BigInt)
+  const address = new Address(toType(addressData, TypeOutput.Buffer))
+  const amount = toType(amountData, TypeOutput.BigInt)
+
+  return { index, validatorIndex, address, amount }
+}
 
 /**
  * An object that represents the block.
@@ -57,7 +74,7 @@ export class Block {
       header: headerData,
       transactions: txsData,
       uncleHeaders: uhsData,
-      withdrawals,
+      withdrawals: withdrawalsData,
     } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -93,6 +110,7 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
+    const withdrawals = withdrawalsData?.map(fromWithdrawalData)
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
@@ -123,7 +141,7 @@ export class Block {
       throw new Error('invalid block. More values than expected were received')
     }
 
-    const [headerData, txsData, uhsData, withdrawalsData] = values
+    const [headerData, txsData, uhsData, withdrawalsBuffer] = values
 
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
@@ -159,14 +177,9 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    let withdrawals
-    if (withdrawalsData) {
-      withdrawals = <Withdrawal[]>[]
-      for (const withdrawal of withdrawalsData) {
-        const [index, validatorIndex, address, amount] = withdrawal
-        withdrawals.push({ index, validatorIndex, address, amount })
-      }
-    }
+    const withdrawals = withdrawalsBuffer?.map(([index, validatorIndex, address, amount]) =>
+      fromWithdrawalData({ index, validatorIndex, address, amount })
+    )
 
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
@@ -241,6 +254,7 @@ export class Block {
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
+    this.withdrawals = withdrawals
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
@@ -265,8 +279,6 @@ export class Block {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
-    this.withdrawals = withdrawals
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -278,17 +290,21 @@ export class Block {
    * @param withdrawal the withdrawal to convert
    * @returns buffer array of the withdrawal
    */
-  private withdrawalToBufferArray(withdrawal: Withdrawal): [Buffer, Buffer, Buffer, Buffer] {
+  private withdrawalToBufferArray(
+    withdrawal: Withdrawal | WithdrawalData
+  ): [Buffer, Buffer, Buffer, Buffer] {
     const { index, validatorIndex, address, amount } = withdrawal
-    let addressBuffer: Buffer
-    if (typeof address === 'string') {
-      addressBuffer = Buffer.from(address.slice(2))
-    } else if (Buffer.isBuffer(address)) {
-      addressBuffer = address
-    } else {
+    const indexBuffer = toType(index, TypeOutput.Buffer)
+    const validatorIndexBuffer = toType(validatorIndex, TypeOutput.Buffer)
+    let addressBuffer
+    if (address instanceof Address) {
       addressBuffer = (<Address>address).buf
+    } else {
+      addressBuffer = toType(address, TypeOutput.Buffer)
     }
-    return [toBuffer(index), toBuffer(validatorIndex), addressBuffer, toBuffer(amount)]
+    const amountBuffer = toType(amount, TypeOutput.Buffer)
+
+    return [indexBuffer, validatorIndexBuffer, addressBuffer, amountBuffer]
   }
 
   /**
@@ -302,10 +318,12 @@ export class Block {
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
+    let withdrawals = []
     if (this.withdrawals) {
       for (const withdrawal of this.withdrawals) {
-        bufferArray.push(this.withdrawalToBufferArray(withdrawal))
+        withdrawals.push(this.withdrawalToBufferArray(withdrawal))
       }
+      bufferArray.push(withdrawals)
     }
     return bufferArray
   }
@@ -510,10 +528,21 @@ export class Block {
    * Returns the block in JSON format.
    */
   toJSON(): JsonBlock {
+    const withdrawalsAttr = this.withdrawals
+      ? {
+          withdrawals: this.withdrawals.map((wt) => ({
+            index: bigIntToHex(BigInt(wt.index)),
+            validatorIndex: bigIntToHex(wt.validatorIndex),
+            address: '0x' + wt.address.buf.toString('hex'),
+            amount: bigIntToHex(wt.amount),
+          })),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
+      ...withdrawalsAttr,
     }
   }
 

@@ -331,11 +331,7 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
   const state = this.eei
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
-    const { address: addressData, amount: amountData } = withdrawal
-    const address = new Address(toBuffer(addressData))
-    const amount = Buffer.isBuffer(amountData)
-      ? BigInt('0x' + amountData.toString('hex'))
-      : BigInt(amountData)
+    const { address, amount } = withdrawal
     await rewardAccount(state, address, amount)
   }
 }

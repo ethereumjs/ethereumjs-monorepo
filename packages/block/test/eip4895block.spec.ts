@@ -102,7 +102,7 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.notOk(await block.validateWithdrawalsTrie(), 'should invalidate the withdrawals root')
+    st.notOk(await block.validateWithdrawalsTrie(), 'should invalidate the empty withdrawals root')
     const validHeader = BlockHeader.fromHeaderData(
       {
         withdrawalsRoot: KECCAK256_RLP,
@@ -118,7 +118,7 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate withdrawals root')
+    st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate empty withdrawals root')
 
     const withdrawal = <Withdrawal>{
       index: BigInt(0),

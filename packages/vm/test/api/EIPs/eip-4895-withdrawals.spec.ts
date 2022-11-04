@@ -64,8 +64,8 @@ tape('EIP4895 tests', (t) => {
     for (let i = 0; i < addresses.length; i++) {
       // Just assign any number to validatorIndex as its just for CL convinience
       withdrawals.push({
-        index,
-        validatorIndex: index,
+        index: BigInt(index),
+        validatorIndex: BigInt(index),
         address: new Address(Buffer.from(addresses[i], 'hex')),
         amount: amounts[i],
       })
