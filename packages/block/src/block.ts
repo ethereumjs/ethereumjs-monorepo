@@ -318,7 +318,7 @@ export class Block {
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
-    let withdrawals = []
+    const withdrawals = []
     if (this.withdrawals) {
       for (const withdrawal of this.withdrawals) {
         withdrawals.push(this.withdrawalToBufferArray(withdrawal))

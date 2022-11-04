@@ -2,15 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  Address,
-  bigIntToBuffer,
-  bufArrToArr,
-  intToBuffer,
-  short,
-  toBuffer,
-} from '@ethereumjs/util'
+import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
