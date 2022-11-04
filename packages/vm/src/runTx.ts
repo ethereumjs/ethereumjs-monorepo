@@ -304,12 +304,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
   fromAccount.balance -= txCost
+  fromAccount.nonce++
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
-    debug(`Update fromAccount (caller) balance(-> ${fromAccount.balance})`)
+    debug(
+      `Update fromAccount (caller) balance (-> ${fromAccount.balance}), nonce (-> ${fromAccount.nonce})`
+    )
   }
 
   /*
@@ -336,11 +339,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value,
     data,
   })) as RunTxResult
-
-  // After running the call, increment the nonce
-  const acc = await state.getAccount(caller)
-  acc.nonce++
-  await state.putAccount(caller, acc)
 
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) nonce (-> ${fromAccount.nonce})`)

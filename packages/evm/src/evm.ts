@@ -884,10 +884,7 @@ export class EVM implements EVMInterface {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
-      let newNonce = acc.nonce
-      if (message.depth > 0) {
-        newNonce--
-      }
+      const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)
