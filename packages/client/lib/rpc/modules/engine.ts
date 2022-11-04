@@ -714,13 +714,18 @@ export class Engine {
      * If payloadAttributes is present, start building block and return payloadId
      */
     if (payloadAttributes) {
-      const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
+      const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
-      const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
-        timestamp,
-        mixHash: prevRandao,
-        coinbase: suggestedFeeRecipient,
-      })
+      const payloadId = await this.pendingBlock.start(
+        await this.vm.copy(),
+        parentBlock,
+        {
+          timestamp,
+          mixHash: prevRandao,
+          coinbase: suggestedFeeRecipient,
+        },
+        withdrawals
+      )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }

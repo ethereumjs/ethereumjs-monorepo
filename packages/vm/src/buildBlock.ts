@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Address, TypeOutput, toBuffer, toType } from '@ethereumjs/util'
+import { Address, TypeOutput, Withdrawal, arrToBufArr, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -11,6 +11,7 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { WithdrawalData } from '@ethereumjs/util'
 
 export class BlockBuilder {
   /**
@@ -23,6 +24,7 @@ export class BlockBuilder {
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
+  private withdrawals?: WithdrawalData[]
   private checkpointed = false
   private reverted = false
   private built = false
@@ -69,6 +71,23 @@ export class BlockBuilder {
     const trie = new Trie()
     for (const [i, tx] of this.transactions.entries()) {
       await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    }
+    return trie.root()
+  }
+
+  /**
+   * Calculates and returns the transactionsTrie for the block.
+   */
+  public async withdrawalsRoot() {
+    if (!this.withdrawals) {
+      return undefined
+    }
+    const trie = new Trie()
+    for (const [i, wt] of this.withdrawals.entries()) {
+      await trie.put(
+        Buffer.from(RLP.encode(i)),
+        arrToBufArr(RLP.encode(Withdrawal.toBufferArray(wt)))
+      )
     }
     return trie.root()
   }
@@ -182,6 +201,7 @@ export class BlockBuilder {
 
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
+    const withdrawalsRoot = await this.withdrawalsRoot()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
@@ -191,6 +211,7 @@ export class BlockBuilder {
       ...this.headerData,
       stateRoot,
       transactionsTrie,
+      withdrawalsRoot,
       receiptTrie,
       logsBloom,
       gasUsed,
@@ -202,7 +223,11 @@ export class BlockBuilder {
       headerData.mixHash = sealOpts?.mixHash ?? headerData.mixHash
     }
 
-    const blockData = { header: headerData, transactions: this.transactions }
+    const blockData = {
+      header: headerData,
+      transactions: this.transactions,
+      withdrawals: this.withdrawals,
+    }
     const block = Block.fromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
