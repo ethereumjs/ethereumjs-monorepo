@@ -4,7 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   arrToBufArr,
-  bigIntToBuffer,
+  devP2PBigIntToBuffer as bigIntToBuffer,
   bufArrToArr,
   bufferToBigInt,
   bufferToInt,
@@ -119,9 +119,9 @@ export class EthProtocol extends Protocol {
         bigIntToBuffer(reqId ?? ++this.nextReqId),
         [
           typeof block === 'bigint' ? bigIntToBuffer(block) : block,
-          max === 0 ? Buffer.from([]) : intToBuffer(max),
-          skip === 0 ? Buffer.from([]) : intToBuffer(skip),
-          !reverse ? Buffer.from([]) : Buffer.from([1]),
+          bigIntToBuffer(max),
+          bigIntToBuffer(skip),
+          bigIntToBuffer(!reverse ? 0 : 1),
         ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
@@ -193,6 +193,8 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
+      encode: (hashes: Buffer[]) => hashes,
+      decode: (hashes: Buffer[]) => hashes,
     },
     {
       name: 'GetPooledTransactions',
@@ -326,8 +328,7 @@ export class EthProtocol extends Protocol {
   encodeStatus(): any {
     return {
       networkId: bigIntToBuffer(this.chain.networkId),
-      td:
-        this.chain.blocks.td === BigInt(0) ? Buffer.from([]) : bigIntToBuffer(this.chain.blocks.td),
+      td: bigIntToBuffer(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
       latestBlock: bigIntToBuffer(this.chain.blocks.latest!.header.number),

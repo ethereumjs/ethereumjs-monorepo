@@ -1,5 +1,10 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from '@ethereumjs/util'
+import {
+  bufferToBigInt,
+  bufferToInt,
+  intToBuffer,
+  devP2PBigIntToBuffer as bigIntToBuffer,
+} from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
@@ -176,12 +181,7 @@ export class LesProtocol extends Protocol {
       this.chain.genesis.hash()
     )
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
-    const forkID = [
-      Buffer.from(forkHash.slice(2), 'hex'),
-      typeof nextFork === 'bigint' && nextFork !== BigInt(0)
-        ? bigIntToBuffer(nextFork)
-        : Buffer.from([]),
-    ]
+    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToBuffer(nextFork ?? 0n)]
 
     return {
       networkId: bigIntToBuffer(this.chain.networkId),

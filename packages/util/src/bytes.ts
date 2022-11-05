@@ -7,6 +7,7 @@ import type {
   PrefixedHexString,
   TransformableToArray,
   TransformableToBuffer,
+  BufferLike,
 } from './types'
 
 /**
@@ -225,6 +226,19 @@ export function bigIntToBuffer(num: bigint) {
   return toBuffer('0x' + num.toString(16))
 }
 
+/**
+ * Converts a {@link bigint} to a {@link Buffer} for devp2p rlp encodings
+ * excluding `0` as rlp has its own special encoding for the same
+ * see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/2402
+ */
+export function devP2PBigIntToBuffer(input: bigint | number): BufferLike {
+  const inputNum = BigInt(input)
+  if (inputNum === 0n) {
+    return 0
+  } else {
+    return bigIntToBuffer(inputNum)
+  }
+}
 /**
  * Converts a `Buffer` to a `Number`.
  * @param buf `Buffer` object to convert

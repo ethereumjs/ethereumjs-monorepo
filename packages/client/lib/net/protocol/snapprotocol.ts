@@ -1,7 +1,7 @@
 import {
   accountBodyFromSlim,
   accountBodyToSlim,
-  bigIntToBuffer,
+  devP2PBigIntToBuffer as bigIntToBuffer,
   bufferToBigInt,
   setLengthLeft,
 } from '@ethereumjs/util'
