@@ -1,9 +1,9 @@
 import { BlockHeader } from '@ethereumjs/block'
 import {
+  devP2PBigIntToBuffer as bigIntToBuffer,
   bufferToBigInt,
   bufferToInt,
   intToBuffer,
-  devP2PBigIntToBuffer as bigIntToBuffer,
 } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'

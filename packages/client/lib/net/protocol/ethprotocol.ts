@@ -8,7 +8,6 @@ import {
   bufArrToArr,
   bufferToBigInt,
   bufferToInt,
-  intToBuffer,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 
