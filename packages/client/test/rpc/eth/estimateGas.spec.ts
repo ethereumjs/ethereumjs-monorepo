@@ -100,7 +100,11 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = 'should return the correct gas estimate'
     t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // Also test without blockopt as its optional and should default to latest
+  const reqWithoutBlockOpt = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
+  await baseRequest(t, server, reqWithoutBlockOpt, 200, expectRes)
 })
 
 tape(`${method}: call with unsupported block argument`, async (t) => {
