@@ -360,6 +360,9 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.feeHistory = middleware(this.feeHistory.bind(this), 0, [])
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -985,5 +988,38 @@ export class Eth {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
     return intToHex(block.transactions.length)
+  }
+
+  async feeHistory(_params = []) {
+    const latest = await this._chain.getCanonicalHeadHeader()
+    return {
+      baseFeePerGas: [
+        '0x' + latest.baseFeePerGas?.toString(16),
+        '0x' + latest.baseFeePerGas?.toString(16),
+      ],
+      oldestBlock: '0x' + latest.number.toString(16),
+      gasUsedRatio: [0.5],
+    }
+  }
+
+  /**
+   * Returns an estimate of the current gas price based on the most recent block
+   * @returns the current gasPrice in gwei as a hex prefixed string
+   */
+  async gasPrice() {
+    let gasPrice: bigint = BigInt(0)
+    const latest = await this._chain.getCanonicalHeadHeader()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      gasPrice = latest.calcNextBaseFee()
+    } else {
+      if (latest.gasUsed > BigInt(0)) gasPrice = latest.gasUsed
+      else {
+        while (gasPrice === BigInt(0)) {
+          const nextBlock = await this._chain.getBlock(latest.number - BigInt(1))
+          if (nextBlock.header.gasUsed > BigInt(0)) gasPrice = nextBlock.header.gasUsed
+        }
+      }
+    }
+    return '0x' + gasPrice.toString(16)
   }
 }
