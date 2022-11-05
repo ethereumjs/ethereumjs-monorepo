@@ -980,7 +980,7 @@ export class Eth {
    * Gas price oracle.
    *
    * Returns a suggested gas price.
-   * @returns a hex code of an integer representing the current gas price in wei.
+   * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
     let gasPrice = BigInt(0)
@@ -999,7 +999,7 @@ export class Eth {
       gasPrice = baseFee + priorityFee
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
-      // blocks to get an average gas price. We cap the total tx lookup to 500.
+      // blocks to get an average gas price.
       const blockIterations = 20 < latest.number ? 20 : latest.number
       let txCount = 0
       for (let i = 0; i < blockIterations; i++) {
@@ -1012,9 +1012,7 @@ export class Eth {
           const txGasPrice = (tx as Transaction).gasPrice
           gasPrice += txGasPrice
           txCount++
-          if (txCount >= 500) break
         }
-        if (txCount >= 500) break
       }
 
       if (txCount > 0) {
