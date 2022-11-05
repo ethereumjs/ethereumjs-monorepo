@@ -90,24 +90,25 @@ export class RlpxServer extends Server {
    */
   getRlpxInfo() {
     // TODO: return undefined? note that this.rlpx might be undefined if called before initRlpx
+    const listenAddr = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
+      ? `${this.ip}:${this.config.port}`
+      : `[${this.ip}]:${this.config.port}`
+
     if (this.rlpx === undefined || this.rlpx === null) {
       return {
         enode: undefined,
         id: undefined,
         ip: this.ip,
-        listenAddr: `[${this.ip}]:${this.config.port}`,
+        listenAddr,
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
     const id = this.rlpx._id.toString('hex')
-    const address = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
-      ? `${this.ip}:${this.config.port}`
-      : `[${this.ip}]:${this.config.port}`
     return {
-      enode: `enode://${id}@${address}`,
+      enode: `enode://${id}@${listenAddr}`,
       id,
       ip: this.ip,
-      listenAddr: `[${this.ip}]:${this.config.port}`,
+      listenAddr,
       ports: { discovery: this.config.port, listener: this.config.port },
     }
   }
