@@ -169,6 +169,9 @@ tape('[TxPool]', async (t) => {
         send: () => {
           t.fail('should not send to announcing peer')
         },
+        request: () => {
+          t.fail('should not send to announcing peer')
+        },
       },
     }
     let sentToPeer2 = 0
@@ -176,6 +179,10 @@ tape('[TxPool]', async (t) => {
       id: '2',
       eth: {
         send: () => {
+          sentToPeer2++
+          t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+        },
+        request: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
@@ -408,7 +415,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
+      await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
       'successfully rejected unsigned tx'
     )
   })
