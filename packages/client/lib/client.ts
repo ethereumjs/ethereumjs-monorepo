@@ -114,7 +114,12 @@ export class EthereumClient {
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       const networkDir = this.config.getNetworkDirectory()
       // Write the transport into a file
-      writeFileSync(`${networkDir}/${details.transport}`, details.url)
+      try {
+        writeFileSync(`${networkDir}/${details.transport}`, details.url)
+      } catch (e) {
+        // Incase dir is not really setup, mostly to take care of mockserver in test
+        this.config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+      }
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`
       )
