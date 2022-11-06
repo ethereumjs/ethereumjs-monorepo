@@ -231,7 +231,7 @@ export function bigIntToBuffer(num: bigint) {
  * excluding `0` as rlp has its own special encoding for the same
  * see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/2402
  */
-export function devP2PBigIntToBuffer(input: bigint | number): BufferLike {
+export function devP2PBigIntToBuffer(input: bigint | number): Buffer {
   const inputNum = BigInt(input)
   if (inputNum === 0n) {
     return Buffer.alloc(0)
