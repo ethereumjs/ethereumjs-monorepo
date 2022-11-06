@@ -234,7 +234,7 @@ export function bigIntToBuffer(num: bigint) {
 export function devP2PBigIntToBuffer(input: bigint | number): BufferLike {
   const inputNum = BigInt(input)
   if (inputNum === 0n) {
-    return 0
+    return Buffer.alloc(0)
   } else {
     return bigIntToBuffer(inputNum)
   }
