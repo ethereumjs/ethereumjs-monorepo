@@ -86,6 +86,13 @@ const jsonRpcBlock = async (
   const transactions = block.transactions.map((tx, txIndex) =>
     includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
   )
+  const withdrawalsAttr =
+    header.withdrawalsRoot !== undefined
+      ? {
+          withdrawalsRoot: header.withdrawalsRoot!,
+          withdrawals: json.withdrawals,
+        }
+      : {}
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
@@ -109,6 +116,7 @@ const jsonRpcBlock = async (
     transactions,
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
+    ...withdrawalsAttr,
   }
 }
 
