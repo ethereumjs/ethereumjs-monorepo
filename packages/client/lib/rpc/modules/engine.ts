@@ -18,7 +18,6 @@ import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
@@ -113,7 +112,7 @@ const executionPayloadV1FieldValidators = {
 }
 const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
-  withdrawals: validators.array(validators.withdrawal),
+  withdrawals: validators.array(validators.withdrawal()),
 }
 
 const forkchoiceFieldValidators = {
@@ -129,7 +128,7 @@ const payloadAttributesFieldValidatorsV1 = {
 }
 const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
-  withdrawals: validators.array(validators.withdrawal),
+  withdrawals: validators.array(validators.withdrawal()),
 }
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
@@ -193,13 +192,10 @@ const txsTrieRoot = async (txs: TypedTransaction[]) => {
 /**
  * Returns the txs trie root for the block.
  */
-const withdrawalsTrieRoot = async (wts: WithdrawalData[]) => {
+const withdrawalsTrieRoot = async (wts: Withdrawal[]) => {
   const trie = new Trie()
   for (const [i, wt] of wts.entries()) {
-    await trie.put(
-      Buffer.from(RLP.encode(i)),
-      arrToBufArr(RLP.encode(Withdrawal.toBufferArray(wt)))
-    )
+    await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
   }
   return trie.root()
 }
@@ -257,7 +253,7 @@ const assembleBlock = async (
     prevRandao: mixHash,
     feeRecipient: coinbase,
     transactions,
-    withdrawals,
+    withdrawals: withdrawalsData,
   } = payload
   const { config } = chain
   const common = config.chainCommon.copy()
@@ -281,6 +277,7 @@ const assembleBlock = async (
   }
 
   const transactionsTrie = await txsTrieRoot(txs)
+  const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
   const withdrawalsRoot = withdrawals ? await withdrawalsTrieRoot(withdrawals) : undefined
   const header: HeaderData = {
     ...payload,
@@ -297,7 +294,6 @@ const assembleBlock = async (
     // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
     // correctly set to the correct hf
     block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
-
     // Verify blockHash matches payload
     if (!block.hash().equals(toBuffer(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
@@ -441,7 +437,6 @@ export class Engine {
   private async newPayload(params: [ExecutionPayload]): Promise<PayloadStatusV1> {
     const [payload] = params
     const { parentHash, blockHash } = payload
-
     const { block, error } = await assembleBlock(payload, this.chain)
     if (!block || error) {
       let response = error
@@ -532,6 +527,8 @@ export class Engine {
       return response
     }
 
+    this.remoteBlocks.set(block.hash().toString('hex'), block)
+
     const response = {
       status: Status.VALID,
       latestValidHash: bufferToHex(block.hash()),
@@ -611,7 +608,6 @@ export class Engine {
       )}`
     )
     await this.service.beaconSync?.setHead(headBlock)
-
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
@@ -680,7 +676,6 @@ export class Engine {
         this.service.txPool.checkRunState()
       }
     }
-
     /*
      * Process safe and finalized block
      * Allowed to have zero value while transition block is finalizing

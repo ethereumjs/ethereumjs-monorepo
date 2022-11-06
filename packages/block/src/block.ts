@@ -26,7 +26,6 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -50,7 +49,7 @@ export class Block {
       header: headerData,
       transactions: txsData,
       uncleHeaders: uhsData,
-      withdrawals,
+      withdrawals: withdrawalsData,
     } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -86,6 +85,8 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
+    const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
@@ -115,7 +116,6 @@ export class Block {
     if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
-
     const [headerData, txsData, uhsData, withdrawalsBuffer] = values
 
     const header = BlockHeader.fromValuesArray(headerData, opts)
@@ -152,12 +152,14 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    const withdrawals = withdrawalsBuffer?.map(([index, validatorIndex, address, amount]) => ({
-      index,
-      validatorIndex,
-      address,
-      amount,
-    }))
+    const withdrawals = withdrawalsBuffer
+      ?.map(([index, validatorIndex, address, amount]) => ({
+        index,
+        validatorIndex,
+        address,
+        amount,
+      }))
+      ?.map(Withdrawal.fromWithdrawalData)
 
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
@@ -228,11 +230,11 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     opts: BlockOptions = {},
-    withdrawals?: WithdrawalData[]
+    withdrawals?: Withdrawal[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
-    this.withdrawals = withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.withdrawals = withdrawals
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
@@ -424,7 +426,7 @@ export class Block {
     let index = 0
     for (const withdrawal of this.withdrawals!) {
       const withdrawalRLP = RLP.encode(withdrawal.raw())
-      await trie.put(Buffer.from('0x' + index.toString(16)), arrToBufArr(withdrawalRLP))
+      await trie.put(Buffer.from(RLP.encode(index)), arrToBufArr(withdrawalRLP))
       index++
     }
     return trie.root().equals(this.header.withdrawalsRoot!)

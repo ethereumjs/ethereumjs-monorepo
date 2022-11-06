@@ -69,8 +69,8 @@ function parseGethParams(json: any) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
-              period: config.clique.period,
-              epoch: config.clique.epoch,
+              period: config.clique.period ?? config.clique.blockperiodseconds,
+              epoch: config.clique.epoch ?? config.clique.epochlength,
             },
           }
         : {
@@ -93,6 +93,7 @@ function parseGethParams(json: any) {
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
     [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
+    [Hardfork.Shanghai]: 'shanghaiBlock',
   }
   params.hardforks = Object.values(Hardfork)
     .map((name) => ({

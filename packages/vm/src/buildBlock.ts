@@ -11,7 +11,6 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
 
 export class BlockBuilder {
   /**
@@ -24,7 +23,7 @@ export class BlockBuilder {
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
-  private withdrawals?: WithdrawalData[]
+  private withdrawals?: Withdrawal[]
   private checkpointed = false
   private reverted = false
   private built = false
@@ -43,6 +42,7 @@ export class BlockBuilder {
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
+    this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
     if (
       this.vm._common.isActivatedEIP(1559) === true &&
@@ -83,11 +83,9 @@ export class BlockBuilder {
       return undefined
     }
     const trie = new Trie()
-    for (const [i, wt] of this.withdrawals.entries()) {
-      await trie.put(
-        Buffer.from(RLP.encode(i)),
-        arrToBufArr(RLP.encode(Withdrawal.toBufferArray(wt)))
-      )
+    for (const [index, withdrawal] of this.withdrawals.entries()) {
+      const withdrawalRLP = RLP.encode(withdrawal.raw())
+      await trie.put(Buffer.from(RLP.encode(index)), arrToBufArr(withdrawalRLP))
     }
     return trie.root()
   }
@@ -128,6 +126,16 @@ export class BlockBuilder {
         ? new Address(toBuffer(this.headerData.coinbase))
         : Address.zero()
     await rewardAccount(this.vm.eei, coinbase, reward)
+  }
+
+  /**
+   * Adds the withdrawal amount to the withdrawal address
+   */
+  private async processWithdrawals() {
+    for (const withdrawal of this.withdrawals ?? []) {
+      const { address, amount } = withdrawal
+      await rewardAccount(this.vm.eei, address, amount)
+    }
   }
 
   /**
@@ -198,6 +206,7 @@ export class BlockBuilder {
     if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
     }
+    await this.processWithdrawals()
 
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()

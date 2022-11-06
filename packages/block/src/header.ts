@@ -203,7 +203,7 @@ export class BlockHeader {
     }
 
     if (this._common.isActivatedEIP(4895)) {
-      if (withdrawalsRoot === defaults.withdrawalsRoot) {
+      if (withdrawalsRoot === undefined) {
         throw new Error('invalid header. withdrawalsRoot should be provided')
       }
     } else {
@@ -538,6 +538,10 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559) === true) {
       rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      rawItems.push(this.withdrawalsRoot!)
     }
 
     return rawItems
