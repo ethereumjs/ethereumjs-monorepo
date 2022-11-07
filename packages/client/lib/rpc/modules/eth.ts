@@ -1,6 +1,6 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -24,7 +24,12 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+import type {
+  FeeMarketEIP1559Transaction,
+  JsonRpcTx,
+  Transaction,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -438,12 +443,12 @@ export class Eth {
    *       * gasPrice (optional) - Integer of the gasPrice used for each paid gas
    *       * value (optional) - Integer of the value sent with this transaction
    *       * data (optional) - Hash of the method signature and encoded parameters.
-   *   2. integer block number, or the string "latest", "earliest" or "pending"
+   *   2. integer block number, or the string "latest", "earliest" or "pending" (optional)
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcTx, string]) {
+  async estimateGas(params: [RpcTx, string?]) {
     const [transaction, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
@@ -458,8 +463,21 @@ export class Eth {
       transaction.gas = latest.gasLimit as any
     }
 
-    const txData = { ...transaction, gasLimit: transaction.gas }
-    const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
+    if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
+      // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
+      if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
+        transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
+      } else if (block.header.baseFeePerGas !== undefined) {
+        transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+      }
+    }
+
+    const txData = {
+      ...transaction,
+      gasLimit: transaction.gas,
+    }
+
+    const tx = TransactionFactory.fromTxData(txData, { common: vm._common, freeze: false })
 
     // set from address
     const from =
@@ -474,6 +492,7 @@ export class Eth {
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
+        block,
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
