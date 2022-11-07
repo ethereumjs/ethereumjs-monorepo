@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667814248052,
+  "lastUpdate": 1667846319739,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ndrozd@users.noreply.github.com",
-            "name": "Nikita Drozd",
-            "username": "ndrozd"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "03587eb98ada83b51a402f06227e31b97450b23a",
-          "message": "Added env check for debug mode + optimised the variable usage #1882 (#2311)\n\n* Added env check for debug mode + optimised the variable usage\r\n\r\nSolves DevP2P debug strings optimization #1882\r\n\r\n* Debug strings update (fixes for #2311)\r\n\r\n* fix examples\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-11T08:55:34-04:00",
-          "tree_id": "8fd2db4bae39bf96fe1be59468484c6076255b00",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/03587eb98ada83b51a402f06227e31b97450b23a"
-        },
-        "date": 1665493133812,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18537,
-            "range": "±2.23%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17979,
-            "range": "±4.64%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16667,
-            "range": "±8.45%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18561,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17974,
-            "range": "±1.90%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.68%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9d470d336fa2cd606dbac31c4c6f8a6a1981f878",
+          "message": "client: Miscellaneous tx related fixes for eth methods  (#2411)\n\n* client: Extend RpcTx type with 1559 fields and make blockOpt optional in estimateGas\r\n\r\n* add optional block opt test\r\n\r\n* bundle validation\r\n\r\n* extract and add test for rpc tx field extenstion\r\n\r\n* Add test coverage\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-11-07T13:34:58-05:00",
+          "tree_id": "f4ce386560caa137b33d2c6a1c1a080aa40de4a4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d470d336fa2cd606dbac31c4c6f8a6a1981f878"
+        },
+        "date": 1667846294924,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 9771,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10054,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 9892,
+            "range": "±4.24%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 9951,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 9968,
+            "range": "±2.35%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
