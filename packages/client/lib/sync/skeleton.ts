@@ -300,6 +300,17 @@ export class Skeleton extends MetaDBManager {
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
     return this.runWithLock<boolean>(async () => {
+      if (head.header.number === 0n) {
+        if (!this.chain.genesis.hash().equals(head.hash())) {
+          throw Error(
+            `Invalid genesis setHead announcement number=${head.header.number} hash=${short(
+              head.hash()
+            )} genesisHash=${short(this.chain.genesis.hash())}`
+          )
+        }
+        // No reorg on genesis annoucement
+        return false
+      }
       this.config.logger.debug(
         `New skeleton head announced number=${head.header.number} hash=${short(
           head.hash()
