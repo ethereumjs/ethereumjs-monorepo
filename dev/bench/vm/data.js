@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667508858163,
+  "lastUpdate": 1667814248052,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "12867336+HelloRickey@users.noreply.github.com",
-            "name": "rickey",
-            "username": "HelloRickey"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5821adda073be023c336a41954fe41e864732b2",
-          "message": "Update README.md (#2342)\n\nUpdated link for Recursive Length Prefix",
-          "timestamp": "2022-10-09T12:41:27-04:00",
-          "tree_id": "eeda33b34fcf362a4d7d88dd526708713525c375",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5821adda073be023c336a41954fe41e864732b2"
-        },
-        "date": 1665333838400,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19301,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18802,
-            "range": "±4.73%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17438,
-            "range": "±7.24%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19395,
-            "range": "±1.29%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18745,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.39%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fd121bee508d2e8eb18e491f5a97182ab61224d3",
+          "message": "client: Fix skeleton reset scenario when head announced before subchain 0 tail (#2408)",
+          "timestamp": "2022-11-07T10:41:29+01:00",
+          "tree_id": "13d08a625e5931442c76cad7159d4b65146f7bc7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fd121bee508d2e8eb18e491f5a97182ab61224d3"
+        },
+        "date": 1667814247188,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18970,
+            "range": "±3.29%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19078,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18210,
+            "range": "±5.21%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18835,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18614,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
