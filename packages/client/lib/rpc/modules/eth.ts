@@ -983,6 +983,7 @@ export class Eth {
    * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
+    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
     let gasPrice = BigInt(0)
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
@@ -996,12 +997,12 @@ export class Eth {
 
       priorityFee =
         priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
-      gasPrice = baseFee + priorityFee
+      gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
       // blocks to get an average gas price.
       const blockIterations = 20 < latest.number ? 20 : latest.number
-      let txCount = 0
+      let txCount = BigInt(0)
       for (let i = 0; i < blockIterations; i++) {
         const block = await this._chain.getBlock(latest.number - BigInt(i))
         if (block.transactions.length === 0) {
@@ -1016,9 +1017,9 @@ export class Eth {
       }
 
       if (txCount > 0) {
-        gasPrice = gasPrice / BigInt(txCount)
+        gasPrice = gasPrice / txCount > minGasPrice ? gasPrice / txCount : minGasPrice
       } else {
-        gasPrice = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+        gasPrice = minGasPrice
       }
     }
 
