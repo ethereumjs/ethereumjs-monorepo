@@ -8,54 +8,11 @@ import { checkError } from '../util'
 
 import type { ExecutionPayload } from '../../../lib/rpc/modules/engine'
 
-tape(`withdrawals spec tests`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-  let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
-  let expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    "invalid argument 1 for key 'withdrawals': argument is not array"
-  )
-  await baseRequest(t, server, req, 200, expectRes, false)
-
-  req = params('engine_forkchoiceUpdatedV2', [
-    validForkChoiceState,
-    validPayloadAttributesWithWithdrawals,
-  ])
-  let payloadId
-  expectRes = (res: any) => {
-    payloadId = res.body.result.payloadId
-  }
-  await baseRequest(t, server, req, 200, expectRes, false)
-
-  let payload: ExecutionPayload | undefined = undefined
-  req = params('engine_getPayloadV2', [payloadId])
-  expectRes = (res: any) => {
-    payload = res.body.result
-    t.equal(res.body.result.blockNumber, '0x1')
-  }
-  await baseRequest(t, server, req, 200, expectRes, false)
-  expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.status, 'VALID')
-  }
-
-  req = params('engine_newPayloadV2', [payload])
-  expectRes = (res: any) => {
-    t.equal(res.body.result.status, 'VALID')
-  }
-  await baseRequest(t, server, req, 200, expectRes, false)
-
-  req = params('engine_forkchoiceUpdatedV2', [
-    {
-      ...validForkChoiceState,
-      headBlockHash: payload!.blockHash,
-    },
-  ])
-  expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.status, 'VALID')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+const validPayloadAttributes = {
+  timestamp: '0x2f',
+  prevRandao: '0xff00000000000000000000000000000000000000000000000000000000000000',
+  suggestedFeeRecipient: '0xaa00000000000000000000000000000000000000',
+}
 
 const withdrawalsVector = [
   {
@@ -108,7 +65,7 @@ const withdrawalsVector = [
   },
 ]
 
-const withdrawals = withdrawalsVector.map((testVec) => ({
+const withdrawalsGethVector = withdrawalsVector.map((testVec) => ({
   index: intToHex(testVec.Index),
   validatorIndex: intToHex(testVec.Validator),
   address: testVec.Recipient,
@@ -121,9 +78,60 @@ const validForkChoiceState = {
   finalizedBlockHash: '0xfe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710',
 }
 
-const validPayloadAttributes = {
-  timestamp: '0x2f',
-  prevRandao: '0xff00000000000000000000000000000000000000000000000000000000000000',
-  suggestedFeeRecipient: '0xaa00000000000000000000000000000000000000',
+const testCases = [
+  { name: 'empty withdrawals', withdrawals: [] },
+  { name: '8 withdrawals', withdrawals: withdrawalsGethVector },
+]
+
+for (const { name, withdrawals } of testCases) {
+  const validPayloadAttributesWithWithdrawals = { ...validPayloadAttributes, withdrawals }
+
+  tape(name, async (t) => {
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+    let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
+    let expectRes = checkError(
+      t,
+      INVALID_PARAMS,
+      "invalid argument 1 for key 'withdrawals': argument is not array"
+    )
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    req = params('engine_forkchoiceUpdatedV2', [
+      validForkChoiceState,
+      validPayloadAttributesWithWithdrawals,
+    ])
+    let payloadId
+    expectRes = (res: any) => {
+      t.equal(res.body.result.payloadId !== undefined, true)
+      payloadId = res.body.result.payloadId
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    let payload: ExecutionPayload | undefined = undefined
+    req = params('engine_getPayloadV2', [payloadId])
+    expectRes = (res: any) => {
+      payload = res.body.result
+      t.equal(payload!.blockNumber, '0x1')
+      t.equal(payload!.withdrawals!.length, withdrawals.length, 'withdrawals should match')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    req = params('engine_newPayloadV2', [payload])
+    expectRes = (res: any) => {
+      t.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+
+    req = params('engine_forkchoiceUpdatedV2', [
+      {
+        ...validForkChoiceState,
+        headBlockHash: payload!.blockHash,
+      },
+    ])
+    expectRes = async (res: any) => {
+      t.equal(res.body.result.payloadStatus.status, 'VALID')
+    }
+    await baseRequest(t, server, req, 200, expectRes)
+  })
 }
-const validPayloadAttributesWithWithdrawals = { ...validPayloadAttributes, withdrawals }
