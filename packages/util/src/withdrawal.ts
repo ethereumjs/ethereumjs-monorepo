@@ -42,15 +42,20 @@ export class Withdrawal {
     withdrawal: Withdrawal | WithdrawalData
   ): [Buffer, Buffer, Buffer, Buffer] {
     const { index, validatorIndex, address, amount } = withdrawal
-    const indexBuffer = toType(index, TypeOutput.Buffer)
-    const validatorIndexBuffer = toType(validatorIndex, TypeOutput.Buffer)
+    const indexBuffer =
+      toType(index, TypeOutput.BigInt) === 0n ? Buffer.alloc(0) : toType(index, TypeOutput.Buffer)
+    const validatorIndexBuffer =
+      toType(validatorIndex, TypeOutput.BigInt) === 0n
+        ? Buffer.alloc(0)
+        : toType(validatorIndex, TypeOutput.Buffer)
     let addressBuffer
     if (address instanceof Address) {
       addressBuffer = (<Address>address).buf
     } else {
       addressBuffer = toType(address, TypeOutput.Buffer)
     }
-    const amountBuffer = toType(amount, TypeOutput.Buffer)
+    const amountBuffer =
+      toType(amount, TypeOutput.BigInt) === 0n ? Buffer.alloc(0) : toType(amount, TypeOutput.Buffer)
 
     return [indexBuffer, validatorIndexBuffer, addressBuffer, amountBuffer]
   }
