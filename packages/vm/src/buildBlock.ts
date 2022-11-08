@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Address, TypeOutput, Withdrawal, arrToBufArr, toBuffer, toType } from '@ethereumjs/util'
+import { Address, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -62,32 +62,6 @@ export class BlockBuilder {
     if (this.reverted) {
       throw new Error('State has already been reverted')
     }
-  }
-
-  /**
-   * Calculates and returns the transactionsTrie for the block.
-   */
-  public async transactionsTrie() {
-    const trie = new Trie()
-    for (const [i, tx] of this.transactions.entries()) {
-      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
-    }
-    return trie.root()
-  }
-
-  /**
-   * Calculates and returns the transactionsTrie for the block.
-   */
-  public async withdrawalsRoot() {
-    if (!this.withdrawals) {
-      return undefined
-    }
-    const trie = new Trie()
-    for (const [index, withdrawal] of this.withdrawals.entries()) {
-      const withdrawalRLP = RLP.encode(withdrawal.raw())
-      await trie.put(Buffer.from(RLP.encode(index)), arrToBufArr(withdrawalRLP))
-    }
-    return trie.root()
   }
 
   /**
@@ -209,8 +183,10 @@ export class BlockBuilder {
     await this.processWithdrawals()
 
     const stateRoot = await this.vm.stateManager.getStateRoot()
-    const transactionsTrie = await this.transactionsTrie()
-    const withdrawalsRoot = await this.withdrawalsRoot()
+    const transactionsTrie = await Block.transactionsTrieRoot(this.transactions)
+    const withdrawalsRoot = this.withdrawals
+      ? await Block.withdrawalsTrieRoot(this.withdrawals)
+      : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed

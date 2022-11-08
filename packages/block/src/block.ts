@@ -439,14 +439,8 @@ export class Block {
     if (!this._common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const trie = new Trie()
-    let index = 0
-    for (const withdrawal of this.withdrawals!) {
-      const withdrawalRLP = RLP.encode(withdrawal.raw())
-      await trie.put(Buffer.from(RLP.encode(index)), arrToBufArr(withdrawalRLP))
-      index++
-    }
-    return trie.root().equals(this.header.withdrawalsRoot!)
+    const withdrawalsRoot = await Block.withdrawalsTrieRoot(this.withdrawals!)
+    return withdrawalsRoot.equals(this.header.withdrawalsRoot!)
   }
 
   /**

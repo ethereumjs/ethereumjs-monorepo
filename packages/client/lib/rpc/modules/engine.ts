@@ -1,9 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Withdrawal, arrToBufArr, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
+import { Withdrawal, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -17,7 +15,6 @@ import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
-import type { TypedTransaction } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
 
 export enum Status {
@@ -179,28 +176,6 @@ const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, ch
 }
 
 /**
- * Returns the txs trie root for the block.
- */
-const txsTrieRoot = async (txs: TypedTransaction[]) => {
-  const trie = new Trie()
-  for (const [i, tx] of txs.entries()) {
-    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
-  }
-  return trie.root()
-}
-
-/**
- * Returns the txs trie root for the block.
- */
-const withdrawalsTrieRoot = async (wts: Withdrawal[]) => {
-  const trie = new Trie()
-  for (const [i, wt] of wts.entries()) {
-    await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
-  }
-  return trie.root()
-}
-
-/**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
 const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => {
@@ -276,9 +251,9 @@ const assembleBlock = async (
     }
   }
 
-  const transactionsTrie = await txsTrieRoot(txs)
+  const transactionsTrie = await Block.transactionsTrieRoot(txs)
   const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
-  const withdrawalsRoot = withdrawals ? await withdrawalsTrieRoot(withdrawals) : undefined
+  const withdrawalsRoot = withdrawals ? await Block.withdrawalsTrieRoot(withdrawals) : undefined
   const header: HeaderData = {
     ...payload,
     number,
