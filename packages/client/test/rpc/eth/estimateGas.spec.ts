@@ -1,6 +1,6 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -14,7 +14,9 @@ import type { FullEthereumService } from '../../../lib/service'
 const method = 'eth_estimateGas'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  // Use custom genesis so we can test EIP1559 txs more easily
+  const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
+  const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'istanbul' })
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
@@ -100,7 +102,61 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = 'should return the correct gas estimate'
     t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // Test without blockopt as its optional and should default to latest
+  const reqWithoutBlockOpt = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
+  await baseRequest(t, server, reqWithoutBlockOpt, 200, expectRes, false)
+
+  // Setup chain to run an EIP1559 tx
+  const service = client.services[0] as FullEthereumService
+  service.execution.vm._common.setHardfork('london')
+  service.chain.config.chainCommon.setHardfork('london')
+  const headBlock = await service.chain.getCanonicalHeadBlock()
+  const londonBlock = Block.fromBlockData(
+    {
+      header: BlockHeader.fromHeaderData(
+        {
+          baseFeePerGas: 1000000000n,
+          number: 2n,
+          parentHash: headBlock.header.hash(),
+        },
+        {
+          common: service.chain.config.chainCommon,
+          skipConsensusFormatValidation: true,
+          calcDifficultyFromHeader: headBlock.header,
+        }
+      ),
+    },
+    { common: service.chain.config.chainCommon }
+  )
+
+  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+  await vm.runBlock({ block: londonBlock, generate: true, skipBlockValidation: true })
+  await vm.blockchain.putBlock(ranBlock!)
+
+  // Test EIP1559 tx
+  const EIP1559req = params(method, [
+    { ...estimateTxData, type: 2, maxFeePerGas: '0x' + 10000000000n.toString(16) },
+  ])
+  const expect1559Res = (res: any) => {
+    const msg = 'should return the correct gas estimate for EIP1559 tx'
+    t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
+  }
+
+  await baseRequest(t, server, EIP1559req, 200, expect1559Res, false)
+
+  // Test EIP1559 tx with no maxFeePerGas
+  const EIP1559reqNoGas = params(method, [
+    { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
+  ])
+  await baseRequest(t, server, EIP1559reqNoGas, 200, expect1559Res, false)
+
+  // Test legacy tx with London head block
+  const legacyTxNoGas = params(method, [
+    { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
+  ])
+  await baseRequest(t, server, legacyTxNoGas, 200, expect1559Res)
 })
 
 tape(`${method}: call with unsupported block argument`, async (t) => {
