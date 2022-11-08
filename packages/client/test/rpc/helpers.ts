@@ -34,7 +34,7 @@ type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessag
 
 export function startRPC(
   methods: any,
-  opts: StartRPCOpts = { port: 3000 },
+  opts: StartRPCOpts = { port: 3001 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
@@ -103,7 +103,7 @@ export function createClient(clientOpts: any = {}) {
   }
 
   let execution
-  if (clientOpts.includeVM === true) {
+  if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
