@@ -30,11 +30,8 @@ export class TxPool {
   content(_params = []) {
     const pending = new Map()
     for (const pool of this._txpool.pool) {
-      const pendingForAcct = new Map<bigint, any>()
-      for (const tx of pool[1]) {
-        pendingForAcct.set(tx.tx.nonce, tx.tx.toJSON())
-      }
-      if (pendingForAcct.size > 0) pending.set('0x' + pool[0], Object.fromEntries(pendingForAcct))
+      const pendingForAcct = pool[1].map((e) => e.tx.toJSON())
+      if (pendingForAcct.length > 0) pending.set('0x' + pool[0], pendingForAcct)
     }
     return {
       pending: Object.fromEntries(pending),
