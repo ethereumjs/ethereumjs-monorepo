@@ -1,4 +1,5 @@
-import { bigIntToHex, intToHex } from '@ethereumjs/util'
+import { Block } from '@ethereumjs/block'
+import { Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -79,14 +80,26 @@ const validForkChoiceState = {
 }
 
 const testCases = [
-  { name: 'empty withdrawals', withdrawals: [] },
-  { name: '8 withdrawals', withdrawals: withdrawalsGethVector },
+  {
+    name: 'empty withdrawals',
+    withdrawals: [],
+    withdrawalsRoot: '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+  },
+  {
+    name: '8 withdrawals',
+    withdrawals: withdrawalsGethVector,
+    withdrawalsRoot: 'b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06d',
+  },
 ]
 
-for (const { name, withdrawals } of testCases) {
+for (const { name, withdrawals, withdrawalsRoot } of testCases) {
   const validPayloadAttributesWithWithdrawals = { ...validPayloadAttributes, withdrawals }
-
   tape(name, async (t) => {
+    // check withdrawals root computation
+    const computedWithdrawalsRoot = (
+      await Block.withdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
+    ).toString('hex')
+    t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
