@@ -108,6 +108,11 @@ export class BlockBuilder {
   private async processWithdrawals() {
     for (const withdrawal of this.withdrawals ?? []) {
       const { address, amount } = withdrawal
+      // If there is no amount to add, skip touching the account
+      // as per the implementation of other clients geth/nethermind
+      // although this should never happen as no withdrawals with 0
+      // amount should ever land up here.
+      if (amount === 0n) continue
       await rewardAccount(this.vm.eei, address, amount)
     }
   }
