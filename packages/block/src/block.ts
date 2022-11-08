@@ -39,6 +39,28 @@ export class Block {
   public readonly _common: Common
 
   /**
+   * Returns the txs trie root for the block.
+   */
+  public static async withdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, wt] of wts.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
+    }
+    return trie.root()
+  }
+
+  /**
+   * Returns the txs trie root for the block.
+   */
+  public static async transactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, tx] of txs.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    }
+    return trie.root()
+  }
+
+  /**
    * Static constructor to create a block from a block data dictionary
    *
    * @param blockData
@@ -309,12 +331,7 @@ export class Block {
    */
   async genTxTrie(): Promise<void> {
     const { transactions, txTrie } = this
-    for (let i = 0; i < transactions.length; i++) {
-      const tx = transactions[i]
-      const key = Buffer.from(RLP.encode(i))
-      const value = tx.serialize()
-      await txTrie.put(key, value)
-    }
+    await Block.transactionsTrieRoot(transactions, txTrie)
   }
 
   /**
