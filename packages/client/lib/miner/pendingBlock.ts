@@ -163,10 +163,11 @@ export class PendingBlock {
     }
 
     const block = await builder.build()
+    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      } hash=${block.hash().toString('hex')}`
+      }${withdrawalsStr} hash=${block.hash().toString('hex')}`
     )
 
     // Remove from pendingPayloads
