@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667846319739,
+  "lastUpdate": 1668014109244,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "72fa1b0899a7f96b605a65385ef76e33da2b16df",
-          "message": "Add Ethers State manager v2 (#2315)\n\n* first steps\r\n\r\n* add more tests\r\n\r\n* Add accounts and contract cache\r\n\r\n* Add runTx test\r\n\r\n* Remove vm hack\r\n\r\n* Switch accountCache to statemanager.cache\r\n\r\n* reorganize imports\r\n\r\n* Fix handling and tests for contract storage\r\n\r\n* Update accountExists to use getProof\r\n\r\n* Add getStateRoot and tests for read-only case\r\n\r\n* half-done runBlock test\r\n\r\n* Add example runBlock test\r\n\r\n* Add test deps\r\n\r\n* Remove package-lock\r\n\r\n* Add package-lock back\r\n\r\n* Fix bug with yParity in from-RPC\r\n\r\n* Typecast txdata values correctly\r\n\r\n* Remove unused dep and console logs\r\n\r\n* Remove unnecessary checks\r\n\r\n* lint\r\n\r\n* ethersStateManager: add trie callbacks\r\n\r\n* rm package-lock\r\n\r\n* rebase updates\r\n\r\n* More tweaks\r\n\r\n* add createProof\r\n\r\n* Fix runBlock issues and add helper\r\n\r\n* Clean up deps\r\n\r\n* Fix fromRPC tests\r\n\r\n* Fix tests again\r\n\r\n* Add correct blocktag to getCode/getstorage\r\n\r\n* Add storageTrie lookup\r\n\r\n* WIP test stuff\r\n\r\n* Dump contents of storage\r\n\r\n* log of value of slot retrieved from storageTrie\r\n\r\n* Remove storage cache map\r\n\r\n* Fix typo\r\n\r\n* Ethers state manager: implement storage cache (#2264)\r\n\r\n* ethersStateManager: update storage queries\r\n\r\n* Start work on storageTries\r\n\r\n* Remove console logs\r\n\r\n* Fix handling of deleted keys\r\n\r\n* block/fromRPC: fix converting CREATE txs\r\n\r\n* Implement clearContractStorage\r\n\r\n* fix hasStateRoot\r\n\r\n* Fix tests, clean up deps\r\n\r\n* Remove console logs\r\n\r\n* Reorganize logically and add docs\r\n\r\n* Fix comma\r\n\r\n* Incorporate feedback\r\n\r\n* mockProvider first draft\r\n\r\n* Add test data\r\n\r\n* Temporarily remove browser tests so unit tests will pass\r\n\r\n* Rework test data and imports\r\n\r\n* Add more test data and mock provider updates\r\n\r\n* Use mockProvider in all tests\r\n\r\n* Remove outdated test\r\n\r\n* Test fixes and error handling\r\n\r\n* Allow provider URL in constructor opts\r\n\r\n* Partially fix browser tests\r\n\r\n* Remove console log\r\n\r\n* switch require to await import\r\n\r\n* Skip API tests in browser\r\n\r\n* readme updates\r\n\r\n* Add new test to replay mainnet tx\r\n\r\n* Set common hf by blockTag\r\n\r\n* Address feedback\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Add additional API tests and putStorage updates\r\n\r\n* Address feedback\r\n\r\n* Update packages/statemanager/src/ethersStateManager.ts\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\n\r\n* Adjust provider instantiation logic\r\n\r\n* Remove erroneous console logs\r\n\r\n* Fix storage slot bug\r\n\r\n* Add error message for trie node delete branch node error\r\n\r\n* statemanager: remove cache [wip]\r\n\r\n* statemanager: store storage trie with consistent key\r\n\r\n* Use correct state root in verifyProof\r\n\r\n* Revise error message on missing node in trie.del\r\n\r\n* Add test for deleting slot happy path\r\n\r\n* lint\r\n\r\n* Update packages/block/src/from-rpc.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* lint\r\n\r\n* Update package lock\r\n\r\n* Updated readme\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Address feedback\r\n\r\n* Switch from trie to cache + maps\r\n\r\n* Remove errant commit\r\n\r\n* More fixes\r\n\r\n* Add state root methods back\r\n\r\n* ethersStateManager: fix storage get\r\n\r\n* Remove unnecessary code\r\n\r\n* Reset runBlock test\r\n\r\n* remove package-lock.json\r\n\r\n* Fix package-lock\r\n\r\n* Address comments\r\n\r\n* Update comments/readme\r\n\r\n* Remove dynamic blocktag option; stateRoot methods\r\n\r\n* Update tests/testdata/docs\r\n\r\n* Fix lint\r\n\r\n* move getBlockfromProvider to block, update deps\r\n\r\n* Clean up imports\r\n\r\n* Add test for getBlockFromProvider\r\n\r\n* add txFromRpc method in transaction\r\n\r\n* block: Move rpc methods to static constructor\r\n\r\n* Move txFromRpc to TxFactory static constructor\r\n\r\n* Fix import/exports\r\n\r\n* Update test to use new static constructors\r\n\r\n* Fix logic bug\r\n\r\n* Revert test hacks\r\n\r\n* readme updates\r\n\r\n* Cleanup\r\n\r\n* Fix typing/wording\r\n\r\n* Add `earliest` back as blocktag option\r\n\r\n* Add tests to verify cached values dont call provider\r\n\r\n* fix block test\r\n\r\n* Add tests for normalizeTxParams\r\n\r\n* Fix readme\r\n\r\n* Move new test stuff to test/\r\n\r\n* Readme clarifications\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: g11tech <gajinder@g11.in>",
-          "timestamp": "2022-10-11T23:05:03+02:00",
-          "tree_id": "83e53777b5db29805fe299bea819c10218d71522",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/72fa1b0899a7f96b605a65385ef76e33da2b16df"
-        },
-        "date": 1665522497623,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10115,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10067,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 10260,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9525,
-            "range": "±6.94%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10323,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.35%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6d23fd07290fb3217e3371b0c42425647e28e89c",
+          "message": "Add txpool_content rpc method for pending txs fetch (#2410)\n\n* Add txpool_content rpc method for pending txs fetch\r\n\r\n* Fix rpc export\r\n\r\n* Add tests for `txpool_content`\r\n\r\n* address feedback\r\n\r\n* Include vm by default in rpc tests\r\n\r\n* Missed commits from shandong\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-11-09T12:05:56-05:00",
+          "tree_id": "cd05f026435ca6444d7bc17bf0d52d515be443d1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6d23fd07290fb3217e3371b0c42425647e28e89c"
+        },
+        "date": 1668014108578,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19146,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18415,
+            "range": "±4.90%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19435,
+            "range": "±1.22%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18814,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18368,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
