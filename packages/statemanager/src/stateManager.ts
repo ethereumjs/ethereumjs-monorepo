@@ -63,6 +63,15 @@ export interface DefaultStateManagerOpts {
   prefixCodeHashes?: boolean
 }
 
+export const idToHash = function (accountId: AccountId): Buffer {
+  if (Buffer.isBuffer(accountId)) {
+    // treat as already hashed
+    return accountId
+  }
+  // hash and return
+  return keccak256(accountId.buf) as Buffer
+}
+
 /**
  * Default StateManager implementation for the VM.
  *
