@@ -95,7 +95,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     super(opts)
 
     // TODO initialize as plain trie
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: false })
     this._storageTries = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
