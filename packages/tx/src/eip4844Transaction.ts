@@ -1,5 +1,6 @@
 import { toHexString } from '@chainsafe/ssz'
 import { Address, MAX_INTEGER, bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
 import { BLOB_COMMITMENT_VERSION_KZG, BlobTransactionType, MAX_BLOBS_PER_TX } from './types'
@@ -161,8 +162,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   getMessageToSign(_hashMessage?: unknown): Buffer | Buffer[] {
     throw new Error('Method not implemented.')
   }
+
   hash(): Buffer {
-    throw new Error('Method not implemented.')
+    return Buffer.from(keccak256(this.serialize()))
   }
   getMessageToVerifySignature(): Buffer {
     throw new Error('Method not implemented.')
