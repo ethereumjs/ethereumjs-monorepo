@@ -1017,7 +1017,8 @@ export class Eth {
       }
 
       if (txCount > 0) {
-        gasPrice = gasPrice / txCount > minGasPrice ? gasPrice / txCount : minGasPrice
+        const avgGasPrice = gasPrice / txCount
+        gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
       } else {
         gasPrice = minGasPrice
       }
