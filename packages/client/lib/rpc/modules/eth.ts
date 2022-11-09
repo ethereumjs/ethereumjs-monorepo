@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { jsonRpcTx } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -24,12 +25,7 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type {
-  FeeMarketEIP1559Transaction,
-  JsonRpcTx,
-  Transaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -75,34 +71,6 @@ type JsonRpcLog = {
   topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
   // (In solidity: The first topic is the hash of the signature of the event
   // (e.g. Deposit(address,bytes32,uint256)), except you declared the event with the anonymous specifier.)
-}
-
-/**
- * Returns tx formatted to the standard JSON-RPC fields
- */
-const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
-  const txJSON = tx.toJSON()
-  return {
-    blockHash: block ? bufferToHex(block.hash()) : null,
-    blockNumber: block ? bigIntToHex(block.header.number) : null,
-    from: tx.getSenderAddress().toString(),
-    gas: txJSON.gasLimit!,
-    gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
-    maxFeePerGas: txJSON.maxFeePerGas,
-    maxPriorityFeePerGas: txJSON.maxPriorityFeePerGas,
-    type: intToHex(tx.type),
-    accessList: txJSON.accessList,
-    chainId: txJSON.chainId,
-    hash: bufferToHex(tx.hash()),
-    input: txJSON.data!,
-    nonce: txJSON.nonce!,
-    to: tx.to?.toString() ?? null,
-    transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-    value: txJSON.value!,
-    v: txJSON.v!,
-    r: txJSON.r!,
-    s: txJSON.s!,
-  }
 }
 
 /**
