@@ -7,6 +7,7 @@ import {
   NoneType,
   UintBigintType,
   UnionType,
+  VectorBasicType,
 } from '@chainsafe/ssz'
 
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
@@ -218,6 +219,10 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    * The versioned hashes used to validate the blobs attached to a transaction
    */
   versionedHashes: Buffer[]
+  /**
+   * The maximum fee per data gas paid for the transaction
+   */
+  maxFeePerDataGas: bigint
 }
 
 /**
@@ -319,8 +324,9 @@ export const BLOB_COMMITMENT_VERSION_KZG = 0x01
 export const MAX_CALLDATA_SIZE = 2 ** 24
 export const MAX_ACCESS_LIST_SIZE = 2 ** 24
 export const MAX_VERSIONED_HASHES_LIST_SIZE = 2 ** 24
-export const MAX_BLOBS_PER_TX = 2
-
+export const LIMIT_BLOBS_PER_TX = 2
+export const MAX_TX_WRAP_KZG_COMMITMENTS = 2 ** 24
+export const FIELD_ELEMENTS_PER_BLOB = 4096
 /** EIP4844 types */
 export const AddressType = new ByteVectorType(20) // SSZ encoded address
 
@@ -336,6 +342,7 @@ export const BlobTransactionType = new ContainerType({
   nonce: new UintBigintType(32),
   priorityFeePerGas: new UintBigintType(32),
   maxFeePerGas: new UintBigintType(32),
+  maxFeePerDataGas: new UintBigintType(32),
   gas: new UintBigintType(8),
   to: new UnionType([new NoneType(), AddressType]),
   value: new UintBigintType(32),
@@ -355,4 +362,22 @@ export const ECDSASignatureType = new ContainerType({
 export const SignedBlobTransactionType = new ContainerType({
   message: BlobTransactionType,
   signature: ECDSASignatureType,
+})
+
+// SSZ encoded KZG Commitment/Proof (48 bytes)
+export const KZGCommitmentType = new ByteVectorType(48)
+export const KZGProofType = KZGCommitmentType
+
+// SSZ encoded BLS Field Element (uint256)
+export const BLSFieldElementType = new UintBigintType(32)
+
+// SSZ encoded blob network transaction wrapper
+export const BlobNetworkTransactionWrapper = new ContainerType({
+  tx: SignedBlobTransactionType,
+  blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
+  blobs: new ListCompositeType(
+    new VectorBasicType(BLSFieldElementType, FIELD_ELEMENTS_PER_BLOB),
+    LIMIT_BLOBS_PER_TX
+  ),
+  kzgAggregatedProof: KZGProofType,
 })

@@ -7,6 +7,7 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
     type: 0x05,
     versionedHashes: [Buffer.concat([Buffer.from([1]), randomBytes(31)])],
+    maxFeePerDataGas: 1n,
   }
   const tx = BlobEIP4844Transaction.fromTxData(txData)
   t.equal(tx.type, 5, 'successfully instantiated a blob transaction from txData')
@@ -23,6 +24,7 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
 tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   const baseTxData = {
     type: 0x05,
+    maxFeePerDataGas: 1n,
   }
   const shortVersionHash = {
     versionedHashes: [Buffer.concat([Buffer.from([3]), randomBytes(3)])],
