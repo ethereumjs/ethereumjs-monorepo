@@ -131,7 +131,7 @@ tape('EIP1559 tests', function (t) {
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+            '897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718',
             'hex'
           ),
         },
@@ -157,7 +157,7 @@ tape('EIP1559 tests', function (t) {
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            'cb1accdf466a644291e7b5f0374a3d490d7c5545f9a346f8652f65b3960e720e',
+            '3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436',
             'hex'
           ),
         },

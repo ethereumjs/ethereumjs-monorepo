@@ -76,7 +76,7 @@ tape('EIP4895 tests', (t) => {
         header: {
           baseFeePerGas: BigInt(7),
           withdrawalsRoot: Buffer.from(
-            'c6595e35232ab8ccf2d9af2a1223446c2e60a01667f348ee156608c8dab7795d',
+            '267414525d22e2be123b619719b92c561f31e0cdd40959148230f5713aecd6b8',
             'hex'
           ),
           transactionsTrie: Buffer.from(
