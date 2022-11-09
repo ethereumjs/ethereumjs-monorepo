@@ -1,9 +1,16 @@
 import { toHexString } from '@chainsafe/ssz'
-import { Address, MAX_INTEGER, bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import {
+  Address,
+  MAX_INTEGER,
+  bigIntToUnpaddedBuffer,
+  bufferToBigInt,
+  ecrecover,
+  toBuffer,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { BLOB_COMMITMENT_VERSION_KZG, BlobTransactionType, MAX_BLOBS_PER_TX } from './types'
+import { BLOB_COMMITMENT_VERSION_KZG, BlobTransactionType, LIMIT_BLOBS_PER_TX } from './types'
 import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
@@ -26,6 +33,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public readonly AccessListJSON: AccessList
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
+  public readonly maxFeePerDataGas: bigint
 
   public readonly common: Common
   private versionedHashes: Buffer[]
@@ -73,6 +81,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
+    this.maxFeePerDataGas = txData.maxFeePerDataGas
+
     this._validateYParity()
     this._validateHighS()
 
@@ -90,8 +100,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         throw new Error(msg)
       }
     }
-    if (txData.versionedHashes.length > MAX_BLOBS_PER_TX) {
-      const msg = this._errorMsg(`tx can contain at most ${MAX_BLOBS_PER_TX} blobs`)
+    if (txData.versionedHashes.length > LIMIT_BLOBS_PER_TX) {
+      const msg = this._errorMsg(`tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
       throw new Error(msg)
     }
 
@@ -153,6 +163,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         return { address: listItem[0], storageKeys: listItem[1] }
       }),
       blobVersionedHash: this.versionedHashes,
+      maxFeePerDataGas: this.maxFeePerDataGas,
     })
     return Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])
   }
@@ -169,9 +180,34 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   getMessageToVerifySignature(): Buffer {
     throw new Error('Method not implemented.')
   }
-  getSenderPublicKey(): Buffer {
-    throw new Error('Method not implemented.')
+
+  /**
+   * Returns the public key of the sender
+   */
+  public getSenderPublicKey(): Buffer {
+    if (!this.isSigned()) {
+      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
+      throw new Error(msg)
+    }
+
+    const msgHash = this.hash()
+    const { v, r, s } = this
+
+    this._validateHighS()
+
+    try {
+      return ecrecover(
+        msgHash,
+        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!)
+      )
+    } catch (e: any) {
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
+    }
   }
+
   toJSON(): JsonTx {
     throw new Error('Method not implemented.')
   }
