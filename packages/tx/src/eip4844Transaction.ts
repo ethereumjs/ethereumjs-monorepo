@@ -12,7 +12,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { BaseTransaction } from './baseTransaction'
 import {
   BLOB_COMMITMENT_VERSION_KZG,
-  BlobTransactionType,
+  BlobNetworkTransactionWrapper,
   LIMIT_BLOBS_PER_TX,
   SignedBlobTransactionType,
 } from './types'
@@ -122,8 +122,18 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return new BlobEIP4844Transaction(txData, opts)
   }
 
-  public static fromSerializedTx(serialized: Buffer, opts?: TxOptions): BlobEIP4844Transaction {
-    const decodedTx = BlobTransactionType.deserialize(serialized.slice(1))
+  /**
+   *
+   * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
+   * @param opts any TxOptions defined
+   * @returns a BlobEIP48488Transaction
+   */
+  public static fromSerializedBlobTxNetworkWrapper(
+    serialized: Buffer,
+    opts?: TxOptions
+  ): BlobEIP4844Transaction {
+    const wrapper = BlobNetworkTransactionWrapper.deserialize(serialized.slice(1))
+    const decodedTx = wrapper.tx.message
     const versionedHashes = decodedTx.blobVersionedHash.map((el) => Buffer.from(el))
     const accessList: AccessListBuffer = []
     for (const listItem of decodedTx.accessList) {
