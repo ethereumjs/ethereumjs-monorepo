@@ -65,6 +65,13 @@ export class BlockBuilder {
   }
 
   /**
+   * Calculates and returns the transactionsTrie for the block.
+   */
+  public async transactionsTrie() {
+    return Block.transactionsTrieRoot(this.transactions)
+  }
+
+  /**
    * Calculates and returns the logs bloom for the block.
    */
   public logsBloom() {
@@ -188,7 +195,7 @@ export class BlockBuilder {
     await this.processWithdrawals()
 
     const stateRoot = await this.vm.stateManager.getStateRoot()
-    const transactionsTrie = await Block.transactionsTrieRoot(this.transactions)
+    const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
       ? await Block.withdrawalsTrieRoot(this.withdrawals)
       : undefined
