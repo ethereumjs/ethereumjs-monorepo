@@ -10,7 +10,12 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { BLOB_COMMITMENT_VERSION_KZG, BlobTransactionType, LIMIT_BLOBS_PER_TX } from './types'
+import {
+  BLOB_COMMITMENT_VERSION_KZG,
+  BlobTransactionType,
+  LIMIT_BLOBS_PER_TX,
+  SignedBlobTransactionType,
+} from './types'
 import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
@@ -145,25 +150,37 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     throw new Error('Method not implemented.')
   }
 
+  /**
+   * Serialize a blob transaction to the execution payload variant
+   * @returns the minimum (execution payload) serialization of a transaction
+   */
   serialize(): Buffer {
     const to = {
       selector: this.to !== undefined ? 1 : 0,
       value: this.to?.toBuffer() ?? null,
     }
-    const sszEncodedTx = BlobTransactionType.serialize({
-      chainId: this.common.chainId(),
-      nonce: this.nonce,
-      priorityFeePerGas: this.maxPriorityFeePerGas,
-      maxFeePerGas: this.maxFeePerGas,
-      gas: this.gasLimit,
-      to,
-      value: this.value,
-      data: this.data,
-      accessList: this.accessList.map((listItem) => {
-        return { address: listItem[0], storageKeys: listItem[1] }
-      }),
-      blobVersionedHash: this.versionedHashes,
-      maxFeePerDataGas: this.maxFeePerDataGas,
+    const sszEncodedTx = SignedBlobTransactionType.serialize({
+      message: {
+        chainId: this.common.chainId(),
+        nonce: this.nonce,
+        priorityFeePerGas: this.maxPriorityFeePerGas,
+        maxFeePerGas: this.maxFeePerGas,
+        gas: this.gasLimit,
+        to,
+        value: this.value,
+        data: this.data,
+        accessList: this.accessList.map((listItem) => {
+          return { address: listItem[0], storageKeys: listItem[1] }
+        }),
+        blobVersionedHash: this.versionedHashes,
+        maxFeePerDataGas: this.maxFeePerDataGas,
+      },
+      // TODO: Decide how to serialize an unsigned transaction
+      signature: {
+        r: this.r ?? BigInt(0),
+        s: this.s ?? BigInt(0),
+        yParity: this.v === BigInt(1) ? true : false,
+      },
     })
     return Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])
   }
