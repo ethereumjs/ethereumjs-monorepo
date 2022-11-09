@@ -220,9 +220,15 @@ export const validators = {
         }
 
         // validate hex
-        for (const field of [tx.gas, tx.gasPrice, tx.value, tx.data]) {
-          const v = validate(field, this.hex)
-          if (v !== undefined) return v
+        const hexFields = { gas: tx.gas, gasPrice: tx.gasPrice, value: tx.value, data: tx.data }
+        for (const field of Object.entries(hexFields)) {
+          const v = validate(field[1], this.hex)
+          if (v !== undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${field[0]}:${v.message.split(':')[1]}`,
+            }
+          }
         }
       }
     }
