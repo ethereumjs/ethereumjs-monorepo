@@ -32,6 +32,25 @@ import type { Common } from '@ethereumjs/common'
 const TRANSACTION_TYPE = 0x05
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
+const validateBlobTransactionNetworkWrapper = (
+  versionedHashes: Uint8Array[],
+  blobs: bigint[][],
+  commitments: Uint8Array[],
+  _kzgProof: Uint8Array
+) => {
+  if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
+    throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
+  }
+
+  /**
+   * TODO: Integrate KZG library (c-kzg with nodejs bindings) and do following validations
+   * 1. Compute aggregated polynomial and commitment
+   * 2. Generate challenge 'x' and evaluate polynomial at x to get y
+   * 3. Verify kzg proof from network wrapper using aggregated polynomial/commitment, x, y
+   * 4. Verify that versioned hashes match each commitment
+   */
+}
+
 export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
@@ -123,18 +142,25 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   }
 
   /**
-   *
+   * Creates a transaction from the network encoding of a blob transaction (with blobs/commitments/proof)
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
-   * @returns a BlobEIP48488Transaction
+   * @returns a BlobEIP4844Transaction
    */
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Buffer,
     opts?: TxOptions
   ): BlobEIP4844Transaction {
+    // Validate network wrapper
     const wrapper = BlobNetworkTransactionWrapper.deserialize(serialized.slice(1))
     const decodedTx = wrapper.tx.message
-    const versionedHashes = decodedTx.blobVersionedHash.map((el) => Buffer.from(el))
+    validateBlobTransactionNetworkWrapper(
+      decodedTx.blobVersionedHashes,
+      wrapper.blobs,
+      wrapper.blobKzgs,
+      wrapper.kzgAggregatedProof
+    )
+
     const accessList: AccessListBuffer = []
     for (const listItem of decodedTx.accessList) {
       const address = Buffer.from(listItem.address)
@@ -145,10 +171,54 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     const to =
       decodedTx.to.value === null ? undefined : Address.fromString(toHexString(decodedTx.to.value))
+    const versionedHashes = decodedTx.blobVersionedHashes.map((el) => Buffer.from(el))
+    const commitments = wrapper.blobKzgs.map((el) => Buffer.from(el))
     const txData = {
       ...decodedTx,
-      ...{ versionedHashes, accessList, to },
+      ...{
+        versionedHashes,
+        accessList,
+        to,
+        blobs: wrapper.blobs,
+        kzgCommitments: commitments,
+        kzgProof: Buffer.from(wrapper.kzgAggregatedProof),
+        r: wrapper.tx.signature.r,
+        s: wrapper.tx.signature.s,
+        v: BigInt(wrapper.tx.signature.yParity),
+      },
+    } as BlobEIP4844TxData
+    return new BlobEIP4844Transaction(txData, opts)
+  }
+
+  /**
+   * Creates a transaction from the "minimal" encoding of a blob transaction (without blobs/commitments/kzg proof)
+   * @param serialized a buffer representing a serialized signed blob transaction
+   * @param opts any TxOptions defined
+   * @returns a BlobEIP4844Transaction
+   */
+  public static fromSerializedTx(serialized: Buffer, opts?: TxOptions) {
+    const decoded = SignedBlobTransactionType.deserialize(serialized.slice(1))
+    const tx = decoded.message
+    const accessList: AccessListBuffer = []
+    for (const listItem of tx.accessList) {
+      const address = Buffer.from(listItem.address)
+      const storageKeys = listItem.storageKeys.map((key) => Buffer.from(key))
+      const accessListItem: AccessListBufferItem = [address, storageKeys]
+      accessList.push(accessListItem)
     }
+    const to = tx.to.value === null ? undefined : Address.fromString(toHexString(tx.to.value))
+    const versionedHashes = tx.blobVersionedHashes.map((el) => Buffer.from(el))
+    const txData = {
+      ...tx,
+      ...{
+        versionedHashes,
+        to,
+        accessList,
+        r: decoded.signature.r,
+        s: decoded.signature.s,
+        v: BigInt(decoded.signature.yParity),
+      },
+    } as BlobEIP4844TxData
     return new BlobEIP4844Transaction(txData, opts)
   }
 
@@ -162,7 +232,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
   /**
    * Serialize a blob transaction to the execution payload variant
-   * @returns the minimum (execution payload) serialization of a transaction
+   * @returns the minimum (execution payload) serialization of a signed transaction
    */
   serialize(): Buffer {
     const to = {
@@ -182,7 +252,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         accessList: this.accessList.map((listItem) => {
           return { address: listItem[0], storageKeys: listItem[1] }
         }),
-        blobVersionedHash: this.versionedHashes,
+        blobVersionedHashes: this.versionedHashes,
         maxFeePerDataGas: this.maxFeePerDataGas,
       },
       // TODO: Decide how to serialize an unsigned transaction

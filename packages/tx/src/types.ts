@@ -212,7 +212,7 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 }
 
 /**
- * {@link BlobEip4844Transaction} data.
+ * {@link BlobEIP4844Transaction} data.
  */
 export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
@@ -223,6 +223,18 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    * The maximum fee per data gas paid for the transaction
    */
   maxFeePerDataGas: bigint
+  /**
+   * The blobs associated with a transaction
+   */
+  blobs?: bigint[][]
+  /**
+   * The KZG commitments corresponding to the versioned hashes for each blob
+   */
+  kzgCommitments?: Buffer[]
+  /**
+   * The aggregate KZG proof associated with the transaction
+   */
+  kzgProof?: Buffer
 }
 
 /**
@@ -348,7 +360,10 @@ export const BlobTransactionType = new ContainerType({
   value: new UintBigintType(32),
   data: new ByteListType(MAX_CALLDATA_SIZE),
   accessList: new ListCompositeType(AccesTupleType, MAX_ACCESS_LIST_SIZE),
-  blobVersionedHash: new ListCompositeType(new ByteVectorType(32), MAX_VERSIONED_HASHES_LIST_SIZE),
+  blobVersionedHashes: new ListCompositeType(
+    new ByteVectorType(32),
+    MAX_VERSIONED_HASHES_LIST_SIZE
+  ),
 })
 
 // SSZ encoded ECDSA Signature
