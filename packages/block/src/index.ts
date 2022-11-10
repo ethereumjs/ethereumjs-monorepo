@@ -1,4 +1,4 @@
 export { Block } from './block'
 export { BlockHeader } from './header'
-export { getDifficulty, valuesArrayToHeaderData } from './helpers'
+export { calcExcessDataGas, getDifficulty, valuesArrayToHeaderData } from './helpers'
 export * from './types'

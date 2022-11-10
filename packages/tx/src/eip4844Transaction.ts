@@ -60,7 +60,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public readonly maxFeePerDataGas: bigint
 
   public readonly common: Common
-  private versionedHashes: Buffer[]
+  public versionedHashes: Buffer[]
 
   constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
@@ -72,7 +72,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     if (this.common.isActivatedEIP(1559) === false) {
       throw new Error('EIP-1559 not enabled on Common')
     }
-    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
+    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 4844])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])

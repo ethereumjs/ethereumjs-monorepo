@@ -96,6 +96,7 @@ export interface HeaderData {
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BufferLike
+  excessDataGas?: BigIntLike
 }
 
 export type Withdrawal = {

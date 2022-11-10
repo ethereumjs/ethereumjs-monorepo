@@ -6,8 +6,34 @@
   "status": "Draft",
   "minimumHardfork": "merge",
   "requiredEIPs": [1559, 2718, 2930],
-  "gasConfig": {},
-  "gasPrices": {},
+  "gasConfig": {
+    "dataGasPerBlob": {
+      "v": 131072,
+      "d": "The base fee for data gas per blob"
+    },
+    "targetDataGasPerBlock": {
+      "v": 1048576,
+      "d": "The target data gas consumed per block"
+    },
+    "maxDataGasPerBlock": {
+      "v": 2097152,
+      "d": "The max data gas allowable per block"
+    },
+    "dataGasPriceUpdateFraction": {
+      "v": 8902606,
+      "d": "The denominator used in the exponential when calculating a data gas price"
+    }
+  },
+  "gasPrices": {
+    "simpleGasPerBlob": {
+      "v": 12000,
+      "d": "The basic gas fee for each blob"
+    },
+    "minDataGasPrice": {
+      "v": 1,
+      "d": "The minimum fee per data gas"
+    }
+  },
   "vm": {},
   "pow": {}
 }

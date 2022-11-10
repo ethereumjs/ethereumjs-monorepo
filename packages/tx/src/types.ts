@@ -45,6 +45,12 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
+
+  /**
+   * Tx supports data blobs as defined in EIP-4844
+   * See: [4844](https://eips.ethereum.org/EIPS/eip-4844#gas-price-of-blobs-simplified-version) Blob Transactions EIP
+   */
+  EIP4844BlobTransaction = 4844,
 }
 
 /**

@@ -52,6 +52,7 @@ export class BlockHeader {
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Buffer
+  public readonly excessDataGas?: bigint
 
   public readonly _common: Common
 
@@ -180,6 +181,7 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
+    const excessDataGas = toType(headerData.excessDataGas, TypeOutput.BigInt)
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -211,6 +213,14 @@ export class BlockHeader {
         throw new Error(
           'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
         )
+      }
+    }
+
+    if (this._common.isActivatedEIP(4844)) {
+      this.excessDataGas = excessDataGas
+    } else {
+      if (excessDataGas !== undefined) {
+        throw new Error('excess data gas can only be provided with EIP4844 activated')
       }
     }
 

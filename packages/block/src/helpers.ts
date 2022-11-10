@@ -1,6 +1,8 @@
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
+import type { BlockHeader } from './header'
 import type { BlockHeaderBuffer, HeaderData } from './types'
+import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -38,9 +40,10 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
+    excessDataGas,
   ] = values
 
-  if (values.length > 17) {
+  if (values.length > 18) {
     throw new Error('invalid header. More values than expected were received')
   }
   if (values.length < 15) {
@@ -65,6 +68,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
+    excessDataGas,
   }
 }
 
@@ -74,4 +78,63 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
     return toType(difficulty, TypeOutput.BigInt)
   }
   return null
+}
+
+/**
+ *
+ * @param parent header for the parent block
+ * @param newBlobs number of blobs contained in block
+ * @returns the excess data gas for the prospective next block
+ */
+export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
+  if (!parent._common.isActivatedEIP(4844)) {
+    throw new Error('excessDataGas can only be computed if EIP 4844 is activated')
+  }
+  if (parent.excessDataGas === undefined) {
+    throw new Error('parent header does not contain excessDataGas field')
+  }
+
+  const consumedDataGas = BigInt(newBlobs) * parent._common.param('gasConfig', 'dataGasPerBlob')
+  const targetDataGasPerBlock = parent._common.param('gasConfig', 'targetDataGasPerBlock')
+  if (parent.excessDataGas + consumedDataGas < targetDataGasPerBlock) return 0
+  else {
+    return parent.excessDataGas + consumedDataGas - targetDataGasPerBlock
+  }
+}
+
+// TODO: Decide if these should be here or in Blockchain or somewhere else
+
+/**
+ * Approximates `factor * e ** (numerator / denominator)` using Taylor expansion
+ */
+export const fakeExponential = (factor: bigint, numerator: bigint, denominator: bigint) => {
+  let i = BigInt(1)
+  let output = BigInt(0)
+  let numerator_accum = factor * denominator
+  while (numerator_accum > BigInt(0)) {
+    output += numerator_accum
+    numerator_accum = BigInt(Math.floor(Number((numerator_accum * numerator) / (denominator * i))))
+    i++
+  }
+  return BigInt(Math.floor(Number(output / denominator)))
+}
+
+export const getDataGasPrice = (header: BlockHeader) => {
+  if (header.excessDataGas === undefined) {
+    throw new Error('parent header must have excessDataGas field populated')
+  }
+  return fakeExponential(
+    header._common.param('gasPrices', 'minDataGasPrice'),
+    header.excessDataGas,
+    header._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+  )
+}
+export const calcDataFee = (tx: BlobEIP4844Transaction, parent: BlockHeader) => {
+  if (parent.excessDataGas === undefined) {
+    throw new Error('parent header must have excessDataGas field populated')
+  }
+  const totalDataGas =
+    parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(tx.versionedHashes.length)
+  const dataGasPrice = getDataGasPrice(parent)
+  return totalDataGas * dataGasPrice
 }
