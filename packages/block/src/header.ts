@@ -217,9 +217,12 @@ export class BlockHeader {
     }
 
     if (this._common.isActivatedEIP(4844)) {
+      if (headerData.excessDataGas === undefined) {
+        throw new Error('excessDataGas value must be provided with EIP4844 activated')
+      }
       this.excessDataGas = excessDataGas
     } else {
-      if (excessDataGas !== undefined) {
+      if (headerData.excessDataGas !== undefined) {
         throw new Error('excess data gas can only be provided with EIP4844 activated')
       }
     }
