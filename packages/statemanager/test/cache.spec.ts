@@ -13,7 +13,7 @@ tape('cache initialization', (t) => {
     const trie = new Trie({ useKeyHashing: true })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
-      const rlp = await innerTrie.get(address.buf)
+      const rlp = await innerTrie.get((address as Address).buf)
       return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
@@ -35,7 +35,7 @@ tape('cache put and get account', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
+    const rlp = await innerTrie.get((address as Address).buf)
     return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {
@@ -106,7 +106,7 @@ tape('cache checkpointing', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
+    const rlp = await innerTrie.get((address as Address).buf)
     return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {

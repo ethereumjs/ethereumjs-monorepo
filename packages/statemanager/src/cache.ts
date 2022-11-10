@@ -167,7 +167,7 @@ export class Cache {
    * Marks address as deleted in cache.
    * @param key - Address
    */
-  del(key: Address): void {
+  del(key: AccountId): void {
     this._update(key, new Account(), true, true, true)
   }
 

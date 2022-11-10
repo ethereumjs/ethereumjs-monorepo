@@ -50,7 +50,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.storageCache = new Map()
 
     const getCb: getCb = async (address) => {
-      return this.getAccountFromProvider(address)
+      return this.getAccountFromProvider(address as Address)
     }
     const putCb: putCb = async (_keyBuf, _accountRlp) => {
       return Promise.resolve()

@@ -6,6 +6,16 @@ import type { DefaultStateManagerOpts } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
+import { keccak256 } from 'ethereum-cryptography/keccak'
+const idToHash = function (accountId: AccountId): Buffer {
+  if (Buffer.isBuffer(accountId)) {
+    // treat as already hashed
+    return accountId
+  }
+  // hash and return
+  return keccak256(new Uint8Array(accountId.buf)) as Buffer
+}
+
 /**
  * Abstract BaseStateManager class for the non-storage-backend
  * related functionality parts of a StateManager like keeping
@@ -48,7 +58,7 @@ export abstract class BaseStateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: AccountId): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
+    const account = await this._cache.getOrLoad(idToHash(address))
     return account
   }
 
@@ -65,7 +75,7 @@ export abstract class BaseStateManager {
         } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
       )
     }
-    this._cache.put(address, account)
+    this._cache.put(idToHash(address), account)
   }
 
   /**
@@ -92,7 +102,7 @@ export abstract class BaseStateManager {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
-    this._cache.del(address)
+    this._cache.del(idToHash(address))
   }
 
   async accountIsEmpty(address: Address): Promise<boolean> {

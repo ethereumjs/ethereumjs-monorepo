@@ -153,7 +153,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    await this.modifyAccountFields(address, { codeHash })
+    await this.modifyAccountFields(idToHash(address), { codeHash })
   }
 
   /**
@@ -163,7 +163,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: AccountId): Promise<Buffer> {
-    const account = await this.getAccount(address)
+    const account = await this.getAccount(idToHash(address))
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
@@ -182,7 +182,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _lookupStorageTrie(address: AccountId): Promise<Trie> {
     // from state trie
-    const account = await this.getAccount(address)
+    const account = await this.getAccount(idToHash(address))
     const storageTrie = this._trie.copy(false)
     storageTrie.root(account.storageRoot)
     storageTrie.flushCheckpoints()
@@ -196,7 +196,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _getStorageTrie(address: AccountId): Promise<Trie> {
     // from storage cache
-    const addressHex = ((address as any).buf ?? address).toString('hex')
+    const addressHex = idToHash(address).toString('hex')
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined || storageTrie === null) {
       // lookup from state
@@ -241,14 +241,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
-        const addressHex = ((address as any).buf ?? address).toString('hex')
+        const addressHex = idToHash(address).toString('hex')
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        const contract = this._cache.get(address)
+        const contract = this._cache.get(idToHash(address))
         contract.storageRoot = storageTrie.root()
 
-        await this.putAccount(address, contract)
+        await this.putAccount(idToHash(address), contract)
         resolve()
       })
     })
@@ -339,10 +339,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param storageSlots storage slots to get proof of
    */
   async getProof(address: AccountId, storageSlots: Buffer[] = []): Promise<Proof> {
-    const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (
-      await this._trie.createProof((address as any).buf ?? address)
-    ).map((p) => bufferToHex(p))
+    const account = await this.getAccount(idToHash(address))
+    const accountProof: PrefixedHexString[] = (await this._trie.createProof(idToHash(address))).map(
+      (p) => bufferToHex(p)
+    )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
@@ -521,15 +521,17 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address - Address of the `account` to check
    */
   async accountExists(address: AccountId): Promise<boolean> {
-    const account = this._cache.lookup(address)
+    const account = this._cache.lookup(idToHash(address))
+    console.log('dbg0')
+    console.log(account)
     if (
       account &&
       ((account as any).virtual === undefined || (account as any).virtual === false) &&
-      !this._cache.keyIsDeleted(address)
+      !this._cache.keyIsDeleted(idToHash(address))
     ) {
       return true
     }
-    if (await this._trie.get((address as any).buf ?? address)) {
+    if (await this._trie.get(idToHash(address))) {
       return true
     }
     return false
