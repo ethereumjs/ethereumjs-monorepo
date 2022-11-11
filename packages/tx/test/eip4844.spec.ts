@@ -16,7 +16,7 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
 
   const serializedTx = tx.serialize()
   t.equal(serializedTx[0], 5, 'successfully serialized a blob tx')
-  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedTx)
+  const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx)
   t.equal(deserializedTx.type, 5, 'deserialized a blob tx')
   t.end()
 })
