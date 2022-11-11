@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { getDataGasPrice } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
@@ -18,6 +19,7 @@ import type {
 import type { VM } from './vm'
 import type {
   AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
@@ -268,6 +270,46 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
   }
+
+  // EIP-4844 validity checks
+  if (this._common.isActivatedEIP(4844) && tx.supports(Capability.EIP4844BlobTransaction)) {
+    // EIP-4844 spec
+    // the signer must be able to afford the transaction
+    // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
+    const castTx = tx as BlobEIP4844Transaction
+    const totalDataGas =
+      castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.versionedHashes.length)
+    const txCost =
+      castTx.gasLimit * castTx.maxFeePerGas + castTx.value + totalDataGas * castTx.maxFeePerDataGas
+    if (balance < txCost) {
+      if (opts.skipBalance === true) {
+        // if skipBalance, ensure caller balance is enough to run transaction
+        fromAccount.balance = txCost
+        await this.stateManager.putAccount(caller, fromAccount)
+      } else {
+        const msg = _errorMsg(
+          `sender doesn't have enough funds to send tx. The base cost is: ${txCost} and the sender's account (${caller}) only has: ${balance}`,
+          this,
+          block,
+          tx
+        )
+        throw new Error(msg)
+      }
+    }
+    // ensure that the user was willing to at least pay the current data gasprice
+    const headBlock = await this.blockchain.getCanonicalHeadBlock!()
+    const dataGasPrice = getDataGasPrice(headBlock.header)
+    if (castTx.maxFeePerDataGas < dataGasPrice) {
+      const msg = _errorMsg(
+        `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+  }
+
   if (opts.skipNonce !== true) {
     if (nonce !== tx.nonce) {
       const msg = _errorMsg(
@@ -299,6 +341,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<Transaction>tx).gasPrice - baseFee
     }
+  }
+
+  // EIP-4844 tx
+  let versionedHashes
+  if (tx.supports(Capability.EIP4844BlobTransaction)) {
+    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
   }
 
   // Update from account's balance
@@ -335,6 +383,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value,
     data,
+    versionedHashes,
   })) as RunTxResult
 
   // After running the call, increment the nonce
