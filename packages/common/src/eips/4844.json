@@ -32,6 +32,10 @@
     "minDataGasPrice": {
       "v": 1,
       "d": "The minimum fee per data gas"
+    },
+    "kzgPointEvaluationGasPrecompilePrice": {
+      "v": 50000,
+      "d": "The fee associated with the point evaluation precompile"
     }
   },
   "vm": {},
