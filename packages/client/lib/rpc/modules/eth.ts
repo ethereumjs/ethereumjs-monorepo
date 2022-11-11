@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { jsonRpcTx } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -24,12 +25,7 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type {
-  FeeMarketEIP1559Transaction,
-  JsonRpcTx,
-  Transaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -75,34 +71,6 @@ type JsonRpcLog = {
   topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
   // (In solidity: The first topic is the hash of the signature of the event
   // (e.g. Deposit(address,bytes32,uint256)), except you declared the event with the anonymous specifier.)
-}
-
-/**
- * Returns tx formatted to the standard JSON-RPC fields
- */
-const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
-  const txJSON = tx.toJSON()
-  return {
-    blockHash: block ? bufferToHex(block.hash()) : null,
-    blockNumber: block ? bigIntToHex(block.header.number) : null,
-    from: tx.getSenderAddress().toString(),
-    gas: txJSON.gasLimit!,
-    gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
-    maxFeePerGas: txJSON.maxFeePerGas,
-    maxPriorityFeePerGas: txJSON.maxPriorityFeePerGas,
-    type: intToHex(tx.type),
-    accessList: txJSON.accessList,
-    chainId: txJSON.chainId,
-    hash: bufferToHex(tx.hash()),
-    input: txJSON.data!,
-    nonce: txJSON.nonce!,
-    to: tx.to?.toString() ?? null,
-    transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-    value: txJSON.value!,
-    v: txJSON.v!,
-    r: txJSON.r!,
-    s: txJSON.s!,
-  }
 }
 
 /**
@@ -365,6 +333,8 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -1004,5 +974,56 @@ export class Eth {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
     return intToHex(block.transactions.length)
+  }
+
+  /**
+   * Gas price oracle.
+   *
+   * Returns a suggested gas price.
+   * @returns a hex code of an integer representing the suggested gas price in wei.
+   */
+  async gasPrice() {
+    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    let gasPrice = BigInt(0)
+    const latest = await this._chain.getCanonicalHeadHeader()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      const baseFee = latest.calcNextBaseFee()
+      let priorityFee = BigInt(0)
+      const block = await this._chain.getBlock(latest.number)
+      for (const tx of block.transactions) {
+        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        priorityFee += maxPriorityFeePerGas
+      }
+
+      priorityFee =
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+      gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
+    } else {
+      // For chains that don't support EIP-1559 we iterate over the last 20
+      // blocks to get an average gas price.
+      const blockIterations = 20 < latest.number ? 20 : latest.number
+      let txCount = BigInt(0)
+      for (let i = 0; i < blockIterations; i++) {
+        const block = await this._chain.getBlock(latest.number - BigInt(i))
+        if (block.transactions.length === 0) {
+          continue
+        }
+
+        for (const tx of block.transactions) {
+          const txGasPrice = (tx as Transaction).gasPrice
+          gasPrice += txGasPrice
+          txCount++
+        }
+      }
+
+      if (txCount > 0) {
+        const avgGasPrice = gasPrice / txCount
+        gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
+      } else {
+        gasPrice = minGasPrice
+      }
+    }
+
+    return bigIntToHex(gasPrice)
   }
 }
