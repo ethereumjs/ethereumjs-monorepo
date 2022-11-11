@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668167508696,
+  "lastUpdate": 1668188966313,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c16ab9495648b10fafa25643e1ca7fac7e2a7137",
-          "message": "Finish the merge (#2351)",
-          "timestamp": "2022-10-12T15:10:41-04:00",
-          "tree_id": "c03514a53a5015c4e262317d317aaef678f9a390",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c16ab9495648b10fafa25643e1ca7fac7e2a7137"
-        },
-        "date": 1665601998040,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18776,
-            "range": "±3.98%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18756,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18190,
-            "range": "±5.45%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18519,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18077,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 17871,
             "range": "±1.77%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hossam.saraya@gmail.com",
+            "name": "dlock",
+            "username": "daedlock"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ccb47787b813c41697069b1aa025716372d27155",
+          "message": "Change vm.evm.on to vm.evm.events.on (#2417)",
+          "timestamp": "2022-11-11T12:46:53-05:00",
+          "tree_id": "524d8932146f11b97fd017e4b19d498b6fdf78e2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ccb47787b813c41697069b1aa025716372d27155"
+        },
+        "date": 1668188965649,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19433,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18610,
+            "range": "±5.42%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19863,
+            "range": "±1.19%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19120,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17591,
+            "range": "±7.17%",
             "unit": "ops/sec",
             "extra": "80 samples"
           }
