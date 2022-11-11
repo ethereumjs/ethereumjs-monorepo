@@ -143,6 +143,10 @@ export interface EVMRunCallOpts {
    * Optionally pass in an already-built message.
    */
   message?: Message
+  /**
+   * Versioned hashes for each blob in a blob transaction
+   */
+  versionedHashes?: Buffer[]
 }
 
 /**

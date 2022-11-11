@@ -634,6 +634,20 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
+  // 0x49: HASH
+  [
+    0x49,
+    function (runState) {
+      const index = runState.stack.pop()
+      if (
+        runState.env.versionedHashes?.length !== undefined &&
+        runState.env.versionedHashes.length > Number(index)
+      ) {
+        return runState.env.versionedHashes[Number(index)]
+      }
+      return BigInt(0)
+    },
+  ],
   // 0x50 range - 'storage' and execution
   // 0x50: POP
   [

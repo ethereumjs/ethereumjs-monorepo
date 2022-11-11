@@ -639,6 +639,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
+      versionedHashes: message.versionedHashes,
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
@@ -720,6 +721,7 @@ export class EVM implements EVMInterface {
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
         delegatecall: opts.delegatecall,
+        versionedHashes: opts.versionedHashes,
       })
     }
 
