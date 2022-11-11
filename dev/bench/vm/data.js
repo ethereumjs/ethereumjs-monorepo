@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668014109244,
+  "lastUpdate": 1668167508696,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "80117772+rodrigoherrerai@users.noreply.github.com",
-            "name": "Rodrigo Herrera Itie",
-            "username": "rodrigoherrerai"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9b0bedeebdaed824f9421e8425101e28a66de685",
-          "message": "Broken Link (#2350)",
-          "timestamp": "2022-10-12T10:08:08-04:00",
-          "tree_id": "b4fb7ec57ebfbb9c631176da73ece3e974652d55",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9b0bedeebdaed824f9421e8425101e28a66de685"
-        },
-        "date": 1665583849030,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19127,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19069,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18350,
-            "range": "±8.63%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19073,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18330,
-            "range": "±4.65%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.07%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "80117772+rodrigoherrerai@users.noreply.github.com",
+            "name": "Rodrigo Herrera Itie",
+            "username": "rodrigoherrerai"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5a300314a5377146f8115684ce5fbf3950e71164",
+          "message": "Implementation of 'eth_gasPrice' (#2396)\n\n* support for eth_gasPrice\r\n\r\n* improve description\r\n\r\n* Update eth.ts\r\n\r\n* pr changes\r\n\r\n* update gas price main entry point for pr changes\r\n\r\n* removing tx lookup\r\n\r\n* adding minGasPrice config for 1559 chains\r\n\r\n* Update packages/client/lib/rpc/modules/eth.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-11-11T12:49:06+01:00",
+          "tree_id": "318e413a4ce57bcc01f034c209d84d5773b8e5bb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5a300314a5377146f8115684ce5fbf3950e71164"
+        },
+        "date": 1668167508041,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18174,
+            "range": "±4.91%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18556,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17468,
+            "range": "±7.28%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18381,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17871,
+            "range": "±1.77%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
