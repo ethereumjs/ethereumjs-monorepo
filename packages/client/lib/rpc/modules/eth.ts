@@ -333,6 +333,8 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -972,5 +974,56 @@ export class Eth {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
     return intToHex(block.transactions.length)
+  }
+
+  /**
+   * Gas price oracle.
+   *
+   * Returns a suggested gas price.
+   * @returns a hex code of an integer representing the suggested gas price in wei.
+   */
+  async gasPrice() {
+    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    let gasPrice = BigInt(0)
+    const latest = await this._chain.getCanonicalHeadHeader()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      const baseFee = latest.calcNextBaseFee()
+      let priorityFee = BigInt(0)
+      const block = await this._chain.getBlock(latest.number)
+      for (const tx of block.transactions) {
+        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        priorityFee += maxPriorityFeePerGas
+      }
+
+      priorityFee =
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+      gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
+    } else {
+      // For chains that don't support EIP-1559 we iterate over the last 20
+      // blocks to get an average gas price.
+      const blockIterations = 20 < latest.number ? 20 : latest.number
+      let txCount = BigInt(0)
+      for (let i = 0; i < blockIterations; i++) {
+        const block = await this._chain.getBlock(latest.number - BigInt(i))
+        if (block.transactions.length === 0) {
+          continue
+        }
+
+        for (const tx of block.transactions) {
+          const txGasPrice = (tx as Transaction).gasPrice
+          gasPrice += txGasPrice
+          txCount++
+        }
+      }
+
+      if (txCount > 0) {
+        const avgGasPrice = gasPrice / txCount
+        gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
+      } else {
+        gasPrice = minGasPrice
+      }
+    }
+
+    return bigIntToHex(gasPrice)
   }
 }
