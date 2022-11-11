@@ -8,12 +8,14 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
+import { getDataGasPrice } from './utils'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
 import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import type { BigIntLike } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -605,8 +607,25 @@ export class Blockchain implements BlockchainInterface {
     await this.validateHeader(block.header)
     await this._validateUncleHeaders(block)
     await block.validateData(false)
+    await this._validateBlobTransactions(block)
   }
 
+  private async _validateBlobTransactions(block: Block) {
+    for (let tx of block.transactions) {
+      if (tx.supports(4844)) {
+        tx = tx as BlobEIP4844Transaction
+        const parent = await this.getBlock(block.header.parentHash)
+        const dataGasPrice = getDataGasPrice(parent.header)
+        if (tx.maxFeePerDataGas < dataGasPrice) {
+          throw new Error(
+            `blob transaction maxFeePerDataGas ${
+              tx.maxFeePerDataGas
+            } < than block data gas price ${dataGasPrice} - ${block.errorStr()}`
+          )
+        }
+      }
+    }
+  }
   /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
