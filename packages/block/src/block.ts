@@ -267,10 +267,6 @@ export class Block {
 
     this.withdrawals = withdrawals
 
-    if (this._common.isActivatedEIP(4844) && this.header.excessDataGas === undefined) {
-      throw new Error('Need an excessDataGas field if EIP 4844 is active')
-    }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
