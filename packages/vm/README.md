@@ -76,7 +76,7 @@ It is still possible to access all `EVM` functionality through the `evm` propert
 
 ```typescript
 vm.evm.runCode() // or
-vm.evm.on('step', function (data) {
+vm.evm.events.on('step', function (data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 ```
