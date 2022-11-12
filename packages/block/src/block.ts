@@ -39,7 +39,9 @@ export class Block {
   public readonly _common: Common
 
   /**
-   * Returns the withdrawals trie root for the block.
+   * Returns the withdrawals trie root for array of Withdrawal.
+   * @param wts array of Withdrawal to compute the root of
+   * @param optional emptyTrie to use to generate the root
    */
   public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
@@ -50,7 +52,9 @@ export class Block {
   }
 
   /**
-   * Returns the txs trie root for the block.
+   * Returns the txs trie root for array of TypedTransaction
+   * @param txs array of TypedTransaction to compute the root of
+   * @param optional emptyTrie to use to generate the root
    */
   public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
