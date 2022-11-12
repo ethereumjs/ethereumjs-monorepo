@@ -1,7 +1,14 @@
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
-import { BlobEIP4844Transaction, TransactionFactory } from '../src'
+import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper, TransactionFactory } from '../src'
+import {
+  KZG,
+  blobToKzgCommitment,
+  computeAggregateKzgProof,
+  loadTrustedSetup,
+} from '../src/kzg/kzg'
+import { computeVersionedHash } from '../src/util'
 
 tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
@@ -60,5 +67,43 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   } catch (err: any) {
     t.ok(err.message.includes('tx can contain at most'), 'throws on too many versioned hashes')
   }
+  t.end()
+})
+
+tape('Network wrapper tests', (t) => {
+  const setupHandle = loadTrustedSetup('./src/kzg/trusted_setup.txt')
+
+  const blobs = []
+  const commitments = []
+  const versionedHashes = []
+  for (let x = 0; x < 2; x++) {
+    blobs.push(randomBytes(32))
+    //@ts-ignore -- c-kzg typescript definitions are incorrect
+    commitments.push(blobToKzgCommitment(blobs[x], setupHandle))
+    versionedHashes.push(computeVersionedHash(commitments[x]))
+  }
+
+  const buffedHashes = versionedHashes.map((el) => Buffer.from(el))
+  // @ts-ignore -- c-kzg typescript definitions are incorrect
+  const proof = computeAggregateKzgProof(blobs, setupHandle)
+
+  const pkey = randomBytes(32)
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    versionedHashes: buffedHashes,
+    maxFeePerDataGas: 100000000n,
+  })
+  const signedTx = unsignedTx.sign(pkey)
+
+  const serializedNetworkWrapper = BlobNetworkTransactionWrapper.serialize({
+    blobs,
+    blobKzgs: commitments,
+    tx: signedTx.txData(),
+    kzgAggregatedProof: proof,
+  })
+
+  const fullTx = Buffer.concat([Uint8Array.from([0x05]), serializedNetworkWrapper])
+
+  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(fullTx)
+  t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob!')
   t.end()
 })

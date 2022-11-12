@@ -1,4 +1,4 @@
-import { toHexString } from '@chainsafe/ssz'
+import { byteArrayEquals, toHexString } from '@chainsafe/ssz'
 import {
   Address,
   MAX_INTEGER,
@@ -10,13 +10,15 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
+import { freeTrustedSetup, loadTrustedSetup, verifyAggregateKzgProof } from './kzg/kzg'
 import {
   BLOB_COMMITMENT_VERSION_KZG,
   BlobNetworkTransactionWrapper,
+  BlobTransactionType,
   LIMIT_BLOBS_PER_TX,
   SignedBlobTransactionType,
 } from './types'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import { AccessLists, checkMaxInitCodeSize, computeVersionedHash } from './util'
 
 import type {
   AccessList,
@@ -34,21 +36,30 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
 
 const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
-  blobs: bigint[][],
+  blobs: Uint8Array[],
   commitments: Uint8Array[],
-  _kzgProof: Uint8Array
+  kzgProof: Uint8Array
 ) => {
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  /**
-   * TODO: Integrate KZG library (c-kzg with nodejs bindings) and do following validations
-   * 1. Compute aggregated polynomial and commitment
-   * 2. Generate challenge 'x' and evaluate polynomial at x to get y
-   * 3. Verify kzg proof from network wrapper using aggregated polynomial/commitment, x, y
-   * 4. Verify that versioned hashes match each commitment
-   */
+  const setupHandle = loadTrustedSetup('./src/kzg/trusted_setup.txt')
+  //@ts-ignore -- c-kzg typescript definitions are incorrect
+  const verified = verifyAggregateKzgProof(blobs, commitments, kzgProof, setupHandle)
+
+  if (!verified) {
+    throw new Error('KZG proof cannot be verified from blobs/commitments')
+  }
+
+  for (let x = 0; x < versionedHashes.length; x++) {
+    const computedVersionHash = computeVersionedHash(commitments[x])
+    if (!byteArrayEquals(computedVersionHash, versionedHashes[x])) {
+      throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
+    }
+  }
+
+  freeTrustedSetup()
 }
 
 export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
@@ -173,13 +184,14 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       decodedTx.to.value === null ? undefined : Address.fromString(toHexString(decodedTx.to.value))
     const versionedHashes = decodedTx.blobVersionedHashes.map((el) => Buffer.from(el))
     const commitments = wrapper.blobKzgs.map((el) => Buffer.from(el))
+    const blobs = wrapper.blobs.map((el) => Buffer.from(el))
     const txData = {
       ...decodedTx,
       ...{
         versionedHashes,
         accessList,
         to,
-        blobs: wrapper.blobs,
+        blobs,
         kzgCommitments: commitments,
         kzgProof: Buffer.from(wrapper.kzgAggregatedProof),
         r: wrapper.tx.signature.r,
@@ -268,12 +280,32 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   getMessageToSign(hashMessage: false): Buffer | Buffer[]
   getMessageToSign(hashMessage?: true | undefined): Buffer
   getMessageToSign(_hashMessage?: unknown): Buffer | Buffer[] {
-    throw new Error('Method not implemented.')
+    return this.hash()
   }
 
   hash(): Buffer {
-    return Buffer.from(keccak256(this.serialize()))
+    const to = {
+      selector: this.to !== undefined ? 1 : 0,
+      value: this.to?.toBuffer() ?? null,
+    }
+    const sszEncodedTx = BlobTransactionType.serialize({
+      chainId: this.common.chainId(),
+      nonce: this.nonce,
+      priorityFeePerGas: this.maxPriorityFeePerGas,
+      maxFeePerGas: this.maxFeePerGas,
+      gas: this.gasLimit,
+      to,
+      value: this.value,
+      data: this.data,
+      accessList: this.accessList.map((listItem) => {
+        return { address: listItem[0], storageKeys: listItem[1] }
+      }),
+      blobVersionedHashes: this.versionedHashes,
+      maxFeePerDataGas: this.maxFeePerDataGas,
+    })
+    return Buffer.from(keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])))
   }
+
   getMessageToVerifySignature(): Buffer {
     throw new Error('Method not implemented.')
   }
@@ -308,8 +340,28 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   toJSON(): JsonTx {
     throw new Error('Method not implemented.')
   }
-  _processSignature(_v: bigint, _r: Buffer, _s: Buffer): BlobEIP4844Transaction {
-    throw new Error('Method not implemented.')
+  _processSignature(v: bigint, r: Buffer, s: Buffer): BlobEIP4844Transaction {
+    const opts = { ...this.txOptions, common: this.common }
+
+    return BlobEIP4844Transaction.fromTxData(
+      {
+        chainId: this.chainId,
+        nonce: this.nonce,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+        maxFeePerGas: this.maxFeePerGas,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        accessList: this.accessList,
+        v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        r: bufferToBigInt(r),
+        s: bufferToBigInt(s),
+        maxFeePerDataGas: this.maxFeePerDataGas,
+        versionedHashes: this.versionedHashes,
+      },
+      opts
+    )
   }
   /**
    * Return a compact error string representation of the object
@@ -328,5 +380,35 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    */
   protected _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
+  }
+
+  public txData() {
+    const to = {
+      selector: this.to !== undefined ? 1 : 0,
+      value: this.to?.toBuffer() ?? null,
+    }
+    return {
+      message: {
+        chainId: this.common.chainId(),
+        nonce: this.nonce,
+        priorityFeePerGas: this.maxPriorityFeePerGas,
+        maxFeePerGas: this.maxFeePerGas,
+        gas: this.gasLimit,
+        to,
+        value: this.value,
+        data: this.data,
+        accessList: this.accessList.map((listItem) => {
+          return { address: listItem[0], storageKeys: listItem[1] }
+        }),
+        blobVersionedHashes: this.versionedHashes,
+        maxFeePerDataGas: this.maxFeePerDataGas,
+      },
+      // TODO: Decide how to serialize an unsigned transaction
+      signature: {
+        r: this.r ?? BigInt(0),
+        s: this.s ?? BigInt(0),
+        yParity: this.v === BigInt(1) ? true : false,
+      },
+    }
   }
 }

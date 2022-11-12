@@ -7,7 +7,6 @@ import {
   NoneType,
   UintBigintType,
   UnionType,
-  VectorBasicType,
 } from '@chainsafe/ssz'
 
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
@@ -232,7 +231,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The blobs associated with a transaction
    */
-  blobs?: bigint[][]
+  blobs?: Buffer[]
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
@@ -389,16 +388,10 @@ export const SignedBlobTransactionType = new ContainerType({
 export const KZGCommitmentType = new ByteVectorType(48)
 export const KZGProofType = KZGCommitmentType
 
-// SSZ encoded BLS Field Element (uint256)
-export const BLSFieldElementType = new UintBigintType(32)
-
 // SSZ encoded blob network transaction wrapper
 export const BlobNetworkTransactionWrapper = new ContainerType({
   tx: SignedBlobTransactionType,
   blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
-  blobs: new ListCompositeType(
-    new VectorBasicType(BLSFieldElementType, FIELD_ELEMENTS_PER_BLOB),
-    LIMIT_BLOBS_PER_TX
-  ),
+  blobs: new ListCompositeType(new ByteListType(FIELD_ELEMENTS_PER_BLOB), LIMIT_BLOBS_PER_TX),
   kzgAggregatedProof: KZGProofType,
 })
