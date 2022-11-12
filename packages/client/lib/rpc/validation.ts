@@ -235,7 +235,8 @@ export const validators = {
   },
 
   /**
-   * validator to ensure required transaction fields are present, and checks for valid address and hex values.
+   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * for the other quantity based fields
    * @param requiredFields array of required fields
    * @returns validator function with params:
    *   - @param params parameters of method

@@ -325,7 +325,7 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
     // skip touching account if no amount update
-    if (amount === 0n) continue
+    if (amount === BigInt(0)) continue
     await rewardAccount(state, address, amount)
   }
 }

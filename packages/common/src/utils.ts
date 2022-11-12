@@ -69,6 +69,9 @@ function parseGethParams(json: any) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
+              // The recent geth genesis seems to be using blockperiodseconds
+              // and epochlength for clique specification
+              // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
               period: config.clique.period ?? config.clique.blockperiodseconds,
               epoch: config.clique.epoch ?? config.clique.epochlength,
             },
