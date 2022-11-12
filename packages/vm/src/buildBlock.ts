@@ -68,7 +68,7 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return Block.transactionsTrieRoot(this.transactions)
+    return Block.genTransactionsTrieRoot(this.transactions)
   }
 
   /**
@@ -197,7 +197,7 @@ export class BlockBuilder {
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await Block.withdrawalsTrieRoot(this.withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(this.withdrawals)
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()

@@ -251,9 +251,9 @@ const assembleBlock = async (
     }
   }
 
-  const transactionsTrie = await Block.transactionsTrieRoot(txs)
+  const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
   const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
-  const withdrawalsRoot = withdrawals ? await Block.withdrawalsTrieRoot(withdrawals) : undefined
+  const withdrawalsRoot = withdrawals ? await Block.genWithdrawalsTrieRoot(withdrawals) : undefined
   const header: HeaderData = {
     ...payload,
     number,

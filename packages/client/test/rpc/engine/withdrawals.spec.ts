@@ -102,7 +102,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   tape(name, async (t) => {
     // check withdrawals root computation
     const computedWithdrawalsRoot = (
-      await Block.withdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
+      await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
     ).toString('hex')
     t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
     const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })

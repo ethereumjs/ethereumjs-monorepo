@@ -39,9 +39,9 @@ export class Block {
   public readonly _common: Common
 
   /**
-   * Returns the txs trie root for the block.
+   * Returns the withdrawals trie root for the block.
    */
-  public static async withdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
     for (const [i, wt] of wts.entries()) {
       await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
@@ -52,7 +52,7 @@ export class Block {
   /**
    * Returns the txs trie root for the block.
    */
-  public static async transactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
     for (const [i, tx] of txs.entries()) {
       await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
@@ -331,7 +331,7 @@ export class Block {
    */
   async genTxTrie(): Promise<void> {
     const { transactions, txTrie } = this
-    await Block.transactionsTrieRoot(transactions, txTrie)
+    await Block.genTransactionsTrieRoot(transactions, txTrie)
   }
 
   /**
@@ -439,7 +439,7 @@ export class Block {
     if (!this._common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.withdrawalsTrieRoot(this.withdrawals!)
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
     return withdrawalsRoot.equals(this.header.withdrawalsRoot!)
   }
 
