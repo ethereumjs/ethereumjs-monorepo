@@ -1,5 +1,3 @@
-import { writeFileSync } from 'fs'
-
 import { version as packageVersion } from '../package.json'
 
 import { Chain } from './blockchain'
@@ -112,14 +110,6 @@ export class EthereumClient {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
-      const networkDir = this.config.getNetworkDirectory()
-      // Write the transport into a file
-      try {
-        writeFileSync(`${networkDir}/${details.transport}`, details.url)
-      } catch (e) {
-        // Incase dir is not really setup, mostly to take care of mockserver in test
-        this.config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
-      }
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`
       )
