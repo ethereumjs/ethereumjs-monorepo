@@ -756,7 +756,6 @@ export class TxPool {
   }
 
   _logPoolStats() {
-    console.log('lets starts the stats!!!')
     let broadcasts = 0
     let broadcasterrors = 0
     let knownpeers = 0
