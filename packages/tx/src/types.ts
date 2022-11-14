@@ -8,6 +8,7 @@ import {
   UintBigintType,
   UnionType,
 } from '@chainsafe/ssz'
+import { BYTES_PER_FIELD_ELEMENT } from 'c-kzg'
 
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -392,6 +393,9 @@ export const KZGProofType = KZGCommitmentType
 export const BlobNetworkTransactionWrapper = new ContainerType({
   tx: SignedBlobTransactionType,
   blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
-  blobs: new ListCompositeType(new ByteListType(FIELD_ELEMENTS_PER_BLOB), LIMIT_BLOBS_PER_TX),
+  blobs: new ListCompositeType(
+    new ByteListType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
+    LIMIT_BLOBS_PER_TX
+  ),
   kzgAggregatedProof: KZGProofType,
 })

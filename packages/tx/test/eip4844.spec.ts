@@ -10,6 +10,8 @@ import * as tape from 'tape'
 import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper, TransactionFactory } from '../src'
 import { computeVersionedHash } from '../src/util'
 
+import { get_blobs } from './utils/blobHelpers'
+
 tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
     type: 0x05,
@@ -71,13 +73,13 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
 })
 
 tape('Network wrapper tests', (t) => {
+  // Initialize KZG environment (i.e. trusted setup)
   loadTrustedSetup('./src/kzg/trusted_setup.txt')
 
-  const blobs = []
   const commitments = []
   const versionedHashes = []
-  for (let x = 0; x < 2; x++) {
-    blobs.push(randomBytes(32))
+  const blobs = get_blobs('hello world')
+  for (let x = 0; x < blobs.length; x++) {
     commitments.push(blobToKzgCommitment(blobs[x]))
     versionedHashes.push(computeVersionedHash(commitments[x]))
   }
@@ -101,8 +103,9 @@ tape('Network wrapper tests', (t) => {
 
   const fullTx = Buffer.concat([Uint8Array.from([0x05]), serializedNetworkWrapper])
   freeTrustedSetup()
+  // Cleanup KZG environment (i.e. remove trusted setup)
 
   const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(fullTx)
-  t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob!')
+  t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction')
   t.end()
 })
