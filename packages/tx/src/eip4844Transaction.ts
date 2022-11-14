@@ -7,10 +7,10 @@ import {
   ecrecover,
   toBuffer,
 } from '@ethereumjs/util'
+import { freeTrustedSetup, loadTrustedSetup, verifyAggregateKzgProof } from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { freeTrustedSetup, loadTrustedSetup, verifyAggregateKzgProof } from './kzg/kzg'
 import {
   BLOB_COMMITMENT_VERSION_KZG,
   BlobNetworkTransactionWrapper,
@@ -44,9 +44,8 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  const setupHandle = loadTrustedSetup('./src/kzg/trusted_setup.txt')
-  //@ts-ignore -- c-kzg typescript definitions are incorrect
-  const verified = verifyAggregateKzgProof(blobs, commitments, kzgProof, setupHandle)
+  loadTrustedSetup('./src/kzg/trusted_setup.txt')
+  const verified = verifyAggregateKzgProof(blobs, commitments, kzgProof)
 
   if (!verified) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
