@@ -4,6 +4,7 @@ import {
   MAX_INTEGER,
   bigIntToUnpaddedBuffer,
   bufferToBigInt,
+  computeVersionedHash,
   ecrecover,
   toBuffer,
 } from '@ethereumjs/util'
@@ -18,7 +19,7 @@ import {
   LIMIT_BLOBS_PER_TX,
   SignedBlobTransactionType,
 } from './types'
-import { AccessLists, checkMaxInitCodeSize, computeVersionedHash } from './util'
+import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
   AccessList,

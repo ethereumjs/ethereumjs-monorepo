@@ -1,7 +1,6 @@
 import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256'
 
-import { BLOB_COMMITMENT_VERSION_KZG, isAccessList } from './types'
+import { isAccessList } from './types'
 
 import type { AccessList, AccessListBuffer, AccessListItem } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -115,11 +114,4 @@ export class AccessLists {
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
   }
-}
-
-export const computeVersionedHash = (commitment: Uint8Array) => {
-  const computedVersionedHash = new Uint8Array(32)
-  computedVersionedHash.set([BLOB_COMMITMENT_VERSION_KZG], 0)
-  computedVersionedHash.set(sha256(commitment).slice(1), 1)
-  return computedVersionedHash
 }

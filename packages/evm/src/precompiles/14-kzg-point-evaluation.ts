@@ -1,4 +1,4 @@
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bufferToBigInt, bufferToHex, computeVersionedHash } from '@ethereumjs/util'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -19,6 +19,9 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const dataKzg = opts.data.slice(96, 144)
+  if (bufferToHex(Buffer.from(computeVersionedHash(dataKzg))) !== bufferToHex(versionedHash)) {
+    return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
+  }
   // TODO: Integrate kzg library and verify kzg_to_versioned_hash(dataKzg) === versionedHash
   const quotientKzg = opts.data.slice(144, 192)
   // TODO: Integrate kzg library and run verify_kzg_proof(dataKzg, x, y, quotientKzg)
