@@ -6,13 +6,14 @@ import { Account, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Config } from '../../lib/config'
+import { getLogger } from '../../lib/logging'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 
 import type { StateManager } from '@ethereumjs/statemanager'
 
 const setup = () => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], logger: getLogger({ loglevel: 'info' }) })
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
