@@ -106,6 +106,6 @@ tape('Network wrapper tests', (t) => {
   // Cleanup KZG environment (i.e. remove trusted setup)
 
   const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(fullTx)
-  t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction')
+  t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')
   t.end()
 })
