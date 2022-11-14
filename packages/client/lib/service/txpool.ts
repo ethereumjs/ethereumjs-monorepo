@@ -187,7 +187,12 @@ export class TxPool {
       this.cleanup.bind(this),
       this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60
     )
-    this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
+
+    if (this.config.logger.isInfoEnabled()) {
+      // Only turn on txPool stats calculator if log level is info or above
+      // since all stats calculator does is print `info` logs
+      this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
+    }
     this.running = true
     this.config.logger.info('TxPool started.')
     return true
@@ -751,6 +756,7 @@ export class TxPool {
   }
 
   _logPoolStats() {
+    console.log('lets starts the stats!!!')
     let broadcasts = 0
     let broadcasterrors = 0
     let knownpeers = 0
