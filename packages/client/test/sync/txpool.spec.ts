@@ -304,7 +304,7 @@ tape('[TxPool]', async (t) => {
 
     pool.open()
     pool.start()
-    let txs = [txA01]
+    const txs = [txA01]
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
@@ -317,7 +317,6 @@ tape('[TxPool]', async (t) => {
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
 
     try {
-      txs = [txA02_Underpriced]
       await pool.add(txA02_Underpriced)
       t.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
@@ -325,6 +324,10 @@ tape('[TxPool]', async (t) => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
+      const poolObject = pool['handled'].get(txA02_Underpriced.hash().toString('hex'))
+      t.equal(poolObject?.error, e, 'should have an errored poolObject')
+      const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
+      t.equal(poolTxs.length, 0, `should not be added in pool`)
     }
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = A.address.toString('hex')
