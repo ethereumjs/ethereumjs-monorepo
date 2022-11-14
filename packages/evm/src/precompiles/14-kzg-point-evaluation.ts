@@ -12,7 +12,7 @@ const BLS_MODULUS = BigInt(
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   const versionedHash = opts.data.slice(0, 32)
-  const x = bufferToBigInt(opts.data.slice(32, 64))
+  const x = bufferToBigInt(opts.data.slice(32, 64)) // TODO: Determine if x/y will stay in the input
   const y = bufferToBigInt(opts.data.slice(64, 96))
   if (x >= BLS_MODULUS || y >= BLS_MODULUS) {
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
@@ -22,9 +22,9 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   if (bufferToHex(Buffer.from(computeVersionedHash(dataKzg))) !== bufferToHex(versionedHash)) {
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
-  // TODO: Integrate kzg library and verify kzg_to_versioned_hash(dataKzg) === versionedHash
-  const quotientKzg = opts.data.slice(144, 192)
-  // TODO: Integrate kzg library and run verify_kzg_proof(dataKzg, x, y, quotientKzg)
+
+  //const quotientKzg = opts.data.slice(144, 192)
+  // TODO: Verify the kzg proof once the kzg library interface is ironed out
   return {
     executionGasUsed: gasUsed,
     returnValue: Buffer.from([]),
