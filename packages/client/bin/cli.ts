@@ -4,7 +4,7 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
-import { existsSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -14,6 +14,7 @@ import * as readline from 'readline'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
+import { Event } from '../lib/types'
 import { parseMultiaddrs } from '../lib/util'
 
 import { helprpc, startRPCServers } from './startRpc'
@@ -655,6 +656,16 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)
+  config.events.on(Event.SERVER_LISTENING, (details) => {
+    const networkDir = config.getNetworkDirectory()
+    // Write the transport into a file
+    try {
+      writeFileSync(`${networkDir}/${details.transport}`, details.url)
+    } catch (e) {
+      // Incase dir is not really setup, mostly to take care of mockserver in test
+      config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+    }
+  })
 
   const client = await startClient(config, customGenesisState)
   const servers = args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args) : []
