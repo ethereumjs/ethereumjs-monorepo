@@ -356,6 +356,9 @@ tape('[TxPool]', async (t) => {
     // Another attempt to add tx which should not be broadcased to peer2
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     t.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
+    // Just to enhance logging coverage, assign peerPool for stats collection
+    pool['service'].pool = peerPool
+    pool._logPoolStats()
     pool.stop()
     pool.close()
   })
