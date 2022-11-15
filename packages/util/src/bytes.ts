@@ -226,19 +226,6 @@ export function bigIntToBuffer(num: bigint) {
 }
 
 /**
- * Converts a {@link bigint} to a {@link Buffer} for devp2p rlp encodings
- * excluding `0` as rlp has its own special encoding for the same
- * see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/2402
- */
-export function devP2PBigIntToBuffer(input: bigint | number): Buffer {
-  const inputNum = BigInt(input)
-  if (inputNum === 0n) {
-    return Buffer.alloc(0)
-  } else {
-    return bigIntToBuffer(inputNum)
-  }
-}
-/**
  * Converts a `Buffer` to a `Number`.
  * @param buf `Buffer` object to convert
  * @throws If the input number exceeds 53 bits.
@@ -398,4 +385,8 @@ export const bigIntToHex = (num: bigint) => {
  */
 export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
   return unpadBuffer(bigIntToBuffer(value))
+}
+
+export function intToUnpaddedBuffer(value: number): Buffer {
+  return unpadBuffer(intToBuffer(value))
 }

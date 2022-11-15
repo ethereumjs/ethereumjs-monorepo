@@ -1,10 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import {
-  devP2PBigIntToBuffer as bigIntToBuffer,
-  bufferToBigInt,
-  bufferToInt,
-  intToBuffer,
-} from '@ethereumjs/util'
+import { bigIntToUnpaddedBuffer, bufferToBigInt, bufferToInt, intToBuffer } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
@@ -61,8 +56,8 @@ export class LesProtocol extends Protocol {
       encode: ({ headHash, headNumber, headTd, reorgDepth }: any) => [
         // TO DO: handle state changes
         headHash,
-        bigIntToBuffer(headNumber),
-        bigIntToBuffer(headTd),
+        bigIntToUnpaddedBuffer(headNumber),
+        bigIntToUnpaddedBuffer(headTd),
         intToBuffer(reorgDepth),
       ],
       decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
@@ -78,8 +73,13 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? ++this.nextReqId),
-        [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
+        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        [
+          typeof block === 'bigint' ? bigIntToUnpaddedBuffer(block) : block,
+          max,
+          skip,
+          !reverse ? 0 : 1,
+        ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
         reqId: bufferToBigInt(reqId),
@@ -93,8 +93,8 @@ export class LesProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x03,
       encode: ({ reqId, bv, headers }: any) => [
-        bigIntToBuffer(reqId),
-        bigIntToBuffer(bv),
+        bigIntToUnpaddedBuffer(reqId),
+        bigIntToUnpaddedBuffer(bv),
         headers.map((h: BlockHeader) => h.raw()),
       ],
       decode: ([reqId, bv, headers]: any) => ({
@@ -181,13 +181,13 @@ export class LesProtocol extends Protocol {
       this.chain.genesis.hash()
     )
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
-    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToBuffer(nextFork ?? 0n)]
+    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToUnpaddedBuffer(nextFork ?? 0n)]
 
     return {
-      networkId: bigIntToBuffer(this.chain.networkId),
-      headTd: bigIntToBuffer(this.chain.headers.td),
+      networkId: bigIntToUnpaddedBuffer(this.chain.networkId),
+      headTd: bigIntToUnpaddedBuffer(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
-      headNum: bigIntToBuffer(this.chain.headers.height),
+      headNum: bigIntToUnpaddedBuffer(this.chain.headers.height),
       genesisHash: this.chain.genesis.hash(),
       forkID,
       recentTxLookup: intToBuffer(1),
