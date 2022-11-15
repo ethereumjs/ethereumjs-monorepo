@@ -313,6 +313,18 @@ tape('[TxPool]', async (t) => {
       },
     }
     const peerPool = new PeerPool({ config })
+    let sentToPeer2 = 0
+    const peer2: any = {
+      id: '2',
+      eth: {
+        request: (methodName: string) => {
+          sentToPeer2++
+          // throw the error on methodName so as to be handy
+          throw Error(methodName)
+        },
+      },
+    }
+    peerPool.add(peer2)
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
 
@@ -330,10 +342,20 @@ tape('[TxPool]', async (t) => {
       t.equal(poolTxs.length, 0, `should not be added in pool`)
     }
     t.equal(pool.pool.size, 1, 'pool size 1')
+    t.equal(sentToPeer2, 1, 'broadcast attempt to the peer')
+    t.equal((pool as any).knownByPeer.get(peer2.id).length, 1, 'known send objects')
+    t.equal(
+      (pool as any).knownByPeer.get(peer2.id)[0]?.error?.message,
+      'NewPooledTransactionHashes',
+      'should have errored sendObject for NewPooledTransactionHashes broadcast'
+    )
     const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+    // Another attempt to add tx which should not be broadcased to peer2
+    await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
+    t.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
     pool.stop()
     pool.close()
   })
