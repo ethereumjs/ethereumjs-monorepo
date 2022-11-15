@@ -102,18 +102,11 @@ function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
-    // Put merge hardfork in right place in case additional hardforks exist after merge
-    const londonIndex = params.hardforks.findIndex((el: any) => el.name === Hardfork.London)
-    params.hardforks.splice(londonIndex + 1, 0, {
+    params.hardforks.push({
       name: Hardfork.Merge,
       ttd: config.terminalTotalDifficulty,
       block: null,
     })
-    /*params.hardforks.push({
-      name: Hardfork.Merge,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
-    })*/
   }
   return params
 }
