@@ -87,7 +87,7 @@ export class EthProtocol extends Protocol {
       name: 'NewBlockHashes',
       code: 0x01,
       encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBuffer(hn[1])]),
-      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBuffer(hn[1])]),
+      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bufferToBigInt(hn[1])]),
     },
     {
       name: 'Transactions',
