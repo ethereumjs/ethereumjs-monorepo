@@ -24,6 +24,7 @@ export enum Hardfork {
   MergeForkIdTransition = 'mergeForkIdTransition',
   Merge = 'merge',
   Shanghai = 'shanghai',
+  Sharding = 'sharding',
 }
 
 export enum ConsensusType {

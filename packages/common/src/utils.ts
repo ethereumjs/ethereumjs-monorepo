@@ -93,6 +93,7 @@ function parseGethParams(json: any) {
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
     [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
+    [Hardfork.Sharding]: 'shardingForkBlock',
   }
   params.hardforks = Object.values(Hardfork)
     .map((name) => ({
@@ -101,11 +102,18 @@ function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({
+    // Put merge hardfork in right place in case additional hardforks exist after merge
+    const londonIndex = params.hardforks.findIndex((el: any) => el.name === Hardfork.London)
+    params.hardforks.splice(londonIndex + 1, 0, {
       name: Hardfork.Merge,
       ttd: config.terminalTotalDifficulty,
       block: null,
     })
+    /*params.hardforks.push({
+      name: Hardfork.Merge,
+      ttd: config.terminalTotalDifficulty,
+      block: null,
+    })*/
   }
   return params
 }
