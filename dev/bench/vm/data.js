@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668444077253,
+  "lastUpdate": 1668521312821,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6eb5a85a48c3b6027ccf1d59a177c4103eaca0b1",
-          "message": "client: fix validation logic for optional params in rpc (#2358)",
-          "timestamp": "2022-10-14T12:50:59-04:00",
-          "tree_id": "9c6b78b2760a138722ed771d1a1bb9b5fac09be9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6eb5a85a48c3b6027ccf1d59a177c4103eaca0b1"
-        },
-        "date": 1665766420109,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 17457,
-            "range": "±4.42%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17809,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16942,
-            "range": "±6.31%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17170,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16899,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.20%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "614381a440119b2289c835c3770cb01dee62264f",
+          "message": "client: Fix sendTransactions peer loop and enchance txpool logs  (#2412)\n\n* client: Enchance txpool logs with success/failure of add, broadcast, block selection logs\r\n\r\n* Txpool stats calculator on info or debug logging\r\n\r\n* remove console log\r\n\r\n* enable logging for txstats in test spec\r\n\r\n* add test cases for handled errors\r\n\r\n* add testcase for marking errored broadcasts\r\n\r\n* cover pool stats logger\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-11-15T09:05:16-05:00",
+          "tree_id": "4543cd6b9321b3b01481cd5b542266c8679bc12e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/614381a440119b2289c835c3770cb01dee62264f"
+        },
+        "date": 1668521311436,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10462,
+            "range": "±4.42%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10195,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 10235,
+            "range": "±6.11%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10728,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 10580,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
