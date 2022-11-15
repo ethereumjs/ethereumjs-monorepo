@@ -157,6 +157,7 @@ export class BlockHeader {
       nonce: zeros(8),
       baseFeePerGas: undefined,
       withdrawalsRoot: undefined,
+      excessDataGas: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
