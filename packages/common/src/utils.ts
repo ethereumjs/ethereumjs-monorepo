@@ -98,18 +98,37 @@ function parseGethParams(json: any) {
     [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
     [Hardfork.Shanghai]: 'shanghaiBlock',
   }
-  params.hardforks = Object.values(Hardfork)
-    .map((name) => ({
-      name,
-      block: name === Hardfork.Chainstart ? 0 : config[forkMap[name]] ?? null,
+  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
+    acc[forkMap[elem]] = elem
+    return acc
+  }, {} as { [key: string]: string })
+  const configHardforks = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+
+  params.hardforks = configHardforks
+    .map((nameBlock) => ({
+      name: forkMapRev[nameBlock],
+      block: config[nameBlock],
     }))
     .filter((fork) => fork.block !== null)
+  const mergeConfig = {
+    name: Hardfork.Merge,
+    ttd: config.terminalTotalDifficulty,
+    block: null,
+  }
+  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
+  const nonzeroIndex = params.hardforks.findIndex((hf: any) => hf.block > 0)
+  if (
+    (config.terminalTotalDifficultyPassed === true ||
+      config.terminalTotalDifficultyPassed === 'true') &&
+    nonzeroIndex !== -1
+  ) {
+    // find index where block > 0
+    params.hardforks.splice(nonzeroIndex, 0, mergeConfig)
+  } else {
+    params.hardforks.push(mergeConfig)
+  }
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({
-      name: Hardfork.Merge,
-      ttd: config.terminalTotalDifficulty,
-      block: null,
-    })
+    params.hardforks.push()
   }
   return params
 }
