@@ -75,7 +75,7 @@ jobs:
       - name: Build from source
         run: >
           docker buildx build .
-          -f Dockerfile.fromSouce
+          -f Dockerfile.fromSource
           --tag ethereumjs:local-source
           --platform linux/amd64
           --build-arg COMMIT=$(git rev-parse HEAD)
