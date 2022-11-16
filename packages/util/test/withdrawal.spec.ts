@@ -3,6 +3,8 @@ import * as tape from 'tape'
 
 import { Withdrawal, bigIntToHex, intToHex } from '../src'
 
+import type { WithdrawalBuffer } from '../src'
+
 const withdrawalsVector = [
   {
     Index: 0,
@@ -66,7 +68,7 @@ tape('Withdrawal', (t) => {
   // gethWithdrawals8Rlp is rlp encoded block with withdrawals in the 4th element of the top array
   const gethWithdrawalsBuffer = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))[3]!
   const gethWithdrawalsRlp = Buffer.from(encode(gethWithdrawalsBuffer)).toString('hex')
-  t.test('Correct fromWithdrawalData and toBufferArray', (st) => {
+  t.test('fromWithdrawalData and toBufferArray', (st) => {
     const withdrawals = withdrawalsGethVector.map(Withdrawal.fromWithdrawalData)
     const withdrawalsToBufferArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = Buffer.from(encode(withdrawalsToBufferArr)).toString('hex')
@@ -74,10 +76,19 @@ tape('Withdrawal', (t) => {
     st.end()
   })
 
-  t.test(`Direct withdrawalData to toBufferArray`, (st) => {
+  t.test('toBufferArray from withdrawalData', (st) => {
     const withdrawalsDataToBufferArr = withdrawalsGethVector.map(Withdrawal.toBufferArray)
     const withdrawalsDataToRlp = Buffer.from(encode(withdrawalsDataToBufferArr)).toString('hex')
     st.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
+    st.end()
+  })
+
+  t.test('fromValuesArray and toJSON', (st) => {
+    const withdrawals = (gethWithdrawalsBuffer as WithdrawalBuffer[]).map(
+      Withdrawal.fromValuesArray
+    )
+    const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
+    st.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
     st.end()
   })
 })

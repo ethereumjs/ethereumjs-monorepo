@@ -7,7 +7,14 @@ import type {
   JsonTx,
   TxData,
 } from '@ethereumjs/tx'
-import type { AddressLike, BigIntLike, BufferLike, WithdrawalData } from '@ethereumjs/util'
+import type {
+  AddressLike,
+  BigIntLike,
+  BufferLike,
+  JsonRpcWithdrawal,
+  WithdrawalBuffer,
+  WithdrawalData,
+} from '@ethereumjs/util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -112,17 +119,18 @@ export interface BlockData {
   withdrawals?: Array<WithdrawalData>
 }
 
+export type WithdrawalsBuffer = WithdrawalBuffer[]
+
 export type BlockBuffer =
   | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
-  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer]
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer]
 export type BlockHeaderBuffer = Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalBuffer?]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer?]
 /**
  * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
  */
 export type TransactionsBuffer = Buffer[][] | Buffer[]
 export type UncleHeadersBuffer = Buffer[][]
-export type WithdrawalBuffer = Buffer[][]
 
 /**
  * An object with the block's data represented as strings.
@@ -158,13 +166,6 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
-}
-
-export interface JsonRpcWithdrawal {
-  index: string // QUANTITY - bigint 8 bytes
-  validatorIndex: string // QUANTITY - bigint 8 bytes
-  address: string // DATA, 20 Bytes  address to withdraw to
-  amount: string // QUANTITY - bigint amount in wei 32 bytes
 }
 
 /*

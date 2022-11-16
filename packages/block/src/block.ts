@@ -26,6 +26,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { WithdrawalBuffer } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -178,7 +179,7 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    const withdrawals = withdrawalsBuffer
+    const withdrawals = (withdrawalsBuffer as WithdrawalBuffer[])
       ?.map(([index, validatorIndex, address, amount]) => ({
         index,
         validatorIndex,
@@ -500,12 +501,7 @@ export class Block {
   toJSON(): JsonBlock {
     const withdrawalsAttr = this.withdrawals
       ? {
-          withdrawals: this.withdrawals.map((wt) => ({
-            index: bigIntToHex(wt.index),
-            validatorIndex: bigIntToHex(wt.validatorIndex),
-            address: '0x' + wt.address.buf.toString('hex'),
-            amount: bigIntToHex(wt.amount),
-          })),
+          withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
         }
       : {}
     return {
