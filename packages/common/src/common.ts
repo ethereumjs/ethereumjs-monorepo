@@ -120,6 +120,16 @@ export class Common extends EventEmitter {
           opts
         )
       }
+      if (chainParamsOrName === CustomChain.ArbitrumOne) {
+        return Common.custom(
+          {
+            name: CustomChain.ArbitrumOne,
+            chainId: 42161,
+            networkId: 42161,
+          },
+          opts
+        )
+      }
       if (chainParamsOrName === CustomChain.xDaiChain) {
         return Common.custom(
           {
