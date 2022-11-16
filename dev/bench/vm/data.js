@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668521312821,
+  "lastUpdate": 1668600333983,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "28a333698c0984fbac0f90b030d428a30d20517a",
-          "message": "evm: update imports/exports (#2303)\n\n* evm: update imports/exports\r\n\r\n* Update return type of evm.copy\r\n\r\n* Fix EVMEvents typing\r\n\r\n* Update vm import/exports\r\n\r\n* Pull event emitter types into evm\r\n\r\n* Internalize asynceventemitter\r\n\r\n* More typing\r\n\r\n* change async-eventemitter to eventemitter2\r\n\r\n* update package-lock\r\n\r\n* update package lock\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-10-17T12:23:56+02:00",
-          "tree_id": "4c0764a6d918649944ff4452adafaf80d5a2ca39",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/28a333698c0984fbac0f90b030d428a30d20517a"
-        },
-        "date": 1666002800312,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 11260,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 11305,
-            "range": "±3.75%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 11221,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10657,
-            "range": "±6.24%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 11220,
-            "range": "±2.31%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.52%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fd8c2827eed78c0d9394278552408e3c3a571db8",
+          "message": "client: Use unpadded int/bigint to buffer in net protocols (#2409)\n\n* client: Correctly encode 0 in the devp2p protocols\r\n\r\n* lint\r\n\r\n* lint\r\n\r\n* respond with empty buffer than 0\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* fix return type\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* remove bufferlike\r\n\r\n* use unpadded versions\r\n\r\n* add spec test\r\n\r\n* fix typo\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2022-11-16T13:02:59+01:00",
+          "tree_id": "5df9ff9913ada38f2f072b83095d8edc2d9c887b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fd8c2827eed78c0d9394278552408e3c3a571db8"
+        },
+        "date": 1668600333247,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19277,
+            "range": "±2.59%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18512,
+            "range": "±4.53%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19718,
+            "range": "±1.30%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18998,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17100,
+            "range": "±9.46%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
