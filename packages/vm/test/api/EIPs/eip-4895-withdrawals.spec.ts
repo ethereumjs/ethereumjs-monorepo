@@ -1,15 +1,15 @@
 import { Block } from '@ethereumjs/block'
-import { parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, zeros, Withdrawal, WithdrawalBuffer, KECCAK256_RLP } from '@ethereumjs/util'
 import { decode } from '@ethereumjs/rlp'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Address, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 
+import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
 import { VM } from '../../../src/vm'
 
-import type { WithdrawalData } from '@ethereumjs/util'
-import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
+import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -166,7 +166,7 @@ tape('EIP4895 tests', (t) => {
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
-        withdrawals: withdrawals,
+        withdrawals,
       },
       { common: vm._common }
     )
@@ -177,6 +177,53 @@ tape('EIP4895 tests', (t) => {
       '7f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afb',
       'post state should match'
     )
+    st.end()
+  })
+
+  t.test('should build a block correctly with withdrawals', async (st) => {
+    const common = Common.fromGethGenesis(genesisJSON, { chain: 'custom' })
+    const genesisState = parseGethGenesisState(genesisJSON)
+    const blockchain = await Blockchain.create({
+      common,
+      validateBlocks: false,
+      validateConsensus: false,
+      genesisState,
+    })
+    const genesisBlock = blockchain.genesisBlock
+    st.equal(
+      genesisBlock.header.stateRoot.toString('hex'),
+      'ca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
+      'correct state root should be generated'
+    )
+    const vm = await VM.create({ common, blockchain })
+    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    const vmCopy = await vm.copy()
+
+    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+      Withdrawal.fromValuesArray(wa)
+    )
+
+    const blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      withdrawals,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+
+    const block = await blockBuilder.build()
+
+    st.equal(
+      block.header.stateRoot.toString('hex'),
+      '7f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afb',
+      'correct state root should be generated'
+    )
+
+    // block should successfully execute with VM.runBlock and have same outputs
+    const result = await vmCopy.runBlock({ block })
+    st.equal(result.gasUsed, block.header.gasUsed)
+    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
+    st.ok(result.stateRoot.equals(block.header.stateRoot))
+    st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
   })
 })
