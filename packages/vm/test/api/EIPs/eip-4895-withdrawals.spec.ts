@@ -1,12 +1,15 @@
 import { Block } from '@ethereumjs/block'
+import { parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, zeros } from '@ethereumjs/util'
+import { Address, zeros, Withdrawal, WithdrawalBuffer, KECCAK256_RLP } from '@ethereumjs/util'
+import { decode } from '@ethereumjs/rlp'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
 import type { WithdrawalData } from '@ethereumjs/util'
+import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -14,6 +17,8 @@ const common = new Common({
 })
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
+const gethWithdrawals8BlockRlp =
+  'f903e1f90213a0fe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794aa00000000000000000000000000000000000000a07f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afba056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b901000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080018401c9c380802f80a0ff0000000000000000000000000000000000000000000000000000000000000088000000000000000007a0b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06dc0c0f901c6da8082ffff94000000000000000000000000000000000000000080f83b0183010000940100000000000000000000000000000000000000a00100000000000000000000000000000000000000000000000000000000000000f83b0283010001940200000000000000000000000000000000000000a00200000000000000000000000000000000000000000000000000000000000000f83b0383010002940300000000000000000000000000000000000000a00300000000000000000000000000000000000000000000000000000000000000f83b0483010003940400000000000000000000000000000000000000a00400000000000000000000000000000000000000000000000000000000000000f83b0583010004940500000000000000000000000000000000000000a00500000000000000000000000000000000000000000000000000000000000000f83b0683010005940600000000000000000000000000000000000000a00600000000000000000000000000000000000000000000000000000000000000f83b0783010006940700000000000000000000000000000000000000a00700000000000000000000000000000000000000000000000000000000000000'
 
 tape('EIP4895 tests', (t) => {
   t.test('EIP4895: withdrawals execute as expected', async (st) => {
@@ -108,5 +113,70 @@ tape('EIP4895 tests', (t) => {
 
     const slotValue = await vm.stateManager.getContractStorage(withdrawalCheckAddress, zeros(32))
     st.ok(zeros(0).equals(slotValue), 'withdrawals do not invoke code')
+  })
+
+  t.test('EIP4895: state updation should exclude 0 amount updates', async (st) => {
+    const vm = await VM.create({ common })
+    vm._common.setEIPs([4895])
+
+    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    const preState = (await vm.eei.getStateRoot()).toString('hex')
+    st.equal(
+      preState,
+      'ca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
+      'preState should be correct'
+    )
+
+    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+      Withdrawal.fromValuesArray(wa)
+    )
+    st.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
+    let block: Block
+    let postState: string
+
+    // construct a block with just the 0th withdrawal should have no effect on state
+    block = Block.fromBlockData(
+      {
+        header: {
+          baseFeePerGas: BigInt(7),
+          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
+          transactionsTrie: KECCAK256_RLP,
+        },
+        transactions: [],
+        withdrawals: withdrawals.slice(0, 1),
+      },
+      { common: vm._common }
+    )
+    postState = (await vm.eei.getStateRoot()).toString('hex')
+
+    await vm.runBlock({ block, generate: true })
+    st.equal(
+      postState,
+      'ca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
+      'post state should not change'
+    )
+
+    // construct a block with all the withdrawals
+    block = Block.fromBlockData(
+      {
+        header: {
+          baseFeePerGas: BigInt(7),
+          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
+          transactionsTrie: KECCAK256_RLP,
+        },
+        transactions: [],
+        withdrawals: withdrawals,
+      },
+      { common: vm._common }
+    )
+    await vm.runBlock({ block, generate: true })
+    postState = (await vm.eei.getStateRoot()).toString('hex')
+    st.equal(
+      postState,
+      '7f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afb',
+      'post state should match'
+    )
+    st.end()
   })
 })
