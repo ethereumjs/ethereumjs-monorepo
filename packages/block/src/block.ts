@@ -501,7 +501,7 @@ export class Block {
     const withdrawalsAttr = this.withdrawals
       ? {
           withdrawals: this.withdrawals.map((wt) => ({
-            index: bigIntToHex(BigInt(wt.index)),
+            index: bigIntToHex(wt.index),
             validatorIndex: bigIntToHex(wt.validatorIndex),
             address: '0x' + wt.address.buf.toString('hex'),
             amount: bigIntToHex(wt.amount),
