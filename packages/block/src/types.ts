@@ -103,7 +103,7 @@ export interface HeaderData {
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
    */
-  verkleProof?: PrefixedHexString
+  verkleProof?: BufferLike
   verklePreState?: VerkleState
 }
 
@@ -120,7 +120,11 @@ export interface BlockData {
 }
 
 export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
-export type BlockHeaderBuffer = Buffer[]
+/**
+ * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
+ * TODO: The verkle prestate type properly
+ */
+export type BlockHeaderBuffer = /* Buffer[][][] | */ Buffer[]
 export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
 /**
  * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.

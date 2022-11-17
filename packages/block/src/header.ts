@@ -335,6 +335,7 @@ export class BlockHeader {
     }
 
     // Validation for Verkle blocks
+    // Unnecessary in this implementation since we're providing defaults if those fields are undefined
     if (this._common.isActivatedEIP(999001) === true) {
       // check if verkleProof is present
       if (this.verkleProof === undefined) {
