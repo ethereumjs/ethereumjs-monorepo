@@ -1,0 +1,55 @@
+{
+  "name": "testnetCondrieu",
+  "chainId": 69420,
+  "networkId": 69420,
+  "defaultHardfork": "istanbul",
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash",
+    "clique": {
+      "period": 15,
+      "epoch": 30000
+    }
+  },
+  "genesis": {
+    "gasLimit": 1000000,
+    "difficulty": 1,
+    "nonce": "0x56",
+    "extraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0
+    },
+    {
+      "name": "homestead",
+      "block": 0
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0
+    },
+    {
+      "name": "istanbul",
+      "block": 0
+    },
+    {
+      "name": "muirGlacier",
+      "block": 0
+    },
+    {
+      "name": "berlin",
+      "block": 0
+    },
+    {
+      "name": "london",
+      "block": 0
+    }
+  ],
+  "bootstrapNodes": []
+}
