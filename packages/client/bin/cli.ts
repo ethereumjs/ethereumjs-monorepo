@@ -381,8 +381,9 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
-      validateBlocks: true,
-      validateConsensus,
+      validateBlocks: false,
+      // TODO: remove this and rely on above validateConsensus mechanism before any merging
+      validateConsensus: false,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
