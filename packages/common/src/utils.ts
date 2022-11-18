@@ -22,7 +22,7 @@ function formatNonce(nonce: string): string {
  * @param json object representing the Geth genesis file
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any) {
+function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp, nonce } = json
   const { chainId } = config
@@ -83,28 +83,30 @@ function parseGethParams(json: any) {
           },
   }
 
-  const forkMap: { [key: string]: string } = {
-    [Hardfork.Homestead]: 'homesteadBlock',
-    [Hardfork.Dao]: 'daoForkBlock',
-    [Hardfork.TangerineWhistle]: 'eip150Block',
-    [Hardfork.SpuriousDragon]: 'eip155Block',
-    [Hardfork.Byzantium]: 'byzantiumBlock',
-    [Hardfork.Constantinople]: 'constantinopleBlock',
-    [Hardfork.Petersburg]: 'petersburgBlock',
-    [Hardfork.Istanbul]: 'istanbulBlock',
-    [Hardfork.MuirGlacier]: 'muirGlacierBlock',
-    [Hardfork.Berlin]: 'berlinBlock',
-    [Hardfork.London]: 'londonBlock',
-    [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
-    [Hardfork.Shanghai]: 'shanghaiBlock',
+  const forkMap: { [key: string]: { name: string; postMerge?: boolean } } = {
+    [Hardfork.Homestead]: { name: 'homesteadBlock' },
+    [Hardfork.Dao]: { name: 'daoForkBlock' },
+    [Hardfork.TangerineWhistle]: { name: 'eip150Block' },
+    [Hardfork.SpuriousDragon]: { name: 'eip155Block' },
+    [Hardfork.Byzantium]: { name: 'byzantiumBlock' },
+    [Hardfork.Constantinople]: { name: 'constantinopleBlock' },
+    [Hardfork.Petersburg]: { name: 'petersburgBlock' },
+    [Hardfork.Istanbul]: { name: 'istanbulBlock' },
+    [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
+    [Hardfork.Berlin]: { name: 'berlinBlock' },
+    [Hardfork.London]: { name: 'londonBlock' },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true },
   }
+
+  // forkMapRev is the map from config field name to Hardfork
   const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
-    acc[forkMap[elem]] = elem
+    acc[forkMap[elem].name] = elem
     return acc
   }, {} as { [key: string]: string })
-  const configHardforks = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+  const configHardforkNames = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
 
-  params.hardforks = configHardforks
+  params.hardforks = configHardforkNames
     .map((nameBlock) => ({
       name: forkMapRev[nameBlock],
       block: config[nameBlock],
@@ -120,14 +122,11 @@ function parseGethParams(json: any) {
       block: null,
     }
 
-    const nonzeroIndex = params.hardforks.findIndex((hf: any) => hf.block > 0)
-    if (
-      (config.terminalTotalDifficultyPassed === true ||
-        config.terminalTotalDifficultyPassed === 'true') &&
-      nonzeroIndex !== -1
-    ) {
-      // find index where block > 0
-      params.hardforks.splice(nonzeroIndex, 0, mergeConfig)
+    const postMergeIndex = params.hardforks.findIndex(
+      (hf: any) => forkMap[hf.name]?.postMerge === true
+    )
+    if (postMergeIndex !== -1) {
+      params.hardforks.splice(postMergeIndex, 0, mergeConfig)
     } else {
       params.hardforks.push(mergeConfig)
     }
@@ -141,7 +140,7 @@ function parseGethParams(json: any) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string) {
+export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
   try {
     if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
       throw new Error('Invalid format, expected geth genesis fields missing')
@@ -149,7 +148,7 @@ export function parseGethGenesis(json: any, name?: string) {
     if (name !== undefined) {
       json.name = name
     }
-    return parseGethParams(json)
+    return parseGethParams(json, mergeForkIdPostMerge)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
