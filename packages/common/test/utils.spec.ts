@@ -66,6 +66,7 @@ tape('[Utils/Parse]', (t) => {
         '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
         'hex'
       ),
+      mergeForkIdPostMerge: false,
     })
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
