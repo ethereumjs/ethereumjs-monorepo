@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668608723485,
+  "lastUpdate": 1668766757872,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2e8b1cfd8542e549949f134871fc05d7c34a678b",
-          "message": "New Releases (#2361)\n\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Common v3.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Tx v4.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Trie v5.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Block v4.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (StateManager v1.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Devp2p v5.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Blockchain v6.0.1)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (EVM v1.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (VM v6.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream library dependencies (Client v0.6.4)\r\n\r\n* Monorepo: Updated package-lock.json\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* EVM: added getActiveOpcodes() as an optional method to EVMInterface\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-18T10:14:31+02:00",
-          "tree_id": "490c00bede4928b3be01f986f59b2ed4bc8162de",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2e8b1cfd8542e549949f134871fc05d7c34a678b"
-        },
-        "date": 1666081018358,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15534,
-            "range": "±3.72%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16387,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14469,
-            "range": "±10.26%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15490,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14204,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.29%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a00251d4d4da850a29c4027e91ee5badf0c22df3",
+          "message": "client: Implement withdrawals via engine api (#2401)\n\n* client: Implement v2 versions for execution api supporting withdrawals\r\n\r\n* create v2 endpoints and proxy them to main handlers\r\n\r\n* refac withdrawals to have a correct withdrawal object\r\n\r\n* fix lint\r\n\r\n* add v2 versions and withdrawal validator\r\n\r\n* extract out withdrawals as separate class\r\n\r\n* use withdrawal in newpayload\r\n\r\n* fix the v2 binding for fcu\r\n\r\n* add withdrawals to block building\r\n\r\n* add withdrawals to shanghai\r\n\r\n* fully working withdrawals feature\r\n\r\n* add withdrawals data in eth getBlock response\r\n\r\n* check genesis annoucement\r\n\r\n* fix and test empty withdrawals\r\n\r\n* add static helpers for trie roots\r\n\r\n* clean up trie roots\r\n\r\n* fix withdrawals root to match with other clients\r\n\r\n* skeleton improv + withdrawal root check\r\n\r\n* add the failing withdrawal root mismatch testcase\r\n\r\n* fix the stateroot mismatch\r\n\r\n* skip withdrawal reward if 0 on runblock too\r\n\r\n* fix spec\r\n\r\n* restore the buildblock's trieroot method\r\n\r\n* rename gen root methods\r\n\r\n* improve the jsdocs\r\n\r\n* genesis handling at skeleton sethead\r\n\r\n* cleanup skeleton\r\n\r\n* cleanup bigint literal\r\n\r\n* remove extra typecasting\r\n\r\n* add comments for spec vec source\r\n\r\n* withdrawal spec vector in test\r\n\r\n* improve var name\r\n\r\n* refactor withdrawal and enhance spec test\r\n\r\n* add zero amount withdrawal test case for vm block run\r\n\r\n* add spec test for buildblock with withdrawals",
+          "timestamp": "2022-11-18T11:16:13+01:00",
+          "tree_id": "941db929f0e4dcb72c52d4b036067d4343eaf41b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a00251d4d4da850a29c4027e91ee5badf0c22df3"
+        },
+        "date": 1668766756155,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 14899,
+            "range": "±4.03%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15014,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14294,
+            "range": "±8.59%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15031,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14616,
+            "range": "±2.56%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
