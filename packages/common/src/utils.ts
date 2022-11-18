@@ -110,25 +110,27 @@ function parseGethParams(json: any) {
       block: config[nameBlock],
     }))
     .filter((fork) => fork.block !== null)
-  const mergeConfig = {
-    name: Hardfork.Merge,
-    ttd: config.terminalTotalDifficulty,
-    block: null,
-  }
+
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
-  const nonzeroIndex = params.hardforks.findIndex((hf: any) => hf.block > 0)
-  if (
-    (config.terminalTotalDifficultyPassed === true ||
-      config.terminalTotalDifficultyPassed === 'true') &&
-    nonzeroIndex !== -1
-  ) {
-    // find index where block > 0
-    params.hardforks.splice(nonzeroIndex, 0, mergeConfig)
-  } else {
-    params.hardforks.push(mergeConfig)
-  }
+
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push()
+    const mergeConfig = {
+      name: Hardfork.Merge,
+      ttd: config.terminalTotalDifficulty,
+      block: null,
+    }
+
+    const nonzeroIndex = params.hardforks.findIndex((hf: any) => hf.block > 0)
+    if (
+      (config.terminalTotalDifficultyPassed === true ||
+        config.terminalTotalDifficultyPassed === 'true') &&
+      nonzeroIndex !== -1
+    ) {
+      // find index where block > 0
+      params.hardforks.splice(nonzeroIndex, 0, mergeConfig)
+    } else {
+      params.hardforks.push(mergeConfig)
+    }
   }
   return params
 }
