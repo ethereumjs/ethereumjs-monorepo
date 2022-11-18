@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
@@ -77,7 +77,10 @@ export function createClient(clientOpts: any = {}) {
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
   if (chain._headers !== undefined) {
-    chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
+    chain._headers.latest = BlockHeader.fromHeaderData(
+      { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
+      { common }
+    )
   }
 
   config.synchronized = true

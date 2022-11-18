@@ -69,8 +69,11 @@ function parseGethParams(json: any) {
             type: 'poa',
             algorithm: 'clique',
             clique: {
-              period: config.clique.period,
-              epoch: config.clique.epoch,
+              // The recent geth genesis seems to be using blockperiodseconds
+              // and epochlength for clique specification
+              // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
+              period: config.clique.period ?? config.clique.blockperiodseconds,
+              epoch: config.clique.epoch ?? config.clique.epochlength,
             },
           }
         : {
@@ -93,6 +96,7 @@ function parseGethParams(json: any) {
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
     [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
+    [Hardfork.Shanghai]: 'shanghaiBlock',
   }
   params.hardforks = Object.values(Hardfork)
     .map((name) => ({

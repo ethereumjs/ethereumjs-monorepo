@@ -45,7 +45,10 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
 
   if (
     isGenesis ||
-    (blockBody instanceof Block && (blockBody.transactions.length || blockBody.uncleHeaders.length))
+    (blockBody instanceof Block &&
+      (blockBody.transactions.length ||
+        (blockBody.withdrawals?.length ?? 0) ||
+        blockBody.uncleHeaders.length))
   ) {
     const bodyValue = Buffer.from(RLP.encode(bufArrToArr(blockBody.raw()).slice(1)))
     dbOps.push(

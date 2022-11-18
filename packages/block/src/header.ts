@@ -203,7 +203,7 @@ export class BlockHeader {
     }
 
     if (this._common.isActivatedEIP(4895)) {
-      if (withdrawalsRoot === defaults.withdrawalsRoot) {
+      if (withdrawalsRoot === undefined) {
         throw new Error('invalid header. withdrawalsRoot should be provided')
       }
     } else {
@@ -540,6 +540,10 @@ export class BlockHeader {
       rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
+    if (this._common.isActivatedEIP(4895) === true) {
+      rawItems.push(this.withdrawalsRoot!)
+    }
+
     return rawItems
   }
 
@@ -778,12 +782,16 @@ export class BlockHeader {
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
+    const withdrawalAttr = this.withdrawalsRoot
+      ? { withdrawalsRoot: '0x' + this.withdrawalsRoot.toString('hex') }
+      : {}
     const jsonDict: JsonHeader = {
       parentHash: '0x' + this.parentHash.toString('hex'),
       uncleHash: '0x' + this.uncleHash.toString('hex'),
       coinbase: this.coinbase.toString(),
       stateRoot: '0x' + this.stateRoot.toString('hex'),
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
+      ...withdrawalAttr,
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
       logsBloom: '0x' + this.logsBloom.toString('hex'),
       difficulty: bigIntToHex(this.difficulty),
