@@ -263,6 +263,7 @@ export class EVM implements EVMInterface {
       Hardfork.GrayGlacier,
       Hardfork.MergeForkIdTransition,
       Hardfork.Merge,
+      Hardfork.Shanghai,
     ]
     if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
