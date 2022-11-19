@@ -111,7 +111,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       name: forkMapRev[nameBlock],
       block: config[nameBlock],
     }))
-    .filter((fork) => fork.block !== null)
+    .filter((fork) => fork.block !== null && fork.block !== undefined)
 
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 
