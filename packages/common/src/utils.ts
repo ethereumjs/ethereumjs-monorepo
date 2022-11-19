@@ -20,6 +20,9 @@ function formatNonce(nonce: string): string {
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
+ * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
+ * hardfork, which by default is post merge as with the merged eth networks but could also come
+ * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
