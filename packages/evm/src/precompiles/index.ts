@@ -19,6 +19,9 @@ import { precompile0f } from './0f-bls12-g2multiexp'
 import { precompile10 } from './10-bls12-pairing'
 import { precompile11 } from './11-bls12-map-fp-to-g1'
 import { precompile12 } from './12-bls12-map-fp2-to-g2'
+import { precompileF8Epochsize } from './f8-epochsize'
+import { precompileFcFractionMulExp } from './fc-fractionmulexp'
+import { precompileFdTransfer } from './fd-transfer'
 
 import type { PrecompileFunc, PrecompileInput } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -70,6 +73,9 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000010': precompile10,
   '0000000000000000000000000000000000000011': precompile11,
   '0000000000000000000000000000000000000012': precompile12,
+  '00000000000000000000000000000000000000f8': precompileF8Epochsize,
+  '00000000000000000000000000000000000000fc': precompileFcFractionMulExp,
+  '00000000000000000000000000000000000000fd': precompileFdTransfer,
 }
 
 const precompileAvailability: PrecompileAvailability = {
@@ -144,6 +150,18 @@ const precompileAvailability: PrecompileAvailability = {
   '0000000000000000000000000000000000000012': {
     type: PrecompileAvailabilityCheck.EIP,
     param: 2537,
+  },
+  '00000000000000000000000000000000000000f8': {
+    type: PrecompileAvailabilityCheck.Hardfork,
+    param: 'chainstart',
+  },
+  '00000000000000000000000000000000000000fc': {
+    type: PrecompileAvailabilityCheck.Hardfork,
+    param: 'chainstart',
+  },
+  '00000000000000000000000000000000000000fd': {
+    type: PrecompileAvailabilityCheck.Hardfork,
+    param: 'chainstart',
   },
 }
 
