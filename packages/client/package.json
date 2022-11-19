@@ -1,5 +1,5 @@
 {
-  "name": "@ethereumjs/client",
+  "name": "@celo/ethereumjs-client",
   "version": "0.6.5",
   "description": "EthereumJS client implementation",
   "keywords": [
@@ -10,13 +10,13 @@
     "light sync",
     "full sync"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
+  "homepage": "https://github.com/celo/ethereumjs-monorepo/tree/master/packages/client#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
+    "url": "https://github.com/celo/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+    "url": "https://github.com/celo/ethereumjs-monorepo.git"
   },
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
@@ -61,13 +61,13 @@
     "@ethereumjs/common": "3.0.1",
     "@ethereumjs/devp2p": "5.0.1",
     "@ethereumjs/ethash": "2.0.1",
-    "@ethereumjs/evm": "1.2.2",
+    "@ethereumjs/evm": "npm:@celo/ethereumjs-evm@1.2.2",
     "@ethereumjs/rlp": "4.0.0",
     "@ethereumjs/statemanager": "1.0.1",
     "@ethereumjs/trie": "5.0.1",
     "@ethereumjs/tx": "4.0.1",
     "@ethereumjs/util": "8.0.2",
-    "@ethereumjs/vm": "6.2.0",
+    "@ethereumjs/vm": "npm:@celo/ethereumjs-vm@6.2.0",
     "abstract-level": "^1.0.3",
     "body-parser": "^1.19.2",
     "chalk": "^4.1.2",

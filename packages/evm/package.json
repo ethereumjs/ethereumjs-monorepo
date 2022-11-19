@@ -1,5 +1,5 @@
 {
-  "name": "@ethereumjs/evm",
+  "name": "@celo/ethereumjs-evm",
   "version": "1.2.2",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
@@ -8,13 +8,13 @@
     "JavaScript",
     "TypeScript"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",
+  "homepage": "https://github.com/celo/ethereumjs-monorepo/tree/master/packages/evm#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+evm%22"
+    "url": "https://github.com/celo/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+evm%22"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+    "url": "https://github.com/celo/ethereumjs-monorepo.git"
   },
   "license": "MPL-2.0",
   "author": "EthereumJS",
