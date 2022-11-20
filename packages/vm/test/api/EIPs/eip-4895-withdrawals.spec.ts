@@ -189,6 +189,7 @@ tape('EIP4895 tests', (t) => {
       validateBlocks: false,
       validateConsensus: false,
       genesisState,
+      hardforkByHeadBlockNumber: true,
     })
     const genesisBlock = blockchain.genesisBlock
     st.equal(
@@ -204,11 +205,16 @@ tape('EIP4895 tests', (t) => {
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
+    const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
       withdrawals,
-      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+      blockOpts: {
+        calcDifficultyFromHeader: genesisBlock.header,
+        freeze: false,
+        hardforkByTTD: td,
+      },
     })
 
     const block = await blockBuilder.build()
