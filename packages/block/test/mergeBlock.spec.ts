@@ -44,7 +44,6 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         uncleHash: Buffer.from('123abc', 'hex'),
-        number: BigInt(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -55,7 +54,6 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         difficulty: BigInt(123456),
-        number: BigInt(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -77,7 +75,6 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         mixHash: Buffer.alloc(30).fill(1),
-        number: BigInt(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -88,7 +85,6 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         nonce: Buffer.alloc(8).fill(1),
-        number: BigInt(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')

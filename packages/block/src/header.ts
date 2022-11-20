@@ -347,7 +347,7 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
-    const { nonce, uncleHash, difficulty, extraData, number } = this
+    const { nonce, uncleHash, difficulty, extraData } = this
     const hardfork = this._common.hardfork()
 
     // Consensus type dependent checks
@@ -394,7 +394,7 @@ export class BlockHeader {
       }
     }
     // Validation for PoS blocks (EIP-3675)
-    if (this._common.consensusType() === ConsensusType.ProofOfStake && number > BigInt(0)) {
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
       let error = false
       let errorMsg = ''
 

@@ -125,8 +125,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       block: null,
     }
 
+    // Merge hardfork has to be placed before first non-zero blockhard fork that is dependent
+    // on merge, as genesis block can never be a PoS block
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true
+      (hf: any) => forkMap[hf.name]?.postMerge === true && hf.block > 0
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig)

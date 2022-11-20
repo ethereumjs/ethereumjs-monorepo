@@ -99,8 +99,6 @@ tape('[Utils/Parse]', (t) => {
       'hardfork parse order should be correct'
     )
     st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
-    // Merge could be at genesis or 1 depending on td, ttd here is 2
-    st.equal(common.getHardforkByBlockNumber(0, BigInt(2)), Hardfork.Merge, 'merge at genesis')
     st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
     // shanghai is at 8
     st.equal(common.getHardforkByBlockNumber(8), Hardfork.Shanghai, 'shanghai at block 8')
