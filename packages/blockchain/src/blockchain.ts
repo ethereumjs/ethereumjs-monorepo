@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Lock } from '@ethereumjs/util'
+import { KECCAK256_RLP, Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -1265,6 +1265,7 @@ export class Blockchain implements BlockchainInterface {
       ...common.genesis(),
       number: 0,
       stateRoot,
+      withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1275,7 +1276,10 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
       }
     }
-    return Block.fromBlockData({ header }, { common })
+    return Block.fromBlockData(
+      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      { common }
+    )
   }
 
   /**

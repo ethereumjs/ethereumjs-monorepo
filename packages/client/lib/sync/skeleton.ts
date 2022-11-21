@@ -118,7 +118,8 @@ export class Skeleton extends MetaDBManager {
   private async checkLinked() {
     if (this.status.progress.subchains.length === 0) return false
     const { tail, next } = this.bounds()
-    // make check for genesis if tail is 1?
+    // if its genesis we are linked
+    if (tail === BigInt(0)) return true
     if (tail <= this.chain.blocks.height + BigInt(1)) {
       const nextBlock = await this.chain.getBlock(tail - BigInt(1))
       const linked = next.equals(nextBlock.hash())
@@ -177,11 +178,25 @@ export class Skeleton extends MetaDBManager {
     // If the header cannot be inserted without interruption, return an error for
     // the outer loop to tear down the skeleton sync and restart it
     const { number } = head.header
+    if (number === BigInt(0)) {
+      if (!this.chain.genesis.hash().equals(head.hash())) {
+        throw Error(
+          `Invalid genesis setHead announcement number=${number} hash=${short(
+            head.hash()
+          )} genesisHash=${short(this.chain.genesis.hash())}`
+        )
+      }
+      // genesis annoucement
+      return false
+    }
 
-    const [lastchain] = this.status.progress.subchains
+    let [lastchain] = this.status.progress.subchains
     if (lastchain === undefined) {
-      this.config.logger.info(`Skeleton empty, no current subchain with newHead=${number}`)
-      return true
+      this.config.logger.info(
+        `Skeleton empty, comparing against genesis head=0 tail=0 newHead=${number}`
+      )
+      // set the lastchain to genesis for comparision in following conditions
+      lastchain = { head: BigInt(0), tail: BigInt(0), next: zeroBlockHash }
     }
 
     if (lastchain.tail > number) {
@@ -246,11 +261,11 @@ export class Skeleton extends MetaDBManager {
       }
     }
     const parent = await this.getBlock(number - BigInt(1))
-    if (parent && !parent.hash().equals(head.header.parentHash)) {
+    if (!parent || !parent.hash().equals(head.header.parentHash)) {
       if (force) {
         this.config.logger.warn(
-          `Beacon chain forked ancestor=${parent.header.number} hash=${short(
-            parent.hash()
+          `Beacon chain forked ancestor=${parent?.header.number} hash=${short(
+            parent?.hash() ?? 'NA'
           )} want=${short(head.header.parentHash)}`
         )
       }
@@ -258,6 +273,12 @@ export class Skeleton extends MetaDBManager {
     }
     if (force) {
       lastchain.head = number
+      if (this.status.progress.subchains.length === 0) {
+        // If there was no subchain to being with i.e. initialized from genesis and no reorg
+        // then push in subchains else the reorg handling will push the new chain
+        this.status.progress.subchains.push(lastchain)
+        this.linked = await this.checkLinked()
+      }
       this.config.logger.debug(
         `Beacon chain extended new head=${lastchain.head} tail=${lastchain.tail} next=${short(
           lastchain.next
@@ -422,6 +443,9 @@ export class Skeleton extends MetaDBManager {
    */
   async putBlocks(blocks: Block[]): Promise<number> {
     return this.runWithLock<number>(async () => {
+      if (this.status.progress.subchains.length === 0) {
+        throw Error(`Skeleton no subchain set for sync`)
+      }
       let merged = false
       this.config.logger.debug(
         `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(
@@ -438,6 +462,17 @@ export class Skeleton extends MetaDBManager {
           // These blocks should already be in skeleton, and might be coming in
           // from previous events especially if the previous subchains merge
           continue
+        } else if (number === BigInt(0)) {
+          if (!this.chain.genesis.hash().equals(block.hash())) {
+            throw Error(
+              `Skeleton pubBlocks with invalid genesis block number=${number} hash=${short(
+                block.hash()
+              )} genesisHash=${short(this.chain.genesis.hash())}`
+            )
+          }
+          continue
+        } else if (number < BigInt(0)) {
+          throw Error(`Skeleton putBlocks with invalid block number=${number}`)
         }
 
         // Extend subchain or create new segment if necessary
