@@ -70,6 +70,12 @@ const args = yargs(hideBin(process.argv))
     describe: 'Import a geth genesis file for running a custom network',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
+  .option('mergeForkIdPostMerge', {
+    describe:
+      'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
+    boolean: true,
+    default: true,
+  })
   .option('transports', {
     describe: 'Network transports',
     default: Config.TRANSPORTS_DEFAULT,
@@ -608,7 +614,10 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    common = Common.fromGethGenesis(genesisFile, { chain: chainName })
+    common = Common.fromGethGenesis(genesisFile, {
+      chain: chainName,
+      mergeForkIdPostMerge: args.mergeForkIdPostMerge,
+    })
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 

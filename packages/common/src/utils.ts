@@ -2,6 +2,7 @@ import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums'
 
+type ConfigHardfork = { name: string; block: number }
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
  * @param nonce string parsed from the Geth genesis file
@@ -20,9 +21,12 @@ function formatNonce(nonce: string): string {
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
  * @param json object representing the Geth genesis file
+ * @param optional mergeForkIdPostMerge which clarifies the placement of MergeForkIdTransition
+ * hardfork, which by default is post merge as with the merged eth networks but could also come
+ * before merge like in kiln genesis
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any) {
+function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp, nonce } = json
   const { chainId } = config
@@ -83,33 +87,72 @@ function parseGethParams(json: any) {
           },
   }
 
-  const forkMap: { [key: string]: string } = {
-    [Hardfork.Homestead]: 'homesteadBlock',
-    [Hardfork.Dao]: 'daoForkBlock',
-    [Hardfork.TangerineWhistle]: 'eip150Block',
-    [Hardfork.SpuriousDragon]: 'eip155Block',
-    [Hardfork.Byzantium]: 'byzantiumBlock',
-    [Hardfork.Constantinople]: 'constantinopleBlock',
-    [Hardfork.Petersburg]: 'petersburgBlock',
-    [Hardfork.Istanbul]: 'istanbulBlock',
-    [Hardfork.MuirGlacier]: 'muirGlacierBlock',
-    [Hardfork.Berlin]: 'berlinBlock',
-    [Hardfork.London]: 'londonBlock',
-    [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
-    [Hardfork.Shanghai]: 'shanghaiBlock',
+  const forkMap: { [key: string]: { name: string; postMerge?: boolean } } = {
+    [Hardfork.Homestead]: { name: 'homesteadBlock' },
+    [Hardfork.Dao]: { name: 'daoForkBlock' },
+    [Hardfork.TangerineWhistle]: { name: 'eip150Block' },
+    [Hardfork.SpuriousDragon]: { name: 'eip155Block' },
+    [Hardfork.Byzantium]: { name: 'byzantiumBlock' },
+    [Hardfork.Constantinople]: { name: 'constantinopleBlock' },
+    [Hardfork.Petersburg]: { name: 'petersburgBlock' },
+    [Hardfork.Istanbul]: { name: 'istanbulBlock' },
+    [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
+    [Hardfork.Berlin]: { name: 'berlinBlock' },
+    [Hardfork.London]: { name: 'londonBlock' },
+    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true },
   }
-  params.hardforks = Object.values(Hardfork)
-    .map((name) => ({
-      name,
-      block: name === Hardfork.Chainstart ? 0 : config[forkMap[name]] ?? null,
+
+  // forkMapRev is the map from config field name to Hardfork
+  const forkMapRev = Object.keys(forkMap).reduce((acc, elem) => {
+    acc[forkMap[elem].name] = elem
+    return acc
+  }, {} as { [key: string]: string })
+  const configHardforkNames = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+
+  params.hardforks = configHardforkNames
+    .map((nameBlock) => ({
+      name: forkMapRev[nameBlock],
+      block: config[nameBlock],
     }))
-    .filter((fork) => fork.block !== null)
+    .filter((fork) => fork.block !== null && fork.block !== undefined)
+
+  // sort with block
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return a.block - b.block
+  })
+  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
+
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({
+    // Following points need to be considered for placement of merge hf
+    // - Merge hardfork can't be placed at genesis
+    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
+    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
+    //   necessary for e.g. withdrawals
+    const mergeConfig = {
       name: Hardfork.Merge,
       ttd: config.terminalTotalDifficulty,
       block: null,
-    })
+    }
+
+    // If any of the genesis block require merge, then we need merge just right after genesis
+    const isMergeJustPostGenesis: boolean = params.hardforks
+      .filter((hf: ConfigHardfork) => hf.block === 0)
+      .reduce(
+        (acc: boolean, hf: ConfigHardfork) => acc || forkMap[hf.name]?.postMerge === true,
+        false
+      )
+
+    // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
+    // on merge or first non zero block hardfork if any of genesis hardforks require merge
+    const postMergeIndex = params.hardforks.findIndex(
+      (hf: any) => (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) && hf.block > 0
+    )
+    if (postMergeIndex !== -1) {
+      params.hardforks.splice(postMergeIndex, 0, mergeConfig)
+    } else {
+      params.hardforks.push(mergeConfig)
+    }
   }
   return params
 }
@@ -120,7 +163,7 @@ function parseGethParams(json: any) {
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string) {
+export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
   try {
     if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
       throw new Error('Invalid format, expected geth genesis fields missing')
@@ -128,7 +171,7 @@ export function parseGethGenesis(json: any, name?: string) {
     if (name !== undefined) {
       json.name = name
     }
-    return parseGethParams(json)
+    return parseGethParams(json, mergeForkIdPostMerge)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
