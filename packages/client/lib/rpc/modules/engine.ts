@@ -396,7 +396,9 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
-    this.getBlobsBundleV1 = cmMiddleware(middleware(this.getBlobsBundleV1.bind(this), 0, []))
+    this.getBlobsBundleV1 = cmMiddleware(middleware(this.getBlobsBundleV1.bind(this), 0, []), () =>
+      this.connectionManager.updateStatus()
+    )
   }
 
   /**
