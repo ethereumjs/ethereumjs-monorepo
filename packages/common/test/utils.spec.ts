@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
 import { Common } from '../src/common'
+import { Hardfork } from '../src/enums'
 import { parseGethGenesis } from '../src/utils'
 
 tape('[Utils/Parse]', (t) => {
@@ -65,11 +66,54 @@ tape('[Utils/Parse]', (t) => {
         '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
         'hex'
       ),
+      mergeForkIdPostMerge: false,
     })
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
       st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
+  })
+
+  t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
+    const json = require(`./data/post-merge-hardfork.json`)
+    const common = Common.fromGethGenesis(json, {
+      chain: 'customChain',
+    })
+    st.deepEqual(
+      common.hardforks().map((hf) => hf.name),
+      [
+        'chainstart',
+        'homestead',
+        'tangerineWhistle',
+        'spuriousDragon',
+        'byzantium',
+        'constantinople',
+        'petersburg',
+        'istanbul',
+        'muirGlacier',
+        'berlin',
+        'london',
+        'merge',
+        'shanghai',
+      ],
+      'hardfork parse order should be correct'
+    )
+    st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
+    // Merge could be at genesis or 1 depending on td, ttd here is 2
+    st.equal(common.getHardforkByBlockNumber(0, BigInt(2)), Hardfork.Merge, 'merge at genesis')
+    st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
+    // shanghai is at 8
+    st.equal(common.getHardforkByBlockNumber(8), Hardfork.Shanghai, 'shanghai at block 8')
+    // should be post merge at shanghai
+    st.equal(common.getHardforkByBlockNumber(8, BigInt(2)), Hardfork.Shanghai, 'london at genesis')
+    // if not post merge, then should error
+    try {
+      common.getHardforkByBlockNumber(8, BigInt(1))
+      st.fail('should have failed since merge not compeleted before shanghai')
+    } catch (e) {
+      st.pass('correctly fails if merge not compeleted before shanghai')
+    }
+    st.end()
   })
 })
 

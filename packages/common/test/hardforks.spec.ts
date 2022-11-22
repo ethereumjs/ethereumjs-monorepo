@@ -433,6 +433,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
     c = Common.fromGethGenesis(json, {
       chain: 'kiln',
+      mergeForkIdPostMerge: false,
     })
 
     // MergeForkIdTransition change should be before Merge
