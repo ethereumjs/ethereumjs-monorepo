@@ -68,10 +68,58 @@ tape('[Utils/Parse]', (t) => {
       ),
       mergeForkIdPostMerge: false,
     })
+    st.deepEqual(
+      common.hardforks().map((hf) => hf.name),
+      [
+        'chainstart',
+        'homestead',
+        'tangerineWhistle',
+        'spuriousDragon',
+        'byzantium',
+        'constantinople',
+        'petersburg',
+        'istanbul',
+        'berlin',
+        'london',
+        'mergeForkIdTransition',
+        'merge',
+      ],
+      'hardfork parse order should be correct'
+    )
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
       st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
+
+    // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
+    // genesis if even mergeForkIdTransition is not confirmed to be post merge
+    // This will also check if the forks are being correctly sorted based on block
+    Object.assign(json.config, { shanghaiBlock: 0 })
+    const common1 = Common.fromGethGenesis(json, {
+      chain: 'customChain',
+      mergeForkIdPostMerge: false,
+    })
+    // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
+    // to be post merge
+    st.deepEqual(
+      common1.hardforks().map((hf) => hf.name),
+      [
+        'chainstart',
+        'homestead',
+        'tangerineWhistle',
+        'spuriousDragon',
+        'byzantium',
+        'constantinople',
+        'petersburg',
+        'istanbul',
+        'berlin',
+        'london',
+        'shanghai',
+        'merge',
+        'mergeForkIdTransition',
+      ],
+      'hardfork parse order should be correct'
+    )
   })
 
   t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
