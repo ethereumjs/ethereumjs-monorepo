@@ -801,12 +801,19 @@ export class Engine {
    * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
    */
   private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
-    const payloadId = toBuffer(params[0])
+    let payloadId: any
+    try {
+      payloadId = toBuffer(params[0])
+    } catch (err) {
+      throw EngineError.UnknownPayload
+    }
+
     const pendingBlock = this.pendingBlock.pendingPayloads.find(([id, _builder]) =>
       payloadId.equals(id)
     )
+
     if (pendingBlock === undefined) {
-      throw EngineError
+      throw EngineError.UnknownPayload
     }
 
     const block = await pendingBlock[1].build()
