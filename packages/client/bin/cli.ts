@@ -383,8 +383,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
       validateBlocks: false,
-      // TODO: remove this and rely on above validateConsensus mechanism before any merging
-      validateConsensus: false,
+      validateConsensus,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -611,6 +610,8 @@ async function run() {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     common = Common.fromGethGenesis(genesisFile, { chain: chainName })
     customGenesisState = parseGethGenesisState(genesisFile)
+    // Set hardfork by block number 0 since merge is on Block 1
+    common.setHardforkByBlockNumber(0)
   }
 
   if (args.mine === true && accounts.length === 0) {
