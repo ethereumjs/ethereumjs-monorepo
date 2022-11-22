@@ -124,6 +124,11 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 
   if (config.terminalTotalDifficulty !== undefined) {
+    // Following points need to be considered for placement of merge hf
+    // - Merge hardfork can't be placed at genesis
+    // - Place merge hf before any hardforks that require CL participation for e.g. withdrawals
+    // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
+    //   necessary for e.g. withdrawals
     const mergeConfig = {
       name: Hardfork.Merge,
       ttd: config.terminalTotalDifficulty,
