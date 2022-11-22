@@ -84,6 +84,11 @@ type TransitionConfigurationV1 = {
   terminalBlockNumber: string
 }
 
+type BlobsBundleV1 = {
+  blockHash: string
+  kzgs: string[]
+  blobs: string[]
+}
 const EngineError = {
   UnknownPayload: {
     code: -32001,
@@ -390,6 +395,8 @@ export class Engine {
       ]),
       () => this.connectionManager.updateStatus()
     )
+
+    this.getBlobsBundleV1 = cmMiddleware(middleware(this.getBlobsBundleV1.bind(this), 0, []))
   }
 
   /**
@@ -783,5 +790,27 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
+  }
+
+  /**
+   *
+   * @param params a payloadId for a pending block
+   * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
+   */
+  private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
+    const payloadId = toBuffer(params[0])
+    const pendingBlock = this.pendingBlock.pendingPayloads.find(([id, _builder]) =>
+      payloadId.equals(id)
+    )
+    if (pendingBlock === undefined) {
+      throw EngineError
+    }
+
+    const block = await pendingBlock[1].build()
+    return {
+      blockHash: '0x' + block.header.hash().toString('hex'),
+      kzgs: [],
+      blobs: [],
+    }
   }
 }
