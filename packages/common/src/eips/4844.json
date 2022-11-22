@@ -5,7 +5,7 @@
   "url": "https://eips.ethereum.org/EIPS/eip-4844",
   "status": "Draft",
   "minimumHardfork": "merge",
-  "requiredEIPs": [1559, 2718, 2930],
+  "requiredEIPs": [1559, 2718, 2930, 4895],
   "gasConfig": {
     "dataGasPerBlob": {
       "v": 131072,

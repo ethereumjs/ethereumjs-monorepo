@@ -156,8 +156,8 @@ export class BlockHeader {
       mixHash: zeros(32),
       nonce: zeros(8),
       baseFeePerGas: undefined,
-      withdrawalsRoot: undefined,
-      excessDataGas: undefined,
+      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      excessDataGas: this._common.isActivatedEIP(4844) ? 0n : undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
