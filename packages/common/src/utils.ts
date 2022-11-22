@@ -2,6 +2,7 @@ import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums'
 
+type ConfigHardfork = { name: string; block: number }
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
  * @param nonce string parsed from the Geth genesis file
@@ -116,6 +117,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     }))
     .filter((fork) => fork.block !== null && fork.block !== undefined)
 
+  // sort with block
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return a.block - b.block
+  })
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 
   if (config.terminalTotalDifficulty !== undefined) {
@@ -125,10 +130,18 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       block: null,
     }
 
-    // Merge hardfork has to be placed before first non-zero blockhard fork that is dependent
-    // on merge, as genesis block can never be a PoS block
+    // If any of the genesis block require merge, then we need merge just right after genesis
+    const isMergeJustPostGenesis: boolean = params.hardforks
+      .filter((hf: ConfigHardfork) => hf.block === 0)
+      .reduce(
+        (acc: boolean, hf: ConfigHardfork) => acc || forkMap[hf.name]?.postMerge === true,
+        false
+      )
+
+    // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
+    // on merge or first non zero block hardfork if any of genesis hardforks require merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true && hf.block > 0
+      (hf: any) => (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) && hf.block > 0
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig)
