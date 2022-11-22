@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668792244745,
+  "lastUpdate": 1669124191324,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1823287bca416cf617f1f0040d883f0d8252b5fa",
-          "message": "New Util release v8.0.1, new client release v0.6.5 (v0.6.4 broken), update packaage-lock.json (#2371)",
-          "timestamp": "2022-10-19T17:08:15+05:30",
-          "tree_id": "a86a9279820d78f2f361df3e572a3b5660806333",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1823287bca416cf617f1f0040d883f0d8252b5fa"
-        },
-        "date": 1666179652723,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9279,
-            "range": "±3.37%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9681,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 8836,
-            "range": "±6.24%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9451,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9676,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.51%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "33f68c6827e75de3f266199855c34f2c136517e2",
+          "message": "common: Parse post-merge hardfork config in parseGethParams and handle post-merge genesis block (#2427)\n\n* correctly set hf order\r\n\r\n* test specs\r\n\r\n* fix the merge hf push condition\r\n\r\n* try placing merge block in better wat\r\n\r\n* fix test spec for kiln\r\n\r\n* alternate fix of skipping only pos validation on genesis\r\n\r\n* move merge validations to non genesis\r\n\r\n* fix unsupported test case\r\n\r\n* correctly set hardfork\r\n\r\n* resolve test genesis poisioning\r\n\r\n* add comment\r\n\r\n* cli arg for mergeforkid placement\r\n\r\n* place merge only after genesis\r\n\r\n* fix tests\r\n\r\n* restore test\r\n\r\n* address another case for merge just post genesis\r\n\r\n* test case for the new edge case\r\n\r\n* add comment",
+          "timestamp": "2022-11-22T14:33:46+01:00",
+          "tree_id": "5f5c6cc0f865670de619cfc632499d8ea4851776",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/33f68c6827e75de3f266199855c34f2c136517e2"
+        },
+        "date": 1669124190663,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18151,
+            "range": "±4.05%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17505,
+            "range": "±5.68%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18045,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15657,
+            "range": "±10.73%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18390,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
