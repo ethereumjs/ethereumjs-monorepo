@@ -27,10 +27,11 @@ export class PendingBlock {
   config: Config
   txPool: TxPool
   pendingPayloads: [payloadId: Buffer, builder: BlockBuilder][] = []
-
+  builtBlocksWithBlobs: Map<string, Block>
   constructor(opts: PendingBlockOpts) {
     this.config = opts.config
     this.txPool = opts.txPool
+    this.builtBlocksWithBlobs = new Map()
   }
 
   /**
@@ -169,10 +170,11 @@ export class PendingBlock {
         block.transactions.length
       }${withdrawalsStr} hash=${block.hash().toString('hex')}`
     )
+    // TODO: Consider only setting this if block actually has blob transactions (and expect CL to not ask for blobs on non blob block)
+    this.builtBlocksWithBlobs.set('0x' + payloadId.toString('hex'), block)
 
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
-
     return [block, builder.transactionReceipts]
   }
 }

@@ -808,15 +808,14 @@ export class Engine {
       throw EngineError.UnknownPayload
     }
 
-    const pendingBlock = this.pendingBlock.pendingPayloads.find(([id, _builder]) =>
-      payloadId.equals(id)
-    )
+    const block = this.pendingBlock.builtBlocksWithBlobs.get(payloadId)
 
-    if (pendingBlock === undefined) {
+    if (block === undefined) {
       throw EngineError.UnknownPayload
     }
 
-    const block = await pendingBlock[1].build()
+    // Remove built blocks once retrieved by CL layer
+    this.pendingBlock.builtBlocksWithBlobs.delete(payloadId)
     return {
       blockHash: '0x' + block.header.hash().toString('hex'),
       kzgs: [],
