@@ -1,7 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TransactionFactory,
+} from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -162,7 +167,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         // calculate expected coinbase balance
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
-          tx instanceof FeeMarketEIP1559Transaction
+          tx instanceof FeeMarketEIP1559Transaction || tx instanceof BlobEIP4844Transaction
             ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
               ? tx.maxPriorityFeePerGas
               : tx.maxFeePerGas - baseFee

@@ -38,7 +38,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
-    //   withdrawalsRoot,
+    withdrawalsRoot,
     excessDataGas,
   ] = values
 
@@ -66,7 +66,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
-    //withdrawalsRoot,
+    withdrawalsRoot,
     excessDataGas,
   }
 }
