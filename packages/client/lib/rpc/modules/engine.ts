@@ -801,12 +801,7 @@ export class Engine {
    * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
    */
   private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
-    let payloadId: any
-    try {
-      payloadId = toBuffer(params[0])
-    } catch (err) {
-      throw EngineError.UnknownPayload
-    }
+    const payloadId = params[0]
 
     const block = this.pendingBlock.builtBlocksWithBlobs.get(payloadId)
 
