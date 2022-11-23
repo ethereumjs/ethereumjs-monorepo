@@ -1,3 +1,4 @@
+import { computeVersionedHash } from '@ethereumjs/util'
 import {
   blobToKzgCommitment,
   computeAggregateKzgProof,
@@ -8,7 +9,6 @@ import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper, TransactionFactory } from '../src'
-import { computeVersionedHash } from '../src/util'
 
 import { get_blobs } from './utils/blobHelpers'
 
