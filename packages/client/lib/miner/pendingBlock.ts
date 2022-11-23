@@ -1,3 +1,4 @@
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { randomBytes } from 'crypto'
 
 import type { Config } from '../config'
@@ -16,6 +17,11 @@ interface PendingBlockOpts {
   txPool: TxPool
 }
 
+interface BlobBundle {
+  blockHash: string
+  blobs: Buffer[]
+  kzgCommitments: Buffer[]
+}
 /**
  * In the future this class should build a pending block by keeping the
  * transaction set up-to-date with the state of local mempool until called.
@@ -27,11 +33,12 @@ export class PendingBlock {
   config: Config
   txPool: TxPool
   pendingPayloads: [payloadId: Buffer, builder: BlockBuilder][] = []
-  builtBlocksWithBlobs: Map<string, Block>
+  blobBundles: Map<string, BlobBundle>
+
   constructor(opts: PendingBlockOpts) {
     this.config = opts.config
     this.txPool = opts.txPool
-    this.builtBlocksWithBlobs = new Map()
+    this.blobBundles = new Map()
   }
 
   /**
@@ -119,6 +126,7 @@ export class PendingBlock {
     void payload[1].revert()
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
+    this.blobBundles.delete('0x' + payloadId.toString())
   }
 
   /**
@@ -170,8 +178,25 @@ export class PendingBlock {
         block.transactions.length
       }${withdrawalsStr} hash=${block.hash().toString('hex')}`
     )
-    // TODO: Consider only setting this if block actually has blob transactions (and expect CL to not ask for blobs on non blob block)
-    this.builtBlocksWithBlobs.set('0x' + payloadId.toString('hex'), block)
+
+    // Construct blobs bundle
+    if (block._common.isActivatedEIP(4844)) {
+      const blobTxs = block.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
+      const blobs: Buffer[] = []
+      const kzgCommitments: Buffer[] = []
+      for (let tx of blobTxs) {
+        tx = tx as BlobEIP4844Transaction
+        if (tx.blobs && tx.blobs.length > 0) {
+          blobs.concat(tx.blobs)
+          kzgCommitments.concat(tx.kzgCommitments!)
+        }
+      }
+      this.blobBundles.set('0x' + payloadId.toString('hex'), {
+        blockHash: '0x' + block.header.hash().toString('hex'),
+        blobs,
+        kzgCommitments,
+      })
+    }
 
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))

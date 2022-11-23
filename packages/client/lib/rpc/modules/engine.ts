@@ -803,18 +803,18 @@ export class Engine {
   private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
     const payloadId = params[0]
 
-    const block = this.pendingBlock.builtBlocksWithBlobs.get(payloadId)
+    const bundle = this.pendingBlock.blobBundles.get(payloadId)
 
-    if (block === undefined) {
+    if (bundle === undefined) {
       throw EngineError.UnknownPayload
     }
 
     // Remove built blocks once retrieved by CL layer
-    this.pendingBlock.builtBlocksWithBlobs.delete(payloadId)
+    this.pendingBlock.blobBundles.delete(payloadId)
     return {
-      blockHash: '0x' + block.header.hash().toString('hex'),
-      kzgs: [],
-      blobs: [],
+      blockHash: bundle.blockHash,
+      kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
+      blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
     }
   }
 }

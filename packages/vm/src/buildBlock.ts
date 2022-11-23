@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
@@ -155,6 +156,13 @@ export class BlockBuilder {
 
     const result = await this.vm.runTx({ tx, block })
 
+    // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
+    if (tx instanceof BlobEIP4844Transaction) {
+      const txData = tx as BlobEIP4844Transaction
+      tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
+        common: this.blockOpts.common,
+      })
+    }
     this.transactions.push(tx)
     this.transactionResults.push(result)
     this.gasUsed += result.totalGasSpent

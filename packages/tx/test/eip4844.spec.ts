@@ -1,16 +1,10 @@
-import { computeVersionedHash } from '@ethereumjs/util'
-import {
-  blobToKzgCommitment,
-  computeAggregateKzgProof,
-  freeTrustedSetup,
-  loadTrustedSetup,
-} from 'c-kzg'
+import { computeAggregateKzgProof, freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper, TransactionFactory } from '../src'
 
-import { get_blobs } from './utils/blobHelpers'
+import { blobsToCommitments, commitmentsToVersionedHashes, getBlobs } from './utils/blobHelpers'
 
 tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
@@ -76,20 +70,18 @@ tape('Network wrapper tests', (t) => {
   // Initialize KZG environment (i.e. trusted setup)
   loadTrustedSetup('./src/kzg/trusted_setup.txt')
 
-  const commitments = []
-  const versionedHashes = []
-  const blobs = get_blobs('hello world')
-  for (let x = 0; x < blobs.length; x++) {
-    commitments.push(blobToKzgCommitment(blobs[x]))
-    versionedHashes.push(computeVersionedHash(commitments[x]))
-  }
+  const blobs = getBlobs('hello world')
+  const commitments = blobsToCommitments(blobs)
+  const versionedHashes = commitmentsToVersionedHashes(commitments)
 
-  const buffedHashes = versionedHashes.map((el) => Buffer.from(el))
+  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
   const proof = computeAggregateKzgProof(blobs)
 
   const pkey = randomBytes(32)
   const unsignedTx = BlobEIP4844Transaction.fromTxData({
-    versionedHashes: buffedHashes,
+    versionedHashes: bufferedHashes,
+    blobs,
+    kzgCommitments: commitments,
     maxFeePerDataGas: 100000000n,
   })
   const signedTx = unsignedTx.sign(pkey)
@@ -107,5 +99,14 @@ tape('Network wrapper tests', (t) => {
 
   const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(fullTx)
   t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')
+  t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
+
+  const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx)
+  t.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
+  t.ok(
+    minimalTx.hash().equals(deserializedTx.hash()),
+    'has the same hash as the network wrapper version'
+  )
+
   t.end()
 })

@@ -1,3 +1,5 @@
+import { BlobNetworkTransactionWrapper, TransactionFactory } from '@ethereumjs/tx'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -30,16 +32,28 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
 })
 
 tape.only(`${method}: call with known payload`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { service, server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
   let req = params('engine_forkchoiceUpdatedV1', validPayload)
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
   }
   await baseRequest(t, server, req, 200, expectRes, false)
-
+  await service.txPool.add(
+    TransactionFactory.fromTxData(
+      {
+        type: 0x05,
+        versionedHashes: [],
+        maxFeePerDataGas: 1n,
+        maxFeePerGas: 10000000000n,
+        maxPriorityFeePerGas: 100000000n,
+      },
+      { common }
+    ).sign(randomBytes(32))
+  )
   req = params('engine_getPayloadV1', [payloadId])
   expectRes = (res: any) => {
+    console.log(res.body)
     t.equal(
       res.body.result.blockHash,
       '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',

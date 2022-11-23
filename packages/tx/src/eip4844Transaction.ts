@@ -72,6 +72,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
   public readonly common: Common
   public versionedHashes: Buffer[]
+  blobs?: Buffer[]
+  kzgCommitments?: Buffer[]
 
   constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
@@ -141,6 +143,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     }
 
     this.versionedHashes = txData.versionedHashes
+    this.blobs = txData.blobs
+    this.kzgCommitments = txData.kzgCommitments
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -152,6 +156,23 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return new BlobEIP4844Transaction(txData, opts)
   }
 
+  /**
+   * Creates the minimal representation of a blob transaction from the network wrapper version.
+   * The minimal representation is used when adding transactions to an execution payload/block
+   * @param txData a {@link BlobEIP4844Transaction} containing optional blobs/kzg commitments
+   * @param opts - dictionary of {@link TxOptions}
+   * @returns the "minimal" representation of a BlobEIP4844Transaction minus blobs and kzg commitments
+   */
+  public static minimalFromNetworkWrapper(txData: BlobEIP4844Transaction, opts?: TxOptions) {
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        ...txData,
+        ...{ blobs: undefined, kzgCommitments: undefined },
+      },
+      opts
+    )
+    return tx
+  }
   /**
    * Creates a transaction from the network encoding of a blob transaction (with blobs/commitments/proof)
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper

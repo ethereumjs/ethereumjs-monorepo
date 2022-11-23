@@ -1,3 +1,6 @@
+import { computeVersionedHash } from '@ethereumjs/util'
+import { blobToKzgCommitment } from 'c-kzg'
+
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
  */
@@ -27,7 +30,7 @@ function get_blob(data: Buffer) {
   return blob
 }
 
-export function get_blobs(input: string) {
+export const getBlobs = (input: string) => {
   const data = Buffer.from(input, 'binary')
   const len = Buffer.byteLength(data)
   if (len === 0) {
@@ -49,4 +52,20 @@ export function get_blobs(input: string) {
   }
 
   return blobs
+}
+
+export const blobsToCommitments = (blobs: Buffer[]) => {
+  const commitments = []
+  for (const blob of blobs) {
+    commitments.push(Buffer.from(blobToKzgCommitment(blob)))
+  }
+  return commitments
+}
+
+export const commitmentsToVersionedHashes = (commitments: Buffer[]) => {
+  const hashes = []
+  for (const commitment of commitments) {
+    hashes.push(Buffer.from(computeVersionedHash(commitment)))
+  }
+  return hashes
 }
