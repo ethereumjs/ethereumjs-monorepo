@@ -8,15 +8,16 @@ import { StatelessVerkleStateManager } from '../src'
 // import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
-import * as verkleBlockJSON from './testdata/verkleBlock.json'
+import * as verkleBlock1JSON from './testdata/verkleBlock1.json'
+import * as verkleBlock2JSON from './testdata/verkleBlock2.json'
 
 tape('StatelessVerkleStateManager', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
-  const block = Block.fromBlockData(verkleBlockJSON, { common })
+  const block = Block.fromBlockData(verkleBlock1JSON, { common })
 
   t.test('initPreState()', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const proofStart = '0x000000000600000008'
     st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
@@ -30,7 +31,7 @@ tape('StatelessVerkleStateManager', (t) => {
   // Test data from https://github.com/gballet/verkle-block-sample/tree/master#block-content
   t.test('getTreeKey()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const balanceKey = await (stateManager as any).getTreeKeyForBalance(
       Address.fromString('0x0000000000000000000000000000000000000000')
@@ -43,7 +44,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x0000000000000000000000000000000000000000')
@@ -64,7 +65,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
