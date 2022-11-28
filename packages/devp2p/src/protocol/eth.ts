@@ -41,10 +41,8 @@ export class ETH extends Protocol {
       this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? BigInt(0)
     }
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
