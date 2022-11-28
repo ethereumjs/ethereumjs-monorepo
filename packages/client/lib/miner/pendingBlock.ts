@@ -1,3 +1,4 @@
+import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { randomBytes } from 'crypto'
 
@@ -90,9 +91,12 @@ export class PendingBlock {
     )
     let index = 0
     let blockFull = false
+    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
+        const tx = txs[index]
+        await builder.addTransaction(tx)
+        if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (builder.gasUsed > gasLimit - BigInt(21000)) {
@@ -112,6 +116,15 @@ export class PendingBlock {
         }
       }
       index++
+    }
+
+    // Construct initial blobs bundle when payload is constructed
+    if (vm._common.isActivatedEIP(4844)) {
+      const header = BlockHeader.fromHeaderData(headerData, {
+        hardforkByTTD: td,
+        common: vm._common,
+      })
+      this.constructBlobsBundle(payloadId, blobTxs, header.hash())
     }
     return payloadId
   }
@@ -181,25 +194,41 @@ export class PendingBlock {
 
     // Construct blobs bundle
     if (block._common.isActivatedEIP(4844)) {
-      const blobTxs = block.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
-      const blobs: Buffer[] = []
-      const kzgCommitments: Buffer[] = []
-      for (let tx of blobTxs) {
-        tx = tx as BlobEIP4844Transaction
-        if (tx.blobs && tx.blobs.length > 0) {
-          blobs.concat(tx.blobs)
-          kzgCommitments.concat(tx.kzgCommitments!)
-        }
-      }
-      this.blobBundles.set('0x' + payloadId.toString('hex'), {
-        blockHash: '0x' + block.header.hash().toString('hex'),
-        blobs,
-        kzgCommitments,
-      })
+      const blobTxs = block.transactions.filter(
+        (tx) => tx instanceof BlobEIP4844Transaction
+      ) as BlobEIP4844Transaction[]
+      this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
     }
 
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
     return [block, builder.transactionReceipts]
+  }
+
+  /**
+   * An internal helper for storing the blob bundle associated with each in an EIP4844 world
+   * @param payloadId the payload Id of the pending block
+   * @param txs an array of {@BlobEIP4844Transaction } transactions
+   * @param blockHash the blockhash of the pending block (computed from the header data provided)
+   */
+  private constructBlobsBundle = (
+    payloadId: Buffer,
+    txs: BlobEIP4844Transaction[],
+    blockHash: Buffer
+  ) => {
+    const blobs: Buffer[] = []
+    const kzgCommitments: Buffer[] = []
+    for (let tx of txs) {
+      tx = tx as BlobEIP4844Transaction
+      if (tx.blobs && tx.blobs.length > 0) {
+        blobs.concat(tx.blobs)
+        kzgCommitments.concat(tx.kzgCommitments!)
+      }
+    }
+    this.blobBundles.set('0x' + payloadId.toString('hex'), {
+      blockHash: '0x' + blockHash.toString('hex'),
+      blobs,
+      kzgCommitments,
+    })
   }
 }
