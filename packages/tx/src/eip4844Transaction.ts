@@ -8,7 +8,12 @@ import {
   ecrecover,
   toBuffer,
 } from '@ethereumjs/util'
-import { freeTrustedSetup, loadTrustedSetup, verifyAggregateKzgProof } from 'c-kzg'
+import {
+  computeAggregateKzgProof,
+  freeTrustedSetup,
+  loadTrustedSetup,
+  verifyAggregateKzgProof,
+} from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
@@ -45,7 +50,7 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  loadTrustedSetup('./src/kzg/trusted_setup.txt')
+  loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
   const verified = verifyAggregateKzgProof(blobs, commitments, kzgProof)
 
   if (!verified) {
@@ -118,8 +123,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    this.maxFeePerDataGas = txData.maxFeePerDataGas
+    this.maxFeePerDataGas = txData.maxFeePerDataGas ?? BigInt(0)
 
+    this.versionedHashes = txData.versionedHashes ?? []
     this._validateYParity()
     this._validateHighS()
 
@@ -127,7 +133,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       checkMaxInitCodeSize(this.common, this.data.length)
     }
 
-    for (const hash of txData.versionedHashes) {
+    for (const hash of this.versionedHashes) {
       if (hash.length !== 32) {
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
@@ -137,12 +143,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         throw new Error(msg)
       }
     }
-    if (txData.versionedHashes.length > LIMIT_BLOBS_PER_TX) {
+    if (this.versionedHashes.length > LIMIT_BLOBS_PER_TX) {
       const msg = this._errorMsg(`tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
       throw new Error(msg)
     }
 
-    this.versionedHashes = txData.versionedHashes
     this.blobs = txData.blobs
     this.kzgCommitments = txData.kzgCommitments
 
@@ -298,6 +303,23 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])
   }
 
+  serializeNetworkWrapper(): Buffer {
+    const to = {
+      selector: this.to !== undefined ? 1 : 0,
+      value: this.to?.toBuffer() ?? null,
+    }
+    const blobArrays = this.blobs?.map((blob) => Uint8Array.from(blob)) ?? []
+    loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
+    const serializedTxWrapper = BlobNetworkTransactionWrapper.serialize({
+      blobs: blobArrays,
+      blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
+      tx: { ...this.txData(), ...to },
+      kzgAggregatedProof: computeAggregateKzgProof(blobArrays),
+    })
+    freeTrustedSetup()
+    return Buffer.concat([Buffer.from([0x05]), serializedTxWrapper])
+  }
+
   getMessageToSign(hashMessage: false): Buffer | Buffer[]
   getMessageToSign(hashMessage?: true | undefined): Buffer
   getMessageToSign(_hashMessage?: unknown): Buffer | Buffer[] {
@@ -380,6 +402,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         s: bufferToBigInt(s),
         maxFeePerDataGas: this.maxFeePerDataGas,
         versionedHashes: this.versionedHashes,
+        blobs: this.blobs,
+        kzgCommitments: this.kzgCommitments,
       },
       opts
     )

@@ -1,6 +1,6 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -856,7 +856,13 @@ export class Eth {
 
     let tx
     try {
-      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const txBuf = toBuffer(serializedTx)
+      if (txBuf[0] === 0x05) {
+        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+      } else {
+        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+      }
     } catch (e: any) {
       throw {
         code: PARSE_ERROR,

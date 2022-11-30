@@ -1,8 +1,8 @@
-import { computeAggregateKzgProof, freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
-import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper, TransactionFactory } from '../src'
+import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 import { blobsToCommitments, commitmentsToVersionedHashes, getBlobs } from './utils/blobHelpers'
 
@@ -75,7 +75,6 @@ tape('Network wrapper tests', (t) => {
   const versionedHashes = commitmentsToVersionedHashes(commitments)
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
-  const proof = computeAggregateKzgProof(blobs)
 
   const pkey = randomBytes(32)
   const unsignedTx = BlobEIP4844Transaction.fromTxData({
@@ -86,14 +85,9 @@ tape('Network wrapper tests', (t) => {
   })
   const signedTx = unsignedTx.sign(pkey)
 
-  const serializedNetworkWrapper = BlobNetworkTransactionWrapper.serialize({
-    blobs,
-    blobKzgs: commitments,
-    tx: signedTx.txData(),
-    kzgAggregatedProof: proof,
-  })
+  const wrapper = signedTx.serializeNetworkWrapper()
 
-  const fullTx = Buffer.concat([Uint8Array.from([0x05]), serializedNetworkWrapper])
+  const fullTx = Buffer.concat([Uint8Array.from([0x05]), wrapper])
   freeTrustedSetup()
   // Cleanup KZG environment (i.e. remove trusted setup)
 
