@@ -138,3 +138,28 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: call with invalid hex params`, async (t) => {
+  const blockchain = await Blockchain.create()
+
+  const client = createClient({ blockchain, includeVM: true })
+  const manager = createManager(client)
+  const server = startRPC(manager.getMethods())
+
+  // genesis address with balance
+  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+  const estimateTxData = {
+    to: address.toString(),
+    from: address.toString(),
+    data: ``,
+    gasLimit: bigIntToHex(BigInt(53000)),
+  }
+
+  const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
+  const expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    'invalid argument data: hex string without 0x prefix'
+  )
+  await baseRequest(t, server, req, 200, expectRes)
+})

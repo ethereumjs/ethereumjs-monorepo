@@ -6,13 +6,14 @@ import { Account, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Config } from '../../lib/config'
+import { getLogger } from '../../lib/logging'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 
 import type { StateManager } from '@ethereumjs/statemanager'
 
 const setup = () => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], logger: getLogger({ loglevel: 'info' }) })
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -169,6 +170,9 @@ tape('[TxPool]', async (t) => {
         send: () => {
           t.fail('should not send to announcing peer')
         },
+        request: () => {
+          t.fail('should not send to announcing peer')
+        },
       },
     }
     let sentToPeer2 = 0
@@ -176,6 +180,10 @@ tape('[TxPool]', async (t) => {
       id: '2',
       eth: {
         send: () => {
+          sentToPeer2++
+          t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+        },
+        request: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
@@ -296,7 +304,7 @@ tape('[TxPool]', async (t) => {
 
     pool.open()
     pool.start()
-    let txs = [txA01]
+    const txs = [txA01]
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
@@ -305,11 +313,22 @@ tape('[TxPool]', async (t) => {
       },
     }
     const peerPool = new PeerPool({ config })
+    let sentToPeer2 = 0
+    const peer2: any = {
+      id: '2',
+      eth: {
+        request: (methodName: string) => {
+          sentToPeer2++
+          // throw the error on methodName so as to be handy
+          throw Error(methodName)
+        },
+      },
+    }
+    peerPool.add(peer2)
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
 
     try {
-      txs = [txA02_Underpriced]
       await pool.add(txA02_Underpriced)
       t.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
@@ -317,12 +336,29 @@ tape('[TxPool]', async (t) => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
+      const poolObject = pool['handled'].get(txA02_Underpriced.hash().toString('hex'))
+      t.equal(poolObject?.error, e, 'should have an errored poolObject')
+      const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
+      t.equal(poolTxs.length, 0, `should not be added in pool`)
     }
     t.equal(pool.pool.size, 1, 'pool size 1')
+    t.equal(sentToPeer2, 1, 'broadcast attempt to the peer')
+    t.equal((pool as any).knownByPeer.get(peer2.id).length, 1, 'known send objects')
+    t.equal(
+      (pool as any).knownByPeer.get(peer2.id)[0]?.error?.message,
+      'NewPooledTransactionHashes',
+      'should have errored sendObject for NewPooledTransactionHashes broadcast'
+    )
     const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
+    // Another attempt to add tx which should not be broadcased to peer2
+    await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
+    t.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
+    // Just to enhance logging coverage, assign peerPool for stats collection
+    pool['service'].pool = peerPool
+    pool._logPoolStats()
     pool.stop()
     pool.close()
   })
@@ -408,7 +444,7 @@ tape('[TxPool]', async (t) => {
     )
 
     t.notOk(
-      await handleTxs(txs, 'Attempting to add tx to txpool which is not signed'),
+      await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
       'successfully rejected unsigned tx'
     )
   })

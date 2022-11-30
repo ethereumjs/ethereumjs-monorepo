@@ -4,6 +4,7 @@ import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { WithdrawalData } from '@ethereumjs/util'
 import type { TxReceipt, VM } from '@ethereumjs/vm'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 
@@ -36,7 +37,12 @@ export class PendingBlock {
    * Starts building a pending block with the given payload
    * @returns an 8-byte payload identifier to call {@link BlockBuilder.build} with
    */
-  async start(vm: VM, parentBlock: Block, headerData: Partial<HeaderData> = {}) {
+  async start(
+    vm: VM,
+    parentBlock: Block,
+    headerData: Partial<HeaderData> = {},
+    withdrawals?: WithdrawalData[]
+  ) {
     const number = parentBlock.header.number + BigInt(1)
     const { gasLimit } = parentBlock.header
     const baseFeePerGas =
@@ -50,7 +56,6 @@ export class PendingBlock {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
 
     const builder = await vm.buildBlock({
       parentBlock,
@@ -60,8 +65,10 @@ export class PendingBlock {
         gasLimit,
         baseFeePerGas,
       },
+      withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
+        hardforkByTTD: td,
       },
     })
 
@@ -156,10 +163,11 @@ export class PendingBlock {
     }
 
     const block = await builder.build()
+    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      } hash=${block.hash().toString('hex')}`
+      }${withdrawalsStr} hash=${block.hash().toString('hex')}`
     )
 
     // Remove from pendingPayloads

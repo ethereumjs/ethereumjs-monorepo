@@ -309,13 +309,13 @@ ethereumjs --loglevel=debug
 For more in-depth debugging on networking the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
 
 ```shell
-DEBUG=*,-babel [CLIENT_START_COMMAND]
+DEBUG=ethjs,*,-babel [CLIENT_START_COMMAND]
 ```
 
 The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
 
 ```shell
-DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
 ### Diagram Updates

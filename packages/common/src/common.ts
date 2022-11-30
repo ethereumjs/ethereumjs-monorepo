@@ -120,6 +120,16 @@ export class Common extends EventEmitter {
           opts
         )
       }
+      if (chainParamsOrName === CustomChain.ArbitrumOne) {
+        return Common.custom(
+          {
+            name: CustomChain.ArbitrumOne,
+            chainId: 42161,
+            networkId: 42161,
+          },
+          opts
+        )
+      }
       if (chainParamsOrName === CustomChain.xDaiChain) {
         return Common.custom(
           {
@@ -166,9 +176,9 @@ export class Common extends EventEmitter {
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, genesisHash, hardfork }: GethConfigOpts
+    { chain, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
   ): Common {
-    const genesisParams = parseGethGenesis(genesisJson, chain)
+    const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
       chain: genesisParams.name ?? 'custom',
       customChains: [genesisParams],

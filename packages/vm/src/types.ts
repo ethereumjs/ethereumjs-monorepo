@@ -5,7 +5,7 @@ import type { Common } from '@ethereumjs/common'
 import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -172,6 +172,7 @@ export interface BuildBlockOpts {
    */
   headerData?: HeaderData
 
+  withdrawals?: WithdrawalData[]
   /**
    * The block and builder options to use.
    */

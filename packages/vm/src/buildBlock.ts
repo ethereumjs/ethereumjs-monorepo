@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Address, TypeOutput, toBuffer, toType } from '@ethereumjs/util'
+import { Address, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -23,6 +23,7 @@ export class BlockBuilder {
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
+  private withdrawals?: Withdrawal[]
   private checkpointed = false
   private reverted = false
   private built = false
@@ -41,6 +42,7 @@ export class BlockBuilder {
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
+    this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
     if (
       this.vm._common.isActivatedEIP(1559) === true &&
@@ -66,11 +68,7 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    const trie = new Trie()
-    for (const [i, tx] of this.transactions.entries()) {
-      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
-    }
-    return trie.root()
+    return Block.genTransactionsTrieRoot(this.transactions)
   }
 
   /**
@@ -109,6 +107,21 @@ export class BlockBuilder {
         ? new Address(toBuffer(this.headerData.coinbase))
         : Address.zero()
     await rewardAccount(this.vm.eei, coinbase, reward)
+  }
+
+  /**
+   * Adds the withdrawal amount to the withdrawal address
+   */
+  private async processWithdrawals() {
+    for (const withdrawal of this.withdrawals ?? []) {
+      const { address, amount } = withdrawal
+      // If there is no amount to add, skip touching the account
+      // as per the implementation of other clients geth/nethermind
+      // although this should never happen as no withdrawals with 0
+      // amount should ever land up here.
+      if (amount === 0n) continue
+      await rewardAccount(this.vm.eei, address, amount)
+    }
   }
 
   /**
@@ -179,9 +192,13 @@ export class BlockBuilder {
     if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
     }
+    await this.processWithdrawals()
 
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
+    const withdrawalsRoot = this.withdrawals
+      ? await Block.genWithdrawalsTrieRoot(this.withdrawals)
+      : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
@@ -191,6 +208,7 @@ export class BlockBuilder {
       ...this.headerData,
       stateRoot,
       transactionsTrie,
+      withdrawalsRoot,
       receiptTrie,
       logsBloom,
       gasUsed,
@@ -202,7 +220,11 @@ export class BlockBuilder {
       headerData.mixHash = sealOpts?.mixHash ?? headerData.mixHash
     }
 
-    const blockData = { header: headerData, transactions: this.transactions }
+    const blockData = {
+      header: headerData,
+      transactions: this.transactions,
+      withdrawals: this.withdrawals,
+    }
     const block = Block.fromBlockData(blockData, blockOpts)
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
