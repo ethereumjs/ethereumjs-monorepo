@@ -2,15 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  Address,
-  bigIntToBuffer,
-  bufArrToArr,
-  intToBuffer,
-  short,
-  toBuffer,
-} from '@ethereumjs/util'
+import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -331,11 +323,9 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
   const state = this.eei
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
-    const { address: addressData, amount: amountData } = withdrawal
-    const address = new Address(toBuffer(addressData))
-    const amount = Buffer.isBuffer(amountData)
-      ? BigInt('0x' + amountData.toString('hex'))
-      : BigInt(amountData)
+    const { address, amount } = withdrawal
+    // skip touching account if no amount update
+    if (amount === BigInt(0)) continue
     await rewardAccount(state, address, amount)
   }
 }

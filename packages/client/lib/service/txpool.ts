@@ -34,16 +34,19 @@ type TxPoolObject = {
   tx: TypedTransaction
   hash: UnprefixedHash
   added: number
+  error?: Error
 }
 
 type HandledObject = {
   address: UnprefixedAddress
   added: number
+  error?: Error
 }
 
 type SentObject = {
   hash: UnprefixedHash
   added: number
+  error?: Error
 }
 
 type UnprefixedAddress = string
@@ -184,7 +187,12 @@ export class TxPool {
       this.cleanup.bind(this),
       this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60
     )
-    this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
+
+    if (this.config.logger.isInfoEnabled()) {
+      // Only turn on txPool stats calculator if log level is info or above
+      // since all stats calculator does is print `info` logs
+      this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
+    }
     this.running = true
     this.config.logger.info('TxPool started.')
     return true
@@ -311,20 +319,25 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    await this.validate(tx, isLocalTransaction)
-    const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
-    let add: TxPoolObject[] = this.pool.get(address) ?? []
-    const inPool = this.pool.get(address)
-    if (inPool) {
-      // Replace pooled txs with the same nonce
-      add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
-    }
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
-    add.push({ tx, added, hash })
-    this.pool.set(address, add)
-    this.handled.set(hash, { address, added })
-    this.txsInPool++
+    const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
+    try {
+      await this.validate(tx, isLocalTransaction)
+      let add: TxPoolObject[] = this.pool.get(address) ?? []
+      const inPool = this.pool.get(address)
+      if (inPool) {
+        // Replace pooled txs with the same nonce
+        add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
+      }
+      add.push({ tx, added, hash })
+      this.pool.set(address, add)
+      this.handled.set(hash, { address, added })
+      this.txsInPool++
+    } catch (e) {
+      this.handled.set(hash, { address, added, error: e as Error })
+      throw e
+    }
   }
 
   /**
@@ -418,7 +431,11 @@ export class TxPool {
 
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        peer.eth?.send('NewPooledTransactionHashes', hashesToSend)
+        try {
+          await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
+        } catch (e) {
+          this.markFailedSends(peer, hashesToSend, e as Error)
+        }
       }
     }
   }
@@ -438,8 +455,23 @@ export class TxPool {
       for (const peer of peers) {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
-        this.addToKnownByPeer(hashes, peer)
-        peer.eth?.send('Transactions', txs)
+        const newHashes = this.addToKnownByPeer(hashes, peer)
+        const newHashesHex = newHashes.map((txHash) => txHash.toString('hex'))
+        const nexTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
+        peer.eth?.request('Transactions', nexTxs).catch((e) => {
+          this.markFailedSends(peer, newHashes, e as Error)
+        })
+      }
+    }
+  }
+
+  private markFailedSends(peer: Peer, failedHashes: Buffer[], e: Error): void {
+    for (const txHash of failedHashes) {
+      const sendobject = this.knownByPeer
+        .get(peer.id)
+        ?.filter((sendObject) => sendObject.hash === txHash.toString('hex'))[0]
+      if (sendobject) {
+        sendobject.error = e
       }
     }
   }
@@ -647,6 +679,7 @@ export class TxPool {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
+    const skippedStats = { byNonce: 0, byPrice: 0 }
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
@@ -656,6 +689,7 @@ export class TxPool {
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
+        skippedStats.byNonce += txsSortedByNonce.length
         continue
       }
       if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
@@ -663,6 +697,7 @@ export class TxPool {
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)
         if (found > -1) {
+          skippedStats.byPrice += found + 1
           txsSortedByNonce = txsSortedByNonce.slice(0, found)
         }
       }
@@ -692,6 +727,9 @@ export class TxPool {
       // Accumulate the best priced transaction
       txs.push(best)
     }
+    this.config.logger.info(
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice}`
+    )
     return txs
   }
 
@@ -718,8 +756,41 @@ export class TxPool {
   }
 
   _logPoolStats() {
+    let broadcasts = 0
+    let broadcasterrors = 0
+    let knownpeers = 0
+    for (const sendobjects of this.knownByPeer.values()) {
+      broadcasts += sendobjects.length
+      broadcasterrors += sendobjects.filter((sendobject) => sendobject.error !== undefined).length
+      knownpeers++
+    }
+    // Get avergae
+    if (knownpeers > 0) {
+      broadcasts = broadcasts / knownpeers
+      broadcasterrors = broadcasterrors / knownpeers
+    }
+    if (this.txsInPool > 0) {
+      broadcasts = broadcasts / this.txsInPool
+      broadcasterrors = broadcasterrors / this.txsInPool
+    }
+
+    let handledadds = 0
+    let handlederrors = 0
+    for (const handledobject of this.handled.values()) {
+      if (handledobject.error === undefined) {
+        handledadds++
+      } else {
+        handlederrors++
+      }
+    }
     this.config.logger.info(
       `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
+    )
+    this.config.logger.info(
+      `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`
+    )
+    this.config.logger.info(
+      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`
     )
   }
 }

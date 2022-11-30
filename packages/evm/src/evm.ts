@@ -139,6 +139,25 @@ export interface EVMOpts {
  * @ignore
  */
 export class EVM implements EVMInterface {
+  private static supportedHardforks = [
+    Hardfork.Chainstart,
+    Hardfork.Homestead,
+    Hardfork.Dao,
+    Hardfork.TangerineWhistle,
+    Hardfork.SpuriousDragon,
+    Hardfork.Byzantium,
+    Hardfork.Constantinople,
+    Hardfork.Petersburg,
+    Hardfork.Istanbul,
+    Hardfork.MuirGlacier,
+    Hardfork.Berlin,
+    Hardfork.London,
+    Hardfork.ArrowGlacier,
+    Hardfork.GrayGlacier,
+    Hardfork.MergeForkIdTransition,
+    Hardfork.Merge,
+    Hardfork.Shanghai,
+  ]
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -246,25 +265,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+    if (!EVM.supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
         `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
       )
@@ -297,10 +298,8 @@ export class EVM implements EVMInterface {
       promisify(this.events.emit.bind(this.events))
     )
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   protected async init(): Promise<void> {
