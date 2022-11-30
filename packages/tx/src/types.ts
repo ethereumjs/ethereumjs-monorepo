@@ -308,6 +308,8 @@ export interface JsonTx {
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
+  maxFeePerDataGas?: string
+  versionedHashes?: string[]
 }
 
 /*
@@ -333,6 +335,8 @@ export interface JsonRpcTx {
   v: string // QUANTITY - ECDSA recovery id
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
+  maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
+  versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
 
 /** EIP4844 constants */

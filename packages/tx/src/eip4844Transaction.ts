@@ -2,8 +2,10 @@ import { byteArrayEquals, toHexString } from '@chainsafe/ssz'
 import {
   Address,
   MAX_INTEGER,
+  bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufferToBigInt,
+  bufferToHex,
   computeVersionedHash,
   ecrecover,
   toBuffer,
@@ -381,8 +383,25 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   }
 
   toJSON(): JsonTx {
-    throw new Error('Method not implemented.')
+    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    return {
+      chainId: bigIntToHex(this.chainId),
+      nonce: bigIntToHex(this.nonce),
+      maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
+      maxFeePerGas: bigIntToHex(this.maxFeePerGas),
+      gasLimit: bigIntToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bigIntToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      accessList: accessListJSON,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+      maxFeePerDataGas: bigIntToHex(this.maxFeePerDataGas),
+      versionedHashes: this.versionedHashes.map((hash) => bufferToHex(hash)),
+    }
   }
+
   _processSignature(v: bigint, r: Buffer, s: Buffer): BlobEIP4844Transaction {
     const opts = { ...this.txOptions, common: this.common }
 
