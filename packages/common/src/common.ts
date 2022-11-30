@@ -307,13 +307,18 @@ export class Common extends EventEmitter {
    * @param td : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf)
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
+  getHardforkByBlockNumber(
+    blockNumber: BigIntLike,
+    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike } = {}
+  ): string {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
+    timestamp = toType(timestamp, TypeOutput.Number)
 
-    // Filter out hardforks with no block number and no ttd (i.e. unapplied hardforks)
+    // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
-      (hf) => hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined)
+      (hf) =>
+        hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined) || hf.timestamp !== null
     )
     const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
     const doubleTTDHF = hfs
@@ -325,7 +330,13 @@ export class Common extends EventEmitter {
 
     // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since
     // it cannot have a block number specified).
-    let hfIndex = hfs.findIndex((hf) => hf.block !== null && hf.block > blockNumber)
+    let hfIndex = hfs.findIndex(
+      (hf) =>
+        !(
+          (hf.block !== null && hf.block <= blockNumber) ||
+          (timestamp !== undefined && Number(hf.timestamp) <= timestamp)
+        )
+    )
 
     // Move hfIndex one back to arrive at candidate hardfork
     if (hfIndex === -1) {
@@ -340,15 +351,11 @@ export class Common extends EventEmitter {
       hfIndex = hfIndex - 1
     }
 
-    let hardfork
-    if (hfs[hfIndex].block === null) {
+    if (hfs[hfIndex].block === null && hfs[hfIndex].timestamp === undefined) {
       // We're on the merge hardfork.  Let's check the TTD
       if (td === undefined || td === null || BigInt(hfs[hfIndex].ttd!) > td) {
         // Merge ttd greater than current td so we're on hardfork before merge
-        hardfork = hfs[hfIndex - 1]
-      } else {
-        // Merge ttd equal or less than current td so we're on merge hardfork
-        hardfork = hfs[hfIndex]
+        hfIndex -= 1
       }
     } else {
       if (mergeIndex >= 0 && td !== undefined && td !== null) {
@@ -358,8 +365,27 @@ export class Common extends EventEmitter {
           throw Error('HF determined by block number is lower than the minimum total difficulty HF')
         }
       }
-      hardfork = hfs[hfIndex]
     }
+
+    if (timestamp) {
+      const minTimeStamp = hfs
+        .slice(0, hfIndex)
+        .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
+      if (minTimeStamp > timestamp) {
+        throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
+      }
+
+      const maxTimeStamp = hfs
+        .slice(hfIndex)
+        .reduce(
+          (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
+          0
+        )
+      if (maxTimeStamp < timestamp) {
+        throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
+      }
+    }
+    const hardfork = hfs[hfIndex]
     return hardfork.name
   }
 
@@ -375,8 +401,11 @@ export class Common extends EventEmitter {
    * @param td
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
+  setHardforkByBlockNumber(
+    blockNumber: BigIntLike,
+    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike } = {}
+  ): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, { td, timestamp })
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -505,8 +534,13 @@ export class Common extends EventEmitter {
    * @param td Total difficulty
    *    * @returns The value requested or `BigInt(0)` if not found
    */
-  paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): bigint {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
+  paramByBlock(
+    topic: string,
+    name: string,
+    blockNumber: BigIntLike,
+    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike }
+  ): bigint {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, { td, timestamp })
     return this.paramByHardfork(topic, name, hardfork)
   }
 
