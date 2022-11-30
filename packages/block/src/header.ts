@@ -158,7 +158,7 @@ export class BlockHeader {
       baseFeePerGas: undefined,
       // TODO: Remove this if needed since we expect CL to provide a withdrawals array (even empty)
       withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      excessDataGas: this._common.isActivatedEIP(4844) ? 0n : undefined,
+      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -183,7 +183,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
-    const excessDataGas = toType(headerData.excessDataGas, TypeOutput.BigInt)
+    const excessDataGas =
+      toType(headerData.excessDataGas, TypeOutput.BigInt) ?? defaults.excessDataGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
@@ -820,6 +821,9 @@ export class BlockHeader {
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
   }
