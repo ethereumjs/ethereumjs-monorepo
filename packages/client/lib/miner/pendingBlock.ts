@@ -122,10 +122,19 @@ export class PendingBlock {
 
     // Construct initial blobs bundle when payload is constructed
     if (vm._common.isActivatedEIP(4844)) {
-      const header = BlockHeader.fromHeaderData(headerData, {
-        hardforkByTTD: td,
-        common: vm._common,
-      })
+      const header = BlockHeader.fromHeaderData(
+        {
+          ...headerData,
+          number,
+          gasLimit,
+          baseFeePerGas,
+          excessDataGas,
+        },
+        {
+          hardforkByBlockNumber: true,
+          common: vm._common,
+        }
+      )
       this.constructBlobsBundle(payloadId, blobTxs, header.hash())
     }
     return payloadId
