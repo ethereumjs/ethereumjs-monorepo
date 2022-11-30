@@ -56,6 +56,7 @@ export class PendingBlock {
     const { gasLimit } = parentBlock.header
     const baseFeePerGas =
       vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
+    const excessDataGas = vm._common.isActivatedEIP(4844) ? BigInt(0) : undefined // Set to default of 0 since fee can't be calculated until all blob transactions are added
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -73,6 +74,7 @@ export class PendingBlock {
         number,
         gasLimit,
         baseFeePerGas,
+        excessDataGas,
       },
       withdrawals,
       blockOpts: {

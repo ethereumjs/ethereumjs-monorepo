@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { Block, calcExcessDataGas } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
@@ -211,7 +211,25 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
+    let excessDataGas = undefined
+    this.headerData.number !== undefined &&
+      this.vm._common.setHardforkByBlockNumber(this.headerData.number)
 
+    if (this.vm._common.isActivatedEIP(4844)) {
+      let parentHeader = null
+      if (this.headerData.parentHash !== undefined) {
+        parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
+      }
+      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
+        const newBlobs = this.transactions.filter(
+          (tx) => tx instanceof BlobEIP4844Transaction
+        ).length
+        excessDataGas =
+          parentHeader !== null ? calcExcessDataGas(parentHeader?.header, newBlobs) : BigInt(0)
+      } else {
+        excessDataGas = BigInt(0)
+      }
+    }
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -221,6 +239,7 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
+      excessDataGas,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {

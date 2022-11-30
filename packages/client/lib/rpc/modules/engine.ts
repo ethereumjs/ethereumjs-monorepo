@@ -45,6 +45,7 @@ export type ExecutionPayload = {
   timestamp: string // QUANTITY, 64 Bits
   extraData: string // DATA, 0 to 32 Bytes
   baseFeePerGas: string // QUANTITY, 256 Bits
+  excessDataGas?: string // QUANTITY, 256 Bits
   blockHash: string // DATA, 32 Bytes
   transactions: string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
@@ -153,6 +154,7 @@ const blockToExecutionPayload = (block: Block) => {
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
+    excessDataGas: header.excessDataGas!,
     blockHash: bufferToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
@@ -696,20 +698,24 @@ export class Engine {
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
-      const payloadId = await this.pendingBlock.start(
-        await this.vm.copy(),
-        parentBlock,
-        {
-          timestamp,
-          mixHash: prevRandao,
-          coinbase: suggestedFeeRecipient,
-        },
-        withdrawals
-      )
-      const latestValidHash = await validHash(headBlock.hash(), this.chain)
-      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
-      return response
+      try {
+        const payloadId = await this.pendingBlock.start(
+          await this.vm.copy(),
+          parentBlock,
+          {
+            timestamp,
+            mixHash: prevRandao,
+            coinbase: suggestedFeeRecipient,
+          },
+          withdrawals
+        )
+        const latestValidHash = await validHash(headBlock.hash(), this.chain)
+        const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+        const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
+        return response
+      } catch (err) {
+        throw err
+      }
     }
 
     const latestValidHash = await validHash(headBlock.hash(), this.chain)
