@@ -1,3 +1,4 @@
+// Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { randomBytes } from 'crypto'
 import { Address } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
