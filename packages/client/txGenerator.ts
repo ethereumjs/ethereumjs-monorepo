@@ -70,14 +70,9 @@ function sleep(ms: number) {
 }
 
 async function estimateGas(client: Client, tx: any) {
-  const req = {
-    id: '',
-    jsonrpc: '2.0',
-    method: 'eth_estimateGas',
-    params: [tx],
-  }
-  const res = await client.request('eth_estimateGas', [tx])
-  console.log(res.result)
+  const num = (await client.request('eth_blockNumber', [], 2.0)).result
+  const res = await client.request('eth_estimateGas', [tx, num])
+  console.log(res)
   return res.result
 }
 
