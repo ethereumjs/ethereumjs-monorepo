@@ -210,6 +210,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     const to =
       decodedTx.to.value === null ? undefined : Address.fromString(toHexString(decodedTx.to.value))
+
     const versionedHashes = decodedTx.blobVersionedHashes.map((el) => Buffer.from(el))
     const commitments = wrapper.blobKzgs.map((el) => Buffer.from(el))
     const blobs = wrapper.blobs.map((el) => Buffer.from(el))
@@ -225,6 +226,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         r: wrapper.tx.signature.r,
         s: wrapper.tx.signature.s,
         v: BigInt(wrapper.tx.signature.yParity),
+        gasLimit: decodedTx.gas,
       },
     } as BlobEIP4844TxData
     return new BlobEIP4844Transaction(txData, opts)

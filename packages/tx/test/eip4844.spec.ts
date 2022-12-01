@@ -66,13 +66,16 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   t.end()
 })
 
-tape('Network wrapper tests', (t) => {
+tape.only('Network wrapper tests', (t) => {
   // Initialize KZG environment (i.e. trusted setup)
   loadTrustedSetup('./src/kzg/trusted_setup.txt')
 
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
+
+  freeTrustedSetup()
+  // Cleanup KZG environment (i.e. remove trusted setup)
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
@@ -82,16 +85,14 @@ tape('Network wrapper tests', (t) => {
     blobs,
     kzgCommitments: commitments,
     maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
   })
   const signedTx = unsignedTx.sign(pkey)
 
   const wrapper = signedTx.serializeNetworkWrapper()
 
-  const fullTx = Buffer.concat([Uint8Array.from([0x05]), wrapper])
-  freeTrustedSetup()
-  // Cleanup KZG environment (i.e. remove trusted setup)
+  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper)
 
-  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(fullTx)
   t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')
   t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
 
