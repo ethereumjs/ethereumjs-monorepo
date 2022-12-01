@@ -6,6 +6,8 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 import { blobsToCommitments, commitmentsToVersionedHashes, getBlobs } from './utils/blobHelpers'
 
+const pk = randomBytes(32)
+
 tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
     type: 0x05,
@@ -21,6 +23,16 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
   t.equal(serializedTx[0], 5, 'successfully serialized a blob tx')
   const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx)
   t.equal(deserializedTx.type, 5, 'deserialized a blob tx')
+
+  const signedTx = tx.sign(pk)
+  const sender = signedTx.getSenderAddress().toString()
+  const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize())
+  t.equal(
+    decodedTx.getSenderAddress().toString(),
+    sender,
+    'signature and sender were deserialized correctly'
+  )
+
   t.end()
 })
 
@@ -79,7 +91,6 @@ tape.only('Network wrapper tests', (t) => {
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
-  const pkey = randomBytes(32)
   const unsignedTx = BlobEIP4844Transaction.fromTxData({
     versionedHashes: bufferedHashes,
     blobs,
@@ -87,15 +98,15 @@ tape.only('Network wrapper tests', (t) => {
     maxFeePerDataGas: 100000000n,
     gasLimit: 0xffffffn,
   })
-  const signedTx = unsignedTx.sign(pkey)
-
+  const signedTx = unsignedTx.sign(pk)
+  const sender = signedTx.getSenderAddress().toString()
   const wrapper = signedTx.serializeNetworkWrapper()
 
   const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper)
 
   t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')
   t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
-
+  t.equal(deserializedTx.getSenderAddress().toString(), sender, 'decoded sender address correctly')
   const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx)
   t.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
   t.ok(

@@ -227,6 +227,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         s: wrapper.tx.signature.s,
         v: BigInt(wrapper.tx.signature.yParity),
         gasLimit: decodedTx.gas,
+        maxFeePerGas: decodedTx.maxFeePerGas,
+        maxPriorityFeePerGas: decodedTx.maxPriorityFeePerGas,
       },
     } as BlobEIP4844TxData
     return new BlobEIP4844Transaction(txData, opts)
@@ -259,6 +261,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         r: decoded.signature.r,
         s: decoded.signature.s,
         v: BigInt(decoded.signature.yParity),
+        gasLimit: decoded.message.gas,
       },
     } as BlobEIP4844TxData
     return new BlobEIP4844Transaction(txData, opts)
@@ -285,7 +288,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       message: {
         chainId: this.common.chainId(),
         nonce: this.nonce,
-        priorityFeePerGas: this.maxPriorityFeePerGas,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
         maxFeePerGas: this.maxFeePerGas,
         gas: this.gasLimit,
         to,
@@ -338,7 +341,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     const sszEncodedTx = BlobTransactionType.serialize({
       chainId: this.common.chainId(),
       nonce: this.nonce,
-      priorityFeePerGas: this.maxPriorityFeePerGas,
+      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
       maxFeePerGas: this.maxFeePerGas,
       gas: this.gasLimit,
       to,
@@ -457,7 +460,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       message: {
         chainId: this.common.chainId(),
         nonce: this.nonce,
-        priorityFeePerGas: this.maxPriorityFeePerGas,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
         maxFeePerGas: this.maxFeePerGas,
         gas: this.gasLimit,
         to,

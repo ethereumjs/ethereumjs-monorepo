@@ -362,7 +362,7 @@ export const AccesTupleType = new ContainerType({
 export const BlobTransactionType = new ContainerType({
   chainId: new UintBigintType(32),
   nonce: new UintBigintType(32),
-  priorityFeePerGas: new UintBigintType(32),
+  maxPriorityFeePerGas: new UintBigintType(32),
   maxFeePerGas: new UintBigintType(32),
   maxFeePerDataGas: new UintBigintType(32),
   gas: new UintBigintType(8),
