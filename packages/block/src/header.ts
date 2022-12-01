@@ -559,6 +559,9 @@ export class BlockHeader {
     if (this._common.isActivatedEIP(4895) === true) {
       rawItems.push(this.withdrawalsRoot!)
     }
+    if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBuffer(this.excessDataGas!))
+    }
 
     return rawItems
   }
