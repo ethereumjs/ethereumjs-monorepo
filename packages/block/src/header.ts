@@ -139,6 +139,7 @@ export class BlockHeader {
     }
 
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -156,9 +157,6 @@ export class BlockHeader {
       mixHash: zeros(32),
       nonce: zeros(8),
       baseFeePerGas: undefined,
-      // TODO: Remove this if needed since we expect CL to provide a withdrawals array (even empty)
-      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -181,15 +179,19 @@ export class BlockHeader {
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
     let baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
-    const withdrawalsRoot =
-      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
-    const excessDataGas =
-      toType(headerData.excessDataGas, TypeOutput.BigInt) ?? defaults.excessDataGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
       this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
     }
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ??
+      // Reasonable default if 4895 is activated -- can't be set with other defaults since dependent on this.common having the hardfork set by block number
+      (this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined)
+    const excessDataGas =
+      toType(headerData.excessDataGas, TypeOutput.BigInt) ??
+      // Reasonable default if 4844 is activated -- can't be set with other defaults since dependent on this.common having the hardfork set by block number
+      (this._common.isActivatedEIP(4844) ? BigInt(0) : undefined)
 
     if (this._common.isActivatedEIP(1559) === true) {
       if (baseFeePerGas === undefined) {
@@ -206,7 +208,6 @@ export class BlockHeader {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
       }
     }
-
     if (this._common.isActivatedEIP(4895)) {
       if (withdrawalsRoot === undefined) {
         throw new Error('invalid header. withdrawalsRoot should be provided')

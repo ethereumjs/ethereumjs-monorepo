@@ -76,7 +76,7 @@ async function estimateGas(client: Client, tx: any) {
     method: 'eth_estimateGas',
     params: [tx],
   }
-  const res = await client.request('eth_estimateGas', tx)
+  const res = await client.request('eth_estimateGas', [tx])
   console.log(res.result)
   return res.result
 }
