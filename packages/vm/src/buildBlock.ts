@@ -151,7 +151,11 @@ export class BlockBuilder {
       ...this.headerData,
       gasUsed: this.gasUsed,
     }
-    const blockData = { header, transactions: this.transactions }
+    const blockData = {
+      header,
+      transactions: this.transactions,
+      withdrawals: this.vm._common.isActivatedEIP(4895) ? [] : undefined,
+    }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block })
