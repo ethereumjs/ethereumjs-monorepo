@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1669634509002,
+  "lastUpdate": 1669994019470,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f886251449f635b64c08533ff052c1a786b75688",
-          "message": "New Releases (EVM/VM Event Emitter Fix) (#2377)\n\n* Added CHANGELOG entry, bumped version number, updated ustream dependencies (Util v8.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated ustream dependencies (EVM v1.2.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated ustream dependencies (VM v6.2.0)\r\n\r\n* Updated package-lock.json",
-          "timestamp": "2022-10-21T18:02:10+02:00",
-          "tree_id": "a1e205b59a8c4f233bd370caecb3e114bd4c05d7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f886251449f635b64c08533ff052c1a786b75688"
-        },
-        "date": 1666368265157,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16280,
-            "range": "±5.46%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17420,
-            "range": "±1.89%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15959,
-            "range": "±8.60%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17622,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16861,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.95%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dc4cd91831bbfc145a1e6812a9da836c1eb2ae6a",
+          "message": "Fix nonce problem (#2404)\n\n* vm/evm: update nonce before entering execution frame\r\n\r\n* vm/evm: update nonce in evm",
+          "timestamp": "2022-12-02T10:11:02-05:00",
+          "tree_id": "8f64a405e0eeb77a2ed1491de58fe5830c8a6a05",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dc4cd91831bbfc145a1e6812a9da836c1eb2ae6a"
+        },
+        "date": 1669994018827,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19456,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19435,
+            "range": "±1.42%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18949,
+            "range": "±5.45%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19302,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18864,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
