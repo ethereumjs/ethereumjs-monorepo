@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1669994019470,
+  "lastUpdate": 1669997503256,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "dacosta.pereirafabio@gmail.com",
-            "name": "strykerin",
-            "username": "strykerin"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e6c2f6c1e96c431b3fa0f29ba899f05ef9f2a728",
-          "message": "Fix devp2p link and specify language on code blocks (#2378)\n\n* specify language on code blocks on README.md for devp2p\r\n\r\n* fix link on devp2p packages to Node discovery protocol\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-24T10:58:36-04:00",
-          "tree_id": "01dc66a41fb224c1159b33d33f68456bbf3c66f8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6c2f6c1e96c431b3fa0f29ba899f05ef9f2a728"
-        },
-        "date": 1666623650471,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15282,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15023,
-            "range": "±4.29%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14474,
-            "range": "±7.10%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14476,
-            "range": "±11.66%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15408,
-            "range": "±2.40%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.53%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45490452b9709818c343b594b71b835674a2e1a9",
+          "message": "evm: optimize memory extensions (MSTORE/MLOAD related ops) (#2405)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-12-02T10:59:51-05:00",
+          "tree_id": "3422d1ea9f6bd1c714457a4e6a50d5b3407f045d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/45490452b9709818c343b594b71b835674a2e1a9"
+        },
+        "date": 1669997502465,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 14155,
+            "range": "±5.85%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14982,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 13902,
+            "range": "±8.47%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15561,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14619,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
