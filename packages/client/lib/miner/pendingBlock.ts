@@ -169,7 +169,9 @@ export class PendingBlock {
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${block.hash().toString('hex')}`
+      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${block
+        .hash()
+        .toString('hex')}`
     )
 
     // Remove from pendingPayloads
