@@ -267,8 +267,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return new BlobEIP4844Transaction(txData, opts)
   }
 
-  getUpfrontCost(): bigint {
-    throw new Error('Method not implemented.')
+  getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
+    const prio = this.maxPriorityFeePerGas
+    const maxBase = this.maxFeePerGas - baseFee
+    const inclusionFeePerGas = prio < maxBase ? prio : maxBase
+    const gasPrice = inclusionFeePerGas + baseFee
+    return this.gasLimit * gasPrice + this.value
   }
 
   raw(): TxValuesArray {
