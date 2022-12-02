@@ -76,6 +76,10 @@ async function estimateGas(client: Client, tx: any) {
   return res.result
 }
 
+async function getNonce(client: Client, account: string) {
+  const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
+  return nonce.result
+}
 async function run(data: any, expected_kzgs: any) {
   const client = Client.http({ port: 8544 })
   while (true) {
@@ -96,21 +100,32 @@ async function run(data: any, expected_kzgs: any) {
   const account = Address.fromPrivateKey(randomBytes(32))
   const txData = {
     from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    to: account.toString(),
+    // to: account.toString(),
     data: '0x',
     chainId: '0x45',
     blobs: blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
     gas: undefined,
+    maxFeePerDataGas: undefined,
+    maxPriorityFeePerGas: undefined,
+    maxFeePerGas: undefined,
+    nonce: undefined,
+    gasLimit: undefined,
   }
 
-  txData['gas'] = await estimateGas(client, txData)
+  txData['maxFeePerGas'] = '0xff' as any
+  txData['maxPriorityFeePerGas'] = BigInt(1) as any
+  txData['maxFeePerDataGas'] = BigInt(1000) as any
+  txData['gasLimit'] = BigInt(1000000) as any
+  const nonce = await getNonce(client, '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+  txData['nonce'] = BigInt(nonce) as any
   const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(
     Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
   )
-  console.log(blobTx.blobs?.length, blobTx.kzgCommitments?.length, blobTx.versionedHashes.length)
-  console.log(`sending to ${account.toString()}`)
+
+  console.log(`sending to ${account.toString()} from ${blobTx.getSenderAddress().toString()}`)
+
   const res = await client.request(
     'eth_sendRawTransaction',
     ['0x' + blobTx.serializeNetworkWrapper().toString('hex')],
