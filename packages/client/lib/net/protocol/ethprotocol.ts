@@ -19,7 +19,7 @@ import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
 import type { BlockBodyBuffer, BlockBuffer, BlockHeaderBuffer } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, BufferLike } from '@ethereumjs/util'
+import type { BigIntLike } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 interface EthProtocolOptions extends ProtocolOptions {

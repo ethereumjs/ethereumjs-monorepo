@@ -25,12 +25,7 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type {
-  FeeMarketEIP1559Transaction,
-  JsonRpcTx,
-  Transaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -1040,7 +1035,7 @@ export class Eth {
     }
 
     return bigIntToHex(gasPrice)
-}
+  }
 
   async feeHistory(_params = []) {
     const latest = await this._chain.getCanonicalHeadHeader()
