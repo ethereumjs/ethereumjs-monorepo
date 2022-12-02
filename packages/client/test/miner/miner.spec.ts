@@ -301,9 +301,9 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
+
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add txs
@@ -347,9 +347,9 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = service
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
+
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
