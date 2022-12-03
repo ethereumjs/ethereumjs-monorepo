@@ -34,4 +34,10 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
       return this.fallbackProvider.getStorageAt(addressOrName, position)
     }
   }
+
+  async getAccount(address: Address | string): Promise<string> {
+    const _address = typeof address === 'string' ? new Address(toBuffer(address)) : address
+    const result = await this.ethersStateManager.getAccount(_address)
+    return bufferToHex(result.serialize())
+  }
 }
