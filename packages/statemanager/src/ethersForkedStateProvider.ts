@@ -11,6 +11,7 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
       typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
     this.ethersStateManager = new EthersStateManager({ blockTag: 'earliest', provider })
   }
+
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
     const address = new Address(toBuffer(await addressOrName))
     const result = await this.ethersStateManager.getContractCode(address)
@@ -18,6 +19,19 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
       return bufferToHex(result)
     } else {
       return this.fallbackProvider.getCode(addressOrName)
+    }
+  }
+  async getStorageAt(
+    addressOrName: string | Promise<string>,
+    position: string | number | bigint | Buffer
+  ): Promise<string> {
+    const address = new Address(toBuffer(await addressOrName))
+    const key = toBuffer(position)
+    const result = await this.ethersStateManager.getContractStorage(address, key)
+    if (result.length > 0) {
+      return bufferToHex(result)
+    } else {
+      return this.fallbackProvider.getStorageAt(addressOrName, position)
     }
   }
 }
