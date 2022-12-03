@@ -7,6 +7,8 @@ const ceil = (value: number, ceiling: number): number => {
   }
 }
 
+const CONTAINER_SIZE = 8192
+
 /**
  * Memory implements a simple memory model
  * for the ethereum virtual machine.
@@ -30,7 +32,10 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = Buffer.concat([this._store, Buffer.alloc(sizeDiff)])
+      this._store = Buffer.concat([
+        this._store,
+        Buffer.alloc(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE),
+      ])
     }
   }
 
@@ -50,9 +55,7 @@ export class Memory {
     if (value.length !== size) throw new Error('Invalid value size')
     if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 
-    for (let i = 0; i < size; i++) {
-      this._store[offset + i] = value[i]
-    }
+    value.copy(this._store, offset)
   }
 
   /**
