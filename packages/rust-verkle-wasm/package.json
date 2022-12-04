@@ -8,12 +8,10 @@
   "files": [
     "rust_verkle_wasm_bg.wasm",
     "rust_verkle_wasm.js",
-    "rust_verkle_wasm_bg.js",
     "rust_verkle_wasm.d.ts",
     "LICENSE_MIT",
     "LICENSE_APACHE"
   ],
-  "module": "rust_verkle_wasm.js",
-  "types": "rust_verkle_wasm.d.ts",
-  "sideEffects": false
+  "main": "rust_verkle_wasm.js",
+  "types": "rust_verkle_wasm.d.ts"
 }
