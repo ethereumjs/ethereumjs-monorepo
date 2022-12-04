@@ -287,6 +287,12 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getTransactionByBlockHashAndIndex = middleware(
+      this.getTransactionByBlockHashAndIndex.bind(this),
+      2,
+      [[validators.hex, validators.blockHash], [validators.hex]]
+    )
+
     this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
       [validators.hex],
     ])
@@ -600,6 +606,27 @@ export class Eth {
           setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
         )
       : '0x'
+  }
+
+  /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of one parameter:
+   *   1. a block hash
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockHashAndIndex(params: [string, string]) {
+    const [blockHash, txIndexHex] = params
+    try {
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
+    }
   }
 
   /**
