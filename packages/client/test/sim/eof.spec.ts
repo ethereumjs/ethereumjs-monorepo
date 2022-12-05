@@ -9,9 +9,9 @@ const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe9
 const sender = '0x' + privateToAddress(pkey).toString('hex')
 const client = Client.http({ port: 8545 })
 
-const network = 'shandong'
-const shandongJson = require(`./configs/${network}.json`)
-const common = Common.fromGethGenesis(shandongJson, { chain: network })
+const network = 'eof'
+const eofJson = require(`./configs/${network}.json`)
+const common = Common.fromGethGenesis(eofJson, { chain: network })
 
 export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -32,7 +32,7 @@ const filterKeywords = [
 ]
 const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 
-tape('Shandong EIP tests', async (t) => {
+tape('EOF ephemeral hardfork tests', async (t) => {
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,

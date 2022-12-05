@@ -12,10 +12,10 @@ export const hardforks = {
   berlin: require('./berlin.json'),
   london: require('./london.json'),
   // TODO CLEANUP:
-  // Shandong is a dummy hardfork for testing and running shandong testnet/eof testnet
+  // Eof is a dummy hardfork for testing and running shandong testnet/eof testnet
   // However its harmless as it never will get scheduled in real and would be cleaned
   // up post eof testnets are no longer needed
-  shandong: require('./shandong.json'),
+  eof: require('./eof.json'),
   shanghai: require('./shanghai.json'),
   arrowGlacier: require('./arrowGlacier.json'),
   grayGlacier: require('./grayGlacier.json'),

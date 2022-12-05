@@ -1,4 +1,4 @@
-### Shandong sim setup
+### Eof sim setup
 
 - https://github.com/ethereumjs/ethereumjs-monorepo/issues/2298
 
@@ -20,7 +20,7 @@ Target EIPs are: `3540,3651,3670,3855,3860`
 2. `cd packages/client`
 3. `docker pull chainsafe/lodestar:latest`, for MAC users: `npm install -g @chainsafe/lodestar:latest`
 4. Install linux package `jq` is not installed
-5. Create a data directory `data/shandong` (or any other place convinient for you).
+5. Create a data directory `data/eof` (or any other place convinient for you).
 
 There are three ways to run tests with varying degree of automation:
 
@@ -29,37 +29,37 @@ There are three ways to run tests with varying degree of automation:
 Just run:
 
 ```
-DATADIR=/data/shandong npm run tape -- test/sim/shandong.spec.ts
+DATADIR=/data/eof npm run tape -- test/sim/eof.spec.ts
 ```
 
 for MAC add extra env variable `LODE_BINARY="lodestar"` (or `LODE_BINARY="npx lodestar"` if you didn't install lodestar globally) , i.e.
 
 ```
-DATADIR=/data/shandong LODE_BINARY="lodestar" npm run tape -- test/sim/shandong.spec.ts
+DATADIR=/data/eof LODE_BINARY="lodestar" npm run tape -- test/sim/eof.spec.ts
 ```
 
-It will auto run the script to run custom network, run tests and in end tear it down. You can modify `test/sim/shandong.spec.ts` transaction scenarios to test your custom functionality.
+It will auto run the script to run custom network, run tests and in end tear it down. You can modify `test/sim/eof.spec.ts` transaction scenarios to test your custom functionality.
 
 #### Semi-Auto run using script to start custom network
 
 Currently you can just start the local instance by
-`DATADIR=data/shandong test/sim/./single-run.sh`
+`DATADIR=data/eof test/sim/./single-run.sh`
 
 MAC users:
-`DATADIR=data/shandong LODE_BINARY="lodestar" test/sim/./single-run.sh`
+`DATADIR=data/eof LODE_BINARY="lodestar" test/sim/./single-run.sh`
 
 This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
 
 Once the network looks synced to you, you can run tests:
 
 ```
-EXTERNAL_RUN=true npm run tape -- test/sim/shandong.spec.ts
+EXTERNAL_RUN=true npm run tape -- test/sim/eof.spec.ts
 ```
 
 #### Manual run to setup network
 
-1. Clean DATADIR (`rm -rf data/shandong/*`) in start of each run and do `mkdir data/shandong/ethereumjs && mkdir data/shandong/lodestar`
-2. Start ethereumjs: `npm run client:start -- --datadir data/shandong/ethereumjs --gethGenesis test/sim/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false`
+1. Clean DATADIR (`rm -rf data/eof/*`) in start of each run and do `mkdir data/eof/ethereumjs && mkdir data/eof/lodestar`
+2. Start ethereumjs: `npm run client:start -- --datadir data/eof/ethereumjs --gethGenesis test/sim/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false`
 3. Get genesis hash from `ethereumjs` client:
 
 ```
@@ -77,13 +77,13 @@ curl --location --request POST 'http://localhost:8545' --header 'Content-Type: a
 Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756`
 
 4. Get current time stamp: `date +%s` and add `30` to it which gives you current time + `30` seconds for e.g. `1664538222`
-5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
-   For MAC users: `lodestar dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
+5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/eof/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
+   For MAC users: `lodestar dev --dataDir data/eof/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
 
 Test the sim tests using the set network as:
 
 ```
-EXTERNAL_RUN=true npm run tape -- test/sim/shandong.spec.ts
+EXTERNAL_RUN=true npm run tape -- test/sim/eof.spec.ts
 ```
 
 ### Custom Transaction testing/development
@@ -105,13 +105,13 @@ The script should auto clean the processes. In case it fails to do so:
 Start peer 1
 
 ```
-DATADIR=/data/shandong LODE_BINARY=lodestar MULTIPEER=peer1 test/sim/./single-run.sh
+DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer1 test/sim/./single-run.sh
 ```
 
 As soon as you see lodestar started and see a count down to genesis, you can start peer 2:
 
 ```
-DATADIR=/data/shandong LODE_BINARY=lodestar MULTIPEER=peer2 test/sim/./single-run.sh
+DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer2 test/sim/./single-run.sh
 ```
 
 (Pls use lodestar stable version i.e. `latest` tag, if you omit `LODE_BINARY` then `chainsafe/lodestar:latest` docker image will be used)

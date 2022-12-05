@@ -23,7 +23,7 @@ export enum Hardfork {
   GrayGlacier = 'grayGlacier',
   MergeForkIdTransition = 'mergeForkIdTransition',
   Merge = 'merge',
-  Shandong = 'shandong',
+  Eof = 'eof',
   Shanghai = 'shanghai',
 }
 
