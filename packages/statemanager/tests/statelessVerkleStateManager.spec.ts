@@ -8,8 +8,8 @@ import { StatelessVerkleStateManager } from '../src'
 // import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
-import * as verkleBlock1JSON from './testdata/verkleBlock1.json'
 import * as verkleBlock2JSON from './testdata/verkleBlock2.json'
+import * as verkleBlock1JSON from './testdata/verkleSampleBlock_banderwagon.json'
 
 tape('StatelessVerkleStateManager', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
@@ -21,10 +21,6 @@ tape('StatelessVerkleStateManager', (t) => {
 
     const proofStart = '0x000000000600000008'
     st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
-    st.ok(
-      Object.keys((stateManager as any)._preState).length !== 0,
-      'should initialize with preState'
-    )
     st.ok(Object.keys((stateManager as any)._state).length !== 0, 'should initialize with state')
   })
 

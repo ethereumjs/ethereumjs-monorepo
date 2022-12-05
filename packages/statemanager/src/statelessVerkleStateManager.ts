@@ -31,6 +31,15 @@ const NONCE_LEAF_KEY = 2
 const CODE_KECCAK_LEAF_KEY = 3
 const CODE_SIZE_LEAF_KEY = 4
 
+const HEADER_STORAGE_OFFSET = 64
+const CODE_OFFSET = 128
+const VERKLE_NODE_WIDTH = 256
+const MAIN_STORAGE_OFFSET = 256 ** 31
+
+const PUSH_OFFSET = 95
+const PUSH1 = PUSH_OFFSET + 1
+const PUSH32 = PUSH_OFFSET + 32
+
 export class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   private _proof: PrefixedHexString = '0x'
 
@@ -120,6 +129,65 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     return this.getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
   }
 
+  private getTreeKeyForCodeChunk(address: Address, chunkId: number) {
+    return this.getTreeKey(
+      address,
+      Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH),
+      (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
+    )
+  }
+
+  private chunkifyCode(code: Buffer) {
+    // Pad code to multiple of 31 bytes
+    if (code.length % 31 !== 0) {
+      const paddingLength = 31 - (code.length % 31)
+      code = setLengthRight(code, code.length + paddingLength)
+    }
+
+    /* # Figure out how much pushdata there is after+including each byte
+    bytes_to_exec_data = [0] * (len(code) + 32)
+    pos = 0
+    while pos < len(code):
+        if PUSH1 <= code[pos] <= PUSH32:
+            pushdata_bytes = code[pos] - PUSH_OFFSET
+        else:
+            pushdata_bytes = 0
+        pos += 1
+        for x in range(pushdata_bytes):
+            bytes_to_exec_data[pos + x] = pushdata_bytes - x
+        pos += pushdata_bytes
+    # Output chunks
+    return [
+        bytes([min(bytes_to_exec_data[pos], 31)]) + code[pos: pos+31]
+        for pos in range(0, len(code), 31)
+    ] */
+  }
+
+  private getTreeKeyForStorageSlot(address: Address, storageKey: number) {
+    let position: number
+    if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
+      position = HEADER_STORAGE_OFFSET + storageKey
+    } else {
+      position = MAIN_STORAGE_OFFSET + storageKey
+    }
+
+    return this.getTreeKey(
+      address,
+      Math.floor(position / VERKLE_NODE_WIDTH),
+      position % VERKLE_NODE_WIDTH
+    )
+  }
+
+  private getStorageSlotTreeKeys(storageKey: number): [number, number] {
+    let position: number
+    if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
+      position = HEADER_STORAGE_OFFSET + storageKey
+    } else {
+      position = MAIN_STORAGE_OFFSET + storageKey
+    }
+    return [Math.floor(position / VERKLE_NODE_WIDTH), position % VERKLE_NODE_WIDTH]
+  }
+
   /**
    * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
@@ -146,6 +214,27 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Buffer> {
+    // Get the contract code size
+    const codeHashKey = this.getTreeKeyForCodeHash(address)
+    const codeSizeKey = this.getTreeKeyForCodeSize(address)
+
+    const codeHash = this._state[bufferToHex(codeHashKey)]
+    const codeSizeLE = toBuffer(this._state[bufferToHex(codeSizeKey)])
+
+    // Calculate number of chunks
+    const chunks = Math.ceil(codeSizeLE.readInt32LE() / 32)
+
+    console.log('chunks', chunks)
+    const retrievedCodeArray: Buffer[] = []
+
+    // Retrieve all code chunks
+    for (let chunkId = 0; chunkId < chunks; chunkId++) {
+      retrievedCodeArray.push(this.getTreeKeyForCodeChunk(address, chunkId))
+    }
+    // Aggregate code chunks
+
+    // Return code chunks
+
     return Buffer.alloc(0)
   }
 
@@ -200,7 +289,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     const nonceKey = this.getTreeKeyForNonce(address)
     const codeHashKey = this.getTreeKeyForCodeHash(address)
 
-    const balanceBuf = Buffer.alloc(32, 0)
+    const balanceBuf = Buffer.alloc(32)
     balanceBuf.writeBigInt64LE(account.balance)
     const nonceBuf = Buffer.alloc(32)
     nonceBuf.writeBigInt64LE(account.nonce)

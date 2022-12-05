@@ -5,7 +5,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
 
-import * as verkleBlockJSON from './testdata/verkleBlock.json'
+import * as verkleBlockJSON from './testdata/verkleSampleBlock_banderwagon.json'
 
 tape('Verkle-enabled VM', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
