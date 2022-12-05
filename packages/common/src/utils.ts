@@ -100,6 +100,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
+    [Hardfork.Eof]: { name: 'eofBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true },
   }
 
