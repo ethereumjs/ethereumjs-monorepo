@@ -342,8 +342,6 @@ export class Eth {
       [[validators.blockOption]]
     )
 
-    this.feeHistory = middleware(this.feeHistory.bind(this), 0, [])
-
     this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
@@ -1035,17 +1033,5 @@ export class Eth {
     }
 
     return bigIntToHex(gasPrice)
-  }
-
-  async feeHistory(_params = []) {
-    const latest = await this._chain.getCanonicalHeadHeader()
-    return {
-      baseFeePerGas: [
-        '0x' + latest.baseFeePerGas?.toString(16),
-        '0x' + latest.baseFeePerGas?.toString(16),
-      ],
-      oldestBlock: '0x' + latest.number.toString(16),
-      gasUsedRatio: [0.5],
-    }
   }
 }
