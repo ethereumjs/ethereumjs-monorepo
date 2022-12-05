@@ -12,11 +12,12 @@ fi;
 mkdir $DATADIR
 origDataDir=$DATADIR
 
-# just use default network as shandong, can be omitted later as more custom networks get added
+# Check if network arg is provided as the name of the geth genesis json file to use to start
+# the custom network
 if [ ! -n "$NETWORK" ]
 then
-  echo "network not provide via NETWORK env variable, default to shandong..."
-  NETWORK="shandong";
+  echo "network not provide via NETWORK env variable, exiting..."
+  exit;
 fi;
 
 if [ "$MULTIPEER" != "peer2" ]

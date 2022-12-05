@@ -38,23 +38,28 @@ for MAC add extra env variable `LODE_BINARY="lodestar"` (or `LODE_BINARY="npx lo
 DATADIR=/data/eof LODE_BINARY="lodestar" npm run tape -- test/sim/eof.spec.ts
 ```
 
-It will auto run the script to run custom network, run tests and in end tear it down. You can modify `test/sim/eof.spec.ts` transaction scenarios to test your custom functionality.
+It will auto run the script to run custom network using geth's genesis json format in `test/configs/eof.json`, run tests and in end tear it down. You can modify `test/sim/eof.spec.ts` transaction scenarios to test your custom functionality.
 
 #### Semi-Auto run using script to start custom network
 
 Currently you can just start the local instance by
-`DATADIR=data/eof test/sim/./single-run.sh`
+`NETWORK=eof DATADIR=data/eof test/sim/./single-run.sh`
 
 MAC users:
-`DATADIR=data/eof LODE_BINARY="lodestar" test/sim/./single-run.sh`
+`NETWORK=eof DATADIR=data/eof LODE_BINARY="lodestar" test/sim/./single-run.sh`
 
 This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
+
+- Please note the extra env variable NETWORK that we supply here in the direct runs which is used to pick the geth
+  genesis config from `test/sim/configs/${NETWORK}.json`. This is not required in directly running `test/sim/eof.spec.ts` (as instructed in previous ection) as it directly passes the `NETWORK` env variable to the underlying script
 
 Once the network looks synced to you, you can run tests:
 
 ```
 EXTERNAL_RUN=true npm run tape -- test/sim/eof.spec.ts
 ```
+
+as `EXTERNAL_RUN=true` indicates to the `eof.spec.ts` that the network is already running directly outside.
 
 #### Manual run to setup network
 
@@ -105,13 +110,13 @@ The script should auto clean the processes. In case it fails to do so:
 Start peer 1
 
 ```
-DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer1 test/sim/./single-run.sh
+NETWORK=eof DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer1 test/sim/./single-run.sh
 ```
 
 As soon as you see lodestar started and see a count down to genesis, you can start peer 2:
 
 ```
-DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer2 test/sim/./single-run.sh
+NETWORK=eof DATADIR=/data/eof LODE_BINARY=lodestar MULTIPEER=peer2 test/sim/./single-run.sh
 ```
 
 (Pls use lodestar stable version i.e. `latest` tag, if you omit `LODE_BINARY` then `chainsafe/lodestar:latest` docker image will be used)
