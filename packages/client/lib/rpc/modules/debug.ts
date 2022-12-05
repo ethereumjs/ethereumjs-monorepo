@@ -33,8 +33,22 @@ export class Debug {
    */
   async traceTransaction(params: [string, tracerOpts]) {
     const [txHash, opts] = params
+
+    // Validate configuration and parameters
+    if (!this.service.execution.receiptsManager) {
+      throw {
+        message: 'missing receiptsManager',
+        code: INTERNAL_ERROR,
+      }
+    }
+    if (opts.disableStorage === false) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'storage retrieval not implemented',
+      }
+    }
+
     try {
-      if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
         toBuffer(txHash)
       )
@@ -59,13 +73,6 @@ export class Debug {
         structLogs: [],
       }
       vmCopy.evm.events?.on('step', async (step, next) => {
-        if (opts.disableStorage === false) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'storage retrieval not implemented',
-          }
-        }
-
         const memory = []
         if (opts.enableMemory === true) {
           for (let x = 0; x < step.memoryWordCount; x++) {

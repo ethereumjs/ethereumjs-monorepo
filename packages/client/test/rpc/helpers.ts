@@ -245,7 +245,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TypedTransaction[]
+  txs: TypedTransaction[],
+  fromEngine = false
 ) {
   const { vm } = execution
   // build block with tx
