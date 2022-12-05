@@ -51,7 +51,7 @@ MAC users:
 This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
 
 - Please note the extra env variable NETWORK that we supply here in the direct runs which is used to pick the geth
-  genesis config from `test/sim/configs/${NETWORK}.json`. This is not required in directly running `test/sim/eof.spec.ts` (as instructed in previous ection) as it directly passes the `NETWORK` env variable to the underlying script
+  genesis config from `test/sim/configs/${NETWORK}.json`. This is not required in directly running `test/sim/eof.spec.ts` (as instructed in previous section) as it directly passes the `NETWORK` env variable to the underlying script
 
 Once the network looks synced to you, you can run tests:
 
