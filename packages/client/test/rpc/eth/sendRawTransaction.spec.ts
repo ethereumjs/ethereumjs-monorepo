@@ -155,6 +155,9 @@ tape(`${method}: call with no peers`, async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  DefaultStateManager.prototype.copy = function () {
+    return this
+  }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
   const syncTargetHeight = common.hardforkBlock(Hardfork.London)
