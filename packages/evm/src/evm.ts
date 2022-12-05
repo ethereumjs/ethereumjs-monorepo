@@ -689,6 +689,7 @@ export class EVM implements EVMInterface {
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
+    let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
@@ -700,7 +701,7 @@ export class EVM implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        const callerAccount = await this.eei.getAccount(caller)
+        callerAccount = await this.eei.getAccount(caller)
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
@@ -723,6 +724,17 @@ export class EVM implements EVMInterface {
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
       })
+    }
+
+    if (message.depth === 0) {
+      if (!callerAccount) {
+        callerAccount = await this.eei.getAccount(message.caller)
+      }
+      callerAccount.nonce++
+      await this.eei.putAccount(message.caller, callerAccount)
+      if (this.DEBUG) {
+        debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
+      }
     }
 
     await this._emit('beforeMessage', message)
@@ -887,10 +899,7 @@ export class EVM implements EVMInterface {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
-      let newNonce = acc.nonce
-      if (message.depth > 0) {
-        newNonce--
-      }
+      const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)

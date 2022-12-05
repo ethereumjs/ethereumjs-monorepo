@@ -173,6 +173,7 @@ export class PendingBlock {
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
     let blockFull = false
+    let skippedByAddErrors = 0
     while (index < txs.length && !blockFull) {
       try {
         await builder.addTransaction(txs[index])
@@ -184,6 +185,7 @@ export class PendingBlock {
             this.config.logger.info(`Pending: Assembled block full`)
           }
         } else {
+          skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
             `Pending: Skipping tx 0x${txs[index]
@@ -200,7 +202,9 @@ export class PendingBlock {
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      }${withdrawalsStr} hash=${block.hash().toString('hex')}`
+      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${block
+        .hash()
+        .toString('hex')}`
     )
 
     // Construct blobs bundle

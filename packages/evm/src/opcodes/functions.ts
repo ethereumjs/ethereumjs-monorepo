@@ -514,9 +514,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
       const account = await runState.eei.getAccount(address)
-      const empty = account.isEmpty()
-      const origin = runState.interpreter.getTxOrigin()
-      if (empty && origin !== addressBigInt) {
+      if (account.isEmpty()) {
         runState.stack.push(BigInt(0))
         return
       }
