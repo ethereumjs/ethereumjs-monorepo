@@ -6,7 +6,7 @@ import { middleware, validators } from '../validation'
 import type { EthereumClient } from '../..'
 import type { FullEthereumService } from '../../service'
 
-interface tracerOpts {
+export interface tracerOpts {
   disableStack?: boolean
   disableStorage?: boolean
   enableMemory?: boolean
