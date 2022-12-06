@@ -174,9 +174,14 @@ export class PendingBlock {
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
+    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
+        const tx = txs[index]
+        if (tx instanceof BlobEIP4844Transaction) {
+          blobTxs.push(tx)
+        }
+        await builder.addTransaction(tx)
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
@@ -209,9 +214,6 @@ export class PendingBlock {
 
     // Construct blobs bundle
     if (block._common.isActivatedEIP(4844)) {
-      const blobTxs = block.transactions.filter(
-        (tx) => tx instanceof BlobEIP4844Transaction
-      ) as BlobEIP4844Transaction[]
       this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
     }
 
@@ -231,13 +233,19 @@ export class PendingBlock {
     txs: BlobEIP4844Transaction[],
     blockHash: Buffer
   ) => {
-    const blobs: Buffer[] = []
-    const kzgCommitments: Buffer[] = []
+    let blobs: Buffer[] = []
+    let kzgCommitments: Buffer[] = []
+    const bundle = this.blobBundles.get('0x' + payloadId.toString('hex'))
+    if (bundle !== undefined) {
+      blobs = bundle.blobs
+      kzgCommitments = bundle.kzgCommitments
+    }
+
     for (let tx of txs) {
       tx = tx as BlobEIP4844Transaction
-      if (tx.blobs && tx.blobs.length > 0) {
-        blobs.concat(tx.blobs)
-        kzgCommitments.concat(tx.kzgCommitments!)
+      if (tx.blobs !== undefined && tx.blobs.length > 0) {
+        blobs = blobs.concat(tx.blobs)
+        kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
       }
     }
     this.blobBundles.set('0x' + payloadId.toString('hex'), {
