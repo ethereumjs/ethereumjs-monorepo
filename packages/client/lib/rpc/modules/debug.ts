@@ -47,13 +47,11 @@ export class Debug {
         message: 'storage retrieval not implemented',
       }
     }
-    console.log('tracing a transaction')
+
     try {
-      console.log('trying to find the tx')
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
         toBuffer(txHash)
       )
-      console.log('do we have one', result)
       if (!result) return null
       const [_, blockHash, txIndex] = result
       const block = await this.service.chain.getBlock(blockHash)
@@ -115,7 +113,6 @@ export class Debug {
       trace.returnValue = bufferToHex(res.execResult.returnValue)
       return trace
     } catch (err: any) {
-      console.log(err)
       throw {
         code: INTERNAL_ERROR,
         message: err.message.toString(),

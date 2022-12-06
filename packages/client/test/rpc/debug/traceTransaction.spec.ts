@@ -61,3 +61,131 @@ tape(`${method}: call with valid parameters`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })
+
+tape(`${method}: call with reverting code`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    txLookupLimit: 0,
+  })
+
+  // construct block with tx
+  const tx = TransactionFactory.fromTxData(
+    {
+      type: 0x2,
+      gasLimit: 0xfffff,
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 1,
+      value: 10000,
+      data: '0x560FAA',
+    },
+    { common, freeze: false }
+  ).sign(dummy.privKey)
+  tx.getSenderAddress = () => {
+    return dummy.addr
+  }
+  const block = Block.fromBlockData({}, { common })
+  block.transactions[0] = tx
+  await runBlockWithTxs(chain, execution, [tx], true)
+
+  const req = params(method, [bufferToHex(tx.hash()), {}])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.failed, true, 'returns error result with reverting code')
+  }
+  await baseRequest(t, server, req, 200, expectRes, true)
+})
+
+tape(`${method}: call with memory enabled`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    txLookupLimit: 0,
+  })
+
+  // construct block with tx
+  const tx = TransactionFactory.fromTxData(
+    {
+      type: 0x2,
+      gasLimit: 0xfffff,
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 1,
+      value: 10000,
+      data: '0x604260005260206000F3',
+    },
+    { common, freeze: false }
+  ).sign(dummy.privKey)
+  tx.getSenderAddress = () => {
+    return dummy.addr
+  }
+  const block = Block.fromBlockData({}, { common })
+  block.transactions[0] = tx
+  await runBlockWithTxs(chain, execution, [tx], true)
+
+  const req = params(method, [bufferToHex(tx.hash()), { enableMemory: true }])
+  const expectRes = (res: any) => {
+    t.equal(
+      res.body.result.structLogs[5].memory[0],
+      '0x0000000000000000000000000000000000000000000000000000000000000042',
+      'produced a trace with correct memory value returned'
+    )
+  }
+  await baseRequest(t, server, req, 200, expectRes, true)
+})
+
+tape(`${method}: call with stack disabled`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    txLookupLimit: 0,
+  })
+
+  // construct block with tx
+  const tx = TransactionFactory.fromTxData(
+    {
+      type: 0x2,
+      gasLimit: 0xfffff,
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 1,
+      value: 10000,
+      data: '0x600F6000',
+    },
+    { common, freeze: false }
+  ).sign(dummy.privKey)
+  tx.getSenderAddress = () => {
+    return dummy.addr
+  }
+  const block = Block.fromBlockData({}, { common })
+  block.transactions[0] = tx
+  await runBlockWithTxs(chain, execution, [tx], true)
+
+  const req = params(method, [bufferToHex(tx.hash()), { disableStack: true }])
+  const expectRes = (res: any) => {
+    t.ok(res.body.result.structLogs[1].stack === undefined, 'returns no stack with trace')
+  }
+  await baseRequest(t, server, req, 200, expectRes, true)
+})
+
+tape(`${method}: call with return stack enabled`, async (t) => {
+  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+    txLookupLimit: 0,
+  })
+
+  // construct block with tx
+  const tx = TransactionFactory.fromTxData(
+    {
+      type: 0x2,
+      gasLimit: 0xfffff,
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 1,
+      value: 10000,
+      data: '0x604260005260206000F3',
+    },
+    { common, freeze: false }
+  ).sign(dummy.privKey)
+  tx.getSenderAddress = () => {
+    return dummy.addr
+  }
+  const block = Block.fromBlockData({}, { common })
+  block.transactions[0] = tx
+  await runBlockWithTxs(chain, execution, [tx], true)
+
+  const req = params(method, [bufferToHex(tx.hash()), { enableReturnData: true }])
+  const expectRes = (res: any) => {
+    t.ok(res.body.result.structLogs[1].returnData !== undefined, 'return data with trace')
+  }
+  await baseRequest(t, server, req, 200, expectRes, true)
+})
