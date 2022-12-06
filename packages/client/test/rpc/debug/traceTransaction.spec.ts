@@ -1,17 +1,13 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { bufferToHex } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { tracerOpts } from '../../../lib/rpc/modules'
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import type { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 const method = 'debug_traceTransaction'
 
@@ -58,9 +54,10 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const block = Block.fromBlockData({}, { common })
   block.transactions[0] = tx
   await runBlockWithTxs(chain, execution, [tx], true)
-  const req = params('debug_traceTransaction', [bufferToHex(tx.hash())])
+
+  const req = params(method, [bufferToHex(tx.hash()), {}])
   const expectRes = (res: any) => {
-    console.log(res.body)
+    t.equal(res.body.result.structLogs[0].op, 'PUSH1', 'produced a correct trace')
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })

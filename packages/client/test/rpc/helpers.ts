@@ -268,7 +268,7 @@ export async function runBlockWithTxs(
   const block = await blockBuilder.build()
 
   // put block into chain and run execution
-  await chain.putBlocks([block])
+  await chain.putBlocks([block], fromEngine)
   await execution.run()
 }
 
