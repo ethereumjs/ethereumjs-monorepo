@@ -131,7 +131,7 @@ export class PendingBlock {
           excessDataGas,
         },
         {
-          hardforkByBlockNumber: true,
+          hardforkByTTD: td,
           common: vm._common,
         }
       )
