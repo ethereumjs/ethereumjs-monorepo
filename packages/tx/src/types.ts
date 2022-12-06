@@ -361,15 +361,15 @@ export const AccesTupleType = new ContainerType({
 // SSZ encoded blob transaction
 export const BlobTransactionType = new ContainerType({
   chainId: new UintBigintType(32),
-  nonce: new UintBigintType(32),
+  nonce: new UintBigintType(8),
   maxPriorityFeePerGas: new UintBigintType(32),
   maxFeePerGas: new UintBigintType(32),
-  maxFeePerDataGas: new UintBigintType(32),
   gas: new UintBigintType(8),
   to: new UnionType([new NoneType(), AddressType]),
   value: new UintBigintType(32),
   data: new ByteListType(MAX_CALLDATA_SIZE),
   accessList: new ListCompositeType(AccesTupleType, MAX_ACCESS_LIST_SIZE),
+  maxFeePerDataGas: new UintBigintType(32),
   blobVersionedHashes: new ListCompositeType(
     new ByteVectorType(32),
     MAX_VERSIONED_HASHES_LIST_SIZE
@@ -385,8 +385,8 @@ export const ECDSASignatureType = new ContainerType({
 
 // SSZ encoded signed blob transaction
 export const SignedBlobTransactionType = new ContainerType({
-  message: BlobTransactionType,
   signature: ECDSASignatureType,
+  message: BlobTransactionType,
 })
 
 // SSZ encoded KZG Commitment/Proof (48 bytes)
