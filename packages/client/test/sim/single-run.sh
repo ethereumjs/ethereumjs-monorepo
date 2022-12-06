@@ -23,7 +23,7 @@ fi;
 if [ "$MULTIPEER" != "peer2" ]
 then 
   DATADIR="$DATADIR/peer1"
-  EL_PORT_ARGS="--extIP 127.0.0.1"
+  EL_PORT_ARGS="--extIP 127.0.0.1 --loglevel debug"
   if [ ! -n "$MULTIPEER" ]
   then
     CL_PORT_ARGS="--genesisValidators 8 --startValidators 0..7"
