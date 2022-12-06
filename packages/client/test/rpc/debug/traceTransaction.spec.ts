@@ -5,7 +5,7 @@ import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import genesisJSON = require('../../testdata/geth-genesis/debug.json')
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
 
