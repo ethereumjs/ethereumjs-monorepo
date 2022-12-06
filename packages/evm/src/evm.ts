@@ -779,7 +779,10 @@ export class EVM implements EVMInterface {
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then all refunds are forfeited
-    if (err) {
+    // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
+    // (this only happens the Frontier/Chainstart fork)
+    // then the error is dismissed
+    if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
