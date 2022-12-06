@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1670261208037,
+  "lastUpdate": 1670335022683,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "72a0736b17c0241f2e9d0d23ad30bbd0ff9bddd9",
-          "message": "client: Enhance skeleton sync to process batches of new payloads and fcUs (#2309)\n\n* client: Enhance skeleton sync to process batches of new payloads and fcUs\r\n\r\n* beacon sync run loop as now block execution callback is outside lock\r\n\r\n* set chain hardfork and log chain head\r\n\r\n* make flow concurrency safe\r\n\r\n* reset linked on backstep\r\n\r\n* fix skeleton specs\r\n\r\n* remove run with unlock\r\n\r\n* move locking to execution from vm\r\n\r\n* handle edge case\r\n\r\n* Stub out peers in peerpool\r\n\r\n* improve condition check\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* incorporate feedback\r\n\r\n* restore waiting for interval clearing\r\n\r\n* clearify return value\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-25T00:27:31+05:30",
-          "tree_id": "a9a380f9a7aaaa2301ec109e69148e1a340718fa",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/72a0736b17c0241f2e9d0d23ad30bbd0ff9bddd9"
-        },
-        "date": 1666637971468,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19413,
-            "range": "±3.01%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19764,
-            "range": "±1.19%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18806,
-            "range": "±5.43%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19300,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18711,
-            "range": "±1.75%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.41%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b6a896bad4abc285fea1ea92f5c0e363c7f45ee6",
+          "message": "evm: fix forfeiting refunds/selfdestructs when there is a codestore-out-of-gas error (chainstart/frontier only) (#2439)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2022-12-06T14:54:25+01:00",
+          "tree_id": "d83261f98c0a3d6ec66284fa6373ed5f4154851d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b6a896bad4abc285fea1ea92f5c0e363c7f45ee6"
+        },
+        "date": 1670335021641,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19500,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18586,
+            "range": "±4.97%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19660,
+            "range": "±1.38%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19128,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17001,
+            "range": "±9.37%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
