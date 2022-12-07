@@ -2,7 +2,7 @@
 import { randomBytes } from 'crypto'
 import { Address } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -81,10 +81,10 @@ async function getNonce(client: Client, account: string) {
   return nonce.result
 }
 async function run(data: any, expected_kzgs: any) {
-  const client = Client.http({ port: 8544 })
+  const client = Client.http({ port: 8545 })
   while (true) {
     const num = parseInt((await client.request('eth_blockNumber', [], 2.0)).result)
-    if (num >= 6) {
+    if (num >= 1) {
       break
     }
     console.log(`waiting for eip4844 proc.... bn=${num}`)
@@ -102,7 +102,7 @@ async function run(data: any, expected_kzgs: any) {
     from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
     // to: account.toString(),
     data: '0x',
-    chainId: '0x45',
+    chainId: '0x1',
     blobs: blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
@@ -125,10 +125,11 @@ async function run(data: any, expected_kzgs: any) {
   )
 
   console.log(`sending to ${account.toString()} from ${blobTx.getSenderAddress().toString()}`)
+  const serializedWrapper = blobTx.serializeNetworkWrapper()
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    ['0x' + blobTx.serializeNetworkWrapper().toString('hex')],
+    ['0x' + serializedWrapper.toString('hex')],
     2.0
   )
   console.log(res)
