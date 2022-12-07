@@ -1,7 +1,10 @@
 import { Address, bufferToHex, toBuffer } from '@ethereumjs/util'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 
 import { EthersStateManager } from '.'
+
+import type { Account } from '@ethereumjs/util'
+
 export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider {
   private fallbackProvider: ethers.providers.JsonRpcProvider
   private ethersStateManager: EthersStateManager
