@@ -137,8 +137,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
       storage = accountStorage.get(key.toString('hex'))
       if (storage !== undefined) {
         return storage
-      } else {
-        return Buffer.from([])
       }
     }
 
