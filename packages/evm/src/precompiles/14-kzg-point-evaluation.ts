@@ -1,4 +1,11 @@
-import { bufferToBigInt, bufferToHex, computeVersionedHash } from '@ethereumjs/util'
+import {
+  bigIntToBuffer,
+  bufferToBigInt,
+  bufferToHex,
+  computeVersionedHash,
+  intToBuffer,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -6,9 +13,13 @@ import { ERROR, EvmError } from '../exceptions'
 import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
+// TODO: Move all Blob related constants to util
 const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513'
 )
+
+const FIELD_ELEMENTS_PER_BLOB = 4096
+
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   const versionedHash = opts.data.slice(0, 32)
@@ -25,8 +36,12 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   //const quotientKzg = opts.data.slice(144, 192)
   // TODO: Verify the kzg proof once the kzg library interface is ironed out
+
+  // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
+  const fieldElementsBuffer = setLengthLeft(intToBuffer(FIELD_ELEMENTS_PER_BLOB), 32)
+  const modulusBuffer = setLengthLeft(bigIntToBuffer(BLS_MODULUS), 32)
   return {
     executionGasUsed: gasUsed,
-    returnValue: Buffer.from([]),
+    returnValue: Buffer.concat([fieldElementsBuffer, modulusBuffer]),
   }
 }
