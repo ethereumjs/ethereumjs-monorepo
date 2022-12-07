@@ -11,6 +11,7 @@ An object with the block's data represented as strings.
 - [header](JsonBlock.md#header)
 - [transactions](JsonBlock.md#transactions)
 - [uncleHeaders](JsonBlock.md#uncleheaders)
+- [withdrawals](JsonBlock.md#withdrawals)
 
 ## Properties
 
@@ -22,7 +23,7 @@ Header data for the block
 
 #### Defined in
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)
+[types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L142)
 
 ___
 
@@ -32,7 +33,7 @@ ___
 
 #### Defined in
 
-[types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
+[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L143)
 
 ___
 
@@ -42,4 +43,14 @@ ___
 
 #### Defined in
 
-[types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L129)
+[types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L144)
+
+___
+
+### withdrawals
+
+• `Optional` **withdrawals**: `JsonRpcWithdrawal`[]
+
+#### Defined in
+
+[types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)
