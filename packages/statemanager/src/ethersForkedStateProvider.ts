@@ -9,7 +9,7 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     super(typeof provider === 'string' ? provider : provider.connection)
     this.fallbackProvider =
       typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
-    this.ethersStateManager = new EthersStateManager({ blockTag: 'earliest', provider })
+    this.ethersStateManager = new EthersStateManager({ blockTag: 1n, provider })
   }
 
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
