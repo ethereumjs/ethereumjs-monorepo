@@ -61,7 +61,7 @@
     "@ethereumjs/common": "3.0.2",
     "@ethereumjs/devp2p": "5.0.2",
     "@ethereumjs/ethash": "2.0.2",
-    "@ethereumjs/evm": "1.2.2",
+    "@ethereumjs/evm": "1.2.3",
     "@ethereumjs/rlp": "4.0.0",
     "@ethereumjs/statemanager": "1.0.2",
     "@ethereumjs/trie": "5.0.2",
