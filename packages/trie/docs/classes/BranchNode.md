@@ -13,10 +13,6 @@
 - [\_branches](BranchNode.md#_branches)
 - [\_value](BranchNode.md#_value)
 
-### Accessors
-
-- [value](BranchNode.md#value)
-
 ### Methods
 
 - [getBranch](BranchNode.md#getbranch)
@@ -24,6 +20,7 @@
 - [raw](BranchNode.md#raw)
 - [serialize](BranchNode.md#serialize)
 - [setBranch](BranchNode.md#setbranch)
+- [value](BranchNode.md#value)
 - [fromArray](BranchNode.md#fromarray)
 
 ## Constructors
@@ -55,36 +52,6 @@ ___
 #### Defined in
 
 [packages/trie/src/trie/node/branch.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L8)
-
-## Accessors
-
-### value
-
-• `get` **value**(): ``null`` \| `Buffer`
-
-#### Returns
-
-``null`` \| `Buffer`
-
-#### Defined in
-
-[packages/trie/src/trie/node/branch.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L22)
-
-• `set` **value**(`v`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `v` | ``null`` \| `Buffer` |
-
-#### Returns
-
-`void`
-
-#### Defined in
-
-[packages/trie/src/trie/node/branch.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L26)
 
 ## Methods
 
@@ -168,6 +135,26 @@ ___
 #### Defined in
 
 [packages/trie/src/trie/node/branch.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L30)
+
+___
+
+### value
+
+▸ **value**(`v?`): ``null`` \| `Buffer`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `v?` | ``null`` \| `Buffer` |
+
+#### Returns
+
+``null`` \| `Buffer`
+
+#### Defined in
+
+[packages/trie/src/trie/node/branch.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L22)
 
 ___
 
