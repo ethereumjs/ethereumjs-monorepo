@@ -17,30 +17,65 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
 
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
     const address = new Address(toBuffer(await addressOrName))
-    const result = await this.ethersStateManager.getContractCode(address)
-    if (result.length > 0) {
+    try {
+      const result = await this.ethersStateManager.getContractCode(address)
       return bufferToHex(result)
-    } else {
+    } catch {
       return this.fallbackProvider.getCode(addressOrName)
     }
   }
   async getStorageAt(
     addressOrName: string | Promise<string>,
-    position: string | number | bigint | Buffer
+    position: string | number | bigint | Buffer,
+    blockTag?: ethers.providers.BlockTag
   ): Promise<string> {
+    const state = this.ethersStateManager.copy()
+    blockTag !== undefined && state.setBlockTag(BigInt(blockTag))
     const address = new Address(toBuffer(await addressOrName))
     const key = toBuffer(position)
-    const result = await this.ethersStateManager.getContractStorage(address, key)
-    if (result.length > 0) {
+    try {
+      const result = await state.getContractStorage(address, key)
       return bufferToHex(result)
-    } else {
-      return this.fallbackProvider.getStorageAt(addressOrName, position)
+    } catch {
+      return this.fallbackProvider.getStorageAt(addressOrName, position, blockTag)
     }
   }
 
-  async getAccount(address: Address | string): Promise<string> {
-    const _address = typeof address === 'string' ? new Address(toBuffer(address)) : address
-    const result = await this.ethersStateManager.getAccount(_address)
-    return bufferToHex(result.serialize())
+  async getAccount(address: Address): Promise<Account> {
+    return this.ethersStateManager.getAccount(address)
+  }
+
+  async getBalance(
+    addressOrName: string | Promise<string>,
+    blockTag?: ethers.providers.BlockTag
+  ): Promise<BigNumber> {
+    blockTag === undefined
+      ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
+      : this.ethersStateManager.setBlockTag(BigInt(blockTag))
+    const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
+    try {
+      const account = await this.ethersStateManager.getAccount(_address)
+      const balance = account.balance
+      return BigNumber.from(balance)
+    } catch {
+      return this.fallbackProvider.getBalance(addressOrName, blockTag)
+    }
+  }
+
+  async getTransactionCount(
+    addressOrName: string | Promise<string>,
+    blockTag?: ethers.providers.BlockTag
+  ): Promise<number> {
+    blockTag === undefined
+      ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
+      : this.ethersStateManager.setBlockTag(BigInt(blockTag))
+    const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
+    try {
+      const account = await this.ethersStateManager.getAccount(_address)
+      const nonce = account.nonce
+      return Number(nonce)
+    } catch {
+      return this.fallbackProvider.getTransactionCount(addressOrName, blockTag)
+    }
   }
 }
