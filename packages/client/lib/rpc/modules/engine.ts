@@ -50,8 +50,9 @@ export type ExecutionPayload = {
   transactions: string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
 }
-export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals'>
+export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
+export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: string }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: string
@@ -117,6 +118,10 @@ const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
   withdrawals: validators.array(validators.withdrawal()),
 }
+const executionPayloadV3FieldValidators = {
+  ...executionPayloadV2FieldValidators,
+  excessDataGas: validators.hex,
+}
 
 const forkchoiceFieldValidators = {
   headBlockHash: validators.blockHash,
@@ -154,7 +159,7 @@ const blockToExecutionPayload = (block: Block) => {
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
-    excessDataGas: header.excessDataGas!,
+    excessDataGas: header.excessDataGas,
     blockHash: bufferToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
@@ -344,6 +349,13 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
+    this.newPayloadV3 = cmMiddleware(
+      middleware(this.newPayloadV3.bind(this), 1, [
+        [validators.object(executionPayloadV3FieldValidators)],
+      ]),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
     const forkchoiceUpdatedResponseCMHandler = (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
@@ -382,6 +394,11 @@ export class Engine {
 
     this.getPayloadV2 = cmMiddleware(
       middleware(this.getPayloadV2.bind(this), 1, [[validators.hex]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadV3 = cmMiddleware(
+      middleware(this.getPayloadV3.bind(this), 1, [[validators.hex]]),
       () => this.connectionManager.updateStatus()
     )
 
@@ -529,6 +546,10 @@ export class Engine {
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2]): Promise<PayloadStatusV1> {
+    return this.newPayload(params)
+  }
+
+  async newPayloadV3(params: [ExecutionPayloadV3]): Promise<PayloadStatusV1> {
     return this.newPayload(params)
   }
 
@@ -770,6 +791,10 @@ export class Engine {
   }
 
   async getPayloadV2(params: [string]) {
+    return this.getPayload(params)
+  }
+
+  async getPayloadV3(params: [string]) {
     return this.getPayload(params)
   }
   /**
