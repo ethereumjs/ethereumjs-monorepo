@@ -342,7 +342,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       selector: this.to !== undefined ? 1 : 0,
       value: this.to?.toBuffer() ?? null,
     }
-    const sszEncodedTx = BlobTransactionType.serialize({
+    const hashTreeRoot = BlobTransactionType.hashTreeRoot({
       chainId: this.common.chainId(),
       nonce: this.nonce,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
@@ -357,7 +357,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       blobVersionedHashes: this.versionedHashes,
       maxFeePerDataGas: this.maxFeePerDataGas,
     })
-    return Buffer.from(keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])))
+    console.log('heres our hash', hashTreeRoot)
+    return Buffer.from(keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, hashTreeRoot])))
   }
 
   getMessageToVerifySignature(): Buffer {

@@ -78,7 +78,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   t.end()
 })
 
-tape.only('Network wrapper tests', (t) => {
+tape('Network wrapper tests', (t) => {
   // Initialize KZG environment (i.e. trusted setup)
   loadTrustedSetup('./src/kzg/trusted_setup.txt')
 
