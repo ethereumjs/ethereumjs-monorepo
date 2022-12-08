@@ -3,26 +3,17 @@ import { BigNumber, ethers } from 'ethers'
 
 import { EthersStateManager } from '.'
 
-import type { Account } from '@ethereumjs/util'
-
 export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider {
-  private fallbackProvider: ethers.providers.JsonRpcProvider
   private ethersStateManager: EthersStateManager
   constructor(provider: string | ethers.providers.JsonRpcProvider) {
     super(typeof provider === 'string' ? provider : provider.connection)
-    this.fallbackProvider =
-      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
     this.ethersStateManager = new EthersStateManager({ blockTag: 1n, provider })
   }
 
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
     const address = new Address(toBuffer(await addressOrName))
-    try {
-      const result = await this.ethersStateManager.getContractCode(address)
-      return bufferToHex(result)
-    } catch {
-      return this.fallbackProvider.getCode(addressOrName)
-    }
+    const result = await this.ethersStateManager.getContractCode(address)
+    return bufferToHex(result)
   }
   async getStorageAt(
     addressOrName: string | Promise<string>,
@@ -33,12 +24,8 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     blockTag !== undefined && state.setBlockTag(BigInt(blockTag))
     const address = new Address(toBuffer(await addressOrName))
     const key = toBuffer(position)
-    try {
-      const result = await state.getContractStorage(address, key)
-      return bufferToHex(result)
-    } catch {
-      return this.fallbackProvider.getStorageAt(addressOrName, position, blockTag)
-    }
+    const result = await state.getContractStorage(address, key)
+    return bufferToHex(result)
   }
 
   async getAccount(address: Address): Promise<Account> {
@@ -53,13 +40,9 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
       ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
       : this.ethersStateManager.setBlockTag(BigInt(blockTag))
     const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
-    try {
-      const account = await this.ethersStateManager.getAccount(_address)
-      const balance = account.balance
-      return BigNumber.from(balance)
-    } catch {
-      return this.fallbackProvider.getBalance(addressOrName, blockTag)
-    }
+    const account = await this.ethersStateManager.getAccount(_address)
+    const balance = account.balance
+    return BigNumber.from(balance)
   }
 
   async getTransactionCount(
@@ -70,12 +53,8 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
       ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
       : this.ethersStateManager.setBlockTag(BigInt(blockTag))
     const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
-    try {
-      const account = await this.ethersStateManager.getAccount(_address)
-      const nonce = account.nonce
-      return Number(nonce)
-    } catch {
-      return this.fallbackProvider.getTransactionCount(addressOrName, blockTag)
-    }
+    const account = await this.ethersStateManager.getAccount(_address)
+    const nonce = account.nonce
+    return Number(nonce)
   }
 }
