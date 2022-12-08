@@ -124,33 +124,38 @@ tape('getCode / getStorageAt', async (t) => {
 })
 
 tape(`getTransactionCount / getBalance`, async (t) => {
-  const provider =
-    process.env.PROVIDER !== undefined
-      ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
-      : new MockProvider()
-  const state = new EthersForkedStateProvider(provider)
+  if (isBrowser() === true) {
+    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    t.end()
+  } else {
+    const provider =
+      process.env.PROVIDER !== undefined
+        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        : new MockProvider()
+    const state = new EthersForkedStateProvider(provider)
 
-  const address = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-  const account = await ((state as any).ethersStateManager as EthersStateManager).getAccount(
-    address
-  )
-  const nonce = account.nonce
-  const balance = account.balance
-  await ((state as any).ethersStateManager as EthersStateManager).putAccount(address, account)
+    const address = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const account = await ((state as any).ethersStateManager as EthersStateManager).getAccount(
+      address
+    )
+    const nonce = account.nonce
+    const balance = account.balance
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(address, account)
 
-  const bal = await state.getBalance(address.toString())
-  t.equal(bal.toBigInt(), balance, 'should return the correct balance')
+    const bal = await state.getBalance(address.toString())
+    t.equal(bal.toBigInt(), balance, 'should return the correct balance')
 
-  const count = await state.getTransactionCount(address.toString())
-  t.equal(BigInt(count), nonce, 'should return the correct nonce')
+    const count = await state.getTransactionCount(address.toString())
+    t.equal(BigInt(count), nonce, 'should return the correct nonce')
 
-  account.nonce = nonce + 1n
-  account.balance = 999999n
-  await ((state as any).ethersStateManager as EthersStateManager).putAccount(address, account)
+    account.nonce = nonce + 1n
+    account.balance = 999999n
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(address, account)
 
-  const _count = await state.getTransactionCount(address.toString())
-  t.equal(BigInt(_count), nonce + 1n, 'should return the correct nonce')
-  const _bal = await state.getBalance(address.toString())
-  t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
-  t.end()
+    const _count = await state.getTransactionCount(address.toString())
+    t.equal(BigInt(_count), nonce + 1n, 'should return the correct nonce')
+    const _bal = await state.getBalance(address.toString())
+    t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
+    t.end()
+  }
 })
