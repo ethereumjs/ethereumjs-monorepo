@@ -21,7 +21,8 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     blockTag?: ethers.providers.BlockTag
   ): Promise<string> {
     const state = this.ethersStateManager.copy()
-    blockTag !== undefined && state.setBlockTag(BigInt(blockTag))
+    blockTag !== undefined &&
+      state.setBlockTag(blockTag === 'earliest' ? blockTag : BigInt(blockTag))
     const address = new Address(toBuffer(await addressOrName))
     const key = toBuffer(position)
     const result = await state.getContractStorage(address, key)
@@ -32,9 +33,8 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     addressOrName: string | Promise<string>,
     blockTag?: ethers.providers.BlockTag
   ): Promise<BigNumber> {
-    blockTag === undefined
-      ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
-      : this.ethersStateManager.setBlockTag(BigInt(blockTag))
+    blockTag === undefined ||
+      this.ethersStateManager.setBlockTag(blockTag === 'earliest' ? 'earliest' : BigInt(blockTag))
     const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
     const account = await this.ethersStateManager.getAccount(_address)
     const balance = account.balance
@@ -45,10 +45,9 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     addressOrName: string | Promise<string>,
     blockTag?: ethers.providers.BlockTag
   ): Promise<number> {
-    blockTag === undefined
-      ? this.ethersStateManager.setBlockTag(BigInt(await this.getBlockNumber()))
-      : this.ethersStateManager.setBlockTag(BigInt(blockTag))
-    const _address = new Address(toBuffer(await this._getAddress(addressOrName)))
+    blockTag === undefined ||
+      this.ethersStateManager.setBlockTag(blockTag === 'earliest' ? 'earliest' : BigInt(blockTag))
+    const _address = Address.fromString(await this._getAddress(addressOrName))
     const account = await this.ethersStateManager.getAccount(_address)
     const nonce = account.nonce
     return Number(nonce)
