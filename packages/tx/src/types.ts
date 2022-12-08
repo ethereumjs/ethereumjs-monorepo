@@ -398,7 +398,7 @@ export const BlobNetworkTransactionWrapper = new ContainerType({
   tx: SignedBlobTransactionType,
   blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
   blobs: new ListCompositeType(
-    new ByteListType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
+    new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
     LIMIT_BLOBS_PER_TX
   ),
   kzgAggregatedProof: KZGProofType,
