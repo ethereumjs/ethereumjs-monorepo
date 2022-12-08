@@ -1,4 +1,5 @@
 import { bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { options } from 'libp2p/src/keychain'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -11,9 +12,49 @@ export interface tracerOpts {
   disableStorage?: boolean
   enableMemory?: boolean
   enableReturnData?: boolean
+  tracer?: string
+  timeout?: string
+  tracerConfig?: any
+}
+
+/**
+ * Validate tracer opts to ensure only supports opts are provided
+ * @param opts a dictionary of {@link tracerOpts}
+ * @returns a dictionary of valid {@link tracerOpts}
+ * @throws if invalid tracer options are provided
+ */
+const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
+  if (opts.tracerConfig !== undefined) {
+    throw {
+      code: INVALID_PARAMS,
+      message: 'custom tracers and tracer configurations are not implemented',
+    }
+  }
+  if (opts.tracer !== undefined) {
+    throw {
+      code: INVALID_PARAMS,
+      message: 'custom tracers not implemented',
+    }
+  }
+  if (opts.timeout !== undefined) {
+    throw {
+      code: INVALID_PARAMS,
+      message: 'custom tracer timeouts not implemented',
+    }
+  }
+  if (opts.disableStorage === false) {
+    throw {
+      code: INVALID_PARAMS,
+      message: 'storage retrieval not implemented',
+    }
+  }
+  return {
+    ...{ disableStack: false, disableStorage: true, enableMemory: true, enableReturnData: false },
+    ...opts,
+  }
 }
 /**
- * web3_* RPC module
+ * debug_* RPC module
  * @memberof module:rpc/modules
  */
 export class Debug {
@@ -32,7 +73,7 @@ export class Debug {
    * @param params string representing the transaction hash
    */
   async traceTransaction(params: [string, tracerOpts]) {
-    const [txHash, opts] = params
+    const [txHash, config] = params
 
     // Validate configuration and parameters
     if (!this.service.execution.receiptsManager) {
@@ -41,12 +82,8 @@ export class Debug {
         code: INTERNAL_ERROR,
       }
     }
-    if (opts.disableStorage === false) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'storage retrieval not implemented',
-      }
-    }
+
+    const opts = validateTracerConfig(config)
 
     try {
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
