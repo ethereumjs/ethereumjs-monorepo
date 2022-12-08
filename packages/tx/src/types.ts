@@ -385,8 +385,8 @@ export const ECDSASignatureType = new ContainerType({
 
 // SSZ encoded signed blob transaction
 export const SignedBlobTransactionType = new ContainerType({
-  signature: ECDSASignatureType,
   message: BlobTransactionType,
+  signature: ECDSASignatureType,
 })
 
 // SSZ encoded KZG Commitment/Proof (48 bytes)
