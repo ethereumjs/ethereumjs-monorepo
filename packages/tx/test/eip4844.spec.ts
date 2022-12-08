@@ -1,5 +1,5 @@
 import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
-import { randomBytes } from 'crypto'
+import { randomBytes, sign } from 'crypto'
 import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, TransactionFactory } from '../src'
@@ -117,7 +117,7 @@ tape('Network wrapper tests', (t) => {
   t.end()
 })
 
-tape('hash()', async (t) => {
+tape('hash() and signature verification', async (t) => {
   const unsignedTx = BlobEIP4844Transaction.fromTxData({
     chainId: 1,
     nonce: 1,
@@ -140,4 +140,15 @@ tape('hash()', async (t) => {
     '4a4451b77bf251d626009dc9c6179c9fe088eb362a1d94eab257fb6f0f9fe95e',
     'produced the correct transaction hash'
   )
+  const signedTx = unsignedTx.sign(
+    Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
+  )
+
+  t.equal(
+    signedTx.getSenderAddress().toString(),
+    '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+    'was able to recover sender address'
+  )
+  t.ok(signedTx.verifySignature(), 'signature is valid')
+  t.end()
 })

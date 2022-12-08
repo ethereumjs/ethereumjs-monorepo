@@ -357,7 +357,6 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       blobVersionedHashes: this.versionedHashes,
       maxFeePerDataGas: this.maxFeePerDataGas,
     })
-    console.log('heres our hash', hashTreeRoot)
     return Buffer.from(keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, hashTreeRoot])))
   }
 
