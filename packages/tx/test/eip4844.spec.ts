@@ -1,5 +1,5 @@
-import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
-import { randomBytes, sign } from 'crypto'
+import { freeTrustedSetup, loadTrustedSetup, transformTrustedSetupJSON } from 'c-kzg'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, TransactionFactory } from '../src'
@@ -78,9 +78,9 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   t.end()
 })
 
-tape('Network wrapper tests', (t) => {
+tape('Network wrapper tests', async (t) => {
   // Initialize KZG environment (i.e. trusted setup)
-  loadTrustedSetup('./src/kzg/trusted_setup.txt')
+  loadTrustedSetup(await transformTrustedSetupJSON('./src/kzg/trusted_setup.json'))
 
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)

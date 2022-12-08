@@ -2,7 +2,7 @@
 import { randomBytes } from 'crypto'
 import { Address } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { BlobEIP4844Transaction, BlobNetworkTransactionWrapper } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
