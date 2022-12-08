@@ -1,5 +1,4 @@
 import { bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
-import { options } from 'libp2p/src/keychain'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -17,6 +16,17 @@ export interface tracerOpts {
   tracerConfig?: any
 }
 
+export interface structLog {
+  depth: number
+  gas: number
+  gasCost: number
+  op: string
+  pc: number
+  stack: string[] | undefined
+  memory: string[] | undefined
+  returnData: string[] | undefined
+  storage: {}
+}
 /**
  * Validate tracer opts to ensure only supports opts are provided
  * @param opts a dictionary of {@link tracerOpts}
@@ -107,7 +117,7 @@ export class Debug {
         gas: '',
         returnValue: '',
         failed: false,
-        structLogs: [],
+        structLogs: [] as structLog[],
       }
       vmCopy.evm.events?.on('step', async (step, next) => {
         const memory = []
