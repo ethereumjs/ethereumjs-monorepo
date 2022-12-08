@@ -237,7 +237,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    const storageKey = this.getTreeKeyForStorageSlot(address, Number(key))
+    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bufferToHex(key)))
     const storage = toBuffer(this._state[bufferToHex(storageKey)])
 
     return storage
