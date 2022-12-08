@@ -116,3 +116,28 @@ tape('Network wrapper tests', (t) => {
 
   t.end()
 })
+
+tape('hash()', async (t) => {
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    chainId: 1,
+    nonce: 1,
+    versionedHashes: [
+      Buffer.from('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e', 'hex'),
+    ],
+    maxFeePerDataGas: 10000000n,
+    gasLimit: 123457n,
+    maxFeePerGas: 42n,
+    maxPriorityFeePerGas: 10n,
+    accessList: [
+      {
+        address: '0x0000000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+      },
+    ],
+  })
+  t.equal(
+    unsignedTx.hash().toString('hex'),
+    '4a4451b77bf251d626009dc9c6179c9fe088eb362a1d94eab257fb6f0f9fe95e',
+    'produced the correct transaction hash'
+  )
+})
