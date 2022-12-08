@@ -97,11 +97,11 @@ tape('Network wrapper tests', (t) => {
     kzgCommitments: commitments,
     maxFeePerDataGas: 100000000n,
     gasLimit: 0xffffffn,
+    to: randomBytes(20),
   })
   const signedTx = unsignedTx.sign(pk)
   const sender = signedTx.getSenderAddress().toString()
   const wrapper = signedTx.serializeNetworkWrapper()
-
   const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper)
 
   t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')

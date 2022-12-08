@@ -100,7 +100,7 @@ async function run(data: any, expected_kzgs: any) {
   const account = Address.fromPrivateKey(randomBytes(32))
   const txData = {
     from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    // to: account.toString(),
+    to: account.toString(),
     data: '0x',
     chainId: '0x1',
     blobs: blobs,
