@@ -1,4 +1,3 @@
-import { Block } from '@ethereumjs/block'
 import {
   Account,
   Address,
@@ -82,15 +81,6 @@ tape('Ethers State Manager API tests', async (t) => {
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersForkedStateProvider(provider)
-    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-    const account = await state.getAccount(vitalikDotEth)
-    t.ok(account.nonce > 0n, 'Vitalik.eth returned a valid nonce')
-
-    await ((state as any).ethersStateManager as EthersStateManager).putAccount(
-      vitalikDotEth,
-      account
-    )
-
     const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const UNIContractCode = await state.getCode('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     t.equal(UNIContractCode, '0x00', 'was able to retrieve UNI contract code')
@@ -104,7 +94,7 @@ tape('Ethers State Manager API tests', async (t) => {
       '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
       setLengthLeft(bigIntToBuffer(1n), 32)
     )
-    t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+    t.ok(storageSlot.length > 0, 'should to retrieve storage slot 1 for the UNI contract')
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
       UNIerc20ContractAddress,
@@ -128,18 +118,7 @@ tape('Ethers State Manager API tests', async (t) => {
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
 
-    t.equal(deletedSlot, '0x', 'deleted slot from storage cache')
-
-    try {
-      await Block.fromEthersProvider(provider, 'fakeBlockTag', {} as any)
-      t.fail('should have thrown')
-    } catch (err: any) {
-      t.ok(
-        err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
-        'threw with correct error when invalid blockTag provided'
-      )
-    }
-
+    t.equal(deletedSlot, '0x', 'should return empty buffer for deleted slot')
     t.end()
   }
 })
