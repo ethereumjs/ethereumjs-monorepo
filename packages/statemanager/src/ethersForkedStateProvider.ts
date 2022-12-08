@@ -28,10 +28,6 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     return bufferToHex(result)
   }
 
-  async getAccount(address: Address): Promise<Account> {
-    return this.ethersStateManager.getAccount(address)
-  }
-
   async getBalance(
     addressOrName: string | Promise<string>,
     blockTag?: ethers.providers.BlockTag
