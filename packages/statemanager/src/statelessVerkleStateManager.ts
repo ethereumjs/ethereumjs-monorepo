@@ -96,7 +96,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     return arrToBufArr(pedersenHash)
   }
 
-  private getTreeKey(address: Address, treeIndex: number, subIndex: number) {
+  private getTreeKey(address: Address, treeIndex: number, subIndex: number): Buffer {
     const address32 = setLengthRight(address.toBuffer(), 32)
 
     const treeIndexB = Buffer.alloc(32)
@@ -178,16 +178,6 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     )
   }
 
-  private getStorageSlotTreeKeys(storageKey: number): [number, number] {
-    let position: number
-    if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-      position = HEADER_STORAGE_OFFSET + storageKey
-    } else {
-      position = MAIN_STORAGE_OFFSET + storageKey
-    }
-    return [Math.floor(position / VERKLE_NODE_WIDTH), position % VERKLE_NODE_WIDTH]
-  }
-
   /**
    * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
@@ -218,24 +208,23 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     const codeHashKey = this.getTreeKeyForCodeHash(address)
     const codeSizeKey = this.getTreeKeyForCodeSize(address)
 
-    const codeHash = this._state[bufferToHex(codeHashKey)]
     const codeSizeLE = toBuffer(this._state[bufferToHex(codeSizeKey)])
 
     // Calculate number of chunks
     const chunks = Math.ceil(codeSizeLE.readInt32LE() / 32)
 
-    console.log('chunks', chunks)
-    const retrievedCodeArray: Buffer[] = []
+    const retrievedChunks: Buffer[] = []
 
     // Retrieve all code chunks
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
-      retrievedCodeArray.push(this.getTreeKeyForCodeChunk(address, chunkId))
+      retrievedChunks.push(this.getTreeKeyForCodeChunk(address, chunkId))
     }
+
     // Aggregate code chunks
+    const code = Buffer.concat(retrievedChunks)
 
     // Return code chunks
-
-    return Buffer.alloc(0)
+    return code
   }
 
   /**
@@ -248,7 +237,10 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    return Buffer.alloc(0)
+    const storageKey = this.getTreeKeyForStorageSlot(address, Number(key))
+    const storage = toBuffer(this._state[bufferToHex(storageKey)])
+
+    return storage
   }
 
   /**
@@ -258,13 +250,19 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {}
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    const storageKey = this.getTreeKeyForStorageSlot(address, Number(key))
+    this._state[bufferToHex(storageKey)] = value.toString('hex')
+  }
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {}
+  async clearContractStorage(address: Address): Promise<void> {
+    // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
+    // Clear all storage slots (how?)
+  }
 
   async getAccount(address: Address): Promise<Account> {
     // Retrieve treeKeys from account address
