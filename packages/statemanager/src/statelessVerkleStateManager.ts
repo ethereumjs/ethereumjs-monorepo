@@ -251,7 +251,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    const storageKey = this.getTreeKeyForStorageSlot(address, Number(key))
+    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bufferToHex(key)))
     this._state[bufferToHex(storageKey)] = value.toString('hex')
   }
 
