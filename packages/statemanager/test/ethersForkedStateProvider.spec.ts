@@ -81,8 +81,9 @@ tape('getCode / getStorageAt', async (t) => {
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersForkedStateProvider(provider)
-    const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
-    const UNIContractCode = await state.getCode('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+    const UNIContract_str = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
+    const UNIerc20ContractAddress = Address.fromString(UNIContract_str)
+    const UNIContractCode = await state.getCode(UNIContract_str)
     t.equal(UNIContractCode, '0x00', 'was able to retrieve UNI contract code')
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractCode(
@@ -91,30 +92,35 @@ tape('getCode / getStorageAt', async (t) => {
     )
 
     const storageSlot = await state.getStorageAt(
-      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+      UNIContract_str,
       setLengthLeft(bigIntToBuffer(1n), 32)
     )
-    t.ok(storageSlot.length > 0, 'should to retrieve storage slot 1 for the UNI contract')
+    t.equal(storageSlot, '0xabcd', 'should to retrieve storage slot 1 for the UNI contract')
 
-    await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32),
-      Buffer.from('abcd')
-    )
-    const slotValue = await state.getStorageAt(
+    let slotValue = await state.getStorageAt(
       '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
-    t.deepEqual(slotValue, bufferToHex(Buffer.from('abcd')), 'should retrieve slot 2 value')
+    t.equal(slotValue, '0xabcd', 'should retrieve unchanged slot 2 value')
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(2n), 32),
-      Buffer.from([])
+      toBuffer('0xbeef')
+    )
+    slotValue = await state.getStorageAt(
+      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+      setLengthLeft(bigIntToBuffer(2n), 32)
+    )
+    t.deepEqual(slotValue, '0xbeef', 'should retrieve changed slot 2 value')
+    await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32),
+      Buffer.from('')
     )
 
     const deletedSlot = await state.getStorageAt(
-      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+      UNIContract_str,
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
 
