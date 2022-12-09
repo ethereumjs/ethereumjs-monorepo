@@ -142,26 +142,34 @@ async function run(data: any, expected_kzgs: any) {
   }
 
   let blob_kzg = null
-  /* try {
-        let start = (await axios.get("http://localhost:3500/eth/v1/beacon/headers")).data.data[0].header.message.slot - 1
-        for (let i = 0; i < 5; i++) {
-            const res = (await axios.get(`http://localhost:3500/eth/v2/beacon/blocks/${start + i}`)).data.data.message.body.blob_kzgs
-            if (res.length > 0) {
-                blob_kzg = res[0]
-            }
-            while (true) {
-                const current = (await axios.get("http://localhost:3500/eth/v1/beacon/headers")).data.data[0].header.message.slot - 1
-                if (current > start + i) {
-                    break
-                }
-                console.log(`waiting for tx to be included in block.... bn=${current}`)
-                await sleep(1000)
-            }
+  try {
+    let res = (
+      await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers', { method: 'get' })).json()
+    ).data[0].header.message.slot
+    const start = parseInt(res)
+    for (let i = 0; i < 5; i++) {
+      const res = (
+        await (await fetch(`http://127.0.0.1:9596/eth/v2/beacon/blocks/${start + i}`)).json()
+      ).data.message.body.blob_kzgs
+      if (res && res.length > 0) {
+        blob_kzg = res[0]
+      }
+      while (true) {
+        const current =
+          (await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()).data[0].header
+            .message.slot - 1
+        if (current > start + i) {
+          break
         }
-    } catch(error) {
-        console.log(`Error retrieving blocks from ${error.config.url}: ${error.response.data}`)
-        return false
-    }*/
+        console.log(`waiting for tx to be included in block.... bn=${current}`)
+        await sleep(1000)
+      }
+    }
+  } catch (error: any) {
+    console.log(error)
+    console.log(`Error retrieving blocks from ${error.config.url}: ${error.response.data}`)
+    return false
+  }
 
   if (blob_kzg !== expected_kzgs) {
     console.log(`Unexpected KZG value: expected ${expected_kzgs}, got ${blob_kzg}`)
