@@ -52,14 +52,8 @@ const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
       message: 'custom tracer timeouts not implemented',
     }
   }
-  if (opts.disableStorage === false) {
-    throw {
-      code: INVALID_PARAMS,
-      message: 'storage retrieval not implemented',
-    }
-  }
   return {
-    ...{ disableStack: false, disableStorage: true, enableMemory: true, enableReturnData: false },
+    ...{ disableStack: false, disableStorage: false, enableMemory: false, enableReturnData: false },
     ...opts,
   }
 }
@@ -121,6 +115,10 @@ export class Debug {
       }
       vmCopy.evm.events?.on('step', async (step, next) => {
         const memory = []
+        let storage = {}
+        if (opts.disableStorage === false) {
+          storage = await vmCopy.stateManager.dumpStorage(step.address)
+        }
         if (opts.enableMemory === true) {
           for (let x = 0; x < step.memoryWordCount; x++) {
             const word = bufferToHex(step.memory.slice(x * 32, 32))
@@ -136,7 +134,7 @@ export class Debug {
           error: null,
           stack:
             opts.disableStack !== true ? step.stack.map((entry) => bigIntToHex(entry)) : undefined,
-          storage: {},
+          storage,
           memory,
           returnData:
             opts.enableReturnData === true

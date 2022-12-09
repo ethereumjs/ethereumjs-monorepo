@@ -22,13 +22,9 @@ tape(`${method}: call with invalid configuration`, async (t) => {
 tape(`${method}: call with invalid parameters`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge')
 
-  let req = params(method, ['abcd', []])
-  let expectRes = checkError(t, INVALID_PARAMS, 'hex string without 0x prefix')
+  const req = params(method, ['abcd', []])
+  const expectRes = checkError(t, INVALID_PARAMS, 'hex string without 0x prefix')
   await baseRequest(t, server, req, 200, expectRes, false)
-
-  req = params(method, ['0x' + randomBytes(32).toString('hex'), { disableStorage: false }])
-  expectRes = checkError(t, INVALID_PARAMS, 'storage retrieval not implemented')
-  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: call with valid parameters`, async (t) => {
