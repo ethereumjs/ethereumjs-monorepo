@@ -150,7 +150,7 @@ async function run(data: any, expected_kzgs: any) {
     for (let i = 0; i < 5; i++) {
       const res = (
         await (await fetch(`http://127.0.0.1:9596/eth/v2/beacon/blocks/${start + i}`)).json()
-      ).data.message.body.blob_kzgs
+      ).data.message.body.blob_kzg_commitments
       if (res && res.length > 0) {
         blob_kzg = res[0]
       }
