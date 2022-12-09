@@ -26,6 +26,7 @@ export interface structLog {
   memory: string[] | undefined
   returnData: string[] | undefined
   storage: {}
+  error: boolean | undefined | null
 }
 /**
  * Validate tracer opts to ensure only supports opts are provided
@@ -107,7 +108,7 @@ export class Debug {
         await vmCopy.runTx({ tx: block.transactions[x], block })
       }
 
-      const trace: any = {
+      const trace = {
         gas: '',
         returnValue: '',
         failed: false,

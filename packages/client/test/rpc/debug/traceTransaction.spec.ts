@@ -1,7 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToHex } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../lib/rpc/error-code'
