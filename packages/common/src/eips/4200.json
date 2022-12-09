@@ -1,0 +1,26 @@
+{
+  "name": "EIP-4200",
+  "number": 4200,
+  "comment": "Static relative jumps",
+  "url": "https://eips.ethereum.org/EIPS/eip-4200",
+  "status": "Review",
+  "minimumHardfork": "berlin",
+  "requiredEIPs": [3540],
+  "gasConfig": {},
+  "gasPrices": {
+    "rjump": {
+      "v": 2,
+      "d": "Base fee of the RJUMP opcode"
+    },
+    "rjumpi": {
+      "v": 4,
+      "d": "Base fee of the RJUMPI opcode"
+    },
+    "rjumpv": {
+      "v": 4,
+      "d": "Base fee of the RJUMPV opcode"
+    }
+  },
+  "vm": {},
+  "pow": {}
+}
