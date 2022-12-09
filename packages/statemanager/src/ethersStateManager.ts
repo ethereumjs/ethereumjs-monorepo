@@ -165,7 +165,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const accountStorage = this.storageCache.get(address.toString()) ?? new Map<string, Buffer>()
 
     if (value.length === 0 || value.equals(Buffer.alloc(value.length).fill(0))) {
-      accountStorage.delete(key.toString('hex'))
+      accountStorage.set(key.toString('hex'), Buffer.from([]))
     } else {
       accountStorage.set(key.toString('hex'), value)
     }
