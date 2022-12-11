@@ -554,7 +554,8 @@ export class EVM implements EVMInterface {
           // in the bytecode of the contract
           if (
             !EOF.validOpcodes(
-              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
+              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code),
+              this._common
             )
           ) {
             result = {

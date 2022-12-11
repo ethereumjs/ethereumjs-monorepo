@@ -297,6 +297,14 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0x49: { name: 'DATAHASH', isAsync: false, dynamicGas: false },
     },
   },
+  {
+    eip: 4200,
+    opcodes: {
+      0x5c: { name: 'RJUMP', isAsync: false, dynamicGas: false },
+      0x5d: { name: 'RJUMPI', isAsync: false, dynamicGas: false },
+      0x5e: { name: 'RJUMPV', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**
