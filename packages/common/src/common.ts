@@ -309,7 +309,8 @@ export class Common extends EventEmitter {
    */
   getHardforkByBlockNumber(
     blockNumber: BigIntLike,
-    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike } = {}
+    td?: BigIntLike,
+    timestamp?: BigIntLike
   ): string {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
@@ -403,9 +404,10 @@ export class Common extends EventEmitter {
    */
   setHardforkByBlockNumber(
     blockNumber: BigIntLike,
-    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike } = {}
+    td?: BigIntLike,
+    timestamp?: BigIntLike
   ): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, { td, timestamp })
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -538,9 +540,10 @@ export class Common extends EventEmitter {
     topic: string,
     name: string,
     blockNumber: BigIntLike,
-    { td, timestamp }: { td?: BigIntLike; timestamp?: BigIntLike }
+    td?: BigIntLike,
+    timestamp?: BigIntLike
   ): bigint {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, { td, timestamp })
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
     return this.paramByHardfork(topic, name, hardfork)
   }
 

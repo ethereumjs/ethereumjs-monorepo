@@ -275,7 +275,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
       const td = await this.getTotalDifficulty(this._headHeaderHash)
-      this.checkAndTransitionHardForkByNumber(latestHeader.number, td)
+      this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
     this._isInitialized = true
@@ -1172,8 +1172,12 @@ export class Blockchain implements BlockchainInterface {
     return this.dbManager.getHeader(hash, number)
   }
 
-  protected checkAndTransitionHardForkByNumber(number: bigint, td?: BigIntLike): void {
-    this._common.setHardforkByBlockNumber(number, td)
+  protected checkAndTransitionHardForkByNumber(
+    number: bigint,
+    td?: BigIntLike,
+    timestamp?: BigIntLike
+  ): void {
+    this._common.setHardforkByBlockNumber(number, td, timestamp)
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))

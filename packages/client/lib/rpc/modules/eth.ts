@@ -851,7 +851,7 @@ export class Eth {
     // Set the tx common to an appropriate HF to create a tx
     // with matching HF rules
     if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight)
+      common.setHardforkByBlockNumber(syncTargetHeight, undefined, Math.floor(Date.now() / 1000))
     }
 
     let tx
