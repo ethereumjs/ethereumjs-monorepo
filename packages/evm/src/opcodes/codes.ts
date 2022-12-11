@@ -291,6 +291,14 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0xf7: { name: 'AUTHCALL', isAsync: true, dynamicGas: true },
     },
   },
+  {
+    eip: 4200,
+    opcodes: {
+      0x5c: { name: 'RJUMP', isAsync: false, dynamicGas: false },
+      0x5d: { name: 'RJUMPI', isAsync: false, dynamicGas: false },
+      0x5e: { name: 'RJUMPV', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**

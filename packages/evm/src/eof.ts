@@ -1,5 +1,7 @@
 import { handlers } from './opcodes'
 
+import type { Common } from '@ethereumjs/common'
+
 export const FORMAT = 0xef
 export const MAGIC = 0x00
 export const VERSION = 0x01
@@ -62,25 +64,81 @@ export const codeAnalysis = (container: Buffer) => {
   return sectionSizes
 }
 
-export const validOpcodes = (code: Buffer) => {
+export const validOpcodes = (code: Buffer, common: Common) => {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
 
-  let x = 0
-  while (x < code.length) {
-    const opcode = code[x]
-    x++
+  const rjumpdests = new Set()
+  const immediates = new Set()
+
+  let pos = 0
+  while (pos < code.length) {
+    const opcode = code[pos]
+    pos++
     if (!opcodes.has(opcode)) {
       // No invalid/undefined opcodes
       return false
     }
     if (opcode >= 0x60 && opcode <= 0x7f) {
-      // Skip data block following push
-      x += opcode - 0x5f
-      if (x > code.length - 1) {
+      // Skip data block following PUSH* instruction
+      const finalPos = pos + opcode - 0x5f
+      if (common.isActivatedEIP(4200)) {
+        for (let immediate = pos; immediate < finalPos; immediate++) {
+          immediates.add(immediate)
+        }
+      }
+      pos = finalPos
+      if (pos > code.length - 1) {
         // Push blocks must not exceed end of code section
         return false
+      }
+    }
+    if (common.isActivatedEIP(4200)) {
+      // RJUMP* checks
+      if (opcode === 0x5c || opcode === 0x5d) {
+        // RJUMP + RJUMPI
+        immediates.add(pos)
+        immediates.add(pos + 1)
+        pos += 2
+        if (pos > code.length - 1) {
+          // RJUMP(I) relative offset is out of code bounds
+          return false
+        }
+        // RJUMP/RJUMPI
+        const target = code.readInt16BE(pos) + pos
+        rjumpdests.add(target)
+        if (target > code.length - 1 || target < 0) {
+          // JUMP is out of bounds
+          return false
+        }
+      } else if (opcode === 0x5e) {
+        // RJUMPV
+        const tableSize = code[pos]
+        if (tableSize === 0) {
+          // cannot have table size 0
+          return false
+        }
+        const jumptableSize = tableSize * 2
+        if (pos + jumptableSize > code.length - 1) {
+          // JUMP table is not contained in the code
+          return false
+        }
+        const finalPos = pos + 1 + jumptableSize
+        for (let immediate = pos; pos < finalPos; immediate++) {
+          immediates.add(immediate)
+        }
+        // Move pos to the start of the jump table
+        pos++
+        for (let jumptablePosition = pos; jumptablePosition < finalPos; jumptablePosition += 2) {
+          const target = code.readInt16BE(jumptablePosition) + finalPos
+          rjumpdests.add(target)
+          if (target > code.length - 1 || target < 0) {
+            // Relative JUMP is outside code container
+            return false
+          }
+        }
+        pos = finalPos
       }
     }
   }
@@ -88,6 +146,14 @@ export const validOpcodes = (code: Buffer) => {
   // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
   if (!terminatingOpcodes.has(code[code.length - 1])) {
     return false
+  }
+  if (common.isActivatedEIP(4200)) {
+    // verify if any of the RJUMP* opcodes JUMPs into an immediate value
+    for (const rjumpdest of rjumpdests) {
+      if (immediates.has(rjumpdest)) {
+        return false
+      }
+    }
   }
   return true
 }

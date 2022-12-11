@@ -760,43 +760,93 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0x5b: JUMPDEST
   [0x5b, function () {}],
-  // 0x5c: BEGINSUB
+  // 0x5c: BEGINSUB (2315) or RJUMP (4200)
   [
     0x5c,
-    function (runState) {
-      trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+      } else if (common.isActivatedEIP(4200)) {
+        if (runState.env.containerCode) {
+          const code = runState.interpreter.getCode()
+          const rjumpDest = code.readInt16BE(runState.programCounter)
+          runState.programCounter += 2 + rjumpDest
+        } else {
+          // Legacy contracts do not support RJUMP
+          trap(ERROR.INVALID_OPCODE)
+        }
+      }
     },
   ],
-  // 0x5d: RETURNSUB
+  // 0x5d: RETURNSUB (2315) or RJUMPI (4200)
   [
     0x5d,
-    function (runState) {
-      if (runState.returnStack.length < 1) {
-        trap(ERROR.INVALID_RETURNSUB)
-      }
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        if (runState.returnStack.length < 1) {
+          trap(ERROR.INVALID_RETURNSUB)
+        }
 
-      const dest = runState.returnStack.pop()
-      runState.programCounter = Number(dest)
+        const dest = runState.returnStack.pop()
+        runState.programCounter = Number(dest)
+      } else if (common.isActivatedEIP(4200)) {
+        if (runState.env.containerCode) {
+          const cond = runState.stack.pop()
+          // Move PC to the PC post instruction
+          runState.programCounter += 2
+          if (cond > 0) {
+            const code = runState.interpreter.getCode()
+            const rjumpDest = code.readInt16BE(runState.programCounter)
+            runState.programCounter += rjumpDest
+          }
+        } else {
+          // Legacy contracts do not support RJUMPI
+          trap(ERROR.INVALID_OPCODE)
+        }
+      }
     },
   ],
-  // 0x5e: JUMPSUB
+  // 0x5e: JUMPSUB (2315) or RJUMPV (4200)
   [
     0x5e,
-    function (runState) {
-      const dest = runState.stack.pop()
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        const dest = runState.stack.pop()
 
-      if (dest > runState.interpreter.getCodeSize()) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        if (dest > runState.interpreter.getCodeSize()) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        const destNum = Number(dest)
+
+        if (!jumpSubIsValid(runState, destNum)) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        runState.returnStack.push(BigInt(runState.programCounter))
+        runState.programCounter = destNum + 1
+      } else if (common.isActivatedEIP(4200)) {
+        if (runState.env.containerCode) {
+          const code = runState.interpreter.getCode()
+          const jumptableEntries = code[runState.programCounter]
+          const jumptableSize = jumptableEntries * 2
+          // Move PC to start of the jump table
+          runState.programCounter += 1
+          const jumptableCase = runState.stack.pop()
+          if (jumptableCase > 0 && jumptableCase <= jumptableEntries) {
+            const rjumpDest = code.readInt16BE(
+              runState.programCounter + (Number(jumptableCase) - 1) * 2
+            )
+            runState.programCounter += jumptableSize + rjumpDest
+          } else {
+            // EIP is not clear what happens if jumpTablecase > jumptableEntries
+            // Default to no operation (default case)
+          }
+        } else {
+          // Legacy contracts do not support RJUMPV
+          trap(ERROR.INVALID_OPCODE)
+        }
       }
-
-      const destNum = Number(dest)
-
-      if (!jumpSubIsValid(runState, destNum)) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
-      }
-
-      runState.returnStack.push(BigInt(runState.programCounter))
-      runState.programCounter = destNum + 1
     },
   ],
   // 0x5f: PUSH0
