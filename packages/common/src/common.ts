@@ -333,10 +333,11 @@ export class Common extends EventEmitter {
     // it cannot have a block number specified).
     let hfIndex = hfs.findIndex(
       (hf) =>
-        !(
-          (hf.block !== null && hf.block <= blockNumber) ||
-          (timestamp !== undefined && Number(hf.timestamp) <= timestamp)
-        )
+        hf.block !== null &&
+        (hf.block > blockNumber ||
+          (timestamp !== undefined &&
+            hf.timestamp !== undefined &&
+            Number(hf.timestamp) > timestamp))
     )
 
     // Move hfIndex one back to arrive at candidate hardfork
@@ -380,7 +381,7 @@ export class Common extends EventEmitter {
         .slice(hfIndex)
         .reduce(
           (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
-          0
+          timestamp
         )
       if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)

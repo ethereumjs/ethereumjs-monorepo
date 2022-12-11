@@ -103,7 +103,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
     [Hardfork.Eof]: { name: 'eofBlock', postMerge: true },
-    [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true, isTimestamp: true },
+    [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -118,7 +118,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       name: forkMapRev[nameBlock],
       block: forkMap[forkMapRev[nameBlock]].isTimestamp === true ? null : config[nameBlock],
       timestamp:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true ? forkMapRev[nameBlock] : undefined,
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true ? config[nameBlock] : undefined,
     }))
     .filter(
       (fork) => (fork.block !== null && fork.block !== undefined) || fork.timestamp !== undefined
@@ -149,7 +149,9 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
     // on merge or first non zero block hardfork if any of genesis hardforks require merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) && hf.block > 0
+      (hf: any) =>
+        (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) &&
+        (hf.block > 0 || (hf.timestamp ?? 0) > 0)
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig)

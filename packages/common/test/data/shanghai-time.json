@@ -14,7 +14,7 @@
     "mergeForkBlock": 0,
     "arrowGlacierBlock": 0,
     "grayGlacierBlock": 0,
-    "shanghaiBlock": 1668699476,
+    "shanghaiTime": 1668699476,
     "terminalTotalDifficulty": 9
   },
   "alloc": {
