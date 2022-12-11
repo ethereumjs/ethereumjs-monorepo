@@ -769,8 +769,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
       } else if (common.isActivatedEIP(4200)) {
         if (runState.env.containerCode![0] === EOF_FORMAT) {
-          const code = runState.interpreter.getCode()
-          const rjumpDest = code.readInt16BE(runState.programCounter - 1)
+          const code = runState.env.code
+          const rjumpDest = code.readInt16BE(runState.programCounter)
           runState.programCounter += 2 + rjumpDest
         } else {
           // Legacy contracts do not support RJUMP

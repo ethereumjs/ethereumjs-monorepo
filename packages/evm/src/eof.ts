@@ -111,6 +111,7 @@ export const validOpcodes = (code: Buffer, common: Common) => {
           // JUMP is out of bounds
           return false
         }
+        pos += 2
       } else if (opcode === 0x5e) {
         // RJUMPV
         const tableSize = code[pos]
