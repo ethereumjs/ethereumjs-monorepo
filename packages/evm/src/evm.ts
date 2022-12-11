@@ -13,7 +13,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode } from './eof'
+import { EOF, getEOFCode, validOpcodes } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -428,8 +428,25 @@ export class EVM implements EVMInterface {
       }
     }
 
-    message.code = message.data
-    message.data = Buffer.alloc(0)
+    message.containerCode = message.data
+    if (this._common.isActivatedEIP(3540)) {
+      message.code = getEOFCode(message.containerCode)
+      if (this._common.isActivatedEIP(3670)) {
+        if (!validOpcodes(message.code, this._common)) {
+          return {
+            createdAddress: message.to,
+            execResult: {
+              returnValue: Buffer.alloc(0),
+              exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+              executionGasUsed: message.gasLimit,
+            },
+          }
+        }
+      }
+    } else {
+      message.code = message.containerCode
+    }
+    message.isCompiled = false
     message.to = await this._generateAddress(message)
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)

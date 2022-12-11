@@ -100,13 +100,12 @@ export const validOpcodes = (code: Buffer, common: Common) => {
         // RJUMP + RJUMPI
         immediates.add(pos)
         immediates.add(pos + 1)
-        pos += 2
-        if (pos > code.length - 1) {
+        if (pos + 2 > code.length - 1) {
           // RJUMP(I) relative offset is out of code bounds
           return false
         }
         // RJUMP/RJUMPI
-        const target = code.readInt16BE(pos) + pos
+        const target = code.readInt16BE(pos) + pos + 2
         rjumpdests.add(target)
         if (target > code.length - 1 || target < 0) {
           // JUMP is out of bounds

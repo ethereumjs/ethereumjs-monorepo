@@ -13,6 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
+import { FORMAT as EOF_FORMAT } from '../eof'
 import { ERROR } from '../exceptions'
 
 import {
@@ -767,9 +768,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (common.isActivatedEIP(2315)) {
         trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
       } else if (common.isActivatedEIP(4200)) {
-        if (runState.env.containerCode) {
+        if (runState.env.containerCode![0] === EOF_FORMAT) {
           const code = runState.interpreter.getCode()
-          const rjumpDest = code.readInt16BE(runState.programCounter)
+          const rjumpDest = code.readInt16BE(runState.programCounter - 1)
           runState.programCounter += 2 + rjumpDest
         } else {
           // Legacy contracts do not support RJUMP
@@ -790,7 +791,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const dest = runState.returnStack.pop()
         runState.programCounter = Number(dest)
       } else if (common.isActivatedEIP(4200)) {
-        if (runState.env.containerCode) {
+        if (runState.env.containerCode![0] === EOF_FORMAT) {
           const cond = runState.stack.pop()
           // Move PC to the PC post instruction
           runState.programCounter += 2
@@ -826,7 +827,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.returnStack.push(BigInt(runState.programCounter))
         runState.programCounter = destNum + 1
       } else if (common.isActivatedEIP(4200)) {
-        if (runState.env.containerCode) {
+        if (runState.env.containerCode![0] === EOF_FORMAT) {
           const code = runState.interpreter.getCode()
           const jumptableEntries = code[runState.programCounter]
           const jumptableSize = jumptableEntries * 2
