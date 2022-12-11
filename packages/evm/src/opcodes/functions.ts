@@ -833,14 +833,11 @@ export const handlers: Map<number, OpHandler> = new Map([
           // Move PC to start of the jump table
           runState.programCounter += 1
           const jumptableCase = runState.stack.pop()
-          if (jumptableCase > 0 && jumptableCase <= jumptableEntries) {
-            const rjumpDest = code.readInt16BE(
-              runState.programCounter + (Number(jumptableCase) - 1) * 2
-            )
+          if (jumptableCase < jumptableEntries) {
+            const rjumpDest = code.readInt16BE(runState.programCounter + Number(jumptableCase) * 2)
             runState.programCounter += jumptableSize + rjumpDest
           } else {
-            // EIP is not clear what happens if jumpTablecase > jumptableEntries
-            // Default to no operation (default case)
+            runState.programCounter += jumptableSize
           }
         } else {
           // Legacy contracts do not support RJUMPV
