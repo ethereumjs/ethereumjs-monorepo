@@ -101,8 +101,21 @@ tape('EIP 3670 tests', (t) => {
       ],
       // RJUMPI: 0 is pushed on stack, so code will just continue after RJUMPI
       [getEOFCode('60005D' + getInt16Str(1) + '006000FE'), 'RJUMPI, 0 is pushed on stack'],
-      // RJUMPV
+      // RJUMPV to JUMPDEST
       [getEOFCode('60005B' + getRJUMPVCode([1]) + '5B5B00'), 'RJUMPV to JUMPDEST, +1'],
+      [getEOFCode('60005B' + getRJUMPVCode([0]) + '5B5B00'), 'RJUMPV to JUMPDEST, 0'],
+      [
+        getEOFCode('5C' + getInt16Str(2) + '5B0060005B' + getRJUMPVCode([-9]) + '5B5B00'),
+        'RJUMPV to JUMPDEST, -8',
+      ],
+      // To ADDRESS
+      [getEOFCode('600030' + getRJUMPVCode([1]) + '303000'), 'RJUMPV to ADDRESS, +1'],
+      [getEOFCode('600030' + getRJUMPVCode([0]) + '303000'), 'RJUMPV to ADDRESS, 0'],
+      [
+        getEOFCode('5C' + getInt16Str(2) + '3000600030' + getRJUMPVCode([-9]) + '303000'),
+        'RJUMPV to ADDRESS, -8',
+      ],
+      [getEOFCode('600130' + getRJUMPVCode([1]) + '00FE'), 'RJUMPV with case > count'],
     ]
 
     let lastOpcode = ''
