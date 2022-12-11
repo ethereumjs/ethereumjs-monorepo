@@ -31,6 +31,7 @@ function formatNonce(nonce: string): string {
 function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp, nonce } = json
+  const genesisTimestamp = Number(timestamp)
   const { chainId } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
@@ -123,6 +124,14 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     .filter(
       (fork) => (fork.block !== null && fork.block !== undefined) || fork.timestamp !== undefined
     )
+
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return (a.block ?? Infinity) - (b.block ?? Infinity)
+  })
+
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return (a.timestamp ?? genesisTimestamp) - (b.timestamp ?? genesisTimestamp)
+  })
 
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 

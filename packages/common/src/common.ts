@@ -319,7 +319,7 @@ export class Common extends EventEmitter {
     // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
       (hf) =>
-        hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined) || hf.timestamp !== null
+        hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined) || hf.timestamp !== undefined
     )
     const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
     const doubleTTDHF = hfs
@@ -331,28 +331,37 @@ export class Common extends EventEmitter {
 
     // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since
     // it cannot have a block number specified).
+    // If timestamp is not provided, it also skips timestamps hardforks to continue discovering/checking number
+    // hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
         hf.block !== null &&
-        (hf.block > blockNumber ||
-          (timestamp !== undefined &&
-            hf.timestamp !== undefined &&
-            Number(hf.timestamp) > timestamp))
+        (hf.block > blockNumber || (timestamp !== undefined && Number(hf.timestamp) > timestamp))
     )
 
-    // Move hfIndex one back to arrive at candidate hardfork
     if (hfIndex === -1) {
       // all hardforks apply, set hfIndex to the last one as thats the candidate
-      hfIndex = hfs.length - 1
+      hfIndex = hfs.length
     } else if (hfIndex === 0) {
       // cannot have a case where a block number is before all applied hardforks
       // since the chain has to start with a hardfork
       throw Error('Must have at least one hardfork at block 0')
-    } else {
-      // The previous hardfork is the candidate here
-      hfIndex = hfIndex - 1
     }
 
+    // If timestamp is not provided, we need to rollback to the last hf with block or ttd
+    if (timestamp === undefined) {
+      const stepBack = hfs
+        .slice(0, hfIndex)
+        .reverse()
+        .findIndex((hf) => hf.block !== null || hf.ttd !== undefined)
+      hfIndex = hfIndex - stepBack
+    }
+
+    // Move hfIndex one back to arrive at candidate hardfork
+    hfIndex = hfIndex - 1
+
+    // If the timestamp was not provided, we could have skipped timestamp hardforks to look for number
+    // hardforks. so it will now be needed to rollback
     if (hfs[hfIndex].block === null && hfs[hfIndex].timestamp === undefined) {
       // We're on the merge hardfork.  Let's check the TTD
       if (td === undefined || td === null || BigInt(hfs[hfIndex].ttd!) > td) {
