@@ -794,12 +794,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (runState.env.containerCode![0] === EOF_FORMAT) {
           const cond = runState.stack.pop()
           // Move PC to the PC post instruction
-          runState.programCounter += 2
           if (cond > 0) {
-            const code = runState.interpreter.getCode()
+            const code = runState.env.code
             const rjumpDest = code.readInt16BE(runState.programCounter)
             runState.programCounter += rjumpDest
           }
+          // In all cases, increment PC with 2 (also in the case if `cond` is `0`)
+          runState.programCounter += 2
         } else {
           // Legacy contracts do not support RJUMPI
           trap(ERROR.INVALID_OPCODE)
@@ -828,7 +829,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.programCounter = destNum + 1
       } else if (common.isActivatedEIP(4200)) {
         if (runState.env.containerCode![0] === EOF_FORMAT) {
-          const code = runState.interpreter.getCode()
+          const code = runState.env.code
           const jumptableEntries = code[runState.programCounter]
           const jumptableSize = jumptableEntries * 2
           // Move PC to start of the jump table

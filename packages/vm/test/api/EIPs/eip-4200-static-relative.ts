@@ -69,30 +69,34 @@ tape('EIP 3670 tests', (t) => {
       ],
       // RJUMPI
       // RJUMPI, jump to JUMPDEST
-      [getEOFCode('5B60015C' + getInt16Str(1) + '5B5B00'), 'RJUMPI to JUMPDEST, +1'],
-      [getEOFCode('5B60015C' + getInt16Str(0) + '5B5B00'), 'RJUMPI to JUMPDEST, 0'],
+      [getEOFCode('5B60015D' + getInt16Str(1) + '5B5B00'), 'RJUMPI to JUMPDEST, +1'],
+      [getEOFCode('5B60015D' + getInt16Str(0) + '5B5B00'), 'RJUMPI to JUMPDEST, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
       [
-        getEOFCode('5C' + getInt16Str(4) + '5B0060015C' + getInt16Str(-7) + '5B5B00'),
+        getEOFCode('5C' + getInt16Str(2) + '5B0060015D' + getInt16Str(-7) + '5B5B00'),
         'RJUMPI to JUMPDEST, -7',
       ],
       // RJUMPI, jump to JUMPDEST
-      [getEOFCode('3060015C' + getInt16Str(1) + '303000'), 'RJUMPI to ADDRESS, +1'],
-      [getEOFCode('3060015C' + getInt16Str(0) + '303000'), 'RJUMPI to ADDRESS, 0'],
+      [getEOFCode('3060015D' + getInt16Str(1) + '303000'), 'RJUMPI to ADDRESS, +1'],
+      [getEOFCode('3060015D' + getInt16Str(0) + '303000'), 'RJUMPI to ADDRESS, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
       [
-        getEOFCode('5C' + getInt16Str(4) + '300060015C' + getInt16Str(-7) + '303000'),
+        getEOFCode('5C' + getInt16Str(2) + '300060015D' + getInt16Str(-7) + '303000'),
         'RJUMPI to ADDRESS, -7',
       ],
+      // RJUMPI: 0 is pushed on stack, so code will just continue after RJUMPI
+      [getEOFCode('60005D' + getInt16Str(1) + '006000FE'), 'RJUMPI, 0 is pushed on stack'],
     ]
 
+    let lastOpcode = ''
     vm.evm.events!.on('step', (e) => {
       console.log(e.opcode.name)
+      lastOpcode = e.opcode.name
     })
 
     for (const validCase of validCases) {
       const { result } = await runTx(vm, validCase[0], nonce++)
-      st.ok(result.execResult.exceptionError === undefined, validCase[1])
+      st.ok(result.execResult.exceptionError === undefined && lastOpcode === 'STOP', validCase[1])
     }
   })
 })
