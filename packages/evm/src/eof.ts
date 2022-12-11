@@ -120,12 +120,12 @@ export const validOpcodes = (code: Buffer, common: Common) => {
           return false
         }
         const jumptableSize = tableSize * 2
-        if (pos + jumptableSize > code.length - 1) {
+        if (pos + jumptableSize + 1 > code.length - 1) {
           // JUMP table is not contained in the code
           return false
         }
         const finalPos = pos + 1 + jumptableSize
-        for (let immediate = pos; pos < finalPos; immediate++) {
+        for (let immediate = pos; immediate < finalPos; immediate++) {
           immediates.add(immediate)
         }
         // Move pos to the start of the jump table

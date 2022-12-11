@@ -27,6 +27,17 @@ function getInt16Str(int16: number) {
   return buf.toString('hex')
 }
 
+function getRJUMPVCode(int16list: number[]) {
+  if (int16list.length > 255) {
+    throw new Error('does not fit')
+  }
+  let str = '5E' + int16list.length.toString(16).padStart(2, '0')
+  for (const i of int16list) {
+    str += getInt16Str(i)
+  }
+  return str
+}
+
 function getEOFCode(code: string) {
   const magic = '0xEF000101'
   const len = code.length / 2
@@ -49,6 +60,10 @@ tape('EIP 3670 tests', (t) => {
     await vm.stateManager.putAccount(sender, account)
     let nonce = 0
 
+    // Note: valid cases all have a format where the final opcode should be STOP
+    // There is only one STOP opcode in the code, which thus means that code
+    // arrived at the designated (wanted) stop opcode
+    // Note: this also verifies that these EOF codes are correct (otherwise code will not run)
     const validCases = [
       // RJUMP
       // RJUMP, jump to JUMPDEST
@@ -86,6 +101,8 @@ tape('EIP 3670 tests', (t) => {
       ],
       // RJUMPI: 0 is pushed on stack, so code will just continue after RJUMPI
       [getEOFCode('60005D' + getInt16Str(1) + '006000FE'), 'RJUMPI, 0 is pushed on stack'],
+      // RJUMPV
+      [getEOFCode('60005B' + getRJUMPVCode([1]) + '5B5B00'), 'RJUMPV to JUMPDEST, +1'],
     ]
 
     let lastOpcode = ''
