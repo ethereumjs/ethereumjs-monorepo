@@ -50,10 +50,45 @@ tape('EIP 3670 tests', (t) => {
     let nonce = 0
 
     const validCases = [
+      // RJUMP
+      // RJUMP, jump to JUMPDEST
       [getEOFCode('5B5C' + getInt16Str(1) + '5B5B00'), 'RJUMP to JUMPDEST, +1'],
       [getEOFCode('5B5C' + getInt16Str(0) + '5B5B00'), 'RJUMP to JUMPDEST, 0'],
-      [getEOFCode('5B5C' + getInt16Str(-3) + '5B5B00'), 'RJUMP to JUMPDEST, -1'],
+      // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
+      [
+        getEOFCode('5C' + getInt16Str(2) + '5B005C' + getInt16Str(-5) + '5B5B00'),
+        'RJUMP to JUMPDEST, -5',
+      ],
+      // RJUMP, jump to not-JUMPDEST (use `ADDRESS` (0x30) as dummy (valid) opcode)
+      [getEOFCode('305C' + getInt16Str(1) + '303000'), 'RJUMP to another opcode than JUMPDEST, +1'],
+      [getEOFCode('305C' + getInt16Str(0) + '303000'), 'RJUMP to another opcode than JUMPDEST, 0'],
+      // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
+      [
+        getEOFCode('5C' + getInt16Str(2) + '30005C' + getInt16Str(-5) + '5B5B00'),
+        'RJUMP to another opcode than JUMPDEST, -5',
+      ],
+      // RJUMPI
+      // RJUMPI, jump to JUMPDEST
+      [getEOFCode('5B60015C' + getInt16Str(1) + '5B5B00'), 'RJUMPI to JUMPDEST, +1'],
+      [getEOFCode('5B60015C' + getInt16Str(0) + '5B5B00'), 'RJUMPI to JUMPDEST, 0'],
+      // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
+      [
+        getEOFCode('5C' + getInt16Str(4) + '5B0060015C' + getInt16Str(-7) + '5B5B00'),
+        'RJUMPI to JUMPDEST, -7',
+      ],
+      // RJUMPI, jump to JUMPDEST
+      [getEOFCode('3060015C' + getInt16Str(1) + '303000'), 'RJUMPI to ADDRESS, +1'],
+      [getEOFCode('3060015C' + getInt16Str(0) + '303000'), 'RJUMPI to ADDRESS, 0'],
+      // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
+      [
+        getEOFCode('5C' + getInt16Str(4) + '300060015C' + getInt16Str(-7) + '303000'),
+        'RJUMPI to ADDRESS, -7',
+      ],
     ]
+
+    vm.evm.events!.on('step', (e) => {
+      console.log(e.opcode.name)
+    })
 
     for (const validCase of validCases) {
       const { result } = await runTx(vm, validCase[0], nonce++)
