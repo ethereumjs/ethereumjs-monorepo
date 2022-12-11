@@ -1,8 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
-import { padStart } from 'core-js/core/string'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -19,7 +17,7 @@ async function runTx(vm: VM, data: string, nonce: number) {
   }).sign(pkey)
   const result = await vm.runTx({ tx })
   const created = result.createdAddress
-  const code = await vm.stateManager.getContractCode(created!)
+  const code = created ? await vm.stateManager.getContractCode(created!) : undefined
   return { result, code }
 }
 
@@ -49,9 +47,17 @@ tape('EIP 3670 tests', (t) => {
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
-    let code = getEOFCode('5B5C' + getInt16Str(1) + '5B5B00')
     let nonce = 0
-    let { result } = await runTx(vm, code, nonce++)
-    st.ok(result.execResult.exceptionError === undefined)
+
+    const validCases = [
+      [getEOFCode('5B5C' + getInt16Str(1) + '5B5B00'), 'RJUMP to JUMPDEST, +1'],
+      [getEOFCode('5B5C' + getInt16Str(0) + '5B5B00'), 'RJUMP to JUMPDEST, 0'],
+      [getEOFCode('5B5C' + getInt16Str(-3) + '5B5B00'), 'RJUMP to JUMPDEST, -1'],
+    ]
+
+    for (const validCase of validCases) {
+      const { result } = await runTx(vm, validCase[0], nonce++)
+      st.ok(result.execResult.exceptionError === undefined, validCase[1])
+    }
   })
 })
