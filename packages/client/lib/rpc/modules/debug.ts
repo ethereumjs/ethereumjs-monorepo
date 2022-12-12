@@ -25,7 +25,9 @@ export interface structLog {
   stack: string[] | undefined
   memory: string[] | undefined
   returnData: string[] | undefined
-  storage: {}
+  storage: {
+    [key: string]: string
+  }
   error: boolean | undefined | null
 }
 /**
@@ -51,6 +53,13 @@ const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
     throw {
       code: INVALID_PARAMS,
       message: 'custom tracer timeouts not implemented',
+    }
+  }
+
+  if (opts.enableReturnData === true) {
+    throw {
+      code: INVALID_PARAMS,
+      message: 'enabling return data not implemented',
     }
   }
   return {
@@ -137,10 +146,7 @@ export class Debug {
             opts.disableStack !== true ? step.stack.map((entry) => bigIntToHex(entry)) : undefined,
           storage,
           memory,
-          returnData:
-            opts.enableReturnData === true
-              ? step.returnStack.map((entry) => bigIntToHex(entry))
-              : undefined,
+          returnData: undefined,
         }
         trace.structLogs.push(log)
         next?.()
