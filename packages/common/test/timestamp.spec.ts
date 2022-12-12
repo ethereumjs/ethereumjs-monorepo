@@ -10,6 +10,11 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
       chain: 'withdrawals',
     })
     st.equal(
+      c.getHardforkByBlockNumber(1, undefined, 0),
+      Hardfork.MergeForkIdTransition,
+      'should match the HF'
+    )
+    st.equal(
       c.getHardforkByBlockNumber(1, undefined, 1668699476),
       Hardfork.Shanghai,
       'should match the HF'

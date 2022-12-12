@@ -172,9 +172,7 @@ export class BlockHeader {
     const number = toType(headerData.number, TypeOutput.BigInt) ?? defaults.number
     const gasLimit = toType(headerData.gasLimit, TypeOutput.BigInt) ?? defaults.gasLimit
     const gasUsed = toType(headerData.gasUsed, TypeOutput.BigInt) ?? defaults.gasUsed
-
-    const inputTimeStamp = toType(headerData.timestamp, TypeOutput.BigInt)
-    const timestamp = inputTimeStamp ?? defaults.timestamp
+    const timestamp = toType(headerData.timestamp, TypeOutput.BigInt) ?? defaults.timestamp
     const extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
     const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
@@ -185,7 +183,7 @@ export class BlockHeader {
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, inputTimeStamp)
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {

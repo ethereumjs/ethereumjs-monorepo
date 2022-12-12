@@ -335,8 +335,8 @@ export class Common extends EventEmitter {
     // hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
-        hf.block !== null &&
-        (hf.block > blockNumber || (timestamp !== undefined && Number(hf.timestamp) > timestamp))
+        (hf.block !== null && hf.block > blockNumber) ||
+        (timestamp !== undefined && Number(hf.timestamp) > timestamp)
     )
 
     if (hfIndex === -1) {
@@ -356,7 +356,6 @@ export class Common extends EventEmitter {
         .findIndex((hf) => hf.block !== null || hf.ttd !== undefined)
       hfIndex = hfIndex - stepBack
     }
-
     // Move hfIndex one back to arrive at candidate hardfork
     hfIndex = hfIndex - 1
 
