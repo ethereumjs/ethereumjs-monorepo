@@ -157,34 +157,3 @@ tape(`${method}: call with stack disabled`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })
-
-tape(`${method}: call with return stack enabled`, async (t) => {
-  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
-    txLookupLimit: 0,
-  })
-
-  // construct block with tx
-  const tx = TransactionFactory.fromTxData(
-    {
-      type: 0x2,
-      gasLimit: 0xfffff,
-      maxFeePerGas: 10,
-      maxPriorityFeePerGas: 1,
-      value: 10000,
-      data: '0x604260005260206000F3',
-    },
-    { common, freeze: false }
-  ).sign(dummy.privKey)
-  tx.getSenderAddress = () => {
-    return dummy.addr
-  }
-  const block = Block.fromBlockData({}, { common })
-  block.transactions[0] = tx
-  await runBlockWithTxs(chain, execution, [tx], true)
-
-  const req = params(method, [bufferToHex(tx.hash()), { enableReturnData: true }])
-  const expectRes = (res: any) => {
-    t.ok(res.body.result.structLogs[1].returnData !== undefined, 'return data with trace')
-  }
-  await baseRequest(t, server, req, 200, expectRes, true)
-})
