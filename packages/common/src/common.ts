@@ -923,7 +923,9 @@ export class Common extends EventEmitter {
       }
       if (hfChanges[0] === hardfork) break
     }
-    return value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm]!
+    return (
+      value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm] ?? {}
+    )
   }
 
   /**
