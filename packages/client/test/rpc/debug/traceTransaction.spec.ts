@@ -27,7 +27,23 @@ tape(`${method}: call with invalid parameters`, async (t) => {
 
   req = params(method, ['0xabcd', { enableReturnData: true }])
   expectRes = checkError(t, INVALID_PARAMS, 'enabling return data not implemented')
-  await baseRequest(t, server, req, 200, expectRes, true)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
+  expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    'custom tracers and tracer configurations are not implemented'
+  )
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, ['0xabcd', { tracer: 'someTracer' }])
+  expectRes = checkError(t, INVALID_PARAMS, 'custom tracers not implemented')
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, ['0xabcd', { timeout: 1000 }])
+  expectRes = checkError(t, INVALID_PARAMS, 'custom tracer timeouts not implemented')
+  await baseRequest(t, server, req, 200, expectRes, false)
 })
 
 tape(`${method}: call with valid parameters`, async (t) => {
