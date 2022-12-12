@@ -377,23 +377,25 @@ export class Common extends EventEmitter {
       }
     }
 
+    const hfStartIndex = hfIndex
+    // Move the hfIndex to the end of the hardforks that might be scheduled on the same block/timestamp
+    // This won't anyway be the case with Merge hfs
+    for (; hfIndex < hfs.length - 1; hfIndex++) {
+      // break out if hfIndex + 1 is not scheduled at hfIndex
+      if (
+        hfs[hfIndex].block !== hfs[hfIndex + 1].block ||
+        hfs[hfIndex].timestamp !== hfs[hfIndex + 1].timestamp
+      ) {
+        break
+      }
+    }
+
     if (timestamp) {
       const minTimeStamp = hfs
-        .slice(0, hfIndex)
+        .slice(0, hfStartIndex)
         .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
       if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
-      }
-
-      // Move the hfIndex to the end of the hardforks that might be scheduled on the same hf
-      for (; hfIndex < hfs.length - 1; hfIndex++) {
-        // break out if hfIndex + 1 is not scheduled at hfIndex
-        if (
-          hfs[hfIndex].block !== hfs[hfIndex + 1].block ||
-          hfs[hfIndex].timestamp !== hfs[hfIndex + 1].timestamp
-        ) {
-          break
-        }
       }
 
       const maxTimeStamp = hfs

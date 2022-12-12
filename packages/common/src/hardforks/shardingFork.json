@@ -1,0 +1,7 @@
+{
+  "name": "shardingFork",
+  "comment": "Hardfork to activate eip-4844",
+  "url": "",
+  "status": "Pre-Draft",
+  "eips": [4844]
+}

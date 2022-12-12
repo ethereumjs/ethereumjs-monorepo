@@ -25,6 +25,7 @@ export enum Hardfork {
   Merge = 'merge',
   Eof = 'eof',
   Shanghai = 'shanghai',
+  ShardingFork = 'shardingFork',
 }
 
 export enum ConsensusType {
