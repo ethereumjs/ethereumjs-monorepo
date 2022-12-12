@@ -710,10 +710,16 @@ export class Common extends EventEmitter {
     if (hfIndex < 0) {
       return null
     }
+    const currHf = hfs[hfIndex]
 
     const nextHf = hfs
-      .slice(hfIndex)
-      .find((hf) => hf.name !== Hardfork.Merge && (hf.block !== null || hf.timestamp !== undefined))
+      .slice(hfIndex + 1)
+      .find(
+        (hf) =>
+          hf.name !== Hardfork.Merge &&
+          ((hf.block !== null && hf.block !== currHf.block) ||
+            (hf.timestamp !== undefined && hf.timestamp !== currHf.timestamp))
+      )
     // If no next hf found with valid block or timestamp return null
     if (nextHf === undefined) {
       return null

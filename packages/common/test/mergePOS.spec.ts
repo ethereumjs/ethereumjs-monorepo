@@ -234,6 +234,11 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
 
     // Check nextHardforkBlock should be MergeForkIdTransition's block on london and merge both
     st.equal(
+      c.nextHardforkBlock(Hardfork.Berlin),
+      1735371n,
+      `should get nextHardforkBlock correctly`
+    )
+    st.equal(
       c.nextHardforkBlock(Hardfork.London),
       1735371n,
       `should get nextHardforkBlock correctly`
