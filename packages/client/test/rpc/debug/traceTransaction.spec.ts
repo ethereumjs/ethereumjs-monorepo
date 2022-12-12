@@ -13,7 +13,7 @@ const method = 'debug_traceTransaction'
 tape(`${method}: call with invalid configuration`, async (t) => {
   const { server } = baseSetup({ engine: false, includeVM: true })
 
-  const req = params(method, ['0xabcd', []])
+  const req = params(method, ['0xabcd', {}])
   const expectRes = checkError(t, INTERNAL_ERROR, 'missing receiptsManager')
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -21,9 +21,13 @@ tape(`${method}: call with invalid configuration`, async (t) => {
 tape(`${method}: call with invalid parameters`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge')
 
-  const req = params(method, ['abcd', []])
-  const expectRes = checkError(t, INVALID_PARAMS, 'hex string without 0x prefix')
+  let req = params(method, ['abcd', {}])
+  let expectRes = checkError(t, INVALID_PARAMS, 'hex string without 0x prefix')
   await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, ['0xabcd', { enableReturnData: true }])
+  expectRes = checkError(t, INVALID_PARAMS, 'enabling return data not implemented')
+  await baseRequest(t, server, req, 200, expectRes, true)
 })
 
 tape(`${method}: call with valid parameters`, async (t) => {
