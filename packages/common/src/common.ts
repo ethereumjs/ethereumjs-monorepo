@@ -385,8 +385,19 @@ export class Common extends EventEmitter {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
       }
 
+      // Move the hfIndex to the end of the hardforks that might be scheduled on the same hf
+      for (; hfIndex < hfs.length - 1; hfIndex++) {
+        // break out if hfIndex + 1 is not scheduled at hfIndex
+        if (
+          hfs[hfIndex].block !== hfs[hfIndex + 1].block ||
+          hfs[hfIndex].timestamp !== hfs[hfIndex + 1].timestamp
+        ) {
+          break
+        }
+      }
+
       const maxTimeStamp = hfs
-        .slice(hfIndex)
+        .slice(hfIndex + 1)
         .reduce(
           (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
           timestamp

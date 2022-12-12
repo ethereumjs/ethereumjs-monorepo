@@ -19,6 +19,11 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
       Hardfork.Shanghai,
       'should match the HF'
     )
+    st.equal(
+      c.getHardforkByBlockNumber(1, undefined, 1668699576),
+      Hardfork.Shanghai,
+      'should match the HF'
+    )
     st.end()
   })
 })
