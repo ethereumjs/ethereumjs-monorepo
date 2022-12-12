@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { Address, toBuffer } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
