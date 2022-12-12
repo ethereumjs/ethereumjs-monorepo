@@ -240,7 +240,7 @@ export class VMExecution extends Execution {
             }
             const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
-            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td, timestamp)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
