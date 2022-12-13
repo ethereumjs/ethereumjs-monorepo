@@ -498,7 +498,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this.checkAndTransitionHardForkByNumber(blockNumber, td)
+          this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
