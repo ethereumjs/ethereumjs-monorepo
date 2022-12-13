@@ -113,7 +113,9 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     acc[forkMap[elem].name] = elem
     return acc
   }, {} as { [key: string]: string })
-  const configHardforkNames = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+  const configHardforkNames = Object.keys(config).filter(
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+  )
 
   params.hardforks = configHardforkNames
     .map((nameBlock) => ({
