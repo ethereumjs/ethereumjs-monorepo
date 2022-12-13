@@ -951,10 +951,9 @@ export class Common extends EventEmitter {
    * Expected returns (parameters must be present in
    * the respective chain json files):
    *
-   * ethash: -
+   * ethash: empty object
    * clique: period, epoch
-   * aura: -
-   * casper: -
+   * casper: empty object
    *
    * Note: This value can update along a Hardfork.
    */
@@ -969,7 +968,9 @@ export class Common extends EventEmitter {
       }
       if (hfChanges[0] === hardfork) break
     }
-    return value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm]!
+    return (
+      value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm] ?? {}
+    )
   }
 
   /**

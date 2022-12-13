@@ -585,10 +585,10 @@ async function run() {
 
   // Configure common based on args given
   if (
-    typeof args.customChainParams === 'string' ||
-    typeof args.customGenesisState === 'string' ||
-    (typeof args.gethGenesis === 'string' &&
-      (args.network !== 'mainnet' || args.networkId !== undefined))
+    (typeof args.customChainParams === 'string' ||
+      typeof args.customGenesisState === 'string' ||
+      typeof args.gethGenesis === 'string') &&
+    (args.network !== 'mainnet' || args.networkId !== undefined)
   ) {
     console.error('cannot specify both custom chain parameters and preset network ID')
     process.exit()
