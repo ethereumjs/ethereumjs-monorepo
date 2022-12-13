@@ -610,20 +610,24 @@ export class Eth {
 
   /**
    * Returns information about a transaction given a block hash and a transaction's index position.
-   * @param params An array of one parameter:
+   * @param params An array of two parameter:
    *   1. a block hash
    *   2. an integer of the transaction index position encoded as a hexadecimal.
    */
   async getTransactionByBlockHashAndIndex(params: [string, string]) {
-    const [blockHash, txIndexHex] = params
     try {
+      const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
       const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
       const tx = block.transactions[txIndex]
       return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
-        code: INTERNAL_ERROR,
+        code: INVALID_PARAMS,
         message: error.message.toString(),
       }
     }
