@@ -1,4 +1,7 @@
+import { bufferToHex, toBuffer } from '@ethereumjs/util'
 import { JsonRpcProvider } from '@ethersproject/providers'
+
+import * as ropsten_contractWithStorage from '../ropsten_contractWithStorage.json'
 
 export class MockProvider extends JsonRpcProvider {
   send = async (method: string, params: Array<any>) => {
@@ -12,9 +15,9 @@ export class MockProvider extends JsonRpcProvider {
       case 'eth_getTransactionByHash':
         return this.getTransactionData(params as any)
       case 'eth_getCode':
-        return 0
+        return this.getContractCode(params as any)
       case 'eth_getStorageAt':
-        return '0xabcd'
+        return this.getContractStorage(params as any)
       default:
         throw new Error(`method ${method} not implemented`)
     }
@@ -42,5 +45,24 @@ export class MockProvider extends JsonRpcProvider {
     const [txHash] = params
     const txData = await import(`./transactions/${txHash}.json`)
     return txData
+  }
+
+  private getContractCode = async (params: [address: string]) => {
+    const [address] = params
+    const contractCode = ropsten_contractWithStorage.codeHash
+    if (address === '0x2d80502854fc7304c3e3457084de549f5016b73f') {
+      return contractCode
+    } else {
+      return 0
+    }
+  }
+  private getContractStorage = async (params: [addressOrName: string, position: BigInt]) => {
+    const [addressOrName, position] = params
+    const storageAt = ropsten_contractWithStorage.storageProof[Number(position)].value
+    if (addressOrName === ropsten_contractWithStorage.address) {
+      return bufferToHex(toBuffer(storageAt))
+    } else {
+      return 0
+    }
   }
 }
