@@ -12,6 +12,7 @@ import * as tape from 'tape'
 import { EthersForkedStateProvider } from '../src/ethersForkedStateProvider'
 
 import { MockProvider } from './testdata/providerData/mockProvider'
+import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
 
 import type { EthersStateManager } from '../src/ethersStateManager'
 
@@ -68,6 +69,26 @@ tape('Ethers State Manager initialization tests', (t) => {
     st.deepEqual(codeRetrieved, bufferToHex(code))
     st.end()
   })
+
+  t.test('getCode', async (st) => {
+    const codeRetrieved = await state.getCode(ropsten_contractWithStorage.address)
+    const code = ropsten_contractWithStorage.codeHash
+    st.deepEqual(codeRetrieved, code)
+    st.end()
+  })
+  t.test('getStorageAt', async (st) => {
+    const retrievedSlot0 = await state.getStorageAt(ropsten_contractWithStorage.address, 0n)
+    const slot0 = ropsten_contractWithStorage.storageProof[0].value
+    st.equal(retrievedSlot0, slot0, 'should retrieve storage value at slot 0')
+    const retrievedSlot1 = await state.getStorageAt(ropsten_contractWithStorage.address, 1n)
+    const slot1 = ropsten_contractWithStorage.storageProof[1].value
+    st.equal(
+      retrievedSlot1,
+      bufferToHex(toBuffer(slot1)),
+      'should retrieve storage value at slot 1'
+    )
+    st.end()
+  })
   t.end()
 })
 
@@ -83,36 +104,25 @@ tape('getCode / getStorageAt', async (t) => {
     const state = new EthersForkedStateProvider(provider)
     const UNIContract_str = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
     const UNIerc20ContractAddress = Address.fromString(UNIContract_str)
-    const UNIContractCode = await state.getCode(UNIContract_str)
-    t.equal(UNIContractCode, '0x00', 'was able to retrieve UNI contract code')
+    const UNIContractCode = '0xbeeffeed'
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractCode(
       UNIerc20ContractAddress,
       toBuffer(UNIContractCode)
     )
-
-    const storageSlot = await state.getStorageAt(
-      UNIContract_str,
-      setLengthLeft(bigIntToBuffer(1n), 32)
-    )
-    t.equal(storageSlot, '0xabcd', 'should to retrieve storage slot 1 for the UNI contract')
-
-    let slotValue = await state.getStorageAt(
-      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
-      setLengthLeft(bigIntToBuffer(2n), 32)
-    )
-    t.equal(slotValue, '0xabcd', 'should retrieve unchanged slot 2 value')
+    const retrievedCode = await state.getCode(UNIContract_str)
+    t.equal(retrievedCode, '0xbeeffeed', 'was able to retrieve UNI contract code')
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(2n), 32),
       toBuffer('0xbeef')
     )
-    slotValue = await state.getStorageAt(
+    const slotValue = await state.getStorageAt(
       '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
       setLengthLeft(bigIntToBuffer(2n), 32)
     )
-    t.deepEqual(slotValue, '0xbeef', 'should retrieve changed slot 2 value')
+    t.deepEqual(slotValue, '0xbeef', 'should retrieve slot 2 value')
     await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBuffer(2n), 32),
@@ -152,14 +162,14 @@ tape(`getTransactionCount / getBalance`, async (t) => {
     t.equal(bal.toBigInt(), balance, 'should return the correct balance')
 
     const count = await state.getTransactionCount(address.toString())
-    t.equal(BigInt(count), nonce, 'should return the correct nonce')
-
-    account.nonce = nonce + 1n
-    account.balance = 999999n
-    await ((state as any).ethersStateManager as EthersStateManager).putAccount(address, account)
+    t.equal(BigInt(count), nonce, `should return the correct nonce ${nonce}`)
+    await ((state as any).ethersStateManager as EthersStateManager).modifyAccountFields(address, {
+      nonce: nonce + 1n,
+      balance: 999999n,
+    })
 
     const _count = await state.getTransactionCount(address.toString())
-    t.equal(BigInt(_count), nonce + 1n, 'should return the correct nonce')
+    t.equal(BigInt(_count), nonce + 1n, `should return correct nonce (${nonce + 1n})`)
     const _bal = await state.getBalance(address.toString())
     t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
     t.end()
