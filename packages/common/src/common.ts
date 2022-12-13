@@ -305,6 +305,7 @@ export class Common extends EventEmitter {
    *
    * @param blockNumber
    * @param td : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf)
+   * @param timestamp: timestamp in seconds at which block was/is to be minted
    * @returns The name of the HF
    */
   getHardforkByBlockNumber(
@@ -329,10 +330,10 @@ export class Common extends EventEmitter {
       throw Error(`More than one merge hardforks found with ttd specified`)
     }
 
-    // Find the first hardfork that has a block number greater than `blockNumber` (skips the merge hardfork since
-    // it cannot have a block number specified).
-    // If timestamp is not provided, it also skips timestamps hardforks to continue discovering/checking number
-    // hardforks.
+    // Find the first hardfork that has a block number greater than `blockNumber`
+    // (skips the merge hardfork since it cannot have a block number specified).
+    // If timestamp is not provided, it also skips timestamps hardforks to continue
+    // discovering/checking number hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
         (hf.block !== null && hf.block > blockNumber) ||
@@ -422,6 +423,7 @@ export class Common extends EventEmitter {
    *
    * @param blockNumber
    * @param td
+   * @param timestamp
    * @returns The name of the HF set
    */
   setHardforkByBlockNumber(
