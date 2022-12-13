@@ -108,7 +108,7 @@ tape(`${method}: call with invalid tx hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`${method}: call with out-of-bound tx hash `, async (t) => {
+tape(`${method}: call with out-of-bound tx hash `, async (t) => {
   const { server } = baseSetup()
 
   const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
