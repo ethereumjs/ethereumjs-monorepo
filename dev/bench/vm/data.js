@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1670939745010,
+  "lastUpdate": 1670945447902,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "cc5bb5977b5d443ebb3437bfa0a2752e1b90e4d6",
-          "message": "New EVM Bugfix Release v1.2.2 (#2384)\n\n* Added CHANGELOG entry, bumped version, updated upstream dependency versions (EVM v1.2.2)\r\n\r\n* Update packages/evm/CHANGELOG.md\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-26T18:39:39+02:00",
-          "tree_id": "e1f8799503e1f00769065f0e84d272136224d162",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cc5bb5977b5d443ebb3437bfa0a2752e1b90e4d6"
-        },
-        "date": 1666802576857,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9753,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9478,
-            "range": "±4.08%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9649,
-            "range": "±2.56%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9100,
-            "range": "±7.10%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9965,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.09%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1bf118ccd9cc48fbbad564a97eda63629f6bd16",
+          "message": "Implement `debug_traceTransaction` RPC endpoint (#2444)\n\n* add basic debug_traceTransaction rpc endpoint\r\n\r\n* Add first test\r\n\r\n* WIP tests\r\n\r\n* Add test for simple code execution\r\n\r\n* Add more tests\r\n\r\n* rename test data file\r\n\r\n* add tracer opts validation\r\n\r\n* add structLog interface\r\n\r\n* Add storage to structLogs\r\n\r\n* add error to structLogs\r\n\r\n* Throw on enabling return data opt\r\n\r\n* Update tests\r\n\r\n* Remove invalid test\r\n\r\n* Add tests for other invalid params",
+          "timestamp": "2022-12-13T10:27:56-05:00",
+          "tree_id": "64eb1b9694f0895a2576edee9600c8bb5f6f60c8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1bf118ccd9cc48fbbad564a97eda63629f6bd16"
+        },
+        "date": 1670945446695,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18380,
+            "range": "±2.62%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17890,
+            "range": "±5.16%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16639,
+            "range": "±9.05%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18618,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17729,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
