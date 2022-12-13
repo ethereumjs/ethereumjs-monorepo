@@ -905,10 +905,9 @@ export class Common extends EventEmitter {
    * Expected returns (parameters must be present in
    * the respective chain json files):
    *
-   * ethash: -
+   * ethash: empty object
    * clique: period, epoch
-   * aura: -
-   * casper: -
+   * casper: empty object
    *
    * Note: This value can update along a Hardfork.
    */
