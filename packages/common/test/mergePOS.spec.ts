@@ -232,21 +232,21 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       msg
     )
 
-    // Check nextHardforkBlock should be MergeForkIdTransition's block on london and merge both
+    // Check nextHardforkBlockOrTimestamp should be MergeForkIdTransition's block on london and merge both
     st.equal(
-      c.nextHardforkBlock(Hardfork.Berlin),
+      c.nextHardforkBlockOrTimestamp(Hardfork.Berlin),
       1735371n,
-      `should get nextHardforkBlock correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`
     )
     st.equal(
-      c.nextHardforkBlock(Hardfork.London),
+      c.nextHardforkBlockOrTimestamp(Hardfork.London),
       1735371n,
-      `should get nextHardforkBlock correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`
     )
     st.equal(
-      c.nextHardforkBlock(Hardfork.Merge),
+      c.nextHardforkBlockOrTimestamp(Hardfork.Merge),
       1735371n,
-      `should get nextHardforkBlock correctly`
+      `should get nextHardforkBlockOrTimestamp correctly`
     )
 
     try {
@@ -313,16 +313,16 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
         msg
       )
 
-      // Check nextHardforkBlock should be MergeForkIdTransition's block on london and merge both
+      // Check nextHardforkBlockOrTimestamp should be MergeForkIdTransition's block on london and merge both
       st.equal(
-        c.nextHardforkBlock(Hardfork.London),
+        c.nextHardforkBlockOrTimestamp(Hardfork.London),
         1735371n,
-        `should get nextHardforkBlock correctly`
+        `should get nextHardforkBlockOrTimestamp correctly`
       )
       st.equal(
-        c.nextHardforkBlock(Hardfork.Merge),
+        c.nextHardforkBlockOrTimestamp(Hardfork.Merge),
         1735371n,
-        `should get nextHardforkBlock correctly`
+        `should get nextHardforkBlockOrTimestamp correctly`
       )
 
       // restore value

@@ -53,7 +53,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
       'should match the HF'
     )
     st.equal(
-      c.nextHardforkBlock(Hardfork.Shanghai),
+      c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
       null,
       'should give null on next Hardfork block'
     )
@@ -87,7 +87,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     )
 
     st.equal(
-      c.nextHardforkBlock(Hardfork.Shanghai),
+      c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
       BigInt(1668700476),
       'should give correct next Hardfork block/time'
     )

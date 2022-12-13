@@ -222,7 +222,7 @@ export class FullSynchronizer extends Synchronizer {
         : ''
 
     let attentionHF: string | null = null
-    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlock()
+    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockOrTimestamp()
     if (nextHFBlockNum !== null) {
       const remaining = nextHFBlockNum - last
       if (remaining <= BigInt(10000)) {
