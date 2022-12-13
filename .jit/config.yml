@@ -1,14 +1,2 @@
 folders:
-  - path: /packages/block
-  - path: /packages/blockchain
-  - path: /packages/client
-  - path: /packages/common
-  - path: /packages/devp2p
-  - path: /packages/ethash
-  - path: /packages/evm
-  - path: /packages/rlp
-  - path: /packages/statemanager
-  - path: /packages/trie
-  - path: /packages/tx
-  - path: /packages/util
-  - path: /packages/vm
+  - path: /sade
