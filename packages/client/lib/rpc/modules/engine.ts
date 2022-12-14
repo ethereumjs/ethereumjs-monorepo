@@ -229,13 +229,14 @@ const assembleBlock = async (
     feeRecipient: coinbase,
     transactions,
     withdrawals: withdrawalsData,
+    timestamp,
   } = payload
   const { config } = chain
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
   const ttd = common.hardforkTTD(Hardfork.Merge)
-  common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined)
+  common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined, timestamp)
 
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {

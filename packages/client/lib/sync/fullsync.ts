@@ -77,7 +77,8 @@ export class FullSynchronizer extends Synchronizer {
     const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.chainCommon.setHardforkByBlockNumber(number, td)
+    const timestamp = this.chain.blocks.latest?.header.timestamp
+    this.config.chainCommon.setHardforkByBlockNumber(number, td, timestamp)
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
@@ -221,7 +222,7 @@ export class FullSynchronizer extends Synchronizer {
         : ''
 
     let attentionHF: string | null = null
-    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlock()
+    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockOrTimestamp()
     if (nextHFBlockNum !== null) {
       const remaining = nextHFBlockNum - last
       if (remaining <= BigInt(10000)) {

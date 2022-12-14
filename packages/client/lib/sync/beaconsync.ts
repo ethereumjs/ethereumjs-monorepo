@@ -72,7 +72,8 @@ export class BeaconSynchronizer extends Synchronizer {
     const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.chainCommon.setHardforkByBlockNumber(number, td)
+    const timestamp = this.chain.blocks.latest?.header.timestamp
+    this.config.chainCommon.setHardforkByBlockNumber(number, td, timestamp)
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${hash.toString(

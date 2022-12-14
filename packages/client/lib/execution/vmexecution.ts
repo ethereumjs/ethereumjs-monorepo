@@ -97,12 +97,12 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
       const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number } = headBlock.header
+      const { number, timestamp } = headBlock.header
       if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkByBlockNumber(number, td)
+      this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
@@ -232,7 +232,7 @@ export class VMExecution extends Execution {
           }
           // run block, update head if valid
           try {
-            const { number } = block.header
+            const { number, timestamp } = block.header
             if (typeof blockchain.getTotalDifficulty !== 'function') {
               throw new Error(
                 'cannot get iterator head: blockchain has no getTotalDifficulty function'
@@ -240,13 +240,13 @@ export class VMExecution extends Execution {
             }
             const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
-            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td, timestamp)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
                 `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
+              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
             }
             let skipBlockValidation = false
             if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -413,7 +413,7 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkByBlockNumber(blockNumber, td)
+      vm._common.setHardforkByBlockNumber(blockNumber, td, block.header.timestamp)
 
       if (txHashes.length === 0) {
         // we are skipping header validation because the block has been picked from the

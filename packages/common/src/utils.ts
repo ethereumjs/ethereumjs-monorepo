@@ -2,7 +2,9 @@ import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums'
 
-type ConfigHardfork = { name: string; block: number }
+type ConfigHardfork =
+  | { name: string; block: null; timestamp: number }
+  | { name: string; block: number; timestamp?: number }
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
  * @param nonce string parsed from the Geth genesis file
@@ -29,6 +31,7 @@ function formatNonce(nonce: string): string {
 function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp, nonce } = json
+  const genesisTimestamp = Number(timestamp)
   const { chainId } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
@@ -87,7 +90,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
           },
   }
 
-  const forkMap: { [key: string]: { name: string; postMerge?: boolean } } = {
+  const forkMap: { [key: string]: { name: string; postMerge?: boolean; isTimestamp?: boolean } } = {
     [Hardfork.Homestead]: { name: 'homesteadBlock' },
     [Hardfork.Dao]: { name: 'daoForkBlock' },
     [Hardfork.TangerineWhistle]: { name: 'eip150Block' },
@@ -100,8 +103,13 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
-    [Hardfork.Eof]: { name: 'eofBlock', postMerge: true },
-    [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true },
+    [Hardfork.Eof_INTERNAL]: { name: 'eofBlock', postMerge: true },
+    [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
+    [Hardfork.ShardingFork_INTERNAL]: {
+      name: 'shardingForkTime',
+      postMerge: true,
+      isTimestamp: true,
+    },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -109,19 +117,29 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     acc[forkMap[elem].name] = elem
     return acc
   }, {} as { [key: string]: string })
-  const configHardforkNames = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+  const configHardforkNames = Object.keys(config).filter(
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+  )
 
   params.hardforks = configHardforkNames
     .map((nameBlock) => ({
       name: forkMapRev[nameBlock],
-      block: config[nameBlock],
+      block: forkMap[forkMapRev[nameBlock]].isTimestamp === true ? null : config[nameBlock],
+      timestamp:
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true ? config[nameBlock] : undefined,
     }))
-    .filter((fork) => fork.block !== null && fork.block !== undefined)
+    .filter(
+      (fork) => (fork.block !== null && fork.block !== undefined) || fork.timestamp !== undefined
+    )
 
-  // sort with block
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
-    return a.block - b.block
+    return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
+
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return (a.timestamp ?? genesisTimestamp) - (b.timestamp ?? genesisTimestamp)
+  })
+
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 
   if (config.terminalTotalDifficulty !== undefined) {
@@ -147,7 +165,9 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
     // on merge or first non zero block hardfork if any of genesis hardforks require merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) && hf.block > 0
+      (hf: any) =>
+        (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) &&
+        (hf.block > 0 || (hf.timestamp ?? 0) > 0)
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig)

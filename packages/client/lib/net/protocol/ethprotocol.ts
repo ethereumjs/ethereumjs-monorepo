@@ -106,7 +106,9 @@ export class EthProtocol extends Protocol {
           this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
-            BigInt(0) // Use chainstart
+            BigInt(0), // Use chainstart,
+          undefined,
+          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
         )
         return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },

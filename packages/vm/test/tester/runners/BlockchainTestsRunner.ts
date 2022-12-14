@@ -126,14 +126,16 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
       // Update common HF
       let TD: bigint | undefined = undefined
+      let timestamp: bigint | undefined = undefined
       try {
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
         TD = await blockchain.getTotalDifficulty(parentHash)
+        timestamp = bufferToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
-      common.setHardforkByBlockNumber(currentBlock, TD)
+      common.setHardforkByBlockNumber(currentBlock, TD, timestamp)
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
