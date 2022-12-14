@@ -729,7 +729,7 @@ export class Common extends EventEmitter {
     hardfork = hardfork ?? this._hardfork
     const hfs = this.hardforks()
     let hfIndex = hfs.findIndex((hf) => hf.name === hardfork)
-    // If the current hardfork is merge go, one behind as merge hf is not part of these
+    // If the current hardfork is merge, go one behind as merge hf is not part of these
     // calcs even if the merge hf block is set
     if (hardfork === Hardfork.Merge) {
       hfIndex -= 1
