@@ -619,8 +619,13 @@ async function run() {
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
     customGenesisState = parseGethGenesisState(genesisFile)
-    // Set hardfork by block number 0 since merge is on Block 1
-    common.setHardforkByBlockNumber(0)
+    // Set hardfork by block number 0 (and or the current time if we have hardforks with timestamps specified)
+    const hardforksWithTimestamps = common.hardforks().filter((hf) => hf.timestamp !== undefined)
+    common.setHardforkByBlockNumber(
+      0,
+      undefined,
+      hardforksWithTimestamps.length > 0 ? Date.now() : undefined
+    )
   }
 
   if (args.mine === true && accounts.length === 0) {

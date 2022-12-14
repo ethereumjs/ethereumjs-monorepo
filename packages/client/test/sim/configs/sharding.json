@@ -1,5 +1,6 @@
 {
   "config": {
+    "name": "sharding",
     "chainId": 1,
     "homesteadBlock": 0,
     "eip150Block": 0,
@@ -13,8 +14,8 @@
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
-    "shanghaiBlock": 0,
-    "shardingForkBlock": 0,
+    "shanghaiTime": 1671043299,
+    "shardingForkTime": 1671043299,
     "clique": {
       "period": 5,
       "epoch": 30000
