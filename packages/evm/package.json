@@ -49,7 +49,7 @@
     "@ethereumjs/common": "^3.0.1",
     "@ethereumjs/util": "^8.0.2",
     "@ethersproject/providers": "^5.7.1",
-    "c-kzg": "^1.0.7",
+    "c-kzg": "^1.0.8",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "mcl-wasm": "^0.7.1",
