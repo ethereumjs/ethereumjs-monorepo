@@ -1,3 +1,4 @@
+import { Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -167,11 +168,92 @@ tape(`getTransactionCount / getBalance`, async (t) => {
       nonce: nonce + 1n,
       balance: 999999n,
     })
-
     const _count = await state.getTransactionCount(address.toString())
     t.equal(BigInt(_count), nonce + 1n, `should return correct nonce (${nonce + 1n})`)
     const _bal = await state.getBalance(address.toString())
     t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
+    t.end()
+  }
+})
+tape(`getTransactionCount / getBalance`, async (t) => {
+  if (isBrowser() === true) {
+    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    t.end()
+  } else {
+    const provider =
+      process.env.PROVIDER !== undefined
+        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        : new MockProvider()
+    const state = new EthersForkedStateProvider(provider)
+    const A = {
+      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      privateKey: Buffer.from(
+        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+        'hex'
+      ),
+    }
+
+    const B = {
+      address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
+      privateKey: Buffer.from(
+        '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
+        'hex'
+      ),
+    }
+
+    const acc = new Account()
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(A.address, acc)
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(B.address, acc)
+
+    const accountA = await ((state as any).ethersStateManager as EthersStateManager).getAccount(
+      A.address
+    )
+
+    const accountB = await ((state as any).ethersStateManager as EthersStateManager).getAccount(
+      B.address
+    )
+
+    accountA.balance = 1000000000000n
+    accountB.balance = 1000000000000n
+
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(A.address, accountB)
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(B.address, accountB)
+
+    const balA = await state.getBalance(A.address.toString())
+    t.equal(balA.toBigInt(), 1000000000000n, 'should return the correct original balance')
+    const balB = await state.getBalance(B.address.toString())
+    t.equal(balB.toBigInt(), 1000000000000n, 'should return the correct original balance')
+
+    const txData = {
+      nonce: 0n,
+      gasPrice: 10n,
+      gasLimit: 100000n,
+      to: B.address,
+      value: 1000n,
+    }
+    const tx = Transaction.fromTxData(txData)
+    const signedTx = tx.sign(A.privateKey)
+
+    await state.sendTransaction(bufferToHex(signedTx.serialize()))
+    const newBalA = await state.getBalance(A.address.toString())
+    t.equal(
+      newBalA.toBigInt(),
+      1000000000000n - 1000n - 210000n,
+      'should return the correct balance'
+    )
+    const newBalB = await state.getBalance(B.address.toString())
+    t.equal(newBalB.toBigInt(), 1000000000000n + 1000n, 'should return the correct balance')
+
+    // const count = await state.getTransactionCount(address.toString())
+    // t.equal(BigInt(count), nonce, `should return the correct nonce ${nonce}`)
+    // await ((state as any).ethersStateManager as EthersStateManager).modifyAccountFields(address, {
+    //   nonce: nonce + 1n,
+    //   balance: 999999n,
+    // })
+    // const _count = await state.getTransactionCount(address.toString())
+    // t.equal(BigInt(_count), nonce + 1n, `should return correct nonce (${nonce + 1n})`)
+    // const _bal = await state.getBalance(address.toString())
+    // t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
     t.end()
   }
 })
