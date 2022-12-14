@@ -141,26 +141,26 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('nextHardforkBlock()', function (st: tape.Test) {
+  t.test('nextHardforkBlockOrTimestamp()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let msg =
       'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
-    st.equal(c.nextHardforkBlock()!, BigInt(1), msg)
+    st.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(1), msg)
 
     msg =
       'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
-    st.equal(c.nextHardforkBlock('homestead')!, BigInt(2), msg)
+    st.equal(c.nextHardforkBlockOrTimestamp('homestead')!, BigInt(2), msg)
 
     msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
-    st.equal(c.nextHardforkBlock(Hardfork.Byzantium)!, BigInt(3660663), msg)
+    st.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(3660663), msg)
 
     msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
-    st.equal(c.nextHardforkBlock(Hardfork.London), null, msg)
+    st.equal(c.nextHardforkBlockOrTimestamp(Hardfork.London), null, msg)
 
     msg =
       'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    st.equal(c.nextHardforkBlock()!, BigInt(10), msg)
+    st.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(10), msg)
 
     st.end()
   })
@@ -226,7 +226,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     // update this test to next unscheduled hardfork.
     st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
     st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
-    st.equal(c.nextHardforkBlock(Hardfork.Shanghai), null, msg)
+    st.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
 
     st.end()
   })
