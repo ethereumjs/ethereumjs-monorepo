@@ -182,7 +182,7 @@ export class BlockHeader {
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ??
