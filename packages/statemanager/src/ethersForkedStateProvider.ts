@@ -1,13 +1,18 @@
 import { Address, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
 import { BigNumber, ethers } from 'ethers'
 
 import { EthersStateManager } from '.'
 
 export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider {
   private ethersStateManager: EthersStateManager
+  private vm: VM
   constructor(provider: string | ethers.providers.JsonRpcProvider) {
     super(typeof provider === 'string' ? provider : provider.connection)
     this.ethersStateManager = new EthersStateManager({ blockTag: 1n, provider })
+    this.vm = new (VM as any)({
+      stateManager: this.ethersStateManager,
+    }) as VM
   }
 
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
