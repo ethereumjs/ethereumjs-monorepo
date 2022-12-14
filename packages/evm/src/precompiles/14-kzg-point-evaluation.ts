@@ -6,6 +6,7 @@ import {
   intToBuffer,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { verifyKzgProof } from 'c-kzg'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -23,19 +24,20 @@ const FIELD_ELEMENTS_PER_BLOB = 4096
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   const versionedHash = opts.data.slice(0, 32)
-  const x = bufferToBigInt(opts.data.slice(32, 64)) // TODO: Determine if x/y will stay in the input
-  const y = bufferToBigInt(opts.data.slice(64, 96))
-  if (x >= BLS_MODULUS || y >= BLS_MODULUS) {
+  const z = opts.data.slice(32, 64)
+  const y = opts.data.slice(64, 96)
+  const commitment = opts.data.slice(96, 144)
+  const kzgProof = opts.data.slice(144, 192)
+
+  if (bufferToBigInt(z) >= BLS_MODULUS || bufferToBigInt(y) >= BLS_MODULUS) {
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
   }
 
-  const dataKzg = opts.data.slice(96, 144)
-  if (bufferToHex(Buffer.from(computeVersionedHash(dataKzg))) !== bufferToHex(versionedHash)) {
+  if (bufferToHex(Buffer.from(computeVersionedHash(commitment))) !== bufferToHex(versionedHash)) {
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
 
-  //const quotientKzg = opts.data.slice(144, 192)
-  // TODO: Verify the kzg proof once the kzg library interface is ironed out
+  verifyKzgProof(commitment, z, y, kzgProof)
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
   const fieldElementsBuffer = setLengthLeft(intToBuffer(FIELD_ELEMENTS_PER_BLOB), 32)
