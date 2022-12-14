@@ -30,9 +30,7 @@ async function setUp() {
 
   await runBlockWithTxs(chain, execution, txs)
 
-  // this line helps getting the block hash for the mockBlock
-  // const block = await chain.getCanonicalHeadBlock()
-  return { server /*, blockHash: block.hash() */ }
+  return { server }
 }
 
 tape(`${method}: call with valid arguments`, async (t) => {
