@@ -157,7 +157,7 @@ export class EVM implements EVMInterface {
     Hardfork.MergeForkIdTransition,
     Hardfork.Merge,
     Hardfork.Shanghai,
-    Hardfork.Sharding,
+    Hardfork.ShardingFork_INTERNAL,
   ]
   protected _tx?: {
     gasPrice: bigint
