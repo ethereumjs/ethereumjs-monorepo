@@ -44,12 +44,12 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     // one
     st.equal(
       c.getHardforkByBlockNumber(1, undefined, 1668699476),
-      Hardfork.ShardingFork,
+      Hardfork.ShardingFork_INTERNAL,
       'should match the HF'
     )
     st.equal(
       c.getHardforkByBlockNumber(1, undefined, 1668699576),
-      Hardfork.ShardingFork,
+      Hardfork.ShardingFork_INTERNAL,
       'should match the HF'
     )
     st.equal(
