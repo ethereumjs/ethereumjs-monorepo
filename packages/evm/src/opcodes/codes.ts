@@ -294,7 +294,7 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
     eip: 4844,
     opcodes: {
-      0x49: { name: 'HASH', isAsync: false, dynamicGas: false },
+      0x49: { name: 'DATAHASH', isAsync: false, dynamicGas: false },
     },
   },
 ]
