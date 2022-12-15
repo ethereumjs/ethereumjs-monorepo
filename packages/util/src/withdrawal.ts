@@ -4,6 +4,9 @@ import { TypeOutput, toType } from './types'
 
 import type { AddressLike, BigIntLike } from './types'
 
+/**
+ * Flexible input data type for EIP-4895 withdrawal data
+ */
 export type WithdrawalData = {
   index: BigIntLike
   validatorIndex: BigIntLike
@@ -11,6 +14,9 @@ export type WithdrawalData = {
   amount: BigIntLike
 }
 
+/**
+ * JSON RPC interface for EIP-4895 withdrawal data
+ */
 export interface JsonRpcWithdrawal {
   index: string // QUANTITY - bigint 8 bytes
   validatorIndex: string // QUANTITY - bigint 8 bytes
@@ -20,7 +26,14 @@ export interface JsonRpcWithdrawal {
 
 export type WithdrawalBuffer = [Buffer, Buffer, Buffer, Buffer]
 
+/**
+ * Representation of EIP-4895 withdrawal data
+ */
 export class Withdrawal {
+  /**
+   * This constructor assigns and validates the values.
+   * Use the static factory methods to assist in creating a Withdrawal object from varying data types.
+   */
   constructor(
     public readonly index: bigint,
     public readonly validatorIndex: bigint,

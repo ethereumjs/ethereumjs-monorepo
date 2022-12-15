@@ -455,7 +455,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L262)
+[packages/devp2p/src/protocol/les.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L254)
 
 ___
 
@@ -976,7 +976,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L201)
+[packages/devp2p/src/protocol/les.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L197)
 
 ___
 

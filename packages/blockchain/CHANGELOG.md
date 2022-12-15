@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.1.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library README for an example how to create an Ethereum Block containing withdrawal operations.
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+```
+
+The Blockchain class now fully supports including/adding withdrawal blocks as well as directly start with a genesis block including withdrawal operations.
+
+### Hardfork-By-Time Support
+
+The Blockchain library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ## 6.0.2 - 2022-10-25
 
 - Updated `@ethereumjs/util` minimal package version to `v8.0.2` to ensure functioning of the library (otherwise the newly exported `Lock` functionality might be missing)

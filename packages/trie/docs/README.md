@@ -8,7 +8,6 @@
 
 - [BranchNode](classes/BranchNode.md)
 - [CheckpointDB](classes/CheckpointDB.md)
-- [CheckpointTrie](classes/CheckpointTrie.md)
 - [ExtensionNode](classes/ExtensionNode.md)
 - [LeafNode](classes/LeafNode.md)
 - [MapDB](classes/MapDB.md)
@@ -34,6 +33,7 @@
 - [Nibbles](README.md#nibbles)
 - [Proof](README.md#proof)
 - [TrieNode](README.md#trienode)
+- [TrieOptsWithDefaults](README.md#trieoptswithdefaults)
 
 ### Variables
 
@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L63)
+[packages/trie/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L72)
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L110)
+[packages/trie/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L119)
 
 ___
 
@@ -164,6 +164,16 @@ ___
 
 [packages/trie/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L4)
 
+___
+
+### TrieOptsWithDefaults
+
+Ƭ **TrieOptsWithDefaults**: [`TrieOpts`](interfaces/TrieOpts.md) & { `useKeyHashing`: `boolean` ; `useKeyHashingFunction`: [`HashKeysFunction`](README.md#hashkeysfunction) ; `useNodePruning`: `boolean` ; `useRootPersistence`: `boolean`  }
+
+#### Defined in
+
+[packages/trie/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L65)
+
 ## Variables
 
 ### ROOT\_DB\_KEY
@@ -172,7 +182,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L117)
+[packages/trie/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L126)
 
 ## Functions
 
@@ -238,7 +248,7 @@ ___
 
 ### verifyRangeProof
 
-▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `useHashedKeysFunction`): `Promise`<`boolean`\>
+▸ **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`, `useKeyHashingFunction`): `Promise`<`boolean`\>
 
 verifyRangeProof checks whether the given leaf nodes and edge proof
 can prove the given trie leaves range is matched with the specific root.
@@ -269,7 +279,7 @@ NOTE: Currently only supports verification when the length of firstKey and lastK
 | `keys` | [`Nibbles`](README.md#nibbles)[] | key list. |
 | `values` | `Buffer`[] | value list, one-to-one correspondence with keys. |
 | `proof` | ``null`` \| `Buffer`[] | proof node list, if proof is null, both `firstKey` and `lastKey` must be null |
-| `useHashedKeysFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
+| `useKeyHashingFunction` | [`HashKeysFunction`](README.md#hashkeysfunction) | - |
 
 #### Returns
 
