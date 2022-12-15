@@ -14,9 +14,9 @@ tape('Memory', (t) => {
     st.end()
   })
 
-  t.test('should extend capacity to word boundary', (st) => {
+  t.test('should extend capacity to 8192 bytes', (st) => {
     m.extend(0, 3)
-    st.equal(m._store.length, 32)
+    st.equal(m._store.length, 8192)
     st.end()
   })
 
@@ -40,17 +40,9 @@ tape('Memory', (t) => {
     'should expand by word (32 bytes) properly when writing to previously untouched location',
     (st) => {
       const memory = new Memory()
+      st.equal(memory._store.length, 0, 'memory should start with zero length')
       memory.write(0, 1, Buffer.from([1]))
-      st.equal(memory._store.length, 32)
-
-      memory.write(1, 3, Buffer.from([2, 2, 2]))
-      st.equal(memory._store.length, 32)
-
-      memory.write(4, 32, Buffer.allocUnsafe(32).fill(3))
-      st.equal(memory._store.length, 64)
-
-      memory.write(36, 32, Buffer.allocUnsafe(32).fill(4))
-      st.equal(memory._store.length, 96)
+      st.equal(memory._store.length, 8192, 'memory buffer length expanded to 8192 bytes')
 
       st.end()
     }
@@ -59,19 +51,19 @@ tape('Memory', (t) => {
   t.test('should expand by word (32 bytes) when reading a previously untouched location', (st) => {
     const memory = new Memory()
     memory.read(0, 8)
-    st.equal(memory._store.length, 32)
+    st.equal(memory._store.length, 8192)
 
     memory.read(1, 16)
-    st.equal(memory._store.length, 32)
+    st.equal(memory._store.length, 8192)
 
     memory.read(1, 32)
-    st.equal(memory._store.length, 64)
+    st.equal(memory._store.length, 8192)
 
     memory.read(32, 32)
-    st.equal(memory._store.length, 64)
+    st.equal(memory._store.length, 8192)
 
     memory.read(33, 32)
-    st.equal(memory._store.length, 96)
+    st.equal(memory._store.length, 8192)
 
     st.end()
   })
