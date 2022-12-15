@@ -37,7 +37,7 @@ tape('Memory', (t) => {
   })
 
   t.test(
-    'should expand by word (32 bytes) properly when writing to previously untouched location',
+    'should expand by container (8192 bytes) properly when writing to previously untouched location',
     (st) => {
       const memory = new Memory()
       st.equal(memory._store.length, 0, 'memory should start with zero length')
@@ -48,23 +48,17 @@ tape('Memory', (t) => {
     }
   )
 
-  t.test('should expand by word (32 bytes) when reading a previously untouched location', (st) => {
-    const memory = new Memory()
-    memory.read(0, 8)
-    st.equal(memory._store.length, 8192)
+  t.test(
+    'should expand by container (8192 bytes) when reading a previously untouched location',
+    (st) => {
+      const memory = new Memory()
+      memory.read(0, 8)
+      st.equal(memory._store.length, 8192)
 
-    memory.read(1, 16)
-    st.equal(memory._store.length, 8192)
+      memory.read(8190, 8193)
+      st.equal(memory._store.length, 16384)
 
-    memory.read(1, 32)
-    st.equal(memory._store.length, 8192)
-
-    memory.read(32, 32)
-    st.equal(memory._store.length, 8192)
-
-    memory.read(33, 32)
-    st.equal(memory._store.length, 8192)
-
-    st.end()
-  })
+      st.end()
+    }
+  )
 })
