@@ -21,6 +21,10 @@ const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
 
 In the VM withdrawals blocks can now both be executed with `VM.runBlock()` and build with `VM.buildBlock()` (for a more complex example you can have a look at the EIP tests in `test/api/EIPs/eip-4895-withdrawals.spec.ts`).
 
+### Hardfork-By-Time Support
+
+The VM library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ### Bug Fixes and Other Changes
 
 - More correctly timed `nonce` updates in `VM.runTx()` to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)

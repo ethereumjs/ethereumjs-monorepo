@@ -15,10 +15,15 @@ Furthermore this client release can now run chain including blocks with `EIP-489
 ### New RPC Methods
 
 - `eth_getBlockTransactionCountByNumber`, PR [#2379](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2379)
+- `eth_getTransactionByBlockHashAndIndex`, PR [#2443](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2443)
 - `eth_gasPrice`, PR [#2396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2396)
-- `eth_feeHistory`, PR [#2413](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2413)
 - `txpool_content`, PR [#2410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2410)
+- `debug_traceTransaction`, PR [#2444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2444)
 - Miscellaneous tx related fixes, PR [#2411](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2411)
+
+### Hardfork-By-Time Support
+
+The Client is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
 
 ### Other Changes and Bug Fixes
 

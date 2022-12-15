@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 5.0.2 - 2022-12-09
 
-Maintenance release with dependency updates, PR [#2445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2445)
+### Hardfork-By-Time Support
+
+The devp2p library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+One specific devp2p change is that the forkid is now calculated based on timestamps for timestamp-based HFs, see [EIP-6122](https://github.com/ethereum/EIPs/pull/6122).
 
 ## 5.0.1 - 2022-10-18
 

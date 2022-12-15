@@ -19,11 +19,15 @@ import { Common, Chain } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
 ```
 
+### Hardfork-By-Time Support
+
+The Common library now supports setting and retrieving hardforks which are triggered by timestamp instead of a specific block number, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This mechanism will be first applied for the upcoming `Shanghai` HF. The methods `getHardforkByBlockNumber()`, `setHardforkByBlockNumber()` and `paramByBlock()` have been altered to take in an additional `timestamp` value, method naming remains for now for backwards compatibility. There are two new utility methods `hardforkTimestamp()` and `nextHardforkBlockOrTimestamp()`.
+
 ### Other Changes
 
 - Support for initialization with Arbitrum One Chain ID, PR [#2426](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2426)
 - Post-Merge hardfork fix in `Common.fromGethGenesis()` static constructor, PR [#2427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2427)
-- Added `Hardfork.Eof` HF for an eventual EOF focused Shandong follow-up testnet (subject to change, do not use in production), PR [#2316](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2316)
+- Fixed minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
 
 ## 3.0.1 - 2022-10-18
 

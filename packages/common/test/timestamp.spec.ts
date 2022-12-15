@@ -40,18 +40,6 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
       Hardfork.MergeForkIdTransition,
       'should match the HF'
     )
-    // If two hardforks are schedule on same block/timestamp, should pick the last
-    // one
-    st.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699476),
-      Hardfork.ShardingFork_INTERNAL,
-      'should match the HF'
-    )
-    st.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699576),
-      Hardfork.ShardingFork_INTERNAL,
-      'should match the HF'
-    )
     st.equal(
       c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
       null,
@@ -84,12 +72,6 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
       c.getHardforkByBlockNumber(1, undefined, 1668699576),
       Hardfork.Shanghai,
       'should match the HF'
-    )
-
-    st.equal(
-      c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
-      BigInt(1668700476),
-      'should give correct next Hardfork block/time'
     )
     st.end()
   })

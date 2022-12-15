@@ -15,7 +15,6 @@ export const hardforks = {
   // Eof is a dummy hardfork for testing and running shandong testnet/eof testnet
   // However its harmless as it never will get scheduled in real and would be cleaned
   // up post eof testnets are no longer needed
-  eof: require('./eof.json'),
   shanghai: require('./shanghai.json'),
   arrowGlacier: require('./arrowGlacier.json'),
   grayGlacier: require('./grayGlacier.json'),

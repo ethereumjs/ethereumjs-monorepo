@@ -49,6 +49,10 @@ There is a new data option `withdrawals` to pass in system-level withdrawal oper
 
 Validation of the withdrawals trie can be manually triggered with the new async `Block.validateWithdrawalsTrie()` method.
 
+### Hardfork-By-Time Support
+
+The Block library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ## 4.0.1 - 2022-10-18
 
 ### Support for Geth genesis.json Genesis Format

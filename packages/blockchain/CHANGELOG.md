@@ -20,6 +20,10 @@ import { Common, Chain } from '@ethereumjs/common'
 
 The Blockchain class now fully supports including/adding withdrawal blocks as well as directly start with a genesis block including withdrawal operations.
 
+### Hardfork-By-Time Support
+
+The Blockchain library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ## 6.0.2 - 2022-10-25
 
 - Updated `@ethereumjs/util` minimal package version to `v8.0.2` to ensure functioning of the library (otherwise the newly exported `Lock` functionality might be missing)
