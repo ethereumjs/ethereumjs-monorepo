@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1671038272553,
+  "lastUpdate": 1671119938297,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e6c18851df309c96c6186d6facca3185024a11af",
-          "message": "Integrate txpool fixes found in Shandong (#2382)\n\n* client: set stateroot when validating tx\r\n\r\n* fix miner and txpool test failures\r\n\r\n* More test fixes\r\n\r\n* Add fix for Transactions message parsing\r\n\r\n* fix txpool tests\r\n\r\n* test fixes\r\n\r\n* more test fixes\r\n\r\n* remove stray console log\r\n\r\n* use vmCopy for tx sender state validation\r\n\r\n* Fix test\r\n\r\n* Fix more tests\r\n\r\n* fix test\r\n\r\n* Add additional checks for chain height\r\n\r\n* Add explanatory comment\r\n\r\n* Add tests and fix newpooledtxhashes",
-          "timestamp": "2022-10-29T22:00:22+05:30",
-          "tree_id": "a48730acaa9057fd3a59400f9d723262d5a8b71d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6c18851df309c96c6186d6facca3185024a11af"
-        },
-        "date": 1667061230373,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9781,
-            "range": "±4.00%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9805,
-            "range": "±4.72%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9809,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9494,
-            "range": "±7.56%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10147,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.83%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "696b36fe9091cd67f3e0a70bc696e41bd16e57a2",
+          "message": "New December Releases (#2445)\n\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs, some withdrawal module code docs (Util v8.0.3)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Common v3.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Trie v5.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Tx v4.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Block v4.1.0)\r\n\r\n* Added withdrawal code example to Block README\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (StateManager v1.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Devp2p v5.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Ethash v2.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Blockchain v6.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (EVM v1.2.3)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (VM v6.3.0)\r\n\r\n* Client -> Release: Bumped version to v0.6.6, added CHANGELOG entry\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Release updates (removed sharding and EOF internal HFs, CHANGELOG updates (in particular Hardfork-By-Time addition))\r\n\r\n* Remove extraneous comment\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2022-12-15T16:55:46+01:00",
+          "tree_id": "54af64530cb76379ec4c18aee1c3e0b85176a38f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/696b36fe9091cd67f3e0a70bc696e41bd16e57a2"
+        },
+        "date": 1671119937140,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 14862,
+            "range": "±3.70%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14861,
+            "range": "±4.73%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14035,
+            "range": "±8.42%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15440,
+            "range": "±2.16%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14850,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
