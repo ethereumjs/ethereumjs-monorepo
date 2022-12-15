@@ -665,7 +665,8 @@ export class Eth {
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    // TODO: add proper `pending` support to allow accurate nonce computation
+    const block = await getBlockByOption(blockOpt === 'pending' ? 'latest' : blockOpt, this._chain)
 
     if (this._vm === undefined) {
       throw new Error('missing vm')

@@ -127,6 +127,8 @@ export function createRPCServer(
         'eth_getLogs',
         'eth_sendRawTransaction',
         'eth_syncing',
+        'eth_getTransactionCount',
+        'eth_getTransactionReceipt',
       ]
       const ethEngineSubsetMethods: { [key: string]: Function } = {}
       for (const method of ethMethodsToBeIncluded) {
