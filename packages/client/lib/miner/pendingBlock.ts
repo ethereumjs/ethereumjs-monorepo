@@ -53,7 +53,8 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BigInt(1)
-    const { gasLimit, timestamp } = parentBlock.header
+    const { timestamp } = headerData
+    const { gasLimit } = parentBlock.header
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
