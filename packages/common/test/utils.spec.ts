@@ -94,10 +94,9 @@ tape('[Utils/Parse]', (t) => {
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
     // This will also check if the forks are being correctly sorted based on block
-    Object.assign(json.config, { shanghaiBlock: 0 })
+    Object.assign(json.config, { shanghaiTime: Math.floor(Date.now() / 1000) })
     const common1 = Common.fromGethGenesis(json, {
       chain: 'customChain',
-      mergeForkIdPostMerge: false,
     })
     // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
     // to be post merge
@@ -114,9 +113,9 @@ tape('[Utils/Parse]', (t) => {
         'istanbul',
         'berlin',
         'london',
-        'shanghai',
         'merge',
         'mergeForkIdTransition',
+        'shanghai',
       ],
       'hardfork parse order should be correct'
     )
@@ -146,15 +145,30 @@ tape('[Utils/Parse]', (t) => {
       ],
       'hardfork parse order should be correct'
     )
+
     st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
     st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
-    // shanghai is at 8
-    st.equal(common.getHardforkByBlockNumber(8), Hardfork.Shanghai, 'shanghai at block 8')
+    // shanghai is at timestamp 8
+    st.equal(common.getHardforkByBlockNumber(8), Hardfork.London, 'without timestamp still london')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2)),
+      Hardfork.Merge,
+      'without timestamp at merge'
+    )
+    st.equal(
+      common.getHardforkByBlockNumber(8, undefined, 8),
+      Hardfork.Shanghai,
+      'with timestamp at shanghai'
+    )
     // should be post merge at shanghai
-    st.equal(common.getHardforkByBlockNumber(8, BigInt(2)), Hardfork.Shanghai, 'london at genesis')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2), 8),
+      Hardfork.Shanghai,
+      'post merge shanghai'
+    )
     // if not post merge, then should error
     try {
-      common.getHardforkByBlockNumber(8, BigInt(1))
+      common.getHardforkByBlockNumber(8, BigInt(1), 8)
       st.fail('should have failed since merge not compeleted before shanghai')
     } catch (e) {
       st.pass('correctly fails if merge not compeleted before shanghai')

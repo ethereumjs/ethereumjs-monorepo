@@ -49,7 +49,7 @@ Returns a copy of the blockchain
 
 #### Defined in
 
-[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L45)
+[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L50)
 
 ___
 
@@ -89,7 +89,7 @@ All values are provided as hex-prefixed strings.
 
 #### Defined in
 
-[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L70)
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
 
 ___
 
@@ -127,7 +127,7 @@ Returns the latest full block in the canonical chain.
 
 #### Defined in
 
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L80)
 
 ___
 
@@ -149,7 +149,7 @@ Returns the specified iterator head.
 
 #### Defined in
 
-[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L59)
+[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L64)
 
 ___
 
@@ -172,13 +172,13 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L64)
+[types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L69)
 
 ___
 
 ### iterator
 
-▸ **iterator**(`name`, `onBlock`, `maxBlocks?`): `Promise`<`number`\>
+▸ **iterator**(`name`, `onBlock`, `maxBlocks?`, `releaseLockOnCallback?`): `Promise`<`number`\>
 
 Iterates through blocks starting at the specified iterator head and calls
 the onBlock function on each block.
@@ -190,6 +190,7 @@ the onBlock function on each block.
 | `name` | `string` | Name of the state root head |
 | `onBlock` | `OnBlock` | Function called on each block with params (block: Block, |
 | `maxBlocks?` | `number` | optional maximum number of blocks to iterate through reorg: boolean) |
+| `releaseLockOnCallback?` | `boolean` | - |
 
 #### Returns
 
@@ -242,4 +243,4 @@ Validates a block header, throwing if invalid. It is being validated against the
 
 #### Defined in
 
-[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L52)
+[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L57)

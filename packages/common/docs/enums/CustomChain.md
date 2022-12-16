@@ -6,6 +6,7 @@
 
 ### Enumeration Members
 
+- [ArbitrumOne](CustomChain.md#arbitrumone)
 - [ArbitrumRinkebyTestnet](CustomChain.md#arbitrumrinkebytestnet)
 - [OptimisticEthereum](CustomChain.md#optimisticethereum)
 - [OptimisticKovan](CustomChain.md#optimistickovan)
@@ -14,6 +15,20 @@
 - [xDaiChain](CustomChain.md#xdaichain)
 
 ## Enumeration Members
+
+### ArbitrumOne
+
+• **ArbitrumOne** = ``"arbitrum-one"``
+
+Arbitrum One - mainnet for Arbitrum roll-up
+
+- [Documentation](https://developer.offchainlabs.com/public-chains)
+
+#### Defined in
+
+[packages/common/src/enums.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L69)
+
+___
 
 ### ArbitrumRinkebyTestnet
 
@@ -39,7 +54,7 @@ Optimistic Ethereum - mainnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/enums.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L83)
+[packages/common/src/enums.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L90)
 
 ___
 
@@ -53,7 +68,7 @@ Optimistic Kovan - testnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/enums.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L76)
+[packages/common/src/enums.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L83)
 
 ___
 
@@ -95,4 +110,4 @@ xDai EVM sidechain with a native stable token
 
 #### Defined in
 
-[packages/common/src/enums.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L69)
+[packages/common/src/enums.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L76)

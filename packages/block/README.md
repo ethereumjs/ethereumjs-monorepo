@@ -102,6 +102,43 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
+### EIP-4895 Beacon Chain Withdrawals Blocks (experimental)
+
+Starting with the `v4.1.0` release there is (experimental) support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a respective `Common` object and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Chain } from '@ethereumjs/common'
+import { Address } from '@ethereumjs/util'
+import type { WithdrawalData } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+
+const withdrawal = <WithdrawalData>{
+  index: BigInt(0),
+  validatorIndex: BigInt(0),
+  address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+  amount: BigInt(1000),
+}
+
+const block = Block.fromBlockData(
+  {
+    header: {
+      withdrawalsRoot: Buffer.from(
+        '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+        'hex'
+      ),
+    },
+    withdrawals: [withdrawal],
+  },
+  {
+    common,
+  }
+)
+```
+
+Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.validateWithdrawalsTrie()` method.
+
 ### Consensus Types
 
 The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).

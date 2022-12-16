@@ -14,6 +14,7 @@
 - [authcallOrigin](Message.md#authcallorigin)
 - [caller](Message.md#caller)
 - [code](Message.md#code)
+- [containerCode](Message.md#containercode)
 - [data](Message.md#data)
 - [delegatecall](Message.md#delegatecall)
 - [depth](Message.md#depth)
@@ -44,7 +45,7 @@
 
 #### Defined in
 
-[packages/evm/src/message.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L62)
+[message.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L63)
 
 ## Properties
 
@@ -54,7 +55,7 @@
 
 #### Defined in
 
-[packages/evm/src/message.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L45)
+[message.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L45)
 
 ___
 
@@ -67,7 +68,7 @@ the purpose is to figure out where `value` should be taken from (not from `calle
 
 #### Defined in
 
-[packages/evm/src/message.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L59)
+[message.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L60)
 
 ___
 
@@ -77,7 +78,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L40)
+[message.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L40)
 
 ___
 
@@ -87,7 +88,17 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L44)
+[message.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L44)
+
+___
+
+### containerCode
+
+• `Optional` **containerCode**: `Buffer`
+
+#### Defined in
+
+[message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L49)
 
 ___
 
@@ -97,7 +108,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L42)
+[message.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L42)
 
 ___
 
@@ -107,7 +118,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
+[message.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L55)
 
 ___
 
@@ -117,7 +128,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L43)
+[message.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L43)
 
 ___
 
@@ -127,7 +138,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L41)
+[message.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L41)
 
 ___
 
@@ -137,7 +148,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L60)
+[message.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L61)
 
 ___
 
@@ -147,7 +158,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
+[message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
 
 ___
 
@@ -157,7 +168,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L46)
+[message.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L46)
 
 ___
 
@@ -167,7 +178,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
+[message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
 
 ___
 
@@ -180,7 +191,7 @@ Value is a boolean when marked for destruction and replaced with a Buffer contai
 
 #### Defined in
 
-[packages/evm/src/message.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L53)
+[message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
 
 ___
 
@@ -190,7 +201,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L38)
+[message.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L38)
 
 ___
 
@@ -200,7 +211,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/message.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L39)
+[message.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L39)
 
 ## Accessors
 
@@ -216,4 +227,4 @@ Note: should only be called in instances where `_codeAddress` or `to` is defined
 
 #### Defined in
 
-[packages/evm/src/message.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L87)
+[message.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L88)

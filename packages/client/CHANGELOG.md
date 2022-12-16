@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.6.6 - 2022-12-09
+
+This releases includes various bug fixes and optimizations discovered and applied along the run of the [Shandong](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2316) Pre-Shanghai testnet (https://github.com/ethereumjs/ethereumjs-monorepo/pull/2316) (now being deprecated) as well as new RPC methods implemented along the way.
+
+Furthermore this client release can now run chain including blocks with `EIP-4895` beacon chain withdrawals respectively execute on EIP-4895 activating hardforks, see PRs [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) and [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401).
+
+### New RPC Methods
+
+- `eth_getBlockTransactionCountByNumber`, PR [#2379](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2379)
+- `eth_getTransactionByBlockHashAndIndex`, PR [#2443](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2443)
+- `eth_gasPrice`, PR [#2396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2396)
+- `txpool_content`, PR [#2410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2410)
+- `debug_traceTransaction`, PR [#2444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2444)
+- Miscellaneous tx related fixes, PR [#2411](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2411)
+
+### Hardfork-By-Time Support
+
+The Client is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+### Other Changes and Bug Fixes
+
+- Enhanced skeleton sync to process batches of new payloads and fcUs, PR [#2309](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2309)
+- Various tx pool fixes, PR [#2382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2382)
+- Fixed skeleton reset scenario when head announced before subchain 0 tail, PR [#2408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2408)
+- Handle genesis and genesis extention properly for skeleton, PR [#2420](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2420)
+- Fixed enode to ip4 and write the same to disk, PR [#2407](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2407)
+- Fixed sendTransactions peer loop and enchance txpool logs, PR [#2412](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2412)
+- Used unpadded int/bigint to buffer in net protocols (bug), PR [#2409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2409)
+- Fixed handling of post-merge genesis blocks, PR [#2427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2427)
+- Fixed logic bug in txPool.validate, PR [#2441](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2441)
+
 ## 0.6.5 - 2022-10-19
 
 - Fixes broken release v0.6.4 (wrong @ethereumjs/util dependency)

@@ -183,7 +183,7 @@ export class BlockHeader {
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {
