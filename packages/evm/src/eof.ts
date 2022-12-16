@@ -65,9 +65,6 @@ export const codeAnalysis = (container: Buffer) => {
 }
 
 export const validOpcodes = (code: Buffer, common?: Common) => {
-  if (code[0] !== FORMAT || code[1] !== MAGIC || code[2] !== VERSION)
-    // Bytecode does not contain EOF1 "magic" or version number in expected positions
-    return true
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
