@@ -429,6 +429,7 @@ export class EVM implements EVMInterface {
     }
 
     message.containerCode = message.data
+    message.data = Buffer.alloc(0)
     if (this._common.isActivatedEIP(3540)) {
       message.code = getEOFCode(message.containerCode)
       if (this._common.isActivatedEIP(3670)) {
