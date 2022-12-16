@@ -7,6 +7,19 @@ export const MAGIC = 0x00
 export const VERSION = 0x01
 
 /**
+ * Checks if the `code` is of EOF format
+ * @param code Code to check
+ * @returns
+ */
+export const isEOFCode = (code: Buffer): boolean => {
+  if (code[0] !== FORMAT || code[1] !== MAGIC || code[2] !== VERSION) {
+    // Bytecode does not contain EOF1 "magic" or version number in expected positions
+    return false
+  }
+  return true
+}
+
+/**
  *
  * @param container A `Buffer` containing bytecode to be checked for EOF1 compliance
  * @returns an object containing the size of the code section and data sections for a valid
@@ -23,9 +36,7 @@ export const codeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[0] !== FORMAT || container[1] !== MAGIC || container[2] !== VERSION)
-    // Bytecode does not contain EOF1 "magic" or version number in expected positions
-    return
+  if (!isEOFCode(container)) return
 
   if (
     // EOF1 bytecode must be more than 7 bytes long for EOF1 header plus code section (but no data section)

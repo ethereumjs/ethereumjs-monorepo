@@ -13,7 +13,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode, validOpcodes } from './eof'
+import { EOF, getEOFCode, isEOFCode, validOpcodes } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -432,7 +432,7 @@ export class EVM implements EVMInterface {
     message.data = Buffer.alloc(0)
     if (this._common.isActivatedEIP(3540)) {
       message.code = getEOFCode(message.containerCode)
-      if (this._common.isActivatedEIP(3670)) {
+      if (this._common.isActivatedEIP(3670) && isEOFCode(message.code)) {
         if (!validOpcodes(message.code, this._common)) {
           return {
             createdAddress: message.to,
