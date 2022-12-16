@@ -1,0 +1,28 @@
+{
+  "name": "EIP-4750",
+  "number": 4750,
+  "comment": "EOF - Functions",
+  "url": "https://eips.ethereum.org/EIPS/eip-4750",
+  "status": "Review",
+  "minimumHardfork": "london",
+  "requiredEIPs": [3540, 3670, 5450],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {
+    "gasPrices": {
+      "callf": {
+        "v": 5,
+        "d": "Base fee of the CALLF opcode"
+      },
+      "jumpf": {
+        "v": 4,
+        "d": "Base fee of the JUMPF opcode"
+      },
+      "retf": {
+        "v": 4,
+        "d": "Base fee of the RETF opcode"
+      }
+    }
+  },
+  "pow": {}
+}

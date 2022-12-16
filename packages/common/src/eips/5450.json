@@ -1,0 +1,13 @@
+{
+  "name": "EIP-5450",
+  "number": 5450,
+  "comment": "EOF - Stack Validation",
+  "url": "https://eips.ethereum.org/EIPS/eip-5450",
+  "status": "Review",
+  "minimumHardfork": "london",
+  "requiredEIPs": [3540, 3670, 4200, 4750],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
