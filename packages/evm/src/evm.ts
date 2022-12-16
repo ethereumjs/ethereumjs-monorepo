@@ -74,15 +74,17 @@ export interface EVMOpts {
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
-   *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
+   * - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-   *   [EIP-4200](https://eips.ethereum.org/EIPS/eip-4200) - Static relative jumps (`experimental`)
+   * - [EIP-4200](https://eips.ethereum.org/EIPS/eip-4200) - Static relative jumps (`experimental`)
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
-   * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
+ - [EIP-4750](https://eips.ethereum.org/EIPS/eip-4399) - EOF - Functions (`experimental`)
+   * - * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
+   * - [EIP-5450](https://eips.ethereum.org/EIPS/eip-5450) - EOF - Stack Validation (`experimenta`)
    *
    * *Annotations:*
    *
@@ -259,7 +261,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4200, 4399, 4895, 4844, 5133,
+      3670, 3855, 3860, 4200, 4399, 4750, 4895, 4844, 5133, 5450,
     ]
 
     for (const eip of this._common.eips()) {
