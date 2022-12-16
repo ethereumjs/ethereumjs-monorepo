@@ -5,7 +5,7 @@
   "url": "https://eips.ethereum.org/EIPS/eip-4200",
   "status": "Review",
   "minimumHardfork": "berlin",
-  "requiredEIPs": [3540],
+  "requiredEIPs": [3540, 3670],
   "gasConfig": {},
   "gasPrices": {
     "rjump": {
