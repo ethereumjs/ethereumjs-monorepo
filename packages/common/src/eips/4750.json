@@ -21,6 +21,10 @@
       "retf": {
         "v": 4,
         "d": "Base fee of the RETF opcode"
+      },
+      "jumpdest": {
+        "v": 1,
+        "d": "Base fee of the JUMPDEST opcode"
       }
     }
   },
