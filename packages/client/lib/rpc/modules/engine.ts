@@ -686,10 +686,9 @@ export class Engine {
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
-      const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(
         await this.vm.copy(),
-        parentBlock,
+        headBlock,
         {
           timestamp,
           mixHash: prevRandao,
