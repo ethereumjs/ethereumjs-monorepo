@@ -115,18 +115,108 @@ tape('EIP 3670 tests', (t) => {
         getEOFCode('5C' + getInt16Str(2) + '3000600030' + getRJUMPVCode([-9]) + '303000'),
         'RJUMPV to ADDRESS, -8',
       ],
-      [getEOFCode('600130' + getRJUMPVCode([1]) + '00FE'), 'RJUMPV with case > count'],
+      [getEOFCode('6001' + getRJUMPVCode([1]) + '00FE'), 'RJUMPV with case > count'],
+      [getEOFCode('61FFFF' + getRJUMPVCode([1]) + '00FE'), 'RJUMPV with case > 255'],
     ]
 
     let lastOpcode = ''
     vm.evm.events!.on('step', (e) => {
-      console.log(e.opcode.name)
       lastOpcode = e.opcode.name
     })
 
     for (const validCase of validCases) {
       const { result } = await runTx(vm, validCase[0], nonce++)
       st.ok(result.execResult.exceptionError === undefined && lastOpcode === 'STOP', validCase[1])
+    }
+
+    // RJUMPV test for cases between 2 and 255 cases
+    // It tests random indices for each of these table sizes
+    // Includes SSTOREs so we are sure we jump to the right location
+    for (let jumptableSize = 2; jumptableSize <= 255; jumptableSize++) {
+      let eCode = ''
+      const arr: number[] = []
+      for (let i = 0; i < jumptableSize; i++) {
+        arr.push(i * 6)
+      }
+      eCode += getRJUMPVCode(arr)
+      for (let i = 0; i < jumptableSize; i++) {
+        const index = i.toString(16).padStart(2, '0')
+        // PUSH index PUSH 0 SSTORE STOP
+        eCode += '60' + index + '60005500'
+      }
+      for (let jumptableIndex = 0; jumptableIndex < jumptableSize; ) {
+        const jumpCase = jumptableIndex.toString(16).padStart(2, '0')
+        const code = '60' + jumpCase + eCode
+        const { result } = await runTx(vm, getEOFCode(code), nonce++)
+        const value = await vm.stateManager.getContractStorage(
+          result.createdAddress!,
+          Buffer.from('00'.repeat(32), 'hex')
+        )
+        const expected = jumptableIndex === 0 ? '' : jumptableIndex.toString(16).padStart(2, '0')
+        st.ok(
+          value.toString('hex') === expected,
+          'rjumpv size ' + jumptableSize + ' index ' + jumptableIndex + ' valid'
+        )
+        jumptableIndex += Math.ceil(Math.random() * 30)
+      }
+    }
+  })
+
+  t.test('eip-4200 is invalid opcode in legacy bytecode', async (st) => {
+    const vm = await VM.create({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    let nonce = 0
+
+    const codes = [
+      ['0x5C000000', 'RJUMP'],
+      ['0x60015D000000', 'RJUMPI'],
+      ['0x6000' + getRJUMPVCode([0]) + '00', 'RJUMPV'],
+    ]
+
+    for (const code of codes) {
+      const { result } = await runTx(vm, code[0], nonce++)
+      st.ok(result.execResult.exceptionError!.error === 'invalid opcode', code[1])
+    }
+  })
+  t.test('eip-4200 invalid eof format tests', async (st) => {
+    const vm = await VM.create({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    let nonce = 0
+
+    const codes = [
+      ['5C00', 'truncated RJUMP'],
+      ['5D00', 'truncated RJUMPI'],
+      ['5E0100', 'truncated RJUMPV'],
+      ['5C' + getInt16Str(2) + '5B005C' + getInt16Str(-5), 'RJUMP as final instruction'],
+      ['5C' + getInt16Str(2) + '5B0060015D' + getInt16Str(-7), 'RJUMPI as final instruction'],
+      ['5C' + getInt16Str(2) + '5B0060005B' + getRJUMPVCode([-9]), 'RJUMPV as final instruction'],
+      ['5C' + getInt16Str(1) + '00', 'RJUMP targets code outside container'],
+      ['60015D' + getInt16Str(1) + '00', 'RJUMPI targets code outside container'],
+      ['6000' + getRJUMPVCode([1]) + '00', 'RJUMPV targets code outside container'],
+      ['5C' + getInt16Str(1) + '600000', 'RJUMP targets PUSH data'],
+      ['60015D' + getInt16Str(1) + '600000', 'RJUMPI targets PUSH data'],
+      ['6000' + getRJUMPVCode([1]) + '600000', 'RJUMPV targets PUSH data'],
+      ['5C' + getInt16Str(1) + '5C000000', 'RJUMP targets RJUMP immediate'],
+      ['5C' + getInt16Str(1) + '5D000000', 'RJUMP targets RJUMPI immediate'],
+      ['5C' + getInt16Str(1) + getRJUMPVCode([0]) + '00', 'RJUMP targets RJUMPV immediate'],
+      ['5D' + getInt16Str(1) + '5C000000', 'RJUMPI targets RJUMP immediate'],
+      ['5D' + getInt16Str(1) + '5D000000', 'RJUMPI targets RJUMPI immediate'],
+      ['5D' + getInt16Str(1) + getRJUMPVCode([0]) + '00', 'RJUMPI targets RJUMPV immediate'],
+      [getRJUMPVCode([1]) + '5C000000', 'RJUMPV targets RJUMP immediate'],
+      [getRJUMPVCode([1]) + '5D000000', 'RJUMPV targets RJUMPI immediate'],
+      [getRJUMPVCode([1]) + getRJUMPVCode([0]) + '00', 'RJUMPV targets RJUMPV immediate'],
+      ['5E000000', 'RJUMPV with count 0'],
+    ]
+
+    for (const code of codes) {
+      const { result } = await runTx(vm, getEOFCode(code[0]), nonce++)
+      st.ok(result.execResult.exceptionError!.error === 'invalid EOF format', code[1])
     }
   })
 })
