@@ -64,7 +64,7 @@ export const codeAnalysis = (container: Buffer) => {
   return sectionSizes
 }
 
-export const validOpcodes = (code: Buffer, common: Common) => {
+export const validOpcodes = (code: Buffer, common?: Common) => {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
@@ -83,7 +83,7 @@ export const validOpcodes = (code: Buffer, common: Common) => {
     if (opcode >= 0x60 && opcode <= 0x7f) {
       // Skip data block following PUSH* instruction
       const finalPos = pos + opcode - 0x5f
-      if (common.isActivatedEIP(4200)) {
+      if (common !== undefined && common.isActivatedEIP(4200)) {
         for (let immediate = pos; immediate < finalPos; immediate++) {
           immediates.add(immediate)
         }
@@ -94,7 +94,7 @@ export const validOpcodes = (code: Buffer, common: Common) => {
         return false
       }
     }
-    if (common.isActivatedEIP(4200)) {
+    if (common !== undefined && common.isActivatedEIP(4200)) {
       // RJUMP* checks
       if (opcode === 0x5c || opcode === 0x5d) {
         // RJUMP + RJUMPI
@@ -147,7 +147,7 @@ export const validOpcodes = (code: Buffer, common: Common) => {
   if (!terminatingOpcodes.has(code[code.length - 1])) {
     return false
   }
-  if (common.isActivatedEIP(4200)) {
+  if (common !== undefined && common.isActivatedEIP(4200)) {
     // verify if any of the RJUMP* opcodes JUMPs into an immediate value
     for (const rjumpdest of rjumpdests) {
       if (immediates.has(rjumpdest)) {
