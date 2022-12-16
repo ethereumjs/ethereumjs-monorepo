@@ -53,19 +53,22 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BigInt(1)
-    const { gasLimit } = parentBlock.header
-    const baseFeePerGas =
-      vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
-    const excessDataGas = vm._common.isActivatedEIP(4844) ? BigInt(0) : undefined // Set to default of 0 since fee can't be calculated until all blob transactions are added
-
-    // Set the state root to ensure the resulting state
-    // is based on the parent block's state
-    await vm.eei.setStateRoot(parentBlock.header.stateRoot)
+    const { gasLimit, timestamp } = parentBlock.header
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
+    vm._common.setHardforkByBlockNumber(number, td, timestamp)
+
+    const baseFeePerGas =
+      vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
+    // Set to default of 0 since fee can't be calculated until all blob transactions are added
+    const excessDataGas = vm._common.isActivatedEIP(4844) ? BigInt(0) : undefined
+
+    // Set the state root to ensure the resulting state
+    // is based on the parent block's state
+    await vm.eei.setStateRoot(parentBlock.header.stateRoot)
 
     const builder = await vm.buildBlock({
       parentBlock,

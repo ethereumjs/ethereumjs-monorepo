@@ -221,7 +221,11 @@ export class BlockBuilder {
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
     let excessDataGas = undefined
     this.headerData.number !== undefined &&
-      this.vm._common.setHardforkByBlockNumber(this.headerData.number)
+      this.vm._common.setHardforkByBlockNumber(
+        this.headerData.number,
+        blockOpts.hardforkByTTD,
+        this.headerData.timestamp
+      )
 
     if (this.vm._common.isActivatedEIP(4844)) {
       let parentHeader = null

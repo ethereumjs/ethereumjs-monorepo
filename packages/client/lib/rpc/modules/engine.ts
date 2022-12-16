@@ -719,12 +719,10 @@ export class Engine {
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
-      const parentBlock = this.chain.blocks.latest!
-      // TODO: Decide whether to remove this try/catch or not once edge cases are handled
       try {
         const payloadId = await this.pendingBlock.start(
           await this.vm.copy(),
-          parentBlock,
+          headBlock,
           {
             timestamp,
             mixHash: prevRandao,
