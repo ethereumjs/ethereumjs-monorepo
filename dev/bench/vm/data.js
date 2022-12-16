@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1671119938297,
+  "lastUpdate": 1671184433080,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5776107e9e0b2663062f084346acf80c84e498f4",
-          "message": "Clean up `handleEth` (#2392)\n\n* client: change if...else if...  statements to switch statement.\r\n\r\n* client: change if...else if...  statements to switch statement.\r\n\r\n* Add test for newBlock after merge\r\n\r\n* Add test for GetBlockHeaders\r\n\r\n* add back commented out tests\r\n\r\n* More coverage tests\r\n\r\n* Add getPooledTxns test\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-10-31T14:10:34-04:00",
-          "tree_id": "fdc91773642620f623d8b5210d7f116a85992e55",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5776107e9e0b2663062f084346acf80c84e498f4"
-        },
-        "date": 1667239991740,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19390,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19442,
-            "range": "±1.37%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19023,
-            "range": "±5.55%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19003,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18722,
-            "range": "±1.82%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.57%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "47403fc028e1098bd625ff32ee3b5441481cdfbf",
+          "message": "Fix EVM test scripts (#2451)\n\n* Fix coverage test script\r\n\r\n* Fix tests\r\n\r\n* Update tests",
+          "timestamp": "2022-12-16T10:51:10+01:00",
+          "tree_id": "5b84d6ec2a001b95514d5ba854033f504c0d43c9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/47403fc028e1098bd625ff32ee3b5441481cdfbf"
+        },
+        "date": 1671184432453,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19545,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18885,
+            "range": "±4.64%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19861,
+            "range": "±1.18%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19128,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17024,
+            "range": "±8.37%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
