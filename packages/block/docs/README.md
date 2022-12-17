@@ -16,6 +16,7 @@
 - [HeaderData](interfaces/HeaderData.md)
 - [JsonBlock](interfaces/JsonBlock.md)
 - [JsonHeader](interfaces/JsonHeader.md)
+- [JsonRpcBlock](interfaces/JsonRpcBlock.md)
 
 ### Type Aliases
 
@@ -24,26 +25,27 @@
 - [BlockHeaderBuffer](README.md#blockheaderbuffer)
 - [TransactionsBuffer](README.md#transactionsbuffer)
 - [UncleHeadersBuffer](README.md#uncleheadersbuffer)
+- [WithdrawalsBuffer](README.md#withdrawalsbuffer)
 
 ## Type Aliases
 
 ### BlockBodyBuffer
 
-Ƭ **BlockBodyBuffer**: [[`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer)]
+Ƭ **BlockBodyBuffer**: [[`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer), WithdrawalsBuffer?]
 
 #### Defined in
 
-[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L113)
+[types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
 
 ___
 
 ### BlockBuffer
 
-Ƭ **BlockBuffer**: [[`BlockHeaderBuffer`](README.md#blockheaderbuffer), [`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer)]
+Ƭ **BlockBuffer**: [[`BlockHeaderBuffer`](README.md#blockheaderbuffer), [`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer)] \| [[`BlockHeaderBuffer`](README.md#blockheaderbuffer), [`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer), [`WithdrawalsBuffer`](README.md#withdrawalsbuffer)]
 
 #### Defined in
 
-[types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L111)
+[types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
 
 ___
 
@@ -53,7 +55,7 @@ ___
 
 #### Defined in
 
-[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L112)
+[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)
 
 ___
 
@@ -65,7 +67,7 @@ TransactionsBuffer can be an array of serialized txs for Typed Transactions or a
 
 #### Defined in
 
-[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L117)
+[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
 
 ___
 
@@ -75,4 +77,14 @@ ___
 
 #### Defined in
 
-[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
+[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
+
+___
+
+### WithdrawalsBuffer
+
+Ƭ **WithdrawalsBuffer**: `WithdrawalBuffer`[]
+
+#### Defined in
+
+[types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L122)

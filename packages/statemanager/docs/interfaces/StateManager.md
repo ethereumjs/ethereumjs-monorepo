@@ -11,6 +11,7 @@
 ## Implemented by
 
 - [`DefaultStateManager`](../classes/DefaultStateManager.md)
+- [`EthersStateManager`](../classes/EthersStateManager.md)
 
 ## Table of contents
 

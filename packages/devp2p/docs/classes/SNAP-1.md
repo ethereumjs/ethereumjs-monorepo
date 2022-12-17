@@ -70,7 +70,7 @@ Protocol.constructor
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L13)
+[packages/devp2p/src/protocol/snap.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L12)
 
 ## Properties
 
@@ -155,7 +155,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L17)
+[packages/devp2p/src/protocol/snap.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L16)
 
 ## Methods
 
@@ -176,7 +176,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L19)
+[packages/devp2p/src/protocol/snap.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L18)
 
 ___
 
@@ -357,7 +357,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L86)
+[packages/devp2p/src/protocol/snap.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L85)
 
 ___
 
@@ -371,7 +371,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L90)
+[packages/devp2p/src/protocol/snap.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L89)
 
 ___
 
@@ -878,7 +878,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L54)
+[packages/devp2p/src/protocol/snap.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L53)
 
 ___
 
@@ -892,7 +892,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/snap.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L45)
+[packages/devp2p/src/protocol/snap.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L44)
 
 ___
 

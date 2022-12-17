@@ -1,7 +1,0 @@
-{
-  "name": "eof",
-  "comment": "Pre shanghai ephemeral hardfork for eof testnet",
-  "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues/2298",
-  "status": "Experimental",
-  "eips": [3540, 3651, 3670, 3855, 3860]
-}

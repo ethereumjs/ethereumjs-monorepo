@@ -71,7 +71,7 @@ StateAccess.accountExists
 
 #### Defined in
 
-[packages/evm/src/types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L251)
+[types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L253)
 
 ___
 
@@ -95,7 +95,7 @@ StateAccess.accountIsEmpty
 
 #### Defined in
 
-[packages/evm/src/types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L254)
+[types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L256)
 
 ___
 
@@ -115,7 +115,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L42)
+[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L44)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L44)
+[types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L46)
 
 ___
 
@@ -154,7 +154,7 @@ StateAccess.checkpoint
 
 #### Defined in
 
-[packages/evm/src/types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L262)
+[types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L264)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L49)
+[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L51)
 
 ___
 
@@ -192,7 +192,7 @@ StateAccess.clearContractStorage
 
 #### Defined in
 
-[packages/evm/src/types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L261)
+[types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L263)
 
 ___
 
@@ -206,7 +206,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L48)
+[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L50)
 
 ___
 
@@ -220,7 +220,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L46)
+[types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L48)
 
 ___
 
@@ -238,7 +238,7 @@ StateAccess.commit
 
 #### Defined in
 
-[packages/evm/src/types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L263)
+[types.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L265)
 
 ___
 
@@ -262,7 +262,7 @@ StateAccess.deleteAccount
 
 #### Defined in
 
-[packages/evm/src/types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L255)
+[types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L257)
 
 ___
 
@@ -283,7 +283,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L47)
+[types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L49)
 
 ___
 
@@ -303,7 +303,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L50)
+[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L52)
 
 ___
 
@@ -327,7 +327,7 @@ StateAccess.getAccount
 
 #### Defined in
 
-[packages/evm/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L252)
+[types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L254)
 
 ___
 
@@ -351,7 +351,7 @@ StateAccess.getContractCode
 
 #### Defined in
 
-[packages/evm/src/types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L258)
+[types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L260)
 
 ___
 
@@ -376,7 +376,7 @@ StateAccess.getContractStorage
 
 #### Defined in
 
-[packages/evm/src/types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L259)
+[types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L261)
 
 ___
 
@@ -401,7 +401,7 @@ StateAccess.getProof
 
 #### Defined in
 
-[packages/evm/src/types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L267)
+[types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L269)
 
 ___
 
@@ -419,7 +419,7 @@ StateAccess.getStateRoot
 
 #### Defined in
 
-[packages/evm/src/types.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L265)
+[types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L267)
 
 ___
 
@@ -443,7 +443,7 @@ StateAccess.hasStateRoot
 
 #### Defined in
 
-[packages/evm/src/types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L269)
+[types.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L271)
 
 ___
 
@@ -463,7 +463,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L43)
+[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L45)
 
 ___
 
@@ -484,7 +484,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L45)
+[types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L47)
 
 ___
 
@@ -509,7 +509,7 @@ StateAccess.modifyAccountFields
 
 #### Defined in
 
-[packages/evm/src/types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L256)
+[types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L258)
 
 ___
 
@@ -534,7 +534,7 @@ StateAccess.putAccount
 
 #### Defined in
 
-[packages/evm/src/types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L253)
+[types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L255)
 
 ___
 
@@ -559,7 +559,7 @@ StateAccess.putContractCode
 
 #### Defined in
 
-[packages/evm/src/types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L257)
+[types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L259)
 
 ___
 
@@ -585,7 +585,7 @@ StateAccess.putContractStorage
 
 #### Defined in
 
-[packages/evm/src/types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L260)
+[types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L262)
 
 ___
 
@@ -603,7 +603,7 @@ StateAccess.revert
 
 #### Defined in
 
-[packages/evm/src/types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L264)
+[types.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L266)
 
 ___
 
@@ -627,7 +627,7 @@ StateAccess.setStateRoot
 
 #### Defined in
 
-[packages/evm/src/types.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L266)
+[types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L268)
 
 ___
 
@@ -651,4 +651,4 @@ StateAccess.verifyProof
 
 #### Defined in
 
-[packages/evm/src/types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L268)
+[types.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L270)

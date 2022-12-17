@@ -154,6 +154,7 @@ const vm = new VM({ common })
 
 Currently supported EIPs:
 
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
@@ -169,6 +170,8 @@ Currently supported EIPs:
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (`experimental`)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
 
 ### Tracing Events
 

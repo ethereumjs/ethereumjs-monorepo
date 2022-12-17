@@ -19,6 +19,7 @@
 
 - [AccessListEIP2930TxData](interfaces/AccessListEIP2930TxData.md)
 - [FeeMarketEIP1559TxData](interfaces/FeeMarketEIP1559TxData.md)
+- [JsonRpcTx](interfaces/JsonRpcTx.md)
 - [JsonTx](interfaces/JsonTx.md)
 - [TxOptions](interfaces/TxOptions.md)
 
