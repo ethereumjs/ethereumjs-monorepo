@@ -17,6 +17,11 @@ export class BlockBuilder {
    * The cumulative gas used by the transactions added to the block.
    */
   gasUsed = BigInt(0)
+  /**
+   * Value of the block, represented by the final transaction fees
+   * acruing to the miner.
+   */
+  private _minerValue = BigInt(0)
 
   private readonly vm: VM
   private blockOpts: BuilderOpts
@@ -30,6 +35,10 @@ export class BlockBuilder {
 
   get transactionReceipts() {
     return this.transactionResults.map((result) => result.receipt)
+  }
+
+  get minerValue() {
+    return this._minerValue
   }
 
   constructor(vm: VM, opts: BuildBlockOpts) {
@@ -158,6 +167,7 @@ export class BlockBuilder {
     this.transactions.push(tx)
     this.transactionResults.push(result)
     this.gasUsed += result.totalGasSpent
+    this._minerValue += result.minerValue
 
     return result
   }

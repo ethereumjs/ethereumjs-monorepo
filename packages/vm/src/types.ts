@@ -359,6 +359,11 @@ export interface RunTxResult extends EVMResult {
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
   accessList?: AccessList
+
+  /**
+   * The value that accrues to the miner by this transaction
+   */
+  minerValue: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {
