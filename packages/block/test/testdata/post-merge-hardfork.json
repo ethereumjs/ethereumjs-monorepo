@@ -13,8 +13,8 @@
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
-    "shanghaiBlock": null,
-    "shardingForkBlock": 8,
+    "shanghaiTime": null,
+    "shardingForkTime": 8,
     "clique": {
       "period": 5,
       "epoch": 30000

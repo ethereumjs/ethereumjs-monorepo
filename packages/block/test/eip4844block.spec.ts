@@ -12,7 +12,7 @@ const common = Common.fromGethGenesis(gethGenesis, {
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
 common.hardforkBlock = function (hardfork: string | undefined) {
-  if (hardfork === 'shardingForkBlock') {
+  if (hardfork === 'shardingForkTime') {
     return BigInt(1)
   } else if (hardfork === 'dao') {
     // Avoid DAO HF side-effects
