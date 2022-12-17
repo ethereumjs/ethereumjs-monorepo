@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Withdrawal, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
+import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -130,13 +130,13 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-const blockToExecutionPayload = (block: Block) => {
+const blockToExecutionPayload = (block: Block, value: bigint) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
 
-  const payload: ExecutionPayload = {
+  const executionPayload: ExecutionPayload = {
     blockNumber: header.number!,
     parentHash: header.parentHash!,
     feeRecipient: header.coinbase!,
@@ -153,7 +153,7 @@ const blockToExecutionPayload = (block: Block) => {
     transactions,
     ...withdrawalsArr,
   }
-  return payload
+  return { executionPayload, blockValue: bigIntToHex(value) }
 }
 
 /**
@@ -735,9 +735,11 @@ export class Engine {
       if (!built) {
         throw EngineError.UnknownPayload
       }
-      const [block, receipts] = built
+      // The third arg returned is the minerValue which we will use to
+      // value the block
+      const [block, receipts, value] = built
       await this.execution.runWithoutSetHead({ block }, receipts)
-      return blockToExecutionPayload(block)
+      return blockToExecutionPayload(block, value)
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
       throw {
@@ -748,7 +750,8 @@ export class Engine {
   }
 
   async getPayloadV1(params: [string]) {
-    return this.getPayload(params)
+    const { executionPayload } = await this.getPayload(params)
+    return executionPayload
   }
 
   async getPayloadV2(params: [string]) {

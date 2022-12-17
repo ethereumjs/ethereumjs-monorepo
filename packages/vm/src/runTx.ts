@@ -406,11 +406,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
-  if (this._common.isActivatedEIP(1559) === true) {
-    minerAccount.balance += results.totalGasSpent * inclusionFeePerGas!
-  } else {
-    minerAccount.balance += results.amountSpent
-  }
+  results.minerValue =
+    this._common.isActivatedEIP(1559) === true
+      ? results.totalGasSpent * inclusionFeePerGas!
+      : results.amountSpent
+  minerAccount.balance += results.minerValue
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
