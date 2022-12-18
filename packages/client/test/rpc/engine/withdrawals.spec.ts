@@ -131,9 +131,11 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     let payload: ExecutionPayload | undefined = undefined
     req = params('engine_getPayloadV2', [payloadId])
     expectRes = (res: any) => {
-      payload = res.body.result
-      t.equal(payload!.blockNumber, '0x1')
-      t.equal(payload!.withdrawals!.length, withdrawals.length, 'withdrawals should match')
+      const { executionPayload, blockValue } = res.body.result
+      t.equal(executionPayload!.blockNumber, '0x1')
+      t.equal(executionPayload!.withdrawals!.length, withdrawals.length, 'withdrawals should match')
+      t.equal(blockValue, '0x0', 'No value should be returned')
+      payload = executionPayload
     }
     await baseRequest(t, server, req, 200, expectRes, false)
 

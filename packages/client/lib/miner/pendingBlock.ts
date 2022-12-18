@@ -160,7 +160,9 @@ export class PendingBlock {
   /**
    * Returns the completed block
    */
-  async build(payloadId: Buffer): Promise<void | [block: Block, receipts: TxReceipt[]]> {
+  async build(
+    payloadId: Buffer
+  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
     if (!payload) {
       return
@@ -223,7 +225,8 @@ export class PendingBlock {
 
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
-    return [block, builder.transactionReceipts]
+
+    return [block, builder.transactionReceipts, builder.minerValue]
   }
 
   /**
