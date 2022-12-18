@@ -80,7 +80,7 @@ export function runNetwork(
     const str = Buffer.from(chunk).toString('utf8')
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-    if (filterStr && !filterOutStr) {
+    if ((filterStr && !filterOutStr) || true) {
       if (lastPrintedDot) {
         console.log('')
         lastPrintedDot = false
