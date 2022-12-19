@@ -738,16 +738,24 @@ export class Common extends EventEmitter {
     if (hfIndex < 0) {
       return null
     }
-    const currHf = hfs[hfIndex]
 
-    const nextHf = hfs
-      .slice(hfIndex + 1)
-      .find(
-        (hf) =>
-          hf.name !== Hardfork.Merge &&
-          ((hf.block !== null && hf.block !== currHf.block) ||
-            (hf.timestamp !== undefined && hf.timestamp !== currHf.timestamp))
+    let currHfTimeOrBlock = hfs[hfIndex].timestamp ?? hfs[hfIndex].block
+    currHfTimeOrBlock =
+      currHfTimeOrBlock !== null && currHfTimeOrBlock !== undefined
+        ? Number(currHfTimeOrBlock)
+        : null
+
+    const nextHf = hfs.slice(hfIndex + 1).find((hf) => {
+      let hfTimeOrBlock = hf.timestamp ?? hf.block
+      hfTimeOrBlock =
+        hfTimeOrBlock !== null && hfTimeOrBlock !== undefined ? Number(hfTimeOrBlock) : null
+      return (
+        hf.name !== Hardfork.Merge &&
+        hfTimeOrBlock !== null &&
+        hfTimeOrBlock !== undefined &&
+        hfTimeOrBlock !== currHfTimeOrBlock
       )
+    })
     // If no next hf found with valid block or timestamp return null
     if (nextHf === undefined) {
       return null
@@ -821,27 +829,29 @@ export class Common extends EventEmitter {
    */
   _calcForkHash(hardfork: string | Hardfork, genesisHash: Buffer) {
     let hfBuffer = Buffer.alloc(0)
-    let prevBlock = 0
+    let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
-      const { block, ttd } = hf
+      const { block, timestamp, name } = hf
+      // Timestamp to be used for timestamp based hfs even if we may bundle
+      // block number with them retrospectively
+      let blockOrTime = timestamp ?? block
+      blockOrTime = blockOrTime !== null ? Number(blockOrTime) : null
 
       // Skip for chainstart (0), not applied HFs (null) and
-      // when already applied on same block number HFs
+      // when already applied on same blockOrTime HFs
       // and on the merge since forkhash doesn't change on merge hf
       if (
-        typeof block === 'number' &&
-        block !== 0 &&
-        block !== prevBlock &&
-        (ttd === null || ttd === undefined)
+        typeof blockOrTime === 'number' &&
+        blockOrTime !== 0 &&
+        blockOrTime !== prevBlockOrTime &&
+        name !== Hardfork.Merge
       ) {
-        const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
+        const hfBlockBuffer = Buffer.from(blockOrTime.toString(16).padStart(16, '0'), 'hex')
         hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+        prevBlockOrTime = blockOrTime
       }
 
       if (hf.name === hardfork) break
-      if (typeof block === 'number') {
-        prevBlock = block
-      }
     }
     const inputBuffer = Buffer.concat([genesisHash, hfBuffer])
 
@@ -859,7 +869,10 @@ export class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data === null || (data?.block === null && data?.ttd === undefined)) {
+    if (
+      data === null ||
+      (data?.block === null && data?.timestamp === undefined && data?.ttd === undefined)
+    ) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
