@@ -76,7 +76,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('should throw if no hardfork qualifies', function (st) {
+  t.test('forkHash', function (st) {
     const mainnet = new Common({ chain: Chain.Mainnet })
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Merge)
