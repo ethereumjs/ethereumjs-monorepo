@@ -16,10 +16,12 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     }) as VM
   }
 
-  // @ts-ignore
   async sendTransaction(signedTransaction: string | Promise<string>) {
     const tx = Transaction.fromSerializedTx(toBuffer(await signedTransaction))
     await this.vm.runTx({ tx })
+    const ethers_tx = ethers.utils.parseTransaction(await signedTransaction)
+    const wrapped = this._wrapTransaction(ethers_tx)
+    return wrapped
   }
 
   async getCode(addressOrName: string | Promise<string>): Promise<string> {
