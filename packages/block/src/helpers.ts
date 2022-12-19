@@ -80,16 +80,21 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
 }
 
 /**
- *
+ * Calculates the excess data gas for a post EIP 4844 block given the parent block header.
  * @param parent header for the parent block
  * @param newBlobs number of blobs contained in block
  * @returns the excess data gas for the prospective next block
+ *
+ * Note: This function expects that it is only being called on a valid block as it does not have
+ * access to the "current" block's common instance to verify if 4844 is active or not.
  */
 export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
   if (!parent._common.isActivatedEIP(4844)) {
-    throw new Error('excessDataGas can only be computed if EIP 4844 is activated')
+    // If 4844 isn't active on header, assume this is the first post-fork block so excess data gas is 0
+    return BigInt(0)
   }
   if (parent.excessDataGas === undefined) {
+    // Given 4844 is active on parent block, we expect it to have an excessDataGas field
     throw new Error('parent header does not contain excessDataGas field')
   }
 

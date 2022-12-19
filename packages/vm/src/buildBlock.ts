@@ -237,11 +237,14 @@ export class BlockBuilder {
         parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
       }
       if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
-        const newBlobs = this.transactions.filter(
-          (tx) => tx instanceof BlobEIP4844Transaction
-        ).length
-        excessDataGas =
-          parentHeader !== null ? calcExcessDataGas(parentHeader?.header, newBlobs) : BigInt(0)
+        // Compute total number of blobs in block
+        const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
+        let newBlobs = 0
+        for (const txn of blobTxns) {
+          newBlobs += (txn as BlobEIP4844Transaction).versionedHashes.length
+        }
+        // Compute excess data gas for block
+        excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)
       } else {
         excessDataGas = BigInt(0)
       }
