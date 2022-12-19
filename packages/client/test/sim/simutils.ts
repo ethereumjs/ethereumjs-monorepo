@@ -1,4 +1,12 @@
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import {
+  blobsToCommitments,
+  commitmentsToVersionedHashes,
+  getBlobs,
+} from '@ethereumjs/tx/test/utils/blobHelpers' // TODO: Decide where all these helpers should live
+import { Address } from '@ethereumjs/util'
+import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import { randomBytes } from 'crypto'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
@@ -179,4 +187,68 @@ export async function runTxHelper(
     }
   }
   return receipt.result
+}
+
+export const runBlobTx = async (
+  client: Client,
+  data: string,
+  pkey: Buffer,
+  to?: string,
+  value?: bigint
+) => {
+  loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
+  const blobs = getBlobs(data)
+  const commitments = blobsToCommitments(blobs)
+  const hashes = commitmentsToVersionedHashes(commitments)
+  freeTrustedSetup()
+
+  const sender = Address.fromPrivateKey(pkey)
+  const txData = {
+    from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+    to,
+    data: '0x',
+    chainId: '0x1',
+    blobs,
+    kzgCommitments: commitments,
+    versionedHashes: hashes,
+    gas: undefined,
+    maxFeePerDataGas: undefined,
+    maxPriorityFeePerGas: undefined,
+    maxFeePerGas: undefined,
+    nonce: undefined,
+    gasLimit: undefined,
+    value,
+  }
+
+  txData['maxFeePerGas'] = '0xff' as any
+  txData['maxPriorityFeePerGas'] = BigInt(1) as any
+  txData['maxFeePerDataGas'] = BigInt(1000) as any
+  txData['gasLimit'] = BigInt(1000000) as any
+  const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
+  txData['nonce'] = BigInt(nonce.result) as any
+  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+
+  const serializedWrapper = blobTx.serializeNetworkWrapper()
+
+  const res = await client.request(
+    'eth_sendRawTransaction',
+    ['0x' + serializedWrapper.toString('hex')],
+    2.0
+  )
+
+  console.log(`tx: ${res.result}`)
+  let tries = 0
+  let mined = false
+  let receipt
+  while (!mined && tries < 50) {
+    tries++
+    receipt = await client.request('eth_getTransactionReceipt', [res.result])
+    if (receipt.result !== null) {
+      mined = true
+    } else {
+      process.stdout.write('-')
+      await sleep(12000)
+    }
+  }
+  return blobTx
 }
