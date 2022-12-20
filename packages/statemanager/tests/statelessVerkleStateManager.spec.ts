@@ -34,7 +34,7 @@ tape('StatelessVerkleStateManager', (t) => {
     )
     st.equal(
       balanceKey.toString('hex'),
-      '695921dca3b16c5cc850e94cdd63f573c467669e89cec88935d03474d6bdf901'
+      'bf101a6e1c8e83c11bd203a582c7981b91097ec55cbd344ce09005c1f26d1901'
     )
   })
 
