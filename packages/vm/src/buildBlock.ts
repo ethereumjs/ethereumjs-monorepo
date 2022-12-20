@@ -156,14 +156,16 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     const parentHeader = await this.vm.blockchain.getBlock(this.headerData.parentHash! as Buffer)
+    const excessDataGas =
+      this.blockOpts.common?.isActivatedEIP(4844) === true
+        ? calcExcessDataGas(parentHeader!.header, (tx as BlobEIP4844Transaction).blobs?.length ?? 0)
+        : undefined
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
-      excessDataGas: calcExcessDataGas(
-        parentHeader!.header,
-        (tx as BlobEIP4844Transaction).blobs?.length ?? 0
-      ),
+      excessDataGas,
     }
+
     const blockData = {
       header,
       transactions: this.transactions,
@@ -232,6 +234,7 @@ export class BlockBuilder {
     let excessDataGas = undefined
 
     if (this.vm._common.isActivatedEIP(4844)) {
+      console.log('lets check the excessdatagas')
       let parentHeader = null
       if (this.headerData.parentHash !== undefined) {
         parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
@@ -245,8 +248,10 @@ export class BlockBuilder {
         }
         // Compute excess data gas for block
         excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)
+        console.log('we got newBlobs', newBlobs, excessDataGas)
       } else {
         excessDataGas = BigInt(0)
+        console.log('excess data gas is zero')
       }
     }
     const headerData = {

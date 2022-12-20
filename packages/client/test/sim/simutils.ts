@@ -250,5 +250,5 @@ export const runBlobTx = async (
       await sleep(12000)
     }
   }
-  return blobTx
+  return { tx: blobTx, receipt: receipt.result }
 }

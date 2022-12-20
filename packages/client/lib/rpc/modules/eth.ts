@@ -117,6 +117,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    excessDataGas: header.excessDataGas,
   }
 }
 
