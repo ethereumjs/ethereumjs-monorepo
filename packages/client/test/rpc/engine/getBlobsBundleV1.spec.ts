@@ -31,7 +31,7 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`${method}: call with known payload`, async (t) => {
+tape(`${method}: call with known payload`, async (t) => {
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
   let req = params('engine_forkchoiceUpdatedV1', validPayload)
   let payloadId

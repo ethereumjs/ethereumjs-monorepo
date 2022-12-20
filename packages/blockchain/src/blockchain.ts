@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, getDataGasPrice } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP, Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
@@ -8,7 +8,7 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
-import { getDataGasPrice } from './utils'
+import {} from './utils'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'

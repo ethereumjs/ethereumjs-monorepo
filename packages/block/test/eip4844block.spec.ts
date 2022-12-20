@@ -6,7 +6,7 @@ import { BlockHeader } from '../src/header'
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
-  hardfork: Hardfork.Sharding,
+  hardfork: Hardfork.ShardingFork,
 })
 
 // Small hack to hack in the activation block number
@@ -41,18 +41,14 @@ tape('EIP4844 header tests', function (t) {
     },
     'should throw when setting excessDataGas with EIP4844 not being activated'
   )
-  t.throws(
-    () => {
-      BlockHeader.fromHeaderData(
-        {},
-        {
-          common,
-        }
-      )
-    },
-    (err: any) =>
-      err.message.toString() === 'excessDataGas value must be provided with EIP4844 activated',
-    'should throw when excessDatGas is undefined with EIP4844 being activated'
+  const excessDataGas = BlockHeader.fromHeaderData(
+    {},
+    { common, skipConsensusFormatValidation: true }
+  ).excessDataGas
+  t.equal(
+    excessDataGas,
+    0n,
+    'instantiates block with reasonable default excess data gas value when not provided'
   )
   t.doesNotThrow(() => {
     BlockHeader.fromHeaderData(
@@ -61,6 +57,7 @@ tape('EIP4844 header tests', function (t) {
       },
       {
         common,
+        skipConsensusFormatValidation: true,
       }
     )
   }, 'correctly instantiates an EIP4844 block header')

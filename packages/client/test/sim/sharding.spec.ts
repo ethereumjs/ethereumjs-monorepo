@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { privateToAddress } from '@ethereumjs/util'
+import { bigIntToHex, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 
@@ -62,7 +62,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     t.fail('ethereumjs<>lodestar failed to start')
   } else {
     t.pass('ethereumjs<>lodestar started successfully')
-  }
+  } /*
   // ------------Sanity checks--------------------------------
   t.test('Simple transfer - sanity check', async (st) => {
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
@@ -75,7 +75,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   })
 
   t.test('Simple blob tx', async (st) => {
-    const tx = await runBlobTx(client, 'hello', pkey, '0x3dA33B9A0894b908DdBb00d96399e506515A1009')
+    const txResult = await runBlobTx(client, 'hello', pkey, '0x3dA33B9A0894b908DdBb00d96399e506515A1009')
 
     const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
     const start = parseInt(eth2res.data[0].header.message.slot) - 1
@@ -108,10 +108,33 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
 
     st.equal(
       eth2kzgs[0],
-      '0x' + tx.kzgCommitments![0].toString('hex'),
+      '0x' + txResult.tx.kzgCommitments![0].toString('hex'),
       'found expected blob commitments on CL'
     )
     st.end()
+  })
+*/
+  t.test('data gas fee market tests', async (st) => {
+    const txResult = await runBlobTx(
+      client,
+      'hello',
+      pkey,
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
+    )
+    console.log(txResult.receipt)
+    const block1 = await client.request(
+      'eth_getBlockByHash',
+      [txResult.receipt.blockHash, false],
+      2.0
+    )
+
+    const nextBlock = await client.request(
+      'eth_getBlockByNumber',
+      [bigIntToHex(BigInt(block1.result.number) + 1n), false],
+      2.0
+    )
+    console.log(nextBlock)
+    st.ok(BigInt(nextBlock.result.excessDataGas) > 0n, 'block2 has more data gas consumed')
   })
   t.test('should reset td', async (st) => {
     try {

@@ -208,11 +208,7 @@ export class BlockHeader {
         throw new Error('A base fee for a block can only be set with EIP1559 being activated')
       }
     }
-    if (this._common.isActivatedEIP(4895)) {
-      if (withdrawalsRoot === undefined) {
-        throw new Error('invalid header. withdrawalsRoot should be provided')
-      }
-    } else {
+    if (!this._common.isActivatedEIP(4895)) {
       if (withdrawalsRoot !== undefined) {
         throw new Error(
           'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
@@ -220,12 +216,7 @@ export class BlockHeader {
       }
     }
 
-    if (this._common.isActivatedEIP(4844)) {
-      if (headerData.excessDataGas === undefined) {
-        throw new Error('excessDataGas value must be provided with EIP4844 activated')
-      }
-      this.excessDataGas = excessDataGas
-    } else {
+    if (!this._common.isActivatedEIP(4844)) {
       if (headerData.excessDataGas !== undefined) {
         throw new Error('excess data gas can only be provided with EIP4844 activated')
       }
@@ -248,7 +239,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
-
+    this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
 

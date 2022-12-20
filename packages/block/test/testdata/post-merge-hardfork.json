@@ -14,7 +14,7 @@
     "berlinBlock": 0,
     "londonBlock": 0,
     "shanghaiTime": null,
-    "shardingForkTime": 8,
+    "shardingForkTime": 0,
     "clique": {
       "period": 5,
       "epoch": 30000

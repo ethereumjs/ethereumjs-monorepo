@@ -1,5 +1,4 @@
-import { Block } from '@ethereumjs/block'
-import { getDataGasPrice } from '@ethereumjs/blockchain'
+import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'

@@ -58,14 +58,17 @@ tape('EIP4895 tests', function (t) {
         }
       )
     }, 'should throw when setting withdrawalsRoot with EIP4895 not being activated')
-    st.throws(() => {
-      BlockHeader.fromHeaderData(
-        {},
-        {
-          common,
-        }
-      )
-    }, 'should throw when withdrawalsRoot is undefined with EIP4895 being activated')
+    const header = BlockHeader.fromHeaderData(
+      {},
+      {
+        common,
+        skipConsensusFormatValidation: true,
+      }
+    )
+    st.ok(
+      header.withdrawalsRoot?.equals(KECCAK256_RLP),
+      'instantiates header with reasonable default withdrawalsRoot when 4895 activated'
+    )
     st.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
