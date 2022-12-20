@@ -1,10 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * @param {Array<any>} values
+ * @param {Uint8Array} address_tree_index
  * @returns {any}
  */
-export function pedersen_hash(values: Array<any>): any
+export function pedersen_hash(address_tree_index: Uint8Array): any
 /**
  * @param {Uint8Array} js_root
  * @param {Uint8Array} js_proof

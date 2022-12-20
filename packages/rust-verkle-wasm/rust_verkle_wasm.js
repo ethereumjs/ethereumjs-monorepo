@@ -25,6 +25,71 @@ function takeObject(idx) {
   return ret
 }
 
+function debugString(val) {
+  // primitive types
+  const type = typeof val
+  if (type == 'number' || type == 'boolean' || val == null) {
+    return `${val}`
+  }
+  if (type == 'string') {
+    return `"${val}"`
+  }
+  if (type == 'symbol') {
+    const description = val.description
+    if (description == null) {
+      return 'Symbol'
+    } else {
+      return `Symbol(${description})`
+    }
+  }
+  if (type == 'function') {
+    const name = val.name
+    if (typeof name == 'string' && name.length > 0) {
+      return `Function(${name})`
+    } else {
+      return 'Function'
+    }
+  }
+  // objects
+  if (Array.isArray(val)) {
+    const length = val.length
+    let debug = '['
+    if (length > 0) {
+      debug += debugString(val[0])
+    }
+    for (let i = 1; i < length; i++) {
+      debug += ', ' + debugString(val[i])
+    }
+    debug += ']'
+    return debug
+  }
+  // Test for built-in
+  const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val))
+  let className
+  if (builtInMatches.length > 1) {
+    className = builtInMatches[1]
+  } else {
+    // Failed to match the standard '[object ClassName]'
+    return toString.call(val)
+  }
+  if (className == 'Object') {
+    // we're a user defined class or Object
+    // JSON.stringify avoids problems with cycles, and is generally much
+    // easier than looping through ownProperties of `val`.
+    try {
+      return 'Object(' + JSON.stringify(val) + ')'
+    } catch (_) {
+      return 'Object'
+    }
+  }
+  // errors
+  if (val instanceof Error) {
+    return `${val.name}: ${val.message}\n${val.stack}`
+  }
+  // TODO we could test for more things here, like `Set`s and `Map`s.
+  return className
+}
+
 let WASM_VECTOR_LEN = 0
 
 let cachedUint8Memory0 = new Uint8Array()
@@ -91,10 +156,6 @@ function passStringToWasm0(arg, malloc, realloc) {
   return ptr
 }
 
-function isLikeNone(x) {
-  return x === undefined || x === null
-}
-
 let cachedInt32Memory0 = new Int32Array()
 
 function getInt32Memory0() {
@@ -102,71 +163,6 @@ function getInt32Memory0() {
     cachedInt32Memory0 = new Int32Array(wasm.memory.buffer)
   }
   return cachedInt32Memory0
-}
-
-function debugString(val) {
-  // primitive types
-  const type = typeof val
-  if (type == 'number' || type == 'boolean' || val == null) {
-    return `${val}`
-  }
-  if (type == 'string') {
-    return `"${val}"`
-  }
-  if (type == 'symbol') {
-    const description = val.description
-    if (description == null) {
-      return 'Symbol'
-    } else {
-      return `Symbol(${description})`
-    }
-  }
-  if (type == 'function') {
-    const name = val.name
-    if (typeof name == 'string' && name.length > 0) {
-      return `Function(${name})`
-    } else {
-      return 'Function'
-    }
-  }
-  // objects
-  if (Array.isArray(val)) {
-    const length = val.length
-    let debug = '['
-    if (length > 0) {
-      debug += debugString(val[0])
-    }
-    for (let i = 1; i < length; i++) {
-      debug += ', ' + debugString(val[i])
-    }
-    debug += ']'
-    return debug
-  }
-  // Test for built-in
-  const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val))
-  let className
-  if (builtInMatches.length > 1) {
-    className = builtInMatches[1]
-  } else {
-    // Failed to match the standard '[object ClassName]'
-    return toString.call(val)
-  }
-  if (className == 'Object') {
-    // we're a user defined class or Object
-    // JSON.stringify avoids problems with cycles, and is generally much
-    // easier than looping through ownProperties of `val`.
-    try {
-      return 'Object(' + JSON.stringify(val) + ')'
-    } catch (_) {
-      return 'Object'
-    }
-  }
-  // errors
-  if (val instanceof Error) {
-    return `${val.name}: ${val.message}\n${val.stack}`
-  }
-  // TODO we could test for more things here, like `Set`s and `Map`s.
-  return className
 }
 
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true })
@@ -186,11 +182,11 @@ function addHeapObject(obj) {
   return idx
 }
 /**
- * @param {Array<any>} values
+ * @param {Uint8Array} address_tree_index
  * @returns {any}
  */
-module.exports.pedersen_hash = function (values) {
-  const ret = wasm.pedersen_hash(addHeapObject(values))
+module.exports.pedersen_hash = function (address_tree_index) {
+  const ret = wasm.pedersen_hash(addHeapObject(address_tree_index))
   return takeObject(ret)
 }
 
@@ -234,17 +230,6 @@ module.exports.__wbindgen_object_drop_ref = function (arg0) {
 
 module.exports.__wbg_log_035529d7f1f4615f = function (arg0, arg1) {
   console.log(getStringFromWasm0(arg0, arg1))
-}
-
-module.exports.__wbindgen_string_get = function (arg0, arg1) {
-  const obj = getObject(arg1)
-  const ret = typeof obj === 'string' ? obj : undefined
-  var ptr0 = isLikeNone(ret)
-    ? 0
-    : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc)
-  var len0 = WASM_VECTOR_LEN
-  getInt32Memory0()[arg0 / 4 + 1] = len0
-  getInt32Memory0()[arg0 / 4 + 0] = ptr0
 }
 
 module.exports.__wbindgen_is_null = function (arg0) {
@@ -295,33 +280,9 @@ module.exports.__wbg_value_1ccc36bc03462d71 = function (arg0) {
   return addHeapObject(ret)
 }
 
-module.exports.__wbg_length_f2ab5db52e68a619 = function (arg0) {
-  const ret = getObject(arg0).length
-  return ret
-}
-
 module.exports.__wbg_from_7ce3cb27cb258569 = function (arg0) {
   const ret = Array.from(getObject(arg0))
   return addHeapObject(ret)
-}
-
-module.exports.__wbg_values_e42671acbf11ec04 = function (arg0) {
-  const ret = getObject(arg0).values()
-  return addHeapObject(ret)
-}
-
-module.exports.__wbg_BigInt_ef61f0cfdae62eeb = function () {
-  return handleError(function (arg0) {
-    const ret = BigInt(getObject(arg0))
-    return addHeapObject(ret)
-  }, arguments)
-}
-
-module.exports.__wbg_toString_d9cd5f001405e8ff = function () {
-  return handleError(function (arg0, arg1) {
-    const ret = getObject(arg0).toString(arg1)
-    return addHeapObject(ret)
-  }, arguments)
 }
 
 module.exports.__wbg_entries_ff7071308de9aaec = function (arg0) {
