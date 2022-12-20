@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1671315216631,
+  "lastUpdate": 1671529356645,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fd121bee508d2e8eb18e491f5a97182ab61224d3",
-          "message": "client: Fix skeleton reset scenario when head announced before subchain 0 tail (#2408)",
-          "timestamp": "2022-11-07T10:41:29+01:00",
-          "tree_id": "13d08a625e5931442c76cad7159d4b65146f7bc7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fd121bee508d2e8eb18e491f5a97182ab61224d3"
-        },
-        "date": 1667814247188,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18970,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19078,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18210,
-            "range": "±5.21%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18835,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18614,
-            "range": "±1.68%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.06%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2eada55e427090b14e2c340e83678bc69f53566d",
+          "message": "common: Update forkhash calculation for timebased hardforks (#2458)\n\n* common: Update forkhash calculation for timebased hardforks\r\n\r\n* update title of test",
+          "timestamp": "2022-12-20T10:39:47+01:00",
+          "tree_id": "609321c6c6b190b81653dc5d3e450c221934cb10",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2eada55e427090b14e2c340e83678bc69f53566d"
+        },
+        "date": 1671529355491,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 17967,
+            "range": "±4.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18285,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17620,
+            "range": "±7.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17964,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17754,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
