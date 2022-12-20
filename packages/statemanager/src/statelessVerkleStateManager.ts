@@ -76,22 +76,11 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
   }
 
   private pedersenHash(input: Buffer) {
-    // max length 255 * 16
-    if (input.length > 4080) {
-      throw new Error('Input buffer for pedersenHash calculation in verkle state manager too long.')
+    const pedersenHash = wasm.pedersen_hash(input)
+
+    if (pedersenHash === null) {
+      throw new Error('Wrong pedersanHash input. This might happen if length is not correct.')
     }
-    const extInput = setLengthRight(input, 4080)
-
-    const ints: Array<number | ArrayBufferLike> = [2 + 256 * input.length]
-
-    for (let i = 0; i <= 254; i++) {
-      const from = 16 * i
-      const to = 16 * (i + 1)
-      const newInt = extInput.slice(from, to)
-      ints.push(newInt)
-    }
-
-    const pedersenHash = wasm.pedersen_hash(ints)
 
     return arrToBufArr(pedersenHash)
   }
