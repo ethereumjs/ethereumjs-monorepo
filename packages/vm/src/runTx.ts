@@ -230,17 +230,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
-  if (balance < cost) {
-    if (opts.skipBalance === true && fromAccount.balance < cost) {
+  // Check balance against upfront tx cost
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  if (balance < upFrontCost) {
+    if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
-        fromAccount.balance = cost
+        fromAccount.balance = upFrontCost
         await this.stateManager.putAccount(caller, fromAccount)
       }
     } else {
       const msg = _errorMsg(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${upFrontCost} and the sender's account (${caller}) only has: ${balance}`,
         this,
         block,
         tx
@@ -249,29 +250,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  // Check balance against max potential cost (for EIP 1559 and 4844)
+  let maxCost = tx.value
+
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
     // `assert balance >= gas_limit * max_fee_per_gas`
-    const cost = tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value
-    if (balance < cost) {
-      if (opts.skipBalance === true && fromAccount.balance < cost) {
-        // if skipBalance, ensure caller balance is enough to run transaction
-        fromAccount.balance = cost
-        await this.stateManager.putAccount(caller, fromAccount)
-      } else {
-        const msg = _errorMsg(
-          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
-          this,
-          block,
-          tx
-        )
-        throw new Error(msg)
-      }
-    }
+    maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
   }
 
-  // EIP-4844 validity checks
   if (this._common.isActivatedEIP(4844) && tx.supports(Capability.EIP4844BlobTransaction)) {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
@@ -279,29 +267,30 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castTx = tx as BlobEIP4844Transaction
     const totalDataGas =
       castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.versionedHashes.length)
-    const txCost =
-      castTx.gasLimit * castTx.maxFeePerGas + castTx.value + totalDataGas * castTx.maxFeePerDataGas
-    if (balance < txCost) {
-      if (opts.skipBalance === true) {
-        // if skipBalance, ensure caller balance is enough to run transaction
-        fromAccount.balance = txCost
-        await this.stateManager.putAccount(caller, fromAccount)
-      } else {
-        const msg = _errorMsg(
-          `sender doesn't have enough funds to send tx. The base cost is: ${txCost} and the sender's account (${caller}) only has: ${balance}`,
-          this,
-          block,
-          tx
-        )
-        throw new Error(msg)
-      }
-    }
-    // ensure that the user was willing to at least pay the current data gasprice
+    maxCost += totalDataGas * castTx.maxFeePerDataGas
+
+    // 4844 minimum datagas price check
     const headBlock = await this.blockchain.getCanonicalHeadBlock!()
     const dataGasPrice = getDataGasPrice(headBlock.header)
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+  }
+
+  if (fromAccount.balance < maxCost) {
+    if (opts.skipBalance === true && fromAccount.balance < maxCost) {
+      // if skipBalance, ensure caller balance is enough to run transaction
+      fromAccount.balance = maxCost
+      await this.stateManager.putAccount(caller, fromAccount)
+    } else {
+      const msg = _errorMsg(
+        `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
         this,
         block,
         tx
