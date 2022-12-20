@@ -252,7 +252,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-
+  let dataGasPrice = BigInt(0)
+  let totalDataGas = BigInt(0)
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
@@ -265,13 +266,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    const totalDataGas =
+    totalDataGas =
       castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.versionedHashes.length)
     maxCost += totalDataGas * castTx.maxFeePerDataGas
 
     // 4844 minimum datagas price check
     const headBlock = await this.blockchain.getCanonicalHeadBlock!()
-    const dataGasPrice = getDataGasPrice(headBlock.header)
+    dataGasPrice = getDataGasPrice(headBlock.header)
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
@@ -338,8 +339,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
   }
 
-  // Update from account's balance
-  const txCost = tx.gasLimit * gasPrice
+  // Update from account's balance (includes datagas fee which defaults to 0 if 4844 is inactive)
+  const txCost = tx.gasLimit * gasPrice + totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
