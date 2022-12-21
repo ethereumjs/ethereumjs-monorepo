@@ -205,15 +205,23 @@ tape('[Utils/Parse]', (t) => {
     st.equal(common.getHardforkByBlockNumber(0, BigInt(2)), Hardfork.Merge, 'merge at genesis')
     st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
     // shanghai is at 8
-    st.equal(common.getHardforkByBlockNumber(8), Hardfork.Shanghai, 'shanghai at block 8')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2), Date.now()),
+      Hardfork.Shanghai,
+      'shanghai at block 8'
+    )
     // should be post merge at shanghai
-    st.equal(common.getHardforkByBlockNumber(8, BigInt(2)), Hardfork.Shanghai, 'london at genesis')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2), Date.now()),
+      Hardfork.Shanghai,
+      'london at genesis'
+    )
     // if not post merge, then should error
     try {
-      common.getHardforkByBlockNumber(8, BigInt(1))
-      st.fail('should have failed since merge not compeleted before shanghai')
+      common.getHardforkByBlockNumber(8, BigInt(1), Date.now())
+      st.fail('should have failed since merge not completed before shanghai')
     } catch (e) {
-      st.pass('correctly fails if merge not compeleted before shanghai')
+      st.pass('correctly fails if merge not completed before shanghai')
     }
     st.end()
   })
