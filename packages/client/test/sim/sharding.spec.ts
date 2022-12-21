@@ -1,9 +1,9 @@
 import { Common } from '@ethereumjs/common'
-import { bigIntToHex, privateToAddress } from '@ethereumjs/util'
+import { privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 
-import { runBlobTx, runTxHelper, sleep, startNetwork } from './simutils'
+import { runBlobTx, runBlobTxsFromFile, runTxHelper, sleep, startNetwork } from './simutils'
 
 const pkey = Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
@@ -62,9 +62,9 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     t.fail('ethereumjs<>lodestar failed to start')
   } else {
     t.pass('ethereumjs<>lodestar started successfully')
-  } /*
+  }
   // ------------Sanity checks--------------------------------
-  t.test('Simple transfer - sanity check', async (st) => {
+  /*t.test('Simple transfer - sanity check', async (st) => {
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
     const balance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
@@ -72,10 +72,15 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     ])
     st.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
     st.end()
-  })
+  })*/
 
   t.test('Simple blob tx', async (st) => {
-    const txResult = await runBlobTx(client, 'hello', pkey, '0x3dA33B9A0894b908DdBb00d96399e506515A1009')
+    const txResult = await runBlobTx(
+      client,
+      2 ** 14,
+      pkey,
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
+    )
 
     const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
     const start = parseInt(eth2res.data[0].header.message.slot) - 1
@@ -113,28 +118,24 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     )
     st.end()
   })
-*/
+
   t.test('data gas fee market tests', async (st) => {
-    const txResult = await runBlobTx(
-      client,
-      'hello',
-      pkey,
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
-    )
-    console.log(txResult.receipt)
+    const res = await runBlobTxsFromFile(client, './test/sim/configs/blobs.txt')
+    let done = false
+    let txReceipt
+    while (!done) {
+      txReceipt = await client.request('eth_getTransactionReceipt', [res[0]], 2.0)
+      if (txReceipt.result !== null) {
+        done = true
+      }
+      await sleep(2000)
+    }
     const block1 = await client.request(
       'eth_getBlockByHash',
-      [txResult.receipt.blockHash, false],
+      [txReceipt.result.blockHash, false],
       2.0
     )
-
-    const nextBlock = await client.request(
-      'eth_getBlockByNumber',
-      [bigIntToHex(BigInt(block1.result.number) + 1n), false],
-      2.0
-    )
-    console.log(nextBlock)
-    st.ok(BigInt(nextBlock.result.excessDataGas) > 0n, 'block2 has more data gas consumed')
+    st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block2 has more data gas consumed')
   })
   t.test('should reset td', async (st) => {
     try {

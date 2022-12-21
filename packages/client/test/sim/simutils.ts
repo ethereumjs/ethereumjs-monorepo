@@ -7,6 +7,7 @@ import {
 import { Address } from '@ethereumjs/util'
 import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
 import { randomBytes } from 'crypto'
+import * as fs from 'fs/promises'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
@@ -191,13 +192,13 @@ export async function runTxHelper(
 
 export const runBlobTx = async (
   client: Client,
-  data: string,
+  blobSize: number,
   pkey: Buffer,
   to?: string,
   value?: bigint
 ) => {
   loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
-  const blobs = getBlobs(data)
+  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
   freeTrustedSetup()
@@ -251,4 +252,61 @@ export const runBlobTx = async (
     }
   }
   return { tx: blobTx, receipt: receipt.result }
+}
+
+export const createBlobTxs = async (
+  numTxs: number,
+  blobSize = 2 ** 17 - 1,
+  pkey: Buffer,
+  to?: string,
+  value?: bigint
+) => {
+  const txHashes: any = []
+  loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
+  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const commitments = blobsToCommitments(blobs)
+  const hashes = commitmentsToVersionedHashes(commitments)
+  freeTrustedSetup()
+  for (let x = 1; x <= numTxs; x++) {
+    const sender = Address.fromPrivateKey(pkey)
+    const txData = {
+      from: sender.toString(),
+      to,
+      data: '0x',
+      chainId: '0x1',
+      blobs,
+      kzgCommitments: commitments,
+      versionedHashes: hashes,
+      gas: undefined,
+      maxFeePerDataGas: undefined,
+      maxPriorityFeePerGas: undefined,
+      maxFeePerGas: undefined,
+      nonce: BigInt(x),
+      gasLimit: undefined,
+      value,
+    }
+
+    txData['maxFeePerGas'] = '0xff' as any
+    txData['maxPriorityFeePerGas'] = BigInt(1) as any
+    txData['maxFeePerDataGas'] = BigInt(1000) as any
+    txData['gasLimit'] = BigInt(1000000) as any
+
+    const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+
+    const serializedWrapper = blobTx.serializeNetworkWrapper()
+    await fs.appendFile('./blobs.txt', '0x' + serializedWrapper.toString('hex') + '\n')
+    txHashes.push('0x' + blobTx.hash().toString('hex'))
+  }
+  return txHashes
+}
+
+export const runBlobTxsFromFile = async (client: Client, path: string) => {
+  const file = await fs.readFile(path, 'utf-8')
+  const txns = file.split('\n').filter((txn) => txn.length > 0)
+  const txnHashes = []
+  for (const txn of txns) {
+    const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+    txnHashes.push(res.result)
+  }
+  return txnHashes
 }
