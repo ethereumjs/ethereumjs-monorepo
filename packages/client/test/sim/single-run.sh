@@ -20,23 +20,40 @@ then
   exit;
 fi;
 
-if [ "$MULTIPEER" != "peer2" ]
-then 
-  DATADIR="$DATADIR/peer1"
-  EL_PORT_ARGS="--extIP 127.0.0.1 --loglevel debug"
-  if [ ! -n "$MULTIPEER" ]
-  then
-    CL_PORT_ARGS="--genesisValidators 8 --startValidators 0..7"
-  else
-    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000 --genesisValidators 8 --startValidators 0..3"
-  fi;
-else
-  DATADIR="$DATADIR/peer2"
-  bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
-  elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
-  EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
-  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
-fi;
+case $MULTIPEER in
+  syncpeer)
+    echo "setting up to run as a sync only peer to peer1 (bootnode)..."
+    DATADIR="$DATADIR/syncpeer"
+    bootEnrs=$(sudo cat "$origDataDir/peer1/lodestar/enr")
+    elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
+    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcport 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --bootnodes $elBootnode --loglevel debug"
+    CL_PORT_ARGS="--genesisValidators 8 --enr.tcp 9002 --port 9002 --execution.urls http://localhost:8553  --rest.port 9598 --server http://localhost:9598 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+    ;;
+
+  peer2 )
+    echo "setting up peer2 to run with peer1 (bootnode)..."
+    DATADIR="$DATADIR/peer2"
+    bootEnrs=$(sudo cat "$origDataDir/peer1/lodestar/enr")
+    elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
+    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
+    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+    ;;
+
+  * )
+    DATADIR="$DATADIR/peer1"
+    EL_PORT_ARGS="--extIP 127.0.0.1 --loglevel debug"
+    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
+    if [ ! -n "$MULTIPEER" ]
+    then
+      echo "setting up to run as a solo node..."
+      CL_PORT_ARGS="$CL_PORT_ARGS --genesisValidators 8 --startValidators 0..7"
+    else
+      echo "setting up to run as peer1 (bootnode)..."
+      CL_PORT_ARGS="$CL_PORT_ARGS --genesisValidators 8 --startValidators 0..3"
+    fi;
+    MULTIPEER="peer1"
+esac
+
 mkdir $DATADIR
 echo "EL_PORT_ARGS=$EL_PORT_ARGS"
 echo "CL_PORT_ARGS=$CL_PORT_ARGS"
@@ -100,7 +117,7 @@ run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
 
-if [ "$MULTIPEER" != "peer2" ] 
+if [ "$MULTIPEER" == "peer1" ]
 then
   # generate the genesis hash and time
   ejsId=0
