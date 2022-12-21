@@ -1,25 +1,23 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import {
+  blobsToCommitments,
+  commitmentsToVersionedHashes,
+  getBlobs,
+} from '@ethereumjs/tx/test/utils/blobHelpers'
+import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
+import { calcExcessDataGas, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
+import { calcDataFee, fakeExponential } from '../src/helpers'
 
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.ShardingFork,
 })
-
-// Small hack to hack in the activation block number
-// (Otherwise there would be need for a custom chain only for testing purposes)
-common.hardforkBlock = function (hardfork: string | undefined) {
-  if (hardfork === 'shardingForkTime') {
-    return BigInt(1)
-  } else if (hardfork === 'dao') {
-    // Avoid DAO HF side-effects
-    return BigInt(99)
-  }
-  return BigInt(0)
-}
 
 tape('EIP4844 header tests', function (t) {
   const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -61,5 +59,80 @@ tape('EIP4844 header tests', function (t) {
       }
     )
   }, 'correctly instantiates an EIP4844 block header')
+  t.end()
+})
+
+tape('data gas tests', async (t) => {
+  const lowGasHeader = BlockHeader.fromHeaderData(
+    { number: 1, excessDataGas: 5000 },
+    { common, skipConsensusFormatValidation: true }
+  )
+  let excessDataGas = calcExcessDataGas(lowGasHeader, 6)
+  let dataGasPrice = getDataGasPrice(lowGasHeader)
+  t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
+  t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
+  const highGasHeader = BlockHeader.fromHeaderData(
+    { number: 1, excessDataGas: 50000000 },
+    { common, skipConsensusFormatValidation: true }
+  )
+  excessDataGas = calcExcessDataGas(highGasHeader, 6)
+  dataGasPrice = getDataGasPrice(highGasHeader)
+  t.ok(
+    excessDataGas > 0n,
+    'excess data gas should be greater than zero in high data gas parent header'
+  )
+  t.equal(dataGasPrice, 274n, 'computed correct data gas price')
+
+  // Initialize KZG environment (i.e. trusted setup)
+  loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
+
+  const blobs = getBlobs('hello world')
+  const commitments = blobsToCommitments(blobs)
+  const versionedHashes = commitmentsToVersionedHashes(commitments)
+
+  freeTrustedSetup()
+  // Cleanup KZG environment (i.e. remove trusted setup)
+
+  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    versionedHashes: bufferedHashes,
+    blobs,
+    kzgCommitments: commitments,
+    maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
+    to: randomBytes(20),
+  })
+
+  t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
+  t.equal(calcDataFee(unsignedTx, highGasHeader), 35913728n, 'compute data fee correctly')
+  t.end()
+})
+
+tape('fake exponential', (t) => {
+  // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
+  const testInputs = [
+    [1, 0, 1, 1],
+    [38493, 0, 1000, 38493],
+    [0, 1234, 2345, 0],
+    [1, 2, 1, 6],
+    [1, 4, 2, 6],
+    [1, 3, 1, 16],
+    [1, 6, 2, 18],
+    [1, 4, 1, 49],
+    [1, 8, 2, 50],
+    [10, 8, 2, 542],
+    [11, 8, 2, 596],
+    [1, 5, 1, 136],
+    [1, 5, 2, 11],
+    [2, 5, 2, 23],
+  ]
+  for (const input of testInputs) {
+    t.equal(
+      fakeExponential(BigInt(input[0]), BigInt(input[1]), BigInt(input[2])),
+      BigInt(input[3]),
+      'fake exponential produced expected output'
+    )
+  }
   t.end()
 })

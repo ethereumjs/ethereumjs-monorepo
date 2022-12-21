@@ -101,7 +101,8 @@ export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
 
   const consumedDataGas = BigInt(newBlobs) * parent._common.param('gasConfig', 'dataGasPerBlob')
   const targetDataGasPerBlock = parent._common.param('gasConfig', 'targetDataGasPerBlock')
-  if (parent.excessDataGas + consumedDataGas < targetDataGasPerBlock) return 0
+
+  if (parent.excessDataGas + consumedDataGas < targetDataGasPerBlock) return BigInt(0)
   else {
     return parent.excessDataGas + consumedDataGas - targetDataGasPerBlock
   }
@@ -132,6 +133,7 @@ export const getDataGasPrice = (header: BlockHeader) => {
     header._common.param('gasConfig', 'dataGasPriceUpdateFraction')
   )
 }
+
 export const calcDataFee = (tx: BlobEIP4844Transaction, parent: BlockHeader) => {
   if (parent.excessDataGas === undefined) {
     throw new Error('parent header must have excessDataGas field populated')
