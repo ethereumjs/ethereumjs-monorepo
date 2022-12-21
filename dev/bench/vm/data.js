@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1671529356645,
+  "lastUpdate": 1671624054574,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9d470d336fa2cd606dbac31c4c6f8a6a1981f878",
-          "message": "client: Miscellaneous tx related fixes for eth methods  (#2411)\n\n* client: Extend RpcTx type with 1559 fields and make blockOpt optional in estimateGas\r\n\r\n* add optional block opt test\r\n\r\n* bundle validation\r\n\r\n* extract and add test for rpc tx field extenstion\r\n\r\n* Add test coverage\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-11-07T13:34:58-05:00",
-          "tree_id": "f4ce386560caa137b33d2c6a1c1a080aa40de4a4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d470d336fa2cd606dbac31c4c6f8a6a1981f878"
-        },
-        "date": 1667846294924,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9771,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10054,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9892,
-            "range": "±4.24%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9951,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9968,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.00%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eee3ab8aa07cf1d5633b496319fbcec76b3c7310",
+          "message": "common: Add eips 3651,3855,3860 to shanghai hf for Zhejiang shanghai testnet (#2459)",
+          "timestamp": "2022-12-21T12:58:17+01:00",
+          "tree_id": "e47f54c9b119ed3ee17028741570abe95e5ea55e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eee3ab8aa07cf1d5633b496319fbcec76b3c7310"
+        },
+        "date": 1671624053890,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19480,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19195,
+            "range": "±4.18%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19309,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18158,
+            "range": "±8.25%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19345,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
