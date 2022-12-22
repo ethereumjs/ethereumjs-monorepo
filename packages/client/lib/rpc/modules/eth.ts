@@ -911,10 +911,11 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service as FullEthereumService
+    const { txPool, pool } = this.service as FullEthereumService
 
     try {
       await txPool.add(tx, true)
+      await txPool.sendNewTxHashes([tx.hash()], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,

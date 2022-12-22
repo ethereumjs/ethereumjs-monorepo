@@ -457,8 +457,8 @@ export class TxPool {
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
         const newHashesHex = newHashes.map((txHash) => txHash.toString('hex'))
-        const nexTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
-        peer.eth?.request('Transactions', nexTxs).catch((e) => {
+        const newTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
+        peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
       }

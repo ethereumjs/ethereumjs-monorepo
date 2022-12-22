@@ -226,10 +226,16 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
-          if (tx.type === 0) {
-            serializedTxs.push(tx.raw())
-          } else {
-            serializedTxs.push(tx.serialize())
+          switch (tx.type) {
+            case 0:
+              serializedTxs.push(tx.raw())
+              break
+            case 5:
+              serializedTxs.push((tx as BlobEIP4844Transaction).serializeNetworkWrapper())
+              break
+            default:
+              serializedTxs.push(tx.serialize())
+              break
           }
         }
         return [bigIntToUnpaddedBuffer(reqId), serializedTxs]
@@ -239,7 +245,13 @@ export class EthProtocol extends Protocol {
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
         //common.setHardforkByBlockNumber(this.config.syncTargetHeight)
-        txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
+        txs.map((txData) => {
+          if (txData[0] === 5) {
+            // Blob transactions are deserialized with network wrapper
+            return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData)
+          }
+          return TransactionFactory.fromBlockBodyData(txData)
+        }),
       ],
     },
     {

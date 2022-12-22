@@ -81,7 +81,7 @@ async function getNonce(client: Client, account: string) {
   return nonce.result
 }
 async function run(data: any, expected_kzgs: any) {
-  const client = Client.http({ port: 8545 })
+  const client = Client.http({ port: 8947 })
   while (true) {
     const num = parseInt((await client.request('eth_blockNumber', [], 2.0)).result)
     if (num >= 1) {
@@ -114,10 +114,10 @@ async function run(data: any, expected_kzgs: any) {
     gasLimit: undefined,
   }
 
-  txData['maxFeePerGas'] = '0xff' as any
-  txData['maxPriorityFeePerGas'] = BigInt(1) as any
+  txData['maxFeePerGas'] = BigInt(1000000000) as any
+  txData['maxPriorityFeePerGas'] = BigInt(100000000) as any
   txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(1000000) as any
+  txData['gasLimit'] = BigInt(28000000) as any
   const nonce = await getNonce(client, '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
   txData['nonce'] = BigInt(nonce) as any
   const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(
