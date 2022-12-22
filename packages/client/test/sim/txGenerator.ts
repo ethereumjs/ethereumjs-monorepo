@@ -78,9 +78,11 @@ async function getNonce(client: Client, account: string) {
 }
 async function run(data: any) {
   const client = Client.http({ port: parseInt(clientPort) })
-  while (true) {
+  let done = false
+  while (!done) {
     const num = parseInt((await client.request('eth_blockNumber', [], 2.0)).result)
     if (num >= 1) {
+      done = true
       break
     }
     console.log(`waiting for eip4844 proc.... bn=${num}`)

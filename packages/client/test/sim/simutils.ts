@@ -12,6 +12,7 @@ import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
 import type { Common } from '@ethereumjs/common'
+import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -69,12 +70,13 @@ type RunOpts = {
   filterKeywords: string[]
   filterOutWords: string[]
   externalRun: string | undefined
+  multiPeer?: boolean
 }
 
 export function runNetwork(
   network: string,
   client: Client,
-  { filterKeywords, filterOutWords }: RunOpts
+  { filterKeywords, filterOutWords, multiPeer }: RunOpts
 ): () => Promise<void> {
   const runProc = spawn('test/sim/single-run.sh', [], {
     env: {
@@ -84,6 +86,48 @@ export function runNetwork(
   })
   console.log({ pid: runProc.pid })
   let lastPrintedDot = false
+
+  let peerRunProc: ChildProcessWithoutNullStreams | undefined = undefined
+  if (multiPeer === true) {
+    peerRunProc = spawn('test/sim/single-run.sh', [], {
+      env: {
+        ...process.env,
+        NETWORK: network,
+        MULTIPEER: 'syncpeer',
+      },
+    })
+    console.log({ peerRunProc: peerRunProc.pid })
+
+    let lastPrintedDot = false
+    peerRunProc.stdout.on('data', (chunk) => {
+      const str = Buffer.from(chunk).toString('utf8')
+      const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
+      const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
+      if ((filterStr && !filterOutStr) || true) {
+        if (lastPrintedDot) {
+          console.log('')
+          lastPrintedDot = false
+        }
+        process.stdout.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+      } else {
+        if (str.includes('Synchronized')) {
+          process.stdout.write('.')
+          lastPrintedDot = true
+        }
+      }
+    })
+    peerRunProc.stderr.on('data', (chunk) => {
+      const str = Buffer.from(chunk).toString('utf8')
+      const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
+      if (!filterOutStr) {
+        process.stderr.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+      }
+    })
+
+    peerRunProc.on('exit', (code) => {
+      console.log('network exited', { code })
+    })
+  }
 
   runProc.stdout.on('data', (chunk) => {
     const str = Buffer.from(chunk).toString('utf8')
@@ -121,6 +165,10 @@ export function runNetwork(
     }
     console.log('Killing network process', runProc.pid)
     execSync(`pkill -15 -P ${runProc.pid}`)
+    if (peerRunProc !== undefined) {
+      console.log('Killing peer network process', peerRunProc.pid)
+      execSync(`pkill -15 -P ${peerRunProc.pid}`)
+    }
     // Wait for the P2P to be offline
     await waitForELOffline()
     console.log('network successfully killed!')

@@ -37,6 +37,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     filterKeywords,
     filterOutWords,
     externalRun: process.env.EXTERNAL_RUN,
+    multiPeer: false,
   })
 
   if (result.includes('EthereumJS')) {
@@ -63,16 +64,6 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   } else {
     t.pass('ethereumjs<>lodestar started successfully')
   }
-  // ------------Sanity checks--------------------------------
-  /*t.test('Simple transfer - sanity check', async (st) => {
-    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    const balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    st.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
-    st.end()
-  })*/
 
   t.test('Simple blob tx', async (st) => {
     const txResult = await runBlobTx(
@@ -135,8 +126,17 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       [txReceipt.result.blockHash, false],
       2.0
     )
-    st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block2 has more data gas consumed')
+    st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
   })
+
+  /*
+  t.test('multipeer setup', async (st) => {
+    const multiPeer = Client.http({ port: 8947 })
+    const res = await multiPeer.request('eth_syncing', [], 2.0)
+    console.log(res)
+    st.equal(res.result, 'false', 'multipeer is up and running')
+  })*/
+
   t.test('should reset td', async (st) => {
     try {
       await teardownCallBack()
