@@ -217,7 +217,11 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.bounds() === undefined || this.skeleton.isLinked()) {
+    if (
+      !this.skeleton.isStarted() ||
+      this.skeleton.bounds() === undefined ||
+      this.skeleton.isLinked()
+    ) {
       this.clearFetcher()
       return false
     }
