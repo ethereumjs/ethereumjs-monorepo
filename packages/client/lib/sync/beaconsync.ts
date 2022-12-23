@@ -252,6 +252,11 @@ export class BeaconSynchronizer extends Synchronizer {
       count = tail - this.chain.blocks.height - BigInt(1)
     }
 
+    // Do not try syncing blocks on/pre genesis
+    if (count > first) {
+      count = first
+    }
+
     if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${
