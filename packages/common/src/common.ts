@@ -902,10 +902,10 @@ export class Common extends EventEmitter {
    */
   setForkHashes(genesisHash: Buffer) {
     for (const hf of this.hardforks()) {
+      const blockOrTime = hf.timestamp ?? hf.block
       if (
         (hf.forkHash === null || hf.forkHash === undefined) &&
-        typeof hf.block !== 'undefined' &&
-        (hf.block !== null || typeof hf.ttd !== 'undefined')
+        ((blockOrTime !== null && blockOrTime !== undefined) || typeof hf.ttd !== 'undefined')
       ) {
         hf.forkHash = this.forkHash(hf.name, genesisHash)
       }
