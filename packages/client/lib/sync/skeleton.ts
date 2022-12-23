@@ -108,6 +108,8 @@ export class Skeleton extends MetaDBManager {
   async open() {
     await this.runWithLock<void>(async () => {
       await this.getSyncStatus()
+      this.linked = await this.checkLinked()
+      this.logSyncStatus('Read')
       this.started = new Date().getTime()
     })
   }
@@ -779,8 +781,6 @@ export class Skeleton extends MetaDBManager {
     if (!rawStatus) return
     const status = this.statusRLPtoObject(rawStatus)
     this.status = status
-    this.linked = await this.checkLinked()
-    this.logSyncStatus('Read')
     return status
   }
 
