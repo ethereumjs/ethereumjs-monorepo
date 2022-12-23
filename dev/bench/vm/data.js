@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1671624054574,
+  "lastUpdate": 1671806630836,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6d23fd07290fb3217e3371b0c42425647e28e89c",
-          "message": "Add txpool_content rpc method for pending txs fetch (#2410)\n\n* Add txpool_content rpc method for pending txs fetch\r\n\r\n* Fix rpc export\r\n\r\n* Add tests for `txpool_content`\r\n\r\n* address feedback\r\n\r\n* Include vm by default in rpc tests\r\n\r\n* Missed commits from shandong\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-11-09T12:05:56-05:00",
-          "tree_id": "cd05f026435ca6444d7bc17bf0d52d515be443d1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6d23fd07290fb3217e3371b0c42425647e28e89c"
-        },
-        "date": 1668014108578,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19146,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18415,
-            "range": "±4.90%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19435,
-            "range": "±1.22%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18814,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18368,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.49%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bd67a97cf7696d7ceffe6b24ba1c83150f684a2e",
+          "message": "common: Update setForkHashes to update timebased hardfork forkhashes (#2461)",
+          "timestamp": "2022-12-23T20:09:31+05:30",
+          "tree_id": "94bbcbd12534cbca20a7c37859943e21a17373c9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bd67a97cf7696d7ceffe6b24ba1c83150f684a2e"
+        },
+        "date": 1671806630135,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18471,
+            "range": "±3.99%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18767,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17966,
+            "range": "±7.04%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18535,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18336,
+            "range": "±1.91%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
