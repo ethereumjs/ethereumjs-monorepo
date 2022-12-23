@@ -175,7 +175,7 @@ tape(`getTransactionCount / getBalance`, async (t) => {
     t.end()
   }
 })
-tape(`getTransactionCount / getBalance`, async (t) => {
+tape(`sendTransaction / getTransactionCount / getBalance`, async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -213,47 +213,46 @@ tape(`getTransactionCount / getBalance`, async (t) => {
       B.address
     )
 
-    accountA.balance = 1000000000000n
-    accountB.balance = 1000000000000n
+    const startingBal = 1000000000000n
+
+    accountA.balance = startingBal
+    accountB.balance = startingBal
+
+    accountA.nonce = 0n
+    accountB.nonce = 0n
 
     await ((state as any).ethersStateManager as EthersStateManager).putAccount(A.address, accountB)
     await ((state as any).ethersStateManager as EthersStateManager).putAccount(B.address, accountB)
 
     const balA = await state.getBalance(A.address.toString())
-    t.equal(balA.toBigInt(), 1000000000000n, 'should return the correct original balance')
+    t.equal(balA.toBigInt(), startingBal, 'should return the correct original balance')
     const balB = await state.getBalance(B.address.toString())
-    t.equal(balB.toBigInt(), 1000000000000n, 'should return the correct original balance')
+    t.equal(balB.toBigInt(), startingBal, 'should return the correct original balance')
+    const countA = await state.getTransactionCount(A.address.toString())
+    t.equal(countA, 0, `should return the correct nonce`)
+
+    const txValue = 500000n
 
     const txData = {
       nonce: 0n,
       gasPrice: 10n,
       gasLimit: 100000n,
       to: B.address,
-      value: 1000n,
+      value: txValue,
     }
     const tx = Transaction.fromTxData(txData)
     const signedTx = tx.sign(A.privateKey)
-
+    const gas = 210000n
     await state.sendTransaction(bufferToHex(signedTx.serialize()))
     const newBalA = await state.getBalance(A.address.toString())
-    t.equal(
-      newBalA.toBigInt(),
-      1000000000000n - 1000n - 210000n,
-      'should return the correct balance'
-    )
+    const expectedNewBalA = startingBal - txValue - gas
+    t.equal(newBalA.toBigInt(), expectedNewBalA, 'should return the correct balance')
     const newBalB = await state.getBalance(B.address.toString())
-    t.equal(newBalB.toBigInt(), 1000000000000n + 1000n, 'should return the correct balance')
+    t.equal(newBalB.toBigInt(), startingBal + txValue, 'should return the correct balance')
 
-    // const count = await state.getTransactionCount(address.toString())
-    // t.equal(BigInt(count), nonce, `should return the correct nonce ${nonce}`)
-    // await ((state as any).ethersStateManager as EthersStateManager).modifyAccountFields(address, {
-    //   nonce: nonce + 1n,
-    //   balance: 999999n,
-    // })
-    // const _count = await state.getTransactionCount(address.toString())
-    // t.equal(BigInt(_count), nonce + 1n, `should return correct nonce (${nonce + 1n})`)
-    // const _bal = await state.getBalance(address.toString())
-    // t.equal(_bal.toBigInt(), 999999n, 'should return the correct balance')
+    const newCountA = await state.getTransactionCount(A.address.toString())
+    t.equal(newCountA, 1, `should return the correct nonce`)
+
     t.end()
   }
 })
