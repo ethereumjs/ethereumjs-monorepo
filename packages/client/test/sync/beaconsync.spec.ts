@@ -119,6 +119,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+    await skeleton.open()
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
@@ -152,6 +154,37 @@ tape('[BeaconSynchronizer]', async (t) => {
     await wait(50)
     t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5')
     t.equal(sync.fetcher!.count, BigInt(1), 'should sync block 5')
+  })
+
+  t.test('should not sync pre-genesis', async (t) => {
+    const config = new Config({
+      transports: [],
+      safeReorgDistance: 0,
+      skeletonSubchainMergeMinimum: 1000,
+    })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+    await skeleton.open()
+    const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
+    sync.best = td.func<typeof sync['best']>()
+    sync.latest = td.func<typeof sync['latest']>()
+    td.when(sync.best()).thenResolve('peer')
+    td.when(sync.latest('peer' as any)).thenResolve({
+      number: BigInt(2),
+      hash: () => Buffer.from([]),
+    })
+    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
+    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
+    ;(sync as any).chain = {
+      // Make height > tail so that skeletonSubchainMergeMinimum is triggered
+      blocks: { height: BigInt(100) },
+    }
+    void sync.sync()
+    await wait(50)
+    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
+    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
   })
 
   t.test('should extend and set with a valid head', async (t) => {
