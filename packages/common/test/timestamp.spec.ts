@@ -121,4 +121,48 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
 
     t.end()
   })
+
+  t.test('setForkHashes', function (st) {
+    const mainnet = new Common({ chain: Chain.Mainnet })
+    const hfs = mainnet.hardforks()
+    const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Merge)
+    const hardforks = hfs.slice(0, mergeIndex + 1).concat([
+      // Add these hardforks as specified here:
+      //   https://github.com/ethereum/EIPs/pull/6122/files
+      {
+        name: 'mergeForkIdTransition',
+        block: 18000000,
+      },
+      {
+        name: 'shanghai',
+        block: null,
+        timestamp: '1668000000',
+      },
+    ])
+
+    const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
+    const mainnetGenesisHash = Buffer.from(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      'hex'
+    )
+
+    let noForkHashes = c.hardforks().reduce((acc, hf) => {
+      if (hf.forkHash === undefined) {
+        acc++
+      }
+      return acc
+    }, 0)
+    st.equal(noForkHashes, 2, 'missing forkhashes')
+
+    c.setForkHashes(mainnetGenesisHash)
+    noForkHashes = c.hardforks().reduce((acc, hf) => {
+      if (hf.forkHash === undefined) {
+        acc++
+      }
+      return acc
+    }, 0)
+    st.equal(noForkHashes, 0, 'all forkhashes should be set')
+    st.equal(c.forkHash(Hardfork.Shanghai), '0xc1fdf181', 'Shanghai forkHash should match')
+    st.end()
+  })
 })
