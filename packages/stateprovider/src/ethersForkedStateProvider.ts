@@ -1,9 +1,8 @@
+import { EthersStateManager } from '@ethereumjs/statemanager'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, bufferToHex, toBuffer } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BigNumber, ethers } from 'ethers'
-
-import { EthersStateManager } from '.'
 
 export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider {
   private ethersStateManager: EthersStateManager

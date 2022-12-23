@@ -15,7 +15,7 @@ import { EthersForkedStateProvider } from '../src/ethersForkedStateProvider'
 import { MockProvider } from './testdata/providerData/mockProvider'
 import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
 
-import type { EthersStateManager } from '../src/ethersStateManager'
+import type { EthersStateManager } from '@ethereumjs/statemanager'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
