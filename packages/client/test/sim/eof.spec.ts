@@ -111,7 +111,7 @@ tape('EOF ephemeral hardfork tests', async (t) => {
     st.end()
   })
   // ------------EIP 3855 tests-------------------------------
-  t.test('EIP 3860 tests', async (st) => {
+  t.test('EIP 3855 tests', async (st) => {
     const push1res = await runTx('0x6000')
     const push0res = await runTx('0x5F')
     st.ok(
