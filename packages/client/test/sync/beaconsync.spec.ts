@@ -119,6 +119,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+    await skeleton.open()
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
