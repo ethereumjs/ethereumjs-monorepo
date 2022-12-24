@@ -38,48 +38,60 @@ tape('StatelessVerkleStateManager', (t) => {
     )
   })
 
-  t.test('getAccount()', async (st) => {
+  t.test('getTreeKey()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-    const account = await stateManager.getAccount(
-      Address.fromString('0x0000000000000000000000000000000000000000')
-    )
-    st.equal(account.balance, 2000000000000000999n, 'should have correct balance')
-    st.equal(account.nonce, 0n, 'should have correct nonce')
-    st.equal(
-      account.storageRoot.toString('hex'),
-      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
+    const balanceKey = await (stateManager as any).getTreeKeyForBalance(
+      Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
     )
     st.equal(
-      account.codeHash.toString('hex'),
-      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
+      balanceKey.toString('hex'),
+      '274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1601'
     )
   })
 
-  t.test('getAccount()', async (st) => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+  // t.test('getAccount()', async (st) => {
+  //   const stateManager = new StatelessVerkleStateManager({ common })
+  //   stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-    const account = await stateManager.getAccount(
-      Address.fromString('0x0000000000000000000000000000000000000000')
-    )
+  //   const account = await stateManager.getAccount(
+  //     Address.fromString('0x0000000000000000000000000000000000000000')
+  //   )
+  //   st.equal(account.balance, 2000000000000000999n, 'should have correct balance')
+  //   st.equal(account.nonce, 0n, 'should have correct nonce')
+  //   st.equal(
+  //     account.storageRoot.toString('hex'),
+  //     '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+  //     'should have correct storageRoot'
+  //   )
+  //   st.equal(
+  //     account.codeHash.toString('hex'),
+  //     'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+  //     'should have correct codeHash'
+  //   )
+  // })
 
-    st.equal(account.balance, 2000000000000000999n, 'should have correct balance')
-    st.equal(account.nonce, 0n, 'should have correct nonce')
-    st.equal(
-      account.storageRoot.toString('hex'),
-      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
-    )
-    st.equal(
-      account.codeHash.toString('hex'),
-      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'should have correct codeHash'
-    )
-  })
+  // t.test('getAccount()', async (st) => {
+  //   const stateManager = new StatelessVerkleStateManager({ common })
+  //   stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+
+  //   const account = await stateManager.getAccount(
+  //     Address.fromString('0x0000000000000000000000000000000000000000')
+  //   )
+  //   st.equal(account.balance, 999913024999998002n, 'should have correct balance')
+  //   st.equal(account.nonce, 3n, 'should have correct nonce')
+  //   st.equal(
+  //     account.storageRoot.toString('hex'),
+  //     '274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1603',
+  //     'should have correct storageRoot'
+  //   )
+  //   st.equal(
+  //     account.codeHash.toString('hex'),
+  //     '274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1604',
+  //     'should have correct codeHash'
+  //   )
+  // })
 
   /**t.test('initPreState()', async (st) => {
     const stateManager = new StatelessVerkleStateManager()

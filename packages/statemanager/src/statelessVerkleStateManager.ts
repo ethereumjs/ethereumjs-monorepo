@@ -79,7 +79,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
     const pedersenHash = wasm.pedersen_hash(input)
 
     if (pedersenHash === null) {
-      throw new Error('Wrong pedersanHash input. This might happen if length is not correct.')
+      throw new Error('Wrong pedersenHash input. This might happen if length is not correct.')
     }
 
     return arrToBufArr(pedersenHash)
