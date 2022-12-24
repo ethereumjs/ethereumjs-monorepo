@@ -53,7 +53,7 @@ Communicate with peers to read new transaction and block information:
 Run an example with:
 
 ```
-DEBUG=devp2p:* node -r ts-node/register ./examples/peer-communication.ts
+DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.ts
 ```
 
 ## Docs
@@ -142,7 +142,7 @@ Events emitted:
 
 ### Reference
 
-- [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+- [Node discovery protocol](https://ethereum.org/en/developers/docs/networking-layer/#discovery)
 - [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
 - [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
 
@@ -218,7 +218,7 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/).
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/protocol/eth/](./src/protocol/eth/).
 
 ### Usage
 
@@ -287,7 +287,7 @@ Events emitted:
 
 ## Light Ethereum Subprotocol (LES)
 
-Upper layer protocol used by light clients, see [./src/les/](./src/les/).
+Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
 
 ### Usage
 
@@ -359,7 +359,7 @@ Events emitted:
 
 ### Reference
 
-- [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
+- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
 
 ## Browser
 
@@ -384,12 +384,12 @@ npm run test
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
 For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
-`export DEBUG=*,-babel`).
+`export DEBUG=ethjs,*,-babel`).
 
 Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
 
 ```shell
-DEBUG=devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 The following loggers are available:
@@ -410,7 +410,7 @@ The following loggers are available:
 For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
 in addition:
 
-DEBUG=devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 
 Exemplary logging output:
 
@@ -439,7 +439,7 @@ Available messages can be added to the logger base name to filter on a per messa
 on two message names along `ETH` protocol debugging:
 
 ```shell
-DEBUG=devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 Exemplary logging output:
@@ -461,7 +461,7 @@ There are the following ways to limit debug output to a certain peer:
 Log output can be limited to one or several certain IPs. This can be useful to follow on the message exchange with a certain remote peer (e.g. a bootstrap peer):
 
 ```shell
-DEBUG=devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 #### First Connected
@@ -469,7 +469,7 @@ DEBUG=devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
 
 ```shell
-DEBUG=devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 This logger can be used in various practical scenarios if you want to concentrate on the message exchange with just one peer.

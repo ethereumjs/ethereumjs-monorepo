@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
@@ -34,7 +34,7 @@ type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessag
 
 export function startRPC(
   methods: any,
-  opts: StartRPCOpts = { port: 3000 },
+  opts: StartRPCOpts = { port: 3001 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
@@ -77,7 +77,10 @@ export function createClient(clientOpts: any = {}) {
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
   if (chain._headers !== undefined) {
-    chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
+    chain._headers.latest = BlockHeader.fromHeaderData(
+      { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
+      { common }
+    )
   }
 
   config.synchronized = true
@@ -103,7 +106,7 @@ export function createClient(clientOpts: any = {}) {
   }
 
   let execution
-  if (clientOpts.includeVM === true) {
+  if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
@@ -242,7 +245,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TypedTransaction[]
+  txs: TypedTransaction[],
+  fromEngine = false
 ) {
   const { vm } = execution
   // build block with tx
@@ -264,7 +268,7 @@ export async function runBlockWithTxs(
   const block = await blockBuilder.build()
 
   // put block into chain and run execution
-  await chain.putBlocks([block])
+  await chain.putBlocks([block], fromEngine)
   await execution.run()
 }
 

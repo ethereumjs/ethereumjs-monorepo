@@ -21,7 +21,7 @@ export const codeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[1] !== MAGIC || container[2] !== VERSION)
+  if (container[0] !== FORMAT || container[1] !== MAGIC || container[2] !== VERSION)
     // Bytecode does not contain EOF1 "magic" or version number in expected positions
     return
 
@@ -90,6 +90,16 @@ export const validOpcodes = (code: Buffer) => {
     return false
   }
   return true
+}
+
+export const getEOFCode = (code: Buffer) => {
+  const sectionSizes = codeAnalysis(code)
+  if (sectionSizes === undefined) {
+    return code
+  } else {
+    const codeStart = sectionSizes.data > 0 ? 10 : 7
+    return code.slice(codeStart, codeStart + sectionSizes.code)
+  }
 }
 
 export const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }

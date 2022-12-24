@@ -386,3 +386,7 @@ export const bigIntToHex = (num: bigint) => {
 export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
   return unpadBuffer(bigIntToBuffer(value))
 }
+
+export function intToUnpaddedBuffer(value: number): Buffer {
+  return unpadBuffer(intToBuffer(value))
+}

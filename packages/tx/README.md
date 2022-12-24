@@ -205,6 +205,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 - `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
+- `public static async fromEthersProvider(provider: string | ethers.providers.JsonRpcProvider, txHash: string, txOptions?: TxOptions)`
 
 ### Sending a Transaction
 

@@ -8,7 +8,7 @@ import { Block } from './index'
 import type { BlockOptions, JsonRpcBlock } from './index'
 import type { TxData, TypedTransaction } from '@ethereumjs/tx'
 
-export function normalizeTxParams(_txParams: any) {
+function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
   txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
@@ -35,6 +35,7 @@ export function normalizeTxParams(_txParams: any) {
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param options - An object describing the blockchain
+ * @deprecated
  */
 export function blockFromRpc(
   blockParams: JsonRpcBlock,

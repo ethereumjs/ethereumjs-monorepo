@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
@@ -10,6 +10,7 @@ import * as td from 'testdouble'
 import { Config } from '../../lib/config'
 import { PendingBlock } from '../../lib/miner'
 import { TxPool } from '../../lib/service/txpool'
+import { mockBlockchain } from '../rpc/mockBlockchain'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -37,14 +38,23 @@ const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berli
 const config = new Config({ transports: [], common })
 
 const setup = () => {
-  const stateManager = { getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')) }
+  const stateManager = {
+    getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
+    setStateRoot: async () => {},
+  }
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
       getCanonicalHeadHeader: () => BlockHeader.fromHeaderData({}, { common }),
     },
     execution: {
-      vm: { stateManager, eei: { getAccount: () => stateManager.getAccount() } },
+      vm: {
+        stateManager,
+        eei: { getAccount: () => stateManager.getAccount() },
+        copy: () => service.execution.vm,
+        setStateRoot: () => {},
+        blockchain: mockBlockchain({}),
+      },
     },
   }
   const txPool = new TxPool({ config, service })
@@ -177,6 +187,21 @@ tape('[PendingBlock]', async (t) => {
     t.end()
   })
 
+  t.test('should throw when blockchain does not have getTotalDifficulty function', async (st) => {
+    const { txPool } = setup()
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = (txPool as any).vm
+    try {
+      await pendingBlock.start(vm, new Block())
+      st.fail('should have thrown')
+    } catch (err: any) {
+      st.equal(
+        err.message,
+        'cannot get iterator head: blockchain has no getTotalDifficulty function'
+      )
+    }
+  })
+
   t.test('should reset td', (t) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
@@ -184,6 +209,7 @@ tape('[PendingBlock]', async (t) => {
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
+
     t.end()
   })
 })

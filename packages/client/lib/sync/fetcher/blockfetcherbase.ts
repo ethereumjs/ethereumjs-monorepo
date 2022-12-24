@@ -94,7 +94,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count > BigInt(0)) {
+    // processed - finished gives out how many jobs have been popped out from in to make parallel requests to peers
+    // Do not generate any new tasks unless maxFetcherRequests are resolved
+    if (
+      this.in.length === 0 &&
+      this.count > BigInt(0) &&
+      this.processed - this.finished < this.config.maxFetcherRequests
+    ) {
       this.debug(
         `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
       )
@@ -103,6 +109,10 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         this.enqueueTask(task)
       }
       this.debug(`Enqueued num=${tasks.length} tasks`)
+    } else {
+      this.debug(
+        `Fetcher skipping nextTasks in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`
+      )
     }
   }
 

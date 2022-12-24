@@ -4,6 +4,7 @@ import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { WithdrawalData } from '@ethereumjs/util'
 import type { TxReceipt, VM } from '@ethereumjs/vm'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 
@@ -36,21 +37,28 @@ export class PendingBlock {
    * Starts building a pending block with the given payload
    * @returns an 8-byte payload identifier to call {@link BlockBuilder.build} with
    */
-  async start(vm: VM, parentBlock: Block, headerData: Partial<HeaderData> = {}) {
+  async start(
+    vm: VM,
+    parentBlock: Block,
+    headerData: Partial<HeaderData> = {},
+    withdrawals?: WithdrawalData[]
+  ) {
     const number = parentBlock.header.number + BigInt(1)
+    const { timestamp } = headerData
     const { gasLimit } = parentBlock.header
+
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
+    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
+    vm._common.setHardforkByBlockNumber(number, td, timestamp)
+
     const baseFeePerGas =
       vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
     await vm.eei.setStateRoot(parentBlock.header.stateRoot)
-
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkByBlockNumber(parentBlock.header.number, td)
 
     const builder = await vm.buildBlock({
       parentBlock,
@@ -60,8 +68,10 @@ export class PendingBlock {
         gasLimit,
         baseFeePerGas,
       },
+      withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
+        hardforkByTTD: td,
       },
     })
 
@@ -69,7 +79,7 @@ export class PendingBlock {
     this.pendingPayloads.push([payloadId, builder])
 
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(vm, baseFeePerGas)
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
@@ -116,17 +126,18 @@ export class PendingBlock {
   /**
    * Returns the completed block
    */
-  async build(payloadId: Buffer): Promise<void | [block: Block, receipts: TxReceipt[]]> {
+  async build(
+    payloadId: Buffer
+  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
     if (!payload) {
       return
     }
     const builder = payload[1]
+    const { vm, headerData } = builder as any
 
     // Add new txs that the pool received
-    const txs = (
-      await this.txPool.txsByPriceAndNonce((builder as any).headerData.baseFeePerGas)
-    ).filter(
+    const txs = (await this.txPool.txsByPriceAndNonce(vm, headerData.baseFeePerGas)).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash())) ===
         false
@@ -134,6 +145,7 @@ export class PendingBlock {
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
     let blockFull = false
+    let skippedByAddErrors = 0
     while (index < txs.length && !blockFull) {
       try {
         await builder.addTransaction(txs[index])
@@ -145,6 +157,7 @@ export class PendingBlock {
             this.config.logger.info(`Pending: Assembled block full`)
           }
         } else {
+          skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
             `Pending: Skipping tx 0x${txs[index]
@@ -157,15 +170,18 @@ export class PendingBlock {
     }
 
     const block = await builder.build()
+    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      } hash=${block.hash().toString('hex')}`
+      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${block
+        .hash()
+        .toString('hex')}`
     )
 
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
 
-    return [block, builder.transactionReceipts]
+    return [block, builder.transactionReceipts, builder.minerValue]
   }
 }

@@ -185,7 +185,7 @@ See also this [diagram](./diagram/client.svg) for an overview of the client stru
 
 ### Overview
 
-You can expose a [JSON-RPC](https://eth.wiki/json-rpc/API) interface along a client run with:
+You can expose a [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) interface along a client run with:
 
 ```shell
 ethereumjs --rpc
@@ -207,7 +207,7 @@ contribution on the project *hint\* _hint_. 😄
 ### API Examples
 
 You can use `cURL` to request data from an API endpoint. Here is a simple example for
-[web3_clientVersion](https://eth.wiki/json-rpc/API#web3_clientversion):
+[web3_clientVersion](https://ethereum.org/en/developers/docs/apis/json-rpc/#web3_clientversion):
 
 ```shell
 curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":1,"method":"web3_clientVersion", "params": []}' http://localhost:8545
@@ -235,7 +235,7 @@ This will give you an output like the following:
 ```
 
 Here's an example for a call on an endpoint with the need for parameters. The following call uses
-the [eth_getBlockByNumer](https://eth.wiki/json-rpc/API#eth_getblockbynumber) endpoint
+the [eth_getBlockByNumer](https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getblockbynumber) endpoint
 to request data for block number 436 (you can use a tool like
 [RapidTables](https://www.rapidtables.com/convert/number/decimal-to-hex.html) for conversion to `hex`):
 
@@ -309,13 +309,13 @@ ethereumjs --loglevel=debug
 For more in-depth debugging on networking the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
 
 ```shell
-DEBUG=*,-babel [CLIENT_START_COMMAND]
+DEBUG=ethjs,*,-babel [CLIENT_START_COMMAND]
 ```
 
 The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
 
 ```shell
-DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
 ### Diagram Updates

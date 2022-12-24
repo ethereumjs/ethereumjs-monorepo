@@ -15,21 +15,21 @@ or the associated YouTube video introduction to [Core Development with Ethereumj
 
 Running the State tests:
 
-`ts-node ./tests/tester --state`
+`ts-node ./test/tester --state`
 
 Running the Blockchain tests:
 
-`ts-node ./tests/tester --blockchain`
+`ts-node ./test/tester --blockchain`
 
 Tests run against source by default. They can be run with the `--dist` flag:
 
-`npm run build:dist && node ./tests/tester --state --dist`
+`npm run build:dist && node ./test/tester --state --dist`
 
 See `package.json` for all the scripts in the `test:` namespace, such as `npm run test:state` which would execute the above.
 
 Use `--fork` to pass in the desired hardfork:
 
-`ts-node ./tests/tester --state --fork='Constantinople'`
+`ts-node ./test/tester --state --fork='Constantinople'`
 
 or
 
@@ -53,29 +53,29 @@ State tests run significantly faster than Blockchain tests, so it is often a goo
 
 Running all the blockchain tests in a file:
 
-`ts-node ./tests/tester --blockchain --file='randomStatetest303'`
+`ts-node ./test/tester --blockchain --file='randomStatetest303'`
 
 Running tests from a specific directory:
 
-`ts-node ./tests/tester --blockchain --dir='bcBlockGasLimitTest'`
+`ts-node ./test/tester --blockchain --dir='bcBlockGasLimitTest'`
 
 Running a specific state test case:
 
-`ts-node ./tests/tester --state --test='stackOverflow'`
+`ts-node ./test/tester --state --test='stackOverflow'`
 
 Only run test cases with selected `data`, `gas` and/or `value` values (see
 [attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
 test docs), provided by the index of the array element in the test `transaction` section:
 
-`ts-node ./tests/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+`ts-node ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
 Recursively run all tests from a custom directory:
 
-`ts-node ./tests/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
+`ts-node ./test/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
 
 Run a test from a specified source file not under the `tests` directory (only state tests):
 
-`ts-node ./tests/tester --state --customStateTest='{path_to_file}'`
+`ts-node ./test/tester --state --customStateTest='{path_to_file}'`
 
 #### Running tests with a reporter/formatter
 
@@ -86,25 +86,25 @@ Run a test from a specified source file not under the `tests` directory (only st
 
 To pipe the results of tests run with a node command to a formatter:
 
-`npm run formatTest -- -t "./tests/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'`
+`npm run formatTest -- -t "./test/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'`
 
 If no reporter or formatter is provided, test results will be reported by `tape` without any additional formatting.
 
 #### Skipping Tests
 
 There are three types of skip lists (`BROKEN`, `PERMANENT` and `SLOW`) which
-can be found in `tests/tester.js`. By default tests from all skip lists are omitted.
+can be found in `test/tester.js`. By default tests from all skip lists are omitted.
 
 You can change this behaviour with:
 
-`ts-node ./tests/tester --state --skip=BROKEN,PERMANENT`
+`ts-node ./test/tester --state --skip=BROKEN,PERMANENT`
 
 to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
 There are also the keywords `NONE` or `ALL` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`ts-node ./tests/tester --state --runSkipped=SLOW`
+`ts-node ./test/tester --state --runSkipped=SLOW`
 
 ### CI Test Integration
 
@@ -124,7 +124,7 @@ For state tests you can use the `--jsontrace` flag to output opcode trace inform
 
 Blockchain tests support `--debug` to verify the postState:
 
-`ts-node ./tests/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+`ts-node ./test/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
@@ -183,7 +183,7 @@ Note: this script runs by actually checking out the targeted branch, running the
 [Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
 
 ```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js --blockchain --excludeDir='GeneralStateTests'
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./test/tester.js --blockchain --excludeDir='GeneralStateTests'
 ```
 
 ## Benchmarks

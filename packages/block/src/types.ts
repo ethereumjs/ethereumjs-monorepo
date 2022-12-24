@@ -7,7 +7,16 @@ import type {
   JsonTx,
   TxData,
 } from '@ethereumjs/tx'
-import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
+import type {
+  AddressLike,
+  BigIntLike,
+  BufferLike,
+  JsonRpcWithdrawal,
+  PrefixedHexString,
+  WithdrawalBuffer,
+  WithdrawalData,
+} from '@ethereumjs/util'
+
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -99,6 +108,7 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
+  withdrawalsRoot?: BufferLike
   /**
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
@@ -117,15 +127,20 @@ export interface BlockData {
   header?: HeaderData
   transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
   uncleHeaders?: Array<HeaderData>
+  withdrawals?: Array<WithdrawalData>
 }
 
-export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type WithdrawalsBuffer = WithdrawalBuffer[]
+export type BlockBuffer =
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer]
+
 /**
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
  * TODO: The verkle prestate type properly
  */
-export type BlockHeaderBuffer = /* Buffer[][][] | */ Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
+export type BlockHeaderBuffer = Buffer[]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer?]
 /**
  * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
  */
@@ -142,6 +157,7 @@ export interface JsonBlock {
   header?: JsonHeader
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
+  withdrawals?: JsonRpcWithdrawal[]
 }
 
 /**
@@ -164,10 +180,11 @@ export interface JsonHeader {
   mixHash?: string
   nonce?: string
   baseFeePerGas?: string
+  withdrawalsRoot?: string
 }
 
 /*
- * Based on https://eth.wiki/json-rpc/API
+ * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
 export interface JsonRpcBlock {
   number: string // the block number. null when pending block.
@@ -191,4 +208,5 @@ export interface JsonRpcBlock {
   transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
 }

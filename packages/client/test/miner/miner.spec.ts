@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
@@ -48,6 +49,11 @@ tape('[Miner]', async (t) => {
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+
+  // Stub out setStateRoot so txPool.validate checks will pass since correct state root
+  // doesn't exist in fakeChain state anyway
+  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = td.func<any>()
 
   class FakeChain {
     open() {}
@@ -477,6 +483,7 @@ tape('[Miner]', async (t) => {
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
+    DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
     t.end()
   })
 })

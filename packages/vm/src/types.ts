@@ -5,7 +5,7 @@ import type { Common } from '@ethereumjs/common'
 import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -172,6 +172,7 @@ export interface BuildBlockOpts {
    */
   headerData?: HeaderData
 
+  withdrawals?: WithdrawalData[]
   /**
    * The block and builder options to use.
    */
@@ -358,6 +359,11 @@ export interface RunTxResult extends EVMResult {
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
   accessList?: AccessList
+
+  /**
+   * The value that accrues to the miner by this transaction
+   */
+  minerValue: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {

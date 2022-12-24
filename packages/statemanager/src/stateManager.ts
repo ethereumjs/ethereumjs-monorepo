@@ -20,7 +20,7 @@ import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
-type StorageProof = {
+export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
   value: PrefixedHexString

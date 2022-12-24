@@ -51,7 +51,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   ) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD
+      opts.hardforkByTTD ?? this._hardforkByTTD,
+      block.header.timestamp
     )
   }
 
@@ -248,6 +249,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
+  if (this._common.isActivatedEIP(4895)) {
+    await assignWithdrawals.bind(this)(block)
+  }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
@@ -324,6 +328,17 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receiptsRoot: receiptTrie.root(),
     receipts,
     results: txResults,
+  }
+}
+
+async function assignWithdrawals(this: VM, block: Block): Promise<void> {
+  const state = this.eei
+  const withdrawals = block.withdrawals!
+  for (const withdrawal of withdrawals) {
+    const { address, amount } = withdrawal
+    // skip touching account if no amount update
+    if (amount === BigInt(0)) continue
+    await rewardAccount(state, address, amount)
   }
 }
 

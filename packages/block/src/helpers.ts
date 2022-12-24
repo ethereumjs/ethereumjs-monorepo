@@ -39,9 +39,10 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     baseFeePerGas,
     verkleProof,
     verklePreStateRaw,
+    withdrawalsRoot,
   ] = values
 
-  if (values.length > 18) {
+  if (values.length > 19) {
     throw new Error('invalid header. More values than expected were received')
   }
   if (values.length < 17) {
@@ -80,6 +81,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
     baseFeePerGas,
     verkleProof,
     verklePreState,
+    withdrawalsRoot,
   }
 }
 

@@ -14,6 +14,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * Withdrawal type
+ */
+export * from './withdrawal'
+
+/**
  * ECDSA signature
  */
 export * from './signature'
@@ -31,6 +36,7 @@ export * from './types'
 /**
  * Export ethjs-util methods
  */
+export * from './asyncEventEmitter'
 export {
   arrayContainsArray,
   fromAscii,

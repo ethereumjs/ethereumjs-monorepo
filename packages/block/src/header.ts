@@ -52,6 +52,7 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
+  public readonly withdrawalsRoot?: Buffer
   /**
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
@@ -163,6 +164,7 @@ export class BlockHeader {
       baseFeePerGas: undefined,
       verkleProof: undefined,
       verklePreState: undefined,
+      withdrawalsRoot: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -188,10 +190,12 @@ export class BlockHeader {
     let verkleProof =
       toType(headerData.verkleProof, TypeOutput.PrefixedHexString) ?? defaults.verkleProof
     let verklePreState = headerData.verklePreState ?? defaults.verklePreState
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
 
     if (this._common.isActivatedEIP(1559) === true) {
@@ -210,12 +214,24 @@ export class BlockHeader {
       }
     }
 
-    if (this._common.isActivatedEIP(999001) === true) {
+    if (this._common.isActivatedEIP(999001)) {
       if (verkleProof === undefined) {
         verkleProof = '0x'
       }
       if (verklePreState === undefined) {
         verklePreState = {}
+      }
+    }
+
+    if (this._common.isActivatedEIP(4895)) {
+      if (withdrawalsRoot === undefined) {
+        throw new Error('invalid header. withdrawalsRoot should be provided')
+      }
+    } else {
+      if (withdrawalsRoot !== undefined) {
+        throw new Error(
+          'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
+        )
       }
     }
 
@@ -237,6 +253,7 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
     this.verkleProof = verkleProof
     this.verklePreState = verklePreState
+    this.withdrawalsRoot = withdrawalsRoot
 
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -336,7 +353,7 @@ export class BlockHeader {
 
     // Validation for Verkle blocks
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
-    if (this._common.isActivatedEIP(999001) === true) {
+    if (this._common.isActivatedEIP(999001)) {
       // check if verkleProof is present
       if (this.verkleProof === undefined) {
         throw new Error(`Invalid block: verkle proof missing`)
@@ -345,6 +362,19 @@ export class BlockHeader {
       // check if verklePreState is present
       if (this.verklePreState === undefined) {
         throw new Error(`Invalid block: verkle preState missing`)
+      }
+    }
+
+    if (this._common.isActivatedEIP(4895)) {
+      if (this.withdrawalsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
+        throw new Error(msg)
+      }
+      if (this.withdrawalsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
       }
     }
   }
@@ -545,6 +575,10 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559) === true) {
       rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      rawItems.push(this.withdrawalsRoot!)
     }
 
     return rawItems
@@ -785,12 +819,16 @@ export class BlockHeader {
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
+    const withdrawalAttr = this.withdrawalsRoot
+      ? { withdrawalsRoot: '0x' + this.withdrawalsRoot.toString('hex') }
+      : {}
     const jsonDict: JsonHeader = {
       parentHash: '0x' + this.parentHash.toString('hex'),
       uncleHash: '0x' + this.uncleHash.toString('hex'),
       coinbase: this.coinbase.toString(),
       stateRoot: '0x' + this.stateRoot.toString('hex'),
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
+      ...withdrawalAttr,
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
       logsBloom: '0x' + this.logsBloom.toString('hex'),
       difficulty: bigIntToHex(this.difficulty),
