@@ -36,7 +36,7 @@ export class EthersForkedStateProvider extends ethers.providers.JsonRpcProvider 
     const state = this.ethersStateManager.copy()
     blockTag === undefined ||
       this.ethersStateManager.setBlockTag(blockTag === 'earliest' ? 'earliest' : BigInt(blockTag))
-    const address = new Address(toBuffer(await addressOrName))
+    const address = Address.fromString(await addressOrName)
     const key = toBuffer(position)
     const result = await state.getContractStorage(address, key)
     return bufferToHex(result)

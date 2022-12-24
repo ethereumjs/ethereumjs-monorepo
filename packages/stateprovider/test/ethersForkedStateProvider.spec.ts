@@ -8,6 +8,7 @@ import {
   toBuffer,
 } from '@ethereumjs/util'
 import { BaseProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ethers } from 'ethers'
 import * as tape from 'tape'
 
 import { EthersForkedStateProvider } from '../src/ethersForkedStateProvider'
@@ -103,36 +104,28 @@ tape('getCode / getStorageAt', async (t) => {
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersForkedStateProvider(provider)
-    const UNIContract_str = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
-    const UNIerc20ContractAddress = Address.fromString(UNIContract_str)
-    const UNIContractCode = '0xbeeffeed'
+    const contract_str = '0x2d80502854fc7304c3e3457084de549f5016b73f'
+    const contractAddress = Address.fromString(contract_str)
+    const contractCode = ropsten_contractWithStorage.codeHash
 
     await ((state as any).ethersStateManager as EthersStateManager).putContractCode(
-      UNIerc20ContractAddress,
-      toBuffer(UNIContractCode)
+      contractAddress,
+      toBuffer(contractCode)
     )
-    const retrievedCode = await state.getCode(UNIContract_str)
-    t.equal(retrievedCode, '0xbeeffeed', 'was able to retrieve UNI contract code')
+    const retrievedCode = await state.getCode(contractAddress.toString())
+    t.equal(retrievedCode, contractCode, 'was able to retrieve contract code')
 
+    const slotValue = await state.getStorageAt(contract_str, setLengthLeft(bigIntToBuffer(0n), 32))
+    t.deepEqual(slotValue, '0x1e4ebdd7', 'should retrieve slot 0 value')
     await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32),
-      toBuffer('0xbeef')
-    )
-    const slotValue = await state.getStorageAt(
-      '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
-      setLengthLeft(bigIntToBuffer(2n), 32)
-    )
-    t.deepEqual(slotValue, '0xbeef', 'should retrieve slot 2 value')
-    await ((state as any).ethersStateManager as EthersStateManager).putContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32),
+      contractAddress,
+      setLengthLeft(bigIntToBuffer(0n), 32),
       Buffer.from('')
     )
 
     const deletedSlot = await state.getStorageAt(
-      UNIContract_str,
-      setLengthLeft(bigIntToBuffer(2n), 32)
+      contract_str,
+      setLengthLeft(bigIntToBuffer(0n), 32)
     )
 
     t.equal(deletedSlot, '0x', 'should return empty buffer for deleted slot')
@@ -253,6 +246,111 @@ tape(`sendTransaction / getTransactionCount / getBalance`, async (t) => {
     const newCountA = await state.getTransactionCount(A.address.toString())
     t.equal(newCountA, 1, `should return the correct nonce`)
 
+    t.end()
+  }
+})
+
+tape(`sendTransaction (contract)`, async (t) => {
+  if (isBrowser() === true) {
+    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    t.end()
+  } else {
+    const provider = new MockProvider()
+    const state = new EthersForkedStateProvider(provider)
+    const A = {
+      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      privateKey: Buffer.from(
+        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+        'hex'
+      ),
+    }
+
+    const acc = new Account()
+    acc.balance = 1000000000000000n
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(A.address, acc)
+
+    // sample contract from https://ethereum.stackexchange.com/a/70791
+    const contract_data =
+      '0x608060405234801561001057600080fd5b506040516020806100ef8339810180604052602081101561003057600080fd5b810190808051906020019092919050505080600081905550506098806100576000396000f3fe6080604052600436106039576000357c010000000000000000000000000000000000000000000000000000000090048063a2a9679914603e575b600080fd5b348015604957600080fd5b5060506066565b6040518082815260200191505060405180910390f35b6000548156fea165627a7a72305820fe2ba3506418c87a075f8f3ae19bc636bd4c18ebde0644bcb45199379603a72c00290000000000000000000000000000000000000000000000000000000000000064'
+    const contract_code =
+      '0x6080604052600436106039576000357c010000000000000000000000000000000000000000000000000000000090048063a2a9679914603e575b600080fd5b348015604957600080fd5b5060506066565b6040518082815260200191505060405180910390f35b6000548156fea165627a7a72305820fe2ba3506418c87a075f8f3ae19bc636bd4c18ebde0644bcb45199379603a72c0029'
+
+    const gasLimit = 2000000
+    const contract_tx = Transaction.fromTxData(
+      { gasLimit, data: contract_data, gasPrice: 100, nonce: 0 },
+      { freeze: false }
+    )
+    const signedC_tx = contract_tx.sign(A.privateKey)
+    const expectedContractAddress = Address.generate(A.address, BigInt(0))
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(
+      expectedContractAddress,
+      acc
+    )
+    t.equal(
+      await state.getCode(expectedContractAddress.toString()),
+      '0x00',
+      'contract code should be empty before deploy'
+    )
+    await state.sendTransaction(bufferToHex(signedC_tx.serialize()))
+    t.equal(
+      await state.getCode(expectedContractAddress.toString()),
+      contract_code,
+      'Transaction should deploy contract code'
+    )
+
+    const storage = ethers.ContractFactory.fromSolidity(
+      await import('./testdata/providerData/simpleStorage.json')
+    )
+
+    const nextExpectedAddress = Address.generate(A.address, 2n)
+    await ((state as any).ethersStateManager as EthersStateManager).putAccount(
+      nextExpectedAddress,
+      acc
+    )
+    const signer = state.getSigner(A.address.toString())
+    signer.signTransaction = async (transaction) => {
+      const signed = Transaction.fromTxData({
+        data: (await transaction.data) as any,
+        gasLimit: 210000n,
+        gasPrice: 10n,
+        nonce: await state.getTransactionCount(A.address.toString()),
+        value: (await transaction.value)?.toString(),
+        to: (await transaction.to)?.toString(),
+      }).sign(A.privateKey)
+      return bufferToHex(signed.serialize())
+    }
+    signer.sendTransaction = async (transaction) => {
+      return state.sendTransaction(signer.signTransaction(transaction))
+    }
+    const contractFactory = storage.connect(signer)
+    const contract = await contractFactory.deploy()
+    const _deploy = Transaction.fromTxData({
+      gasLimit,
+      gasPrice: 10,
+      nonce: 2,
+      data: contract.deployTransaction.data,
+    })
+    const signed_deploy = _deploy.sign(A.privateKey)
+    await state.sendTransaction(bufferToHex(signed_deploy.serialize()))
+    t.equal(
+      await state.getCode(nextExpectedAddress.toString()),
+      '0x608060405234801561001057600080fd5b50600436106100365760003560e01c80632e64cec11461003b5780636057361d14610059575b600080fd5b610043610075565b60405161005091906100d9565b60405180910390f35b610073600480360381019061006e919061009d565b61007e565b005b60008054905090565b8060008190555050565b60008135905061009781610103565b92915050565b6000602082840312156100b3576100b26100fe565b5b60006100c184828501610088565b91505092915050565b6100d3816100f4565b82525050565b60006020820190506100ee60008301846100ca565b92915050565b6000819050919050565b600080fd5b61010c816100f4565b811461011757600080fd5b5056fea26469706673582212209a159a4f3847890f10bfb87871a61eba91c5dbf5ee3cf6398207e292eee22a1664736f6c63430008070033',
+      'bytecode added'
+    )
+    const storageTxData = contract.interface.encodeFunctionData('store', [
+      setLengthLeft(bigIntToBuffer(432n), 32),
+    ])
+    const storage_tx = Transaction.fromTxData({
+      gasLimit,
+      data: toBuffer(storageTxData),
+      gasPrice: 10,
+      nonce: 3,
+      to: nextExpectedAddress,
+    })
+    const signed_S_tx = storage_tx.sign(A.privateKey)
+    await state.sendTransaction(bufferToHex(signed_S_tx.serialize()))
+    const stor = await state.getStorageAt(nextExpectedAddress.toString(), 1)
+    t.equal(stor, '0x01b0', 'should return stored uint256')
     t.end()
   }
 })
