@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
+import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -153,7 +153,7 @@ export class Interpreter {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this._common.isActivatedEIP(3540)) {
-      if (code[1] !== EOF.MAGIC) {
+      if (!code.subarray(0, 2).equals(toBuffer(EOF.MAGIC))) {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
