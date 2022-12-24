@@ -1,6 +1,13 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
-import { Account, arrToBufArr, bufferToHex, setLengthRight, toBuffer } from '@ethereumjs/util'
+import {
+  Account,
+  arrToBufArr,
+  bufferToHex,
+  setLengthLeft,
+  setLengthRight,
+  toBuffer,
+} from '@ethereumjs/util'
 
 import { Cache } from './cache'
 
@@ -86,7 +93,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
   }
 
   private getTreeKey(address: Address, treeIndex: number, subIndex: number): Buffer {
-    const address32 = setLengthRight(address.toBuffer(), 32)
+    const address32 = setLengthLeft(address.toBuffer(), 32)
 
     const treeIndexB = Buffer.alloc(32)
     treeIndexB.writeInt32LE(treeIndex)
