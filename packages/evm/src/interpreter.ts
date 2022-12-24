@@ -149,7 +149,7 @@ export class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this._common.isActivatedEIP(3540) || code[0] !== 0xef) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this._common.isActivatedEIP(3540)) {

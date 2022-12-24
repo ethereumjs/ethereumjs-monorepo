@@ -531,7 +531,7 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === 0xef) {
         if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }

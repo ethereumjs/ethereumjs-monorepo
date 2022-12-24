@@ -2,7 +2,6 @@ import { toBuffer } from '@ethereumjs/util'
 
 import { handlers } from './opcodes'
 
-export const FORMAT = 0xef
 export const MAGIC = 0xef00
 export const VERSION = 0x01
 
@@ -105,4 +104,4 @@ export const getEOFCode = (code: Buffer) => {
   }
 }
 
-export const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }
+export const EOF = { MAGIC, VERSION, codeAnalysis, validOpcodes }

@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Address, privateToAddress, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -31,7 +31,7 @@ tape('EIP 3540 tests', (t) => {
   })
 
   t.test('EOF > codeAnalysis() tests', async (st) => {
-    const eofHeader = Buffer.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
+    const eofHeader = Buffer.concat([toBuffer(EOF.MAGIC), toBuffer(EOF.VERSION)])
     st.ok(
       EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
         ?.code! > 0,
