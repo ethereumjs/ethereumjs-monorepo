@@ -1,3 +1,5 @@
+import { toBuffer } from '@ethereumjs/util'
+
 import { handlers } from './opcodes'
 
 export const FORMAT = 0xef
@@ -21,9 +23,10 @@ export const codeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[0] !== FORMAT || container[1] !== MAGIC || container[2] !== VERSION)
+  if (!container.subarray(0, 2).equals(toBuffer(MAGIC)) || container[2] !== VERSION) {
     // Bytecode does not contain EOF1 "magic" or version number in expected positions
     return
+  }
 
   if (
     // EOF1 bytecode must be more than 7 bytes long for EOF1 header plus code section (but no data section)
