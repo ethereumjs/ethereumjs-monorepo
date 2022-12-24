@@ -95,11 +95,20 @@ export const validOpcodes = (code: Buffer) => {
 }
 
 export const getEOFCode = (code: Buffer) => {
-  const sectionSizes = codeAnalysis(code)
-  if (sectionSizes === undefined) {
+  const sectionSizes = {
+    code: (code[4] << 8) | code[5],
+    data: (code[7] << 8) | code[8],
+  }
+  const codeStart = code.length > 10 ? 10 : 7
+  if (
+    sectionSizes.code < 1 ||
+    !code.subarray(0, 2).equals(toBuffer(MAGIC)) ||
+    code[2] !== VERSION ||
+    (code.length !== codeStart + sectionSizes.code + sectionSizes.data &&
+      code.length !== codeStart + sectionSizes.code)
+  ) {
     return code
   } else {
-    const codeStart = sectionSizes.data > 0 ? 10 : 7
     return code.slice(codeStart, codeStart + sectionSizes.code)
   }
 }
