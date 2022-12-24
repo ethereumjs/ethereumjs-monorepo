@@ -64,10 +64,11 @@ tape('StatelessVerkleStateManager', (t) => {
     stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
+      Address.fromString('0x0000000000000000000000000000000000000000')
     )
-    st.equal(account.balance, 999913024999998002n, 'should have correct balance')
-    st.equal(account.nonce, 3n, 'should have correct nonce')
+
+    st.equal(account.balance, 2000000000000000999n, 'should have correct balance')
+    st.equal(account.nonce, 0n, 'should have correct nonce')
     st.equal(
       account.storageRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
