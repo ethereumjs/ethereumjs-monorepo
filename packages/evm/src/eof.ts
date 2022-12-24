@@ -1,7 +1,7 @@
 import { handlers } from './opcodes'
 
 export const FORMAT = 0xef
-export const MAGIC = 0x00
+export const MAGIC = 0xef00
 export const VERSION = 0x01
 
 /**
