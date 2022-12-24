@@ -1,4 +1,5 @@
 import { Common } from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
 import { privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
@@ -129,6 +130,55 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
   })
 
+  t.test('point precompile contract test', async (st) => {
+    const nonce = await client.request(
+      'eth_getTransactionCount',
+      [sender.toString(), 'latest'],
+      2.0
+    )
+
+    /* Data is contract deployment code for the below contract borrowed from the 4844-interop repo
+    //https://github.com/Inphi/eip4844-interop/blob/master/point_evaluation_tx/PointEvaluationTest.sol
+
+    contract PointEvaluationTest {
+      constructor(bytes memory input) {
+          assembly {
+              if iszero(staticcall(gas(), 0x14, mload(input), 0xc0, 0, 0)) {
+                revert(0,0)
+              }
+          }
+      }
+    }
+    */
+
+    const txData = {
+      data: Buffer.from(
+        'f9031103830186a0830f42408080b902c0608060405234801561001057600080fd5b50604051610260380380610260833981810160405281019061003291906101ca565b60008060c0835160145afa61004657600080fd5b50610213565b6000604051905090565b600080fd5b600080fd5b600080fd5b600080fd5b6000601f19601f8301169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6100b38261006a565b810181811067ffffffffffffffff821117156100d2576100d161007b565b5b80604052505050565b60006100e561004c565b90506100f182826100aa565b919050565b600067ffffffffffffffff8211156101115761011061007b565b5b61011a8261006a565b9050602081019050919050565b60005b8381101561014557808201518184015260208101905061012a565b83811115610154576000848401525b50505050565b600061016d610168846100f6565b6100db565b90508281526020810184848401111561018957610188610065565b5b610194848285610127565b509392505050565b600082601f8301126101b1576101b0610060565b5b81516101c184826020860161015a565b91505092915050565b6000602082840312156101e0576101df610056565b5b600082015167ffffffffffffffff8111156101fe576101fd61005b565b5b61020a8482850161019c565b91505092915050565b603f806102216000396000f3fe6080604052600080fdfea2646970667358221220cbb964afe0f584a89b887bf992e18697c0ebd77a40a102c121f54213f23d4d9464736f6c634300080f00330000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000212340000000000000000000000000000000000000000000000000000000000001ba002e89a44a4e4da739fed1ed658079a75dbcb59eebbd8ea0cb11f88a41d611dfaa025fe1645a1d3c9828be471fac5cd3e4be59c90ea304c94d774ff88c84349d8db',
+        'hex'
+      ),
+      nonce: BigInt(nonce.result),
+      gasLimit: 0xffffff,
+      maxFeePerGas: 0xff,
+      maxPriorityFeePerGas: 0xf,
+    }
+
+    const tx = TransactionFactory.fromTxData({ type: 2, ...txData }, { common }).sign(pkey)
+
+    const txResult = await client.request(
+      'eth_sendRawTransaction',
+      ['0x' + tx.serialize().toString('hex')],
+      2.0
+    )
+    let receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
+    while (receipt.result === null) {
+      receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
+      await sleep(1000)
+    }
+    st.ok(
+      receipt.result.contractAddress !== undefined,
+      'successfully deployed contract that calls precompile'
+    )
+  })
   /*
   t.test('multipeer setup', async (st) => {
     const multiPeer = Client.http({ port: 8947 })
