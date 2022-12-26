@@ -19,6 +19,10 @@ export class BlockBuilder {
    */
   gasUsed = BigInt(0)
   /**
+   *  The cumulative data gas used by the blobs in a block
+   */
+  dataGasUsed = BigInt(0)
+  /**
    * Value of the block, represented by the final transaction fees
    * acruing to the miner.
    */
@@ -151,12 +155,28 @@ export class BlockBuilder {
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+
+    // Set default values for data gas calculations so Typescript won't complain
+    let dataGasLimit = BigInt(0)
+    let dataGasPerBlob = BigInt(0)
+
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let excessDataGas = undefined
     if (this.blockOpts.common?.isActivatedEIP(4844) === true) {
+      const blobTx = tx as BlobEIP4844Transaction
+      dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
+      dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
+
+      if (
+        this.dataGasUsed + BigInt(blobTx.versionedHashes.length) * dataGasPerBlob >
+        dataGasLimit
+      ) {
+        throw new Error('block data gas limit reached')
+      }
+
       const parentHeader = await this.vm.blockchain.getBlock(this.headerData.parentHash! as Buffer)
       excessDataGas = calcExcessDataGas(
         parentHeader!.header,
@@ -181,6 +201,7 @@ export class BlockBuilder {
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {
       const txData = tx as BlobEIP4844Transaction
+      this.dataGasUsed += BigInt(txData.versionedHashes.length) * dataGasPerBlob
       tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
       })
