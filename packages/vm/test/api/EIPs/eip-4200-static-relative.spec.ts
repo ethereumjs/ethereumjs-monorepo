@@ -39,10 +39,10 @@ function getRJUMPVCode(int16list: number[]) {
 }
 
 function getEOFCode(code: string) {
-  const magic = '0xEF000101'
-  const len = code.length / 2
-  const lenHex = len.toString(16)
-  return magic + lenHex.padStart(4, '0') + '00' + code
+  const header = '0xEF000101'
+  const byteLen = code.length / 2
+  const lenHex = byteLen.toString(16)
+  return header + lenHex.padStart(4, '0') + '00' + code
 }
 
 tape('EIP 3670 tests', (t) => {
@@ -66,7 +66,7 @@ tape('EIP 3670 tests', (t) => {
     // Note: this also verifies that these EOF codes are correct (otherwise code will not run)
     const validCases = [
       // RJUMP
-      // RJUMP, jump to JUMPDEST
+      // RJUMP, jump to JUMPDEST (0x5B)
       [getEOFCode('5B5C' + getInt16Str(1) + '5B5B00'), 'RJUMP to JUMPDEST, +1'],
       [getEOFCode('5B5C' + getInt16Str(0) + '5B5B00'), 'RJUMP to JUMPDEST, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
@@ -74,7 +74,7 @@ tape('EIP 3670 tests', (t) => {
         getEOFCode('5C' + getInt16Str(2) + '5B005C' + getInt16Str(-5) + '5B5B00'),
         'RJUMP to JUMPDEST, -5',
       ],
-      // RJUMP, jump to not-JUMPDEST (use `ADDRESS` (0x30) as dummy (valid) opcode)
+      // RJUMP, jump to not-JUMPDEST (0x5B) (use `ADDRESS` (0x30) as dummy (valid) opcode)
       [getEOFCode('305C' + getInt16Str(1) + '303000'), 'RJUMP to another opcode than JUMPDEST, +1'],
       [getEOFCode('305C' + getInt16Str(0) + '303000'), 'RJUMP to another opcode than JUMPDEST, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
@@ -83,7 +83,7 @@ tape('EIP 3670 tests', (t) => {
         'RJUMP to another opcode than JUMPDEST, -5',
       ],
       // RJUMPI
-      // RJUMPI, jump to JUMPDEST
+      // RJUMPI, jump to JUMPDEST (0x5B)
       [getEOFCode('5B60015D' + getInt16Str(1) + '5B5B00'), 'RJUMPI to JUMPDEST, +1'],
       [getEOFCode('5B60015D' + getInt16Str(0) + '5B5B00'), 'RJUMPI to JUMPDEST, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
@@ -91,7 +91,7 @@ tape('EIP 3670 tests', (t) => {
         getEOFCode('5C' + getInt16Str(2) + '5B0060015D' + getInt16Str(-7) + '5B5B00'),
         'RJUMPI to JUMPDEST, -7',
       ],
-      // RJUMPI, jump to JUMPDEST
+      // RJUMPI, jump to JUMPDEST (0x5B)
       [getEOFCode('3060015D' + getInt16Str(1) + '303000'), 'RJUMPI to ADDRESS, +1'],
       [getEOFCode('3060015D' + getInt16Str(0) + '303000'), 'RJUMPI to ADDRESS, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
@@ -101,14 +101,14 @@ tape('EIP 3670 tests', (t) => {
       ],
       // RJUMPI: 0 is pushed on stack, so code will just continue after RJUMPI
       [getEOFCode('60005D' + getInt16Str(1) + '006000FE'), 'RJUMPI, 0 is pushed on stack'],
-      // RJUMPV to JUMPDEST
+      // RJUMPV to JUMPDEST (0x5B)
       [getEOFCode('60005B' + getRJUMPVCode([1]) + '5B5B00'), 'RJUMPV to JUMPDEST, +1'],
       [getEOFCode('60005B' + getRJUMPVCode([0]) + '5B5B00'), 'RJUMPV to JUMPDEST, 0'],
       [
         getEOFCode('5C' + getInt16Str(2) + '5B0060005B' + getRJUMPVCode([-9]) + '5B5B00'),
         'RJUMPV to JUMPDEST, -8',
       ],
-      // To ADDRESS
+      // To ADDRESS (0x30)
       [getEOFCode('600030' + getRJUMPVCode([1]) + '303000'), 'RJUMPV to ADDRESS, +1'],
       [getEOFCode('600030' + getRJUMPVCode([0]) + '303000'), 'RJUMPV to ADDRESS, 0'],
       [
@@ -192,13 +192,23 @@ tape('EIP 3670 tests', (t) => {
     const codes = [
       ['5C00', 'truncated RJUMP'],
       ['5D00', 'truncated RJUMPI'],
-      ['5E0100', 'truncated RJUMPV'],
+      ['5E0100', 'truncated RJUMPV (count 1)'],
+      ['5E02000000', 'truncated RJUMPV (count 2)'],
       ['5C' + getInt16Str(2) + '5B005C' + getInt16Str(-5), 'RJUMP as final instruction'],
       ['5C' + getInt16Str(2) + '5B0060015D' + getInt16Str(-7), 'RJUMPI as final instruction'],
       ['5C' + getInt16Str(2) + '5B0060005B' + getRJUMPVCode([-9]), 'RJUMPV as final instruction'],
       ['5C' + getInt16Str(1) + '00', 'RJUMP targets code outside container'],
       ['60015D' + getInt16Str(1) + '00', 'RJUMPI targets code outside container'],
       ['6000' + getRJUMPVCode([1]) + '00', 'RJUMPV targets code outside container'],
+      ['5C' + getInt16Str(-4) + '00', 'RJUMP targets code outside container (negative target))'],
+      [
+        '60015D' + getInt16Str(-6) + '00',
+        'RJUMPI targets code outside container (negative target)',
+      ],
+      [
+        '6000' + getRJUMPVCode([-9]) + '00',
+        'RJUMPV targets code outside container (negative target)',
+      ],
       ['5C' + getInt16Str(1) + '600000', 'RJUMP targets PUSH data'],
       ['60015D' + getInt16Str(1) + '600000', 'RJUMPI targets PUSH data'],
       ['6000' + getRJUMPVCode([1]) + '600000', 'RJUMPV targets PUSH data'],
