@@ -51,14 +51,23 @@ export interface Env {
   versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
 }
 
+type eip4750ReturnStackItem = {
+  codeSectionIndex: number
+  offset: number // PC post instruction
+  stackHeight: number
+}
+
 export interface RunState {
   programCounter: number
+  programCounterOffset: number // Used in EIP 4750. This is used to correctly report the `PC` opcode
   opCode: number
   memory: Memory
   memoryWordCount: bigint
   highestMemCost: bigint
   stack: Stack
-  returnStack: Stack
+  returnStack: Stack // Used in EIP 2315
+  returnStackEIP4750: eip4750ReturnStackItem[] // Used in EIP 4750 (these two EIPs could co-exist)
+  currentSectionIndex: number // EIP 4750
   code: Buffer
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
@@ -125,12 +134,15 @@ export class Interpreter {
     this._common = this._evm._common
     this._runState = {
       programCounter: 0,
+      programCounterOffset: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
       memoryWordCount: BigInt(0),
       highestMemCost: BigInt(0),
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
+      returnStackEIP4750: [],
+      currentSectionIndex: 0,
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,

@@ -754,7 +754,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x58,
     function (runState) {
-      runState.stack.push(BigInt(runState.programCounter - 1))
+      runState.stack.push(BigInt(runState.programCounter - 1 - runState.programCounterOffset))
     },
   ],
   // 0x59: MSIZE
@@ -771,7 +771,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getGasLeft())
     },
   ],
-  // 0x5b: JUMPDEST
+  // 0x5b: JUMPDEST / NOP (EIP 4750)
   [0x5b, function () {}],
   // 0x5c: BEGINSUB (2315) or RJUMP (4200)
   [
