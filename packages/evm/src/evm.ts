@@ -72,7 +72,7 @@ export interface EVMOpts {
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    * - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
