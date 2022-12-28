@@ -120,3 +120,21 @@ export class TypeSection {
     return buf
   }
 }
+
+class EOFBody {
+  typeSections: TypeSection[]
+  codeSections: Buffer[]
+  dataSection: Buffer
+  constructor(typeSections: TypeSection[], codeSections: Buffer[], dataSection: Buffer) {
+    this.typeSections = typeSections
+    this.codeSections = codeSections
+    this.dataSection = dataSection
+  }
+  buffer() {
+    return Buffer.concat([
+      ...this.typeSections.map((ts) => ts.buffer()),
+      ...this.codeSections,
+      this.dataSection,
+    ])
+  }
+}
