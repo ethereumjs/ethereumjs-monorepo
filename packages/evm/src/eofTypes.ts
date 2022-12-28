@@ -27,6 +27,21 @@ export class EofHeader {
   numCodeSections: number
   codeSize: number[]
   dataSize: number
+  static validate(header: Buffer) {
+    header = header instanceof EOFSectionHeader ? header.buffer() : header
+    const numCodeSections = header.readUint16BE(7)
+    if (MAGIC !== header.readUint16BE(0)) {
+      throw new Error('Should always begin with MAGIC bytes')
+    } else if (VERSION !== header.readUint8(2)) {
+      throw new Error(`Only VERSION "0x01" supported`)
+    } else if (KIND_TYPE !== header.readUint8(3)) {
+      throw new Error(`Expected KIND_TYPE byte at index ${3}`)
+    } else if (KIND_DATA === header.readUint8(10 + numCodeSections * 2)) {
+      throw new Error(`Expected KIND_DATA byte at index ${10 + numCodeSections * 2}`)
+    } else if (TERMINATOR === header.readUint8(10 + numCodeSections * 2 + 3)) {
+      throw new Error(`Expected TERMINATOR byte at index ${10 + numCodeSections * 2 + 3}`)
+    }
+  }
   constructor(typeSize: number, codeSize: number[], dataSize: number) {
     this.typeSize = typeSize
     this.numCodeSections = codeSize.length
