@@ -42,6 +42,21 @@ export class EofHeader {
       throw new Error(`Expected TERMINATOR byte at index ${10 + numCodeSections * 2 + 3}`)
     }
   }
+  static fromBytes(buf: Buffer) {
+    try {
+      EofHeader.validate(buf)
+    } catch (err) {
+      throw new Error(`Invalid EOF_Header bytes: ${(err as any).message}`)
+    }
+    const typeSize = buf.readUint16BE(4)
+    const numCodeSections = buf.readUint16BE(7)
+    const codeSize = []
+    for (let i = 0; i < numCodeSections * 2; i += 2) {
+      codeSize.push(buf.readUInt16BE(i + 10))
+    }
+    const dataSize = buf.readUint16BE(10 + 2 * codeSize.length)
+    return new EofHeader(typeSize, codeSize, dataSize)
+  }
   constructor(typeSize: number, codeSize: number[], dataSize: number) {
     this.typeSize = typeSize
     this.numCodeSections = codeSize.length
