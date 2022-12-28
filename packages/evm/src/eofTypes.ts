@@ -137,6 +137,28 @@ class EOFBody {
     }
     return body
   }
+  static fromBytes = (header: EofHeader, _body: Buffer) => {
+    const typeSections = new Array(header.codeSize.length + 1).fill(0).map((v, i) => {
+      return TypeSection.fromBuffer(_body.subarray(i * 4, i * 4 + 4))
+    })
+    const codeSections = header.codeSize.map((v, i) => {
+      const start =
+        i === 0
+          ? header.typeSize
+          : header.typeSize +
+            header.codeSize.slice(0, i).reduce((a, b) => {
+              return a + b
+            })
+      return _body.subarray(start, start + v)
+    })
+    const dataSection = _body.subarray(
+      header.typeSize +
+        header.codeSize.reduce((a, b) => {
+          return a + b
+        })
+    )
+    return EOFBody.validate(new EOFBody(typeSections, codeSections, dataSection))
+  }
   constructor(typeSections: TypeSection[], codeSections: Buffer[], dataSection: Buffer) {
     this.typeSections = typeSections
     this.codeSections = codeSections
