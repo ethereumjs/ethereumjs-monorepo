@@ -1,6 +1,8 @@
 import { handlers } from './opcodes'
 
 // Constants
+const FORMAT = 0xef
+
 const MAGIC = Buffer.from('EF00', 'hex')
 
 const KIND_TYPE = 1
@@ -35,10 +37,27 @@ function _getEOFVersion(code: Buffer) {
   return code[2]
 }
 
+export function getEOFCode(code: Buffer): Buffer {
+  if (!isEOFCode(code)) {
+    return code
+  }
+  const numCodeSections = code.readUint16BE(7)
+  const dataMarkerPosition = 7 + 2 * numCodeSections
+  const dataSize = code.readUint16BE(dataMarkerPosition + 1)
+  const codeEnd = code.length - dataSize
+
+  // Add 4: data marker (1 byte), data size (2 bytes), terminator (1 byte)
+  const eofBodyStart = dataMarkerPosition + 4
+  // Add the type section size to find the code start section
+  const codeStart = eofBodyStart + 4 * numCodeSections
+  return code.slice(codeStart, codeEnd)
+}
+
 /**
  * This method checks if `code` is valid EOF code
  * Note: if the code is a legacy contract, this returns true
  * This method should only be called if EIP 3540 (EOF v1) is activated
+ * TODO change this to throw if the code is invalid so we can provide reasons to why it actually fails (handy for debugging, also in practice)
  * @param code Code to check
  */
 export function validateCode(code: Buffer): boolean {
@@ -296,4 +315,4 @@ export const getEOFCode = (code: Buffer) => {
   throw new Error('removed in PR 2453')
 }*/
 
-export const EOF = { MAGIC }
+export const EOF = { FORMAT, MAGIC, validateCode }

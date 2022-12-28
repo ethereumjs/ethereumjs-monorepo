@@ -13,7 +13,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode, isEOFCode, validOpcodes } from './eof'
+import { EOF, getEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -435,17 +435,17 @@ export class EVM implements EVMInterface {
     message.containerCode = message.data
     message.data = Buffer.alloc(0)
     if (this._common.isActivatedEIP(3540)) {
-      message.code = getEOFCode(message.containerCode)
-      if (this._common.isActivatedEIP(3670) && isEOFCode(message.containerCode)) {
-        if (!validOpcodes(message.code, this._common)) {
-          return {
-            createdAddress: message.to,
-            execResult: {
-              returnValue: Buffer.alloc(0),
-              exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-              executionGasUsed: message.gasLimit,
-            },
-          }
+      if (!EOF.validateCode(message.containerCode)) {
+        // If it is a create transaction, consume all gas
+        // Otherwise, only the upfront cost is paid
+        const gasUsed = message.depth === 0 ? message.gasLimit : BigInt(0)
+        return {
+          createdAddress: message.to,
+          execResult: {
+            returnValue: Buffer.alloc(0),
+            exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+            executionGasUsed: gasUsed,
+          },
         }
       }
     } else {
@@ -560,30 +560,14 @@ export class EVM implements EVMInterface {
         }
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
+        const eof1CodeAnalysisResults = EOF.validateCode(result.returnValue)
+        if (!eof1CodeAnalysisResults) {
+          // Only in create transactions, spend all the gas
+          // Otherwise, only the execution gas is charged
+          const gasUsed = message.depth === 0 ? message.gasLimit : totalGas
           result = {
             ...result,
-            ...INVALID_EOF_RESULT(message.gasLimit),
-          }
-        } else if (this._common.isActivatedEIP(3670)) {
-          // EIP-3670 EOF1 opcode check
-          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
-          // The start of the code section of an EOF1 compliant contract will either be
-          // index 7 (if no data section is present) or index 10 (if a data section is present)
-          // in the bytecode of the contract
-          if (
-            !EOF.validOpcodes(
-              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code),
-              this._common
-            )
-          ) {
-            result = {
-              ...result,
-              ...INVALID_EOF_RESULT(message.gasLimit),
-            }
-          } else {
-            result.executionGasUsed = totalGas
+            ...INVALID_EOF_RESULT(gasUsed),
           }
         }
       } else {

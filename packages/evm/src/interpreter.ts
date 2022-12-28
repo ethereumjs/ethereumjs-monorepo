@@ -2,7 +2,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import { EOF } from './eof'
+import { getEOFCode, isEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Message } from './message'
@@ -162,41 +162,12 @@ export class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this._common.isActivatedEIP(3540) || !isEOFCode(code)) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this._common.isActivatedEIP(3540)) {
-      if (code[1] !== EOF.MAGIC) {
-        // Bytecode contains invalid EOF magic byte
-        return {
-          runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
-        }
-      }
-      if (code[2] !== EOF.VERSION) {
-        // Bytecode contains invalid EOF version number
-        return {
-          runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-        }
-      }
-      // Code is EOF1 format
-      const codeSections = EOF.codeAnalysis(code)
-      if (!codeSections) {
-        // Code is invalid EOF1 format if `codeSections` is falsy
-        return {
-          runState: this._runState,
-          exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-        }
-      }
-
-      if (codeSections.data) {
-        // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.slice(10, 10 + codeSections!.code)
-      } else {
-        // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.slice(7, 7 + codeSections!.code)
-      }
+      // It is EOF code (only support for EOF1 now - not other EOF versions defined)
+      this._runState.code = getEOFCode(code)
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
