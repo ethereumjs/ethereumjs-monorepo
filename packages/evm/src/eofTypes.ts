@@ -164,6 +164,23 @@ class EOFBody {
     this.codeSections = codeSections
     this.dataSection = dataSection
   }
+  sections() {
+    return [...this.codeSections, this.dataSection]
+  }
+  size() {
+    return {
+      typeSize: Buffer.concat(this.typeSections.map((s) => s.buffer())).length,
+      codeSize: Buffer.concat(this.codeSections).length,
+      dataSize: this.dataSection.length,
+    }
+  }
+  sectionSizes() {
+    return [
+      Buffer.concat(this.typeSections.map((s) => s.buffer())).length,
+      ...this.codeSections.map((s) => s.length),
+      this.dataSection.length,
+    ]
+  }
   buffer() {
     return Buffer.concat([
       ...this.typeSections.map((ts) => ts.buffer()),
