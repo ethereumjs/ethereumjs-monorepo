@@ -33,10 +33,10 @@ export class EofHeader {
       throw new Error(`Only VERSION "0x01" supported`)
     } else if (KIND_TYPE !== header.readUint8(3)) {
       throw new Error(`Expected KIND_TYPE byte at index ${3}`)
-    } else if (KIND_DATA === header.readUint8(10 + numCodeSections * 2)) {
-      throw new Error(`Expected KIND_DATA byte at index ${10 + numCodeSections * 2}`)
-    } else if (TERMINATOR === header.readUint8(10 + numCodeSections * 2 + 3)) {
-      throw new Error(`Expected TERMINATOR byte at index ${10 + numCodeSections * 2 + 3}`)
+    } else if (KIND_DATA !== header.readUint8(9 + numCodeSections * 2)) {
+      throw new Error(`Expected KIND_DATA byte at index ${9 + numCodeSections * 2}`)
+    } else if (TERMINATOR !== header.readUint8(9 + numCodeSections * 2 + 3)) {
+      throw new Error(`Expected TERMINATOR byte at index ${9 + numCodeSections * 2 + 3}`)
     }
   }
   static fromBytes(buf: Buffer) {
