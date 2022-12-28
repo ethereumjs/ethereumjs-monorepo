@@ -96,3 +96,27 @@ export class EofHeader {
     return buf
   }
 }
+
+export class TypeSection {
+  inputs: number
+  outputs: number
+  maxStackHeight: number
+  static fromBuffer = (buf: Buffer) => {
+    const _inputs = buf.readUint8()
+    const _outputs = buf.readUint8(1)
+    const _msh = buf.readUint16BE(2)
+    return new TypeSection(_inputs, _outputs, _msh)
+  }
+  constructor(inputs: number = 0, outputs: number = 0, maxStackHeight: number = 1023) {
+    this.inputs = inputs
+    this.outputs = outputs
+    this.maxStackHeight = maxStackHeight
+  }
+  buffer = () => {
+    const buf = Buffer.alloc(4)
+    buf.writeUint8(this.inputs)
+    buf.writeUint8(this.outputs)
+    buf.writeUint16BE(this.maxStackHeight)
+    return buf
+  }
+}
