@@ -203,4 +203,9 @@ export class EOFContainer {
     this.body = new EOFBody(buf.slice(this.header.buffer.length), this.header)
     this.buffer = buf
   }
+  // this.body.codeSections is a list of code section buffers.
+  // this.getEOFCode returns one buffer for all code sections
+  getEOFCode() {
+    return Buffer.concat(this.body.codeSections)
+  }
 }
