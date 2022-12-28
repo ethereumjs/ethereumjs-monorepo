@@ -125,6 +125,18 @@ class EOFBody {
   typeSections: TypeSection[]
   codeSections: Buffer[]
   dataSection: Buffer
+  static validate(body: EOFBody): EOFBody {
+    if (body.sections().length === 0) {
+      throw new Error(`There MUST be at least one section`)
+    }
+    if (body.typeSections.length !== body.codeSections.length + 1) {
+      throw new Error(`There must be a type header for each section`)
+    }
+    if (body.typeSections[0].inputs !== 0 || body.typeSections[0].outputs !== 0) {
+      throw new Error(`Inputs and Outputs of first section must be 0`)
+    }
+    return body
+  }
   constructor(typeSections: TypeSection[], codeSections: Buffer[], dataSection: Buffer) {
     this.typeSections = typeSections
     this.codeSections = codeSections
