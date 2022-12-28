@@ -2,7 +2,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import { getEOFCode, isEOFCode } from './eof'
+import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Memory } from './memory'
 import { Message } from './message'
@@ -162,12 +162,12 @@ export class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || !isEOFCode(code)) {
+    if (!this._common.isActivatedEIP(3540) || !EOF.isEOFCode(code)) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
     } else if (this._common.isActivatedEIP(3540)) {
       // It is EOF code (only support for EOF1 now - not other EOF versions defined)
-      this._runState.code = getEOFCode(code)
+      this._runState.code = EOF.getEOFCode(code)
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range

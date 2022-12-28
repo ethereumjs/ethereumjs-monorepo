@@ -7,7 +7,7 @@ import * as tape from 'tape'
  *
  */
 
-import { validateCode } from '../../src/eof'
+import { EOF } from '../../src/eof'
 
 // Tests taken from https://github.com/hyperledger/besu/blob/main/evm/src/test/java/org/hyperledger/besu/evm/code/EOFLayoutTest.java
 tape('container validation - invalid', (t) => {
@@ -162,7 +162,7 @@ tape('container validation - invalid', (t) => {
   for (const testCase of cases) {
     const str = testCase[0].replace(/\s/g, '')
     const bytes = Buffer.from(str, 'hex')
-    if (validateCode(bytes)) {
+    if (EOF.validateCode(bytes)) {
       t.fail(str + ': ' + testCase[2])
       break
     } else {
@@ -223,7 +223,7 @@ tape('container validation - valid', (t) => {
     const str = testCase[0].replace(/\s/g, '')
 
     const bytes = Buffer.from(str, 'hex')
-    if (!validateCode(bytes)) {
+    if (!EOF.validateCode(bytes)) {
       t.fail(str)
       break
     } else {
@@ -279,14 +279,14 @@ tape('container validation - invalid type section', (t) => {
     const str = testCase[0].replace(/\s/g, '')
     const bytes = Buffer.from(str, 'hex')
     if (testCase[2] === null) {
-      if (!validateCode(bytes)) {
+      if (!EOF.validateCode(bytes)) {
         t.fail(str)
         break
       } else {
         t.pass(str)
       }
     } else {
-      if (validateCode(bytes)) {
+      if (EOF.validateCode(bytes)) {
         t.fail(str + ': ' + testCase[2])
         break
       } else {

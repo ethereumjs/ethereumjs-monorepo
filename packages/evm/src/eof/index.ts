@@ -1,4 +1,4 @@
-import { handlers } from './opcodes'
+import { handlers } from '../opcodes'
 
 // Constants
 const FORMAT = 0xef
@@ -15,7 +15,7 @@ const TERMINATOR = 0
  * @param code Code to check
  * @returns
  */
-export const isEOFCode = (code: Buffer): boolean => {
+const isEOFCode = (code: Buffer): boolean => {
   return code.slice(0, 2).equals(MAGIC)
 }
 
@@ -25,7 +25,7 @@ export const isEOFCode = (code: Buffer): boolean => {
  * Note: if `0` is returned, this is EOF0, so legacy code
  * @param code Code to check
  */
-export const getEOFVersion = (code: Buffer): number => {
+const getEOFVersion = (code: Buffer): number => {
   if (!isEOFCode(code)) {
     return 0
   }
@@ -37,7 +37,7 @@ function _getEOFVersion(code: Buffer) {
   return code[2]
 }
 
-export function getEOFCode(code: Buffer): Buffer {
+function getEOFCode(code: Buffer): Buffer {
   if (!isEOFCode(code)) {
     return code
   }
@@ -60,7 +60,7 @@ export function getEOFCode(code: Buffer): Buffer {
  * TODO change this to throw if the code is invalid so we can provide reasons to why it actually fails (handy for debugging, also in practice)
  * @param code Code to check
  */
-export function validateCode(code: Buffer): boolean {
+function validateCode(code: Buffer): boolean {
   // TODO: Is this not cleaner to throw if it is invalid? Then we can add error strings to it, why it is invalid EOF code (note: this also thus does a quick check if it is legacy code)
   if (!isEOFCode(code)) {
     // Legacy code
@@ -350,4 +350,15 @@ export const getEOFCode = (code: Buffer) => {
   throw new Error('removed in PR 2453')
 }*/
 
-export const EOF = { FORMAT, MAGIC, validateCode }
+export const EOF = {
+  FORMAT,
+  MAGIC,
+  KIND_CODE,
+  KIND_DATA,
+  KIND_TYPE,
+  TERMINATOR,
+  validateCode,
+  getEOFCode,
+  getEOFVersion,
+  isEOFCode,
+}

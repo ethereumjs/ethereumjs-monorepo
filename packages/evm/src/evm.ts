@@ -13,7 +13,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode } from './eof'
+import { EOF } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -895,7 +895,7 @@ export class EVM implements EVMInterface {
         message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
         if (this._common.isActivatedEIP(3540)) {
-          message.code = getEOFCode(message.containerCode)
+          message.code = EOF.getEOFCode(message.containerCode)
         } else {
           message.code = message.containerCode
         }
