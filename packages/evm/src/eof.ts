@@ -64,14 +64,17 @@ export function validateCode(code: Buffer): boolean {
   // TODO: Is this not cleaner to throw if it is invalid? Then we can add error strings to it, why it is invalid EOF code (note: this also thus does a quick check if it is legacy code)
   if (!isEOFCode(code)) {
     // Legacy code
-    return true
+    console.log('legacy')
+    return false
   }
   if (code.length <= 2) {
     // No version
+    console.log('no version')
     return false
   }
   const version = _getEOFVersion(code)
-  if (version !== 0) {
+  if (version !== 1) {
+    console.log('not v ersion 1')
     // Only version 1 is supported now
     return false
   }
@@ -86,6 +89,7 @@ export function validateCode(code: Buffer): boolean {
   // This means that the header itself should have AT LEAST 9 bytes (but this header is still invalid, anyways, as it has no code sections and no data section)
 
   if (code.length < 15) {
+    console.log('too small')
     return false
   }
 
@@ -93,6 +97,7 @@ export function validateCode(code: Buffer): boolean {
   // 0 1 2 3 4 5 6 7 8 9 A B C D
   if (code[3] !== KIND_TYPE) {
     // 3rd byte is not type section kind
+    console.log('kind type')
     return false
   }
 
@@ -100,16 +105,19 @@ export function validateCode(code: Buffer): boolean {
 
   if (typeSectionSize % 4 !== 0) {
     // Type section size should be a multiple of 4
+    console.log('type section size should be a multiple')
     return false
   }
 
   // Each type section
   if (typeSectionSize < 4) {
+    console.log('each type section')
     // There is at least one code section so there also should be at least one type section
     return false
   }
 
   if (code[6] !== KIND_CODE) {
+    console.log('6th byte')
     // 6th byte is not code section kind
     return false
   }
@@ -118,11 +126,14 @@ export function validateCode(code: Buffer): boolean {
   const numCodeSections = code.readUint16BE(7)
   // Ensure that there are no more than 1024 code sections. There must be at least one code section
   if (numCodeSections > 1024 || numCodeSections === 0) {
+    console.log('code sections')
     return false
   }
 
   // Verify that each code section has a type section
   if (typeSectionSize / 4 !== numCodeSections) {
+    console.log('typess size')
+    console.log(typeSectionSize, numCodeSections)
     return false
   }
 
@@ -130,10 +141,12 @@ export function validateCode(code: Buffer): boolean {
 
   const dataSectionMarkerIndex = 9 + 2 * numCodeSections
   if (code.length < dataSectionMarkerIndex) {
+    console.log('dsmarker index')
     return false
   }
 
   if (code[dataSectionMarkerIndex] !== KIND_DATA) {
+    console.log('data sep expected')
     // After the code section (dynamic length depending on `numCodeSections`) the KIND_DATA separator is expected, but is not there
     return false
   }
@@ -143,11 +156,13 @@ export function validateCode(code: Buffer): boolean {
 
   const bodyStartPos = dataSectionMarkerIndex + 4
   if (code.length < bodyStartPos) {
+    console.log('body length err')
     return false
   }
 
   if (code[dataSectionMarkerIndex + 3] !== TERMINATOR) {
     // Terminator field not present
+    console.log('no term')
     return false
   }
 
@@ -161,20 +176,36 @@ export function validateCode(code: Buffer): boolean {
   for (let typeSection = 0; typeSection < numTypeSections; typeSection++) {
     const inputs = code.readUint8(currentBodyPos)
     if (inputs > 0x7f) {
+      console.log('input err')
       // Highest byte should be 0
       return false
     }
     const outputs = code.readUint8(currentBodyPos + 1)
     if (outputs > 0x7f) {
+      console.log('output err')
       // Highest byte should be 0
       return false
     }
     const maxStackHeight = code.readUint16BE(currentBodyPos + 2)
     if (maxStackHeight > 1023) {
+      console.log('stack er')
       return false
+    }
+    // Check if type section 0 has 0 inputs and 0 outputs
+    if (typeSection === 0) {
+      if (inputs !== 0) {
+        console.log('tsec 0 nonzero inputs')
+        return false
+      }
+      if (outputs !== 0) {
+        console.log('tsec 0 nonzero outputs')
+        return false
+      }
     }
     currentBodyPos += 4
   }
+
+  const codeStart = currentBodyPos
 
   // Determine the size of the code
   let codeSize = 0
@@ -187,13 +218,17 @@ export function validateCode(code: Buffer): boolean {
 
   currentBodyPos += codeSize + dataSectionSize
 
-  if (currentBodyPos !== code.length - 1) {
+  if (currentBodyPos !== code.length) {
     // The container is either too large or too small
+    console.log(currentBodyPos, code.length, 'bodylen')
     return false
   }
 
+  const runtimeCode = code.slice(codeStart, codeStart + codeSize)
+
   // Verify opcodes
-  if (!checkOpcodes(code)) {
+  if (!checkOpcodes(runtimeCode)) {
+    console.log('opcodes')
     return false
   }
 
