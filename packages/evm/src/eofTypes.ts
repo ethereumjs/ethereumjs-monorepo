@@ -64,6 +64,21 @@ export class EofHeader {
     this.dataSize = dataSize
   }
 
+  sectionHeaders() {
+    return [
+      new EOFSectionHeader(KIND_TYPE, this.typeSize),
+      new EOFSectionHeader(KIND_CODE, this.codeSize),
+      new EOFSectionHeader(KIND_DATA, this.dataSize),
+    ]
+  }
+  sectionSizes() {
+    return this.sectionHeaders()
+      .map((header) => {
+        return header.sectionSize
+      })
+      .flat()
+  }
+
   buffer() {
     const buf = Buffer.from([])
     buf.writeUint16BE(MAGIC)
