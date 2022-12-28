@@ -193,6 +193,19 @@ class EOFBody {
 export class EOFContainer {
   header: EofHeader
   body: EOFBody
+  static validate(container: EOFContainer): EOFContainer {
+    const sizes = container.header.sectionSizes()
+    for (const [idx, size] of sizes.entries()) {
+      if (size !== container.body.sectionSizes()[idx]) {
+        throw new Error(
+          `Size: ${
+            container.body.sectionSizes()[idx]
+          } of section ${idx} does not match expected size: ${size}`
+        )
+      }
+    }
+    return container
+  }
   constructor(header: EofHeader, body: EOFBody) {
     this.header = header
     this.body = body
