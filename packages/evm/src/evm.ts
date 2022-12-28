@@ -435,7 +435,7 @@ export class EVM implements EVMInterface {
     message.containerCode = message.data
     message.data = Buffer.alloc(0)
     if (this._common.isActivatedEIP(3540)) {
-      if (!EOF.validateCode(message.containerCode)) {
+      if (EOF.isEOFCode(message.containerCode) && !EOF.validateCode(message.containerCode)) {
         // If it is a create transaction, consume all gas
         // Otherwise, only the upfront cost is paid
         const gasUsed = message.depth === 0 ? message.gasLimit : BigInt(0)
@@ -448,6 +448,7 @@ export class EVM implements EVMInterface {
           },
         }
       }
+      message.code = EOF.getEOFCode(message.containerCode)
     } else {
       message.code = message.containerCode
     }
@@ -554,7 +555,7 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+      if (this._common.isActivatedEIP(3541) && EOF.isEOFCode(result.returnValue)) {
         if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
@@ -570,6 +571,7 @@ export class EVM implements EVMInterface {
             ...INVALID_EOF_RESULT(gasUsed),
           }
         }
+        result.executionGasUsed = totalGas
       } else {
         result.executionGasUsed = totalGas
       }

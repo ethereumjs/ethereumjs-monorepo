@@ -23,48 +23,31 @@ async function runTx(vm: VM, data: string, nonce: number) {
   return { result, code }
 }
 
+/**
+ * TODO add tests:
+    Legacy init code
+      Returns valid EOF1 code
+      Returns invalid EOF1 code
+    Valid EOF1 init code
+      Returns legacy code (INVALID)
+      Returns valid EOF1 code
+      Returns invalid EOF1 code
+    Invalid EOF1 init code
+    
+
+    These tests:
+      On a create transaction, if either initcode or th created address is invalid, consume ALL gas
+      On a CREATE(2) opcode, if either initcode or the returned data is invalid (i.e. it is legacy or invalid EOF) consume only execution gas
+ */
+
 tape('EIP 3540 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540],
-  })
-
-  t.test('EOF > codeAnalysis() tests', async (st) => {
-    const eofHeader = Buffer.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
-    st.ok(
-      EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
-        ?.code! > 0,
-      'valid code section'
-    )
-    st.ok(
-      EOF.codeAnalysis(
-        Buffer.concat([
-          eofHeader,
-          Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa]),
-        ])
-      )?.data! > 0,
-      'valid data section'
-    )
-    st.ok(
-      !EOF.codeAnalysis(
-        Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00])])
-      ),
-      'invalid container length (too long)'
-    )
-    st.ok(
-      !EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])),
-      'invalid container length (too short)'
-    )
-    st.end()
+    eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
   })
 
   t.test('valid EOF format / contract creation', async (st) => {
-    const common = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.London,
-      eips: [3540],
-    })
     const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)

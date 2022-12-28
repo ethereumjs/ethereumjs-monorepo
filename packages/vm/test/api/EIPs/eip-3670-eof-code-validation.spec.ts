@@ -22,39 +22,13 @@ async function runTx(vm: VM, data: string, nonce: number) {
   return { result, code }
 }
 
+// Should these tests be moved inside 3540...? (3670 is essentially an extension of 3540 now, and only a very small one)
+
 tape('EIP 3670 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540, 3670],
-  })
-
-  t.test('EOF > validOpcodes() tests', (st) => {
-    st.ok(EOF.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
-    st.ok(EOF.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
-    st.ok(EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
-
-    for (const opcode of [0x00, 0xf3, 0xfd, 0xfe, 0xff]) {
-      st.ok(
-        EOF.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
-        `code ends with valid terminating instruction 0x${opcode.toString(16)}`
-      )
-    }
-
-    st.notOk(EOF.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
-    st.notOk(
-      EOF.validOpcodes(Buffer.from([0x7f, 0xaa, 0])),
-      'invalid -- PUSH32 AA STOP -- truncated push'
-    )
-    st.notOk(
-      EOF.validOpcodes(Buffer.from([0x61, 0xaa, 0])),
-      'invalid -- PUSH2 AA STOP -- truncated push'
-    )
-    st.notOk(
-      EOF.validOpcodes(Buffer.from([0x60, 0xaa, 0x30])),
-      'invalid -- PUSH1 AA ADDRESS -- invalid terminal opcode'
-    )
-    st.end()
+    eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
   })
 
   t.test('valid contract code transactions', async (st) => {

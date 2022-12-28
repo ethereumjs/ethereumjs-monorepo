@@ -39,17 +39,21 @@ function getRJUMPVCode(int16list: number[]) {
 }
 
 function getEOFCode(code: string) {
-  const header = '0xEF000101'
-  const byteLen = code.length / 2
-  const lenHex = byteLen.toString(16)
-  return header + lenHex.padStart(4, '0') + '00' + code
+  // Assume: only one section
+  const str =
+    '0xEF0001010004020001' +
+    (code.length / 2).toString(16).padStart(4, '0') +
+    '03000000' +
+    '00000000' +
+    code
+  return str
 }
 
 tape('EIP 3670 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540, 3670, 4200],
+    eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
   })
 
   t.test('valid eip-4200 eof code', async (st) => {
@@ -127,6 +131,7 @@ tape('EIP 3670 tests', (t) => {
     for (const validCase of validCases) {
       const { result } = await runTx(vm, validCase[0], nonce++)
       st.ok(result.execResult.exceptionError === undefined && lastOpcode === 'STOP', validCase[1])
+      break
     }
 
     // RJUMPV test for cases between 2 and 255 cases

@@ -1,7 +1,6 @@
 import { handlers } from '../opcodes'
 
 import { FORMAT, KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR } from './constants'
-import { EOFContainer } from './eofContainer'
 
 /**
  * Checks if the `code` is of EOF format
@@ -35,7 +34,7 @@ function getEOFCode(code: Buffer): Buffer {
     return code
   }
   const numCodeSections = code.readUint16BE(7)
-  const dataMarkerPosition = 7 + 2 * numCodeSections
+  const dataMarkerPosition = 9 + 2 * numCodeSections
   const dataSize = code.readUint16BE(dataMarkerPosition + 1)
   const codeEnd = code.length - dataSize
 
@@ -54,16 +53,16 @@ function getEOFCode(code: Buffer): Buffer {
  * @param code Code to check
  */
 function validateCode(code: Buffer): boolean {
-  try {
+  /*try {
     EOFContainer.validate(EOFContainer.fromBytes(code))
     return true
   } catch (e) {
     console.log(e)
     return false
-  }
+  }*/
   // TODO: Is this not cleaner to throw if it is invalid? Then we can add error strings to it, why it is invalid EOF code (note: this also thus does a quick check if it is legacy code)
 
-  /*if (!isEOFCode(code)) {
+  if (!isEOFCode(code)) {
     // Legacy code
     console.log('legacy')
     return false
@@ -231,7 +230,6 @@ function validateCode(code: Buffer): boolean {
   }
 
   return true
-  */
 }
 
 function checkOpcodes(code: Buffer) {

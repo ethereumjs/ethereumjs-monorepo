@@ -7,3 +7,5 @@ export const KIND_TYPE = 1
 export const KIND_CODE = 2
 export const KIND_DATA = 3
 export const TERMINATOR = 0
+
+export const VERSION = 1
