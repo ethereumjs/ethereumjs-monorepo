@@ -1,9 +1,6 @@
-export const MAGIC = 0xef00
-export const VERSION = 0x01
-export const KIND_TYPE = 0x01
-export const KIND_CODE = 0x02
-export const KIND_DATA = 0x03
-export const TERMINATOR = 0x00
+import { KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR } from './constants'
+
+const VERSION = 0x01
 
 export class EOFSectionHeader {
   sectionKind: number
@@ -30,7 +27,7 @@ export class EofHeader {
   static validate(header: Buffer) {
     header = header instanceof EOFSectionHeader ? header.buffer() : header
     const numCodeSections = header.readUint16BE(7)
-    if (MAGIC !== header.readUint16BE(0)) {
+    if (!header.slice(0, 2).equals(MAGIC)) {
       throw new Error('Should always begin with MAGIC bytes')
     } else if (VERSION !== header.readUint8(2)) {
       throw new Error(`Only VERSION "0x01" supported`)
@@ -80,8 +77,7 @@ export class EofHeader {
   }
 
   buffer() {
-    const buf = Buffer.from([])
-    buf.writeUint16BE(MAGIC)
+    const buf = Buffer.from(MAGIC)
     buf.writeUint8(VERSION, buf.length)
     buf.writeUint8(KIND_TYPE, buf.length)
     buf.writeUint16BE(this.typeSize, buf.length)
