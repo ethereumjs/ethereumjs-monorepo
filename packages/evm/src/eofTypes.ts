@@ -189,3 +189,15 @@ class EOFBody {
     ])
   }
 }
+
+export class EOFContainer {
+  header: EofHeader
+  body: EOFBody
+  constructor(header: EofHeader, body: EOFBody) {
+    this.header = header
+    this.body = body
+  }
+  buffer() {
+    return Buffer.concat([this.header.buffer(), this.body.buffer()])
+  }
+}
