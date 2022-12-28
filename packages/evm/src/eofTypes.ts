@@ -206,6 +206,12 @@ export class EOFContainer {
     }
     return container
   }
+  static fromBytes(bytes: Buffer): EOFContainer {
+    const header = EofHeader.fromBytes(bytes)
+    const _body = bytes.subarray(header.buffer().length)
+    const body = EOFBody.fromBytes(header, _body)
+    return EOFContainer.validate(new EOFContainer(header, body))
+  }
   constructor(header: EofHeader, body: EOFBody) {
     this.header = header
     this.body = body
