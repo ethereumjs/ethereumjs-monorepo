@@ -56,6 +56,28 @@ function getEOFCode(
   return str
 }
 
+function createEOFCode(functions: [string, number, number][]) {
+  let code = ''
+  const codeSizes = []
+  const codeInputOutputs: [number, number][] = []
+  for (const func of functions) {
+    code += func[0]
+    codeSizes.push(func[0].length / 2)
+    codeInputOutputs.push([func[1], func[2]])
+  }
+  return getEOFCode(code, codeSizes, codeInputOutputs)
+}
+
+function callFunc(func: number) {
+  return 'B0' + func.toString(16).padStart(4, '0')
+}
+
+type eipTestCase = {
+  code: [string, number, number][]
+  expect: string
+  name: string
+}
+
 tape('EIP 4750 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
@@ -83,6 +105,49 @@ tape('EIP 4750 tests', (t) => {
         testCase[3],
         'EIP 4750: ' + testCase[0] + ' failed: ' + testCase[3]
       )
+    }
+  })
+
+  t.test('test CALLF/RETF execution', async (st) => {
+    const vm = await VM.create({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    let nonce = 0
+
+    // ADD RETF
+    const codeAdd: [string, number, number] = ['01B1', 2, 1]
+    // function which has output 5
+    const output5: [string, number, number] = ['6005B1', 0, 1]
+
+    const test = createEOFCode([
+      [callFunc(2) + callFunc(2) + callFunc(1) + '60005500', 0, 0],
+      codeAdd,
+      output5,
+    ])
+
+    const cases: eipTestCase[] = [
+      {
+        code: [[callFunc(2) + callFunc(2) + callFunc(1) + '60005500', 0, 0], codeAdd, output5],
+        expect: '0a', // 10
+        name: 'simple add test',
+      },
+      {
+        code: [[callFunc(1) + callFunc(1) + callFunc(2) + '60005500', 0, 0], output5, codeAdd],
+        expect: '0a', // 10
+        name: 'simple add test (functions now in different order)',
+      },
+    ]
+
+    for (const testCase of cases) {
+      const code = createEOFCode(testCase.code)
+      const { result } = await runTx(vm, test, nonce++)
+      const value = await vm.stateManager.getContractStorage(
+        result.createdAddress!,
+        Buffer.from('00'.repeat(32), 'hex')
+      )
+      st.equals(value.toString('hex'), testCase.expect, testCase.name)
     }
   })
 })
