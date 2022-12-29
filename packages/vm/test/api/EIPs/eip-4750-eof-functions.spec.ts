@@ -56,14 +56,21 @@ function getEOFCode(
   return str
 }
 
-function createEOFCode(functions: [string, number, number][]) {
+/**
+ * Create valid EOF container
+ * @param functions This is a list of functions. The first index is a hex string of the function code
+ *                  The second index is the amount of inputs. The third index is the amount of outputs.
+ *                  The last index (optional, defaults to 0) is the max stack height of this function
+ * @returns
+ */
+function createEOFCode(functions: [string, number, number, number?][]) {
   let code = ''
   const codeSizes = []
-  const codeInputOutputs: [number, number][] = []
+  const codeInputOutputs: [number, number, number?][] = []
   for (const func of functions) {
     code += func[0]
     codeSizes.push(func[0].length / 2)
-    codeInputOutputs.push([func[1], func[2]])
+    codeInputOutputs.push([func[1], func[2], func[3]])
   }
   return getEOFCode(code, codeSizes, codeInputOutputs)
 }
@@ -121,12 +128,6 @@ tape('EIP 4750 tests', (t) => {
     // function which has output 5
     const output5: [string, number, number] = ['6005B1', 0, 1]
 
-    const test = createEOFCode([
-      [callFunc(2) + callFunc(2) + callFunc(1) + '60005500', 0, 0],
-      codeAdd,
-      output5,
-    ])
-
     const cases: eipTestCase[] = [
       {
         code: [[callFunc(2) + callFunc(2) + callFunc(1) + '60005500', 0, 0], codeAdd, output5],
@@ -142,7 +143,7 @@ tape('EIP 4750 tests', (t) => {
 
     for (const testCase of cases) {
       const code = createEOFCode(testCase.code)
-      const { result } = await runTx(vm, test, nonce++)
+      const { result } = await runTx(vm, code, nonce++)
       const value = await vm.stateManager.getContractStorage(
         result.createdAddress!,
         Buffer.from('00'.repeat(32), 'hex')
