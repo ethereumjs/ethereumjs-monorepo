@@ -142,7 +142,7 @@ function checkOpcodes(code: Buffer) {
       pos = finalPos
     }
   }
-  const terminatingOpcodes = new Set([0x00, 0xf3, 0xfd, 0xfe, 0xff])
+  const terminatingOpcodes = new Set([0x00, 0xb1, 0xf3, 0xfd, 0xfe, 0xff])
   // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
   if (!terminatingOpcodes.has(code[code.length - 1])) {
     return false
