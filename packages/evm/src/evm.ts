@@ -655,6 +655,7 @@ export class EVM implements EVMInterface {
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
       versionedHashes: message.versionedHashes ?? [],
+      eofContainer: message.EOFContainer,
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)

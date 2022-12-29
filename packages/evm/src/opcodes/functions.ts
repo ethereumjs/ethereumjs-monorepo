@@ -923,6 +923,59 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.interpreter.log(mem, topicsCount, topicsBuf)
     },
   ],
+  // 0xb0: CALLF
+  [
+    0xb0,
+    function (runState) {
+      // TODO make this invalid in legacy
+      if (runState.returnStackEIP4750.length >= 1024) {
+        trap(ERROR.CALLF_RETURN_STACK_FULL)
+      }
+      const sectionTarget = runState.code.readInt16BE(runState.programCounter)
+      const stackItems = runState.stack.length
+      const typeSection = runState.env.eofContainer?.body.typeSections[sectionTarget]
+      const topSection = runState.returnStackEIP4750[runState.returnStackEIP4750.length - 1]
+      const callerStackHeight = topSection.stackHeight
+      if (stackItems < callerStackHeight + typeSection!.inputs) {
+        trap(ERROR.CALLF_NOT_ENOUGH_STACK_ITEMS)
+      }
+      if (stackItems > 1024 - typeSection!.maxStackHeight) {
+        trap(ERROR.CALLF_DATA_STACK_OVERFLOW)
+      }
+      runState.returnStackEIP4750.push({
+        codeSectionIndex: runState.currentSectionIndex,
+        offset: runState.programCounter + 2,
+        stackHeight: stackItems - typeSection!.inputs,
+      })
+
+      // Find out the opcode we should jump into
+      runState.programCounter = runState.env.eofContainer!.header.getCodePosition(sectionTarget)
+      runState.currentSectionIndex = sectionTarget
+    },
+  ],
+  // 0xb1: RETF
+  [
+    0xb1,
+    function (runState) {
+      const stackItems = runState.stack.length
+      const topSection = runState.returnStackEIP4750[runState.returnStackEIP4750.length - 1]
+      const callerStackHeight = topSection.stackHeight
+      if (
+        stackItems !==
+        callerStackHeight +
+          runState.env.eofContainer!.body.typeSections[runState.currentSectionIndex].outputs
+      ) {
+        trap(ERROR.RETF_STACK_ERROR)
+      }
+      const returnTarget = runState.returnStackEIP4750.pop()
+      if (runState.returnStackEIP4750.length === 0) {
+        // Return stack is empty, treat it as a STOP
+        trap(ERROR.STOP)
+      }
+      runState.programCounter = returnTarget!.offset
+      runState.currentSectionIndex = returnTarget!.codeSectionIndex
+    },
+  ],
   // 0xb3: TLOAD
   [
     0xb3,

@@ -9,6 +9,7 @@ import { Message } from './message'
 import { trap } from './opcodes'
 import { Stack } from './stack'
 
+import type { EOFContainer } from './eof/eofContainer'
 import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, EEIInterface, Log } from './types'
@@ -49,6 +50,7 @@ export interface Env {
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Buffer /** Full container code for EOF1 contracts */
   versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
+  eofContainer?: EOFContainer // Only EOF contracts
 }
 
 type eip4750ReturnStackItem = {
@@ -141,7 +143,13 @@ export class Interpreter {
       highestMemCost: BigInt(0),
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
-      returnStackEIP4750: [],
+      returnStackEIP4750: [
+        {
+          codeSectionIndex: 0,
+          offset: 0,
+          stackHeight: 0,
+        },
+      ],
       currentSectionIndex: 0,
       code: Buffer.alloc(0),
       validJumps: Uint8Array.from([]),

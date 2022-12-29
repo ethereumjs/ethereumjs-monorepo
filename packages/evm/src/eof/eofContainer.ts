@@ -75,6 +75,8 @@ class EOFHeader {
   dataSize: number
   buffer: Buffer
 
+  private codeStartPos: number[]
+
   constructor(buf: Buffer) {
     const stream = new StreamReader(buf)
     stream.verifyBytes(MAGIC, 'header should start with magic bytes')
@@ -106,6 +108,7 @@ class EOFHeader {
     this.codeSizes = codeSizes
     this.dataSize = dataSize
     this.buffer = buf.slice(0, stream.getPtr())
+    this.codeStartPos = [0]
   }
 
   sections() {
@@ -113,6 +116,21 @@ class EOFHeader {
   }
   sectionSizes() {
     return [1, this.codeSizes.length, 1]
+  }
+
+  // Returns the code position in the code section
+  // This is thus not relative to the entire container, but works on the runtime code itself
+  getCodePosition(section: number) {
+    if (this.codeStartPos[section]) {
+      return this.codeStartPos[section]
+    }
+    const start = this.codeStartPos.length
+    let offset = this.codeStartPos[start - 1]
+    for (let i = start; i < section; i++) {
+      offset += this.codeSizes[i - 1]
+      this.codeStartPos[i] = offset
+    }
+    return offset
   }
 }
 

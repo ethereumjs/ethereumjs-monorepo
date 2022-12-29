@@ -26,6 +26,11 @@ export enum ERROR {
   AUTHCALL_NONZERO_VALUEEXT = 'attempting to execute AUTHCALL with nonzero external value',
   AUTH_INVALID_S = 'invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
 
+  CALLF_NOT_ENOUGH_STACK_ITEMS = 'CALLF: data stack has less than the required stack items',
+  CALLF_DATA_STACK_OVERFLOW = 'CALLF: called function might exceed global stack height limit',
+  CALLF_RETURN_STACK_FULL = 'CALLF: return stack is full',
+  RETF_STACK_ERROR = 'stack size does not match expected value',
+
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
   BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',

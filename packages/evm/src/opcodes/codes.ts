@@ -305,6 +305,13 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0x5e: { name: 'RJUMPV', isAsync: false, dynamicGas: false },
     },
   },
+  {
+    eip: 4750,
+    opcodes: {
+      0xb0: { name: 'CALLF', isAsync: false, dynamicGas: false },
+      0xb1: { name: 'RETF', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**
