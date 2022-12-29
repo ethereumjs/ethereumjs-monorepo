@@ -53,13 +53,15 @@ function getEOFCode(code: Buffer): Buffer {
  * TODO change this to throw if the code is invalid so we can provide reasons to why it actually fails (handy for debugging, also in practice)
  * @param code Code to check
  */
-function validateCode(code: Buffer): boolean {
+function validateCode(code: Buffer): EOFContainer | null {
   try {
     const container = new EOFContainer(code)
-    checkOpcodes(container.body.entireCode)
-    return true
+    if (!checkOpcodes(container.body.entireCode)) {
+      throw new Error('opcode error') // todo move errors into checkopcodes
+    }
+    return container
   } catch (e) {
-    return false
+    return null
   }
 }
 

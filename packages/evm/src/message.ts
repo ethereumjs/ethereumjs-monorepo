@@ -1,5 +1,6 @@
 import { Address } from '@ethereumjs/util'
 
+import type { EOFContainer } from './eof/eofContainer'
 import type { PrecompileFunc } from './precompiles'
 
 const defaults = {
@@ -48,6 +49,7 @@ export class Message {
   isCompiled: boolean
   salt?: Buffer
   containerCode?: Buffer /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
+  EOFContainer?: EOFContainer // Only for EOF contracts
   /**
    * Map of addresses to selfdestruct. Key is the unprefixed address.
    * Value is a boolean when marked for destruction and replaced with a Buffer containing the address where the remaining funds are sent.
