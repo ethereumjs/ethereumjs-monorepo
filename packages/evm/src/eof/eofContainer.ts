@@ -126,7 +126,7 @@ class EOFHeader {
     }
     const start = this.codeStartPos.length
     let offset = this.codeStartPos[start - 1]
-    for (let i = start; i < section; i++) {
+    for (let i = start; i <= section; i++) {
       offset += this.codeSizes[i - 1]
       this.codeStartPos[i] = offset
     }
