@@ -338,9 +338,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
   }
 
-  // Update from account's balance (includes datagas fee which defaults to 0 if 4844 is inactive)
-  const txCost = tx.gasLimit * gasPrice + totalDataGas * dataGasPrice
+  // Update from account's balance
+  const txCost = tx.gasLimit * gasPrice
+  const dataGasCost = totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
+  fromAccount.balance -= dataGasCost
+
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
