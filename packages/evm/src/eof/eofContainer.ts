@@ -144,6 +144,16 @@ class EOFBody {
           throw new Error('type section body: first code section should have 0 outputs')
         }
       }
+      if (inputs > 0x7f) {
+        throw new Error(
+          `type section body: inputs of code section ${i} exceeds 127, the maximum (got ${inputs})`
+        )
+      }
+      if (outputs > 0x7f) {
+        throw new Error(
+          `type section body: inputs of code section ${i} exceeds 127, the maximum (got ${inputs})`
+        )
+      }
       if (maxStackHeight > 1023) {
         throw new Error(
           `type section body: max stack height should be at most 1023, got ${maxStackHeight}`
