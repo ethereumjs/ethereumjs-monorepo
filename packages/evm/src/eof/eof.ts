@@ -193,7 +193,7 @@ function checkOpcodes(container: EOFContainer) {
         continue
       }
       const info = opcodeInfo[opcode]
-      const nextStackHeight = currentStackHeight + info.pushes! - info.pops!
+      const nextStackHeight = currentStackHeight + stackDelta[opcode]
 
       if (nextStackHeight > 1024) {
         // stack overflow
