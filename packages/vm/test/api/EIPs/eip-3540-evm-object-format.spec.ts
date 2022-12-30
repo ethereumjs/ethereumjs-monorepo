@@ -1,28 +1,39 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EOF } from '@ethereumjs/evm/dist/eof'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { VM } from '../../../src/vm'
+import { eip_util } from './eipUtils'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
-const GWEI = BigInt('1000000000')
-const sender = new Address(privateToAddress(pkey))
+import type { eipTestCase } from './eipUtils'
 
-async function runTx(vm: VM, data: string, nonce: number) {
-  const tx = FeeMarketEIP1559Transaction.fromTxData({
-    data,
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce,
-  }).sign(pkey)
-  const result = await vm.runTx({ tx })
-  const created = result.createdAddress
-  const code = await vm.stateManager.getContractCode(created!)
-  return { result, code }
-}
-
+tape('EIP 3540 requires other EIPs', async (st) => {
+  try {
+    await eip_util.setUpVM([3540])
+  } catch (e) {
+    st.equal(
+      (e as any).message,
+      '3540 requires EIP 3860, but is not included in the EIP list',
+      'EIP 3540 requires EIP 3860'
+    )
+    try {
+      await eip_util.setUpVM([3540, 3860])
+    } catch (e) {
+      st.equal(
+        (e as any).message,
+        '3540 requires EIP 4750, but is not included in the EIP list',
+        'EIP 3540 requires EIP 4750'
+      )
+      try {
+        await eip_util.setUpVM([3540, 3860, 4750])
+      } catch (e) {
+        st.equal(
+          (e as any).message,
+          '3540 requires EIP 5450, but is not included in the EIP list',
+          'EIP 3540 requires EIP 5450'
+        )
+        await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
+      }
+    }
+  }
+})
 /**
  * TODO add tests:
     Legacy init code
@@ -40,161 +51,105 @@ async function runTx(vm: VM, data: string, nonce: number) {
       On a CREATE(2) opcode, if either initcode or the returned data is invalid (i.e. it is legacy or invalid EOF) consume only execution gas
  */
 
-tape('EIP 3540 tests', (t) => {
-  const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.London,
-    eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
-  })
+// const offset = '13'
+// const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
 
-  t.test('valid EOF format / contract creation', async (st) => {
-    const vm = await VM.create({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+// const create2offset = '15'
+// const CREATE2Deploy =
+//   '0x600060' +
+//   create2offset +
+//   '380360' +
+//   create2offset +
+//   '60003960' +
+//   create2offset +
+//   '380360006000F500'
 
-    let data = '0x67' + 'EF0001' + '01000100' + '00' + '60005260086018F3'
-    let res = await runTx(vm, data, 0)
-    st.ok(res.code.length > 0, 'code section with no data section')
+// function deployCreateCode(initcode: string) {
+//   return CREATEDeploy + initcode
+// }
 
-    data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
-    res = await runTx(vm, data, 1)
-    st.ok(res.code.length > 0, 'code section with data section')
-  })
-
-  t.test('invalid EOF format / contract creation', async (st) => {
-    const vm = await VM.create({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-
-    let data = '0x60EF60005360016000F3'
-    let res = await runTx(vm, data, 0)
-    st.ok(res.code.length === 0, 'no magic')
-
-    data = '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 1)
-    st.ok(res.code.length === 0, 'invalid header')
-
-    data = '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 2)
-    st.ok(res.code.length === 0, 'valid header but invalid EOF version')
-
-    data = '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 3)
-    st.ok(res.code.length === 0, 'valid header and version but no code section')
-
-    data = '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 4)
-    st.ok(res.code.length === 0, 'valid header and version but unknown section type')
-
-    data = '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3'
-    res = await runTx(vm, data, 5)
-    st.ok(res.code.length === 0, 'code section with trailing bytes')
-  })
-})
-
-function generateEOFCode(code: string) {
-  const len = (code.length / 2).toString(16).padStart(4, '0')
-  return '0xEF000101' + len + '00' + code
-}
-
-function generateInvalidEOFCode(code: string) {
-  const len = (code.length / 2 + 1).toString(16).padStart(4, '0') // len will be 1 too long
-  return '0xEF000101' + len + '00' + code
-}
-
-const offset = '13'
-const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
-
-const create2offset = '15'
-const CREATE2Deploy =
-  '0x600060' +
-  create2offset +
-  '380360' +
-  create2offset +
-  '60003960' +
-  create2offset +
-  '380360006000F500'
-
-function deployCreateCode(initcode: string) {
-  return CREATEDeploy + initcode
-}
-
-function deployCreate2Code(initcode: string) {
-  return CREATE2Deploy + initcode
-}
+// function deployCreate2Code(initcode: string) {
+//   return CREATE2Deploy + initcode
+// }
 
 tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
   t.test('case: tx', async (st) => {
-    const common = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.London,
-      eips: [3540],
-    })
-    const vm = await VM.create({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
+    let nonce = 0
 
-    let data = generateEOFCode('60016001F3')
-    const res = await runTx(vm, data, 0)
+    // ADD RETF
+    const codeAdd: [string, number, number] = ['01B1', 2, 1]
+    // function which has output 5
+    const output5: [string, number, number] = ['6005B1', 0, 1]
 
-    data = generateInvalidEOFCode('60016001F3')
-    const res2 = await runTx(vm, data, 1)
+    const cases: eipTestCase[] = [
+      {
+        code: [
+          [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
+          codeAdd,
+          output5,
+        ],
+        expect: '0a', // 10
+        name: 'simple add test',
+      },
+    ]
+    const code = eip_util.createEOFCode(cases[0].code)
+    const bad_code = code.slice(0, 20)
+
+    const { result } = await eip_util.runTx(vm, code, nonce++)
+    const bad_res = await eip_util.runTx(vm, bad_code, nonce++)
     st.ok(
-      res.result.totalGasSpent > res2.result.totalGasSpent,
-      'invalid initcode did not consume all gas'
+      result.totalGasSpent > bad_res.result.totalGasSpent,
+      'Invalid EOF Code did not consume all gas'
     )
+    st.end()
   })
 
-  t.test('case: create', async (st) => {
-    const common = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.London,
-      eips: [3540],
-    })
-    const vm = await VM.create({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+  // t.test('case: create', async (st) => {
+  //   const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
 
-    let data = deployCreateCode(generateEOFCode('60016001F3').substring(2))
-    const res = await runTx(vm, data, 0)
+  //   // ADD RETF
+  //   const codeAdd: [string, number, number] = ['01B1', 2, 1]
+  //   // function which has output 5
+  //   const output5: [string, number, number] = ['6005B1', 0, 1]
 
-    data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
-    const res2 = await runTx(vm, data, 1)
+  //   const testCase: eipTestCase = {
+  //     code: [
+  //       [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
+  //       codeAdd,
+  //       output5,
+  //     ],
+  //     expect: '0a', // 10
+  //     name: 'simple add test',
+  //   }
+  //   const code = eip_util.createEOFCode(testCase.code)
+  //   const bad_code = code.slice(0, -2)
 
-    st.ok(
-      res.result.totalGasSpent > res2.result.totalGasSpent,
-      'invalid initcode did not consume all gas'
-    )
-  })
+  //   let data = deployCreateCode(code.slice(2))
+  //   const res = await eip_util.runTx(vm, data, 0)
 
-  t.test('case: create2', async (st) => {
-    const common = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.London,
-      eips: [3540],
-    })
-    const vm = await VM.create({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+  //   data = deployCreateCode(bad_code.slice(2))
+  //   const res2 = await eip_util.runTx(vm, data, 1)
+  //   console.log({ res: res.result.totalGasSpent, bad_res: res2.result.totalGasSpent })
+  //   st.ok(
+  //     res.result.totalGasSpent > res2.result.totalGasSpent,
+  //     'invalid initcode did not consume all gas'
+  //   )
+  // })
 
-    let data = deployCreate2Code(generateEOFCode('60016001F3').substring(2))
-    const res = await runTx(vm, data, 0)
+  // t.test('case: create2', async (st) => {
+  //   const vm = await eip_util.setUpVM([])
 
-    data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
-    const res2 = await runTx(vm, data, 1)
-    st.ok(
-      res.result.totalGasSpent > res2.result.totalGasSpent,
-      'invalid initcode did not consume all gas'
-    )
-  })
+  //   let data = deployCreate2Code(eip_util.generateEOFCode('60016001F3').substring(2))
+  //   const res = await runTx(vm, data, 0)
+
+  //   data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
+  //   const res2 = await runTx(vm, data, 1)
+  //   st.ok(
+  //     res.result.totalGasSpent > res2.result.totalGasSpent,
+  //     'invalid initcode did not consume all gas'
+  //   )
+  // })
+
+  t.end()
 })
