@@ -11,7 +11,7 @@ tape('EIP 4750 tests', (t) => {
     let nonce = 0
 
     const cases: [string, number[], [number, number, number?][], string][] = [
-      ['B00000', [3], [[0, 0]], ERROR.CALLF_RETURN_STACK_FULL],
+      ['B0000000', [4], [[0, 0]], ERROR.CALLF_RETURN_STACK_FULL],
     ]
 
     for (const testCase of cases) {

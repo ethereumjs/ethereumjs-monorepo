@@ -84,7 +84,9 @@ function checkOpcodes(container: EOFContainer) {
     const immediates = new Set()
 
     let pos = 0
+    let lpos = 0 // cache last pos
     while (pos < code.length) {
+      lpos = pos
       const opcode = code[pos]
       if (!opcodes.has(opcode)) {
         // No invalid/undefined opcodes
@@ -161,7 +163,7 @@ function checkOpcodes(container: EOFContainer) {
     }
     const terminatingOpcodes = new Set([0x00, 0xb1, 0xf3, 0xfd, 0xfe, 0xff])
     // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
-    if (!terminatingOpcodes.has(code[code.length - 1])) {
+    if (!terminatingOpcodes.has(code[lpos])) {
       throw new Error('Final opcode should be a terminating opcode')
       // TODO THIS CAN CURRENTLY BE AN INTERMEDIATE OPCODE
     }
