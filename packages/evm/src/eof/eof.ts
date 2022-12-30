@@ -1,7 +1,8 @@
-import { handlers, opcodes as opcodeInfo } from '../opcodes'
+import { handlers } from '../opcodes'
 
 import { FORMAT, KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR } from './constants'
 import { EOFContainer } from './eofContainer'
+import { stackDelta } from './stackDelta'
 
 /**
  * Checks if the `code` is of EOF format
@@ -85,11 +86,11 @@ function checkOpcodes(container: EOFContainer) {
     let pos = 0
     while (pos < code.length) {
       const opcode = code[pos]
-      pos++
       if (!opcodes.has(opcode)) {
         // No invalid/undefined opcodes
-        return false
+        throw new Error(`EOF: Invalid opcode ${opcode} at pos ${pos}`)
       }
+      pos++
       if (opcode >= 0x60 && opcode <= 0x7f) {
         // Skip data block following PUSH* instruction
         const finalPos = pos + opcode - 0x5f
@@ -99,7 +100,7 @@ function checkOpcodes(container: EOFContainer) {
         pos = finalPos
         if (pos > code.length - 1) {
           // Push blocks must not exceed end of code section
-          return false
+          throw new Error('PUSH opcode exceeds code size')
         }
       }
       // RJUMP* checks
@@ -109,14 +110,14 @@ function checkOpcodes(container: EOFContainer) {
         immediates.add(pos + 1)
         if (pos + 2 > code.length - 1) {
           // RJUMP(I) relative offset is out of code bounds
-          return false
+          throw new Error('RJUMP(I) opcode exceeds code size')
         }
         // RJUMP/RJUMPI
         const target = code.readInt16BE(pos) + pos + 2
         rjumpdests.add(target)
         if (target > code.length - 1 || target < 0) {
           // JUMP is out of bounds
-          return false
+          throw new Error('RJUMP(I) target is out of bounds')
         }
         pos += 2
       } else if (opcode === 0x5e) {
@@ -124,12 +125,12 @@ function checkOpcodes(container: EOFContainer) {
         const tableSize = code[pos]
         if (tableSize === 0) {
           // cannot have table size 0
-          return false
+          throw new Error('RJUMPV cannot have table size 0')
         }
         const jumptableSize = tableSize * 2
         if (pos + jumptableSize + 1 > code.length - 1) {
           // JUMP table is not contained in the code
-          return false
+          throw new Error('RJUMPV opcode exceeds code bounds')
         }
         const finalPos = pos + 1 + jumptableSize
         for (let immediate = pos; immediate < finalPos; immediate++) {
@@ -142,7 +143,7 @@ function checkOpcodes(container: EOFContainer) {
           rjumpdests.add(target)
           if (target > code.length - 1 || target < 0) {
             // Relative JUMP is outside code container
-            return false
+            throw new Error('RJUMPV target is out of bounds')
           }
         }
         pos = finalPos
@@ -153,7 +154,7 @@ function checkOpcodes(container: EOFContainer) {
         const codeTarget = code.readInt16BE(pos)
         if (codeTarget >= container.header.codeSizes.length) {
           // tries to call a function which is undefined
-          return false
+          throw new Error('Cannot CALLF undefined function')
         }
         pos += 2
       }
@@ -161,12 +162,13 @@ function checkOpcodes(container: EOFContainer) {
     const terminatingOpcodes = new Set([0x00, 0xb1, 0xf3, 0xfd, 0xfe, 0xff])
     // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
     if (!terminatingOpcodes.has(code[code.length - 1])) {
-      return false
+      throw new Error('Final opcode should be a terminating opcode')
+      // TODO THIS CAN CURRENTLY BE AN INTERMEDIATE OPCODE
     }
     // verify if any of the RJUMP* opcodes JUMPs into an immediate value
     for (const rjumpdest of rjumpdests) {
       if (immediates.has(rjumpdest)) {
-        return false
+        throw new Error('Cannot jump into an immediate value of an opcode')
       }
     }
 
@@ -182,26 +184,40 @@ function checkOpcodes(container: EOFContainer) {
       visitedSet.add(pc)
       const opcode = code[pc]
       const currentStackHeight = stackHeight[pc]
+      if (pc >= code.length) {
+        //break
+      }
+      if (opcode === undefined) {
+        // this cannot and thus should not happen
+        throw new Error('EIP 5450: Undefined opcode (should never happen)')
+      }
       if (terminatingOpcodes.has(opcode)) {
         if (
           opcode === 0xb1 &&
           currentStackHeight !== container.body.typeSections[currentSection].outputs
         ) {
           // RETF stack height is invalid
-          return false
+          throw new Error('RETF stack height invalid')
         }
         continue
       }
-      const info = opcodeInfo[opcode]
-      const nextStackHeight = currentStackHeight + stackDelta[opcode]
+      let nextStackHeight = currentStackHeight + stackDelta[opcode]
 
       if (nextStackHeight > 1024) {
         // stack overflow
-        return false
+        throw new Error('Stack height exceeds the maximum of 1024')
       }
       maxHeight = Math.max(maxHeight, nextStackHeight)
       if (maxHeight > 1023) {
-        return false
+        throw new Error('Stack height exceeds the maximum of 1024')
+      }
+      if (opcode === 0xb0) {
+        // special case, CALLF, so need to edit stack height
+        const functionToCall = code.readUint16BE(pc + 1)
+        const iput = container.body.typeSections[functionToCall].inputs
+        const oput = container.body.typeSections[functionToCall].outputs
+        const delta = oput - iput
+        nextStackHeight += delta
       }
 
       const nextPcs = []
@@ -237,7 +253,7 @@ function checkOpcodes(container: EOFContainer) {
         const functionToCall = code.readUint16BE(pc + 1)
         if (currentStackHeight < container.body.typeSections[functionToCall].inputs) {
           // stack underflow on function call
-          return false
+          throw new Error('Cannot CALLF: stack underflow')
         }
         visitedSet.add(pc + 1)
         visitedSet.add(pc + 2)
@@ -250,19 +266,21 @@ function checkOpcodes(container: EOFContainer) {
       for (const nextPc of nextPcs) {
         if (stackHeight[nextPc] !== undefined) {
           if (stackHeight[nextPc] !== currentStackHeight) {
-            return false
+            throw new Error(
+              'Stack height target is different than previous target (stack loop error)'
+            )
           }
         } else {
-          stackHeight[nextPc] = currentStackHeight
+          stackHeight[nextPc] = nextStackHeight
           worklist.push(nextPc)
         }
       }
     }
     if (visitedSet.size !== code.length) {
-      return false
+      throw new Error('There exist opcodes which cannot be reached')
     }
     if (maxHeight !== container.body.typeSections[currentSection].maxStackHeight) {
-      return false
+      throw new Error('Section max height does not correspond to actual max height')
     }
   }
 

@@ -30,14 +30,19 @@ tape('EIP 4750 tests', (t) => {
     let nonce = 0
 
     // ADD RETF
-    const codeAdd: [string, number, number] = ['01B1', 2, 1]
+    const codeAdd: [string, number, number, number] = ['01B1', 2, 1, 1]
     // function which has output 5
-    const output5: [string, number, number] = ['6005B1', 0, 1]
+    const output5: [string, number, number, number] = ['6005B1', 0, 1, 1]
 
     const cases: eipTestCase[] = [
       {
         code: [
-          [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
+          [
+            eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
+            0,
+            0,
+            2,
+          ],
           codeAdd,
           output5,
         ],
@@ -46,7 +51,12 @@ tape('EIP 4750 tests', (t) => {
       },
       {
         code: [
-          [eip_util.callFunc(1) + eip_util.callFunc(1) + eip_util.callFunc(2) + '60005500', 0, 0],
+          [
+            eip_util.callFunc(1) + eip_util.callFunc(1) + eip_util.callFunc(2) + '60005500',
+            0,
+            0,
+            2,
+          ],
           output5,
           codeAdd,
         ],

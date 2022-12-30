@@ -93,7 +93,7 @@ function callFunc(func: number) {
 }
 
 export type eipTestCase = {
-  code: [string, number, number][]
+  code: [string, number, number, number?][]
   expect: string
   name: string
 }
