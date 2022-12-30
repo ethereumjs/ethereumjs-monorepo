@@ -51,7 +51,7 @@ class StreamReader {
     const end = this.ptr + 2
     if (end > this.data.length) {
       throw new Error(
-        `pos: ${this.ptr - 2}: trying to read out of bounds: ` + errorStr ??
+        `pos: ${this.ptr}: trying to read out of bounds: ` + errorStr ??
           defaultStreamReadOutOfBoundsError
       )
     }
