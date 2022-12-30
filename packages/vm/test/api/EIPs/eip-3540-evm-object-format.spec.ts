@@ -51,26 +51,26 @@ tape('EIP 3540 requires other EIPs', async (st) => {
       On a CREATE(2) opcode, if either initcode or the returned data is invalid (i.e. it is legacy or invalid EOF) consume only execution gas
  */
 
-// const offset = '13'
-// const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
+const offset = '13'
+const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
 
-// const create2offset = '15'
-// const CREATE2Deploy =
-//   '0x600060' +
-//   create2offset +
-//   '380360' +
-//   create2offset +
-//   '60003960' +
-//   create2offset +
-//   '380360006000F500'
+const create2offset = '15'
+const CREATE2Deploy =
+  '0x600060' +
+  create2offset +
+  '380360' +
+  create2offset +
+  '60003960' +
+  create2offset +
+  '380360006000F500'
 
-// function deployCreateCode(initcode: string) {
-//   return CREATEDeploy + initcode
-// }
+function deployCreateCode(initcode: string) {
+  return CREATEDeploy + initcode
+}
 
-// function deployCreate2Code(initcode: string) {
-//   return CREATE2Deploy + initcode
-// }
+function deployCreate2Code(initcode: string) {
+  return CREATE2Deploy + initcode
+}
 
 tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
   t.test('case: tx', async (st) => {
@@ -105,51 +105,49 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     st.end()
   })
 
-  // t.test('case: create', async (st) => {
-  //   const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
+  // ADD RETF
+  const codeAdd: [string, number, number] = ['01B1', 2, 1]
+  // function which has output 5
+  const output5: [string, number, number] = ['6005B1', 0, 1]
 
-  //   // ADD RETF
-  //   const codeAdd: [string, number, number] = ['01B1', 2, 1]
-  //   // function which has output 5
-  //   const output5: [string, number, number] = ['6005B1', 0, 1]
+  const testCase: eipTestCase = {
+    code: [
+      [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
+      codeAdd,
+      output5,
+    ],
+    expect: '0a', // 10
+    name: 'simple add test',
+  }
+  const code = eip_util.createEOFCode(testCase.code)
+  const bad_code = code.slice(0, -2)
+  t.test('case: create', async (st) => {
+    const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
 
-  //   const testCase: eipTestCase = {
-  //     code: [
-  //       [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
-  //       codeAdd,
-  //       output5,
-  //     ],
-  //     expect: '0a', // 10
-  //     name: 'simple add test',
-  //   }
-  //   const code = eip_util.createEOFCode(testCase.code)
-  //   const bad_code = code.slice(0, -2)
+    let data = deployCreateCode(code.slice(2))
+    const res = await eip_util.runTx(vm, data, 0)
 
-  //   let data = deployCreateCode(code.slice(2))
-  //   const res = await eip_util.runTx(vm, data, 0)
+    data = deployCreateCode(bad_code.slice(2))
+    const res2 = await eip_util.runTx(vm, data, 1)
+    st.ok(
+      res.result.totalGasSpent > res2.result.totalGasSpent,
+      'invalid initcode did not consume all gas'
+    )
+  })
 
-  //   data = deployCreateCode(bad_code.slice(2))
-  //   const res2 = await eip_util.runTx(vm, data, 1)
-  //   console.log({ res: res.result.totalGasSpent, bad_res: res2.result.totalGasSpent })
-  //   st.ok(
-  //     res.result.totalGasSpent > res2.result.totalGasSpent,
-  //     'invalid initcode did not consume all gas'
-  //   )
-  // })
+  t.test('case: create2', async (st) => {
+    const vm = await eip_util.setUpVM([])
 
-  // t.test('case: create2', async (st) => {
-  //   const vm = await eip_util.setUpVM([])
+    let data = deployCreate2Code(code.slice(2))
+    const res = await eip_util.runTx(vm, data, 0)
 
-  //   let data = deployCreate2Code(eip_util.generateEOFCode('60016001F3').substring(2))
-  //   const res = await runTx(vm, data, 0)
-
-  //   data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
-  //   const res2 = await runTx(vm, data, 1)
-  //   st.ok(
-  //     res.result.totalGasSpent > res2.result.totalGasSpent,
-  //     'invalid initcode did not consume all gas'
-  //   )
-  // })
+    data = deployCreate2Code(bad_code.slice(2))
+    const res2 = await eip_util.runTx(vm, data, 1)
+    st.ok(
+      res.result.totalGasSpent > res2.result.totalGasSpent,
+      'invalid initcode did not consume all gas'
+    )
+  })
 
   t.end()
 })
