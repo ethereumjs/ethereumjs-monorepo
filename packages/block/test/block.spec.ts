@@ -382,4 +382,15 @@ tape('[Block]: block functions', function (t) {
       st.end()
     }
   )
+
+  t.test(
+    'should be able to initialize shanghai blocks with correct hardfork defaults',
+    function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const block = Block.fromBlockData({}, { common })
+      st.equal(block._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+      st.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
+      st.end()
+    }
+  )
 })
