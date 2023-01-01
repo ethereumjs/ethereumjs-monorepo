@@ -58,14 +58,14 @@ tape('EIP4895 tests', function (t) {
         }
       )
     }, 'should throw when setting withdrawalsRoot with EIP4895 not being activated')
-    st.throws(() => {
+    st.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {},
         {
           common,
         }
       )
-    }, 'should throw when withdrawalsRoot is undefined with EIP4895 being activated')
+    }, 'should not throw when withdrawalsRoot is undefined with EIP4895 being activated')
     st.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
@@ -90,14 +90,14 @@ tape('EIP4895 tests', function (t) {
         }
       )
     }, 'should throw when setting withdrawals with EIP4895 not being activated')
-    st.throws(() => {
+    st.doesNotThrow(() => {
       Block.fromBlockData(
         {},
         {
           common,
         }
       )
-    }, 'should throw when withdrawals is undefined with EIP4895 being activated')
+    }, 'should not throw when withdrawals is undefined with EIP4895 being activated')
     st.doesNotThrow(() => {
       Block.fromBlockData(
         {
