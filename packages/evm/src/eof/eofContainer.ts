@@ -93,6 +93,9 @@ class EOFHeader {
     if (codeSize < 1) {
       throw new Error('should at least have 1 code section')
     }
+    if (codeSize > 1024) {
+      throw new Error('can have at most 1024 code sections')
+    }
     if (codeSize !== typeSize / 4) {
       throw new Error('need to have a type section for each code section')
     }
