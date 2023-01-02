@@ -98,7 +98,11 @@ class EOFHeader {
     }
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
-      codeSizes.push(stream.readUint16('expected a code section'))
+      const codeSectionSize = stream.readUint16('expected a code section')
+      if (codeSectionSize === 0) {
+        throw new Error('code section should be at least one byte')
+      }
+      codeSizes.push(codeSectionSize)
     }
     stream.verifyUint(KIND_DATA, `data section marker (${KIND_DATA}) expected`)
     const dataSize = stream.readUint16('missing data size')
