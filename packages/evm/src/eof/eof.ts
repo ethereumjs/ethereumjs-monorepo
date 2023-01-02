@@ -177,9 +177,9 @@ function checkOpcodes(container: EOFContainer) {
     // EIP 5450 stack verification
     const worklist = [0]
     const visitedSet = new Set()
-    const stackHeight = [container.body.typeSections[currentSection].inputs]
 
-    let maxHeight = 0
+    let maxHeight = container.body.typeSections[currentSection].inputs
+    const stackHeight = [maxHeight]
 
     while (worklist.length !== 0) {
       const pc = worklist.shift()!
@@ -208,6 +208,8 @@ function checkOpcodes(container: EOFContainer) {
       if (nextStackHeight > 1024) {
         // stack overflow
         throw new Error('Stack height exceeds the maximum of 1024')
+      } else if (nextStackHeight < 0) {
+        throw new Error('Stack underflow')
       }
       maxHeight = Math.max(maxHeight, nextStackHeight)
       if (maxHeight > 1023) {
