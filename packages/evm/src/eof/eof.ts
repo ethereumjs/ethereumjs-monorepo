@@ -188,12 +188,13 @@ function checkOpcodes(container: EOFContainer): true {
         throw new Error('EIP 5450: Undefined opcode (should never happen)')
       }
 
-      let nextStackHeight = currentStackHeight + stackDelta[opcode]
+      const stackInfo = stackDelta[opcode]
+      let nextStackHeight = currentStackHeight - stackInfo.inputs + stackInfo.outputs
 
       if (nextStackHeight > 1024) {
         // stack overflow
         throw new Error('Stack height exceeds the maximum of 1024')
-      } else if (nextStackHeight < 0) {
+      } else if (nextStackHeight < 0 || currentStackHeight < stackInfo.minStackHeight) {
         throw new Error('Stack underflow')
       }
       maxHeight = Math.max(maxHeight, nextStackHeight)
