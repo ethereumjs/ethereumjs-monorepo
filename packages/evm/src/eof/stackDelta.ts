@@ -201,9 +201,9 @@ export const stackDelta: {
     outputs: 1,
   },
   0x3c: {
-    minStackHeight: 1,
-    inputs: 1,
-    outputs: 1,
+    minStackHeight: 4,
+    inputs: 4,
+    outputs: 0,
   },
   0x3d: {
     minStackHeight: 0,
@@ -278,12 +278,12 @@ export const stackDelta: {
   0x52: {
     minStackHeight: 2,
     inputs: 2,
-    outputs: 1,
+    outputs: 0,
   },
   0x53: {
     minStackHeight: 2,
     inputs: 2,
-    outputs: 1,
+    outputs: 0,
   },
   0x54: {
     minStackHeight: 1,
@@ -578,77 +578,77 @@ export const stackDelta: {
   0x91: {
     minStackHeight: 3,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x92: {
     minStackHeight: 4,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x93: {
     minStackHeight: 5,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x94: {
     minStackHeight: 6,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x95: {
     minStackHeight: 7,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x96: {
     minStackHeight: 8,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x97: {
     minStackHeight: 9,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x98: {
     minStackHeight: 10,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x99: {
     minStackHeight: 11,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9a: {
     minStackHeight: 12,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9b: {
     minStackHeight: 13,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9c: {
     minStackHeight: 14,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9d: {
     minStackHeight: 15,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9e: {
     minStackHeight: 16,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0x9f: {
     minStackHeight: 17,
     inputs: 0,
-    outputs: 1,
+    outputs: 0,
   },
   0xa0: {
     minStackHeight: 2,

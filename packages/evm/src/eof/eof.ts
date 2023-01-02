@@ -227,7 +227,7 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
         // PUSH
         nextPcs.push(pc + 1 + opcode - 0x5f)
         for (let i = 1; i <= opcode - 0x5f; i++) {
-          visitedSet.add(pc + 1)
+          visitedSet.add(pc + i)
         }
       } else if (opcode === 0x5c) {
         // RJUMP
