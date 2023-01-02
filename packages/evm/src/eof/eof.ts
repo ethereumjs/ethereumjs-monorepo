@@ -1,8 +1,8 @@
-import { handlers } from '../opcodes'
-
 import { FORMAT, KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR } from './constants'
 import { EOFContainer } from './eofContainer'
 import { stackDelta } from './stackDelta'
+
+import type { OpcodeList } from '../opcodes'
 
 /**
  * Checks if the `code` is of EOF format
@@ -54,15 +54,15 @@ function getEOFCode(code: Buffer): Buffer {
  * TODO change this to throw if the code is invalid so we can provide reasons to why it actually fails (handy for debugging, also in practice)
  * @param code Code to check
  */
-export function validateCode(code: Buffer): EOFContainer {
+export function validateCode(code: Buffer, opcodes: OpcodeList): EOFContainer {
   const container = new EOFContainer(code)
-  checkOpcodes(container)
+  checkOpcodes(container, opcodes)
   return container
 }
 
-function checkOpcodes(container: EOFContainer): true {
+function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
   // EIP-3670 - validate all opcodes
-  const opcodes = new Set(handlers.keys())
+  const opcodes = new Set(opcodeList.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
   opcodes.delete(0x56) // Delete JUMP opcode from set (See EIP 4750)
   opcodes.delete(0x57) // Delete JUMPI opcode from set (See EIP 4750)

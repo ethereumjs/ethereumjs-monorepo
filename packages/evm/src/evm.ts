@@ -437,7 +437,7 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(3540)) {
       if (EOF.isEOFCode(message.containerCode)) {
         try {
-          const container = EOF.validateCode(message.containerCode)
+          const container = EOF.validateCode(message.containerCode, this._opcodes)
           message.code = container.body.entireCode
           message.EOFContainer = container
         } catch (e: any) {
@@ -569,7 +569,7 @@ export class EVM implements EVMInterface {
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
         try {
-          EOF.validateCode(result.returnValue)
+          EOF.validateCode(result.returnValue, this._opcodes)
           result.executionGasUsed = totalGas
         } catch (e: any) {
           const gasUsed = message.depth === 0 ? message.gasLimit : totalGas
@@ -905,7 +905,7 @@ export class EVM implements EVMInterface {
         message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
         if (this._common.isActivatedEIP(3540) && EOF.isEOFCode(message.containerCode)) {
-          const container = EOF.validateCode(message.containerCode)
+          const container = EOF.validateCode(message.containerCode, this._opcodes)
           // container is always available
           message.code = container?.body.entireCode
           message.EOFContainer = container!
