@@ -54,19 +54,13 @@ function getEOFCode(code: Buffer): Buffer {
  * TODO change this to throw if the code is invalid so we can provide reasons to why it actually fails (handy for debugging, also in practice)
  * @param code Code to check
  */
-function validateCode(code: Buffer): EOFContainer | null {
-  try {
-    const container = new EOFContainer(code)
-    if (!checkOpcodes(container)) {
-      throw new Error('opcode error') // todo move errors into checkopcodes
-    }
-    return container
-  } catch (e) {
-    return null
-  }
+export function validateCode(code: Buffer): EOFContainer {
+  const container = new EOFContainer(code)
+  checkOpcodes(container)
+  return container
 }
 
-function checkOpcodes(container: EOFContainer) {
+function checkOpcodes(container: EOFContainer): true {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
@@ -269,7 +263,7 @@ function checkOpcodes(container: EOFContainer) {
 
       for (const nextPc of nextPcs) {
         if (stackHeight[nextPc] !== undefined) {
-          if (stackHeight[nextPc] !== currentStackHeight) {
+          if (stackHeight[nextPc] !== nextStackHeight) {
             throw new Error(
               'Stack height target is different than previous target (stack loop error)'
             )

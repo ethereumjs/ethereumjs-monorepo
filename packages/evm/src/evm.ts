@@ -436,8 +436,11 @@ export class EVM implements EVMInterface {
     message.data = Buffer.alloc(0)
     if (this._common.isActivatedEIP(3540)) {
       if (EOF.isEOFCode(message.containerCode)) {
-        const container = EOF.validateCode(message.containerCode)
-        if (container === null) {
+        try {
+          const container = EOF.validateCode(message.containerCode)
+          message.code = container.body.entireCode
+          message.EOFContainer = container
+        } catch (e: any) {
           // If it is a create transaction, consume all gas
           // Otherwise, only the upfront cost is paid
           const gasUsed = message.depth === 0 ? message.gasLimit : BigInt(0)
@@ -445,13 +448,11 @@ export class EVM implements EVMInterface {
             createdAddress: message.to,
             execResult: {
               returnValue: Buffer.alloc(0),
-              exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+              exceptionError: new EvmError(e.message),
               executionGasUsed: gasUsed,
             },
           }
         }
-        message.code = container.body.entireCode
-        message.EOFContainer = container
       } else {
         message.code = message.containerCode
       }
@@ -567,17 +568,17 @@ export class EVM implements EVMInterface {
         }
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = EOF.validateCode(result.returnValue)
-        if (eof1CodeAnalysisResults === null) {
-          // Only in create transactions, spend all the gas
-          // Otherwise, only the execution gas is charged
+        try {
+          EOF.validateCode(result.returnValue)
+          result.executionGasUsed = totalGas
+        } catch (e: any) {
           const gasUsed = message.depth === 0 ? message.gasLimit : totalGas
           result = {
-            ...result,
-            ...INVALID_EOF_RESULT(gasUsed),
+            returnValue: Buffer.alloc(0),
+            executionGasUsed: gasUsed,
+            exceptionError: new EvmError(e.message),
           }
         }
-        result.executionGasUsed = totalGas
       } else {
         result.executionGasUsed = totalGas
       }
@@ -903,7 +904,7 @@ export class EVM implements EVMInterface {
       } else {
         message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
-        if (this._common.isActivatedEIP(3540)) {
+        if (this._common.isActivatedEIP(3540) && EOF.isEOFCode(message.containerCode)) {
           const container = EOF.validateCode(message.containerCode)
           // container is always available
           message.code = container?.body.entireCode
