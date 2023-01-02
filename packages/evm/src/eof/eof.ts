@@ -187,16 +187,7 @@ function checkOpcodes(container: EOFContainer): true {
         // this cannot and thus should not happen
         throw new Error('EIP 5450: Undefined opcode (should never happen)')
       }
-      if (terminatingOpcodes.has(opcode)) {
-        if (
-          opcode === 0xb1 &&
-          currentStackHeight !== container.body.typeSections[currentSection].outputs
-        ) {
-          // RETF stack height is invalid
-          throw new Error('RETF stack height invalid')
-        }
-        continue
-      }
+
       let nextStackHeight = currentStackHeight + stackDelta[opcode]
 
       if (nextStackHeight > 1024) {
@@ -209,6 +200,18 @@ function checkOpcodes(container: EOFContainer): true {
       if (maxHeight > 1023) {
         throw new Error('Stack height exceeds the maximum of 1024')
       }
+
+      if (terminatingOpcodes.has(opcode)) {
+        if (
+          opcode === 0xb1 &&
+          currentStackHeight !== container.body.typeSections[currentSection].outputs
+        ) {
+          // RETF stack height is invalid
+          throw new Error('RETF stack height invalid')
+        }
+        continue
+      }
+
       if (opcode === 0xb0) {
         // special case, CALLF, so need to edit stack height
         const functionToCall = code.readUint16BE(pc + 1)
