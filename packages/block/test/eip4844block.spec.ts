@@ -62,7 +62,7 @@ tape('EIP4844 header tests', function (t) {
   t.end()
 })
 
-tape.only('data gas tests', async (t) => {
+tape('data gas tests', async (t) => {
   const lowGasHeader = BlockHeader.fromHeaderData(
     { number: 1, excessDataGas: 5000 },
     { common, skipConsensusFormatValidation: true }
