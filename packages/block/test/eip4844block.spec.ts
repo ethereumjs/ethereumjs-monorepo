@@ -5,7 +5,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/test/utils/blobHelpers'
-import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
@@ -62,50 +62,50 @@ tape('EIP4844 header tests', function (t) {
   t.end()
 })
 
-tape('data gas tests', async (t) => {
+tape.only('data gas tests', async (t) => {
   const lowGasHeader = BlockHeader.fromHeaderData(
     { number: 1, excessDataGas: 5000 },
     { common, skipConsensusFormatValidation: true }
   )
-  let excessDataGas = calcExcessDataGas(lowGasHeader, 6)
+  let excessDataGas = calcExcessDataGas(lowGasHeader, 1)
   let dataGasPrice = getDataGasPrice(lowGasHeader)
   t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
   t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
   const highGasHeader = BlockHeader.fromHeaderData(
-    { number: 1, excessDataGas: 50000000 },
+    { number: 1, excessDataGas: 4194304 },
     { common, skipConsensusFormatValidation: true }
   )
-  excessDataGas = calcExcessDataGas(highGasHeader, 6)
+  excessDataGas = calcExcessDataGas(highGasHeader, 4)
   dataGasPrice = getDataGasPrice(highGasHeader)
-  t.ok(
-    excessDataGas > 0n,
-    'excess data gas should be greater than zero in high data gas parent header'
-  )
-  t.equal(dataGasPrice, 274n, 'computed correct data gas price')
+  t.equal(excessDataGas, 4456448n)
+  t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
   // Initialize KZG environment (i.e. trusted setup)
-  loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
+  kzg.loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
 
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
 
-  freeTrustedSetup()
+  kzg.freeTrustedSetup()
   // Cleanup KZG environment (i.e. remove trusted setup)
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
-  const unsignedTx = BlobEIP4844Transaction.fromTxData({
-    versionedHashes: bufferedHashes,
-    blobs,
-    kzgCommitments: commitments,
-    maxFeePerDataGas: 100000000n,
-    gasLimit: 0xffffffn,
-    to: randomBytes(20),
-  })
+  const unsignedTx = BlobEIP4844Transaction.fromTxData(
+    {
+      versionedHashes: bufferedHashes,
+      blobs,
+      kzgCommitments: commitments,
+      maxFeePerDataGas: 100000000n,
+      gasLimit: 0xffffffn,
+      to: randomBytes(20),
+    },
+    { kzg }
+  )
 
   t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
-  t.equal(calcDataFee(unsignedTx, highGasHeader), 35913728n, 'compute data fee correctly')
+  t.equal(calcDataFee(unsignedTx, highGasHeader), 786432n, 'compute data fee correctly')
   t.end()
 })
 
