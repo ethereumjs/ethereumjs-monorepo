@@ -176,11 +176,12 @@ export class Common extends EventEmitter {
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
       chain: genesisParams.name ?? 'custom',
+      eips,
       customChains: [genesisParams],
       hardfork,
     })
