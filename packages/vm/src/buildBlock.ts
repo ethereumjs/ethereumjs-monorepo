@@ -165,7 +165,10 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let excessDataGas = undefined
-    if (this.blockOpts.common?.isActivatedEIP(4844) === true) {
+    if (tx instanceof BlobEIP4844Transaction) {
+      if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
+        throw Error('eip4844 not activated yet for adding a blob transaction')
+      }
       const blobTx = tx as BlobEIP4844Transaction
       dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
       dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
@@ -189,11 +192,7 @@ export class BlockBuilder {
       excessDataGas,
     }
 
-    const blockData = {
-      header,
-      transactions: this.transactions,
-      withdrawals: this.vm._common.isActivatedEIP(4895) ? [] : undefined,
-    }
+    const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block })
