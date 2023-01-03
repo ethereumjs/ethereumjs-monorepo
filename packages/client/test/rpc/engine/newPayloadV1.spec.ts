@@ -99,6 +99,8 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
 tape(
   `${method}: call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU`,
   async (t) => {
+    // @ts-ignore -- removes sharding hardfork since this test expects the hardfork to be merge
+    delete genesisJSON.config['shardingForkTime']
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params(method, [blocks[1]])
