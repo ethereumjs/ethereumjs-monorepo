@@ -64,13 +64,13 @@ then
   exit;
 fi;
 
+# clean these folders as old data can cause issues
+sudo rm -rf $DATADIR/ethereumjs
+sudo rm -rf $DATADIR/lodestar
+
 # these two commands will harmlessly fail if folders exists
 mkdir $DATADIR/ethereumjs
 mkdir $DATADIR/lodestar
-
-# clean these folders as old data can cause issues
-rm -rf $DATADIR/ethereumjs
-rm -rf $DATADIR/lodestar
 
 run_cmd(){
   execCmd=$1;

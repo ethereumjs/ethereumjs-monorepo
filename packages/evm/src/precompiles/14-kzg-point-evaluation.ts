@@ -1,3 +1,4 @@
+import { kzg } from '@ethereumjs/tx'
 import {
   BLS_MODULUS,
   bigIntToBuffer,
@@ -7,7 +8,6 @@ import {
   intToBuffer,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { verifyKzgProof } from 'c-kzg'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -16,6 +16,7 @@ import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 const FIELD_ELEMENTS_PER_BLOB = 4096
+const { verifyKzgProof } = kzg
 
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')

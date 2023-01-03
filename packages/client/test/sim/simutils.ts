@@ -1,11 +1,11 @@
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/test/utils/blobHelpers' // TODO: Decide where all these helpers should live
 import { Address } from '@ethereumjs/util'
-import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as fs from 'fs/promises'
 import { execSync, spawn } from 'node:child_process'
@@ -16,6 +16,9 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+// Initialize the kzg object with the kzg library
+initKZG(kzg)
+const { freeTrustedSetup, loadTrustedSetup } = kzg
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {
@@ -103,7 +106,7 @@ export function runNetwork(
       const str = Buffer.from(chunk).toString('utf8')
       const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-      if ((filterStr && !filterOutStr) || true) {
+      if (filterStr && !filterOutStr) {
         if (lastPrintedDot) {
           console.log('')
           lastPrintedDot = false
@@ -133,7 +136,7 @@ export function runNetwork(
     const str = Buffer.from(chunk).toString('utf8')
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-    if ((filterStr && !filterOutStr) || true) {
+    if (filterStr && !filterOutStr) {
       if (lastPrintedDot) {
         console.log('')
         lastPrintedDot = false
@@ -249,7 +252,6 @@ export const runBlobTx = async (
   const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
-  freeTrustedSetup()
 
   const sender = Address.fromPrivateKey(pkey)
   const txData = {
@@ -276,6 +278,7 @@ export const runBlobTx = async (
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData['nonce'] = BigInt(nonce.result) as any
   const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  freeTrustedSetup()
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

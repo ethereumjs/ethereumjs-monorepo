@@ -30,6 +30,8 @@ const filterKeywords = [
   'ejs',
   'lode',
   'pid',
+  'TxPool',
+  'Pending',
 ]
 const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 

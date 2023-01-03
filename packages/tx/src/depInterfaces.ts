@@ -1,4 +1,4 @@
-export interface kzg {
+export interface Ikzg {
   loadTrustedSetup(filePath: string): void
   freeTrustedSetup(): void
   blobToKzgCommitment(blob: Uint8Array): Uint8Array

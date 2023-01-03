@@ -9,7 +9,6 @@ import {
   UnionType,
 } from '@chainsafe/ssz'
 
-import type { kzg } from './depInterfaces'
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
@@ -80,10 +79,6 @@ export interface TxOptions {
    * Default: true
    */
   freeze?: boolean
-  /**
-   * Optional kzg library for working with blob transactions.  Must implement {@link kzg} interface
-   */
-  kzg?: kzg
 }
 
 /*
