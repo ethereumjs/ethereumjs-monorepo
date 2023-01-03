@@ -267,8 +267,8 @@ export const stackDelta: {
   },
   0x50: {
     minStackHeight: 0,
-    inputs: 0,
-    outputs: 1,
+    inputs: 1,
+    outputs: 0,
   },
   0x51: {
     minStackHeight: 1,

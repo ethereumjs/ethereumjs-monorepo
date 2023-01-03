@@ -191,6 +191,14 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
       const stackInfo = stackDelta[opcode]
       let nextStackHeight = currentStackHeight - stackInfo.inputs + stackInfo.outputs
 
+      if (opcode === 0xb0) {
+        // special case, CALLF, so need to edit stack height
+        const functionToCall = code.readUint16BE(pc + 1)
+        const iput = container.body.typeSections[functionToCall].inputs
+        const oput = container.body.typeSections[functionToCall].outputs
+        const delta = oput - iput
+        nextStackHeight += delta
+      }
       if (nextStackHeight > 1024) {
         // stack overflow
         throw new Error('Stack height exceeds the maximum of 1024')
@@ -211,15 +219,6 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
           throw new Error('RETF stack height invalid')
         }
         continue
-      }
-
-      if (opcode === 0xb0) {
-        // special case, CALLF, so need to edit stack height
-        const functionToCall = code.readUint16BE(pc + 1)
-        const iput = container.body.typeSections[functionToCall].inputs
-        const oput = container.body.typeSections[functionToCall].outputs
-        const delta = oput - iput
-        nextStackHeight += delta
       }
 
       const nextPcs = []
