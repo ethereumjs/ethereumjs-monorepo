@@ -8,12 +8,12 @@ import { StatelessVerkleStateManager } from '../src'
 // import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
-import * as verkleBlock2JSON from './testdata/verkleBlock2.json'
-import * as verkleBlock1JSON from './testdata/verkleSampleBlock_banderwagon.json'
+// import * as verkleBlockJSON from './testdata/verkleCondrieuBlock500.json'
+import * as verkleBlockJSON from './testdata/verkleSampleBlock.json'
 
 tape('StatelessVerkleStateManager', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
-  const block = Block.fromBlockData(verkleBlock1JSON, { common })
+  const block = Block.fromBlockData(verkleBlockJSON, { common })
 
   t.test('initPreState()', async (st) => {
     const stateManager = new StatelessVerkleStateManager()

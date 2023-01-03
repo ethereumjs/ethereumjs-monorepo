@@ -7,6 +7,7 @@ import {
   setLengthLeft,
   setLengthRight,
   toBuffer,
+  zeros,
 } from '@ethereumjs/util'
 
 import { Cache } from './cache'
@@ -191,7 +192,9 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Buffer): Promise<void> {}
+  async putContractCode(address: Address, value: Buffer): Promise<void> {
+    // TODO
+  }
 
   /**
    * Gets the code corresponding to the provided `address`.
@@ -268,11 +271,11 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
 
     const balanceLE = toBuffer(this._state[bufferToHex(balanceKey)])
     const nonceLE = toBuffer(this._state[bufferToHex(nonceKey)])
-    const codeHash = this._state[bufferToHex(codeHashKey)]
+    const codeHash = toBuffer(this._state[bufferToHex(codeHashKey)])
 
     return Account.fromAccountData({
       balance: balanceLE.length > 0 ? balanceLE.readBigInt64LE() : 0n,
-      codeHash,
+      codeHash: codeHash.length > 0 ? codeHash : zeros(32),
       nonce: nonceLE.length > 0 ? nonceLE.readBigInt64LE() : 0n,
     })
   }
@@ -290,7 +293,7 @@ export class StatelessVerkleStateManager extends BaseStateManager implements Sta
 
     this._state[bufferToHex(balanceKey)] = bufferToHex(balanceBuf)
     this._state[bufferToHex(nonceKey)] = bufferToHex(nonceBuf)
-    this._state[bufferToHex(codeHashKey)] = bufferToHex(codeHashKey)
+    this._state[bufferToHex(codeHashKey)] = bufferToHex(account.codeHash)
   }
 
   /**
