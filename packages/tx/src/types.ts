@@ -8,8 +8,8 @@ import {
   UintBigintType,
   UnionType,
 } from '@chainsafe/ssz'
-import { BYTES_PER_FIELD_ELEMENT } from 'c-kzg'
 
+import type { kzg } from './depInterfaces'
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
@@ -80,6 +80,10 @@ export interface TxOptions {
    * Default: true
    */
   freeze?: boolean
+  /**
+   * Optional kzg library for working with blob transactions.  Must implement {@link kzg} interface
+   */
+  kzg?: kzg
 }
 
 /*
@@ -349,6 +353,7 @@ export const MAX_VERSIONED_HASHES_LIST_SIZE = 2 ** 24
 export const LIMIT_BLOBS_PER_TX = 2
 export const MAX_TX_WRAP_KZG_COMMITMENTS = 2 ** 24
 export const FIELD_ELEMENTS_PER_BLOB = 4096
+export const BYTES_PER_FIELD_ELEMENT = 32
 /** EIP4844 types */
 export const AddressType = new ByteVectorType(20) // SSZ encoded address
 

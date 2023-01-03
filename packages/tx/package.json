@@ -55,9 +55,11 @@
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/util": "^8.0.3",
-    "c-kzg": "^1.0.8",
     "ethereum-cryptography": "^1.1.2",
     "ethers": "^5.7.1"
+  },
+  "peerDependencies": {
+    "c-kzg": "^1.0.8"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

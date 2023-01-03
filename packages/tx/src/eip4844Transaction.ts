@@ -10,12 +10,6 @@ import {
   ecrecover,
   toBuffer,
 } from '@ethereumjs/util'
-import {
-  computeAggregateKzgProof,
-  freeTrustedSetup,
-  loadTrustedSetup,
-  verifyAggregateKzgProof,
-} from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
@@ -28,6 +22,7 @@ import {
 } from './types'
 import { AccessLists, checkMaxInitCodeSize } from './util'
 
+import type { kzg } from './depInterfaces'
 import type {
   AccessList,
   AccessListBuffer,
@@ -46,14 +41,15 @@ const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
   blobs: Uint8Array[],
   commitments: Uint8Array[],
-  kzgProof: Uint8Array
+  kzgProof: Uint8Array,
+  kzg: kzg
 ) => {
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
-  const verified = verifyAggregateKzgProof(blobs, commitments, kzgProof)
+  kzg.loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
+  const verified = kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
 
   if (!verified) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
@@ -66,7 +62,7 @@ const validateBlobTransactionNetworkWrapper = (
     }
   }
 
-  freeTrustedSetup()
+  kzg.freeTrustedSetup()
 }
 
 export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
@@ -81,10 +77,15 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public versionedHashes: Buffer[]
   blobs?: Buffer[]
   kzgCommitments?: Buffer[]
-
+  kzg: kzg
   constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+
+    if (opts.kzg === undefined) {
+      throw new Error('kzg library required for blob transactions')
+    }
+    this.kzg = opts.kzg
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
@@ -193,11 +194,15 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     // Validate network wrapper
     const wrapper = BlobNetworkTransactionWrapper.deserialize(serialized.slice(1))
     const decodedTx = wrapper.tx.message
+    if (opts?.kzg === undefined) {
+      throw new Error('kzg library required for blob transactions')
+    }
     validateBlobTransactionNetworkWrapper(
       decodedTx.blobVersionedHashes,
       wrapper.blobs,
       wrapper.blobKzgs,
-      wrapper.kzgAggregatedProof
+      wrapper.kzgAggregatedProof,
+      opts.kzg
     )
 
     const accessList: AccessListBuffer = []
@@ -320,14 +325,14 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       value: this.to?.toBuffer() ?? null,
     }
     const blobArrays = this.blobs?.map((blob) => Uint8Array.from(blob)) ?? []
-    loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
+    this.kzg.loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
     const serializedTxWrapper = BlobNetworkTransactionWrapper.serialize({
       blobs: blobArrays,
       blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
       tx: { ...this.txData(), ...to },
-      kzgAggregatedProof: computeAggregateKzgProof(blobArrays),
+      kzgAggregatedProof: this.kzg.computeAggregateKzgProof(blobArrays),
     })
-    freeTrustedSetup()
+    this.kzg.freeTrustedSetup()
     return Buffer.concat([Buffer.from([0x05]), serializedTxWrapper])
   }
 
