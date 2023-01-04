@@ -13,6 +13,9 @@ import { calcExcessDataGas, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
 import { calcDataFee, fakeExponential } from '../src/helpers'
 
+// Hack to detect if running in browser or not
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
 initKZG(kzg)
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
@@ -21,90 +24,98 @@ const common = Common.fromGethGenesis(gethGenesis, {
 })
 
 tape('EIP4844 header tests', function (t) {
-  const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  t.throws(
-    () => {
+  if (isBrowser() === true) {
+    t.end()
+  } else {
+    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    t.throws(
+      () => {
+        BlockHeader.fromHeaderData(
+          {
+            excessDataGas: 1n,
+          },
+          {
+            common: earlyCommon,
+          }
+        )
+      },
+      (err: any) => {
+        return (
+          err.message.toString() === 'excess data gas can only be provided with EIP4844 activated'
+        )
+      },
+      'should throw when setting excessDataGas with EIP4844 not being activated'
+    )
+    const excessDataGas = BlockHeader.fromHeaderData(
+      {},
+      { common, skipConsensusFormatValidation: true }
+    ).excessDataGas
+    t.equal(
+      excessDataGas,
+      0n,
+      'instantiates block with reasonable default excess data gas value when not provided'
+    )
+    t.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          excessDataGas: 1n,
+          excessDataGas: 0n,
         },
         {
-          common: earlyCommon,
+          common,
+          skipConsensusFormatValidation: true,
         }
       )
-    },
-    (err: any) => {
-      return (
-        err.message.toString() === 'excess data gas can only be provided with EIP4844 activated'
-      )
-    },
-    'should throw when setting excessDataGas with EIP4844 not being activated'
-  )
-  const excessDataGas = BlockHeader.fromHeaderData(
-    {},
-    { common, skipConsensusFormatValidation: true }
-  ).excessDataGas
-  t.equal(
-    excessDataGas,
-    0n,
-    'instantiates block with reasonable default excess data gas value when not provided'
-  )
-  t.doesNotThrow(() => {
-    BlockHeader.fromHeaderData(
-      {
-        excessDataGas: 0n,
-      },
-      {
-        common,
-        skipConsensusFormatValidation: true,
-      }
-    )
-  }, 'correctly instantiates an EIP4844 block header')
-  t.end()
+    }, 'correctly instantiates an EIP4844 block header')
+    t.end()
+  }
 })
 
 tape('data gas tests', async (t) => {
-  const lowGasHeader = BlockHeader.fromHeaderData(
-    { number: 1, excessDataGas: 5000 },
-    { common, skipConsensusFormatValidation: true }
-  )
-  let excessDataGas = calcExcessDataGas(lowGasHeader, 1)
-  let dataGasPrice = getDataGasPrice(lowGasHeader)
-  t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
-  t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
-  const highGasHeader = BlockHeader.fromHeaderData(
-    { number: 1, excessDataGas: 4194304 },
-    { common, skipConsensusFormatValidation: true }
-  )
-  excessDataGas = calcExcessDataGas(highGasHeader, 4)
-  dataGasPrice = getDataGasPrice(highGasHeader)
-  t.equal(excessDataGas, 4456448n)
-  t.equal(dataGasPrice, 6n, 'computed correct data gas price')
+  if (isBrowser() === true) {
+    t.end()
+  } else {
+    const lowGasHeader = BlockHeader.fromHeaderData(
+      { number: 1, excessDataGas: 5000 },
+      { common, skipConsensusFormatValidation: true }
+    )
+    let excessDataGas = calcExcessDataGas(lowGasHeader, 1)
+    let dataGasPrice = getDataGasPrice(lowGasHeader)
+    t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
+    t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
+    const highGasHeader = BlockHeader.fromHeaderData(
+      { number: 1, excessDataGas: 4194304 },
+      { common, skipConsensusFormatValidation: true }
+    )
+    excessDataGas = calcExcessDataGas(highGasHeader, 4)
+    dataGasPrice = getDataGasPrice(highGasHeader)
+    t.equal(excessDataGas, 4456448n)
+    t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
-  // Initialize KZG environment (i.e. trusted setup)
-  kzg.loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
+    // Initialize KZG environment (i.e. trusted setup)
+    kzg.loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
 
-  const blobs = getBlobs('hello world')
-  const commitments = blobsToCommitments(blobs)
-  const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobs = getBlobs('hello world')
+    const commitments = blobsToCommitments(blobs)
+    const versionedHashes = commitmentsToVersionedHashes(commitments)
 
-  kzg.freeTrustedSetup()
-  // Cleanup KZG environment (i.e. remove trusted setup)
+    kzg.freeTrustedSetup()
+    // Cleanup KZG environment (i.e. remove trusted setup)
 
-  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
-  const unsignedTx = BlobEIP4844Transaction.fromTxData({
-    versionedHashes: bufferedHashes,
-    blobs,
-    kzgCommitments: commitments,
-    maxFeePerDataGas: 100000000n,
-    gasLimit: 0xffffffn,
-    to: randomBytes(20),
-  })
+    const unsignedTx = BlobEIP4844Transaction.fromTxData({
+      versionedHashes: bufferedHashes,
+      blobs,
+      kzgCommitments: commitments,
+      maxFeePerDataGas: 100000000n,
+      gasLimit: 0xffffffn,
+      to: randomBytes(20),
+    })
 
-  t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
-  t.equal(calcDataFee(unsignedTx, highGasHeader), 786432n, 'compute data fee correctly')
-  t.end()
+    t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
+    t.equal(calcDataFee(unsignedTx, highGasHeader), 786432n, 'compute data fee correctly')
+    t.end()
+  }
 })
 
 tape('fake exponential', (t) => {
