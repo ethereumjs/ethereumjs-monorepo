@@ -2,11 +2,12 @@ import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
-import { BlobEIP4844Transaction, TransactionFactory } from '../src'
+import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
 
 import { blobsToCommitments, commitmentsToVersionedHashes, getBlobs } from './utils/blobHelpers'
 
 const pk = randomBytes(32)
+initKZG(kzg)
 
 tape('EIP4844 constructor tests - valid scenarios', (t) => {
   const txData = {
@@ -14,19 +15,19 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
     versionedHashes: [Buffer.concat([Buffer.from([1]), randomBytes(31)])],
     maxFeePerDataGas: 1n,
   }
-  const tx = BlobEIP4844Transaction.fromTxData(txData, { kzg })
+  const tx = BlobEIP4844Transaction.fromTxData(txData)
   t.equal(tx.type, 5, 'successfully instantiated a blob transaction from txData')
-  const factoryTx = TransactionFactory.fromTxData(txData, { kzg })
+  const factoryTx = TransactionFactory.fromTxData(txData)
   t.equal(factoryTx.type, 5, 'instantiated a blob transaction from the tx factory')
 
   const serializedTx = tx.serialize()
   t.equal(serializedTx[0], 5, 'successfully serialized a blob tx')
-  const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { kzg })
+  const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx)
   t.equal(deserializedTx.type, 5, 'deserialized a blob tx')
 
   const signedTx = tx.sign(pk)
   const sender = signedTx.getSenderAddress().toString()
-  const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize(), { kzg })
+  const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize())
   t.equal(
     decodedTx.getSenderAddress().toString(),
     sender,
@@ -55,7 +56,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
     ],
   }
   try {
-    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash }, { kzg })
+    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash })
   } catch (err: any) {
     t.ok(
       err.message.includes('versioned hash is invalid length'),
@@ -63,7 +64,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
     )
   }
   try {
-    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash }, { kzg })
+    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash })
   } catch (err: any) {
     t.ok(
       err.message.includes('does not start with KZG commitment'),
@@ -71,7 +72,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
     )
   }
   try {
-    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs }, { kzg })
+    BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs })
   } catch (err: any) {
     t.ok(err.message.includes('tx can contain at most'), 'throws on too many versioned hashes')
   }
@@ -91,26 +92,23 @@ tape('Network wrapper tests', async (t) => {
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
-  const unsignedTx = BlobEIP4844Transaction.fromTxData(
-    {
-      versionedHashes: bufferedHashes,
-      blobs,
-      kzgCommitments: commitments,
-      maxFeePerDataGas: 100000000n,
-      gasLimit: 0xffffffn,
-      to: randomBytes(20),
-    },
-    { kzg }
-  )
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    versionedHashes: bufferedHashes,
+    blobs,
+    kzgCommitments: commitments,
+    maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
+    to: randomBytes(20),
+  })
   const signedTx = unsignedTx.sign(pk)
   const sender = signedTx.getSenderAddress().toString()
   const wrapper = signedTx.serializeNetworkWrapper()
-  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, { kzg })
+  const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper)
 
   t.equal(deserializedTx.type, 0x05, 'successfully deserialized a blob transaction network wrapper')
   t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
   t.equal(deserializedTx.getSenderAddress().toString(), sender, 'decoded sender address correctly')
-  const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx, { kzg })
+  const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx)
   t.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
   t.ok(
     minimalTx.hash().equals(deserializedTx.hash()),
@@ -121,26 +119,23 @@ tape('Network wrapper tests', async (t) => {
 })
 
 tape('hash() and signature verification', async (t) => {
-  const unsignedTx = BlobEIP4844Transaction.fromTxData(
-    {
-      chainId: 1,
-      nonce: 1,
-      versionedHashes: [
-        Buffer.from('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e', 'hex'),
-      ],
-      maxFeePerDataGas: 10000000n,
-      gasLimit: 123457n,
-      maxFeePerGas: 42n,
-      maxPriorityFeePerGas: 10n,
-      accessList: [
-        {
-          address: '0x0000000000000000000000000000000000000001',
-          storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-        },
-      ],
-    },
-    { kzg }
-  )
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    chainId: 1,
+    nonce: 1,
+    versionedHashes: [
+      Buffer.from('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e', 'hex'),
+    ],
+    maxFeePerDataGas: 10000000n,
+    gasLimit: 123457n,
+    maxFeePerGas: 42n,
+    maxPriorityFeePerGas: 10n,
+    accessList: [
+      {
+        address: '0x0000000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+      },
+    ],
+  })
   t.equal(
     unsignedTx.hash().toString('hex'),
     '4a4451b77bf251d626009dc9c6179c9fe088eb362a1d94eab257fb6f0f9fe95e',

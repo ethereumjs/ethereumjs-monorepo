@@ -297,6 +297,7 @@ export function middleware(
         return response
       })
       .catch((e) => {
+        console.log(e)
         handler(params, undefined, e.message)
         throw e
       })

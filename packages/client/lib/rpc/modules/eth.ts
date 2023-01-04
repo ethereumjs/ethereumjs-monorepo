@@ -897,6 +897,7 @@ export class Eth {
         tx = TransactionFactory.fromSerializedData(txBuf, { common })
       }
     } catch (e: any) {
+      console.log(e)
       throw {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,

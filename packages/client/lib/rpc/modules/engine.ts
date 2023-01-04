@@ -256,6 +256,7 @@ const assembleBlock = async (
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       txs.push(tx)
     } catch (error) {
+      console.log(error)
       const validationError = `Invalid tx at index ${index}: ${error}`
       config.logger.error(validationError)
       const latestValidHash = await validHash(toBuffer(payload.parentHash), chain)
@@ -779,6 +780,7 @@ export class Engine {
       await this.execution.runWithoutSetHead({ block }, receipts)
       return blockToExecutionPayload(block, value)
     } catch (error: any) {
+      console.log(error)
       if (error === EngineError.UnknownPayload) throw error
       throw {
         code: INTERNAL_ERROR,
