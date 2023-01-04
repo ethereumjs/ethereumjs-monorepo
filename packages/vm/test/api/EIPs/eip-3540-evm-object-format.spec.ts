@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 
-import { eip_util } from './eipUtils'
+import { eip_util } from './utils'
 
-import type { IeipTestCase, evmFunction } from './eipUtils'
+import type { IeipTestCase, evmFunction } from './utils'
 
 tape('EIP 3540 requires other EIPs', async (st) => {
   try {

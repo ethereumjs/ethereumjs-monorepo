@@ -1,9 +1,9 @@
 import { EOFError } from '@ethereumjs/evm/src/eof/errors'
 import * as tape from 'tape'
 
-import { eip_util } from './eipUtils'
+import { eip_util } from './utils'
 
-import type { IeipTestCase, evmFunction } from './eipUtils'
+import type { IeipTestCase, evmFunction } from './utils'
 import type { TypeSection } from '@ethereumjs/evm/src/eof/container'
 
 interface IgetEOFCodeOpts {

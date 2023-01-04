@@ -1,7 +1,7 @@
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
-import { eip_util } from './eipUtils'
+import { eip_util } from './utils'
 
 tape('EIP 3860 tests', (t) => {
   t.test('EIP-3860 tests', async (st) => {
