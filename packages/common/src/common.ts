@@ -171,17 +171,18 @@ export class Common extends EventEmitter {
   /**
    * Static method to load and set common from a geth genesis json
    * @param genesisJson json of geth configuration
-   * @param { chain, genesisHash, hardfork } to futher configure the common instance
+   * @param { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
    * @returns Common
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
       chain: genesisParams.name ?? 'custom',
       customChains: [genesisParams],
+      eips,
       hardfork,
     })
     if (genesisHash !== undefined) {

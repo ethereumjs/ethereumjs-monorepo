@@ -14,6 +14,7 @@ import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.Merge,
+  eips: [4895],
 })
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
@@ -23,7 +24,6 @@ const gethWithdrawals8BlockRlp =
 tape('EIP4895 tests', (t) => {
   t.test('EIP4895: withdrawals execute as expected', async (st) => {
     const vm = await VM.create({ common })
-    vm._common.setEIPs([4895])
     const withdrawals = <WithdrawalData[]>[]
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
@@ -117,7 +117,6 @@ tape('EIP4895 tests', (t) => {
 
   t.test('EIP4895: state updation should exclude 0 amount updates', async (st) => {
     const vm = await VM.create({ common })
-    vm._common.setEIPs([4895])
 
     await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
     const preState = (await vm.eei.getStateRoot()).toString('hex')
