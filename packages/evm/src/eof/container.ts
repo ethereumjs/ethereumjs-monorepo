@@ -131,7 +131,7 @@ class EOFHeader {
 export interface TypeSection {
   inputs: number
   outputs: number
-  maxStackHeight: number
+  maxStackHeight?: number
 }
 
 class EOFBody {
@@ -145,9 +145,9 @@ class EOFBody {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
     for (let i = 0; i < header.typeSize / 4; i++) {
-      const inputs = stream.readUint(validationError(EOFError.Inputs))
-      const outputs = stream.readUint(validationError(EOFError.Outputs))
-      const maxStackHeight = stream.readUint16(validationError(EOFError.MaxStackHeight))
+      const inputs = stream.readUint(EOFError.Inputs)
+      const outputs = stream.readUint(EOFError.Outputs)
+      const maxStackHeight = stream.readUint16(EOFError.MaxStackHeight)
       if (i === 0) {
         if (inputs !== 0) {
           validationError(EOFError.Code0Inputs)
@@ -163,7 +163,7 @@ class EOFBody {
         validationError(EOFError.MaxOutputs, i, outputs)
       }
       if (maxStackHeight > 1023) {
-        validationError(EOFError.MaxStackHeight, i)
+        validationError(EOFError.MaxStackHeightLimit, i, maxStackHeight)
       }
       typeSections.push({
         inputs,
@@ -174,11 +174,15 @@ class EOFBody {
     const codeStartPtr = stream.getPtr()
     const codes = []
     for (const [i, codeSize] of header.codeSizes.entries()) {
-      const code = stream.readBytes(codeSize, validationError(EOFError.CodeSection, i))
-      codes.push(code)
+      try {
+        const code = stream.readBytes(codeSize)
+        codes.push(code)
+      } catch {
+        validationError(EOFError.CodeSection, i)
+      }
     }
     const entireCodeSection = buf.slice(codeStartPtr, stream.getPtr())
-    const dataSection = stream.readBytes(header.dataSize, validationError(EOFError.DataSection))
+    const dataSection = stream.readBytes(header.dataSize, EOFError.DataSection)
 
     if (!stream.isAtEnd()) {
       validationError(EOFError.DanglingBytes)
