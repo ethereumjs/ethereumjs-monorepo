@@ -9,7 +9,7 @@ import { Message } from './message'
 import { trap } from './opcodes'
 import { Stack } from './stack'
 
-import type { EOFContainer } from './eof/eofContainer'
+import type { EOFContainer } from './eof/container'
 import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, EEIInterface, Log } from './types'

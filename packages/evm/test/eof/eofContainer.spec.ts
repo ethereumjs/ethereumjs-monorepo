@@ -1,7 +1,7 @@
 import { toBuffer } from '@ethereumjs/util'
 import tape from 'tape'
 
-import { EOFContainer } from '../../src/eof/eofContainer'
+import { EOFContainer } from '../../src/eof/container'
 
 enum Change {
   MAGIC = 0,

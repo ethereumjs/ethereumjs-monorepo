@@ -1,6 +1,6 @@
 import { Address } from '@ethereumjs/util'
 
-import type { EOFContainer } from './eof/eofContainer'
+import type { EOFContainer } from './eof/container'
 import type { PrecompileFunc } from './precompiles'
 
 const defaults = {

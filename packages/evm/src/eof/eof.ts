@@ -1,5 +1,5 @@
 import { FORMAT, KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR } from './constants'
-import { EOFContainer } from './eofContainer'
+import { EOFContainer } from './container'
 import { stackDelta } from './stackDelta'
 
 import type { OpcodeList } from '../opcodes'
