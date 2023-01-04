@@ -1,6 +1,6 @@
 import { KIND_CODE, KIND_DATA, KIND_TYPE, MAGIC, TERMINATOR, VERSION } from './constants'
+import { EOFError, validationError } from './errors'
 
-const defaultStreamReadOutOfBoundsError = 'reading out of bounds'
 class StreamReader {
   private data: Buffer
   private ptr: number
@@ -12,10 +12,7 @@ class StreamReader {
   readBytes(amount: number, errorStr?: string) {
     const end = this.ptr + amount
     if (end > this.data.length) {
-      throw new Error(
-        `pos: ${this.ptr}: trying to read out of bounds: ` + errorStr ??
-          defaultStreamReadOutOfBoundsError
-      )
+      validationError(EOFError.OutOfBounds, this.ptr, errorStr)
     }
     const ptr = this.ptr
     this.ptr += amount
@@ -25,35 +22,27 @@ class StreamReader {
   verifyBytes(expect: Buffer, errorStr?: string) {
     const buf = this.readBytes(expect.length, errorStr)
     if (!buf.equals(expect)) {
-      throw new Error(
-        `pos: ${this.ptr - expect.length}: ` + (errorStr ?? 'bytes do not match expected value')
-      )
+      validationError(EOFError.VerifyBytes, this.ptr - expect.length, errorStr)
     }
   }
 
   readUint(errorStr?: string) {
     if (this.ptr >= this.data.length) {
-      throw new Error(
-        `pos: ${this.ptr}: trying read out of bounds: ` + errorStr ??
-          defaultStreamReadOutOfBoundsError
-      )
+      validationError(EOFError.OutOfBounds, this.ptr, errorStr)
     }
     return this.data.readUint8(this.ptr++)
   }
 
   verifyUint(expect: number, errorStr?: string) {
     if (this.readUint() !== expect) {
-      throw new Error(`pos: ${this.ptr - 1}: ` + (errorStr ?? 'uint do not match expected value'))
+      validationError(EOFError.VerifyUint, this.ptr - 1, errorStr)
     }
   }
 
   readUint16(errorStr?: string) {
     const end = this.ptr + 2
     if (end > this.data.length) {
-      throw new Error(
-        `pos: ${this.ptr}: trying to read out of bounds: ` + errorStr ??
-          defaultStreamReadOutOfBoundsError
-      )
+      validationError(EOFError.OutOfBounds, this.ptr, errorStr)
     }
     const ptr = this.ptr
     this.ptr += 2
@@ -79,37 +68,35 @@ class EOFHeader {
 
   constructor(buf: Buffer) {
     const stream = new StreamReader(buf)
-    stream.verifyBytes(MAGIC, 'header should start with magic bytes')
-    stream.verifyUint(VERSION, `version should be ${VERSION}`)
-    stream.verifyUint(KIND_TYPE, `type section marker (${KIND_TYPE}) expected`)
-    const typeSize = stream.readUint16('missing type size')
+    stream.verifyBytes(MAGIC, EOFError.MAGIC)
+    stream.verifyUint(VERSION, EOFError.VERSION)
+    stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
+    const typeSize = stream.readUint16(EOFError.TypeSize)
     if (typeSize < 4 || typeSize % 4 !== 0) {
-      throw new Error(
-        `invalid type size: should be at least 4 and should be a multiple of 4. got: ${typeSize}`
-      )
+      validationError(EOFError.TypeSize, typeSize)
     }
-    stream.verifyUint(KIND_CODE, `code section marker (${KIND_CODE}) expected`)
-    const codeSize = stream.readUint16('missing code size')
+    stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)
+    const codeSize = stream.readUint16(EOFError.CodeSize)
     if (codeSize < 1) {
-      throw new Error('should at least have 1 code section')
+      validationError(EOFError.MinCodeSections)
     }
     if (codeSize > 1024) {
-      throw new Error('can have at most 1024 code sections')
+      validationError(EOFError.MaxCodeSections)
     }
     if (codeSize !== typeSize / 4) {
-      throw new Error('need to have a type section for each code section')
+      validationError(EOFError.InvalidTypeSize)
     }
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
-      const codeSectionSize = stream.readUint16('expected a code section')
+      const codeSectionSize = stream.readUint16(EOFError.CodeSection)
       if (codeSectionSize === 0) {
-        throw new Error('code section should be at least one byte')
+        validationError(EOFError.CodeSectionSize)
       }
       codeSizes.push(codeSectionSize)
     }
-    stream.verifyUint(KIND_DATA, `data section marker (${KIND_DATA}) expected`)
-    const dataSize = stream.readUint16('missing data size')
-    stream.verifyUint(TERMINATOR, `${TERMINATOR} terminator expected`)
+    stream.verifyUint(KIND_DATA, EOFError.KIND_DATA)
+    const dataSize = stream.readUint16(EOFError.DataSize)
+    stream.verifyUint(TERMINATOR, EOFError.TERMINATOR)
 
     this.typeSize = typeSize
     this.codeSizes = codeSizes
@@ -141,7 +128,7 @@ class EOFHeader {
   }
 }
 
-interface TypeSection {
+export interface TypeSection {
   inputs: number
   outputs: number
   maxStackHeight: number
@@ -158,31 +145,25 @@ class EOFBody {
     const stream = new StreamReader(buf)
     const typeSections: TypeSection[] = []
     for (let i = 0; i < header.typeSize / 4; i++) {
-      const inputs = stream.readUint('type section body: expected input')
-      const outputs = stream.readUint('type section body: expected output')
-      const maxStackHeight = stream.readUint16('type section body: expected max stack height')
+      const inputs = stream.readUint(validationError(EOFError.Inputs))
+      const outputs = stream.readUint(validationError(EOFError.Outputs))
+      const maxStackHeight = stream.readUint16(validationError(EOFError.MaxStackHeight))
       if (i === 0) {
         if (inputs !== 0) {
-          throw new Error('type section body: first code section should have 0 inputs')
+          validationError(EOFError.Code0Inputs)
         }
         if (outputs !== 0) {
-          throw new Error('type section body: first code section should have 0 outputs')
+          validationError(EOFError.Code0Outputs)
         }
       }
       if (inputs > 0x7f) {
-        throw new Error(
-          `type section body: inputs of code section ${i} exceeds 127, the maximum (got ${inputs})`
-        )
+        validationError(EOFError.MaxInputs, i, inputs)
       }
       if (outputs > 0x7f) {
-        throw new Error(
-          `type section body: inputs of code section ${i} exceeds 127, the maximum (got ${inputs})`
-        )
+        validationError(EOFError.MaxOutputs, i, outputs)
       }
       if (maxStackHeight > 1023) {
-        throw new Error(
-          `type section body: max stack height should be at most 1023, got ${maxStackHeight}`
-        )
+        validationError(EOFError.MaxStackHeight, i)
       }
       typeSections.push({
         inputs,
@@ -192,15 +173,15 @@ class EOFBody {
     }
     const codeStartPtr = stream.getPtr()
     const codes = []
-    for (const codeSize of header.codeSizes) {
-      const code = stream.readBytes(codeSize, 'code section body: expected code')
+    for (const [i, codeSize] of header.codeSizes.entries()) {
+      const code = stream.readBytes(codeSize, validationError(EOFError.CodeSection, i))
       codes.push(code)
     }
     const entireCodeSection = buf.slice(codeStartPtr, stream.getPtr())
-    const dataSection = stream.readBytes(header.dataSize, 'data section body expected')
+    const dataSection = stream.readBytes(header.dataSize, validationError(EOFError.DataSection))
 
     if (!stream.isAtEnd()) {
-      throw new Error('got dangling bytes in body')
+      validationError(EOFError.DanglingBytes)
     }
 
     this.typeSections = typeSections
