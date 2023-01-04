@@ -3,7 +3,6 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory, initKZG } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'

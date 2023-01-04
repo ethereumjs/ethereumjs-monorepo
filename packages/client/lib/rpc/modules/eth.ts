@@ -666,8 +666,7 @@ export class Eth {
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    // TODO: add proper `pending` support to allow accurate nonce computation
-    const block = await getBlockByOption(blockOpt === 'pending' ? 'latest' : blockOpt, this._chain)
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
@@ -897,7 +896,6 @@ export class Eth {
         tx = TransactionFactory.fromSerializedData(txBuf, { common })
       }
     } catch (e: any) {
-      console.log(e)
       throw {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,
