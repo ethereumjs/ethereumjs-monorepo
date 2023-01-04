@@ -1,4 +1,8 @@
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
+
+import { EOF } from '../../src/eof'
+import { getOpcodesForHF } from '../../src/opcodes'
 
 /**
  *
@@ -7,7 +11,12 @@ import * as tape from 'tape'
  *
  */
 
-import { EOF } from '../../src/eof'
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
+  eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
+})
+const ops = getOpcodesForHF(common)
 
 // Tests taken from https://github.com/hyperledger/besu/blob/main/evm/src/test/java/org/hyperledger/besu/evm/code/EOFLayoutTest.java
 tape('container validation - invalid', (t) => {
@@ -162,11 +171,12 @@ tape('container validation - invalid', (t) => {
   for (const testCase of cases) {
     const str = testCase[0].replace(/\s/g, '')
     const bytes = Buffer.from(str, 'hex')
-    if (EOF.validateCode(bytes)) {
+    try {
+      EOF.validateCode(bytes, ops.opcodes)
+      t.pass(str + ': ' + testCase[2])
+    } catch {
       t.fail(str + ': ' + testCase[2])
       break
-    } else {
-      t.pass(str + ': ' + testCase[2])
     }
   }
   t.end()
@@ -223,11 +233,12 @@ tape('container validation - valid', (t) => {
     const str = testCase[0].replace(/\s/g, '')
 
     const bytes = Buffer.from(str, 'hex')
-    if (!EOF.validateCode(bytes)) {
+    try {
+      EOF.validateCode(bytes, ops.opcodes)
+      t.pass('verified container')
+    } catch {
       t.fail(str)
       break
-    } else {
-      t.pass('verified container')
     }
   }
   t.end()
@@ -279,18 +290,20 @@ tape('container validation - invalid type section', (t) => {
     const str = testCase[0].replace(/\s/g, '')
     const bytes = Buffer.from(str, 'hex')
     if (testCase[2] === null) {
-      if (!EOF.validateCode(bytes)) {
+      try {
+        EOF.validateCode(bytes, ops.opcodes)
+        t.pass(str)
+      } catch {
         t.fail(str)
         break
-      } else {
-        t.pass(str)
       }
     } else {
-      if (EOF.validateCode(bytes)) {
+      try {
+        EOF.validateCode(bytes, ops.opcodes)
+        t.pass(str + ': ' + testCase[2])
+      } catch {
         t.fail(str + ': ' + testCase[2])
         break
-      } else {
-        t.pass(str + ': ' + testCase[2])
       }
     }
   }

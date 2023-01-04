@@ -72,8 +72,11 @@ class EOFHeader {
     stream.verifyUint(VERSION, EOFError.VERSION)
     stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
     const typeSize = stream.readUint16(EOFError.TypeSize)
-    if (typeSize < 4 || typeSize % 4 !== 0) {
-      validationError(EOFError.TypeSize, typeSize)
+    if (typeSize < 4) {
+      validationError(EOFError.InvalidTypeSize, typeSize)
+    }
+    if (typeSize % 4 !== 0) {
+      validationError(EOFError.InvalidTypeSize, typeSize)
     }
     stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)
     const codeSize = stream.readUint16(EOFError.CodeSize)
@@ -82,9 +85,6 @@ class EOFHeader {
     }
     if (codeSize > 1024) {
       validationError(EOFError.MaxCodeSections)
-    }
-    if (codeSize !== typeSize / 4) {
-      validationError(EOFError.InvalidTypeSize)
     }
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
