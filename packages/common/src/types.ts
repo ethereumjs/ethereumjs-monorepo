@@ -115,10 +115,8 @@ export interface CustomCommonOpts extends BaseOpts {
   baseChain?: string | number | Chain | bigint
 }
 
-export interface GethConfigOpts {
+export interface GethConfigOpts extends BaseOpts {
   chain?: string
-  eips?: number[]
-  hardfork?: string | Hardfork
   genesisHash?: Buffer
   mergeForkIdPostMerge?: boolean
 }

@@ -161,10 +161,8 @@ export class BlockHeader {
       extraData: Buffer.from([]),
       mixHash: zeros(32),
       nonce: zeros(8),
-      baseFeePerGas: undefined,
       verkleProof: undefined,
       verklePreState: undefined,
-      withdrawalsRoot: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -185,33 +183,23 @@ export class BlockHeader {
     const extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
     const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
-    let baseFeePerGas =
-      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
     let verkleProof =
       toType(headerData.verkleProof, TypeOutput.PrefixedHexString) ?? defaults.verkleProof
     let verklePreState = headerData.verklePreState ?? defaults.verklePreState
-    const withdrawalsRoot =
-      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? defaults.withdrawalsRoot
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
       this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
 
-    if (this._common.isActivatedEIP(1559) === true) {
-      if (baseFeePerGas === undefined) {
-        if (number === this._common.hardforkBlock(Hardfork.London)) {
-          baseFeePerGas = this._common.param('gasConfig', 'initialBaseFee')
-        } else {
-          // Minimum possible value for baseFeePerGas is 7,
-          // so we use it as the default if the field is missing.
-          baseFeePerGas = BigInt(7)
-        }
-      }
-    } else {
-      if (baseFeePerGas) {
-        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
-      }
+    // Hardfork defaults which couldn't be paired with earlier defaults
+    const hardforkDefaults = {
+      baseFeePerGas: this._common.isActivatedEIP(1559)
+        ? number === this._common.hardforkBlock(Hardfork.London)
+          ? this._common.param('gasConfig', 'initialBaseFee')
+          : BigInt(7)
+        : undefined,
+      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
     }
 
     if (this._common.isActivatedEIP(999001)) {
@@ -223,16 +211,19 @@ export class BlockHeader {
       }
     }
 
-    if (this._common.isActivatedEIP(4895)) {
-      if (withdrawalsRoot === undefined) {
-        throw new Error('invalid header. withdrawalsRoot should be provided')
-      }
-    } else {
-      if (withdrawalsRoot !== undefined) {
-        throw new Error(
-          'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
-        )
-      }
+    const baseFeePerGas =
+      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? hardforkDefaults.withdrawalsRoot
+
+    if (!this._common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
+      throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+    }
+
+    if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
+      throw new Error(
+        'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
+      )
     }
 
     this.parentHash = parentHash

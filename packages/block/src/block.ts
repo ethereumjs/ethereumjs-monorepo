@@ -260,10 +260,11 @@ export class Block {
     withdrawals?: Withdrawal[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
-    this.transactions = transactions
-    this.withdrawals = withdrawals
-    this.uncleHeaders = uncleHeaders
     this._common = this.header._common
+
+    this.transactions = transactions
+    this.withdrawals = withdrawals ?? (this._common.isActivatedEIP(4895) ? [] : undefined)
+    this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -280,9 +281,7 @@ export class Block {
       }
     }
 
-    if (this._common.isActivatedEIP(4895) && withdrawals === undefined) {
-      throw new Error('Need a withdrawals field if EIP 4895 is active')
-    } else if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+    if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
