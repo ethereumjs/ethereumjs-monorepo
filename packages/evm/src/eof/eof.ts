@@ -104,9 +104,9 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
         // RJUMP + RJUMPI
         immediates.add(pos)
         immediates.add(pos + 1)
-        if (pos + 2 > code.length - 1) {
-          // RJUMP(I) relative offset is out of code bounds
-          throw new Error('RJUMP(I) opcode exceeds code size')
+        if (opcode === 0x5d && pos + 2 > code.length - 1) {
+          // RJUMPI relative offset is out of code bounds (in case popped stack item is zero)
+          throw new Error('RJUMPI opcode exceeds code size')
         }
         // RJUMP/RJUMPI
         const target = code.readInt16BE(pos) + pos + 2
@@ -155,7 +155,7 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
         pos += 2
       }
     }
-    const terminatingOpcodes = new Set([0x00, 0xb1, 0xf3, 0xfd, 0xfe, 0xff])
+    const terminatingOpcodes = new Set([0x00, 0x5c, 0xb1, 0xf3, 0xfd, 0xfe, 0xff])
     // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
     if (!terminatingOpcodes.has(code[lpos])) {
       throw new Error('Final opcode should be a terminating opcode')
@@ -210,7 +210,8 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
         throw new Error('Stack height exceeds the maximum of 1024')
       }
 
-      if (terminatingOpcodes.has(opcode)) {
+      // Special case; for RJUMP do not immediately continue (need to check jump location and add intermediate bytes)
+      if (opcode !== 0x5c && terminatingOpcodes.has(opcode)) {
         if (
           opcode === 0xb1 &&
           currentStackHeight !== container.body.typeSections[currentSection].outputs
