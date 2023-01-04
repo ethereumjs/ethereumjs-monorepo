@@ -4,6 +4,8 @@ import { Address, privateToAddress } from '@ethereumjs/util'
 
 import { VM } from '../../../src/vm'
 
+import type { TypeSection } from '@ethereumjs/evm/src/eof/container'
+
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -35,12 +37,8 @@ async function runTx(vm: VM, data: string, nonce: number) {
   return { result, code }
 }
 
-function getEOFCode(
-  code: string,
-  codeSizes: number[],
-  codeInputOutputs: [number, number, number?][]
-) {
-  if (codeInputOutputs.length !== codeSizes.length) {
+function getEOFCode(code: string, codeSizes: number[], typeHeaders: TypeSection[]) {
+  if (typeHeaders.length !== codeSizes.length) {
     throw new Error('each code should have input/output fields')
   }
   const typeSize = (codeSizes.length * 4).toString(16).padStart(4, '0')
@@ -53,13 +51,13 @@ function getEOFCode(
   }
   str += '030000' // Data section
   str += '00'
-  for (const codeInputOutput of codeInputOutputs) {
-    const input = codeInputOutput[0]
-    const output = codeInputOutput[1]
+  for (const code of typeHeaders) {
+    const input = code.inputs
+    const output = code.outputs
     str += input.toString(16).padStart(2, '0')
     str += output.toString(16).padStart(2, '0')
-    if (codeInputOutput[2] !== undefined) {
-      str += codeInputOutput[2].toString(16).padStart(4, '0')
+    if (code.maxStackHeight !== undefined) {
+      str + code.maxStackHeight.toString(16).padStart(4, '0')
     } else {
       str += '0000' // max stack height
     }
@@ -76,24 +74,41 @@ function getEOFCode(
  *                  The last index (optional, defaults to 0) is the max stack height of this function
  * @returns
  */
-function createEOFCode(functions: [string, number, number, number?][]) {
+function createEOFCode(functions: evmFunction[]) {
   let code = ''
   const codeSizes = []
-  const codeInputOutputs: [number, number, number?][] = []
+  const typeHeaders: TypeSection[] = []
   for (const func of functions) {
-    code += func[0]
-    codeSizes.push(func[0].length / 2)
-    codeInputOutputs.push([func[1], func[2], func[3]])
+    code += func.function
+    codeSizes.push(func.function.length / 2)
+    typeHeaders.push({
+      inputs: func.inputs,
+      outputs: func.outputs,
+      maxStackHeight: func.maxStackHeight ?? 0,
+    })
   }
-  return getEOFCode(code, codeSizes, codeInputOutputs)
+  return getEOFCode(code, codeSizes, typeHeaders)
 }
 
 function callFunc(func: number) {
   return 'B0' + func.toString(16).padStart(4, '0')
 }
 
+export type evmFunction = {
+  function: string
+  inputs: number
+  outputs: number
+  maxStackHeight?: number
+}
+
+export interface IeipTestCase {
+  code: evmFunction[]
+  expect: string
+  name: string
+}
+
 export type eipTestCase = {
-  code: [string, number, number, number?][]
+  code: evmFunction[]
   expect: string
   name: string
 }

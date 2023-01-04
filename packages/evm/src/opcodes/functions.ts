@@ -939,7 +939,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (stackItems < callerStackHeight + typeSection!.inputs) {
         trap(ERROR.CALLF_NOT_ENOUGH_STACK_ITEMS)
       }
-      if (stackItems > 1024 - typeSection!.maxStackHeight) {
+      if (stackItems > 1024 - typeSection!.maxStackHeight!) {
         trap(ERROR.CALLF_DATA_STACK_OVERFLOW)
       }
       runState.returnStackEIP4750.push({

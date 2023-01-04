@@ -2,7 +2,7 @@ import * as tape from 'tape'
 
 import { eip_util } from './eipUtils'
 
-import type { eipTestCase } from './eipUtils'
+import type { IeipTestCase, evmFunction } from './eipUtils'
 
 tape('EIP 3540 requires other EIPs', async (st) => {
   try {
@@ -73,54 +73,41 @@ function deployCreate2Code(initcode: string) {
 }
 
 tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
+  // ADD RETF
+  const codeAdd: evmFunction = { function: '01B1', inputs: 2, outputs: 1 }
+  // function which has output 5
+  const output5: evmFunction = { function: '6005B1', inputs: 0, outputs: 1 }
+  const cases: IeipTestCase[] = [
+    {
+      code: [
+        {
+          function: eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
+          inputs: 0,
+          outputs: 0,
+        },
+        codeAdd,
+        output5,
+      ],
+      expect: '0a', // 10
+      name: 'simple add test',
+    },
+  ]
+  const code = eip_util.createEOFCode(cases[0].code)
+  const bad_code = code.slice(0, -2)
   t.test('case: tx', async (st) => {
     const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
+    const vm2 = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
     let nonce = 0
+    let nonce2 = 0
 
-    // ADD RETF
-    const codeAdd: [string, number, number] = ['01B1', 2, 1]
-    // function which has output 5
-    const output5: [string, number, number] = ['6005B1', 0, 1]
-
-    const cases: eipTestCase[] = [
-      {
-        code: [
-          [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
-          codeAdd,
-          output5,
-        ],
-        expect: '0a', // 10
-        name: 'simple add test',
-      },
-    ]
-    const code = eip_util.createEOFCode(cases[0].code)
-    const bad_code = code.slice(0, 20)
-
-    const { result } = await eip_util.runTx(vm, code, nonce++)
-    const bad_res = await eip_util.runTx(vm, bad_code, nonce++)
+    const res = await eip_util.runTx(vm, code, nonce++)
+    const bad_res = await eip_util.runTx(vm2, bad_code, nonce2++)
     st.ok(
-      result.totalGasSpent > bad_res.result.totalGasSpent,
-      'Invalid EOF Code did not consume all gas'
+      res.result.totalGasSpent > bad_res.result.totalGasSpent,
+      `Invalid EOF Code did not consume all gas: ${bad_res.result.totalGasSpent}/${res.result.totalGasSpent}`
     )
     st.end()
   })
-
-  // ADD RETF
-  const codeAdd: [string, number, number] = ['01B1', 2, 1]
-  // function which has output 5
-  const output5: [string, number, number] = ['6005B1', 0, 1]
-
-  const testCase: eipTestCase = {
-    code: [
-      [eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500', 0, 0],
-      codeAdd,
-      output5,
-    ],
-    expect: '0a', // 10
-    name: 'simple add test',
-  }
-  const code = eip_util.createEOFCode(testCase.code)
-  const bad_code = code.slice(0, -2)
   t.test('case: create', async (st) => {
     const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
 
@@ -133,10 +120,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
     )
+    st.end()
   })
 
   t.test('case: create2', async (st) => {
-    const vm = await eip_util.setUpVM([])
+    const vm = await eip_util.setUpVM([3540, 3860, 4750, 5450, 3670, 4200])
 
     let data = deployCreate2Code(code.slice(2))
     const res = await eip_util.runTx(vm, data, 0)
@@ -147,6 +135,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
     )
+    st.end()
   })
 
   t.end()

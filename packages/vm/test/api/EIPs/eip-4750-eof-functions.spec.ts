@@ -1,48 +1,75 @@
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { EOFError } from '@ethereumjs/evm/src/eof/errors'
 import * as tape from 'tape'
 
 import { eip_util } from './eipUtils'
 
-import type { eipTestCase } from './eipUtils'
+import type { IeipTestCase, evmFunction } from './eipUtils'
+import type { TypeSection } from '@ethereumjs/evm/src/eof/container'
+
+interface IgetEOFCodeOpts {
+  function: string
+  typeHeaders: TypeSection[]
+  sizes: number[]
+  result: string
+}
 
 tape('EIP 4750 tests', (t) => {
   t.test('test CALLF errors', async (st) => {
     const vm = await eip_util.setUpVM([3540, 5450, 3860, 5450, 4200, 4750, 3670])
     let nonce = 0
 
-    const cases: [string, number[], [number, number, number?][], string][] = [
-      ['B0000000', [4], [[0, 0]], ERROR.CALLF_RETURN_STACK_FULL],
+    const cases: IgetEOFCodeOpts[] = [
+      {
+        function: 'B0000000',
+        typeHeaders: [
+          {
+            inputs: 0,
+            outputs: 0,
+            maxStackHeight: 0,
+          },
+        ],
+        sizes: [4],
+        result: EOFError.MaxStackHeightLimit,
+      },
     ]
 
     for (const testCase of cases) {
-      const code = eip_util.getEOFCode(testCase[0], testCase[1], testCase[2])
+      const code = eip_util.getEOFCode(testCase.function, testCase.sizes, testCase.typeHeaders)
       const { result } = await eip_util.runTx(vm, code, nonce++)
       st.equal(
-        result.execResult.exceptionError?.error,
-        testCase[3],
-        'EIP 4750: ' + testCase[0] + ' failed: ' + testCase[3]
+        result.execResult.exceptionError?.error.slice(0, testCase.result.length),
+        testCase.result,
+        'EIP 4750: ' + testCase.function + ' failed: ' + testCase.result
       )
     }
   })
 
   t.test('test CALLF/RETF execution', async (st) => {
-    const vm = await eip_util.setUpVM([3540, 5450, 3860, 5450, 4200, 4750, 3670])
-    let nonce = 0
-
     // ADD RETF
-    const codeAdd: [string, number, number, number] = ['01B1', 2, 1, 1]
+    const codeAdd: evmFunction = {
+      function: '01B1',
+      inputs: 2,
+      outputs: 1,
+      maxStackHeight: 1,
+    }
     // function which has output 5
-    const output5: [string, number, number, number] = ['6005B1', 0, 1, 1]
+    const output5: evmFunction = {
+      function: '6005B1',
+      inputs: 0,
+      outputs: 1,
+      maxStackHeight: 2,
+    }
 
-    const cases: eipTestCase[] = [
+    const cases: IeipTestCase[] = [
       {
         code: [
-          [
-            eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
-            0,
-            0,
-            2,
-          ],
+          {
+            function:
+              eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
+            inputs: 0,
+            outputs: 0,
+            maxStackHeight: 0,
+          },
           codeAdd,
           output5,
         ],
@@ -51,12 +78,13 @@ tape('EIP 4750 tests', (t) => {
       },
       {
         code: [
-          [
-            eip_util.callFunc(1) + eip_util.callFunc(1) + eip_util.callFunc(2) + '60005500',
-            0,
-            0,
-            2,
-          ],
+          {
+            function:
+              eip_util.callFunc(1) + eip_util.callFunc(1) + eip_util.callFunc(2) + '60005500',
+            inputs: 0,
+            outputs: 0,
+            maxStackHeight: 2,
+          },
           output5,
           codeAdd,
         ],
@@ -66,6 +94,8 @@ tape('EIP 4750 tests', (t) => {
     ]
 
     for (const testCase of cases) {
+      const vm = await eip_util.setUpVM([3540, 5450, 3860, 5450, 4200, 4750, 3670])
+      let nonce = 0
       const code = eip_util.createEOFCode(testCase.code)
       const { result } = await eip_util.runTx(vm, code, nonce++)
       const value = await vm.stateManager.getContractStorage(
@@ -74,5 +104,7 @@ tape('EIP 4750 tests', (t) => {
       )
       st.equals(value.toString('hex'), testCase.expect, testCase.name)
     }
+    st.end()
   })
+  t.end()
 })
