@@ -1,14 +1,30 @@
-import { BlobNetworkTransactionWrapper, TransactionFactory } from '@ethereumjs/tx'
+import { Hardfork } from '@ethereumjs/common'
+import { BlobNetworkTransactionWrapper, TransactionFactory, initKZG } from '@ethereumjs/tx'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
-import { validPayload } from './forkchoiceUpdatedV1.spec'
+// Since the genesis is copy of withdrawals with just sharding hardfork also started
+// at 0, we can re-use the same payload args
+const validForkChoiceState = {
+  headBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
+  safeBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
+  finalizedBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
+}
+const validPayloadAttributes = {
+  timestamp: '0x2f',
+  prevRandao: '0xff00000000000000000000000000000000000000000000000000000000000000',
+  suggestedFeeRecipient: '0xaa00000000000000000000000000000000000000',
+}
 
+const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
+
+initKZG(kzg)
 const method = 'engine_getBlobsBundleV1'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
@@ -33,7 +49,8 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
 
 tape(`${method}: call with known payload`, async (t) => {
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-  let req = params('engine_forkchoiceUpdatedV1', validPayload)
+  common.setHardfork(Hardfork.ShardingFork)
+  let req = params('engine_forkchoiceUpdatedV2', validPayload)
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
@@ -51,11 +68,10 @@ tape(`${method}: call with known payload`, async (t) => {
       { common }
     ).sign(randomBytes(32))
   )
-  req = params('engine_getPayloadV1', [payloadId])
+  req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {
-    console.log(res.body)
     t.equal(
-      res.body.result.blockHash,
+      res.body.result.executionPayload.blockHash,
       '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       'built expected block'
     )

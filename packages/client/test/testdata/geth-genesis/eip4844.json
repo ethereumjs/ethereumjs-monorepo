@@ -12,9 +12,11 @@
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
+    "shanghaiTime": 0,
+    "shardingForkTime": 0,
     "clique": {
-      "period": 5,
-      "epoch": 30000
+      "blockperiodseconds": 5,
+      "epochlength": 30000
     },
     "terminalTotalDifficulty": 0
   },
