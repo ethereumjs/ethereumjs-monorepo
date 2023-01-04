@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -13,6 +13,7 @@ import { calcExcessDataGas, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
 import { calcDataFee, fakeExponential } from '../src/helpers'
 
+initKZG(kzg)
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
@@ -92,17 +93,14 @@ tape('data gas tests', async (t) => {
 
   const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
-  const unsignedTx = BlobEIP4844Transaction.fromTxData(
-    {
-      versionedHashes: bufferedHashes,
-      blobs,
-      kzgCommitments: commitments,
-      maxFeePerDataGas: 100000000n,
-      gasLimit: 0xffffffn,
-      to: randomBytes(20),
-    },
-    { kzg }
-  )
+  const unsignedTx = BlobEIP4844Transaction.fromTxData({
+    versionedHashes: bufferedHashes,
+    blobs,
+    kzgCommitments: commitments,
+    maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
+    to: randomBytes(20),
+  })
 
   t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
   t.equal(calcDataFee(unsignedTx, highGasHeader), 786432n, 'compute data fee correctly')
