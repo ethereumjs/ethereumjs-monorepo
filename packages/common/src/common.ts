@@ -183,7 +183,6 @@ export class Common extends EventEmitter {
       chain: genesisParams.name ?? 'custom',
       eips,
       customChains: [genesisParams],
-      eips,
       hardfork,
     })
     if (genesisHash !== undefined) {
