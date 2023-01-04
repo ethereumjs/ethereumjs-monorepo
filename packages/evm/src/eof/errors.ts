@@ -62,10 +62,10 @@ export function validationError(type: EOFError, ...args: any) {
       throw new Error(EOFError.InvalidCodeSize + args[0])
     }
     case EOFError.Inputs: {
-      return `${EOFError.Inputs} - typeSection ${args[0]}`
+      throw new Error(`${EOFError.Inputs} - typeSection ${args[0]}`)
     }
     case EOFError.Outputs: {
-      return `${EOFError.Outputs} - typeSection ${args[0]}`
+      throw new Error(`${EOFError.Outputs} - typeSection ${args[0]}`)
     }
     case EOFError.Code0Inputs: {
       throw new Error(`first code section should have 0 inputs`)
@@ -80,7 +80,7 @@ export function validationError(type: EOFError, ...args: any) {
       throw new Error(EOFError.MaxOutputs + `${args[1]} - code section ${args[0]}`)
     }
     case EOFError.CodeSection: {
-      return `expected code: codeSection ${args[0]}: `
+      throw new Error(`expected code: codeSection ${args[0]}: `)
     }
     case EOFError.DataSection: {
       throw new Error(EOFError.DataSection)
@@ -93,6 +93,9 @@ export function validationError(type: EOFError, ...args: any) {
     }
     case EOFError.DanglingBytes: {
       throw new Error(EOFError.DanglingBytes)
+    }
+    default: {
+      throw new Error(type)
     }
   }
 }
