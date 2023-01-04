@@ -1,5 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BlobNetworkTransactionWrapper, TransactionFactory, initKZG } from '@ethereumjs/tx'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { TransactionFactory, initKZG } from '@ethereumjs/tx'
+import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
@@ -48,31 +50,48 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
 })
 
 tape(`${method}: call with known payload`, async (t) => {
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  DefaultStateManager.prototype.setStateRoot = function (): any {}
+  DefaultStateManager.prototype.copy = function () {
+    return this
+  }
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
   common.setHardfork(Hardfork.ShardingFork)
+  const pkey = Buffer.from(
+    '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
+    'hex'
+  )
+  const address = Address.fromPrivateKey(pkey)
+  const account = await service.execution.vm.stateManager.getAccount(address)
+
+  account.balance = 0xfffffffffffffffn
+  await service.execution.vm.stateManager.putAccount(address, account)
   let req = params('engine_forkchoiceUpdatedV2', validPayload)
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
   }
   await baseRequest(t, server, req, 200, expectRes, false)
-  await service.txPool.add(
-    TransactionFactory.fromTxData(
-      {
-        type: 0x05,
-        versionedHashes: [],
-        maxFeePerDataGas: 1n,
-        maxFeePerGas: 10000000000n,
-        maxPriorityFeePerGas: 100000000n,
-      },
-      { common }
-    ).sign(randomBytes(32))
-  )
+  const tx = TransactionFactory.fromTxData(
+    {
+      type: 0x05,
+      versionedHashes: [],
+      maxFeePerDataGas: 1n,
+      maxFeePerGas: 10000000000n,
+      maxPriorityFeePerGas: 100000000n,
+      gasLimit: 30000000n,
+    },
+    { common }
+  ).sign(pkey)
+
+  await service.txPool.add(tx, true)
   req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {
     t.equal(
       res.body.result.executionPayload.blockHash,
-      '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+      '0xcb97ab742c7c7815a9f1e370b023701ba5b12ebe571149fd7adc4e5ec2de0123',
       'built expected block'
     )
   }
@@ -82,9 +101,12 @@ tape(`${method}: call with known payload`, async (t) => {
   expectRes = (res: any) => {
     t.equal(
       res.body.result.blockHash,
-      '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+      '0xcb97ab742c7c7815a9f1e370b023701ba5b12ebe571149fd7adc4e5ec2de0123',
       'got expected blockHash'
     )
   }
   await baseRequest(t, server, req, 200, expectRes, false)
+  // Restore setStateRoot
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+  DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
