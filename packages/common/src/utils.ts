@@ -29,10 +29,27 @@ function formatNonce(nonce: string): string {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
-  const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
-  let { extraData, timestamp, nonce } = json
+  const {
+    name,
+    config,
+    difficulty,
+    mixHash,
+    gasLimit,
+    coinbase,
+    baseFeePerGas,
+  }: {
+    name: string
+    config: any
+    difficulty: string
+    mixHash: string
+    gasLimit: string
+    coinbase: string
+    baseFeePerGas: string
+  } = json
+  let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
+    json
   const genesisTimestamp = Number(timestamp)
-  const { chainId } = config
+  const { chainId }: { chainId: number } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
   if (extraData === '') {
@@ -55,7 +72,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     )
   }
 
-  const params: any = {
+  const params = {
     name,
     chainId,
     networkId: chainId,
@@ -69,6 +86,8 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       coinbase,
       baseFeePerGas,
     },
+    hardfork: undefined as string | undefined,
+    hardforks: [] as ConfigHardfork[],
     bootstrapNodes: [],
     consensus:
       config.clique !== undefined
@@ -118,13 +137,16 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   params.hardforks = configHardforkNames
     .map((nameBlock) => ({
       name: forkMapRev[nameBlock],
-      block: forkMap[forkMapRev[nameBlock]].isTimestamp === true ? null : config[nameBlock],
+      block:
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
+          ? null
+          : config[nameBlock],
       timestamp:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true ? config[nameBlock] : undefined,
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true && typeof config[nameBlock] === 'number'
+          ? config[nameBlock]
+          : undefined,
     }))
-    .filter(
-      (fork) => (fork.block !== null && fork.block !== undefined) || fork.timestamp !== undefined
-    )
+    .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
@@ -133,8 +155,6 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.timestamp ?? genesisTimestamp) - (b.timestamp ?? genesisTimestamp)
   })
-
-  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
 
   if (config.terminalTotalDifficulty !== undefined) {
     // Following points need to be considered for placement of merge hf
@@ -164,11 +184,16 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
         (hf.block > 0 || (hf.timestamp ?? 0) > 0)
     )
     if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig)
+      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
     } else {
-      params.hardforks.push(mergeConfig)
+      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
     }
   }
+
+  const latestHardfork = params.hardforks.length > 0 ? params.hardforks.slice(-1)[0] : undefined
+  params.hardfork = latestHardfork?.name
+  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
+
   return params
 }
 
