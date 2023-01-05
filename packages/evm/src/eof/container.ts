@@ -86,6 +86,9 @@ class EOFHeader {
     if (codeSize > 1024) {
       validationError(EOFError.MaxCodeSections)
     }
+    if (codeSize !== typeSize / 4) {
+      validationError(EOFError.TypeSections)
+    }
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
       const codeSectionSize = stream.readUint16(EOFError.CodeSection)
