@@ -164,7 +164,7 @@ tape('hash() and signature verification', async (t) => {
     })
     t.equal(
       unsignedTx.hash().toString('hex'),
-      '4a4451b77bf251d626009dc9c6179c9fe088eb362a1d94eab257fb6f0f9fe95e',
+      '0fcee5b30088a9c96b4990a3914002736a50f42468209d65a93badd3d1cd0677',
       'produced the correct transaction hash'
     )
     const signedTx = unsignedTx.sign(

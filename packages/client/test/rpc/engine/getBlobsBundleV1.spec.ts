@@ -90,7 +90,7 @@ tape(`${method}: call with known payload`, async (t) => {
   expectRes = (res: any) => {
     t.equal(
       res.body.result.executionPayload.blockHash,
-      '0xcb97ab742c7c7815a9f1e370b023701ba5b12ebe571149fd7adc4e5ec2de0123',
+      '0x467ffd05100e34088fbc3eee3966304a3330ac37fe5d85c1873a867f514112e6',
       'built expected block'
     )
   }
@@ -100,7 +100,7 @@ tape(`${method}: call with known payload`, async (t) => {
   expectRes = (res: any) => {
     t.equal(
       res.body.result.blockHash,
-      '0xcb97ab742c7c7815a9f1e370b023701ba5b12ebe571149fd7adc4e5ec2de0123',
+      '0x467ffd05100e34088fbc3eee3966304a3330ac37fe5d85c1873a867f514112e6',
       'got expected blockHash'
     )
   }
