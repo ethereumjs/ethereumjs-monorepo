@@ -47,7 +47,6 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  kzg.loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
   const verified = kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
 
   if (!verified) {
@@ -60,8 +59,6 @@ const validateBlobTransactionNetworkWrapper = (
       throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
     }
   }
-
-  kzg.freeTrustedSetup()
 }
 
 export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
@@ -174,6 +171,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     )
     return tx
   }
+
   /**
    * Creates a transaction from the network encoding of a blob transaction (with blobs/commitments/proof)
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
@@ -315,14 +313,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       value: this.to?.toBuffer() ?? null,
     }
     const blobArrays = this.blobs?.map((blob) => Uint8Array.from(blob)) ?? []
-    kzg.loadTrustedSetup(__dirname + '/kzg/trusted_setup.txt')
     const serializedTxWrapper = BlobNetworkTransactionWrapper.serialize({
       blobs: blobArrays,
       blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
       tx: { ...this.txData(), ...to },
       kzgAggregatedProof: kzg.computeAggregateKzgProof(blobArrays),
     })
-    kzg.freeTrustedSetup()
     return Buffer.concat([Buffer.from([0x05]), serializedTxWrapper])
   }
 

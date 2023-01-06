@@ -1,3 +1,6 @@
+/**
+ * Interface for an externally provided kzg library used when creating blob transactions
+ */
 export interface Ikzg {
   loadTrustedSetup(filePath: string): void
   freeTrustedSetup(): void

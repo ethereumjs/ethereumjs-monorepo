@@ -14,6 +14,7 @@ export let kzg: Ikzg = {
   verifyAggregateKzgProof: kzgNotLoaded,
 }
 
-export function initKZG(kzgLib: Ikzg) {
+export function initKZG(kzgLib: Ikzg, trustedSetupPath = __dirname + '/trusted_setup.txt') {
   kzg = kzgLib
+  kzg.loadTrustedSetup(trustedSetupPath)
 }

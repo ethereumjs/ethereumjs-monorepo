@@ -94,15 +94,9 @@ tape('Network wrapper tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    // Initialize KZG environment (i.e. trusted setup)
-    kzg.loadTrustedSetup(await kzg.transformTrustedSetupJSON('./src/kzg/trusted_setup.json'))
-
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-
-    kzg.freeTrustedSetup()
-    // Cleanup KZG environment (i.e. remove trusted setup)
 
     const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 

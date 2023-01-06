@@ -18,7 +18,6 @@ import type { Client } from 'jayson/promise'
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // Initialize the kzg object with the kzg library
 initKZG(kzg)
-const { freeTrustedSetup, loadTrustedSetup } = kzg
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {
@@ -248,7 +247,6 @@ export const runBlobTx = async (
   to?: string,
   value?: bigint
 ) => {
-  loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
   const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
@@ -278,7 +276,6 @@ export const runBlobTx = async (
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData['nonce'] = BigInt(nonce.result) as any
   const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
-  freeTrustedSetup()
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -313,11 +310,11 @@ export const createBlobTxs = async (
   value?: bigint
 ) => {
   const txHashes: any = []
-  loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
+
   const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
-  freeTrustedSetup()
+
   for (let x = 1; x <= numTxs; x++) {
     const sender = Address.fromPrivateKey(pkey)
     const txData = {

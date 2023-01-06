@@ -1,11 +1,11 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
 } from '@ethereumjs/tx/test/utils/blobHelpers'
 import { Address } from '@ethereumjs/util'
-import { freeTrustedSetup, loadTrustedSetup } from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { Client } from 'jayson/promise'
 const clientPort = process.argv[2]
@@ -18,6 +18,7 @@ const MAX_BLOBS_PER_TX = 2
 const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
+initKZG(kzg)
 const pkey = Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
 const sender = Address.fromPrivateKey(pkey)
 
@@ -89,11 +90,9 @@ async function run(data: any) {
     await sleep(1000)
   }
 
-  loadTrustedSetup('../tx/src/kzg/trusted_setup.txt')
   const blobs = get_blobs(data)
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
-  freeTrustedSetup()
 
   const account = Address.fromPrivateKey(randomBytes(32))
   const txData = {

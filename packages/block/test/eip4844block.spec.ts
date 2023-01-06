@@ -91,15 +91,9 @@ tape('data gas tests', async (t) => {
     t.equal(excessDataGas, 4456448n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
-    // Initialize KZG environment (i.e. trusted setup)
-    kzg.loadTrustedSetup(__dirname.split('/block')[0] + '/tx/src/kzg/trusted_setup.txt')
-
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-
-    kzg.freeTrustedSetup()
-    // Cleanup KZG environment (i.e. remove trusted setup)
 
     const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
 
