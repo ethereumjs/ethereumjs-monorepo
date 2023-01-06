@@ -177,6 +177,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
    * @returns a BlobEIP4844Transaction
+   * @throws if no KZG library is loaded -- using the {@link initKzg} helper method
    */
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Buffer,
