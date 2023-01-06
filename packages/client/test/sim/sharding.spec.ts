@@ -32,6 +32,8 @@ const filterKeywords = [
   'pid',
   'TxPool',
   'Pending',
+  'Synced',
+  'Syncing',
 ]
 const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 
@@ -40,7 +42,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     filterKeywords,
     filterOutWords,
     externalRun: process.env.EXTERNAL_RUN,
-    multiPeer: false,
+    withPeer: process.env.WITH_PEER,
   })
 
   if (result.includes('EthereumJS')) {

@@ -71,31 +71,62 @@ export async function waitForELOffline(): Promise<void> {
 type RunOpts = {
   filterKeywords: string[]
   filterOutWords: string[]
-  externalRun: string | undefined
-  multiPeer?: boolean
+  externalRun?: string
+  withPeer?: string
 }
 
 export function runNetwork(
   network: string,
   client: Client,
-  { filterKeywords, filterOutWords, multiPeer }: RunOpts
+  { filterKeywords, filterOutWords, withPeer }: RunOpts
 ): () => Promise<void> {
   const runProc = spawn('test/sim/single-run.sh', [], {
     env: {
       ...process.env,
       NETWORK: network,
+      // If instructed to run a multipeer with a peer2
+      MULTIPEER: withPeer === 'peer2' ? 'peer1' : undefined,
     },
   })
-  console.log({ pid: runProc.pid })
+  const runProcPrefix = withPeer !== undefined ? 'peer1' : ''
   let lastPrintedDot = false
+  runProc.stdout.on('data', (chunk) => {
+    const str = Buffer.from(chunk).toString('utf8')
+    const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
+    const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
+    if (filterStr && !filterOutStr) {
+      if (lastPrintedDot) {
+        console.log('')
+        lastPrintedDot = false
+      }
+      process.stdout.write(`${runProcPrefix}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+    } else {
+      if (str.includes('Synchronized')) {
+        process.stdout.write('.')
+        lastPrintedDot = true
+      }
+    }
+  })
+  runProc.stderr.on('data', (chunk) => {
+    const str = Buffer.from(chunk).toString('utf8')
+    const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
+    if (!filterOutStr) {
+      process.stderr.write(`${runProcPrefix}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+    }
+  })
+
+  runProc.on('exit', (code) => {
+    console.log('network exited', { code })
+  })
+  console.log({ pid: runProc.pid })
 
   let peerRunProc: ChildProcessWithoutNullStreams | undefined = undefined
-  if (multiPeer === true) {
+  if (withPeer !== undefined) {
     peerRunProc = spawn('test/sim/single-run.sh', [], {
       env: {
         ...process.env,
         NETWORK: network,
-        MULTIPEER: 'syncpeer',
+        MULTIPEER: withPeer,
       },
     })
     console.log({ peerRunProc: peerRunProc.pid })
@@ -110,7 +141,7 @@ export function runNetwork(
           console.log('')
           lastPrintedDot = false
         }
-        process.stdout.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+        process.stdout.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
       } else {
         if (str.includes('Synchronized')) {
           process.stdout.write('.')
@@ -122,7 +153,7 @@ export function runNetwork(
       const str = Buffer.from(chunk).toString('utf8')
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
       if (!filterOutStr) {
-        process.stderr.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+        process.stderr.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
       }
     })
 
@@ -130,35 +161,6 @@ export function runNetwork(
       console.log('network exited', { code })
     })
   }
-
-  runProc.stdout.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
-    const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
-    const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-    if (filterStr && !filterOutStr) {
-      if (lastPrintedDot) {
-        console.log('')
-        lastPrintedDot = false
-      }
-      process.stdout.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
-    } else {
-      if (str.includes('Synchronized')) {
-        process.stdout.write('.')
-        lastPrintedDot = true
-      }
-    }
-  })
-  runProc.stderr.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
-    const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-    if (!filterOutStr) {
-      process.stderr.write(`el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
-    }
-  })
-
-  runProc.on('exit', (code) => {
-    console.log('network exited', { code })
-  })
 
   const teardownCallBack = async () => {
     console.log('teardownCallBack', { pid: runProc.pid })
