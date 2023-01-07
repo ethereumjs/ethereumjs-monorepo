@@ -49,7 +49,7 @@ function getEOFCode(code: string) {
   return str
 }
 
-tape('EIP 3670 tests', (t) => {
+tape('EIP 4200 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
