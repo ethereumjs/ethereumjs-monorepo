@@ -840,7 +840,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.returnStack.push(BigInt(runState.programCounter))
         runState.programCounter = destNum + 1
       } else if (common.isActivatedEIP(4200)) {
-        if (EOF.isEOFCode(runState.env.containerCode!)) {
+        if (runState.env.containerCode && EOF.isEOFCode(runState.env.containerCode!)) {
           const code = runState.env.code
           const jumptableEntries = code[runState.programCounter]
           const jumptableSize = jumptableEntries * 2
@@ -857,6 +857,8 @@ export const handlers: Map<number, OpHandler> = new Map([
           // Legacy contracts do not support RJUMPV
           trap(ERROR.INVALID_OPCODE)
         }
+      } else {
+        trap(ERROR.INVALID_OPCODE)
       }
     },
   ],
@@ -927,7 +929,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xb0,
     function (runState) {
-      // TODO make this invalid in legacy
+      if (!runState.env.containerCode) {
+        // legacy contract
+        trap(ERROR.INVALID_OPCODE)
+      }
+      if (!EOF.isEOFCode(runState.env.containerCode!)) {
+        // legacy contract
+        trap(ERROR.INVALID_OPCODE)
+      }
       if (runState.returnStackEIP4750.length >= 1024) {
         trap(ERROR.CALLF_RETURN_STACK_FULL)
       }
@@ -957,6 +966,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xb1,
     function (runState) {
+      if (!runState.env.containerCode) {
+        // legacy contract
+        trap(ERROR.INVALID_OPCODE)
+      }
+      if (!EOF.isEOFCode(runState.env.containerCode!)) {
+        // legacy contract
+        trap(ERROR.INVALID_OPCODE)
+      }
       const stackItems = runState.stack.length
       const topSection = runState.returnStackEIP4750[runState.returnStackEIP4750.length - 1]
       const callerStackHeight = topSection.stackHeight
