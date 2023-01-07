@@ -282,7 +282,13 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
       throw new Error('There exist opcodes which cannot be reached')
     }
     if (maxHeight !== container.body.typeSections[currentSection].maxStackHeight) {
-      throw new Error('Section max height does not correspond to actual max height')
+      throw new Error(
+        `Section max height does not correspond to actual max height, expected: 0x${maxHeight
+          .toString(16)
+          .padStart(4, '0')}, got: 0x${container.body.typeSections[currentSection].maxStackHeight
+          .toString(16)
+          .padStart(4, '0')}`
+      )
     }
   }
 

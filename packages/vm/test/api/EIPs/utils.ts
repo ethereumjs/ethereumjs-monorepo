@@ -57,7 +57,7 @@ function getEOFCode(code: string, codeSizes: number[], typeHeaders: TypeSection[
     str += input.toString(16).padStart(2, '0')
     str += output.toString(16).padStart(2, '0')
     if (code.maxStackHeight !== undefined) {
-      str + code.maxStackHeight.toString(16).padStart(4, '0')
+      str += code.maxStackHeight.toString(16).padStart(4, '0')
     } else {
       str += '0000' // max stack height
     }

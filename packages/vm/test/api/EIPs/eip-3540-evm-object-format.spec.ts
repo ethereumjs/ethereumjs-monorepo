@@ -74,9 +74,9 @@ function deployCreate2Code(initcode: string) {
 
 tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
   // ADD RETF
-  const codeAdd: evmFunction = { function: '01B1', inputs: 2, outputs: 1 }
+  const codeAdd: evmFunction = { function: '01B1', inputs: 2, outputs: 1, maxStackHeight: 2 }
   // function which has output 5
-  const output5: evmFunction = { function: '6005B1', inputs: 0, outputs: 1 }
+  const output5: evmFunction = { function: '6005B1', inputs: 0, outputs: 1, maxStackHeight: 1 }
   const cases: IeipTestCase[] = [
     {
       code: [
@@ -84,6 +84,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
           function: eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
           inputs: 0,
           outputs: 0,
+          maxStackHeight: 2,
         },
         codeAdd,
         output5,
@@ -101,10 +102,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     let nonce2 = 0
 
     const res = await eip_util.runTx(vm, code, nonce++)
+    st.ok(res.result.createdAddress !== undefined, 'succesfully created EOF contract using tx')
     const bad_res = await eip_util.runTx(vm2, bad_code, nonce2++)
     st.ok(
-      res.result.totalGasSpent > bad_res.result.totalGasSpent,
-      `Invalid EOF Code did not consume all gas: ${bad_res.result.totalGasSpent}/${res.result.totalGasSpent}`
+      res.result.totalGasSpent < bad_res.result.totalGasSpent,
+      `Invalid EOF contract creation tx which contained an EOF contract consumed all gas: ${bad_res.result.totalGasSpent}/${res.result.totalGasSpent}`
     )
     st.end()
   })

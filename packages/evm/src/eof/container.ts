@@ -134,7 +134,7 @@ class EOFHeader {
 export interface TypeSection {
   inputs: number
   outputs: number
-  maxStackHeight?: number
+  maxStackHeight: number
 }
 
 class EOFBody {
