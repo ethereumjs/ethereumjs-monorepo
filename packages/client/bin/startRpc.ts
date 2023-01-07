@@ -38,7 +38,13 @@ type RPCArgs = {
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret: Buffer
   const defaultJwtPath = `${config.datadir}/jwtsecret`
-  if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {
+
+  // If jwtFilePath is provided, it should exist
+  if (typeof jwtFilePath === 'string' && !existsSync(jwtFilePath)) {
+    throw new Error(`No file exists at provided jwt secret path=${jwtFilePath}`)
+  }
+
+  if (typeof jwtFilePath === 'string' || existsSync(defaultJwtPath)) {
     const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
@@ -47,7 +53,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     }
     config.logger.debug(
       `Read a hex encoded jwt secret from ${
-        jwtFilePath !== undefined ? `path=${jwtFilePath}` : `default path=${defaultJwtPath}`
+        typeof jwtFilePath === 'string' ? `path=${jwtFilePath}` : `default path=${defaultJwtPath}`
       }`
     )
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
