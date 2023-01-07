@@ -80,7 +80,7 @@ tape('EOF Container Constructor Test', (t) => {
       {
         name: 'CODE_SIZE',
         code: invalidate(Change.CODE_SIZE),
-        err: 'Trying to read out of bounds at pos: 49: expected a code section',
+        err: 'need to have a type section for each code section',
       },
       {
         name: 'CODE_SIZE',
@@ -156,7 +156,7 @@ tape('EOF Container Constructor Test', (t) => {
       {
         name: 'CODE',
         code: toBuffer(valid).slice(0, 32),
-        err: 'Trying to read out of bounds: expected code',
+        err: 'expected code: codeSection 0: ',
       },
       {
         name: 'DANGLING',

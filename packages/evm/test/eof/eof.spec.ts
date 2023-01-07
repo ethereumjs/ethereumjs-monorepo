@@ -173,10 +173,9 @@ tape('container validation - invalid', (t) => {
     const bytes = Buffer.from(str, 'hex')
     try {
       EOF.validateCode(bytes, ops.opcodes)
-      t.pass(str + ': ' + testCase[2])
-    } catch {
       t.fail(str + ': ' + testCase[2])
-      break
+    } catch {
+      t.pass(str + ': ' + testCase[2])
     }
   }
   t.end()
@@ -210,7 +209,7 @@ tape('container validation - valid', (t) => {
       1,
     ],
     [
-      'EF0001 010010 0200040001000200020002 030000 00 00000000 01000000 00010000 02030000 FE 5000 3000 8000',
+      'EF0001 010010 0200040001000200020002 030000 00 00000000 01000001 00010001 02030003 FE 5000 3000 8000',
       'non-void input and output types',
       null,
       1,
@@ -238,7 +237,6 @@ tape('container validation - valid', (t) => {
       t.pass('verified container')
     } catch {
       t.fail(str)
-      break
     }
   }
   t.end()
@@ -280,7 +278,7 @@ tape('container validation - invalid type section', (t) => {
       1,
     ],
     [
-      'EF0001 010010 0200040001000200020002 030000 00 00000000 01000000 00010000 02030000 FE 5000 3000 8000',
+      'EF0001 010010 0200040001000200020002 030000 00 00000000 01000001 00010001 02030003 FE 5000 3000 8000',
       'non-void input and output types',
       null,
       1,
@@ -295,15 +293,13 @@ tape('container validation - invalid type section', (t) => {
         t.pass(str)
       } catch {
         t.fail(str)
-        break
       }
     } else {
       try {
         EOF.validateCode(bytes, ops.opcodes)
-        t.pass(str + ': ' + testCase[2])
-      } catch {
         t.fail(str + ': ' + testCase[2])
-        break
+      } catch {
+        t.pass(str + ': ' + testCase[2])
       }
     }
   }
