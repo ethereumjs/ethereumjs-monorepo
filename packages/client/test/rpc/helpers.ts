@@ -19,6 +19,7 @@ import { mockBlockchain } from './mockBlockchain'
 
 import type { EthereumClient } from '../../lib/client'
 import type { FullEthereumService } from '../../lib/service'
+import type { ClientOpts } from '../../lib/types'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
@@ -56,7 +57,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: any = {}) {
+export function createClient(clientOpts: ClientOpts = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({
     transports: [],

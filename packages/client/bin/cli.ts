@@ -21,6 +21,8 @@ import { helprpc, startRPCServers } from './startRpc'
 
 import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
+import type { ClientOpts } from '../lib/types'
+import type { RPCArgs } from './startRpc'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -33,7 +35,7 @@ const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
-const args = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs(hideBin(process.argv))
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
@@ -585,7 +587,7 @@ async function run() {
 
   // Configure common based on args given
   if (
-    (typeof args.customChainParams === 'string' ||
+    (typeof args.customChain === 'string' ||
       typeof args.customGenesisState === 'string' ||
       typeof args.gethGenesis === 'string') &&
     (args.network !== 'mainnet' || args.networkId !== undefined)
@@ -677,7 +679,8 @@ async function run() {
   })
 
   const client = await startClient(config, customGenesisState)
-  const servers = args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args) : []
+  const servers =
+    args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
