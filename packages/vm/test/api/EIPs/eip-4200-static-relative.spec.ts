@@ -49,6 +49,7 @@ const createEOFCode = eip_util.createEOFCode */
 
 tape('EIP 4200 tests', (t) => {
   t.fail('need to convert EIP 4200 containers')
+  t.end()
   /**const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
