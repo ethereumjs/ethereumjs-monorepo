@@ -1,4 +1,4 @@
-import { EOFError } from '@ethereumjs/evm/src/eof/errors'
+import { ERROR } from '@ethereumjs/evm/src/exceptions'
 import * as tape from 'tape'
 
 import { eip_util } from './utils'
@@ -29,7 +29,7 @@ tape('EIP 4750 tests', (t) => {
           },
         ],
         sizes: [4],
-        result: EOFError.MaxStackHeightLimit,
+        result: ERROR.CALLF_RETURN_STACK_FULL,
       },
     ]
 
@@ -50,14 +50,14 @@ tape('EIP 4750 tests', (t) => {
       function: '01B1',
       inputs: 2,
       outputs: 1,
-      maxStackHeight: 1,
+      maxStackHeight: 2,
     }
     // function which has output 5
     const output5: evmFunction = {
       function: '6005B1',
       inputs: 0,
       outputs: 1,
-      maxStackHeight: 2,
+      maxStackHeight: 1,
     }
 
     const cases: IeipTestCase[] = [
@@ -68,7 +68,7 @@ tape('EIP 4750 tests', (t) => {
               eip_util.callFunc(2) + eip_util.callFunc(2) + eip_util.callFunc(1) + '60005500',
             inputs: 0,
             outputs: 0,
-            maxStackHeight: 0,
+            maxStackHeight: 2,
           },
           codeAdd,
           output5,
