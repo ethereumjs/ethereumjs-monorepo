@@ -5,12 +5,20 @@ import { stackDelta } from './stackDelta'
 import type { OpcodeList } from '../opcodes'
 
 /**
- * Checks if the `code` is of EOF format
+ * Checks if the `code` is of EOF format (starts with 0xEF00)
  * @param code Code to check
  * @returns
  */
 const isEOFCode = (code: Buffer): boolean => {
   return code.slice(0, 2).equals(MAGIC)
+}
+
+/**
+ * Checks if the code starts with 0xEF (this is not possible if EIP 3541 is activated, but 3540 is not)
+ * @param code Code to check
+ */
+const isEOF_3541_code = (code: Buffer): boolean => {
+  return code.slice(0, 1).equals(MAGIC.slice(0, 1))
 }
 
 /**
@@ -330,4 +338,5 @@ export const EOF = {
   getEOFCode,
   getEOFVersion,
   isEOFCode,
+  isEOF_3541_code,
 }
