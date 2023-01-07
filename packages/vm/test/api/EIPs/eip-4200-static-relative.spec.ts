@@ -1,9 +1,13 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+/**import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Address, privateToAddress } from '@ethereumjs/util'*/
 import * as tape from 'tape'
 
-import { VM } from '../../../src/vm'
+/**
+import { eip_util } from './utils'
+
+import type { VM } from '../../../src/vm'
+
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -38,19 +42,14 @@ function getRJUMPVCode(int16list: number[]) {
   return str
 }
 
-function getEOFCode(code: string) {
-  // Assume: only one section
-  const str =
-    '0xEF0001010004020001' +
-    (code.length / 2).toString(16).padStart(4, '0') +
-    '03000000' +
-    '00000000' +
-    code
-  return str
-}
+const createEOFCode = eip_util.createEOFCode */
+
+// NOTE: all these tests will fail, since these are invalid EOF format
+// It takes a lot of time to change these - better to wait for ethereum/tests
 
 tape('EIP 4200 tests', (t) => {
-  const common = new Common({
+  t.fail('need to convert EIP 4200 containers')
+  /**const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
     eips: [3540, 5450, 3860, 5450, 4200, 4750, 3670],
@@ -71,7 +70,7 @@ tape('EIP 4200 tests', (t) => {
     const validCases = [
       // RJUMP
       // RJUMP, jump to JUMPDEST (0x5B)
-      [getEOFCode('5B5C' + getInt16Str(1) + '5B5B00'), 'RJUMP to JUMPDEST, +1'],
+      [('5B5C' + getInt16Str(1) + '5B5B00'), 'RJUMP to JUMPDEST, +1'],
       [getEOFCode('5B5C' + getInt16Str(0) + '5B5B00'), 'RJUMP to JUMPDEST, 0'],
       // Note: need to jump over `JUMPDEST STOP`, otherwise an infinite loop is created
       [
@@ -233,5 +232,5 @@ tape('EIP 4200 tests', (t) => {
       const { result } = await runTx(vm, getEOFCode(code[0]), nonce++)
       st.ok(result.execResult.exceptionError!.error === 'invalid EOF format', code[1])
     }
-  })
+  })*/
 })
