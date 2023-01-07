@@ -52,15 +52,9 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     )
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
-    // TODO: Check if jwtsecret already exists and re-use that one if not provided.
-    // jwtFilePath = `${config.datadir}/jwtsecret`
-    // jwtSecret = readFileSync(defaultJwtP)
-    // Check if file exists and re-use it
-    // if (jwtSecret === undefined) {
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
     writeFileSync(defaultJwtPath, jwtSecret.toString('hex'))
     config.logger.info(`Wrote a hex encoded random jwt secret to path=${defaultJwtPath}`)
-    // }
   }
   return jwtSecret
 }
