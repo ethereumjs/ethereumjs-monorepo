@@ -6,33 +6,33 @@ import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
 
-import * as testnetVerkle from './testdata/testnetVerkle.json'
-import * as verkleBlockJSON from './testdata/verkleCondrieuBlock499.json'
+import * as testnetVerkle from './testdata/testnetVerkleBeverlyHills.json'
+import * as verkleBlockJSON from './testdata/verkleBeverlyHillsBlock86466.json'
 import * as simpleVerkleBlockJSON from './testdata/verkleSampleBlock.json'
 
 tape('Verkle-enabled VM', async (t) => {
-  // t.test('should run a simple verkle block (no storage/contract accesses)', async (st) => {
-  //   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
-  //   const block = Block.fromBlockData(simpleVerkleBlockJSON, { common })
-  //   const stateManager = new StatelessVerkleStateManager()
-  //   stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+  t.test('should run a simple verkle block (no storage/contract accesses)', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
+    const block = Block.fromBlockData(simpleVerkleBlockJSON, { common })
+    const stateManager = new StatelessVerkleStateManager()
+    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
 
-  //   const vm = await VM.create({ common, stateManager })
+    const vm = await VM.create({ common, stateManager })
 
-  //   await vm.runBlock({
-  //     block,
-  //     skipHeaderValidation: true,
-  //   })
+    await vm.runBlock({
+      block,
+      skipHeaderValidation: true,
+    })
 
-  //   st.pass('Should run verkle block successfully')
+    st.pass('Should run verkle block successfully')
 
-  //   st.end()
-  // })
+    st.end()
+  })
 
   t.test('should run a verkle block', async (st) => {
     const common = Common.fromGethGenesis(testnetVerkle, {
       chain: 'customChain',
-      hardfork: Hardfork.London,
+      hardfork: Hardfork.Merge,
       eips: [999001],
     })
 
