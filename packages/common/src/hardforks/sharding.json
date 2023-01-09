@@ -1,6 +1,6 @@
 {
   "name": "shardingFork",
-  "comment": "Hardfork to introduce proto-danksharding",
+  "comment": "Internal hardfork to test proto-danksharding (do not use in production)",
   "url": "https://eips.ethereum.org/EIPS/eip-4844",
   "status": "Draft",
   "eips": [4895, 4844]

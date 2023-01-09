@@ -113,7 +113,6 @@ export class PendingBlock {
             )
           }
         } else {
-          console.log(error)
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
             `Pending: Skipping tx 0x${txs[index]
@@ -232,7 +231,7 @@ export class PendingBlock {
   }
 
   /**
-   * An internal helper for storing the blob bundle associated with each in an EIP4844 world
+   * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
    * @param payloadId the payload Id of the pending block
    * @param txs an array of {@BlobEIP4844Transaction } transactions
    * @param blockHash the blockhash of the pending block (computed from the header data provided)

@@ -57,7 +57,7 @@ tape(`${method}: call with known payload`, async (t) => {
     return this
   }
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-  common.setHardfork(Hardfork.ShardingFork)
+  common.setHardfork(Hardfork.ShardingForkDev)
   const pkey = Buffer.from(
     '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
     'hex'

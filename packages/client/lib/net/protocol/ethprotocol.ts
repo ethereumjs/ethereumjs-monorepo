@@ -151,19 +151,14 @@ export class EthProtocol extends Protocol {
           const common = this.config.chainCommon
           // If this is a post merge block, we can still send chainTTD since it would still lead
           // to correct hardfork choice
-          try {
-            const header = BlockHeader.fromValuesArray(
-              h,
-              difficulty > 0
-                ? // TODO: Change this back before merging
-                  { common, hardforkByBlockNumber: true, skipConsensusFormatValidation: true }
-                : { common, hardforkByTTD: this.chainTTD }
-            )
-            return header
-          } catch (err: any) {
-            console.log(err)
-            throw err
-          }
+          const header = BlockHeader.fromValuesArray(
+            h,
+            difficulty > 0
+              ? // TODO: Change this back before merging
+                { common, hardforkByBlockNumber: true, skipConsensusFormatValidation: true }
+              : { common, hardforkByTTD: this.chainTTD }
+          )
+          return header
         }),
       ],
     },

@@ -110,7 +110,7 @@ const txData = {
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
 ```
 
-Note, the `versionedHashes`, `kzgCommitments`, and `blobs` are in reality 32 byte or 4096 bytes in length but are trimmed here for brevity.
+Note, the `versionedHashes`, `kzgCommitments`, and `blobs` are in reality 32 bytes or 4096 bytes in length but are trimmed here for brevity.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 

@@ -20,7 +20,7 @@ initKZG(kzg)
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
-  hardfork: Hardfork.ShardingFork,
+  hardfork: Hardfork.ShardingForkDev,
 })
 
 tape('EIP4844 header tests', function (t) {

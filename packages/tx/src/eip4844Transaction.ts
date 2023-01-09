@@ -61,6 +61,12 @@ const validateBlobTransactionNetworkWrapper = (
   }
 }
 
+/**
+ * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
+ *
+ * - TransactionType: 5
+ * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+ */
 export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
@@ -71,8 +77,16 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
   public readonly common: Common
   public versionedHashes: Buffer[]
-  blobs?: Buffer[]
-  kzgCommitments?: Buffer[]
+  blobs?: Buffer[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgCommitments?: Buffer[] // THis property should only be populated when the transaction is in the "Network Wrapper" format
+
+  /**
+   * This constructor takes the values, validates them, assigns them and freezes the object.
+   *
+   * It is not recommended to use this constructor directly. Instead use
+   * the static constructors or factory methods to assist in creating a Transaction object from
+   * varying data types.
+   */
   constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
@@ -159,7 +173,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * The minimal representation is used when adding transactions to an execution payload/block
    * @param txData a {@link BlobEIP4844Transaction} containing optional blobs/kzg commitments
    * @param opts - dictionary of {@link TxOptions}
-   * @returns the "minimal" representation of a BlobEIP4844Transaction minus blobs and kzg commitments
+   * @returns the "minimal" representation of a BlobEIP4844Transaction (i.e. transaction object minus blobs and kzg commitments)
    */
   public static minimalFromNetworkWrapper(txData: BlobEIP4844Transaction, opts?: TxOptions) {
     const tx = BlobEIP4844Transaction.fromTxData(
@@ -261,6 +275,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return new BlobEIP4844Transaction(txData, opts)
   }
 
+  /**
+   * The up front amount that an account must have for this transaction to be valid
+   * @param baseFee The base fee of the block (will be set to 0 if not provided)
+   */
   getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
     const prio = this.maxPriorityFeePerGas
     const maxBase = this.maxFeePerGas - baseFee
@@ -308,6 +326,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])
   }
 
+  /**
+   * @returns the serialized form of a blob transaction in the network wrapper format (used for gossipping mempool transactions over devp2p)
+   */
   serializeNetworkWrapper(): Buffer {
     const to = {
       selector: this.to !== undefined ? 1 : 0,
@@ -329,6 +350,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return this.hash()
   }
 
+  /**
+   * Returns the hash of a blob transaction
+   */
   hash(): Buffer {
     const to = {
       selector: this.to !== undefined ? 1 : 0,
