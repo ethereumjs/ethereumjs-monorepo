@@ -24,6 +24,7 @@ export abstract class Execution {
   protected chain: Chain
 
   public running: boolean = false
+  public started: boolean = false
 
   /**
    * Create new excution module
@@ -44,10 +45,18 @@ export abstract class Execution {
   abstract run(): Promise<number>
 
   /**
+   * Starts execution
+   */
+  async open(): Promise<void> {
+    this.started = true
+    this.config.logger.info('Starting execution.')
+  }
+
+  /**
    * Stop execution. Returns a promise that resolves once stopped.
    */
   async stop(): Promise<boolean> {
-    this.running = false
+    this.started = false
     this.config.logger.info('Stopped execution.')
     return true
   }
