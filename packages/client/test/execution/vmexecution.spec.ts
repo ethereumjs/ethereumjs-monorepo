@@ -72,6 +72,10 @@ tape('[VMExecution]', async (t) => {
     exec['vmPromise'] = undefined
     await exec.open()
     t.equal(exec.started, true, 'execution should be restarted')
+    exec['vmPromise'] = (async () => 0)()
+    await exec.stop()
+    t.equal(exec.started, false, 'execution should be restopped')
+    t.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
     t.end()
   })
 
