@@ -1,4 +1,4 @@
-import { byteArrayEquals, toHexString } from '@chainsafe/ssz'
+import { byteArrayEquals } from '@chainsafe/ssz'
 import {
   Address,
   MAX_INTEGER,
@@ -217,7 +217,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     }
 
     const to =
-      decodedTx.to.value === null ? undefined : Address.fromString(toHexString(decodedTx.to.value))
+      decodedTx.to.value === null
+        ? undefined
+        : Address.fromString(bufferToHex(Buffer.from(decodedTx.to.value)))
 
     const versionedHashes = decodedTx.blobVersionedHashes.map((el) => Buffer.from(el))
     const commitments = wrapper.blobKzgs.map((el) => Buffer.from(el))
@@ -258,7 +260,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       const accessListItem: AccessListBufferItem = [address, storageKeys]
       accessList.push(accessListItem)
     }
-    const to = tx.to.value === null ? undefined : Address.fromString(toHexString(tx.to.value))
+    const to =
+      tx.to.value === null ? undefined : Address.fromString(bufferToHex(Buffer.from(tx.to.value)))
     const versionedHashes = tx.blobVersionedHashes.map((el) => Buffer.from(el))
     const txData = {
       ...tx,
