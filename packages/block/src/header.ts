@@ -22,6 +22,8 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { valuesArrayToHeaderData } from './helpers'
 
+import { Block } from '.'
+
 import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
 

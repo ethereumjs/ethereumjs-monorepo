@@ -9,7 +9,7 @@ import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
-import { calcExcessDataGas, getDataGasPrice } from '../src'
+import { Block, calcExcessDataGas, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
 import { calcDataFee, fakeExponential } from '../src/helpers'
 
@@ -112,6 +112,71 @@ tape('data gas tests', async (t) => {
   }
 })
 
+tape('validateBlobTransactions() tests', async (t) => {
+  if (isBrowser() === true) {
+    t.end()
+  } else {
+    const blobs = getBlobs('hello world')
+    const commitments = blobsToCommitments(blobs)
+    const versionedHashes = commitmentsToVersionedHashes(commitments)
+
+    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+
+    const tx1 = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: bufferedHashes,
+        blobs,
+        kzgCommitments: commitments,
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    ).sign(randomBytes(32))
+    const tx2 = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: bufferedHashes,
+        blobs,
+        kzgCommitments: commitments,
+        maxFeePerDataGas: 1n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    ).sign(randomBytes(32))
+
+    const parentHeader = BlockHeader.fromHeaderData(
+      { number: 1n, excessDataGas: 4194304 },
+      { common, skipConsensusFormatValidation: true }
+    )
+    const blockHeader = BlockHeader.fromHeaderData(
+      { number: 2n, parentHash: parentHeader.hash() },
+      { common, skipConsensusFormatValidation: true }
+    )
+
+    const blockWithValidTx = Block.fromBlockData(
+      { header: blockHeader, transactions: [tx1] },
+      { common, skipConsensusFormatValidation: true }
+    )
+
+    const blockWithInvalidTx = Block.fromBlockData(
+      { header: blockHeader, transactions: [tx1, tx2] },
+      { common, skipConsensusFormatValidation: true }
+    )
+
+    t.doesNotThrow(
+      () => blockWithValidTx.validateBlobTransactions(parentHeader),
+      'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
+    )
+    t.throws(
+      () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
+      (err: any) => err.message.includes('than block data gas price'),
+      'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+    )
+
+    t.end()
+  }
+})
 tape('fake exponential', (t) => {
   // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
   const testInputs = [

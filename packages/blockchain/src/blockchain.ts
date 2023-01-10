@@ -607,24 +607,10 @@ export class Blockchain implements BlockchainInterface {
     await this.validateHeader(block.header)
     await this._validateUncleHeaders(block)
     await block.validateData(false)
-    await this._validateBlobTransactions(block)
-  }
-
-  private async _validateBlobTransactions(block: Block) {
-    for (let tx of block.transactions) {
-      if (tx.supports(4844)) {
-        tx = tx as BlobEIP4844Transaction
-        const parent = await this.getBlock(block.header.parentHash)
-        const dataGasPrice = getDataGasPrice(parent.header)
-        if (tx.maxFeePerDataGas < dataGasPrice) {
-          throw new Error(
-            `blob transaction maxFeePerDataGas ${
-              tx.maxFeePerDataGas
-            } < than block data gas price ${dataGasPrice} - ${block.errorStr()}`
-          )
-        }
-      }
-    }
+    // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
+    // (one for each uncle header and then for validateBlobTxs).
+    const parentBlock = await this.getBlock(block.header.parentHash)
+    await block.validateBlobTransactions(parentBlock.header)
   }
   /**
    * The following rules are checked in this method:

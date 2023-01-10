@@ -1,7 +1,7 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP,
   Withdrawal,
@@ -17,6 +17,7 @@ import { ethers } from 'ethers'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
+import { getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -425,6 +426,25 @@ export class Block {
     if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
+    }
+  }
+
+  /**
+   * Validates that data gas fee for each transaction
+   * @param parentHeader header of parent block
+   */
+  validateBlobTransactions(parentHeader: BlockHeader) {
+    for (const tx of this.transactions) {
+      if (tx instanceof BlobEIP4844Transaction) {
+        const dataGasPrice = getDataGasPrice(parentHeader)
+        if (tx.maxFeePerDataGas < dataGasPrice) {
+          throw new Error(
+            `blob transaction maxFeePerDataGas ${
+              tx.maxFeePerDataGas
+            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+          )
+        }
+      }
     }
   }
 
