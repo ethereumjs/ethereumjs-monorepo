@@ -67,7 +67,7 @@ You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` 
 
 #### Run client
 
-This the the bare minimum command required for interop with the CL `lodestar`. You may add further args to expose functionality for your use case.
+This is the bare minimum command required for interop with the CL `lodestar`. You may add further args to expose functionality for your use case.
 
 ```shell
 npm run client:start -- --network sepolia --rpcEngine --jwt-secret /path/to/jwtsecret/file
@@ -84,7 +84,7 @@ In case you want to host `engine_*` without auth (not recommended, only for debu
 1. Use lodestar branch `stable` and run `yarn && yarn build`
 2. Run cmd: `./lodestar beacon --network sepolia --jwt-secret /path/to/jwtsecret/file`
 
-This will by default try reaching out `ethereumjs` over the endpoint `8551`. (You may customize this in conjuction with `ethereumjs`, see lodestar cli help via `--help`).
+This will by default try reaching out `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
 
 You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
 
