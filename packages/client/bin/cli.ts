@@ -242,7 +242,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('mine', {
     describe: 'Enable private custom network mining (beta)',
     boolean: true,
-    default: false,
   })
   .option('unlock', {
     describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
@@ -637,7 +636,7 @@ async function run() {
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
-  const mine = args.mine === true ? args.mine : args.dev !== undefined
+  const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const config = new Config({
     accounts,
     bootnodes,
