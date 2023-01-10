@@ -147,7 +147,7 @@ export interface ClientOpts {
   discV4?: boolean
   mine?: boolean
   unlock?: string
-  dev?: boolean
+  dev?: boolean | string
   minerCoinbase?: Address
   saveReceipts?: boolean
   disableBeaconSync?: boolean

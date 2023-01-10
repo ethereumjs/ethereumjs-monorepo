@@ -503,7 +503,7 @@ async function inputAccounts() {
   }
 
   try {
-    const addresses = args.unlock.split(',')
+    const addresses = args.unlock!.split(',')
     const isFile = existsSync(path.resolve(addresses[0]))
     if (!isFile) {
       for (const addressString of addresses) {
@@ -524,7 +524,7 @@ async function inputAccounts() {
         }
       }
     } else {
-      const acc = readFileSync(path.resolve(args.unlock), 'utf-8')
+      const acc = readFileSync(path.resolve(args.unlock!), 'utf-8')
       const privKey = Buffer.from(acc, 'hex')
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
@@ -637,6 +637,7 @@ async function run() {
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
+  const mine = args.mine === true ? args.mine : args.dev !== undefined
   const config = new Config({
     accounts,
     bootnodes,
@@ -654,7 +655,7 @@ async function run() {
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
     maxFetcherJobs: args.maxFetcherJobs,
-    mine: args.mine === true ? args.mine : args.dev,
+    mine,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,
     multiaddrs,
