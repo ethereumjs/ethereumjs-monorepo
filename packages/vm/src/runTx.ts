@@ -1,6 +1,6 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Capability } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
@@ -18,7 +18,6 @@ import type {
 import type { VM } from './vm'
 import type {
   AccessListEIP2930Transaction,
-  BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
@@ -260,7 +259,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
   }
 
-  if (this._common.isActivatedEIP(4844) && tx.supports(Capability.EIP4844BlobTransaction)) {
+  if (this._common.isActivatedEIP(4844) && tx instanceof BlobEIP4844Transaction) {
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
@@ -334,7 +333,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // EIP-4844 tx
   let versionedHashes
-  if (tx.supports(Capability.EIP4844BlobTransaction)) {
+  if (tx instanceof BlobEIP4844Transaction) {
     versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
   }
 

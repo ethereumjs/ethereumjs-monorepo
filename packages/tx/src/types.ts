@@ -44,12 +44,6 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
-
-  /**
-   * Tx supports data blobs as defined in EIP-4844
-   * See: [4844](https://eips.ethereum.org/EIPS/eip-4844#gas-price-of-blobs-simplified-version) Blob Transactions EIP
-   */
-  EIP4844BlobTransaction = 4844,
 }
 
 /**
@@ -342,18 +336,18 @@ export interface JsonRpcTx {
 
 // TODO: Decide which of these should be in the hardfork params instead of hardcoded as constants here
 export const BLOB_COMMITMENT_VERSION_KZG = 0x01
-export const MAX_CALLDATA_SIZE = 2 ** 24
-export const MAX_ACCESS_LIST_SIZE = 2 ** 24
-export const MAX_VERSIONED_HASHES_LIST_SIZE = 2 ** 24
+export const MAX_CALLDATA_SIZE = 16777216 // 2 ** 24
+export const MAX_ACCESS_LIST_SIZE = 16777216 // 2 ** 24
+export const MAX_VERSIONED_HASHES_LIST_SIZE = 16777216 // 2 ** 24
 export const LIMIT_BLOBS_PER_TX = 2
-export const MAX_TX_WRAP_KZG_COMMITMENTS = 2 ** 24
+export const MAX_TX_WRAP_KZG_COMMITMENTS = 16777216 // 2 ** 24
 export const FIELD_ELEMENTS_PER_BLOB = 4096
 export const BYTES_PER_FIELD_ELEMENT = 32
 /** EIP4844 types */
 export const AddressType = new ByteVectorType(20) // SSZ encoded address
 
 // SSZ encoded container for address and storage keys
-export const AccesTupleType = new ContainerType({
+export const AccessTupleType = new ContainerType({
   address: AddressType,
   storageKeys: new ListCompositeType(new ByteVectorType(32), MAX_VERSIONED_HASHES_LIST_SIZE),
 })
@@ -368,7 +362,7 @@ export const BlobTransactionType = new ContainerType({
   to: new UnionType([new NoneType(), AddressType]),
   value: new UintBigintType(32),
   data: new ByteListType(MAX_CALLDATA_SIZE),
-  accessList: new ListCompositeType(AccesTupleType, MAX_ACCESS_LIST_SIZE),
+  accessList: new ListCompositeType(AccessTupleType, MAX_ACCESS_LIST_SIZE),
   maxFeePerDataGas: new UintBigintType(32),
   blobVersionedHashes: new ListCompositeType(
     new ByteVectorType(32),
