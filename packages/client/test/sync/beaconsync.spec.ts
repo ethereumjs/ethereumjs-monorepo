@@ -6,7 +6,6 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Skeleton } from '../../lib/sync'
-import { wait } from '../integration/util'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
@@ -110,7 +109,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     t.end()
   })
 
-  t.test('should sync to next subchain head or chain height', async (t) => {
+  t.test('should sync to next subchain head or chain height', async (st) => {
+    st.plan(3)
     const config = new Config({
       transports: [],
       safeReorgDistance: 0,
@@ -137,26 +137,31 @@ tape('[BeaconSynchronizer]', async (t) => {
     ;(sync as any).chain = {
       blocks: { height: BigInt(0) },
     }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
-    await wait(51)
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=5'))
+        st.pass('should sync block 5 and target chain start')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=1 count=1'))
+        st.pass('should sync block 1 and target chain start')
+    })
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(1), 'should sync block 1')
-    t.equal(sync.fetcher!.count, BigInt(1), 'should target syncing all the way to chain')
-    await wait(51)
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5')
-    t.equal(sync.fetcher!.count, BigInt(1), 'should sync block 5')
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=1'))
+        st.pass('should sync block 5 with count 1')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
   })
 
-  t.test('should not sync pre-genesis', async (t) => {
+  t.test('should not sync pre-genesis', async (st) => {
+    st.plan(1)
     const config = new Config({
       transports: [],
       safeReorgDistance: 0,
@@ -181,10 +186,12 @@ tape('[BeaconSynchronizer]', async (t) => {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
       blocks: { height: BigInt(100) },
     }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=5'))
+        st.pass('should sync block 5 and target chain start')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
   })
 
   t.test('should extend and set with a valid head', async (t) => {
