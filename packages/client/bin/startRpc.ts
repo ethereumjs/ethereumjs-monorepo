@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
@@ -33,24 +33,39 @@ type RPCArgs = {
 }
 
 /**
- * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir
+ * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
  */
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
-  let jwtSecret
-  if (jwtFilePath !== undefined) {
-    const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
+  let jwtSecret: Buffer
+  const defaultJwtPath = `${config.datadir}/jwtsecret`
+
+  // If jwtFilePath is provided, it should exist
+  if (typeof jwtFilePath === 'string' && !existsSync(jwtFilePath)) {
+    throw new Error(`No file exists at provided jwt secret path=${jwtFilePath}`)
+  }
+
+  if (typeof jwtFilePath === 'string' || existsSync(defaultJwtPath)) {
+    const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)
+    config.logger.debug(
+      `Read a hex encoded jwt secret from ${
+        typeof jwtFilePath === 'string' ? `path=${jwtFilePath}` : `default path=${defaultJwtPath}`
+      }`
+    )
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
-    jwtFilePath = `${config.datadir}/jwtsecret`
+    const folderExists = existsSync(config.datadir)
+    if (!folderExists) {
+      mkdirSync(config.datadir, { recursive: true })
+    }
+
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
-    writeFileSync(jwtFilePath, jwtSecret.toString('hex'))
-    config.logger.info(`Wrote a hex encoded random jwt secret to path=${jwtFilePath}`)
+    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
+    config.logger.info(`Wrote a hex encoded random jwt secret to path=${defaultJwtPath}`)
   }
   return jwtSecret
 }
