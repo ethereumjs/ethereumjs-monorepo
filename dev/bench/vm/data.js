@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673380400014,
+  "lastUpdate": 1673402345529,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "614381a440119b2289c835c3770cb01dee62264f",
-          "message": "client: Fix sendTransactions peer loop and enchance txpool logs  (#2412)\n\n* client: Enchance txpool logs with success/failure of add, broadcast, block selection logs\r\n\r\n* Txpool stats calculator on info or debug logging\r\n\r\n* remove console log\r\n\r\n* enable logging for txstats in test spec\r\n\r\n* add test cases for handled errors\r\n\r\n* add testcase for marking errored broadcasts\r\n\r\n* cover pool stats logger\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-11-15T09:05:16-05:00",
-          "tree_id": "4543cd6b9321b3b01481cd5b542266c8679bc12e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/614381a440119b2289c835c3770cb01dee62264f"
-        },
-        "date": 1668521311436,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 10462,
-            "range": "±4.42%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10195,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 10235,
-            "range": "±6.11%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10728,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10580,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.04%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "73983677+omahs@users.noreply.github.com",
+            "name": "omahs",
+            "username": "omahs"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9821adbf62e1a4ac28bcc4918557b871bc8b108b",
+          "message": "Fix: typos (#2479)\n\n* Fix: typos\r\n\r\nFix: typos\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Fix: typos\r\n\r\nFix: typos\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Put spelling correction in correct place\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-10T20:55:54-05:00",
+          "tree_id": "9eb19214b71401008336f4b45a5f0bf0db256ad3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9821adbf62e1a4ac28bcc4918557b871bc8b108b"
+        },
+        "date": 1673402344362,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18372,
+            "range": "±4.50%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17389,
+            "range": "±6.79%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18818,
+            "range": "±1.53%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18169,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16341,
+            "range": "±8.93%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
