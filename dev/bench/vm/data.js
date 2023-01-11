@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673442011892,
+  "lastUpdate": 1673443670418,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "33f68c6827e75de3f266199855c34f2c136517e2",
-          "message": "common: Parse post-merge hardfork config in parseGethParams and handle post-merge genesis block (#2427)\n\n* correctly set hf order\r\n\r\n* test specs\r\n\r\n* fix the merge hf push condition\r\n\r\n* try placing merge block in better wat\r\n\r\n* fix test spec for kiln\r\n\r\n* alternate fix of skipping only pos validation on genesis\r\n\r\n* move merge validations to non genesis\r\n\r\n* fix unsupported test case\r\n\r\n* correctly set hardfork\r\n\r\n* resolve test genesis poisioning\r\n\r\n* add comment\r\n\r\n* cli arg for mergeforkid placement\r\n\r\n* place merge only after genesis\r\n\r\n* fix tests\r\n\r\n* restore test\r\n\r\n* address another case for merge just post genesis\r\n\r\n* test case for the new edge case\r\n\r\n* add comment",
-          "timestamp": "2022-11-22T14:33:46+01:00",
-          "tree_id": "5f5c6cc0f865670de619cfc632499d8ea4851776",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/33f68c6827e75de3f266199855c34f2c136517e2"
-        },
-        "date": 1669124190663,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18151,
-            "range": "±4.05%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17505,
-            "range": "±5.68%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18045,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15657,
-            "range": "±10.73%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18390,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.47%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9224fd0165083c7b14536f3b59821d749c9e17cc",
+          "message": "client: Clean stop sync and execution to allow client shutdown (#2477)\n\n* client: Clean stop sync and execution to allow client shutdown\r\n\r\n* add testcase\r\n\r\n* enhance coverage\r\n\r\n* fix typo\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-01-11T14:25:13+01:00",
+          "tree_id": "e66b3143a1a7aa47c4c6c1a5649965c5c5868e97",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9224fd0165083c7b14536f3b59821d749c9e17cc"
+        },
+        "date": 1673443669749,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19442,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18569,
+            "range": "±5.52%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19786,
+            "range": "±1.16%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19045,
+            "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16836,
+            "range": "±8.41%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
