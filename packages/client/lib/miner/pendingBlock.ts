@@ -198,7 +198,6 @@ export class PendingBlock {
         } else {
           skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped
-          console.log(error)
           this.config.logger.debug(
             `Pending: Skipping tx 0x${txs[index]
               .hash()

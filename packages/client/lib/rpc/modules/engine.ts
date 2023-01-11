@@ -256,7 +256,6 @@ const assembleBlock = async (
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       txs.push(tx)
     } catch (error) {
-      console.log(error)
       const validationError = `Invalid tx at index ${index}: ${error}`
       config.logger.error(validationError)
       const latestValidHash = await validHash(toBuffer(payload.parentHash), chain)
@@ -720,25 +719,20 @@ export class Engine {
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
-      try {
-        const payloadId = await this.pendingBlock.start(
-          await this.vm.copy(),
-          headBlock,
-          {
-            timestamp,
-            mixHash: prevRandao,
-            coinbase: suggestedFeeRecipient,
-          },
-          withdrawals
-        )
-        const latestValidHash = await validHash(headBlock.hash(), this.chain)
-        const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-        const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
-        return response
-      } catch (err) {
-        console.log(err)
-        throw err
-      }
+      const payloadId = await this.pendingBlock.start(
+        await this.vm.copy(),
+        headBlock,
+        {
+          timestamp,
+          mixHash: prevRandao,
+          coinbase: suggestedFeeRecipient,
+        },
+        withdrawals
+      )
+      const latestValidHash = await validHash(headBlock.hash(), this.chain)
+      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+      const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
+      return response
     }
 
     const latestValidHash = await validHash(headBlock.hash(), this.chain)
@@ -780,7 +774,6 @@ export class Engine {
       await this.execution.runWithoutSetHead({ block }, receipts)
       return blockToExecutionPayload(block, value)
     } catch (error: any) {
-      console.log(error)
       if (error === EngineError.UnknownPayload) throw error
       throw {
         code: INTERNAL_ERROR,

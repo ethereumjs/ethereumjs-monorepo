@@ -1,4 +1,4 @@
-import { Block, BlockHeader, getDataGasPrice } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP, Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
@@ -15,7 +15,6 @@ import type { GenesisState } from './genesisStates'
 import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import type { BigIntLike } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -610,7 +609,7 @@ export class Blockchain implements BlockchainInterface {
     // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
-    await block.validateBlobTransactions(parentBlock.header)
+    block.validateBlobTransactions(parentBlock.header)
   }
   /**
    * The following rules are checked in this method:

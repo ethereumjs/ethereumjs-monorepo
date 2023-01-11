@@ -172,9 +172,6 @@ export class BlockBuilder {
       const blobTx = tx as BlobEIP4844Transaction
       dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
       dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
-      if (blobTx.versionedHashes === undefined) {
-        console.log(blobTx)
-      }
 
       if (
         this.dataGasUsed + BigInt(blobTx.versionedHashes.length) * dataGasPerBlob >
