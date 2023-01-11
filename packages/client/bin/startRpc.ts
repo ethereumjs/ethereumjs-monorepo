@@ -13,7 +13,7 @@ import type { EthereumClient } from '../lib/client'
 import type { Config } from '../lib/config'
 import type { Server as RPCServer } from 'jayson/promise'
 
-type RPCArgs = {
+export type RPCArgs = {
   rpc: boolean
   rpcaddr: string
   rpcport: number

@@ -32,6 +32,17 @@ config.logger = getLogger(config)
 type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
+type createClientArgs = {
+  includeVM: boolean // Instantiates the VM when creating the test client
+  commonChain: Common
+  enableMetaDB: boolean
+  txLookupLimit: number
+  syncTargetHeight: bigint
+  noPeers: boolean
+  blockchain: Blockchain
+  chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
+  opened: boolean
+}
 export function startRPC(
   methods: any,
   opts: StartRPCOpts = { port: 3001 },
@@ -56,7 +67,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: any = {}) {
+export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({
     transports: [],
@@ -66,7 +77,7 @@ export function createClient(clientOpts: any = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  const chain = clientOpts.chain ?? new Chain({ config, blockchain })
+  const chain = clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any })
   chain.opened = true
 
   const defaultClientConfig = {
@@ -76,8 +87,8 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
-  if (chain._headers !== undefined) {
-    chain._headers.latest = BlockHeader.fromHeaderData(
+  if ((chain as any)._headers !== undefined) {
+    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common }
     )
