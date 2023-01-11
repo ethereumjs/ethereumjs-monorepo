@@ -23,6 +23,8 @@ import { helprpc, startRPCServers } from './startRpc'
 
 import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
+import type { ClientOpts } from '../lib/types'
+import type { RPCArgs } from './startRpc'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -35,7 +37,7 @@ const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
-const args = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs(hideBin(process.argv))
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
@@ -242,7 +244,6 @@ const args = yargs(hideBin(process.argv))
   .option('mine', {
     describe: 'Enable private custom network mining (beta)',
     boolean: true,
-    default: false,
   })
   .option('unlock', {
     describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
@@ -503,7 +504,7 @@ async function inputAccounts() {
   }
 
   try {
-    const addresses = args.unlock.split(',')
+    const addresses = args.unlock!.split(',')
     const isFile = existsSync(path.resolve(addresses[0]))
     if (!isFile) {
       for (const addressString of addresses) {
@@ -524,7 +525,7 @@ async function inputAccounts() {
         }
       }
     } else {
-      const acc = readFileSync(path.resolve(args.unlock), 'utf-8')
+      const acc = readFileSync(path.resolve(args.unlock!), 'utf-8')
       const privKey = Buffer.from(acc, 'hex')
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
@@ -590,7 +591,7 @@ async function run() {
 
   // Configure common based on args given
   if (
-    (typeof args.customChainParams === 'string' ||
+    (typeof args.customChain === 'string' ||
       typeof args.customGenesisState === 'string' ||
       typeof args.gethGenesis === 'string') &&
     (args.network !== 'mainnet' || args.networkId !== undefined)
@@ -642,6 +643,7 @@ async function run() {
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
+  const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const config = new Config({
     accounts,
     bootnodes,
@@ -659,7 +661,7 @@ async function run() {
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
     maxFetcherJobs: args.maxFetcherJobs,
-    mine: args.mine === true ? args.mine : args.dev,
+    mine,
     minerCoinbase: args.minerCoinbase,
     minPeers: args.minPeers,
     multiaddrs,
@@ -684,7 +686,8 @@ async function run() {
   })
 
   const client = await startClient(config, customGenesisState)
-  const servers = args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args) : []
+  const servers =
+    args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')

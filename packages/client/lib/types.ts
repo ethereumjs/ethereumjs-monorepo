@@ -1,10 +1,12 @@
 import { EventEmitter } from 'events'
 
+import type { SyncMode } from '.'
 import type Connection = require('../../../node_modules/libp2p-interfaces/dist/src/connection/connection')
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from 'multiaddr'
 
 /**
@@ -96,3 +98,61 @@ export type DnsNetwork = string
  */
 export type Libp2pConnection = Connection
 export type Libp2pMuxedStream = MuxedStream
+
+export interface ClientOpts {
+  network?: string
+  networkId?: number
+  syncmode?: SyncMode
+  lightserv?: boolean
+  datadir?: string
+  customChain?: string
+  customGenesisState?: string
+  gethGenesis?: string
+  mergeForkIdPostMerge?: boolean
+  transports?: string[]
+  bootnodes?: string | string[]
+  port?: number
+  extIP?: string
+  multiaddrs?: string | string[]
+  rpc?: boolean
+  rpcport?: number
+  rpcaddr?: string
+  ws?: boolean
+  wsPort?: number
+  wsAddr?: string
+  rpcEngine?: boolean
+  rpcEnginePort?: number
+  rpcEngineAddr?: string
+  wsEnginePort?: number
+  wsEngineAddr?: string
+  rpcEngineAuth?: boolean
+  'jwt-secret'?: string
+  helprpc?: boolean
+  loglevel?: string
+  logFile?: boolean
+  logLevelFile?: string
+  logRotate?: boolean
+  logMaxFiles?: number
+  rpcDebug?: boolean
+  rpcCors?: string
+  maxPerRequest?: number
+  maxFetcherJobs?: number
+  minPeers?: number
+  maxPeers?: number
+  dnsAddr?: string
+  dnsNetworks?: string[]
+  executeBlocks?: string
+  debugCode?: boolean
+  discDns?: boolean
+  discV4?: boolean
+  mine?: boolean
+  unlock?: string
+  dev?: boolean | string
+  minerCoinbase?: Address
+  saveReceipts?: boolean
+  disableBeaconSync?: boolean
+  forceSnapSync?: boolean
+  txLookupLimit?: number
+  startBlock?: number
+  opened: boolean
+}

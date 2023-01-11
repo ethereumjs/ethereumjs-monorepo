@@ -305,7 +305,7 @@ export class Common extends EventEmitter {
    * will be thrown).
    *
    * @param blockNumber
-   * @param td : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf)
+   * @param td : total difficulty of the parent block (for block hf) OR of the chain latest (for chain hf)
    * @param timestamp: timestamp in seconds at which block was/is to be minted
    * @returns The name of the HF
    */
@@ -342,7 +342,7 @@ export class Common extends EventEmitter {
     )
 
     if (hfIndex === -1) {
-      // all hardforks apply, set hfIndex to the last one as thats the candidate
+      // all hardforks apply, set hfIndex to the last one as that's the candidate
       hfIndex = hfs.length
     } else if (hfIndex === 0) {
       // cannot have a case where a block number is before all applied hardforks
@@ -479,7 +479,7 @@ export class Common extends EventEmitter {
   /**
    * Returns a parameter for the current chain setup
    *
-   * If the parameter is present in an EIP, the EIP always takes precendence.
+   * If the parameter is present in an EIP, the EIP always takes precedence.
    * Otherwise the parameter if taken from the latest applied HF with
    * a change on the respective parameter.
    *

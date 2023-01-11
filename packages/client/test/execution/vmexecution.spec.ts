@@ -57,6 +57,28 @@ tape('[VMExecution]', async (t) => {
     t.end()
   })
 
+  t.test('Should fail opening if vmPromise already assigned', async (t) => {
+    const blockchain = await Blockchain.create({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const exec = await testSetup(blockchain)
+    t.equal(exec.started, true, 'execution should be opened')
+    await exec.stop()
+    t.equal(exec.started, false, 'execution should be stopped')
+    exec['vmPromise'] = (async () => 0)()
+    await exec.open()
+    t.equal(exec.started, false, 'execution should be stopped')
+    exec['vmPromise'] = undefined
+    await exec.open()
+    t.equal(exec.started, true, 'execution should be restarted')
+    exec['vmPromise'] = (async () => 0)()
+    await exec.stop()
+    t.equal(exec.started, false, 'execution should be restopped')
+    t.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
+    t.end()
+  })
+
   t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
     const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
     let blockchain = await Blockchain.create({
