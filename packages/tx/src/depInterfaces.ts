@@ -1,7 +1,7 @@
 /**
  * Interface for an externally provided kzg library used when creating blob transactions
  */
-export interface Ikzg {
+export interface Kzg {
   loadTrustedSetup(filePath: string): void
   freeTrustedSetup(): void
   blobToKzgCommitment(blob: Uint8Array): Uint8Array

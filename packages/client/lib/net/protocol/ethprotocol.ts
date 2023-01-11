@@ -154,8 +154,7 @@ export class EthProtocol extends Protocol {
           const header = BlockHeader.fromValuesArray(
             h,
             difficulty > 0
-              ? // TODO: Change this back before merging
-                { common, hardforkByBlockNumber: true, skipConsensusFormatValidation: true }
+              ? { common, hardforkByBlockNumber: true }
               : { common, hardforkByTTD: this.chainTTD }
           )
           return header
