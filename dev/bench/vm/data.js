@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673431616684,
+  "lastUpdate": 1673442011892,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "aleksandar.cakalic@gmail.com",
-            "name": "Aleksandar Cakalic",
-            "username": "Cussone"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "161a4029c2fc24e5d04da6ad3aab4ac3c72af0f8",
-          "message": "common: Arbitrum One support (#2426)\n\n* Add `ArbitrumOne` to `enums.ts`\r\n\r\n* Add `ArbitrumOne` check to `static custom` method of `Common` class",
-          "timestamp": "2022-11-18T18:21:09+01:00",
-          "tree_id": "9ea70e8b577d0b2a9b6d99f94db8c23c7d87fa81",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/161a4029c2fc24e5d04da6ad3aab4ac3c72af0f8"
-        },
-        "date": 1668792243843,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18926,
-            "range": "±3.46%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19065,
-            "range": "±1.35%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18479,
-            "range": "±5.47%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18760,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18495,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.76%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "14c451fb97d1a24dd137ddb099cc0d72d1776d9b",
+          "message": "Remove text-lcov reporter to clean coverage output (#2478)\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-01-11T13:56:54+01:00",
+          "tree_id": "2823ca1a4a20d62ab32f190f744f5c0153ca82a6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/14c451fb97d1a24dd137ddb099cc0d72d1776d9b"
+        },
+        "date": 1673442010466,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15534,
+            "range": "±3.60%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15209,
+            "range": "±4.85%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15172,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14449,
+            "range": "±9.12%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15231,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
