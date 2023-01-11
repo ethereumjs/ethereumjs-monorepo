@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
@@ -58,8 +58,13 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     )
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
+    const folderExists = existsSync(config.datadir)
+    if (!folderExists) {
+      mkdirSync(config.datadir, { recursive: true })
+    }
+
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
-    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'))
+    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
     config.logger.info(`Wrote a hex encoded random jwt secret to path=${defaultJwtPath}`)
   }
   return jwtSecret
