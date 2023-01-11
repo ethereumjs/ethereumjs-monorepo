@@ -21,7 +21,7 @@ import {
   LIMIT_BLOBS_PER_TX,
   SignedBlobTransactionType,
 } from './types'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import { AccessLists, blobTxToNetworkWrapperDataFormat, checkMaxInitCodeSize } from './util'
 
 import type {
   AccessList,
@@ -341,7 +341,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     const serializedTxWrapper = BlobNetworkTransactionWrapper.serialize({
       blobs: blobArrays,
       blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
-      tx: { ...this.txData(), ...to },
+      tx: { ...blobTxToNetworkWrapperDataFormat(this), ...to },
       kzgAggregatedProof: kzg.computeAggregateKzgProof(blobArrays),
     })
     return Buffer.concat([Buffer.from([0x05]), serializedTxWrapper])
@@ -472,35 +472,5 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    */
   protected _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
-  }
-
-  public txData() {
-    const to = {
-      selector: this.to !== undefined ? 1 : 0,
-      value: this.to?.toBuffer() ?? null,
-    }
-    return {
-      message: {
-        chainId: this.common.chainId(),
-        nonce: this.nonce,
-        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-        maxFeePerGas: this.maxFeePerGas,
-        gas: this.gasLimit,
-        to,
-        value: this.value,
-        data: this.data,
-        accessList: this.accessList.map((listItem) => {
-          return { address: listItem[0], storageKeys: listItem[1] }
-        }),
-        blobVersionedHashes: this.versionedHashes,
-        maxFeePerDataGas: this.maxFeePerDataGas,
-      },
-      // TODO: Decide how to serialize an unsigned transaction
-      signature: {
-        r: this.r ?? BigInt(0),
-        s: this.s ?? BigInt(0),
-        yParity: this.v === BigInt(1) ? true : false,
-      },
-    }
   }
 }
