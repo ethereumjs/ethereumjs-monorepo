@@ -92,7 +92,7 @@ export class VMExecution extends Execution {
    */
   async open(): Promise<void> {
     return this.runWithLock<void>(async () => {
-      // id already opened or stopping midway
+      // if already opened or stopping midway
       if (this.started || this.vmPromise !== undefined) {
         return
       }
