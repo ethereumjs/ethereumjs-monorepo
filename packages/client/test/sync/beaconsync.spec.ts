@@ -6,7 +6,6 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Skeleton } from '../../lib/sync'
-import { wait } from '../integration/util'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
