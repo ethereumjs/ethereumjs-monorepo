@@ -163,6 +163,7 @@ export class FullEthereumService extends EthereumService {
     }
     this.txPool.stop()
     this.miner?.stop()
+    await this.synchronizer.stop()
     await this.execution.stop()
     await super.stop()
     return true
