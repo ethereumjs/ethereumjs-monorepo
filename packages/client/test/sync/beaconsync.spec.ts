@@ -161,7 +161,8 @@ tape('[BeaconSynchronizer]', async (t) => {
     sync.config.logger.removeAllListeners()
   })
 
-  t.test('should not sync pre-genesis', async (t) => {
+  t.test('should not sync pre-genesis', async (st) => {
+    st.plan(1)
     const config = new Config({
       transports: [],
       safeReorgDistance: 0,
@@ -186,10 +187,12 @@ tape('[BeaconSynchronizer]', async (t) => {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
       blocks: { height: BigInt(100) },
     }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=5'))
+        st.pass('should sync block 5 and target chain start')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
   })
 
   t.test('should extend and set with a valid head', async (t) => {
