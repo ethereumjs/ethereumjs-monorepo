@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673426646633,
+  "lastUpdate": 1673431616684,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a00251d4d4da850a29c4027e91ee5badf0c22df3",
-          "message": "client: Implement withdrawals via engine api (#2401)\n\n* client: Implement v2 versions for execution api supporting withdrawals\r\n\r\n* create v2 endpoints and proxy them to main handlers\r\n\r\n* refac withdrawals to have a correct withdrawal object\r\n\r\n* fix lint\r\n\r\n* add v2 versions and withdrawal validator\r\n\r\n* extract out withdrawals as separate class\r\n\r\n* use withdrawal in newpayload\r\n\r\n* fix the v2 binding for fcu\r\n\r\n* add withdrawals to block building\r\n\r\n* add withdrawals to shanghai\r\n\r\n* fully working withdrawals feature\r\n\r\n* add withdrawals data in eth getBlock response\r\n\r\n* check genesis annoucement\r\n\r\n* fix and test empty withdrawals\r\n\r\n* add static helpers for trie roots\r\n\r\n* clean up trie roots\r\n\r\n* fix withdrawals root to match with other clients\r\n\r\n* skeleton improv + withdrawal root check\r\n\r\n* add the failing withdrawal root mismatch testcase\r\n\r\n* fix the stateroot mismatch\r\n\r\n* skip withdrawal reward if 0 on runblock too\r\n\r\n* fix spec\r\n\r\n* restore the buildblock's trieroot method\r\n\r\n* rename gen root methods\r\n\r\n* improve the jsdocs\r\n\r\n* genesis handling at skeleton sethead\r\n\r\n* cleanup skeleton\r\n\r\n* cleanup bigint literal\r\n\r\n* remove extra typecasting\r\n\r\n* add comments for spec vec source\r\n\r\n* withdrawal spec vector in test\r\n\r\n* improve var name\r\n\r\n* refactor withdrawal and enhance spec test\r\n\r\n* add zero amount withdrawal test case for vm block run\r\n\r\n* add spec test for buildblock with withdrawals",
-          "timestamp": "2022-11-18T11:16:13+01:00",
-          "tree_id": "941db929f0e4dcb72c52d4b036067d4343eaf41b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a00251d4d4da850a29c4027e91ee5badf0c22df3"
-        },
-        "date": 1668766756155,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 14899,
-            "range": "±4.03%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15014,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14294,
-            "range": "±8.59%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15031,
-            "range": "±2.85%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14616,
-            "range": "±2.56%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.53%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01bc5fdd4fbbb03c2fdaad1cdf30165e9ecc3fab",
+          "message": "client: typed client opts (#2475)\n\n* client: initial ClientOpts interface [wip]\r\n\r\n* Clean up type mismatches\r\n\r\n* add createClientArgs type and add typing\r\n\r\n* fix args.mine evaluation\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-11T11:03:18+01:00",
+          "tree_id": "490cd57e88ad2023c35cd22b76c334e845abd538",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/01bc5fdd4fbbb03c2fdaad1cdf30165e9ecc3fab"
+        },
+        "date": 1673431615442,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 10488,
+            "range": "±2.71%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 10745,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 10413,
+            "range": "±6.22%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 10472,
+            "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 10133,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
