@@ -656,7 +656,7 @@ will be thrown).
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `blockNumber` | `BigIntLike` |  |
-| `td?` | `BigIntLike` | : total difficulty of the parent block (for block hf) OR of the the chain latest (for chain hf) |
+| `td?` | `BigIntLike` | : total difficulty of the parent block (for block hf) OR of the chain latest (for chain hf) |
 
 #### Returns
 
