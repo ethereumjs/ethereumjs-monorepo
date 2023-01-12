@@ -74,11 +74,33 @@ tape('data gas tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
+    const preShardingHeader = BlockHeader.fromHeaderData({})
+
+    let excessDataGas = calcExcessDataGas(preShardingHeader, 2)
+    t.equals(
+      excessDataGas,
+      0n,
+      'excess data gas where 4844 is not active on parent header should be 0'
+    )
+
+    t.throws(
+      () => getDataGasPrice(preShardingHeader),
+      (err: any) => err.message.includes('parent header must have excessDataGas field'),
+      'getDataGasPrice throws when header has no excessDataGas field'
+    )
+
+    t.throws(
+      () => calcDataFee(BlobEIP4844Transaction.fromTxData({}, { common }), preShardingHeader),
+      (err: any) => err.message.includes('parent header must have excessDataGas field'),
+      'calcDataFee throws when header has no excessDataGas field'
+    )
+
     const lowGasHeader = BlockHeader.fromHeaderData(
       { number: 1, excessDataGas: 5000 },
       { common, skipConsensusFormatValidation: true }
     )
-    let excessDataGas = calcExcessDataGas(lowGasHeader, 1)
+
+    excessDataGas = calcExcessDataGas(lowGasHeader, 1)
     let dataGasPrice = getDataGasPrice(lowGasHeader)
     t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
     t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
