@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
@@ -788,4 +788,54 @@ tape(
   }
 )
 
-// TODO - Add tests for datagas checks
+tape.only('EIP 4844 transaction tests', async (t) => {
+  const genesisJson = require('../../../block/test/testdata/post-merge-hardfork.json')
+  const common = Common.fromGethGenesis(genesisJson, {
+    chain: 'customChain',
+    hardfork: Hardfork.ShardingForkDev,
+  })
+  const oldHeadBlockFunction = Blockchain.prototype.getCanonicalHeadBlock
+
+  // Stub getCanonicalHeadBlock to produce a valid parent header under EIP 4844
+  Blockchain.prototype.getCanonicalHeadBlock = async () => {
+    return Block.fromBlockData(
+      {
+        header: BlockHeader.fromHeaderData(
+          {
+            excessDataGas: 1n,
+            number: 1,
+          },
+          {
+            common,
+            skipConsensusFormatValidation: true,
+          }
+        ),
+      },
+      { common, skipConsensusFormatValidation: true }
+    )
+  }
+  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
+  const vm = await VM.create({ common, blockchain })
+
+  const tx = getTransaction(common, 5, true)
+
+  const block = Block.fromBlockData(
+    {
+      header: BlockHeader.fromHeaderData(
+        {
+          excessDataGas: 1n,
+          number: 2,
+        },
+        {
+          common,
+          skipConsensusFormatValidation: true,
+        }
+      ),
+    },
+    { common, skipConsensusFormatValidation: true }
+  )
+  const res = await vm.runTx({ tx, block, skipBalance: true })
+  t.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+  Blockchain.prototype.getCanonicalHeadBlock = oldHeadBlockFunction
+  t.end()
+})
