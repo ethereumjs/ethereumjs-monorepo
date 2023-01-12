@@ -259,13 +259,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
   }
 
-  if (this._common.isActivatedEIP(4844) && tx instanceof BlobEIP4844Transaction) {
+  if (tx instanceof BlobEIP4844Transaction) {
+    if (!this._common.isActivatedEIP(4844)) {
+      const msg = _errorMsg('blob transactions are only valid with EIP4844 active', this, block, tx)
+      throw new Error(msg)
+    }
     // EIP-4844 spec
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalDataGas =
-      castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.versionedHashes.length)
+    totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalDataGas * castTx.maxFeePerDataGas
 
     // 4844 minimum datagas price check

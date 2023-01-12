@@ -38,6 +38,12 @@
       "d": "The fee associated with the point evaluation precompile"
     }
   },
+  "blobsConfig": {
+    "blobCommitmentVersionKzg": {
+      "v": 1,
+      "d": "The number indicated a versioned hash is a KZG commitment"
+    }
+  },
   "vm": {},
   "pow": {}
 }

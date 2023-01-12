@@ -20,6 +20,7 @@ const { verifyKzgProof } = kzg
 
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
+  const version = Number(opts._common.param('blobsConfig', 'blobCommitmentVersionKzg'))
   const versionedHash = opts.data.slice(0, 32)
   const z = opts.data.slice(32, 64)
   const y = opts.data.slice(64, 96)
@@ -30,7 +31,10 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
   }
 
-  if (bufferToHex(Buffer.from(computeVersionedHash(commitment))) !== bufferToHex(versionedHash)) {
+  if (
+    bufferToHex(Buffer.from(computeVersionedHash(commitment, version))) !==
+    bufferToHex(versionedHash)
+  ) {
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
 

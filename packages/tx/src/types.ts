@@ -9,6 +9,16 @@ import {
   UnionType,
 } from '@chainsafe/ssz'
 
+import {
+  BYTES_PER_FIELD_ELEMENT,
+  FIELD_ELEMENTS_PER_BLOB,
+  LIMIT_BLOBS_PER_TX,
+  MAX_ACCESS_LIST_SIZE,
+  MAX_CALLDATA_SIZE,
+  MAX_TX_WRAP_KZG_COMMITMENTS,
+  MAX_VERSIONED_HASHES_LIST_SIZE,
+} from './constants'
+
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
@@ -332,17 +342,6 @@ export interface JsonRpcTx {
   versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
 
-/** EIP4844 constants */
-
-// TODO: Decide which of these should be in the hardfork params instead of hardcoded as constants here
-export const BLOB_COMMITMENT_VERSION_KZG = 0x01
-export const MAX_CALLDATA_SIZE = 16777216 // 2 ** 24
-export const MAX_ACCESS_LIST_SIZE = 16777216 // 2 ** 24
-export const MAX_VERSIONED_HASHES_LIST_SIZE = 16777216 // 2 ** 24
-export const LIMIT_BLOBS_PER_TX = 2
-export const MAX_TX_WRAP_KZG_COMMITMENTS = 16777216 // 2 ** 24
-export const FIELD_ELEMENTS_PER_BLOB = 4096
-export const BYTES_PER_FIELD_ELEMENT = 32
 /** EIP4844 types */
 export const AddressType = new ByteVectorType(20) // SSZ encoded address
 

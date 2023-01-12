@@ -13,12 +13,11 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
+import { LIMIT_BLOBS_PER_TX } from './constants'
 import { kzg } from './kzg/kzg'
 import {
-  BLOB_COMMITMENT_VERSION_KZG,
   BlobNetworkTransactionWrapper,
   BlobTransactionType,
-  LIMIT_BLOBS_PER_TX,
   SignedBlobTransactionType,
 } from './types'
 import { AccessLists, blobTxToNetworkWrapperDataFormat, checkMaxInitCodeSize } from './util'
@@ -41,7 +40,8 @@ const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
   blobs: Uint8Array[],
   commitments: Uint8Array[],
-  kzgProof: Uint8Array
+  kzgProof: Uint8Array,
+  version: number
 ) => {
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
@@ -54,8 +54,8 @@ const validateBlobTransactionNetworkWrapper = (
   }
 
   for (let x = 0; x < versionedHashes.length; x++) {
-    const computedVersionHash = computeVersionedHash(commitments[x])
-    if (!byteArrayEquals(computedVersionHash, versionedHashes[x])) {
+    const computedVersionedHash = computeVersionedHash(commitments[x], version)
+    if (!byteArrayEquals(computedVersionedHash, versionedHashes[x])) {
       throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
     }
   }
@@ -145,7 +145,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (hash[0] !== BLOB_COMMITMENT_VERSION_KZG) {
+      if (BigInt(hash[0]) !== this.common.param('blobsConfig', 'blobCommitmentVersionKzg')) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -191,21 +191,25 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
    * @returns a BlobEIP4844Transaction
-   * @throws if no KZG library is loaded -- using the {@link initKzg} helper method
+   * @throws if no KZG library is loaded -- using the {@link initKzg} helper method -- or if `opts.common` not provided
    */
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Buffer,
     opts?: TxOptions
   ): BlobEIP4844Transaction {
+    if (!opts || !opts.common) {
+      throw new Error('common instance required to validate versioned hashes')
+    }
     // Validate network wrapper
     const wrapper = BlobNetworkTransactionWrapper.deserialize(serialized.slice(1))
     const decodedTx = wrapper.tx.message
-
+    const version = Number(opts.common.param('blobsConfig', 'blobCommitmentVersionKzg'))
     validateBlobTransactionNetworkWrapper(
       decodedTx.blobVersionedHashes,
       wrapper.blobs,
       wrapper.blobKzgs,
-      wrapper.kzgAggregatedProof
+      wrapper.kzgAggregatedProof,
+      version
     )
 
     const accessList: AccessListBuffer = []
@@ -290,6 +294,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return this.gasLimit * gasPrice + this.value
   }
 
+  /**
+   * This method is not implemented for blob transactions as the `raw` method is used exclusively with
+   * rlp encoding and these transactions use SSZ for serialization.
+   */
   raw(): TxValuesArray {
     throw new Error('Method not implemented.')
   }
@@ -472,5 +480,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    */
   protected _errorMsg(msg: string) {
     return `${msg} (${this.errorStr()})`
+  }
+
+  /**
+   * @returns the number of blobs included with this transaction
+   */
+  public numBlobs() {
+    return this.versionedHashes.length
   }
 }

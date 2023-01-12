@@ -639,7 +639,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
-      versionedHashes: message.versionedHashes,
+      versionedHashes: message.versionedHashes ?? [],
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)

@@ -430,18 +430,29 @@ export class Block {
   }
 
   /**
-   * Validates that data gas fee for each transaction
+   * Validates that data gas fee for each transaction is greater than or equal to the
+   * dataGasPrice for the block and that total data gas in block is less than maximum
+   * data gas per block
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
+    let blockDataGas = BigInt(0)
+    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
     for (const tx of this.transactions) {
       if (tx instanceof BlobEIP4844Transaction) {
         const dataGasPrice = getDataGasPrice(parentHeader)
+        blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
         if (tx.maxFeePerDataGas < dataGasPrice) {
           throw new Error(
             `blob transaction maxFeePerDataGas ${
               tx.maxFeePerDataGas
             } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+          )
+        }
+        if (blockDataGas > dataGasLimit) {
+          throw new Error(
+            `total data gas from blobs  of ${blockDataGas} exceeds maximum data gas per blob of ${dataGasLimit}`
           )
         }
       }

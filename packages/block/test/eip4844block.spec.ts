@@ -164,6 +164,10 @@ tape('validateBlobTransactions() tests', async (t) => {
       { common, skipConsensusFormatValidation: true }
     )
 
+    const blockWithTooManyBlobs = Block.fromBlockData(
+      { header: blockHeader, transactions: [tx1, tx1, tx1, tx1, tx1] },
+      { common, skipConsensusFormatValidation: true }
+    )
     t.doesNotThrow(
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
@@ -172,6 +176,12 @@ tape('validateBlobTransactions() tests', async (t) => {
       () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
       (err: any) => err.message.includes('than block data gas price'),
       'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+    )
+
+    t.throws(
+      () => blockWithTooManyBlobs.validateBlobTransactions(parentHeader),
+      (err: any) => err.message.includes('exceeds maximum data gas per blob'),
+      'throws with correct error message when too many blobs in a block'
     )
 
     t.end()

@@ -156,9 +156,8 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    // Set default values for data gas calculations so Typescript won't complain
-    let dataGasLimit = BigInt(0)
-    let dataGasPerBlob = BigInt(0)
+    const dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
@@ -170,13 +169,8 @@ export class BlockBuilder {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
       const blobTx = tx as BlobEIP4844Transaction
-      dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
-      dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
 
-      if (
-        this.dataGasUsed + BigInt(blobTx.versionedHashes.length) * dataGasPerBlob >
-        dataGasLimit
-      ) {
+      if (this.dataGasUsed + BigInt(blobTx.numBlobs()) * dataGasPerBlob > dataGasLimit) {
         throw new Error('block data gas limit reached')
       }
 
@@ -266,7 +260,7 @@ export class BlockBuilder {
         const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
         let newBlobs = 0
         for (const txn of blobTxns) {
-          newBlobs += (txn as BlobEIP4844Transaction).versionedHashes.length
+          newBlobs += (txn as BlobEIP4844Transaction).numBlobs()
         }
         // Compute excess data gas for block
         excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)

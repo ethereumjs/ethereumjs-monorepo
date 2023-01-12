@@ -62,10 +62,16 @@ export const blobsToCommitments = (blobs: Buffer[]) => {
   return commitments
 }
 
+/**
+ * Generate an array of versioned hashes from corresponding kzg commitments
+ * @param commitments array of kzg commitments
+ * @returns array of versioned hashes
+ * Note: assumes KZG commitments (version 1 version hashes)
+ */
 export const commitmentsToVersionedHashes = (commitments: Buffer[]) => {
   const hashes = []
   for (const commitment of commitments) {
-    hashes.push(Buffer.from(computeVersionedHash(commitment)))
+    hashes.push(Buffer.from(computeVersionedHash(commitment, 0x01)))
   }
   return hashes
 }
