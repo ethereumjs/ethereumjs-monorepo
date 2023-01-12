@@ -97,7 +97,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     if (this.common.isActivatedEIP(1559) === false) {
       throw new Error('EIP-1559 not enabled on Common')
     }
-    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 4844])
+
+    if (this.common.isActivatedEIP(4844) === false) {
+      throw new Error('EIP-4844 not enabled on Common')
+    }
+    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])
@@ -145,7 +149,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('blobsConfig', 'blobCommitmentVersionKzg')) {
+      if (
+        BigInt(hash[0]) !== this.common.paramByEIP('blobsConfig', 'blobCommitmentVersionKzg', 4844)
+      ) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }

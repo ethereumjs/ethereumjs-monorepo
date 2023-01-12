@@ -1,3 +1,4 @@
+import { Common, Hardfork } from '@ethereumjs/common'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
@@ -12,7 +13,13 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 const pk = randomBytes(32)
 initKZG(kzg)
 
-tape('EIP4844 constructor tests - valid scenarios', (t) => {
+const gethGenesis = require('../../block/test/testdata/post-merge-hardfork.json')
+const common = Common.fromGethGenesis(gethGenesis, {
+  chain: 'customChain',
+  hardfork: Hardfork.ShardingForkDev,
+})
+
+tape.only('EIP4844 constructor tests - valid scenarios', (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
@@ -21,19 +28,19 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
       versionedHashes: [Buffer.concat([Buffer.from([1]), randomBytes(31)])],
       maxFeePerDataGas: 1n,
     }
-    const tx = BlobEIP4844Transaction.fromTxData(txData)
+    const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
     t.equal(tx.type, 5, 'successfully instantiated a blob transaction from txData')
-    const factoryTx = TransactionFactory.fromTxData(txData)
+    const factoryTx = TransactionFactory.fromTxData(txData, { common })
     t.equal(factoryTx.type, 5, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()
     t.equal(serializedTx[0], 5, 'successfully serialized a blob tx')
-    const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx)
+    const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { common })
     t.equal(deserializedTx.type, 5, 'deserialized a blob tx')
 
     const signedTx = tx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
-    const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize())
+    const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize(), { common })
     t.equal(
       decodedTx.getSenderAddress().toString(),
       sender,
@@ -66,7 +73,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
       ],
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash })
+      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash }, { common })
     } catch (err: any) {
       t.ok(
         err.message.includes('versioned hash is invalid length'),
@@ -74,7 +81,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
       )
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash })
+      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash }, { common })
     } catch (err: any) {
       t.ok(
         err.message.includes('does not start with KZG commitment'),
@@ -82,7 +89,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
       )
     }
     try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs })
+      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs }, { common })
     } catch (err: any) {
       t.ok(err.message.includes('tx can contain at most'), 'throws on too many versioned hashes')
     }
