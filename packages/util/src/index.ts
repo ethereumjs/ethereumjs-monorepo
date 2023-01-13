@@ -37,7 +37,6 @@ export * from './types'
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter'
-export * from './sharding'
 export {
   arrayContainsArray,
   fromAscii,

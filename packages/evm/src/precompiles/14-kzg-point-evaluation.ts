@@ -1,6 +1,5 @@
 import { kzg } from '@ethereumjs/tx'
 import {
-  BLS_MODULUS,
   bigIntToBuffer,
   bufferToBigInt,
   bufferToHex,
@@ -21,13 +20,14 @@ const { verifyKzgProof } = kzg
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   const version = Number(opts._common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
+  const blsModulus = opts._common.paramByEIP('sharding', 'blsModulus', 4844)!
   const versionedHash = opts.data.slice(0, 32)
   const z = opts.data.slice(32, 64)
   const y = opts.data.slice(64, 96)
   const commitment = opts.data.slice(96, 144)
   const kzgProof = opts.data.slice(144, 192)
 
-  if (bufferToBigInt(z) >= BLS_MODULUS || bufferToBigInt(y) >= BLS_MODULUS) {
+  if (bufferToBigInt(z) >= blsModulus || bufferToBigInt(y) >= blsModulus) {
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
   }
 
@@ -42,7 +42,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
   const fieldElementsBuffer = setLengthLeft(intToBuffer(FIELD_ELEMENTS_PER_BLOB), 32)
-  const modulusBuffer = setLengthLeft(bigIntToBuffer(BLS_MODULUS), 32)
+  const modulusBuffer = setLengthLeft(bigIntToBuffer(blsModulus), 32)
   return {
     executionGasUsed: gasUsed,
     returnValue: Buffer.concat([fieldElementsBuffer, modulusBuffer]),

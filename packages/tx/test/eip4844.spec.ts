@@ -4,14 +4,17 @@ import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
-
-import { blobsToCommitments, commitmentsToVersionedHashes, getBlobs } from './utils/blobHelpers'
+import {
+  blobsToCommitments,
+  commitmentsToVersionedHashes,
+  getBlobs,
+} from '../src/utils/blobHelpers'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-initKZG(kzg)
+if (isBrowser() === false) initKZG(kzg)
 
 const gethGenesis = require('../../block/test/testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {

@@ -1,5 +1,5 @@
-import { computeVersionedHash } from '@ethereumjs/util'
 import { blobToKzgCommitment } from 'c-kzg'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
@@ -60,6 +60,21 @@ export const blobsToCommitments = (blobs: Buffer[]) => {
     commitments.push(Buffer.from(blobToKzgCommitment(blob)))
   }
   return commitments
+}
+
+/**
+ * Converts a vector commitment for a given data blob to its versioned hash.  For 4844, this version
+ * number will be 0x01 for KZG vector commitments but could be different if future vector commitment
+ * types are introduced
+ * @param commitment a vector commitment to a blob
+ * @param blobCommitmentVersion the version number corresponding to the type of vector commitment
+ * @returns a versioned hash corresponding to a given blob vector commitment
+ */
+export const computeVersionedHash = (commitment: Uint8Array, blobCommitmentVersion: number) => {
+  const computedVersionedHash = new Uint8Array(32)
+  computedVersionedHash.set([blobCommitmentVersion], 0)
+  computedVersionedHash.set(sha256(commitment).slice(1), 1)
+  return computedVersionedHash
 }
 
 /**

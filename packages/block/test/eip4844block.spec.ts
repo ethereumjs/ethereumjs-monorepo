@@ -4,7 +4,7 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/test/utils/blobHelpers'
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
@@ -16,7 +16,7 @@ import { calcDataFee, fakeExponential } from '../src/helpers'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-initKZG(kzg)
+if (isBrowser() === false) initKZG(kzg)
 const gethGenesis = require('./testdata/post-merge-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',

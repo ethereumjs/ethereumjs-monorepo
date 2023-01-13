@@ -199,7 +199,11 @@ tape('[EthProtocol]', (t) => {
   t.test('verify that Transactions handler encodes/decodes correctly', (st) => {
     const config = new Config({
       transports: [],
-      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      common: new Common({
+        chain: Config.CHAIN_DEFAULT,
+        hardfork: Hardfork.Merge,
+        eips: [4895, 4844],
+      }),
     })
     config.synchronized = true
     const chain = new Chain({ config })
@@ -208,7 +212,7 @@ tape('[EthProtocol]', (t) => {
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
-    const blobTx = TransactionFactory.fromTxData({ type: 5 })
+    const blobTx = TransactionFactory.fromTxData({ type: 5 }, { common: config.chainCommon })
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,
