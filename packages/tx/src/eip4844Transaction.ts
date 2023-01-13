@@ -150,7 +150,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         throw new Error(msg)
       }
       if (
-        BigInt(hash[0]) !== this.common.paramByEIP('blobsConfig', 'blobCommitmentVersionKzg', 4844)
+        BigInt(hash[0]) !== this.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844)
       ) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
@@ -209,7 +209,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     // Validate network wrapper
     const wrapper = BlobNetworkTransactionWrapper.deserialize(serialized.slice(1))
     const decodedTx = wrapper.tx.message
-    const version = Number(opts.common.param('blobsConfig', 'blobCommitmentVersionKzg'))
+    const version = Number(opts.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
     validateBlobTransactionNetworkWrapper(
       decodedTx.blobVersionedHashes,
       wrapper.blobs,

@@ -367,6 +367,10 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
+    let blockDataGas = BigInt(0)
+    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
@@ -383,7 +387,16 @@ export class Block {
           }
         }
       }
-
+      if (this._common.isActivatedEIP(4844) === true) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
+          if (blockDataGas > dataGasLimit) {
+            errs.push(
+              `tx causes total data gas of ${blockDataGas} to exceed maximum data gas per block of ${dataGasLimit}`
+            )
+          }
+        }
+      }
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
@@ -436,23 +449,14 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    let blockDataGas = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
     for (const tx of this.transactions) {
       if (tx instanceof BlobEIP4844Transaction) {
         const dataGasPrice = getDataGasPrice(parentHeader)
-        blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
         if (tx.maxFeePerDataGas < dataGasPrice) {
           throw new Error(
             `blob transaction maxFeePerDataGas ${
               tx.maxFeePerDataGas
             } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
-          )
-        }
-        if (blockDataGas > dataGasLimit) {
-          throw new Error(
-            `total data gas from blobs  of ${blockDataGas} exceeds maximum data gas per blob of ${dataGasLimit}`
           )
         }
       }

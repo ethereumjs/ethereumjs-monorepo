@@ -137,7 +137,7 @@ tape('data gas tests', async (t) => {
   }
 })
 
-tape('validateBlobTransactions() tests', async (t) => {
+tape('transaction validation tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
@@ -203,10 +203,11 @@ tape('validateBlobTransactions() tests', async (t) => {
       'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
     )
 
-    t.throws(
-      () => blockWithTooManyBlobs.validateBlobTransactions(parentHeader),
-      (err: any) => err.message.includes('exceeds maximum data gas per blob'),
-      'throws with correct error message when too many blobs in a block'
+    t.ok(
+      blockWithTooManyBlobs
+        .validateTransactions(true)[4]
+        .includes('exceed maximum data gas per block'),
+      'tx erros includes correct error message when too many blobs in a block'
     )
 
     t.end()

@@ -788,7 +788,7 @@ tape(
   }
 )
 
-tape.only('EIP 4844 transaction tests', async (t) => {
+tape('EIP 4844 transaction tests', async (t) => {
   const genesisJson = require('../../../block/test/testdata/post-merge-hardfork.json')
   const common = Common.fromGethGenesis(genesisJson, {
     chain: 'customChain',
