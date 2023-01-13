@@ -210,6 +210,7 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('construct blob bundles', async (st) => {
+    kzg.freeTrustedSetup()
     initKZG(kzg)
     const gethGenesis = require('../../../block/test/testdata/post-merge-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
