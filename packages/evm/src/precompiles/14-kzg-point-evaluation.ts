@@ -3,7 +3,6 @@ import {
   bigIntToBuffer,
   bufferToBigInt,
   bufferToHex,
-  computeVersionedHash,
   intToBuffer,
   setLengthLeft,
 } from '@ethereumjs/util'

@@ -6,7 +6,6 @@ import {
   bigIntToUnpaddedBuffer,
   bufferToBigInt,
   bufferToHex,
-  computeVersionedHash,
   ecrecover,
   toBuffer,
 } from '@ethereumjs/util'
@@ -21,6 +20,7 @@ import {
   SignedBlobTransactionType,
 } from './types'
 import { AccessLists, blobTxToNetworkWrapperDataFormat, checkMaxInitCodeSize } from './util'
+import { computeVersionedHash } from './utils/blobHelpers'
 
 import type {
   AccessList,
