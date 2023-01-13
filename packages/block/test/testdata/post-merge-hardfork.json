@@ -13,7 +13,7 @@
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
-    "shanghaiTime": null,
+    "shanghaiTime": 0,
     "shardingForkTime": 0,
     "clique": {
       "period": 5,

@@ -66,6 +66,14 @@ tape('EIP4844 header tests', function (t) {
         }
       )
     }, 'correctly instantiates an EIP4844 block header')
+
+    const block = Block.fromBlockData(
+      {
+        header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
+      },
+      { common, skipConsensusFormatValidation: true }
+    )
+    t.equal(block.toJSON().header?.excessDataGas, '0x0', 'JSON output includes excessDataGas')
     t.end()
   }
 })
@@ -213,6 +221,7 @@ tape('transaction validation tests', async (t) => {
     t.end()
   }
 })
+
 tape('fake exponential', (t) => {
   // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
   const testInputs = [
