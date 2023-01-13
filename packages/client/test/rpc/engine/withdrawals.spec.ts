@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
+import { GWEI_TO_WEI, Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -74,7 +74,8 @@ const withdrawalsGethVector = withdrawalsVector.map((testVec) => ({
   index: intToHex(testVec.Index),
   validatorIndex: intToHex(testVec.Validator),
   address: testVec.Recipient,
-  amount: bigIntToHex(BigInt(testVec.Amount)),
+  // withdrawal amount is now represent in gwei to match CL representation
+  amount: bigIntToHex(BigInt(testVec.Amount) / GWEI_TO_WEI),
 }))
 
 const validForkChoiceState = {
