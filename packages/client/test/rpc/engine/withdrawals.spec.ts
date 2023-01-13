@@ -107,7 +107,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
     ).toString('hex')
     t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
-    const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
     let expectRes = checkError(
