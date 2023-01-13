@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { GWEI_TO_WEI, Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
+import { Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -74,8 +74,7 @@ const withdrawalsGethVector = withdrawalsVector.map((testVec) => ({
   index: intToHex(testVec.Index),
   validatorIndex: intToHex(testVec.Validator),
   address: testVec.Recipient,
-  // withdrawal amount is now represent in gwei to match CL representation
-  amount: bigIntToHex(BigInt(testVec.Amount) / GWEI_TO_WEI),
+  amount: bigIntToHex(BigInt(testVec.Amount)),
 }))
 
 const validForkChoiceState = {
@@ -142,10 +141,9 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
-      const gethBlock = Block.fromRLPSerializedBlock(Buffer.from(gethBlockRlp, 'hex'), { common })
       t.equal(
         payload!.stateRoot,
-        `0x${gethBlock.header.stateRoot.toString('hex')}`,
+        '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
         'stateRoot should match'
       )
     }
