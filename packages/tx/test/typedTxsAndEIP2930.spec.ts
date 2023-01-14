@@ -66,7 +66,7 @@ tape(
         const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
         t.throws(() => {
           txType.class.fromTxData({}, { common: nonEIP2930Common })
-        }, `should throw on a pre-Berlin Harfork (EIP-2930 not activated) (${txType.name})`)
+        }, `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`)
 
         t.throws(() => {
           txType.class.fromTxData(
@@ -422,7 +422,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
         )
     )
 
-    // Explicilty check that even if we have duplicates in our list, we still charge for those
+    // Explicitly check that even if we have duplicates in our list, we still charge for those
     tx = AccessListEIP2930Transaction.fromTxData(
       {
         to: validAddress,

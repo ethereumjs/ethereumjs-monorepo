@@ -40,7 +40,7 @@ tape('Create where FROM account nonce is 0', async (t) => {
 
 tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const contractAddress = new Address(
     Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   ) // contract address
@@ -101,7 +101,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
 tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   t.plan(2)
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const contractAddress = new Address(
     Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   ) // contract address
@@ -152,7 +152,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
 tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -204,7 +204,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
 tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
@@ -232,7 +232,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
 
 tape('ensure correct gas for calling non-existent accounts in homestead', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
@@ -264,7 +264,7 @@ tape(
   'ensure callcode goes OOG if the gas argument is more than the gas left in the homestead fork',
   async (t) => {
     // setup the accounts for this test
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
     const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
@@ -295,7 +295,7 @@ tape(
 
 tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
@@ -326,7 +326,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
 
 tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
@@ -395,7 +395,7 @@ tape(
   'Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new contracts (EIP-2681)',
   async (t) => {
     // setup the accounts for this test
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
     const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const slot = Buffer.from('00'.repeat(32), 'hex')
     const emptyBuffer = Buffer.from('')
@@ -453,7 +453,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // Exploit post-mortem: https://github.com/ethereum/go-ethereum/blob/master/docs/postmortems/2021-08-22-split-postmortem.md
   // Permalink: https://github.com/ethereum/go-ethereum/blob/90987db7334c1d10eb866ca550efedb66dea8a20/docs/postmortems/2021-08-22-split-postmortem.md
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const eei = await getEEI()
@@ -554,7 +554,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
 
 tape('runCall() => allows to detect for max code size deposit errors', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   // setup the evm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const eei = await getEEI()

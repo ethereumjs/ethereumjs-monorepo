@@ -392,7 +392,7 @@ export class VMExecution extends Execution {
     await this.runWithLock<void>(async () => {
       await super.stop()
     })
-    // Resolve this promise outside lock since promise also aquires the lock while
+    // Resolve this promise outside lock since promise also acquires the lock while
     // running the iterator
     if (this.vmPromise) {
       // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)

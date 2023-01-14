@@ -1207,7 +1207,7 @@ ___
 
 Returns a parameter for the current chain setup
 
-If the parameter is present in an EIP, the EIP always takes precendence.
+If the parameter is present in an EIP, the EIP always takes precedence.
 Otherwise the parameter if taken from the latest applied HF with
 a change on the respective parameter.
 
@@ -1816,7 +1816,7 @@ Static method to load and set common from a geth genesis json
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `genesisJson` | `any` | json of geth configuration |
-| `to` | [`GethConfigOpts`](../interfaces/GethConfigOpts.md) | futher configure the common instance |
+| `to` | [`GethConfigOpts`](../interfaces/GethConfigOpts.md) | further configure the common instance |
 
 #### Returns
 

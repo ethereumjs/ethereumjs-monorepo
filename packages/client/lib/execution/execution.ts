@@ -27,7 +27,7 @@ export abstract class Execution {
   public started: boolean = false
 
   /**
-   * Create new excution module
+   * Create new execution module
    * @memberof module:sync/execution
    */
   constructor(options: ExecutionOptions) {

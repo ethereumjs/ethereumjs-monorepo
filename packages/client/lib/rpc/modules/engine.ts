@@ -455,7 +455,7 @@ export class Engine {
     }
 
     // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
-    // been intialized here but a batch of blocks new payloads arrive, most likely during sync
+    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
@@ -578,7 +578,7 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    // It is possible that newPayload didnt start beacon sync as the payload it was asked to
+    // It is possible that newPayload didn't start beacon sync as the payload it was asked to
     // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
     // starts from a bit behind like how lodestar does
     if (!this.service.beaconSync && !this.config.disableBeaconSync) {

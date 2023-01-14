@@ -40,7 +40,7 @@ tape('invalid tests', (t) => {
 // The tests below are taken from Geth
 // https://github.com/ethereum/go-ethereum/blob/99be62a9b16fd7b3d1e2e17f1e571d3bef34f122/rlp/decode_test.go
 // Not all tests were taken; some which throw due to type errors in Geth are ran against Geth's RLPdump to
-// see if there is a decode error or not. In both cases, the test is convered to either reflect the
+// see if there is a decode error or not. In both cases, the test is converted to either reflect the
 // expected value, or if the test is invalid, it is added as error test case
 
 const invalidGethCases: string[] = [

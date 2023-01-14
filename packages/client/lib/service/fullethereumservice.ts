@@ -57,7 +57,7 @@ export class FullEthereumService extends EthereumService {
 
     // This flag is just to run and test snap sync, when fully ready, this needs to
     // be replaced by a more sophisticated condition based on how far back we are
-    // from the head, and how to run it in conjuction with the beacon sync
+    // from the head, and how to run it in conjunction with the beacon sync
     if (this.config.forceSnapSync) {
       this.synchronizer = new SnapSynchronizer({
         config: this.config,

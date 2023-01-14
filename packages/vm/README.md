@@ -81,7 +81,7 @@ vm.evm.events.on('step', function (data) {
 })
 ```
 
-Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
+Note that it's now also possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
 ### Execution Environment (EEI) and State
 
@@ -205,9 +205,9 @@ to receive a function as the handler's second argument, nor call it.
 Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
-If an exception is thrown from withing the handler or a function called
+If an exception is thrown from within the handler or a function called
 by it, the exception will bubble into the VM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
+corrupting its state. It's strongly recommended not to throw from within
 event handlers.
 
 ## Understanding the VM

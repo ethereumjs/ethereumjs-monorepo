@@ -129,7 +129,7 @@ export class Skeleton extends MetaDBManager {
         // Remove all other subchains as no more relevant
         const junkedSubChains = this.status.progress.subchains.splice(1)
         this.config.logger.debug(
-          `Canonocal subchain linked with main, removing junked chains ${junkedSubChains
+          `Canonical subchain linked with main, removing junked chains ${junkedSubChains
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}`
         )
@@ -192,7 +192,7 @@ export class Skeleton extends MetaDBManager {
           )} genesisHash=${short(this.chain.genesis.hash())}`
         )
       }
-      // genesis annoucement
+      // genesis announcement
       return false
     }
 
@@ -201,7 +201,7 @@ export class Skeleton extends MetaDBManager {
       this.config.logger.info(
         `Skeleton empty, comparing against genesis head=0 tail=0 newHead=${number}`
       )
-      // set the lastchain to genesis for comparision in following conditions
+      // set the lastchain to genesis for comparison in following conditions
       lastchain = { head: BigInt(0), tail: BigInt(0), next: zeroBlockHash }
     }
 
@@ -226,7 +226,7 @@ export class Skeleton extends MetaDBManager {
       const mayBeDupBlock = await this.getBlock(number)
       if (mayBeDupBlock !== undefined && mayBeDupBlock.header.hash().equals(head.hash())) {
         this.config.logger.debug(
-          `Skeleton duplicate annoucement tail=${lastchain.tail} head=${
+          `Skeleton duplicate announcement tail=${lastchain.tail} head=${
             lastchain.head
           } number=${number} hash=${short(head.hash())}`
         )
@@ -349,7 +349,7 @@ export class Skeleton extends MetaDBManager {
       if (force && this.linked) {
         void this.fillCanonicalChain()
       }
-      // Earlier we were throwing on reorg, essentially for the puposes for killing the reverse fetcher
+      // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
       // but it can be handled properly in the calling fn without erroring
       if (reorg && reorgthrow) {
         if (force) {
@@ -366,7 +366,7 @@ export class Skeleton extends MetaDBManager {
    * Setup the skeleton to init sync with head
    * @params head - The block with which we want to init the skeleton head
    * @params reorgthrow - If we would like the function to throw instead of silently
-   *         return if there is reorg of the skeleon head
+   *         return if there is reorg of the skeleton head
    *
    * @returns True if the skeleton was reorged trying to init else false
    */
@@ -588,7 +588,7 @@ export class Skeleton extends MetaDBManager {
     this.filling = true
     let canonicalHead = this.chain.blocks.height
     const start = canonicalHead
-    // This subchain is a reference to update the tail for the very sunchain we are filling the data for
+    // This subchain is a reference to update the tail for the very subchain we are filling the data for
     const subchain = this.status.progress.subchains[0]!
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
