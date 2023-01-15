@@ -225,13 +225,21 @@ export class EthProtocol extends Protocol {
         }
         return [bigIntToUnpaddedBuffer(reqId), serializedTxs]
       },
-      decode: ([reqId, txs]: [Buffer, any[]]) => [
-        bufferToBigInt(reqId),
-        // TODO: add proper Common instance (problem: service not accesible)
-        //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.config.syncTargetHeight)
-        txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
-      ],
+      decode: ([reqId, txs]: [Buffer, any[]]) => {
+        const common = this.config.chainCommon.copy()
+        common.setHardforkByBlockNumber(
+          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+            this.config.syncTargetHeight ?? // Use sync target height if available OR
+            common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
+            BigInt(0), // Use chainstart,
+          undefined,
+          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
+        )
+        return [
+          bufferToBigInt(reqId),
+          txs.map((txData) => TransactionFactory.fromBlockBodyData(txData, { common })),
+        ]
+      },
     },
     {
       name: 'GetReceipts',

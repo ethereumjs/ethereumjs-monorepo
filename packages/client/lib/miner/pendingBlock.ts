@@ -97,6 +97,16 @@ export class PendingBlock {
               `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
             )
           }
+        } else if (error.message === 'tx has a different hardfork than the block') {
+          // We can here decide to keep a tx in pool if it belongs to future hf
+          // but for simplicity just remove the tx as the sender can always retransmit
+          // the tx
+          this.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.config.logger.error(
+            `Pending: Removed from txPool tx 0x${txs[index].hash()} having different hf=${txs[
+              index
+            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
+          )
         } else {
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
