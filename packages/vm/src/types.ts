@@ -307,6 +307,12 @@ export interface RunTxOpts {
   skipBlockGasLimitValidation?: boolean
 
   /**
+   * If true, skips the hardfork validation of vm, block
+   * and tx
+   */
+  skipHardForkValidation?: boolean
+
+  /**
    * If true, adds a generated EIP-2930 access list
    * to the `RunTxResult` returned.
    *
