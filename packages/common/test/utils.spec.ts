@@ -127,7 +127,7 @@ tape('[Utils/Parse]', (t) => {
   })
 
   t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
-    const json = require(`./data/4844-hardfork.json`)
+    const json = require(`./data/post-merge-hardfork.json`)
     const common = Common.fromGethGenesis(json, {
       chain: 'customChain',
     })
